@@ -11,7 +11,7 @@ export default function Navbar({ mode }) {
 
       <nav className={styles.navbar}>
         <div className={styles.navbar__logo}>
-          <p>RoboStage</p>
+          <Link href="/">RoboStage</Link>
         </div>
         {validMode === "default" && (
           <div className={styles.navbar__module}>

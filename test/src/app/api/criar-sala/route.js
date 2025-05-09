@@ -16,6 +16,7 @@ export async function POST(req, res) {
 
     // Cria a nova sala
     salas[idSala] = {
+      idSala,
       nome,  // Armazena o nome da sala
       visitante: codigoVisitante,
       voluntario: codigoVoluntario,

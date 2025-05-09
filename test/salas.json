@@ -1,0 +1,137 @@
+{
+  "TIQ": {
+    "visitante": "TIQID6",
+    "voluntario": "TIQBHC"
+  },
+  "YRM": {
+    "visitante": "YRMQT4",
+    "voluntario": "YRM56S",
+    "admin": "YRMGC6"
+  },
+  "IP0": {
+    "visitante": "IP0TZ1",
+    "voluntario": "IP076A",
+    "admin": "IP0NRC"
+  },
+  "Q86": {
+    "visitante": "Q86WI2",
+    "voluntario": "Q86U1A",
+    "admin": "Q86SSP"
+  },
+  "90C": {
+    "visitante": "90C2R8",
+    "voluntario": "90CP8Y",
+    "admin": "90CXWR"
+  },
+  "9DF": {
+    "visitante": "9DFJEP",
+    "voluntario": "9DFJJ0",
+    "admin": "9DFYOT"
+  },
+  "QF0": {
+    "visitante": "QF0DIW",
+    "voluntario": "QF0N1G",
+    "admin": "QF0IG1"
+  },
+  "QUP": {
+    "visitante": "QUPGK5",
+    "voluntario": "QUPQD1",
+    "admin": "QUP177"
+  },
+  "KRD": {
+    "visitante": "KRD495",
+    "voluntario": "KRDJKT",
+    "admin": "KRD5IK"
+  },
+  "1746750872380": {
+    "idSala": "1746750872380",
+    "nome": "Torneio VMRT",
+    "visitante": "0y2u64vh",
+    "voluntario": "rqli2vxr",
+    "admin": "gdtsb6sm"
+  },
+  "1746751582694": {
+    "idSala": "1746751582694",
+    "nome": "Torneio",
+    "visitante": "uxt6les6",
+    "voluntario": "n8r77t1q",
+    "admin": "16h2dgm9"
+  },
+  "1746751709421": {
+    "idSala": "1746751709421",
+    "nome": "Torneio",
+    "visitante": "17467517094216BS",
+    "voluntario": "1746751709421ESJ",
+    "admin": "17467517094211XB"
+  },
+  "1746751906148": {
+    "idSala": "1746751906148",
+    "nome": "Torneio",
+    "visitante": "1746751906148VCS",
+    "voluntario": "1746751906148NDG",
+    "admin": "17467519061489I4"
+  },
+  "1746752021840": {
+    "idSala": "1746752021840",
+    "nome": "Olá",
+    "visitante": "1746752021840RJ7",
+    "voluntario": "17467520218402E9",
+    "admin": "1746752021840RPX"
+  },
+  "1746752261394": {
+    "idSala": "1746752261394",
+    "nome": "Ola2",
+    "visitante": "1746752261394UZU",
+    "voluntario": "174675226139449K",
+    "admin": "174675226139496N"
+  },
+  "1746752347105": {
+    "idSala": "1746752347105",
+    "nome": "a",
+    "visitante": "17467523471058NX",
+    "voluntario": "17467523471052Z9",
+    "admin": "1746752347105K67"
+  },
+  "CYY": {
+    "idSala": "CYY",
+    "nome": "a",
+    "visitante": "CYY9LQ",
+    "voluntario": "CYYJC1",
+    "admin": "CYYPCA"
+  },
+  "ZJS": {
+    "idSala": "ZJS",
+    "nome": "a",
+    "visitante": "ZJSGQ2",
+    "voluntario": "ZJSD1A",
+    "admin": "ZJSBFI"
+  },
+  "7YD": {
+    "idSala": "7YD",
+    "nome": "a",
+    "visitante": "7YDH2O",
+    "voluntario": "7YD0ML",
+    "admin": "7YDOLR"
+  },
+  "EL2": {
+    "idSala": "EL2",
+    "nome": "a",
+    "visitante": "EL2QMK",
+    "voluntario": "EL21Y6",
+    "admin": "EL2D5T"
+  },
+  "KAU": {
+    "idSala": "KAU",
+    "nome": "a",
+    "visitante": "KAUYHG",
+    "voluntario": "KAU59I",
+    "admin": "KAUUS1"
+  },
+  "VU1": {
+    "idSala": "VU1",
+    "nome": "asa",
+    "visitante": "VU1D1Z",
+    "voluntario": "VU14KO",
+    "admin": "VU1FEX"
+  }
+}

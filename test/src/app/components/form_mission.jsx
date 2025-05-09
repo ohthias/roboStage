@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "../styles/FormMission.module.css";
+import styles from "../../../styles/FormMission.module.css";
 
 export default function FormMission({ missions = [], responses = {}, onSelect }) {
   const renderInput = (missionId, index, type) => {

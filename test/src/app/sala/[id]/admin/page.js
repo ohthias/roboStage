@@ -20,7 +20,7 @@ export default function SalaAdmin({ params }) {
       <p><strong>Código do Admin:</strong> {admin}</p>
 
       {/* Adicionando um botão para sair */}
-      <button onClick={() => window.location.href = '/sala'}>Sair da Sala</button>
+      <button onClick={() => window.location.href = '/'}>Sair da Sala</button>
     </div>
   )
 }

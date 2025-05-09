@@ -1,5 +1,5 @@
 'use client';
-import '../styles/Modal.css';
+import '../../../styles/Modal.css';
 
 export default function Modal({ children, onClose }) {
   return (

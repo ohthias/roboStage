@@ -62,8 +62,6 @@ export default function EntradaSala() {
       }
     } catch (e) {
       setErro("Erro de conexão.");
-    } finally {
-      setLoading(false);
     }
   };
 

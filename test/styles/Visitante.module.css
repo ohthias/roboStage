@@ -1,0 +1,37 @@
+.container {
+    padding: 1rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .nomeSala {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .tabela {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #f9f9f9;
+  }
+  
+  .thead {
+    background-color: #004080;
+    color: white;
+  }
+  
+  .tr {
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .th, .td {
+    text-align: center;
+    padding: 0.6rem;
+  }
+  
+  .tbody tr:nth-child(even) {
+    background-color: #f0f0f0;
+  }
+  

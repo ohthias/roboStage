@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import styles from "../../../styles/Equipes.module.css";
 
 export default function Equipes({ idSala }) {
   const [equipes, setEquipes] = useState([]);
@@ -50,37 +51,60 @@ export default function Equipes({ idSala }) {
     }
   };
 
+  const removerEquipe = async (index) => {
+    const novasEquipes = equipes.filter((_, i) => i !== index);
+    setEquipes(novasEquipes);
+    setCarregando(true);
+
+    try {
+      const res = await fetch(`/api/sala/${idSala}/equipes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ equipes: novasEquipes }),
+      });
+
+      if (!res.ok) throw new Error("Erro ao atualizar equipes");
+    } catch (error) {
+      console.error("Erro ao remover equipe:", error);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
   return (
-    <div>
+    <div className={styles.container__equipes}>
       <h2>Equipes</h2>
-      <div>
+      <div className={styles.input__container}>
         <input
           type="text"
-          placeholder="Nome da Equipe"
           value={nomeEquipe}
+          placeholder="Nome da Equipe"
+          className={styles.input__equipes}
           onChange={(e) => setNomeEquipe(e.target.value)}
         />
-        <button onClick={adicionarEquipe} disabled={carregando}>
+        <button onClick={adicionarEquipe} disabled={carregando} className={styles.btn__equipes}>
           {carregando ? "Salvando..." : "Adicionar Equipe"}
         </button>
       </div>
 
-      <table border="1" cellPadding="8" cellSpacing="0">
-        <thead>
-          <tr>
-            <th>Equipe</th>
-            <th>Round 1</th>
-            <th>Round 2</th>
-            <th>Round 3</th>
+      <table border="1" cellPadding="8" cellSpacing="0" className={styles.table__equipes}>
+        <thead className={styles.thead}>
+          <tr className={styles.tr}>
+            <th className={styles.th}>Nº</th>
+            <th className={styles.th}>Equipe</th>
+            <th className={styles.th}>Ações</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className={styles.tbody}>
           {equipes.map((eq, idx) => (
-            <tr key={idx}>
-              <td>{eq.nomeEquipe}</td>
-              <td>{eq.round1}</td>
-              <td>{eq.round2}</td>
-              <td>{eq.round3}</td>
+            <tr key={idx} className={styles.tr}>
+              <td className={styles.td}>{idx + 1}</td>
+              <td className={styles.td}>{eq.nomeEquipe}</td>
+              <td className={styles.td}>
+                <button onClick={() => removerEquipe(idx)} disabled={carregando}>
+                  Remover
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

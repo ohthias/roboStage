@@ -7,28 +7,16 @@
     "admin": "D51T2A",
     "equipes": [
       {
-        "nomeEquipe": "Equipe A",
-        "round1": 0,
-        "round2": 0,
-        "round3": 0
-      },
-      {
-        "nomeEquipe": "Equipe B",
-        "round1": 0,
-        "round2": 0,
-        "round3": 0
-      },
-      {
         "nomeEquipe": "VMRT",
-        "round1": 0,
-        "round2": 0,
-        "round3": 0
+        "round1": 50,
+        "round2": 200,
+        "round3": 350
       },
       {
         "nomeEquipe": "SPARKOS",
-        "round1": 0,
-        "round2": 0,
-        "round3": 0
+        "round1": 20,
+        "round2": 400,
+        "round3": 320
       }
     ]
   },
@@ -38,5 +26,32 @@
     "visitante": "ORGL4B",
     "voluntario": "ORGNP2",
     "admin": "ORGC1Z"
+  },
+  "7ZN": {
+    "idSala": "7ZN",
+    "nome": "Torneio VMRT",
+    "visitante": "7ZNX4H",
+    "voluntario": "7ZNH3O",
+    "admin": "7ZNW1A",
+    "equipes": [
+      {
+        "nomeEquipe": "VMRT",
+        "round1": 0,
+        "round2": 0,
+        "round3": 0
+      },
+      {
+        "nomeEquipe": "Robonáticos",
+        "round1": 0,
+        "round2": 0,
+        "round3": 0
+      },
+      {
+        "nomeEquipe": "BB-8",
+        "round1": 0,
+        "round2": 0,
+        "round3": 0
+      }
+    ]
   }
 }

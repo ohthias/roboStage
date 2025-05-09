@@ -4,6 +4,10 @@
   align-items: center;
   width: 100%;
   padding: 10px 40px;
+  background: #f3f3f35b;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 10;
 }
 
 .navbar__logo {

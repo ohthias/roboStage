@@ -5,6 +5,7 @@ import Navbar from "@/app/components/navbar";
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import styles from "../../../../../styles/Admin.module.css";
+import Loader from "@/app/components/Loader";
 
 export default function SalaAdmin() {
   const [sala, setSala] = useState(null);
@@ -52,7 +53,24 @@ export default function SalaAdmin() {
   }, [id]);
 
   if (carregando) {
-    return <p>Carregando dados da sala...</p>;
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(255,255,255,0.8)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+        }}
+      >
+        <Loader />
+      </div>
+    );
   }
 
   if (!sala) {

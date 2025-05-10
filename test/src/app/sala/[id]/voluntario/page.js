@@ -86,8 +86,7 @@ export default function VoluntarioPage() {
 
     const updatedEquipe = {
       ...equipeAtual,
-      round: roundSelecionado,
-      pontos: pontos
+      [roundSelecionado]: pontos,
     };
 
     try {

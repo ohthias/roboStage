@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import FormMission from "@/app/components/form_mission";
 import styles from "../../../../../styles/Voluntario.module.css";
 
-export default function VoluntarioPage({ idSala }) {
+export default function VoluntarioPage() {
   const params = useParams();
   const id = params?.id;
   const [equipes, setEquipes] = useState([]);
@@ -35,31 +35,34 @@ export default function VoluntarioPage({ idSala }) {
         const res = await fetch("/data/missions.json");
         if (!res.ok) throw new Error("Erro ao carregar missões");
         const data = await res.json();
-        setMissions(data.missions);
+        setMissions(data.missions || []); // Garantir que seja um array
       } catch (err) {
         console.error("Erro ao carregar missões:", err);
       }
     };
 
-    if (id) fetchSala();
-    loadMissions();
+    if (id) {
+      fetchSala();
+      loadMissions();
+    }
   }, [id]);
 
-  const calcularPontuacaoTotal = () => {
+  const calcularPontuacaoTotal = (equipeSelecionada, missions) => {
     let total = 0;
-    if (!equipeSelecionada) return total;
+    if (!equipeSelecionada || !missions) return total;
 
+    // Verificar se as missões são um array válido antes de usar forEach
     missions.forEach((mission) => {
       const respostas = equipeSelecionada[mission.id] || [];
 
-      // Missão principal
+      // Cálculo das respostas da missão principal
       if (mission.type?.[0] === "switch" && respostas[0] === "Sim") {
         total += mission.points || 0;
       } else if (mission.type?.[0] === "range") {
         total += Number(respostas[0] || 0);
       }
 
-      // Submissões
+      // Cálculo das sub-missões
       if (Array.isArray(mission["sub-mission"])) {
         mission["sub-mission"].forEach((sub, i) => {
           const respostaSub = respostas[i + 1];
@@ -75,27 +78,37 @@ export default function VoluntarioPage({ idSala }) {
     return total;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (dataForm) => {
     if (!equipeSelecionada || !roundSelecionado) return;
 
-    const pontos = calcularPontuacaoTotal();
+    const pontos = calcularPontuacaoTotal(equipeSelecionada, missions);
     setPontuacaoTotal(pontos);
 
     const updatedEquipe = {
-      ...equipeSelecionada,
-      [roundSelecionado]: pontos,
+      ...equipeAtual,
+      round: roundSelecionado,
+      pontos: pontos
     };
 
-    const res = await fetch(`/api/sala/${idSala}/atualizarEquipe`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedEquipe),
-    });
+    try {
+      console.log("Atualizando equipe:", updatedEquipe);
+      console.log("ID da sala:", id);
+      const res = await fetch(`/api/sala/${id}/atualizarEquipe`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedEquipe),
+      });
 
-    if (res.ok) {
-      alert("Avaliação salva com sucesso!");
-    } else {
-      alert("Erro ao salvar avaliação.");
+      if (res.ok) {
+        alert("Avaliação salva com sucesso!");
+      } else {
+        alert("Erro ao salvar avaliação.");
+      }
+    } catch (err) {
+      console.error("Erro na requisição:", err);
+      alert("Erro ao atualizar equipe.");
     }
   };
 
@@ -117,7 +130,7 @@ export default function VoluntarioPage({ idSala }) {
           onChange={(e) => {
             const equipe = equipes.find((eq) => eq._id === e.target.value);
             setEquipeSelecionada(equipe);
-            setPontuacaoTotal(null); // Reset ao trocar equipe
+            setPontuacaoTotal(null); // Resetar a pontuação total ao selecionar uma equipe
           }}
           defaultValue=""
         >
@@ -145,23 +158,22 @@ export default function VoluntarioPage({ idSala }) {
             responses={equipeSelecionada}
             onSelect={(missionId, index, value) => {
               const updatedEquipe = { ...equipeSelecionada };
-              if (!updatedEquipe[missionId]) updatedEquipe[missionId] = {};
+              if (!updatedEquipe[missionId]) updatedEquipe[missionId] = [];
               updatedEquipe[missionId][index] = value;
               setEquipeSelecionada(updatedEquipe);
             }}
           />
 
           <div style={{ textAlign: "center", marginTop: "30px" }}>
-            <button
-              onClick={handleSubmit}
-              className={styles.botaoEnviar}
-            >
+            <button onClick={handleSubmit} className={styles.botaoEnviar}>
               Enviar Avaliação
             </button>
 
-            {pontuacaoTotal !== null && (
+            {/* Apenas exibe a pontuação total para o round selecionado */}
+            {equipeSelecionada && (
               <p className={styles.pontuacao}>
-                🏆 Pontuação Total: <strong>{pontuacaoTotal} pontos</strong>
+                🏆 Pontuação do {roundSelecionado}:{" "}
+                <strong>{pontuacaoTotal} pontos</strong>
               </p>
             )}
           </div>

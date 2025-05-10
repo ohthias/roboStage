@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import FormMission from "./components/form_mission"; 
-import Navbar from "./components/navbar"; 
-import { calculateTotalPoints } from "./lib/utils"; 
+import FormMission from "./components/form_mission";
+import Navbar from "./components/navbar";
+import { calculateTotalPoints } from "./lib/utils";
 import style from "../../styles/Home.module.css";
+import Loader from "./components/Loader";
 
 export default function HomePage() {
   const [missions, setMissions] = useState([]);
   const [responses, setResponses] = useState({});
-  const [loading, setLoading] = useState(true); // Estado de carregamento
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/data/missions.json")
@@ -21,11 +22,11 @@ export default function HomePage() {
       })
       .then((data) => {
         setMissions(data.missions);
-        setLoading(false); // Atualiza o estado de carregamento
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Erro:", error);
-        setLoading(false); // Atualiza o estado de carregamento mesmo em caso de erro
+        setLoading(false);
       });
   }, []);
 
@@ -42,7 +43,24 @@ export default function HomePage() {
   const totalPoints = calculateTotalPoints(missions, responses);
 
   if (loading) {
-    return <div className={style.loading}>Carregando...</div>; // Exibe uma mensagem de carregamento
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+        }}
+      >
+        <Loader />
+      </div>
+    );
   }
 
   return (
@@ -77,7 +95,6 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        {/* Passando as missões e as respostas como props para o componente FormMission */}
         <FormMission
           missions={missions}
           responses={responses}

@@ -1,201 +1,200 @@
 {
-    "missions": [
-      {
-        "id": "EL",
-        "name": "INSPEÇÃO DE EQUIPAMENTOS",
-        "mission": "O robô e todos os equipamentos cabem em sua totalidade na área de lançamento e respeitam o limite de altura",
-        "points": 20,
-        "type": ["switch", null, null]
-      },
-      {
-        "id": "M01",
-        "name": "BERÇÁRIO DE CORAIS",
-        "mission": "A árvore de coral está pendurada no suporte apropriado",
-        "points": 20,
-        "type": ["switch", null, null],
-        "sub-mission": [
-          {
-            "submission": "A parte de baixo da árvore de coral está em seu suporte",
-            "points": 10,
-            "type": ["switch", null, null]
-          },
-          {
-            "submission": "Os botões de coral estão virados para cima",
-            "points": 20,
-            "type": ["switch", null, null]
-          }
-        ]
-      },
-      {
-        "id": "M02",
-        "name": "TUBARÃO",
-        "mission": "O tubarão não está tocando a caverna",
-        "points": 20,
-        "type": ["switch", null, null],
-        "sub-mission": [
-          {
-            "submission": "O tubarão está tocando o tapete e está pelo menos parcialmente dentro do habitat dele",
-            "points": 10,
-            "type": ["switch", null, null]
-          }
-        ]
-      },
-      {
-        "id": "M03",
-        "name": "RECIFE DE CORAIS",
-        "mission": "O recife de corais está virado para cima e não está tocando o tapete",
-        "points": 20,
-        "type": ["switch", null, null],
-        "sub-mission": [
-          {
-            "submission": "Número de segmentos do recife que estão de pé, fora área de lançamento e tocando o tapete",
-            "points": 5,
-            "type": ["range", 0, 3]
-          }
-        ]
-      },
-      {
-        "id": "M04",
-        "name": "MERGULHADOR",
-        "mission": "O mergulhador não está mais tocando o berçário de corais",
-        "points": 20,
-        "type": ["switch", null, null],
-        "sub-mission": [
-          {
-            "submission": "O mergulhador está segurando no suporte do recife de corais",
-            "points": 20,
-            "type": ["switch", null, null]
-          }
-        ]
-      },
-      {
-        "id": "M05",
-        "name": "PEIXE PESCADOR",
-        "mission": "O peixe-pescador está preso ao navio naufragado",
-        "points": 30,
-        "type": ["switch", null, null]
-      },
-      {
-        "id": "M06",
-        "name": "SUBA O MASTRO",
-        "mission": "O mastro do navio naufragado está totalmente de pé",
-        "points": 30,
-        "type": ["switch", null, null]
-      },
-      {
-        "id": "M07",
-        "name": "TESOURO DO KRAKEN",
-        "mission": "O baú do tesouro está completamente fora do ninho do kraken",
-        "points": 20,
-        "type": ["switch", null, null]
-      },
-      {
-        "id": "M08",
-        "name": "HABITAT ARTIFICIAL",
-        "mission": "Número de segmentos do habitat artificial empilhados, totalmente planificados e verticais",
-        "points": 10,
-        "type": ["range", 0, 4]
-      },
-      {
-        "id": "M09",
-        "name": "UM ENCONTRO INESPERADO",
-        "mission": "A criatura desconhecida foi libertada",
-        "points": 20,
-        "type": ["switch", null, null],
-        "sub-mission": [
-          {
-            "submission": "Ao menos parte da criatura desconhecida está na emanação fria",
-            "points": 10,
-            "type": ["switch", null, null]
-          }
-        ]
-      },
-      {
-        "id": "M10",
-        "name": "ENVIE O NAVIO",
-        "mission": "A bandeira amarela da sua equipe não está hasteada",
-        "points": 30,
-        "type": ["switch", null, null],
-        "sub-mission": [
-          {
-            "submission": "O submarino está claramente mais próximo do campo oposto",
-            "points": 10,
-            "type": ["switch", null, null]
-          }
-        ]
-      },
-      {
-        "id": "M11",
-        "name": "DESCOBERTA DO SONAR",
-        "mission": "Número de baleias revelado",
-        "points": 20,
-        "type": ["range", 0, 2]
-      },
-      {
-        "id": "M12",
-        "name": "ALIMENTE A BALEIA",
-        "mission": "Número de krills que estão ao menos parcialmente na boca da baleia",
-        "points": 10,
-        "type": ["range", 0, 5]
-      },
-      {
-        "id": "M13",
-        "name": "MUDE O NAVIO DE ROTA",
-        "mission": "O navio está na nova rota, tocando o tapete",
-        "points": 20,
-        "type": ["switch", null, null]
-      },
-      {
-        "id": "M14",
-        "name": "COLETA DE AMOSTRAS",
-        "mission": "A amostra de água está completamente fora da área de amostras",
-        "points": 5,
-        "type": ["switch", null, null],
-        "sub-mission": [
-          {
-            "submission": "A amostra do fundo do mar não está mais tocando o próprio fundo",
-            "points": 10,
-            "type": ["switch", null, null]
-          },
-          {
-            "submission": "A amostra de plâncton não está mais tocando a floresta de algas",
-            "points": 10,
-            "type": ["switch", null, null]
-          },
-          {
-            "submission": "Número de partes do tridente que não está mais tocando o navio naufragado",
-            "points": 20,
-            "type": ["range", 0, 2]
-          }
-        ]
-      },
-      {
-        "id": "M15",
-        "name": "EMBARCAÇÃO DE PESQUISA",
-        "mission": "Número de amostras, partes do tridente ou baús de tesouro que estão ao menos em parte na área de carga da embarcação",
-        "points": 5,
-        "type": ["range", 0, 6],
-        "sub-mission": [
-          {
-            "submission": "Ao menos parte do biestável da porta está no ciclo da embarcação de pesquisa",
-            "points": 20,
-            "type": ["switch", null, null]
-          }
-        ]
-      },
-      {
-        "id": "PT",
-        "name": "TOKENS DE PRECISÃO",
-        "mission": "Número de tokens de precisão restantes",
-        "points": [0, 10, 15, 25, 35, 50, 50],
-        "type": ["range", 0, 6]
-      },
-      {
-        "id": "GP",
-        "name": "Gracious Professionalism®",
-        "mission": "Gracious Professionalism® demonstrados durante o round:",
-        "type": ["switch", "Em desenvolvimento", "Comprido", "Excede"]
-      }
-    ]
-  }
-  
+  "missions": [
+    {
+      "id": "EL",
+      "name": "INSPEÇÃO DE EQUIPAMENTOS",
+      "mission": "O robô e todos os equipamentos cabem em sua totalidade na área de lançamento e respeitam o limite de altura",
+      "points": 20,
+      "type": ["switch", null, null]
+    },
+    {
+      "id": "M01",
+      "name": "BERÇÁRIO DE CORAIS",
+      "mission": "A árvore de coral está pendurada no suporte apropriado",
+      "points": 20,
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "A parte de baixo da árvore de coral está em seu suporte",
+          "points": 10,
+          "type": ["switch", null, null]
+        },
+        {
+          "submission": "Os botões de coral estão virados para cima",
+          "points": 20,
+          "type": ["switch", null, null]
+        }
+      ]
+    },
+    {
+      "id": "M02",
+      "name": "TUBARÃO",
+      "mission": "O tubarão não está tocando a caverna",
+      "points": 20,
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "O tubarão está tocando o tapete e está pelo menos parcialmente dentro do habitat dele",
+          "points": 10,
+          "type": ["switch", null, null]
+        }
+      ]
+    },
+    {
+      "id": "M03",
+      "name": "RECIFE DE CORAIS",
+      "mission": "O recife de corais está virado para cima e não está tocando o tapete",
+      "points": 20,
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "Número de segmentos do recife que estão de pé, fora área de lançamento e tocando o tapete",
+          "points": 5,
+          "type": ["range", 0, 3]
+        }
+      ]
+    },
+    {
+      "id": "M04",
+      "name": "MERGULHADOR",
+      "mission": "O mergulhador não está mais tocando o berçário de corais",
+      "points": 20,
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "O mergulhador está segurando no suporte do recife de corais",
+          "points": 20,
+          "type": ["switch", null, null]
+        }
+      ]
+    },
+    {
+      "id": "M05",
+      "name": "PEIXE PESCADOR",
+      "mission": "O peixe-pescador está preso ao navio naufragado",
+      "points": 30,
+      "type": ["switch", null, null]
+    },
+    {
+      "id": "M06",
+      "name": "SUBA O MASTRO",
+      "mission": "O mastro do navio naufragado está totalmente de pé",
+      "points": 30,
+      "type": ["switch", null, null]
+    },
+    {
+      "id": "M07",
+      "name": "TESOURO DO KRAKEN",
+      "mission": "O baú do tesouro está completamente fora do ninho do kraken",
+      "points": 20,
+      "type": ["switch", null, null]
+    },
+    {
+      "id": "M08",
+      "name": "HABITAT ARTIFICIAL",
+      "mission": "Número de segmentos do habitat artificial empilhados, totalmente planificados e verticais",
+      "points": 10,
+      "type": ["range", 0, 4]
+    },
+    {
+      "id": "M09",
+      "name": "UM ENCONTRO INESPERADO",
+      "mission": "A criatura desconhecida foi libertada",
+      "points": 20,
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "Ao menos parte da criatura desconhecida está na emanação fria",
+          "points": 10,
+          "type": ["switch", null, null]
+        }
+      ]
+    },
+    {
+      "id": "M10",
+      "name": "ENVIE O NAVIO",
+      "mission": "A bandeira amarela da sua equipe não está hasteada",
+      "points": 30,
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "O submarino está claramente mais próximo do campo oposto",
+          "points": 10,
+          "type": ["switch", null, null]
+        }
+      ]
+    },
+    {
+      "id": "M11",
+      "name": "DESCOBERTA DO SONAR",
+      "mission": "Número de baleias revelado",
+      "points": [0,20,30],
+      "type": ["range", 0, 2]
+    },
+    {
+      "id": "M12",
+      "name": "ALIMENTE A BALEIA",
+      "mission": "Número de krills que estão ao menos parcialmente na boca da baleia",
+      "points": 10,
+      "type": ["range", 0, 5]
+    },
+    {
+      "id": "M13",
+      "name": "MUDE O NAVIO DE ROTA",
+      "mission": "O navio está na nova rota, tocando o tapete",
+      "points": 20,
+      "type": ["switch", null, null]
+    },
+    {
+      "id": "M14",
+      "name": "COLETA DE AMOSTRAS",
+      "mission": "A amostra de água está completamente fora da área de amostras",
+      "points": 5,
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "A amostra do fundo do mar não está mais tocando o próprio fundo",
+          "points": 10,
+          "type": ["switch", null, null]
+        },
+        {
+          "submission": "A amostra de plâncton não está mais tocando a floresta de algas",
+          "points": 10,
+          "type": ["switch", null, null]
+        },
+        {
+          "submission": "Número de partes do tridente que não está mais tocando o navio naufragado",
+          "points": [0,20,30],
+          "type": ["range", 0, 2]
+        }
+      ]
+    },
+    {
+      "id": "M15",
+      "name": "EMBARCAÇÃO DE PESQUISA",
+      "mission": "Número de amostras, partes do tridente ou baús de tesouro que estão ao menos em parte na área de carga da embarcação",
+      "points": 5,
+      "type": ["range", 0, 6],
+      "sub-mission": [
+        {
+          "submission": "Ao menos parte do biestável da porta está no ciclo da embarcação de pesquisa",
+          "points": 20,
+          "type": ["switch", null, null]
+        }
+      ]
+    },
+    {
+      "id": "PT",
+      "name": "TOKENS DE PRECISÃO",
+      "mission": "Número de tokens de precisão restantes",
+      "points": [0, 10, 15, 25, 35, 50, 50],
+      "type": ["range", 0, 6]
+    },
+    {
+      "id": "GP",
+      "name": "Gracious Professionalism®",
+      "mission": "Gracious Professionalism® demonstrados durante o round:",
+      "type": ["switch", "Em desenvolvimento", "Comprido", "Excede"]
+    }
+  ]
+}

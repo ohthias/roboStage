@@ -1,36 +1,59 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import styles from "../styles/Navbar.module.css";
+import styles from "../../../styles/Navbar.module.css";
 
-export default function Navbar({ mode }) {
+export default function Navbar({ mode, id, admin }) {
   const validMode = mode ?? "default";
-  const [overlayRoute, setOverlayRoute] = useState(null);
 
-  const handleOverlay = (route, e) => {
-    e.preventDefault(); // impede navegação
-    setOverlayRoute(route);
+  const handleLogout = () => {
+    window.location.href = "/";
   };
 
   return (
-    <>
+    <nav className={styles.navbar}>
+      <div className={styles.navbar__logo}>
+        <Link href="/">RoboStage</Link>
+      </div>
 
-      <nav className={styles.navbar}>
-        <div className={styles.navbar__logo}>
-          <p>RoboStage</p>
+      {validMode === "default" && (
+        <div className={styles.navbar__module}>
+          <Link href="/nova-sala" className={styles.navbar__buttons}>
+            Criar
+          </Link>
+          <Link href="/sala" className={styles.navbar__buttons}>
+            Embarcar
+          </Link>
         </div>
-        {validMode === "default" && (
-          <div className={styles.navbar__module}>
-            <Link href="/criar" className={styles.navbar__buttons}>
-              Criar
-            </Link>
-            <Link href="/embarcar" className={styles.navbar__buttons}>
-              Embarcar
-            </Link>
-          </div>
-        )}
-      </nav>
-    </>
+      )}
+
+      {validMode === "admin" && (
+        <div className={styles.navbar__module}>
+          <Link
+            className={styles.btn__header}
+            href={`/sala/${id}/visitante?admin=${admin}`}
+          >
+            Visualização
+          </Link>
+          <button
+            className={styles.btn__header}
+            onClick={() => (window.location.hash = "#codigos")}
+          >
+            Ver Códigos de Acesso
+          </button>
+          <button className={styles.btn__header} onClick={handleLogout}>
+            Sair
+          </button>
+        </div>
+      )}
+
+      {validMode === "visitante" && (
+        <div className={styles.navbar__module}>
+          <Link className={styles.btn__header} href="/">
+            Início
+          </Link>
+        </div>
+      )}
+    </nav>
   );
 }

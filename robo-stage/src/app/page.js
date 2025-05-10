@@ -3,18 +3,30 @@
 import { useEffect, useState } from "react";
 import FormMission from "./components/form_mission";
 import Navbar from "./components/navbar";
-import { calculateTotalPoints } from "../utils/calculatePoints";
-import style from "./styles/Home.module.css";
+import { calculateTotalPoints } from "./lib/utils";
+import style from "../../styles/Home.module.css";
+import Loader from "./components/Loader";
 
 export default function HomePage() {
   const [missions, setMissions] = useState([]);
   const [responses, setResponses] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/data/missions.json")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Erro ao buscar as missões");
+        }
+        return res.json();
+      })
       .then((data) => {
         setMissions(data.missions);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Erro:", error);
+        setLoading(false);
       });
   }, []);
 
@@ -30,9 +42,30 @@ export default function HomePage() {
 
   const totalPoints = calculateTotalPoints(missions, responses);
 
+  if (loading) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+        }}
+      >
+        <Loader />
+      </div>
+    );
+  }
+
   return (
     <>
-      <Navbar/>
+      <Navbar />
       <div className={style.container__banner}>
         <div className={style.banner}>
           <div className={style.banner__space}>
@@ -62,7 +95,6 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        {/* Passando as missões e as respostas como props para o componente FormMission */}
         <FormMission
           missions={missions}
           responses={responses}

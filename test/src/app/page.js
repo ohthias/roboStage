@@ -9,12 +9,23 @@ import style from "../../styles/Home.module.css";
 export default function HomePage() {
   const [missions, setMissions] = useState([]);
   const [responses, setResponses] = useState({});
+  const [loading, setLoading] = useState(true); // Estado de carregamento
 
   useEffect(() => {
     fetch("/data/missions.json")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Erro ao buscar as missões");
+        }
+        return res.json();
+      })
       .then((data) => {
         setMissions(data.missions);
+        setLoading(false); // Atualiza o estado de carregamento
+      })
+      .catch((error) => {
+        console.error("Erro:", error);
+        setLoading(false); // Atualiza o estado de carregamento mesmo em caso de erro
       });
   }, []);
 
@@ -30,9 +41,13 @@ export default function HomePage() {
 
   const totalPoints = calculateTotalPoints(missions, responses);
 
+  if (loading) {
+    return <div className={style.loading}>Carregando...</div>; // Exibe uma mensagem de carregamento
+  }
+
   return (
     <>
-      <Navbar/>
+      <Navbar />
       <div className={style.container__banner}>
         <div className={style.banner}>
           <div className={style.banner__space}>

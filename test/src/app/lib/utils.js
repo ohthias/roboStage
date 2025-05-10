@@ -9,7 +9,7 @@ export function calculateTotalPoints(missions, responses) {
   let total = 0;
 
   missions.forEach((mission) => {
-    const missionResponses = responses[mission.id] || {};
+    const missionResponses = responses[mission.id] || [];
 
     // Pontuação da missão principal
     if (mission.type?.[0] === "switch") {
@@ -20,9 +20,19 @@ export function calculateTotalPoints(missions, responses) {
           ? response && options.includes(response)
           : response === "Sim";
       if (isValid) total += mission.points || 0;
+
     } else if (mission.type?.[0] === "range") {
       const value = missionResponses[0];
-      if (!isNaN(value)) total += value * (mission.points || 0);
+      if (!isNaN(value)) {
+        if (Array.isArray(mission.points)) {
+          // Se points é array, some o valor no índice selecionado (igual para PT, M11 e outros casos similares)
+          const pointsValue = mission.points[value] ?? 0;
+          total += pointsValue;
+        } else {
+          // Se points é número, multiplica normalmente
+          total += value * (mission.points || 0);
+        }
+      }
     }
 
     // Pontuação das sub-missões
@@ -37,7 +47,14 @@ export function calculateTotalPoints(missions, responses) {
               : response === "Sim";
           if (isValid) total += sub.points || 0;
         } else if (sub.type?.[0] === "range") {
-          if (!isNaN(response)) total += response * (sub.points || 0);
+          if (!isNaN(response)) {
+            if (Array.isArray(sub.points)) {
+              const pointsValue = sub.points[response] ?? 0;
+              total += pointsValue;
+            } else {
+              total += response * (sub.points || 0);
+            }
+          }
         }
       });
     }

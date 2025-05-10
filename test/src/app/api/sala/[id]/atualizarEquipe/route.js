@@ -45,34 +45,37 @@ export async function PUT(request, { params }) {
       });
     }
 
-    // Atualiza o campo do round dinamicamente
-    const roundKey = Object.keys(dadosAtualizados).find((k) =>
-      k.startsWith("round")
-    );
-    if (roundKey) {
-      sala.equipes[equipeIndex][roundKey] = dadosAtualizados[roundKey];
-    } else {
-      console.error(
-        "Nenhum campo de round encontrado nos dados recebidos:",
-        dadosAtualizados
-      );
-      return new Response(JSON.stringify({ error: "Campo de round ausente" }), {
-        status: 400,
-      });
-    }
+    // Atualiza todos os campos de round
+const roundKeys = Object.keys(dadosAtualizados).filter((k) =>
+  k.startsWith("round")
+);
 
-    // Escreve os dados atualizados no arquivo
+if (roundKeys.length > 0) {
+  roundKeys.forEach((roundKey) => {
+    sala.equipes[equipeIndex][roundKey] = dadosAtualizados[roundKey];
+  });
+} else {
+  console.error(
+    "Nenhum campo de round encontrado nos dados recebidos:",
+    dadosAtualizados
+  );
+  return new Response(JSON.stringify({ error: "Campo de round ausente" }), {
+    status: 400,
+  });
+}
+
+
     fs.writeFileSync(
       salasFilePath,
       JSON.stringify(salasData, null, 2),
       "utf-8"
     );
     console.log("Arquivo final salvo:", JSON.stringify(salasData, null, 2));
-    console.log("Dados atualizados salvos com sucesso."); // Log de sucesso
+    console.log("Dados atualizados salvos com sucesso.");
 
     return new Response(JSON.stringify({ sucesso: true }), { status: 200 });
   } catch (error) {
-    console.error("Erro ao processar a requisição:", error); // Log de erro detalhado
+    console.error("Erro ao processar a requisição:", error);
     return new Response(JSON.stringify({ error: "Erro ao atualizar equipe" }), {
       status: 500,
     });

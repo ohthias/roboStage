@@ -1,74 +1,90 @@
-import { useState } from "react";
-import styles from "../../../styles/FormMission.module.css"; // Importando o CSS para estilização
+import React from "react";
+import styles from "../../../styles/FormMission.module.css";
 
-export default function FormMission({
-  missions = [],
-  responses = {},
-  onSelect,
-}) {
-  const [localResponses, setLocalResponses] = useState(responses);
+export default function FormMission({ missions = [], responses = {}, onSelect }) {
+  const renderInput = (missionId, index, type, depth = 0) => {
+    if (depth > 3) {
+      console.warn(`[FormMission] Máxima profundidade de recursão atingida para a missão: ${missionId}`);
+      return null;
+    }
 
- const renderInput = (missionId, index, type) => {
-  const value = localResponses?.[missionId]?.[index]; // Verifica se localResponses e a missão existem
+    const mission = missions.find((m) => m.id === missionId);
+    const value = responses?.[missionId]?.[index];
 
-  if (!type || !type[0]) {
-    console.warn(`Tipo de input inválido para a missão ${missionId}`);
+    if (!mission || !type || !type[0]) {
+      console.warn(`[FormMission] Tipo de input inválido para a missão ${missionId}. Confira os dados do tipo de input.`);
+      return null;
+    }
+
+    const points = mission.points;
+    const isRangeType = type[0] === "range";
+
+    if (type[0] === "switch") {
+      const options = type.slice(1).filter(Boolean);
+      const buttons = options.length > 0 ? options : ["Não", "Sim"];
+
+      return (
+        <>
+          {buttons.map((option) => (
+            <button
+              key={`${missionId}-switch-${index}-${option}`}
+              className={
+                value === option ? styles.activeButton : styles.inactiveButton
+              }
+              onClick={() => onSelect?.(missionId, index, option)}
+              aria-pressed={value === option}
+              type="button"
+            >
+              {option}
+            </button>
+          ))}
+        </>
+      );
+    }
+
+    if (isRangeType) {
+      const start = Number(type[1]) ?? 0;
+      const end = Number(type[2]) ?? 10;
+      const count = end - start + 1;
+
+      let pointOptions;
+
+      if (Array.isArray(points)) {
+        pointOptions = points;
+      } else if (typeof points === "number") {
+        pointOptions = Array.from({ length: count }, () => points);
+      } else {
+        console.warn(`[FormMission] "points" está indefinido ou inválido para a missão ${missionId}:`, points);
+        pointOptions = Array.from({ length: count }, () => 0);
+      }
+
+      return (
+        <div
+          className={styles.buttonGroup}
+          role="group"
+          aria-label={`Opções de pontuação para ${mission.name}`}
+        >
+          {pointOptions.map((val, idx) => {
+            const displayLabel = idx + start;
+            return (
+              <button
+                key={`${missionId}-range-${index}-${val}-${idx}`}
+                className={
+                  value === displayLabel ? styles.activeButton : styles.inactiveButton
+                }
+                onClick={() => onSelect?.(missionId, index, displayLabel)}
+                aria-pressed={value === displayLabel}
+                type="button"
+              >
+                {displayLabel}
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
     return null;
-  }
-
-  if (type[0] === "switch") {
-    const options = type.slice(1).filter(Boolean);
-    const buttons = options.length > 0 ? options : ["Não", "Sim"];
-
-    return buttons.map((option) => (
-      <button
-        key={option}
-        className={
-          value === option ? styles.activeButton : styles.inactiveButton
-        }
-        onClick={() => handleSelect(missionId, index, option)}
-      >
-        {option}
-      </button>
-    ));
-  }
-
-  if (type[0] === "range") {
-    const pointOptions = Array.isArray(missions.points)
-      ? missions.points
-      : Array.from(
-          { length: (type[2] || 10) - (type[1] || 0) + 1 },
-          (_, i) => (type[1] || 0) + i
-        );
-
-    return (
-      <div className={styles.buttonGroup}>
-        {pointOptions.map((val) => (
-          <button
-            key={val}
-            className={
-              value === val ? styles.activeButton : styles.inactiveButton
-            }
-            onClick={() => handleSelect(missionId, index, val)}
-          >
-            {val}
-          </button>
-        ))}
-      </div>
-    );
-  }
-
-  return null;
-};
-
-
-  const handleSelect = (missionId, index, value) => {
-    const updatedResponses = { ...localResponses };
-
-    if (!updatedResponses[missionId]) updatedResponses[missionId] = [];
-    updatedResponses[missionId][index] = value;
-    setLocalResponses(updatedResponses);
-    onSelect(missionId, index, value);
   };
 
   return (
@@ -78,22 +94,20 @@ export default function FormMission({
           <div className={styles.missionCard} key={mission.id}>
             <span className={styles.missionLabel}>{mission.id}</span>
             <div className={styles.missionContainer}>
-              <h3 className={styles.missionTitle}>
-                {mission.name.toUpperCase()}
-              </h3>
+              <h3 className={styles.missionTitle}>{mission.name.toUpperCase()}</h3>
 
               {mission.mission && (
                 <div className={styles.questionBlock}>
                   <p>{mission.mission}</p>
-                  {renderInput(mission.id, 0, mission.type)}{" "}
+                  {renderInput(mission.id, 0, mission.type)}
                 </div>
               )}
 
               {Array.isArray(mission["sub-mission"]) &&
                 mission["sub-mission"].map((sub, index) => (
-                  <div key={index} className={styles.questionBlock}>
+                  <div key={`${mission.id}-sub${index}`} className={styles.questionBlock}>
                     <p>{sub.submission}</p>
-                    {renderInput(mission.id, index + 1, sub.type)}{" "}
+                    {renderInput(mission.id, index + 1, sub.type, 1)}
                   </div>
                 ))}
             </div>

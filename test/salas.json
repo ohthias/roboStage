@@ -8,8 +8,14 @@
     "equipes": [
       {
         "nomeEquipe": "VMRT",
-        "round1": 6,
+        "round1": 40,
         "round2": 0,
+        "round3": 0
+      },
+      {
+        "nomeEquipe": "Olá Mundo",
+        "round1": 50,
+        "round2": 150,
         "round3": 0
       }
     ]

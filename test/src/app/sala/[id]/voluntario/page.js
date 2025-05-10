@@ -2,7 +2,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import FormMission from "@/app/components/form_mission";
+import { calculateTotalPoints } from "@/app/lib/utils";
 import styles from "../../../../../styles/Voluntario.module.css";
+import Loader from "@/app/components/Loader";
 
 export default function VoluntarioPage() {
   const params = useParams();
@@ -47,41 +49,10 @@ export default function VoluntarioPage() {
     }
   }, [id]);
 
-  const calcularPontuacaoTotal = (equipeSelecionada, missions) => {
-    let total = 0;
-    if (!equipeSelecionada || !missions) return total;
-
-    // Verificar se as missões são um array válido antes de usar forEach
-    missions.forEach((mission) => {
-      const respostas = equipeSelecionada[mission.id] || [];
-
-      // Cálculo das respostas da missão principal
-      if (mission.type?.[0] === "switch" && respostas[0] === "Sim") {
-        total += mission.points || 0;
-      } else if (mission.type?.[0] === "range") {
-        total += Number(respostas[0] || 0);
-      }
-
-      // Cálculo das sub-missões
-      if (Array.isArray(mission["sub-mission"])) {
-        mission["sub-mission"].forEach((sub, i) => {
-          const respostaSub = respostas[i + 1];
-          if (sub.type?.[0] === "switch" && respostaSub === "Sim") {
-            total += sub.points || 0;
-          } else if (sub.type?.[0] === "range") {
-            total += Number(respostaSub || 0);
-          }
-        });
-      }
-    });
-
-    return total;
-  };
-
-  const handleSubmit = async (dataForm) => {
+  const handleSubmit = async () => {
     if (!equipeSelecionada || !roundSelecionado) return;
 
-    const pontos = calcularPontuacaoTotal(equipeSelecionada, missions);
+    const pontos = calculateTotalPoints(missions, equipeSelecionada);
     setPontuacaoTotal(pontos);
 
     const updatedEquipe = {
@@ -89,6 +60,7 @@ export default function VoluntarioPage() {
       [roundSelecionado]: pontos,
     };
 
+    setCarregando(true);
     try {
       console.log("Atualizando equipe:", updatedEquipe);
       console.log("ID da sala:", id);
@@ -102,8 +74,10 @@ export default function VoluntarioPage() {
 
       if (res.ok) {
         alert("Avaliação salva com sucesso!");
+        setCarregando(false);
       } else {
         alert("Erro ao salvar avaliação.");
+        setCarregando(false);
       }
     } catch (err) {
       console.error("Erro na requisição:", err);
@@ -111,13 +85,36 @@ export default function VoluntarioPage() {
     }
   };
 
+  if (carregando) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(255,255,255,0.8)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+        }}
+      >
+        <Loader />
+      </div>
+    );
+  }
+
   const equipeOptions = equipes.map((eq, index) => (
-    <option key={eq._id || index} value={eq._id}>
+    <option key={eq.nomeEquipe || index} value={eq.nomeEquipe}>
       {eq.nomeEquipe}
     </option>
   ));
 
-  const equipeAtual = equipes.find((eq) => eq._id === equipeSelecionada?._id);
+  const equipeAtual = equipes.find(
+    (eq) => eq.nomeEquipe === equipeSelecionada?.nomeEquipe
+  );
 
   return (
     <div className={styles.container}>
@@ -127,9 +124,11 @@ export default function VoluntarioPage() {
         <label>Equipe:</label>
         <select
           onChange={(e) => {
-            const equipe = equipes.find((eq) => eq._id === e.target.value);
+            const equipe = equipes.find(
+              (eq) => eq.nomeEquipe === e.target.value
+            );
             setEquipeSelecionada(equipe);
-            setPontuacaoTotal(null); // Resetar a pontuação total ao selecionar uma equipe
+            setPontuacaoTotal(null);
           }}
           defaultValue=""
         >
@@ -168,7 +167,6 @@ export default function VoluntarioPage() {
               Enviar Avaliação
             </button>
 
-            {/* Apenas exibe a pontuação total para o round selecionado */}
             {equipeSelecionada && (
               <p className={styles.pontuacao}>
                 🏆 Pontuação do {roundSelecionado}:{" "}

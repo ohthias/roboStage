@@ -128,7 +128,7 @@
       "id": "M11",
       "name": "DESCOBERTA DO SONAR",
       "mission": "Número de baleias revelado",
-      "points": 20,
+      "points": [0,20,30],
       "type": ["range", 0, 2]
     },
     {
@@ -164,7 +164,7 @@
         },
         {
           "submission": "Número de partes do tridente que não está mais tocando o navio naufragado",
-          "points": 20,
+          "points": [0,20,30],
           "type": ["range", 0, 2]
         }
       ]

@@ -9,7 +9,7 @@ import Navbar from "@/app/components/navbar";
 
 export default function VoluntarioPage() {
   const params = useParams();
-  const id = params?.id;
+  const codigoSala = params?.codigoSala;
   const [equipes, setEquipes] = useState([]);
   const [equipeSelecionada, setEquipeSelecionada] = useState(null);
   const [roundSelecionado, setRoundSelecionado] = useState("round1");
@@ -21,7 +21,7 @@ export default function VoluntarioPage() {
   useEffect(() => {
     const fetchSala = async () => {
       try {
-        const res = await fetch(`/api/sala/${id}`);
+        const res = await fetch(`/api/sala/${codigoSala}`);
         if (!res.ok) throw new Error("Erro ao buscar sala");
         const data = await res.json();
         setSala(data);
@@ -44,11 +44,11 @@ export default function VoluntarioPage() {
       }
     };
 
-    if (id) {
+    if (codigoSala) {
       fetchSala();
       loadMissions();
     }
-  }, [id]);
+  }, [codigoSala]);
 
   const handleSubmit = async () => {
     if (!equipeSelecionada || !roundSelecionado) return;
@@ -64,8 +64,7 @@ export default function VoluntarioPage() {
     setCarregando(true);
     try {
       console.log("Atualizando equipe:", updatedEquipe);
-      console.log("ID da sala:", id);
-      const res = await fetch(`/api/sala/${id}/atualizarEquipe`, {
+      const res = await fetch(`/api/sala/${codigoSala}/atualizarEquipe`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

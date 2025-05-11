@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import styles from "../../../styles/Visitante.module.css";
 import Loader from "./Loader";
 
-export default function TabelaEquipes({ idSala }) {
+export default function TabelaEquipes({ codigoSala }) {
   const [equipes, setEquipes] = useState([]);
   const [nomeSala, setNomeSala] = useState("");
   const [loading, setLoading] = useState(true);
@@ -11,7 +11,7 @@ export default function TabelaEquipes({ idSala }) {
   useEffect(() => {
     const fetchSala = async () => {
       try {
-        const res = await fetch(`/api/sala/${idSala}`);
+        const res = await fetch(`/api/sala/${codigoSala}`);
         if (!res.ok) throw new Error("Erro ao buscar sala");
         const data = await res.json();
         setNomeSala(data.nome || "Sala sem nome");
@@ -30,8 +30,8 @@ export default function TabelaEquipes({ idSala }) {
       }
     };
 
-    if (idSala) fetchSala();
-  }, [idSala]);
+    if (codigoSala) fetchSala();
+  }, [codigoSala]);
 
   return (
     <>

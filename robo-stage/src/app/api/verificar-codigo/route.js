@@ -1,42 +1,43 @@
-import { NextResponse } from 'next/server'
-import { lerSalas } from '@/app/lib/salasDB'
+import { NextResponse } from "next/server";
+import prisma from "@/app/lib/prisma";
 
 export async function POST(request) {
   try {
-    const { codigo } = await request.json()
+    const { codigo } = await request.json();
+    console.log("Código recebido:", codigo);
 
-    const salas = await lerSalas()
-    let salaEncontrada = null
-    let role = null
-    let idSala = null
+    const salas = await prisma.sala.findMany();
+    console.log("Salas no banco:", salas);
 
-    for (const id in salas) {
-      const sala = salas[id]
-      if (codigo === sala.visitante) {
-        salaEncontrada = sala
-        role = 'visitante'
-        idSala = id
-        break
-      } else if (codigo === sala.voluntario) {
-        salaEncontrada = sala
-        role = 'voluntario'
-        idSala = id
-        break
-      } else if (codigo === sala.admin) {
-        salaEncontrada = sala
-        role = 'admin'
-        idSala = id
-        break
+    let salaEncontrada = null;
+    let role = null;
+    let codigoSala = null;
+
+    const roles = ["codigoVisitante", "codigoVoluntario", "codigoAdmin"];
+
+    for (const sala of salas) {
+      for (let r of roles) {
+        console.log(`Verificando código ${codigo} contra o campo ${r}:`, sala[r]);
+        if (codigo === sala[r]) {
+          salaEncontrada = sala;
+          role = r.replace("codigo", "").toLowerCase();
+          codigoSala = sala.codigoSala;
+          break;
+        }
       }
+      if (salaEncontrada) break;
     }
 
     if (!salaEncontrada) {
-      return NextResponse.json({ error: 'Código inválido' }, { status: 404 })
+      console.log("Código não encontrado");
+      return NextResponse.json({ error: "Código inválido" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, role, id: idSala }) // <-- corrigido aqui
+    console.log("Sala encontrada:", salaEncontrada);
+
+    return NextResponse.json({ success: true, role, codigoSala });
   } catch (error) {
-    console.error('Erro ao verificar código:', error)
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
+    console.error("Erro ao verificar código:", error);
+    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
   }
 }

@@ -20,11 +20,11 @@ export async function POST(req) {
 
     const novaSala = await prisma.sala.create({
       data: {
-        nome: nome,
-        codigoSala: codigoSala,
-        codigoAdmin: codigoAdmin,
-        codigoVisitante: codigoVisitante,
-        codigoVoluntario: codigoVoluntario,
+        nome,
+        codigoSala,
+        codigoAdmin,
+        codigoVisitante,
+        codigoVoluntario,
       },
     });
 

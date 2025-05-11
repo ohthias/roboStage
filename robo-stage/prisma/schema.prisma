@@ -8,22 +8,22 @@ datasource db {
 }
 
 model Sala {
-  id               Int       @id @default(autoincrement())
-  codigoSala       String    @unique
+  id               Int      @id @default(autoincrement())
+  codigoSala       String   @unique
   nome             String
   codigoAdmin      String
   codigoVisitante  String
   codigoVoluntario String
-  createdAt        DateTime  @default(now())
+  createdAt        DateTime @default(now())
   equipes          Equipe[]
 }
 
 model Equipe {
-  id          String  @id @default(uuid())
-  nomeEquipe  String
-  round1      Int     @default(0)
-  round2      Int     @default(0)
-  round3      Int     @default(0)
-  salaId      Int
-  sala        Sala    @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  id         String @id @default(uuid())
+  nomeEquipe String
+  round1     Int    @default(0)
+  round2     Int    @default(0)
+  round3     Int    @default(0)
+  salaId     Int
+  sala       Sala   @relation(fields: [salaId], references: [id], onDelete: Cascade)
 }

@@ -11,15 +11,15 @@ export default function SalaAdmin() {
   const [sala, setSala] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [carregando, setCarregando] = useState(true);
-  const { id } = useParams();
+  const { codigoSala } = useParams();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (!id) return;
+    if (!codigoSala) return;
 
     const fetchSala = async () => {
       try {
-        const res = await fetch(`/api/sala/${id}`);
+        const res = await fetch(`/api/sala/${codigoSala}`);
         if (!res.ok) {
           throw new Error("Sala não encontrada");
         }
@@ -50,7 +50,7 @@ export default function SalaAdmin() {
     return () => {
       window.removeEventListener("hashchange", handleHashChange);
     };
-  }, [id]);
+  }, [codigoSala]);
 
   if (carregando) {
     return (
@@ -77,20 +77,20 @@ export default function SalaAdmin() {
     return <p>Erro: Sala não encontrada</p>;
   }
 
-  const visitante = sala.visitante;
-  const voluntario = sala.voluntario;
-  const admin = sala.admin;
+  const visitante = sala.codigoVisitante;
+  const voluntario = sala.codigoVoluntario;
+  const admin = sala.codigoAdmin;
   const nomeSala = sala?.nome || searchParams.get("nome");
 
   return (
     <>
-      <Navbar mode={"admin"} id={id} admin={admin} />
+      <Navbar mode={"admin"} codigoSala={codigoSala} admin={admin} />
       <h1 className={styles.title__admin}>
         Administração do evento: {nomeSala}
       </h1>
       <main className={styles.main}>
         <div className={styles.container_teams}>
-          <Equipes idSala={id} />
+          <Equipes codigoSala={codigoSala} />
         </div>
         {showModal && (
           <ModalCodigos

@@ -21,7 +21,7 @@ export default function NovaSala() {
       return;
     }
 
-    setLoading(true); // inicia o loader
+    setLoading(true);
     try {
       const res = await fetch("/api/criar-sala", {
         method: "POST",
@@ -32,18 +32,18 @@ export default function NovaSala() {
       });
 
       if (!res.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error("Erro ao criar sala");
       }
 
       const data = await res.json();
-      setSala(data);
 
       router.push(
-        `/sala/${data.idSala}/admin?visitante=${data.codigoVisitante}&voluntario=${data.codigoVoluntario}&admin=${data.codigoAdmin}&nome=${data.nome}`
+        `/sala/${data.codigoSala}/admin?visitante=${data.codigoVisitante}&voluntario=${data.codigoVoluntario}&admin=${data.codigoAdmin}&nome=${data.nome}`
       );
     } catch (error) {
       console.error("Error creating room:", error);
-      setLoading(false); // encerra o loader
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,10 +54,14 @@ export default function NovaSala() {
         <div
           style={{
             position: "fixed",
-            top: 0, left: 0,
-            width: "100vw", height: "100vh",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
             backgroundColor: "rgba(0, 0, 0, 0.8)",
-            display: "flex", justifyContent: "center", alignItems: "center",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
             zIndex: 9999,
           }}
         >

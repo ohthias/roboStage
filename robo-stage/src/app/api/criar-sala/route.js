@@ -1,41 +1,39 @@
-// /api/criar-sala.js
-import { gerarCodigoAleatorio } from '@/app/lib/utils'
-import { salvarSalas, lerSalas } from '@/app/lib/salasDB'
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server";
+import { gerarCodigoAleatorio } from "@/app/lib/utils";
+import prisma from "@/app/lib/prisma";
 
-export async function POST(req, res) {
+export async function POST(req) {
   try {
-    const { nome } = await req.json()  // Obtém o nome da sala enviado no corpo da requisição
-    const idSala = gerarCodigoAleatorio(3)
-    const codigoVisitante = idSala + gerarCodigoAleatorio(3)
-    const codigoVoluntario = idSala + gerarCodigoAleatorio(3)
-    const codigoAdmin = idSala + gerarCodigoAleatorio(3)
+    const { nome } = await req.json();
 
-    // Lê as salas existentes
-    const salas = await lerSalas()
-
-    // Cria a nova sala
-    salas[idSala] = {
-      idSala,
-      nome,  // Armazena o nome da sala
-      visitante: codigoVisitante,
-      voluntario: codigoVoluntario,
-      admin: codigoAdmin
+    if (!nome || nome.trim() === "") {
+      return NextResponse.json(
+        { error: "Nome da sala é obrigatório" },
+        { status: 400 }
+      );
     }
 
-    // Salva as salas atualizadas no arquivo
-    await salvarSalas(salas)
+    const codigoSala = gerarCodigoAleatorio();
+    const codigoAdmin = codigoSala + gerarCodigoAleatorio();
+    const codigoVisitante = codigoSala + gerarCodigoAleatorio();
+    const codigoVoluntario = codigoSala + gerarCodigoAleatorio();
 
-    // Retorna a resposta com os dados da sala
-    return NextResponse.json({
-      idSala,
-      nome,
-      codigoVisitante,
-      codigoVoluntario,
-      codigoAdmin
-    })
+    const novaSala = await prisma.sala.create({
+      data: {
+        nome,
+        codigoSala,
+        codigoAdmin,
+        codigoVisitante,
+        codigoVoluntario,
+      },
+    });
+
+    return NextResponse.json(novaSala);
   } catch (error) {
-    console.error('Error creating room:', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    console.error("Erro ao criar sala:", error);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 }
+    );
   }
 }

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import styles from "../../../styles/Equipes.module.css";
 
-export default function Equipes({ idSala }) {
+export default function Equipes({ codigoSala }) {
   const [equipes, setEquipes] = useState([]);
   const [nomeEquipe, setNomeEquipe] = useState("");
   const [carregando, setCarregando] = useState(false);
@@ -10,7 +10,7 @@ export default function Equipes({ idSala }) {
   useEffect(() => {
     const carregarEquipes = async () => {
       try {
-        const res = await fetch(`/api/sala/${idSala}`);
+        const res = await fetch(`/api/sala/${codigoSala}`);
         const data = await res.json();
         setEquipes(data.equipes || []);
       } catch (error) {
@@ -19,7 +19,7 @@ export default function Equipes({ idSala }) {
     };
 
     carregarEquipes();
-  }, [idSala]);
+  }, [codigoSala]);
 
   const adicionarEquipe = async () => {
     if (!nomeEquipe.trim()) return;
@@ -37,7 +37,7 @@ export default function Equipes({ idSala }) {
     setCarregando(true);
 
     try {
-      const res = await fetch(`/api/sala/${idSala}/equipes`, {
+      const res = await fetch(`/api/sala/${codigoSala}/equipes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ equipes: novasEquipes }),
@@ -57,7 +57,7 @@ export default function Equipes({ idSala }) {
     setCarregando(true);
 
     try {
-      const res = await fetch(`/api/sala/${idSala}/equipes`, {
+      const res = await fetch(`/api/sala/${codigoSala}/equipes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ equipes: novasEquipes }),

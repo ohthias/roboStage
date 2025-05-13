@@ -5,7 +5,7 @@ import TabelaEquipes from "@/app/components/TabelaEquipes";
 import styles from "../../../../../styles/Visitante.module.css";
 
 export default function Visitante() {
-  const { id } = useParams();
+  const { codigoSala } = useParams();
   const searchParams = useSearchParams();
 
   const isAdmin = searchParams.get("admin") !== null;
@@ -15,7 +15,7 @@ export default function Visitante() {
       <Navbar mode={isAdmin ? "admin" : "visitante"} />
 
       <main style={{ padding: "2rem" }}>
-        <TabelaEquipes idSala={id} />
+        <TabelaEquipes codigoSala={codigoSala} />
       </main>
     </div>
   );

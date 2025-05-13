@@ -1,15 +1,21 @@
 {
   "name": "robo-stage",
-  "version": "0.1.0",
+  "description": "Criador de eventos de FLL",
+  "author": "Matheus Gabriel Santos Silva",
+  "license": "MIT",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@prisma/client": "^6.7.0",
     "next": "15.3.2",
+    "pg": "^8.15.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "styled-components": "^6.1.18"
@@ -17,6 +23,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "eslint": "^9",
-    "eslint-config-next": "15.3.2"
+    "eslint-config-next": "15.3.2",
+    "prisma": "^6.7.0"
   }
 }

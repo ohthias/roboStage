@@ -39,6 +39,7 @@ export default function EntradaSala() {
   const entrar = async () => {
     setErro("");
     const codigo = inputRefs.current.map((input) => input.value).join("");
+    console.log("Código enviado:", codigo);
 
     if (inputRefs.current.some((input) => input.value.trim() === "")) {
       setErro("Digite todos os 6 caracteres do código.");
@@ -54,11 +55,12 @@ export default function EntradaSala() {
       });
 
       if (res.ok) {
-        const { id, role } = await res.json();
-        router.push(`/sala/${id}/${role}`);
+        const { codigoSala, role } = await res.json();
+        router.push(`/sala/${codigoSala}/${role}`);
       } else {
         const err = await res.json();
         setErro(err.error || "Erro ao acessar a sala");
+        setLoading(false);
       }
     } catch (e) {
       setErro("Erro de conexão.");

@@ -18,6 +18,7 @@ export async function POST(req) {
     const codigoVisitante = codigoSala + gerarCodigoAleatorio();
     const codigoVoluntario = codigoSala + gerarCodigoAleatorio();
 
+    await prisma.$connect();
     const novaSala = await prisma.sala.create({
       data: {
         nome,
@@ -32,7 +33,10 @@ export async function POST(req) {
   } catch (error) {
     console.error("Erro ao criar sala:", error);
     return NextResponse.json(
-      { error: "Erro interno do servidor" },
+      {
+        error: "Erro interno do servidor",
+        detalhe: error.message ?? error.toString(),
+      },
       { status: 500 }
     );
   }

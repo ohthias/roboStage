@@ -4,15 +4,16 @@ import styles from "./style/Equipes.module.css";
 
 export default function Equipes({ codigoSala }) {
   const [equipes, setEquipes] = useState([]);
-  const [nomeEquipe, setNomeEquipe] = useState("");
+  const [nome_equipe, setNomeEquipe] = useState("");
   const [carregando, setCarregando] = useState(false);
 
   useEffect(() => {
     const carregarEquipes = async () => {
       try {
-        const res = await fetch(`/api/sala/${codigoSala}`);
+        const res = await fetch(`/rooms/${codigoSala}/get/`);
         const data = await res.json();
-        setEquipes(data.equipes || []);
+        console.log(data.teams)
+        setEquipes(data.teams || []);
       } catch (error) {
         console.error("Erro ao carregar equipes:", error);
       }
@@ -22,10 +23,10 @@ export default function Equipes({ codigoSala }) {
   }, [codigoSala]);
 
   const adicionarEquipe = async () => {
-    if (!nomeEquipe.trim()) return;
+    if (!nome_equipe.trim()) return;
 
     const novaEquipe = {
-      nomeEquipe,
+      nome_equipe,
       round1: 0,
       round2: 0,
       round3: 0,
@@ -37,10 +38,10 @@ export default function Equipes({ codigoSala }) {
     setCarregando(true);
 
     try {
-      const res = await fetch(`/api/sala/${codigoSala}/equipes`, {
+      const res = await fetch(`/rooms/${codigoSala}/post/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ equipes: novasEquipes }),
+        body: JSON.stringify({ teams: novasEquipes }),
       });
 
       if (!res.ok) throw new Error("Erro ao salvar equipes");
@@ -57,10 +58,10 @@ export default function Equipes({ codigoSala }) {
     setCarregando(true);
 
     try {
-      const res = await fetch(`/api/sala/${codigoSala}/equipes`, {
+      const res = await fetch(`/rooms/${codigoSala}/post/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ equipes: novasEquipes }),
+        body: JSON.stringify({ teams: novasEquipes }),
       });
 
       if (!res.ok) throw new Error("Erro ao atualizar equipes");
@@ -77,7 +78,7 @@ export default function Equipes({ codigoSala }) {
       <div className={styles.input__container}>
         <input
           type="text"
-          value={nomeEquipe}
+          value={nome_equipe}
           placeholder="Nome da Equipe"
           className={styles.input__equipes}
           onChange={(e) => setNomeEquipe(e.target.value)}
@@ -99,7 +100,7 @@ export default function Equipes({ codigoSala }) {
           {equipes.map((eq, idx) => (
             <tr key={idx} className={styles.tr}>
               <td className={styles.td}>{idx + 1}</td>
-              <td className={styles.td}>{eq.nomeEquipe}</td>
+              <td className={styles.td}>{eq.nome_equipe}</td>
               <td className={styles.td}>
                 <button onClick={() => removerEquipe(idx)} disabled={carregando}>
                   Remover

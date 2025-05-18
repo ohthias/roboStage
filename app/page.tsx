@@ -86,8 +86,6 @@ export default function Home() {
           <div className={style.banner__space}>
             <h1 className={style.banner__title}>RoboStage</h1>
             <p className={style.banner__text}>
-              Uma plataforma de avaliação de robôs, onde você pode criar e
-              avaliar missões para os robôs.
             </p>
           </div>
           <hr className={style.banner__hr} />

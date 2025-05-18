@@ -3,10 +3,12 @@ import { useState } from "react";
 import { gerarCodigoAleatorio } from "@/utils/gerarCodigoAleatorio";
 import Loader from "@/components/loader";
 import { useRouter } from "next/navigation";
+import style from "@/components/style/Login.module.css";
 
 export default function CreateRoomPage() {
   const router = useRouter();
   const codigo_sala = gerarCodigoAleatorio();
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     codigo_sala: codigo_sala,
     nome: "",
@@ -16,7 +18,6 @@ export default function CreateRoomPage() {
   });
 
   const [status, setStatus] = useState({
-    loading: false,
     success: "",
     error: "",
   });
@@ -26,6 +27,7 @@ export default function CreateRoomPage() {
   };
 
   const handleSubmit = async (e) => {
+    setLoading(true);
     e.preventDefault();
     setStatus({ loading: true, success: "", error: "" });
 
@@ -36,61 +38,78 @@ export default function CreateRoomPage() {
     });
 
     const result = await res.json();
-    console.log(result.room);
     if (res.ok) {
       setStatus({
-        loading: true,
         success: "Sala criada com sucesso!",
         error: "",
       });
-      
+      setLoading(false);
       router.push(`/${result.room.codigo_sala}/admin`);
     } else {
       setStatus({
-        loading: false,
         success: "",
         error: result.error || "Erro ao criar sala",
       });
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen relative">
-      {status.loading && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-[9999] flex items-center justify-center">
+    <>
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
           <Loader />
         </div>
       )}
-
-      <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow bg-white">
-        <h1 className="text-2xl font-bold mb-4">Criar Nova Sala</h1>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block mb-1">Nome:</label>
-            <input
-              name="nome"
-              value={form.nome}
-              onChange={handleChange}
-              className="w-full border px-3 py-2 rounded"
-              required
-            />
+      <div className={style.container}>
+        <div className={style.container__content}>
+          <div className={`${style.container_side_left} ${style.blue__box}`}>
+            <h1 className={style.title}>CRIE UM EVENTO DA FLL!</h1>
           </div>
+          <div className={style.container_side_right}>
+            <form onSubmit={handleSubmit} className={style.form}>
+              <div className={style.group}>
+                <label className={style.group__label}>Nome do evento:</label>
+                <input
+                  name="nome"
+                  value={form.nome}
+                  className={style.group__input}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-          <button
-            type="submit"
-            disabled={status.loading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-          >
-            {status.loading ? "Criando..." : "Criar Sala"}
-          </button>
+              <button
+                type="submit"
+                disabled={status.loading}
+                className={`${style.button} ${style.create}`}
+              >
+                {status.loading ? "Criando..." : "Criar Sala"}
+              </button>
 
-          {status.success && (
-            <p className="text-green-600 mt-2">{status.success}</p>
-          )}
-          {status.error && <p className="text-red-600 mt-2">{status.error}</p>}
-        </form>
+              {status.success && (
+                <p className="text-green-600 mt-2">{status.success}</p>
+              )}
+              {status.error && (
+                <p className="text-red-600 mt-2">{status.error}</p>
+              )}
+            </form>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

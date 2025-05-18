@@ -1,7 +1,7 @@
-// app/enter/page.tsx
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import style from "@/components/style/Login.module.css"
 
 export default function EnterRoomPage() {
   const router = useRouter();
@@ -44,35 +44,43 @@ export default function EnterRoomPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow">
-      <h1 className="text-2xl font-bold mb-4">Entrar na Sala</h1>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block mb-1">Código de Acesso:</label>
-          <input
-            value={codigo}
-            onChange={(e) => setCodigo(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
-            required
-          />
+    <div className={style.container}>
+      <div className={style.container__content}>
+        <div className={style.container_side_left}>
+          <h1 className={style.title}>EMBARQUE EM UM EVENTO EXISTENTE</h1>
         </div>
+        <div className={style.container_side_right}>
+          <form onSubmit={handleSubmit} className={style.form}>
+            <div>
+              <label className={style.group_label}>Código de Acesso:</label>
+              <input
+                value={codigo}
+                onChange={(e) => setCodigo(e.target.value)}
+                maxLength={6}
+                className={`${style.group__input} & ${style.enter}`}
+                required
+              />
+            </div>
 
-        <button
-          type="submit"
-          disabled={status.loading}
-          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-        >
-          {status.loading ? "Verificando..." : "Entrar"}
-        </button>
+            <button
+              type="submit"
+              disabled={status.loading}
+              className={style.button}
+            >
+              {status.loading ? "Verificando..." : "Entrar"}
+            </button>
 
-        {status.sucesso && (
-          <p className="text-green-600 mt-2">
-            {status.sucesso} (Acesso: <strong>{status.nivelAcesso}</strong>)
-          </p>
-        )}
-        {status.error && <p className="text-red-600 mt-2">{status.error}</p>}
-      </form>
+            {status.sucesso && (
+              <p className="text-green-600 mt-2">
+                {status.sucesso} (Acesso: <strong>{status.nivelAcesso}</strong>)
+              </p>
+            )}
+            {status.error && (
+              <p className="text-red-600 mt-2">{status.error}</p>
+            )}
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

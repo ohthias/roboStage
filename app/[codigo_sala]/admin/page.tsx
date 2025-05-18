@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 import ModalCodigos from "@/components/ModalCodigos";
 import Equipes from "@/components/Equipes";
 import styles from "@/components/style/Admin.module.css";
+import Loader from "@/components/loader";
 
 export default function AdminRoomPage({
   params,
@@ -20,7 +20,6 @@ export default function AdminRoomPage({
   const [sala, setSala] = useState<Sala | undefined>();
   const [showModal, setShowModal] = useState(false);
   const [carregando, setCarregando] = useState(true);
-  const searchParams = useSearchParams();
   const codigoSala = params.codigo_sala;
 
   useEffect(() => {
@@ -61,6 +60,31 @@ export default function AdminRoomPage({
     };
   }, [codigoSala]);
 
+  if (carregando) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+        }}
+      >
+        <Loader />
+      </div>
+    );
+  }
+
+  if (!sala) {
+    return <p>Erro: Sala não encontrada</p>;
+  }
+
   const visitante = sala?.codigo_visitante;
   const voluntario = sala?.codigo_voluntario;
   const admin = sala?.codigo_admin;
@@ -68,7 +92,7 @@ export default function AdminRoomPage({
 
   return (
     <>
-    <h1 className={styles.title__admin}>
+      <h1 className={styles.title__admin}>
         Administração do evento: {nomeSala}
       </h1>
       <main className={styles.main}>

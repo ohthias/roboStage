@@ -19,7 +19,8 @@ export async function GET(
     const salaFiltrada = data?.find((sala) => String(sala.codigo_sala) === codigo_sala);
 
     if (!salaFiltrada) {
-      return NextResponse.json({ error: "Sala não encontrada" + error }, { status: 404 });
+      const errorMessage = error?.message ? `Sala não encontrada: ${error.message}` : "Sala não encontrada";
+      return NextResponse.json({ error: errorMessage }, { status: 404 });
     }
 
     return NextResponse.json(salaFiltrada);

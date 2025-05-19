@@ -8,9 +8,7 @@ export default function Equipes({ codigoSala }) {
   const [nome_equipe, setNomeEquipe] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [mensagem, setMensagem] = useState("");
-  const [tipoMensagem, setTipoMensagem] = useState(
-    "sucesso" | "erro" | "aviso" | ""
-  );
+  const [tipoMensagem, setTipoMensagem] = useState<"sucesso" | "erro" | "aviso" | "">("");
 
   useEffect(() => {
     const carregarEquipes = async () => {

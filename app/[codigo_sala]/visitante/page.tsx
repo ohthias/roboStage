@@ -8,16 +8,13 @@ export default function VisitanteRoomPage({
 }: {
   params: { codigo_sala: string };
 }) {
-  const { codigoSala } = useParams();
-  const searchParams = useSearchParams();
-
-  const isAdmin = searchParams.get("admin") !== null;
+  const { codigo_sala } = useParams();
 
   return (
     <>
       <div className={styles.background}>
         <main style={{ padding: "2rem" }}>
-          <TabelaEquipes codigoSala={codigoSala} />
+          <TabelaEquipes codigoSala={codigo_sala} />
         </main>
       </div>
     </>

@@ -99,13 +99,6 @@ export default function CreateRoomPage() {
               >
                 {status.loading ? "Criando..." : "Criar Sala"}
               </button>
-
-              {status.success && (
-                <p className="text-green-600 mt-2">{status.success}</p>
-              )}
-              {status.error && (
-                <p className="text-red-600 mt-2">{status.error}</p>
-              )}
             </form>
           </div>
         </div>

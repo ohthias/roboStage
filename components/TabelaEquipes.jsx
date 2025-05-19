@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import styles from "./style/Visitante.module.css";
-import Loader from "./Loader";
+import Loader from "./loader";
 
 export default function TabelaEquipes({ codigoSala }) {
   const [equipes, setEquipes] = useState([]);
@@ -11,12 +11,12 @@ export default function TabelaEquipes({ codigoSala }) {
   useEffect(() => {
     const fetchSala = async () => {
       try {
-        const res = await fetch(`/api/sala/${codigoSala}`);
+        const res = await fetch(`/rooms/${codigoSala}/get`);
         if (!res.ok) throw new Error("Erro ao buscar sala");
         const data = await res.json();
         setNomeSala(data.nome || "Sala sem nome");
 
-        const equipesOrdenadas = (data.equipes || []).sort((a, b) => {
+        const equipesOrdenadas = (data.teams || []).sort((a, b) => {
           const maxA = Math.max(a.round1 || 0, a.round2 || 0, a.round3 || 0);
           const maxB = Math.max(b.round1 || 0, b.round2 || 0, b.round3 || 0);
           return maxB - maxA;
@@ -70,7 +70,7 @@ export default function TabelaEquipes({ codigoSala }) {
               {equipes.map((eq, idx) => (
                 <tr key={idx} className={styles.tr}>
                   <td className={styles.td}>{idx + 1}</td>
-                  <td className={styles.td}>{eq.nomeEquipe}</td>
+                  <td className={styles.td}>{eq.nome_equipe}</td>
                   <td className={styles.td}>{eq.round1}</td>
                   <td className={styles.td}>{eq.round2}</td>
                   <td className={styles.td}>{eq.round3}</td>

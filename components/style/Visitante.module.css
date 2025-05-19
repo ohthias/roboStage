@@ -1,5 +1,5 @@
 .background {
-  background-image: url('/fundoPadrao.gif');
+  background-image: url('../..//public/fundoPadrao.gif');
   background-size: cover;
   background-position: center;
   height: 100vh;
@@ -12,7 +12,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.8);
     z-index: 1;
   }
 }
@@ -28,6 +28,7 @@
 .nomeSala {
   text-align: center;
   font-size: 1.8rem;
+  font-weight: 700;
   margin-bottom: 1rem;
   color: #f3f3f3;
 }

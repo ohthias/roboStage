@@ -41,7 +41,7 @@ export default function Navbar({ mode, id, admin } : NavbarProps) {
       {validMode === "admin" && (
         <div className="flex items-center justify-end gap-5">
           <Link
-            href={`/room/${id}/visitante?admin=${admin}`}
+            href={`/${id}/visitante?admin=${admin}`}
             className="px-4 py-2 border-2 border-foreground rounded-full font-bold text-center hover:bg-[#e60046] hover:border-[#e60046] hover:text-white transition-colors duration-250"
           >
             Visualização

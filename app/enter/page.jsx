@@ -69,15 +69,6 @@ export default function EnterRoomPage() {
             >
               {status.loading ? "Verificando..." : "Entrar"}
             </button>
-
-            {status.sucesso && (
-              <p className="text-green-600 mt-2">
-                {status.sucesso} (Acesso: <strong>{status.nivelAcesso}</strong>)
-              </p>
-            )}
-            {status.error && (
-              <p className="text-red-600 mt-2">{status.error}</p>
-            )}
           </form>
         </div>
       </div>

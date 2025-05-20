@@ -1,0 +1,50 @@
+{
+  "seção1": {
+    "titulo": "Identificação",
+    "subtitulo": "A equipe tinha um problema claramente definido e bem pesquisado.",
+    "linhas": [
+      {
+        "descricoes": [
+          "Definição pouco clara do problema",
+          "Definição parcialmente clara do problema",
+          "Definição clara do problema",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      },
+      {
+        "descricoes": [
+          "Evidências mínimas de pesquisa",
+          "Evidências parciais de pesquisa de uma ou mais fontes",
+          "Pesquisa clara e detalhada de uma variedade de fontes",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      }
+    ]
+  },
+  "seção2": {
+    "titulo": "DESIGN",
+    "subtitulo": "A equipe trabalhou em conjunto na criação de um plano de projeto e no desenvolvimento de suas ideias.",
+    "linhas": [
+      {
+        "descricoes": [
+          "Plano de projeto pouco eficaz",
+          "Plano parcialmente eficaz",
+          "Plano eficaz",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      },
+      {
+        "descricoes": [
+          "Pouca colaboração da equipe",
+          "Colaboração parcial",
+          "Colaboração clara de todos",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      }
+    ]
+  }
+}

@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import AvaliacaoRounds from "@/components/AvaRound";
+import RubricaForm from "./RubricaForm";
 
 export default function VoluntarioRoomClient({ codigoSala }: { codigoSala: string }) {
   const [view, setView] = useState<"default" | "round" | "sala">("default");
@@ -31,8 +32,7 @@ export default function VoluntarioRoomClient({ codigoSala }: { codigoSala: strin
               Voltar
             </button>
             <div className="mt-4">
-              {/* Substitua por seu componente de avaliação de sala */}
-              <p>Avaliação da sala ainda não implementada.</p>
+              <RubricaForm />
             </div>
           </>
         );

@@ -1,5 +1,5 @@
-import Link from  "next/link";
-import ROBOSTAGE from "@/public/robostage_logo.svg"
+import Link from "next/link";
+import ROBOSTAGE from "@/public/robostage_logo.svg";
 import Image from "next/image";
 
 interface NavbarProps {
@@ -8,7 +8,7 @@ interface NavbarProps {
   admin?: string;
 }
 
-export default function Navbar({ mode, id, admin } : NavbarProps) {
+export default function Navbar({ mode, id, admin }: NavbarProps) {
   const validMode = mode ?? "default";
 
   const handleLogout = () => {
@@ -18,7 +18,9 @@ export default function Navbar({ mode, id, admin } : NavbarProps) {
   return (
     <nav className="flex justify-between items-center w-full px-10 py-2 bg-[#f3f3f35b] backdrop-blur-sm relative z-10">
       <div className="text-2xl font-bold text-primary">
-        <Link href="/"><Image src={ROBOSTAGE} alt="robostage-logo" width={150}/></Link>
+        <Link href="/">
+          <Image src={ROBOSTAGE} alt="robostage-logo" width={150} />
+        </Link>
       </div>
 
       {validMode === "default" && (
@@ -70,6 +72,15 @@ export default function Navbar({ mode, id, admin } : NavbarProps) {
             Início
           </Link>
         </div>
+      )}
+
+      {validMode === "voluntario" && (
+        <button
+          className="px-4 py-2 border-2 border-foreground rounded-full font-bold text-center hover:bg-[#e60046] hover:border-[#e60046] hover:text-white transition-colors duration-250"
+          onClick={handleLogout}
+        >
+          Sair
+        </button>
       )}
     </nav>
   );

@@ -4,8 +4,13 @@
 import { useState } from "react";
 import AvaliacaoRounds from "@/components/AvaRound";
 import RubricaForm from "./RubricaForm";
+import Button from "./ui/Button";
 
-export default function VoluntarioRoomClient({ codigoSala }: { codigoSala: string }) {
+export default function VoluntarioRoomClient({
+  codigoSala,
+}: {
+  codigoSala: string;
+}) {
   const [view, setView] = useState<"default" | "round" | "sala">("default");
 
   const renderContent = () => {
@@ -14,7 +19,7 @@ export default function VoluntarioRoomClient({ codigoSala }: { codigoSala: strin
         return (
           <>
             <button
-              className="mt-4 bg-gray-500 text-white px-4 py-2 rounded"
+              className="mt-4 bg-white text-primary-dark px-4 py-2 rounded"
               onClick={() => setView("default")}
             >
               Voltar
@@ -26,7 +31,7 @@ export default function VoluntarioRoomClient({ codigoSala }: { codigoSala: strin
         return (
           <>
             <button
-              className="mt-4 bg-gray-500 text-white px-4 py-2 rounded"
+              className="mt-4 bg-white text-primary-dark px-4 py-2 rounded"
               onClick={() => setView("default")}
             >
               Voltar
@@ -38,28 +43,22 @@ export default function VoluntarioRoomClient({ codigoSala }: { codigoSala: strin
         );
       default:
         return (
-          <>
-            <button
-              className="mt-4 bg-pink-500 text-white px-4 py-2 rounded"
-              onClick={() => setView("round")}
-            >
-              Avaliar Round
-            </button>
-            <button
-              className="mt-4 ml-2 bg-pink-500 text-white px-4 py-2 rounded"
-              onClick={() => setView("sala")}
-            >
-              Avaliar Sala
-            </button>
-          </>
+          <div className="flex gap-8 items-center">
+            <Button text="Avaliar Round" onClick={() => setView("round")} />
+            <Button text="Avaliar Sala" onClick={() => setView("sala")} />
+          </div>
         );
     }
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">Sala {codigoSala} - Acesso Voluntário</h1>
-      <p className="mt-2 text-gray-600">Selecione a opção de avaliação desejada.</p>
+    <div className="flex flex-col itens-center justify-center p-6">
+      <h1 className="text-2xl font-bold text-primary-dark dark:text-white text-center">
+        Sala {codigoSala} - Acesso Voluntário
+      </h1>
+      <p className="mt-2 text-gray-600 text-center">
+        Selecione a opção de avaliação desejada.
+      </p>
       <div className="mt-4">{renderContent()}</div>
     </div>
   );

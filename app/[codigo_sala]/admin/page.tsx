@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import ModalCodigos from "@/components/ModalCodigos";
+import AccessModal from "@/components/AccessModal";
 import Equipes from "@/components/Equipes";
 import styles from "@/components/style/Admin.module.css";
 import Loader from "@/components/loader";
@@ -91,23 +91,36 @@ export default function AdminRoomPage({
   const nomeSala = sala?.nome;
 
   return (
-    <>
-      <h1 className={styles.title__admin}>
+    <div className="h-full">
+      {showModal && (
+        <AccessModal
+          visitante={visitante}
+          voluntario={voluntario}
+          admin={admin}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+      <h1 className="text-3xl font-bold text-center text-primary-dark dark:text-white mt-4">
         Administração do evento: {nomeSala}
       </h1>
-      <main className={styles.main}>
-        <div className={styles.container_teams}>
+      <main className="mx-8 mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
+        <div className="h-full">
           <Equipes codigoSala={codigoSala} />
         </div>
-        {showModal && (
-          <ModalCodigos
-            visitante={visitante}
-            voluntario={voluntario}
-            admin={admin}
-            onClose={() => setShowModal(false)}
-          />
-        )}
+        <div>
+          <div className="bg-white rounded-md p-4 mb-8">
+            <p className="text-3x1 font-bold text-primary-dark">Atualizações:</p>
+            <ul>
+              <li>Atualização 1</li>
+              <li>Atualização 2</li>
+              <li>Atualização 3</li>
+            </ul>
+            </div>
+          <div className="bg-white rounded-md p-4">
+            asasa
+            </div>
+        </div>
       </main>
-    </>
+    </div>
   );
 }

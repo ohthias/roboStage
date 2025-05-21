@@ -7,5 +7,9 @@ export default async function VoluntarioRoomPage({
 }) {
   const codigoSala = params.codigo_sala;
 
-  return <VoluntarioRoomClient codigoSala={codigoSala} />;
+  return (
+    <div className="w-full h-full flex items-center justify-center p-6">
+      <VoluntarioRoomClient codigoSala={codigoSala} />
+    </div>
+  );
 }

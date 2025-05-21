@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import FormMission from "./FormMission";
 import { calculateTotalPoints } from "@/utils/calculateTotalPoints";
+import Loader from "./loader";
 
 type MissionType = {
   id: string;
@@ -38,6 +39,7 @@ export default function AvaliacaoRounds({
     "round2",
     "round3",
   ]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const codigoSala = codigo_sala;
 
@@ -109,7 +111,7 @@ export default function AvaliacaoRounds({
 
     const confirm = window.confirm("Deseja realmente enviar a avaliação?");
     if (!confirm) return;
-
+    setLoading(true);
     const updatedEquipe = {
       nome_equipe: selectedEquipe,
       [`${selectedRound}`]: totalPoints,
@@ -134,10 +136,33 @@ export default function AvaliacaoRounds({
     } catch (err) {
       console.error("Erro na requisição:", err);
       alert("Erro ao atualizar equipe.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const totalPoints = calculateTotalPoints(missions, responses);
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+        }}
+      >
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <>

@@ -45,7 +45,7 @@ export default function MessageCard({ mensagem, tipo, onClose }: MessageCardProp
   const config = tipoConfig[tipo];
 
   return (
-    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+    <div className="fixed top-15 right-8 z-50">
       <div
         role="alert"
         className={`${config.bg} ${config.border} ${config.text} p-2 rounded-lg flex items-center shadow-lg transition duration-300 ease-in-out`}

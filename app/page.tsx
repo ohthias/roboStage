@@ -4,6 +4,7 @@ import FormMission from "@/components/FormMission";
 import Loader from "@/components/loader";
 import style from "@/components/style/Home.module.css";
 import { calculateTotalPoints } from "@/utils/calculateTotalPoints";
+import Banner from "@/components/Banner";
 
 type MissionType = {
   id: string;
@@ -46,7 +47,11 @@ export default function Home() {
       });
   }, []);
 
-  const handleSelect = (missionId: string, questionIndex: number, value: string | number) => {
+  const handleSelect = (
+    missionId: string,
+    questionIndex: number,
+    value: string | number
+  ) => {
     setResponses((prev) => ({
       ...prev,
       [missionId]: {
@@ -81,32 +86,14 @@ export default function Home() {
 
   return (
     <>
-      <div className={style.container__banner}>
-        <div className={style.banner}>
-          <div className={style.banner__space}>
-            <h1 className={style.banner__title}>RoboStage</h1>
-            <p className={style.banner__text}>
-            </p>
+      <Banner />
+      <main className="flex flex-col items-center justify-center gap-8 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center gap-4 relative w-[calc(100%-164px)] my-8">
+          <div className="bg-white flex flex-col items-center justify-center rounded-md shadow-md p-4 absolute top-0 left-0 transform -translate-x-0 -translate-y-1/4">
+            <p className="text-sm font-bold text-black">Pontos</p>
+            <h3 className="text-2xl font-bold text-primary">{totalPoints}</h3>
           </div>
-          <hr className={style.banner__hr} />
-          <div>
-            <img
-              src="https://static.wixstatic.com/media/3a1650_a7d1c334024840d8b642e62d02ebdaaf~mv2.gif"
-              alt="Banner"
-              className={style.banner__img}
-            />
-          </div>
-        </div>
-      </div>
-      <main>
-        <div className={style.container__title}>
-          <div className={style.container__title__contents}>
-            <h1 className={style.title}>Score</h1>
-            <div className={style.poins__container}>
-              <p className={style.poins__text}>Pontos</p>
-              <h3 className={style.poins__score}>{totalPoints}</h3>
-            </div>
-          </div>
+          <h1 className="text-4xl font-bold text-primary sm:text-5xl">Pontuador</h1>
         </div>
         <FormMission
           missions={missions}

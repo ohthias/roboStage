@@ -101,7 +101,6 @@ export default function Equipes({ codigoSala }) {
         }}
       />
       <div className={styles.container__equipes}>
-        <h2>Equipes</h2>
         <div className={styles.input__container}>
           <input
             type="text"

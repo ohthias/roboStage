@@ -22,11 +22,11 @@ export default function CreateRoomPage() {
     error: "",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: { target: { name: any; value: any; }; }) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     setLoading(true);
     e.preventDefault();
     setStatus({ loading: true, success: "", error: "" });
@@ -40,6 +40,7 @@ export default function CreateRoomPage() {
     const result = await res.json();
     if (res.ok) {
       setStatus({
+        loading: false,
         success: "Sala criada com sucesso!",
         error: "",
       });
@@ -47,6 +48,7 @@ export default function CreateRoomPage() {
       setLoading(false);
     } else {
       setStatus({
+        loading: false,
         success: "",
         error: result.error || "Erro ao criar sala",
       });

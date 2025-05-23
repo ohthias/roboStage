@@ -4,11 +4,13 @@ import AccessModal from "@/components/AccessModal";
 import Equipes from "@/components/Equipes";
 import Loader from "@/components/loader";
 
-export default function AdminRoomPage({
-  params,
-}: {
-  params: { codigo_sala: string };
-}) {
+interface AdminPageProps {
+  params: {
+    codigo_sala: string;
+  };
+}
+
+export default function AdminRoomPage({ params }: AdminPageProps) {
   interface Sala {
     codigo_visitante?: string;
     codigo_voluntario?: string;

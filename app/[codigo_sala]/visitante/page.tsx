@@ -3,12 +3,14 @@ import { useParams, useSearchParams } from "next/navigation";
 import TabelaEquipes from "@/components/TabelaEquipes";
 import styles from "@/style/Visitante.module.css";
 
-export default function VisitanteRoomPage({
-  params,
-}: {
-  params: { codigo_sala: string };
-}) {
-  const { codigo_sala } = useParams();
+interface VisitantePageProps {
+  params: {
+    codigo_sala: string;
+  };
+}
+
+export default function VisitanteRoomPage({ params }: VisitantePageProps) {
+  const codigo_sala  = params.codigo_sala;
 
   return (
     <>

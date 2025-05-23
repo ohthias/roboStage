@@ -3,12 +3,12 @@ import React from "react";
 const AccessModal = ({ visitante, voluntario, admin, onClose }) => {
   return (
     <div
-      class="w-full max-h-md fixed inset-0 z-50 flex itens-center justify-center bg-[#f3f3f35b] backdrop-blur-sm p-4"
+      class="w-full h-screen fixed inset-0 z-50 flex itens-center justify-center bg-[#f3f3f35b] backdrop-blur-sm p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modalTitle"
     >
-      <div class="w-full max-w-md h-50 rounded-lg bg-white p-6 shadow-lg">
+      <div class="w-full max-w-md h-max rounded-lg bg-white p-6 shadow-lg">
         <div class="flex items-start justify-between">
           <h2
             id="modalTitle"

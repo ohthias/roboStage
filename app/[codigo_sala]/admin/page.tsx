@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import AccessModal from "@/components/AccessModal";
 import Equipes from "@/components/Equipes";
-import styles from "@/components/style/Admin.module.css";
 import Loader from "@/components/loader";
 
 export default function AdminRoomPage({
@@ -21,6 +20,11 @@ export default function AdminRoomPage({
   const [showModal, setShowModal] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const codigoSala = params.codigo_sala;
+  const [atualizacoes, setAtualizacoes] = useState<string[]>([]);
+
+  const adicionarAtualizacao = (texto: any) => {
+    setAtualizacoes((prev) => [texto, ...prev]);
+  };
 
   useEffect(() => {
     if (!codigoSala) return;
@@ -91,7 +95,7 @@ export default function AdminRoomPage({
   const nomeSala = sala?.nome;
 
   return (
-    <div className="h-full">
+    <div className="px-8">
       {showModal && (
         <AccessModal
           visitante={visitante}
@@ -100,23 +104,23 @@ export default function AdminRoomPage({
           onClose={() => setShowModal(false)}
         />
       )}
-      <h1 className="text-3xl font-bold text-center text-primary-dark dark:text-white mt-4">
+      <h1 className="text-3xl font-bold text-left text-primary-dark mt-4">
         Administração do evento: {nomeSala}
       </h1>
-      <main className="mx-8 mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
+      <main className="mx-8 mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
         <div className="h-full">
-          <Equipes codigoSala={codigoSala} />
+          <Equipes codigoSala={codigoSala} onAtualizacao={adicionarAtualizacao} />
         </div>
         <div>
-          <div className="bg-white rounded-md p-4 mb-8">
-            <p className="text-3x1 font-bold text-primary-dark">Atualizações:</p>
+          <div className="bg-light-smoke rounded-md p-4 mb-8">
+            <p className="text-xl font-bold text-primary-dark">Atualizações:</p>
             <ul>
-              <li>Atualização 1</li>
-              <li>Atualização 2</li>
-              <li>Atualização 3</li>
+              {atualizacoes.map((item, idx) => (
+            <li key={idx}>{item}</li>
+          ))}
             </ul>
             </div>
-          <div className="bg-white rounded-md p-4">
+          <div className="bg-light-smoke rounded-md p-4">
             asasa
             </div>
         </div>

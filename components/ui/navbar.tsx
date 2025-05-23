@@ -1,8 +1,6 @@
 import Link from "next/link";
-import ROBOSTAGE from "@/public/robostage_logo.svg";
-import Image from "next/image";
-import Button from "./ui/Button";
-import ExitButton from "./ui/ExitButon";
+import Button from "./Button";
+import ExitButton from "./ExitButon";
 
 interface NavbarProps {
   mode?: string;

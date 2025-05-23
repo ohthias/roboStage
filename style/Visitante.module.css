@@ -1,5 +1,5 @@
 .background {
-  background-image: url('../..//public/fundoPadrao.gif');
+  background-image: url('../public/fundoPadrao.gif');
   background-size: cover;
   background-position: center;
   height: 100vh;

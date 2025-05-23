@@ -1,4 +1,4 @@
-import styles from "./style/FormMission.module.css";
+import styles from "@/style/FormMission.module.css";
 import React from "react";
 
 interface Mission {

@@ -1,7 +1,7 @@
 "use client";
 import { useParams, useSearchParams } from "next/navigation";
 import TabelaEquipes from "@/components/TabelaEquipes";
-import styles from "@/components/style/Visitante.module.css";
+import styles from "@/style/Visitante.module.css";
 
 export default function VisitanteRoomPage({
   params,

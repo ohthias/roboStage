@@ -3,7 +3,6 @@ import { useState } from "react";
 import { gerarCodigoAleatorio } from "@/utils/gerarCodigoAleatorio";
 import Loader from "@/components/loader";
 import { useRouter } from "next/navigation";
-import style from "@/components/style/Login.module.css";
 
 export default function CreateRoomPage() {
   const router = useRouter();
@@ -43,8 +42,8 @@ export default function CreateRoomPage() {
         success: "Sala criada com sucesso!",
         error: "",
       });
-      setLoading(false);
       router.push(`/${result.room.codigo_sala}/admin`);
+      setLoading(false);
     } else {
       setStatus({
         success: "",
@@ -67,6 +66,7 @@ export default function CreateRoomPage() {
             backgroundColor: "rgba(0, 0, 0, 0.8)",
             display: "flex",
             justifyContent: "center",
+            backdropFilter: "blur(5px)",
             alignItems: "center",
             zIndex: 9999,
           }}
@@ -74,19 +74,21 @@ export default function CreateRoomPage() {
           <Loader />
         </div>
       )}
-      <div className={style.container}>
-        <div className={style.container__content}>
-          <div className={`${style.container_side_left} ${style.blue__box}`}>
-            <h1 className={style.title}>CRIE UM EVENTO DA FLL!</h1>
+      <div className="h-[calc(100vh-64px)] flex items-center justify-center bg-gradient-to-t from-secondary/50 to-light">
+        <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md animate-fadein-down">
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold text-center">Crie seu próprio evento!</h1>
           </div>
-          <div className={style.container_side_right}>
-            <form onSubmit={handleSubmit} className={style.form}>
-              <div className={style.group}>
-                <label className={style.group__label}>Nome do evento:</label>
+          <div className="mb-4">
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <p className="text-sm text-gray-400 mb-2">Nome do evento:</p>
+
                 <input
                   name="nome"
                   value={form.nome}
-                  className={style.group__input}
+                  className="w-full p-2 border border-gray-300 rounded"
+                  placeholder="Insira o nome do evento"
                   onChange={handleChange}
                   required
                 />
@@ -95,7 +97,7 @@ export default function CreateRoomPage() {
               <button
                 type="submit"
                 disabled={status.loading}
-                className={`${style.button} ${style.create}`}
+                className="w-full py-2 bg-secondary text-white rounded shadow hover:bg-secondary-dark focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 active:loading"
               >
                 {status.loading ? "Criando..." : "Criar Sala"}
               </button>

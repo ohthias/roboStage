@@ -3,7 +3,7 @@ import React from "react";
 const ExitButton = () => {
   return (
     <button
-      className="group flex items-center justify-start w-11 h-11 bg-gray rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-full hover:bg-primary-dark active:bg-primary-dark active:translate-x-1 active:translate-y-1"
+      className="group flex items-center justify-start w-11 h-11 bg-primary-dark rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-full hover:bg-primary-dark active:bg-primary-dark active:translate-x-1 active:translate-y-1"
       onClick={() => (confirm("Você tem certeza que deseja sair?") ? window.location.href = "/" : null)}
     >
       <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3">

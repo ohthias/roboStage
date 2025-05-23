@@ -1,14 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
-import styles from "./style/Equipes.module.css";
 import Mensage from "./Mensage";
 
-export default function Equipes({ codigoSala }) {
+export default function Equipes({ codigoSala, onAtualizacao }) {
   const [equipes, setEquipes] = useState([]);
   const [nome_equipe, setNomeEquipe] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [mensagem, setMensagem] = useState("");
-  const [tipoMensagem, setTipoMensagem] = useState("sucesso" | "erro" | "aviso" | "");
+  const [tipoMensagem, setTipoMensagem] = useState(
+    "sucesso" | "erro" | "aviso" | ""
+  );
 
   useEffect(() => {
     const carregarEquipes = async () => {
@@ -56,6 +57,7 @@ export default function Equipes({ codigoSala }) {
 
       setMensagem("Equipe salva com sucesso!");
       setTipoMensagem("sucesso");
+      onAtualizacao?.(`Equipe "${nome_equipe}" adicionada.`);
     } catch (error) {
       console.error(error);
       setMensagem("Erro ao salvar equipe!");
@@ -81,6 +83,7 @@ export default function Equipes({ codigoSala }) {
 
       setMensagem("Equipe removida com sucesso.");
       setTipoMensagem("sucesso");
+      onAtualizacao?.(`Equipe "${nome_equipe}" removida.`);
     } catch (error) {
       console.error("Erro ao remover equipe:", error);
       setMensagem("Erro ao remover equipe.");
@@ -100,54 +103,62 @@ export default function Equipes({ codigoSala }) {
           setTipoMensagem("");
         }}
       />
-      <div className={styles.container__equipes}>
-        <div className={styles.input__container}>
+      <div className="bg-gray-100 p-4 rounded-lg shadow-md h-[400px] flex flex-col">
+        <h2 className="text-xl font-bold mb-4 text-primary-dark">Equipes</h2>
+
+        <div className="flex flex-row gap-4 mb-4">
           <input
             type="text"
             value={nome_equipe}
             placeholder="Nome da Equipe"
-            className={styles.input__equipes}
+            className="p-2 border border-gray-300 rounded w-full"
             onChange={(e) => setNomeEquipe(e.target.value)}
           />
           <button
             onClick={adicionarEquipe}
             disabled={carregando}
-            className={styles.btn__equipes}
+            className="w-50 bg-primary text-white p-2 rounded hover:bg-primary-dark transition duration-200 cursor-pointer"
           >
             {carregando ? "Salvando..." : "Adicionar Equipe"}
           </button>
         </div>
 
-        <table
-          border="1"
-          cellPadding="8"
-          cellSpacing="0"
-          className={styles.table__equipes}
-        >
-          <thead className={styles.thead}>
-            <tr className={styles.tr}>
-              <th className={styles.th}>Nº</th>
-              <th className={styles.th}>Equipe</th>
-              <th className={styles.th}>Ações</th>
-            </tr>
-          </thead>
-          <tbody className={styles.tbody}>
-            {equipes.map((eq, idx) => (
-              <tr key={idx} className={styles.tr}>
-                <td className={styles.td}>{idx + 1}</td>
-                <td className={styles.td}>{eq.nome_equipe}</td>
-                <td className={styles.td}>
-                  <button
-                    onClick={() => removerEquipe(idx)}
-                    disabled={carregando}
-                  >
-                    Remover
-                  </button>
-                </td>
+        <div className="overflow-auto flex-1">
+          <table className="w-full border-collapse border border-gray-300">
+            <thead className="bg-primary text-white sticky top-0 z-10">
+              <tr>
+                <th className="p-2">Nº</th>
+                <th className="p-2">Equipe</th>
+                <th className="p-2 w-32">Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {equipes.length === 0 ? (
+                <tr>
+                  <td colSpan="3" className="text-center text-gray-500 p-4">
+                    Nenhuma equipe cadastrada.
+                  </td>
+                </tr>
+              ) : (
+                equipes.map((eq, idx) => (
+                  <tr key={idx} className="border-b border-gray-300">
+                    <td className="text-center text-gray-400 p-2">{idx + 1}</td>
+                    <td className="p-2">{eq.nome_equipe}</td>
+                    <td className="text-center p-2">
+                      <button
+                        onClick={() => removerEquipe(idx)}
+                        disabled={carregando}
+                        className="bg-light text-primary-dark px-2 rounded hover:bg-primary-light hover:text-white transition duration-200 cursor-pointer"
+                      >
+                        Remover
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </>
   );

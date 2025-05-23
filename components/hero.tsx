@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import Navbar from "@/components/navbar";
+import Navbar from "@/components/ui/navbar";
 
 export default function Hero() {
   const pathname = usePathname();
@@ -16,7 +16,7 @@ export default function Hero() {
   return (
     <header>
       <div className="mx-auto flex h-16 max-w-screen-xl items-center gap-8 px-4 sm:px-6 lg:px-8">
-        <a className="block text-primary dark:text-teal-300" href="/">
+        <a className="block text-gray dark:text-teal-300" href="/">
           <span className="sr-only">Home</span>
           <Image
             className="h-8 w-auto"
@@ -33,7 +33,7 @@ export default function Hero() {
             <ul className="flex items-center gap-6 text-sm">
               <li>
                 <a
-                  className="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
+                  className="text-foreground/75 transition hover:text-foreground"
                   href="/"
                 >
                   Pontuador
@@ -48,14 +48,14 @@ export default function Hero() {
             ) : (
               <div className="sm:flex sm:gap-4">
                 <a
-                  className="block rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-white-light transition hover:bg-primary-dark dark:hover:bg-teal-500"
+                  className="block rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-light transition hover:bg-primary-dark"
                   href="/enter"
                 >
                   Entrar
                 </a>
 
                 <a
-                  className="hidden rounded-md bg-white-light px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-white sm:block dark:bg-gray-800 dark:text-white dark:hover:text-white/75"
+                  className="hidden rounded-md bg-transparent px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-light-smoke sm:block"
                   href="/create-room"
                 >
                   Criar

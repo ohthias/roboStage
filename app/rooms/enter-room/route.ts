@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
+import { cookies } from 'next/headers'
 
 export async function POST(req: Request) {
   const { codigo } = await req.json();
@@ -25,5 +26,8 @@ export async function POST(req: Request) {
   else if (codigo === sala.codigo_visitante) nivelAcesso = "visitante";
   else nivelAcesso = "desconhecido"; // fallback
 
-  return NextResponse.json({ nivelAcesso, codigo_sala: sala.codigo_sala }, { status: 200 });
+  const response = NextResponse.json({nivelAcesso, codigo_sala: sala.codigo_sala}, { status: 200 });
+  response.cookies.set('codigo_sala', sala.codigo_sala)
+  response.cookies.set('nivel_acesso', nivelAcesso)
+  return response
 }

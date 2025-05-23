@@ -41,6 +41,24 @@ export async function POST(req: NextRequest) {
     .select()
     .single();
 
+  await supabase.from("acessos").insert([
+    {
+      codigo_sala: cod_room,
+      codigo_acesso: codigo_admin,
+      nivel_acesso: "admin",
+    },
+    {
+      codigo_sala: cod_room,
+      codigo_acesso: codigo_visitante,
+      nivel_acesso: "visitante",
+    },
+    {
+      codigo_sala: cod_room,
+      codigo_acesso: codigo_voluntario,
+      nivel_acesso: "voluntario",
+    },
+  ]);
+
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

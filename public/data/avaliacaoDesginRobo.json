@@ -1,0 +1,122 @@
+{
+  "seção1": {
+    "titulo": "Identificação",
+    "subtitulo": "A equipe definiu quais missões iria tentar realizar, explorou recursos de construção e codificação e buscou orientação conforme necessário.",
+    "linhas": [
+      {
+        "descricoes": [
+          "Definição pouco clara do problema",
+          "Definição parcialmente clara do problema",
+          "Definição clara do problema",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      },
+      {
+        "descricoes": [
+          "Evidências mínimas de pesquisa",
+          "Evidências parciais de pesquisa de uma ou mais fontes",
+          "Pesquisa clara e detalhada de uma variedade de fontes",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      }
+    ]
+  },
+  "seção2": {
+    "titulo": "Design",
+    "subtitulo": "A equipe trabalhou em conjunto na criação de um plano de projeto e no desenvolvimento de suas ideias.",
+    "linhas": [
+      {
+        "descricoes": [
+          "Evidências mínimas de um plano de projeto eficaz",
+          "Evidências parciais de um plano de projeto eficaz",
+          "Evidências claras de um plano de projeto eficaz",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      },
+      {
+        "descricoes": [
+          "Evidências mínimas de que o processo de desenvolvimento envolveu todos os membros da equipe",
+          "Evidências parciais de que o processo de desenvolvimento envolveu todos os membros da equipe",
+          "Evidências claras de que o processo de desenvolvimento envolveu todos os membros da equipe",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      }
+    ]
+  },
+  "seção3": {
+    "titulo": "Criação",
+    "subtitulo": "A equipe desenvolveu uma ideia original ou baseou-se em uma ideia existente com um protótipo/desenho para representar sua solução.",
+    "linhas": [
+      {
+        "descricoes": [
+          "Explicação mínima com relação à inovação na solução",
+          "Explicação simples com relação à inovação na solução",
+          "Explicação detalhada com relação à inovação na solução",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      },
+      {
+        "descricoes": [
+          "Protótipo/desenho pouco claro para representar a solução",
+          "Protótipo/desenho simples para representar a solução",
+          "Protótipo/desenho detalhado para representar a solução",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      }
+    ]
+  },
+  "seção4": {
+    "titulo": "Iteração",
+    "subtitulo": "A equipe compartilhou suas ideias, coletou feedback e incluiu melhorias em sua solução.",
+    "linhas": [
+      {
+        "descricoes": [
+          "Compartilhamento mínimo da solução com outras pessoas",
+          "Solução compartilhada com pelo menos uma pessoa/grupo",
+          "Solução compartilhada com várias pessoas/grupos",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      },
+      {
+        "descricoes": [
+          "Evidências mínimas de melhorias com base em feedbacks",
+          "Evidências parciais de melhorias com base em feedbacks",
+          "Evidências claras de melhorias com base em feedbacks",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      }
+    ]
+  },
+  "seção5": {
+    "titulo": "Comunicação",
+    "subtitulo": "Os alunos fizeram uma apresentação eficaz de sua solução, seu impacto sobre outras pessoas e comemoraram o progresso da equipe.",
+    "linhas": [
+      {
+        "descricoes": [
+          "Explicação pouco clara da solução e seu impacto potencial sobre outras pessoas",
+          "Explicação parcialmente clara da solução e seu impacto potencial sobre outras pessoas",
+          "Explicação clara da solução e seu impacto potencial sobre outras pessoas",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      },
+      {
+        "descricoes": [
+          "A apresentação demonstra orgulho ou entusiasmo mínimo com o trabalho da equipe",
+          "A apresentação demonstra orgulho ou entusiasmo parcial com o trabalho da equipe",
+          "A apresentação claramente demonstra orgulho ou entusiasmo com o trabalho da equipe",
+          "Comentário sobre excelência"
+        ],
+        "nivel": null
+      }
+    ]
+  }
+}

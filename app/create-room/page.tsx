@@ -17,6 +17,7 @@ export default function CreateRoomPage() {
   });
 
   const [status, setStatus] = useState({
+    loading: false,
     success: "",
     error: "",
   });

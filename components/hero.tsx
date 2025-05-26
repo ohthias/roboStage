@@ -1,17 +1,19 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Navbar from "@/components/ui/navbar";
 
-export default function Hero() {
+interface HeroProps {
+  admin?: string;
+}
+
+export default function Hero({ admin }: HeroProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const pathParts = pathname.split("/").filter(Boolean);
   const id = pathParts[0] || undefined;
   const mode = pathParts[1] || "default";
-  const admin = searchParams.get("admin") || undefined;
 
   return (
     <header>
@@ -30,16 +32,16 @@ export default function Hero() {
         <div className="flex flex-1 items-center justify-end md:justify-between">
           <nav aria-label="Global" className="hidden md:block">
             {mode === "default" && (
-            <ul className="flex items-center gap-6 text-sm">
-              <li>
-                <a
-                  className="text-foreground/75 transition hover:text-foreground"
-                  href="/"
-                >
-                  Pontuador
-                </a>
-              </li>
-            </ul>
+              <ul className="flex items-center gap-6 text-sm">
+                <li>
+                  <a
+                    className="text-foreground/75 transition hover:text-foreground"
+                    href="/"
+                  >
+                    Pontuador
+                  </a>
+                </li>
+              </ul>
             )}
           </nav>
           <div className="flex items-center gap-4">

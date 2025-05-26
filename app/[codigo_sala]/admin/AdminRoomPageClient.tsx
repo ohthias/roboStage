@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import AccessModal from "@/components/AccessModal";
 import Equipes from "@/components/Equipes";
 import Loader from "@/components/loader";
+import Hero from "@/components/hero";
 
 interface Props {
   codigoSala: string;
@@ -74,6 +75,8 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
   const { codigo_visitante, codigo_voluntario, codigo_admin, nome } = sala;
 
   return (
+    <>
+    <Hero admin={codigo_admin} />
     <div className="px-8">
       {showModal && (
         <AccessModal
@@ -106,5 +109,6 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
         </div>
       </main>
     </div>
+    </>
   );
 }

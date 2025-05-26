@@ -33,7 +33,16 @@ export default function AvaliacaoRounds({
   const [selectedEquipe, setSelectedEquipe] = useState<string>("");
   const [missions, setMissions] = useState<MissionType[]>([]);
   const [responses, setResponses] = useState<ResponseType>({});
-  const [teams, setTeams] = useState<{ id: string; nome_equipe: string }[]>([]);
+  type TeamType = {
+    id: string;
+    nome_equipe: string;
+    round1?: number;
+    round2?: number;
+    round3?: number;
+    [key: string]: any;
+  };
+
+  const [teams, setTeams] = useState<TeamType[]>([]);
   const [availableRounds, setAvailableRounds] = useState<string[]>([
     "round1",
     "round2",

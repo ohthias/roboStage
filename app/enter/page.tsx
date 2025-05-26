@@ -1,11 +1,11 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 
 export default function EnterRoomPage() {
   const router = useRouter();
   const [codigo, setCodigo] = useState(["", "", "", "", "", ""]);
-  const inputsRef = useRef([]);
+  const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const [status, setStatus] = useState({
     loading: false,
     error: "",
@@ -13,7 +13,7 @@ export default function EnterRoomPage() {
     nivelAcesso: "",
   });
 
-  const handleChange = (index, value) => {
+  const handleChange = (index: number, value: string) => {
     if (!/^[0-9a-zA-Z]*$/.test(value)) return; // Apenas caracteres válidos
     const newCodigo = [...codigo];
     newCodigo[index] = value.slice(-1); // Garante 1 caractere
@@ -24,13 +24,13 @@ export default function EnterRoomPage() {
     }
   };
 
-  const handleKeyDown = (index, e) => {
+  const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace" && !codigo[index] && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     const codigoCompleto = codigo.join("");
 
@@ -78,7 +78,6 @@ export default function EnterRoomPage() {
                 {codigo.map((char, index) => (
                   <div className="w-16 h-16" key={index}>
                     <input
-                      ref={(el) => (inputsRef.current[index] = el)}
                       className="w-full h-full text-center px-2 outline-none rounded-xl border border-gray-200 text-lg bg-white focus:bg-gray-50 focus:ring-1 ring-red-700"
                       type="text"
                       maxLength={1}

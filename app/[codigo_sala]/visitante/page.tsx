@@ -1,16 +1,11 @@
 "use client";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import TabelaEquipes from "@/components/TabelaEquipes";
 import styles from "@/style/Visitante.module.css";
 
-interface VisitantePageProps {
-  params: {
-    codigo_sala: string;
-  };
-}
-
-export default function VisitanteRoomPage({ params }: VisitantePageProps) {
-  const codigo_sala  = params.codigo_sala;
+export default function VisitanteRoomPage() {
+  const params = useParams();
+  const codigo_sala = params?.codigo_sala as string;
 
   return (
     <>

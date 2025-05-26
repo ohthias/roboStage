@@ -63,5 +63,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ room: data }, { status: 201 });
+  const response = NextResponse.json({ room: data }, { status: 201 });
+
+  response.cookies.set("nivel_acesso", "admin", {
+    path: "/",
+    httpOnly: true,
+    maxAge: 60 * 60 * 24,
+  });
+
+  response.cookies.set("codigo_sala", codigo_sala, {
+    path: "/",
+    httpOnly: true,
+    maxAge: 60 * 60 * 24,
+  });
+
+  response.headers.set("Location", `/${codigo_sala}/admin`);
+
+  return response;
 }

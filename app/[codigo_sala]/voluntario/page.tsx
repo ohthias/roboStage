@@ -1,13 +1,10 @@
+"use client";
+import { useParams } from "next/navigation";
 import VoluntarioRoomClient from "@/components/VoluntarioRoomClient";
 
-interface VoluntarioPageProps {
-  params: {
-    codigo_sala: string;
-  };
-}
-
-export default async function VoluntarioRoomPage({ params }: VoluntarioPageProps) {
-  const codigo_sala = params.codigo_sala;
+export default async function VoluntarioRoomPage() {
+  const params = useParams();
+  const codigo_sala = params?.codigo_sala as string;
 
   return (
     <div className="w-full h-full flex items-center justify-center p-6">

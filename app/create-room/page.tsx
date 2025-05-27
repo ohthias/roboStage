@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { gerarCodigoAleatorio } from "@/utils/gerarCodigoAleatorio";
+import Hero from "@/components/hero"
 import Loader from "@/components/loader";
 import { useRouter } from "next/navigation";
 
@@ -58,6 +59,7 @@ export default function CreateRoomPage() {
 
   return (
     <>
+      <Hero />
       {loading && (
         <div
           style={{

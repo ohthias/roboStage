@@ -86,7 +86,7 @@ export default function Home() {
 
   return (
     <>
-    <Hero />
+      <Hero />
       <Banner />
       <main className="flex flex-col items-center justify-center gap-8 px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center gap-4 relative w-[calc(100%-164px)] my-8">

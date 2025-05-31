@@ -35,12 +35,18 @@ export default function Hero({ admin }: HeroProps) {
             {mode === "default" && (
               <ul className="flex items-center gap-6 text-sm">
                 <li>
-                  <a
-                    className="text-foreground/75 transition hover:text-foreground"
-                    href="/"
-                  >
+                    <a
+                    className="text-foreground/75 transition hover:text-foreground cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const el = document.getElementById("pontuador");
+                      if (el) {
+                      el.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }}
+                    >
                     Pontuador
-                  </a>
+                    </a>
                 </li>
               </ul>
             )}

@@ -83,7 +83,6 @@ export default function Equipes({ codigoSala, onAtualizacao }) {
 
       setMensagem("Equipe removida com sucesso.");
       setTipoMensagem("sucesso");
-      onAtualizacao?.(`Equipe "${nome_equipe}" removida.`);
     } catch (error) {
       console.error("Erro ao remover equipe:", error);
       setMensagem("Erro ao remover equipe.");
@@ -125,7 +124,7 @@ export default function Equipes({ codigoSala, onAtualizacao }) {
 
         <div className="overflow-auto flex-1">
           <table className="w-full border-collapse border border-gray-300">
-            <thead className="bg-primary text-white sticky top-0 z-10">
+            <thead className="bg-primary text-white top-0 z-10">
               <tr>
                 <th className="p-2">Nº</th>
                 <th className="p-2">Equipe</th>

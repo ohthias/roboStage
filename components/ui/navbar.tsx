@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Button from "./Button";
 import ExitButton from "./ExitButon";
+import AccessModal from "../AccessModal";
 
 interface NavbarProps {
   mode?: string;
@@ -10,6 +11,10 @@ interface NavbarProps {
 
 export default function Navbar({ mode, id, admin }: NavbarProps) {
   const validMode = mode ?? "default";
+
+  function setShowModal(arg0: boolean): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <nav className="flex justify-between items-center max-w-full px-10 py-2 relative z-10">
@@ -34,10 +39,6 @@ export default function Navbar({ mode, id, admin }: NavbarProps) {
               (window.location.href = `/${id}/visitante?admin=${admin}`)
             }
           />
-          <Button
-            text="Códigos"
-            onClick={() => (window.location.hash = "#codigos")}
-          />
           <ExitButton />
         </div>
       )}
@@ -55,9 +56,7 @@ export default function Navbar({ mode, id, admin }: NavbarProps) {
 
       {validMode === "voluntario" && (
         <div className="flex items-center justify-end gap-5">
-          <p className="text-foreground font-bold text-lg">
-            Voluntário
-          </p>
+          <p className="text-foreground font-bold text-lg">Voluntário</p>
           <ExitButton />
         </div>
       )}

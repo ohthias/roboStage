@@ -3,37 +3,38 @@ import React from "react";
 const AccessModal = ({ visitante, voluntario, admin, onClose }) => {
   return (
     <div
-      class="w-full h-screen fixed inset-0 z-50 flex itens-center justify-center bg-[#f3f3f35b] backdrop-blur-sm p-4"
+      className="w-full h-screen fixed inset-0 z-50 flex itens-center justify-center bg-[#f3f3f35b] backdrop-blur-sm p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modalTitle"
     >
-      <div class="w-full max-w-md h-max rounded-lg bg-white p-6 shadow-lg">
-        <div class="flex items-start justify-between">
+      <div className="w-full max-w-md h-max rounded-lg bg-white p-6 shadow-lg">
+        <div className="flex items-start justify-between">
           <h2
             id="modalTitle"
-            class="text-xl font-bold text-primary sm:text-2xl"
+            className="text-xl font-bold text-primary sm:text-2xl"
           >
             Códigos de Acesso
           </h2>
 
           <button
             type="button"
-            class="-me-4 -mt-4 rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 focus:outline-none"
+            className="-me-4 -mt-4 rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 focus:outline-none cursor-pointer"
+            title="Fechar"
             aria-label="Close"
             onClick={onClose}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="size-5"
+              className="size-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
               <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>

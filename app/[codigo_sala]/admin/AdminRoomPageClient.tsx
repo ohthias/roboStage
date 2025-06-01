@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
-import AccessModal from "@/components/AccessModal";
 import Equipes from "@/components/Equipes";
 import Loader from "@/components/loader";
-import Hero from "@/components/hero";
+import Button from "@/components/ui/Button";
+import SideBar from "@/components/ui/SideBar";
 
 interface Props {
   codigoSala: string;
@@ -66,21 +66,6 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
     fetchLogs();
   }, [codigoSala]);
 
-  useEffect(() => {
-    const checkHash = () => {
-      if (window?.location.hash === "#codigos") {
-        setShowModal(true);
-      } else {
-        setShowModal(false);
-      }
-    };
-
-    checkHash();
-    window.addEventListener("hashchange", checkHash);
-
-    return () => window.removeEventListener("hashchange", checkHash);
-  }, []);
-
   if (carregando) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
@@ -94,60 +79,43 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
   const { codigo_visitante, codigo_voluntario, codigo_admin, nome } = sala;
 
   return (
-    <>
-      <Hero admin={codigo_admin} />
-      <div className="px-8">
-        {showModal && (
-          <AccessModal
-            visitante={codigo_visitante}
-            voluntario={codigo_voluntario}
-            admin={codigo_admin}
-            onClose={() => setShowModal(false)}
+    <div className="w-full bg-white">
+      <SideBar
+        codVisitante={codigo_visitante}
+        codVoluntario={codigo_voluntario}
+        codAdmin={codigo_admin}
+      />
+      <main className="max-w-7xl mx-auto px-4 py-8 ml-[180px]">
+        <div className="my-4 flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-left text-primary-dark">
+            {nome}
+          </h1>
+        </div>
+
+        <div className="my-4">
+          <Equipes
+            codigoSala={codigoSala}
+            onAtualizacao={adicionarAtualizacao}
           />
-        )}
+        </div>
 
-        <h1 className="text-3xl font-bold text-left text-primary-dark mt-4">
-          Administração do evento: {nome}
-        </h1>
-
-        <main className="mx-8 mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
-          <div className="h-full">
-            <Equipes
-              codigoSala={codigoSala}
-              onAtualizacao={adicionarAtualizacao}
-            />
+        <div>
+          <div className="bg-light-smoke rounded-md p-4 mb-8 shadow-md">
+            <p className="text-xl font-bold text-primary-dark">Atualizações:</p>
+            {atualizacoes.length === 0 ? (
+              <p className="text-sm text-gray-500 mt-2">Sem atualizações</p>
+            ) : (
+              <ul className="max-h-64 overflow-y-auto list-disc list-inside mt-2 space-y-1">
+                {atualizacoes.slice(0, 7).map((item, idx) => (
+                  <li key={idx} className="text-sm text-gray-700">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-
-          <div>
-            <div className="bg-light-smoke rounded-md p-4 mb-8">
-              <p className="text-xl font-bold text-primary-dark">
-                Atualizações:
-              </p>
-              {atualizacoes.length === 0 ? (
-                <p className="text-sm text-gray-500 mt-2">Sem atualizações</p>
-              ) : (
-                <ul className="max-h-64 overflow-y-auto list-disc list-inside mt-2 space-y-1">
-                  {atualizacoes.slice(0, 7).map((item, idx) => (
-                    <li key={idx} className="text-sm text-gray-700">
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div className="bg-light-smoke rounded-md p-4">
-              <p className="text-xl font-bold text-primary-dark">
-                Estatísticas
-              </p>
-              <div className="mt-2 text-sm text-gray-600">
-                <p>Equipes</p>
-                <p>{sala?.equipes?.length || 0}</p>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    </>
+        </div>
+      </main>
+    </div>
   );
 }

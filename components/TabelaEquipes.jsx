@@ -9,7 +9,10 @@ export default function TabelaEquipes({ codigoSala }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSala = async () => {
+    let intervalId;
+
+    const fetchSala = async (showLoader = false) => {
+      if (showLoader) setLoading(true);
       try {
         const res = await fetch(`/rooms/${codigoSala}/get`);
         if (!res.ok) throw new Error("Erro ao buscar sala");
@@ -26,36 +29,43 @@ export default function TabelaEquipes({ codigoSala }) {
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
+        if (showLoader) setLoading(false);
       }
     };
 
-    if (codigoSala) fetchSala();
+    if (codigoSala) {
+      fetchSala(true);
+      intervalId = setInterval(() => fetchSala(false), 10000);
+    }
+
+    return () => clearInterval(intervalId);
   }, [codigoSala]);
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+        }}
+      >
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <>
-      {loading && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
-          <Loader />
-        </div>
-      )}
       {!loading && (
         <div className={styles.container}>
-          <h2 className={styles.nomeSala}>{nomeSala}</h2>
           <table className={styles.tabela}>
             <thead className={styles.thead}>
               <tr className={styles.tr}>

@@ -6,8 +6,6 @@ export async function PUT(request: NextRequest, context: any) {
     const codigo_sala = context.params.codigo_sala;
     const dados = await request.json();
 
-    console.log("Dados recebidos no PUT:", dados);
-
     const { nome_equipe, ...roundData } = dados;
 
     if (!codigo_sala || !nome_equipe) {
@@ -59,6 +57,22 @@ export async function PUT(request: NextRequest, context: any) {
         { error: "Erro ao atualizar pontuação" },
         { status: 500 }
       );
+    }
+
+    const descricaoLog = `Atualização de dados da equipe "${nome_equipe}" na sala "${codigo_sala}"`;
+
+    const { error: erroLog } = await supabase.from("audit_logs").insert([
+      {
+        sala_id: sala.id,
+        acao: "UPDATE",
+        tabela_afetada: "teams",
+        id_registro: String(equipe.id),
+        descricao: descricaoLog,
+      },
+    ]);
+
+    if (erroLog) {
+      console.error("Erro ao registrar log:", erroLog);
     }
 
     return NextResponse.json({ sucesso: true }, { status: 200 });

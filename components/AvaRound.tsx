@@ -138,6 +138,9 @@ export default function AvaliacaoRounds({
 
       if (res.ok) {
         alert("Avaliação salva com sucesso!");
+        alert(
+          `Pontuação total para ${selectedEquipe} no ${selectedRound}: ${totalPoints} pontos`
+        );
         window.location.reload();
       } else {
         alert("Erro ao salvar avaliação.");
@@ -166,6 +169,7 @@ export default function AvaliacaoRounds({
           justifyContent: "center",
           alignItems: "center",
           zIndex: 9999,
+          backdropFilter: "blur(5px)",
         }}
       >
         <Loader />
@@ -174,73 +178,87 @@ export default function AvaliacaoRounds({
   }
 
   return (
-    <>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold">Avaliação de Rounds</h1>
-        <p className="text-gray-600">Aqui você pode avaliar os rounds.</p>
+    <main className="flex flex-col items-center justify-center min-h-screen">
+      <h1 className="text-3xl font-bold mb-6">Avaliação de Rounds</h1>
+      <div className="text-left mb-6 max-w-4xl">
         <p className="text-gray-600">
-          Selecione o round e equipe que deseja avaliar.
+          Selecione a equipe e o round para avaliar.
         </p>
         <p className="text-gray-600">
-          Após selecionar o round, as missões serão liberadas para avaliação.
+          Lembre-se de que a pontuação total será atualizada automaticamente com
+          base nas missões avaliadas.
         </p>
         <p className="text-gray-600">
-          Após avaliar a missão, você poderá enviar a avaliação.
-        </p>
-        <p className="text-gray-600">
-          O resultado será salvo, não podendo ser alterado.
-        </p>
-        <p className="text-gray-600">
-          Após ver o resultado da avaliação, você poderá ver o feedback e
-          mostrar para a equipe.
+          A pontuação total será salva automaticamente ao enviar a avaliação.
+          Sendo indisponível para edição posteriormente.
         </p>
       </div>
+      <div className="p-6 w-full bg-light-smoke rounded-lg mb-8 max-w-4xl flex flex-row gap-8 justify-between">
+        <div className="flex flex-col gap-2 w-full">
+          <label
+            htmlFor="equipe-select"
+            className="font-medium text-gray-700 text-m"
+          >
+            Equipe
+          </label>
+          <select
+            id="equipe-select"
+            className="border border-gray-300 p-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary transition bg-white disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-700 cursor-pointer"
+            value={selectedEquipe}
+            onChange={(e) => setSelectedEquipe(e.target.value)}
+          >
+            <option value="">Selecione a equipe</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.nome_equipe}>
+                {team.nome_equipe}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <div className="p-6 space-y-8">
-        <select
-          className="border p-2 rounded"
-          value={selectedEquipe}
-          onChange={(e) => setSelectedEquipe(e.target.value)}
-        >
-          <option value="">Selecione a equipe</option>
-          {teams.map((team) => (
-            <option key={team.id} value={team.nome_equipe}>
-              {team.nome_equipe}
-            </option>
-          ))}
-        </select>
-
-        <select
-          className="border p-2 rounded"
-          value={selectedRound}
-          onChange={(e) => setSelectedRound(e.target.value)}
-          disabled={availableRounds.length === 0}
-        >
-          <option value="">Selecione o round</option>
-          {availableRounds.map((round) => (
-            <option key={round} value={round}>
-              {round.charAt(0).toUpperCase() + round.slice(1)}
-            </option>
-          ))}
-        </select>
-
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          onClick={handleSubmit}
-        >
-          Enviar pontuação
-        </button>
-
-        <span className="block font-bold text-lg">
-          Pontuação Total: {totalPoints}
-        </span>
+        <div className="flex flex-col gap-2 w-full">
+          <label
+            htmlFor="round-select"
+            className="font-medium text-gray-700 text-m"
+          >
+            Round
+          </label>
+          <select
+            id="round-select"
+            className="border border-gray-300 p-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary transition bg-white disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-700 cursor-pointer"
+            value={selectedRound}
+            onChange={(e) => setSelectedRound(e.target.value)}
+            disabled={availableRounds.length === 0}
+          >
+            <option value="">Selecione o round</option>
+            {availableRounds.map((round) => (
+              <option key={round} value={round}>
+                {round.charAt(0).toUpperCase() + round.slice(1)}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      <FormMission
-        missions={missions}
-        responses={responses}
-        onSelect={handleSelectMission}
-      />
-    </>
+      {missions.length === 0 || teams.length === 0 ? (
+        <div className="flex justify-center items-center w-full h-64">
+          <Loader />
+        </div>
+      ) : (
+        <FormMission
+          missions={missions}
+          responses={responses}
+          onSelect={handleSelectMission}
+        />
+      )}
+
+      <button
+        className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark mt-4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        disabled={!selectedRound || !selectedEquipe || loading}
+        onClick={handleSubmit}
+      >
+        Enviar pontuação
+      </button>
+    </main>
   );
 }

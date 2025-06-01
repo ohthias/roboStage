@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import AvaliacaoRounds from "@/components/AvaRound";
-import RubricaForm from "./RubricaForm";
 import Button from "./ui/Button";
 
 export default function VoluntarioRoomClient({
@@ -11,7 +10,7 @@ export default function VoluntarioRoomClient({
 }: {
   codigoSala: string;
 }) {
-  const [view, setView] = useState<"default" | "round" | "sala">("default");
+  const [view, setView] = useState<"default" | "round">("default");
 
   const renderContent = () => {
     switch (view) {
@@ -19,7 +18,7 @@ export default function VoluntarioRoomClient({
         return (
           <>
             <button
-              className="mt-4 bg-white text-primary-dark px-4 py-2 rounded"
+              className="mt-4 bg-white text-primary-dark px-4 py-2 rounded cursor-pointer hover:bg-light-smoke transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer"
               onClick={() => setView("default")}
             >
               Voltar
@@ -27,38 +26,27 @@ export default function VoluntarioRoomClient({
             <AvaliacaoRounds codigo_sala={codigoSala} />
           </>
         );
-      case "sala":
-        return (
-          <>
-            <button
-              className="mt-4 bg-white text-primary-dark px-4 py-2 rounded"
-              onClick={() => setView("default")}
-            >
-              Voltar
-            </button>
-            <div className="mt-4">
-              <RubricaForm />
-            </div>
-          </>
-        );
       default:
         return (
           <div className="flex gap-8 items-center">
             <Button text="Avaliar Round" onClick={() => setView("round")} />
-            <Button text="Avaliar Sala" onClick={() => setView("sala")} />
           </div>
         );
     }
   };
 
   return (
-    <div className="flex flex-col itens-center justify-center p-6">
-      <h1 className="text-2xl font-bold text-primary-dark dark:text-white text-center">
-        Sala {codigoSala} - Acesso Voluntário
-      </h1>
-      <p className="mt-2 text-gray-600 text-center">
-        Selecione a opção de avaliação desejada.
-      </p>
+    <div className="flex flex-col items-center justify-center w-full">
+      {view === "default" && (
+        <>
+          <h1 className="text-2xl font-bold text-primary-dark text-center">
+            Evento {codigoSala} - Acesso Voluntário
+          </h1>
+          <p className="mt-2 text-gray-600 text-center">
+            Selecione a opção de avaliação desejada.
+          </p>
+        </>
+      )}
       <div className="mt-4">{renderContent()}</div>
     </div>
   );

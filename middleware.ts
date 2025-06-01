@@ -1,4 +1,3 @@
-// middleware.ts
 import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(req: NextRequest) {
@@ -8,7 +7,6 @@ export function middleware(req: NextRequest) {
   const urlParts = req.nextUrl.pathname.split('/').filter(Boolean)
   const [rotaCodigoSala, rotaNivel] = urlParts
 
-  // Validação básica
   if (!codigoSala || !nivel) {
     return NextResponse.redirect(new URL('/enter', req.url))
   }

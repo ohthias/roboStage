@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { gerarCodigoAleatorio } from "@/utils/gerarCodigoAleatorio";
+import Hero from "@/components/hero";
 import Loader from "@/components/loader";
 import { useRouter } from "next/navigation";
 
@@ -11,6 +12,7 @@ export default function CreateRoomPage() {
   const [form, setForm] = useState({
     codigo_sala: codigo_sala,
     nome: "",
+    email: "",
     codigo_admin: codigo_sala + gerarCodigoAleatorio(),
     codigo_visitante: codigo_sala + gerarCodigoAleatorio(),
     codigo_voluntario: codigo_sala + gerarCodigoAleatorio(),
@@ -22,11 +24,11 @@ export default function CreateRoomPage() {
     error: "",
   });
 
-  const handleChange = (e: { target: { name: any; value: any; }; }) => {
+  const handleChange = (e: { target: { name: any; value: any } }) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     setLoading(true);
     e.preventDefault();
     setStatus({ loading: true, success: "", error: "" });
@@ -39,6 +41,12 @@ export default function CreateRoomPage() {
 
     const result = await res.json();
     if (res.ok) {
+      await fetch("/rooms/create-room/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
       setStatus({
         loading: false,
         success: "Sala criada com sucesso!",
@@ -58,6 +66,7 @@ export default function CreateRoomPage() {
 
   return (
     <>
+      <Hero />
       {loading && (
         <div
           style={{
@@ -80,7 +89,9 @@ export default function CreateRoomPage() {
       <div className="h-[calc(100vh-64px)] flex items-center justify-center bg-gradient-to-t from-secondary/50 to-light">
         <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md animate-fadein-down">
           <div className="mb-4">
-            <h1 className="text-2xl font-bold text-center">Crie seu próprio evento!</h1>
+            <h1 className="text-2xl font-bold text-center">
+              Crie seu próprio evento!
+            </h1>
           </div>
           <div className="mb-4">
             <form onSubmit={handleSubmit}>
@@ -93,6 +104,20 @@ export default function CreateRoomPage() {
                   className="w-full p-2 border border-gray-300 rounded"
                   placeholder="Insira o nome do evento"
                   onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <p className="text-sm text-gray-400 mb-2">Email:</p>
+
+                <input
+                  name="email"
+                  value={form.email}
+                  className="w-full p-2 border border-gray-300 rounded"
+                  placeholder="Insira o email para receber os códigos de acesso"
+                  onChange={handleChange}
+                  type="email"
                   required
                 />
               </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Button from "./Button";
 import ExitButton from "./ExitButon";
+import AccessModal from "../AccessModal";
 
 interface NavbarProps {
   mode?: string;
@@ -11,19 +12,33 @@ interface NavbarProps {
 export default function Navbar({ mode, id, admin }: NavbarProps) {
   const validMode = mode ?? "default";
 
+  function setShowModal(arg0: boolean): void {
+    throw new Error("Function not implemented.");
+  }
+
   return (
-    <nav className="flex justify-between items-center w-full px-10 py-2 relative z-10">
+    <nav className="flex justify-between items-center max-w-full px-10 py-2 relative z-10">
       {validMode === "default" && (
         <div className="flex items-center justify-end gap-5">
-          <Button text="Criar" onClick={() => window.location.href = "/create-room"}/>
-          <Button text="Entrar" onClick={() => window.location.href = "/enter"}/>
+          <Button
+            text="Criar"
+            onClick={() => (window.location.href = "/create-room")}
+          />
+          <Button
+            text="Entrar"
+            onClick={() => (window.location.href = "/enter")}
+          />
         </div>
       )}
 
       {validMode === "admin" && (
         <div className="flex items-center justify-end gap-5">
-          <Button text="Visualização" onClick={() => window.location.href = `/${id}/visitante?admin=${admin}`}/>
-          <Button text="Códigos" onClick={() => window.location.hash = "#codigos"}/>
+          <Button
+            text="Visualização"
+            onClick={() =>
+              (window.location.href = `/${id}/visitante?admin=${admin}`)
+            }
+          />
           <ExitButton />
         </div>
       )}
@@ -40,7 +55,10 @@ export default function Navbar({ mode, id, admin }: NavbarProps) {
       )}
 
       {validMode === "voluntario" && (
-        <ExitButton />
+        <div className="flex items-center justify-end gap-5">
+          <p className="text-foreground font-bold text-lg">Voluntário</p>
+          <ExitButton />
+        </div>
       )}
     </nav>
   );

@@ -1,16 +1,16 @@
 "use client";
-
 import { useState, useEffect } from "react";
-import AccessModal from "@/components/AccessModal";
 import Equipes from "@/components/Equipes";
 import Loader from "@/components/loader";
-import Hero from "@/components/hero";
-
+import SideBar from "@/components/ui/SideBar";
+import TabelaEquipes from "@/components/TabelaEquipes";
+import { supabase } from "@/lib/supabaseClient";
 interface Props {
   codigoSala: string;
 }
 
 interface Sala {
+  equipes: any;
   codigo_visitante?: string;
   codigo_voluntario?: string;
   codigo_admin?: string;
@@ -19,12 +19,50 @@ interface Sala {
 
 export default function AdminRoomPageClient({ codigoSala }: Props) {
   const [sala, setSala] = useState<Sala | undefined>();
-  const [showModal, setShowModal] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [atualizacoes, setAtualizacoes] = useState<string[]>([]);
 
   const adicionarAtualizacao = (texto: any) => {
     setAtualizacoes((prev) => [texto, ...prev]);
+  };
+
+  const deletarSala = async () => {
+    const confirmacao = confirm(
+      "Você tem certeza que deseja deletar este evento?"
+    );
+    if (!confirmacao || !codigoSala) return;
+
+    const emailAdmin = prompt("Digite seu e-mail para confirmar a exclusão:");
+
+    if (!emailAdmin || !/\S+@\S+\.\S+/.test(emailAdmin)) {
+      alert("E-mail inválido. A operação foi cancelada.");
+      return;
+    }
+
+    try {
+      console.log("Deletando sala:", codigoSala, "Email do admin:", emailAdmin);
+      const res = await fetch("/rooms/deleteRoom", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          codigo: codigoSala,
+          emailAdmin,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert("Erro ao deletar sala: " + (data.error || "Erro desconhecido"));
+        return;
+      }
+
+      alert("Sala deletada com sucesso! Um e-mail de confirmação foi enviado.");
+      window.location.href = "/";
+    } catch (error) {
+      alert("Erro inesperado ao tentar deletar a sala.");
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -40,27 +78,74 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
         console.error(err);
       } finally {
         setCarregando(false);
-
-        if (typeof window !== "undefined") {
-          const hash = window.location.hash;
-          if (hash === "#codigos") {
-            setShowModal(true);
-          }
-        }
       }
     };
 
     fetchSala();
 
-    const handleHashChange = () => {
-      setShowModal(window.location.hash === "#codigos");
+    const fetchLogs = async () => {
+      try {
+        const res = await fetch(`/rooms/salvar-log/get`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codigo: codigoSala }),
+        });
+        if (!res.ok) throw new Error("Erro ao buscar logs");
+        const data = await res.json();
+        const ultimosLogs = (data.logs || [])
+          .slice(0, 7)
+          .map((log: any) => log.descricao);
+        setAtualizacoes(ultimosLogs);
+      } catch (err) {
+        console.error(err);
+      }
     };
 
-    window.addEventListener("hashchange", handleHashChange);
-    return () => {
-      window.removeEventListener("hashchange", handleHashChange);
-    };
+    fetchLogs();
   }, [codigoSala]);
+
+  const [conteudo, setConteudo] = useState<"geral" | "ranking">("geral");
+
+  const renderContent = () => {
+    switch (conteudo) {
+      case "geral":
+        return (
+          <>
+            <Equipes
+              codigoSala={codigoSala}
+              onAtualizacao={adicionarAtualizacao}
+            />
+            <div className="bg-light-smoke rounded-md p-4 my-8 shadow-md">
+              <p className="text-xl font-bold text-primary-dark">
+                Atualizações:
+              </p>
+              {atualizacoes.length === 0 ? (
+                <p className="text-sm text-gray-500 mt-2">Sem atualizações</p>
+              ) : (
+                <ul className="max-h-64 overflow-y-auto list-disc list-inside mt-2 space-y-1">
+                  {atualizacoes.slice(0, 7).map((item, idx) => (
+                    <li key={idx} className="text-sm text-gray-700">
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </>
+        );
+      case "ranking":
+        return (
+          <div className="text-gray-700 bg-light-smoke rounded-md p-4 my-8 shadow-md">
+            <h2 className="text-2xl font-bold mb-4 text-primary-dark">
+              Ranking
+            </h2>
+            <TabelaEquipes codigoSala={codigoSala} />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   if (carregando) {
     return (
@@ -75,40 +160,24 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
   const { codigo_visitante, codigo_voluntario, codigo_admin, nome } = sala;
 
   return (
-    <>
-    <Hero admin={codigo_admin} />
-    <div className="px-8">
-      {showModal && (
-        <AccessModal
-          visitante={codigo_visitante}
-          voluntario={codigo_voluntario}
-          admin={codigo_admin}
-          onClose={() => setShowModal(false)}
-        />
-      )}
+    <div className="w-full bg-white">
+      <SideBar
+        codVisitante={codigo_visitante}
+        codVoluntario={codigo_voluntario}
+        codAdmin={codigo_admin}
+        setConteudo={setConteudo}
+        onDelete={deletarSala}
+      />
 
-      <h1 className="text-3xl font-bold text-left text-primary-dark mt-4">
-        Administração do evento: {nome}
-      </h1>
-
-      <main className="mx-8 mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
-        <div className="h-full">
-          <Equipes codigoSala={codigoSala} onAtualizacao={adicionarAtualizacao} />
+      <main className="max-w-7xl mx-auto px-4 py-8 ml-[180px]">
+        <div className="my-4 flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-left text-primary-dark">
+            {nome}
+          </h1>
         </div>
 
-        <div>
-          <div className="bg-light-smoke rounded-md p-4 mb-8">
-            <p className="text-xl font-bold text-primary-dark">Atualizações:</p>
-            <ul>
-              {atualizacoes.map((item, idx) => (
-                <li key={idx}>{item}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="bg-light-smoke rounded-md p-4">asasa</div>
-        </div>
+        <div className="my-4">{renderContent()}</div>
       </main>
     </div>
-    </>
   );
 }

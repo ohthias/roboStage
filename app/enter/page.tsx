@@ -2,10 +2,13 @@
 import { useState, useRef, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import Hero from "@/components/hero";
+import Loader from "@/components/loader";
 
 export default function EnterRoomPage() {
   const router = useRouter();
   const [codigo, setCodigo] = useState(["", "", "", "", "", ""]);
+  const [nomeUsuario, setNomeUsuario] = useState("");
+  const [showUsernameInput, setShowUsernameInput] = useState(false);
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const [status, setStatus] = useState({
     loading: false,
@@ -48,9 +51,18 @@ export default function EnterRoomPage() {
     inputsRef.current[nextIndex]?.focus();
   };
 
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
-    e.preventDefault();
+  const verificarCodigo = async () => {
     const codigoCompleto = codigo.join("");
+
+    if (codigoCompleto.length < 6) {
+      setStatus({
+        loading: false,
+        error: "Digite todos os 6 dígitos do código.",
+        sucesso: "",
+        nivelAcesso: "",
+      });
+      return;
+    }
 
     setStatus({ loading: true, error: "", sucesso: "", nivelAcesso: "" });
 
@@ -69,7 +81,7 @@ export default function EnterRoomPage() {
         sucesso: "Acesso permitido!",
         nivelAcesso: result.nivelAcesso,
       });
-      router.push(`/${result.codigo_sala}/${result.nivelAcesso}`);
+      setShowUsernameInput(true);
     } else {
       setStatus({
         loading: false,
@@ -79,6 +91,83 @@ export default function EnterRoomPage() {
       });
     }
   };
+
+  const handleNomeSubmit = async () => {
+    if (!nomeUsuario) return;
+
+    setStatus((prev) => ({ ...prev, loading: true, error: "" }));
+
+    const resSalvar = await fetch("/rooms/salvar-log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        codigo: codigo,
+        nome: nomeUsuario,
+      }),
+    });
+    console.log(codigo.slice(0, 3).join(""));
+
+    if (!resSalvar.ok) {
+      const err = await resSalvar.json();
+      setStatus((prev) => ({
+        ...prev,
+        loading: false,
+        error: err.error || "Erro ao salvar log",
+      }));
+      return;
+    }
+
+    const resEnter = await fetch("/rooms/enter-room", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codigo: codigo.join("") }),
+    });
+
+    if (!resEnter.ok) {
+      const err = await resEnter.json();
+      setStatus((prev) => ({
+        ...prev,
+        loading: false,
+        error: err.error || "Erro ao verificar código após salvar log",
+      }));
+      return;
+    }
+
+    const result = await resEnter.json();
+    console.log("Resultado do acesso:", result);
+
+    setStatus({
+      loading: false,
+      error: "",
+      sucesso: "Acesso permitido!",
+      nivelAcesso: result.nivelAcesso,
+    });
+
+    console.log(codigo.join(""));
+    router.push(`/${codigo.slice(0, 3).join("")}/${result.nivelAcesso}`);
+  };
+
+  if (status.loading) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          display: "flex",
+          justifyContent: "center",
+          backdropFilter: "blur(5px)",
+          alignItems: "center",
+          zIndex: 9999,
+        }}
+      >
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -92,50 +181,69 @@ export default function EnterRoomPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="flex flex-col space-y-16">
-              <div className="flex flex-row items-center justify-between mx-auto w-full max-w-xs gap-4">
-                {codigo.map((char, index) => (
-                  <div className="w-16 h-16" key={index}>
-                    <input
-                      className="w-full h-full text-center px-2 outline-none rounded-xl border border-gray-200 text-lg bg-white focus:bg-gray-50 focus:ring-1 ring-red-700"
-                      type="text"
-                      maxLength={1}
-                      value={char}
-                      onChange={(e) => handleChange(index, e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(index, e)}
-                      onPaste={handlePaste}
-                      ref={(el) => {
-                        inputsRef.current[index] = el;
-                      }}
-                      required
-                    />
+          <div className="flex flex-col space-y-8">
+            <div className="flex flex-col space-y-8">
+              {/* INPUT DO CÓDIGO */}
+              {!showUsernameInput && (
+                <>
+                  <div className="flex flex-row items-center justify-between mx-auto w-full max-w-xs gap-4">
+                    {codigo.map((char, index) => (
+                      <div className="w-16 h-16" key={index}>
+                        <input
+                          className="w-full h-full text-center px-2 outline-none rounded-xl border border-gray-200 text-lg bg-white focus:bg-gray-50 focus:ring-1 ring-red-700"
+                          type="text"
+                          maxLength={1}
+                          value={char}
+                          onChange={(e) => handleChange(index, e.target.value)}
+                          onKeyDown={(e) => handleKeyDown(index, e)}
+                          onPaste={handlePaste}
+                          ref={(el) => {
+                            inputsRef.current[index] = el;
+                          }}
+                          required
+                          disabled={status.loading}
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
 
-              <div className="flex flex-col space-y-5">
-                <button
-                  className="w-full py-5 bg-primary text-white rounded-xl text-sm shadow-sm cursor-pointer transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                  disabled={status.loading}
-                  type="submit"
-                >
-                  {status.loading ? "Verificando..." : "Entrar"}
-                </button>
+                  <button
+                    onClick={verificarCodigo}
+                    className="w-full py-3 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
+                    disabled={status.loading || codigo.some((c) => !c)}
+                  >
+                    {status.loading ? "Verificando..." : "Verificar código"}
+                  </button>
+                </>
+              )}
 
-                {status.error && (
-                  <p className="text-red-600 text-sm text-center">
-                    {status.error}
-                  </p>
-                )}
-                {status.sucesso && (
-                  <p className="text-green-600 text-sm text-center">
-                    {status.sucesso}
-                  </p>
-                )}
-              </div>
+              {/* INPUT DO NOME */}
+              {showUsernameInput && (
+                <div className="flex flex-col space-y-4 pt-4">
+                  <input
+                    type="text"
+                    placeholder="Seu nome"
+                    value={nomeUsuario}
+                    onChange={(e) => setNomeUsuario(e.target.value)}
+                    className="w-full py-3 px-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    disabled={status.loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleNomeSubmit}
+                    className={`w-full py-3 text-white rounded-lg text-sm transition ${
+                      status.loading
+                        ? "bg-green-400 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700"
+                    }`}
+                    disabled={status.loading || !nomeUsuario.trim()}
+                  >
+                    {status.loading ? "Entrando..." : "Confirmar nome"}
+                  </button>
+                </div>
+              )}
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </>

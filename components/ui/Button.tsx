@@ -9,7 +9,7 @@ const Button: React.FC<ButtonProps> = ({ text, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="inline-block rounded-md w-max border border-current px-8 py-3 text-sm font-medium text-primary transition hover:scale-110 hover:shadow-xl focus:ring-3 focus:outline-hidden"
+      className="inline-block rounded-md w-max border border-current px-8 py-3 text-sm font-medium text-primary transition hover:scale-110 hover:shadow-xl focus:ring-3 focus:outline-hidden cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {text}
     </button>

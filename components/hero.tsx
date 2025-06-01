@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Navbar from "@/components/ui/navbar";
+import Icone from "@/public/Icone.png"
 
 interface HeroProps {
   admin?: string;
@@ -17,12 +18,12 @@ export default function Hero({ admin }: HeroProps) {
 
   return (
     <header>
-      <div className="mx-auto flex h-16 max-w-screen-xl items-center gap-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-screen-xl items-center gap-8 px-4 sm:px-2 lg:px-6">
         <a className="block text-gray dark:text-teal-300" href="/">
           <span className="sr-only">Home</span>
           <Image
             className="h-8 w-auto"
-            src="/icone.png"
+            src={Icone}
             alt="Logo"
             width={32}
             height={32}
@@ -34,12 +35,18 @@ export default function Hero({ admin }: HeroProps) {
             {mode === "default" && (
               <ul className="flex items-center gap-6 text-sm">
                 <li>
-                  <a
-                    className="text-foreground/75 transition hover:text-foreground"
-                    href="/"
-                  >
+                    <a
+                    className="text-foreground/75 transition hover:text-foreground cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const el = document.getElementById("pontuador");
+                      if (el) {
+                      el.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }}
+                    >
                     Pontuador
-                  </a>
+                    </a>
                 </li>
               </ul>
             )}

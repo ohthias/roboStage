@@ -20,7 +20,6 @@ export const POST = async (request: Request) => {
       .from("rooms")
       .delete()
       .eq("codigo_sala", codigo);
-    console.log(error);
     if (error) throw error;
 
     await resend.emails.send({

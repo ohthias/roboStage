@@ -41,7 +41,7 @@ const AccessModal = ({ visitante, voluntario, admin, onClose }) => {
           </button>
         </div>
 
-        <div class="mt-4">
+        <div className="mt-4">
           <table className="w-full border-collapse border">
             <thead>
               <tr className="bg-gray-200 text-center font-bold text-base">

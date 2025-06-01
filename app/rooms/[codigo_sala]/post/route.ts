@@ -35,6 +35,34 @@ export async function POST(req: NextRequest, context: any) {
       equipesExistentes.map((e) => [e.nome_equipe, e])
     );
 
+    const nomesEquipesEnviadas = new Set(teams.map((e: { nome_equipe: any; }) => e.nome_equipe));
+    const equipesParaRemover = equipesExistentes.filter(
+      (e) => !nomesEquipesEnviadas.has(e.nome_equipe)
+    );
+
+    for (const equipeRemovida of equipesParaRemover) {
+      const { error: erroRemocao } = await supabase
+        .from("teams")
+        .delete()
+        .eq("id", equipeRemovida.id);
+
+      if (erroRemocao) {
+        console.error("Erro ao remover equipe:", erroRemocao);
+        continue;
+      }
+
+      await supabase.from("audit_logs").insert([
+        {
+          sala_id: sala.id,
+          acao: "DELETE",
+          tabela_afetada: "teams",
+          id_registro: equipeRemovida.id,
+          descricao: `Equipe "${equipeRemovida.nome_equipe}" removida.`,
+        },
+      ]);
+    }
+
+    // INSERÇÃO E ATUALIZAÇÃO
     for (const equipe of teams) {
       const equipeAtual = mapaEquipesExistentes.get(equipe.nome_equipe);
 

@@ -3,7 +3,7 @@ import React from "react";
 const AccessModal = ({ visitante, voluntario, admin, onClose }) => {
   return (
     <div
-      className="w-full h-screen fixed inset-0 z-50 flex itens-center justify-center bg-[#f3f3f35b] backdrop-blur-sm p-4"
+      className="w-full h-screen fixed inset-0 z-50 flex items-center justify-center bg-[#f3f3f35b] backdrop-blur-sm p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modalTitle"

@@ -6,12 +6,16 @@ interface SideBarProps {
   codVisitante?: string;
   codVoluntario?: string;
   codAdmin?: string;
+  setConteudo: (tipo: "geral" | "ranking") => void;
+  onDelete: () => void;
 }
 
 export default function SideBar({
   codVisitante,
   codVoluntario,
   codAdmin,
+  setConteudo,
+  onDelete,
 }: SideBarProps) {
   const [showModal, setShowModal] = useState(false);
 
@@ -35,8 +39,8 @@ export default function SideBar({
           </li>
           <li>
             <a
-              href="javascript:void(0)"
-              className="text-slate-700 font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all"
+              onClick={() => setConteudo("geral")}
+              className="text-slate-700 font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
             >
               Geral
             </a>
@@ -56,6 +60,14 @@ export default function SideBar({
                 Exibir Códigos
               </a>
             </li>
+            <li>
+              <a
+                onClick={() => setConteudo("ranking")}
+                className="text-slate-700 font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
+              >
+                Ranking
+              </a>
+            </li>
           </ul>
         </div>
 
@@ -66,8 +78,8 @@ export default function SideBar({
           <ul className="mt-2 space-y-1">
             <li>
               <a
-                href="/create-room"
-                className="text-primary-dark font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all"
+                onClick={onDelete}
+                className="text-primary-dark font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
               >
                 Deletar Evento
               </a>

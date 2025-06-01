@@ -1,6 +1,5 @@
 import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
-import Icone from "@/public/Icone.png";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -20,7 +19,7 @@ export async function POST(req: NextRequest) {
     html: `
       <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
         <div style="text-align: center;">
-          <img src="${Icone}" alt="Robostage" width="80" style="margin-bottom: 20px;" />
+          <img src="https://robo-stage.vercel.app/Icone.png" alt="Robostage" width="80" style="margin-bottom: 20px;" />
           <h1 style="font-size: 24px; margin-bottom: 5px;">
             <span style="font-weight: bold;">Robo</span><span style="color: #ed1e25; font-weight: bold;">Stage</span>
           </h1>

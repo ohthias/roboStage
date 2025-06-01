@@ -66,7 +66,7 @@ export async function PUT(request: NextRequest, context: any) {
         sala_id: sala.id,
         acao: "UPDATE",
         tabela_afetada: "teams",
-        id_registro: equipe.id,
+        id_registro: String(equipe.id),
         descricao: descricaoLog,
       },
     ]);

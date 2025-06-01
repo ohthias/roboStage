@@ -139,7 +139,8 @@ export default function AvaliacaoRounds({
       if (res.ok) {
         alert("Avaliação salva com sucesso!");
         alert(
-          `Pontuação total para ${selectedEquipe} no ${selectedRound}: ${totalPoints} pontos`)
+          `Pontuação total para ${selectedEquipe} no ${selectedRound}: ${totalPoints} pontos`
+        );
         window.location.reload();
       } else {
         alert("Erro ao salvar avaliação.");
@@ -238,8 +239,8 @@ export default function AvaliacaoRounds({
           </select>
         </div>
       </div>
-      
-      {(missions.length === 0 || teams.length === 0) ? (
+
+      {missions.length === 0 || teams.length === 0 ? (
         <div className="flex justify-center items-center w-full h-64">
           <Loader />
         </div>

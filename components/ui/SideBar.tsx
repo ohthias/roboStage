@@ -6,8 +6,7 @@ interface SideBarProps {
   codVisitante?: string;
   codVoluntario?: string;
   codAdmin?: string;
-  setConteudo: (tipo: "geral" | "ranking" | "equipes" | "personalização" | "visualização") => void;
-  onDelete: () => void;
+  setConteudo: (tipo: "geral" | "ranking" | "equipes" | "personalização" | "visualização" | "configurações") => void;
 }
 
 export default function SideBar({
@@ -15,7 +14,6 @@ export default function SideBar({
   codVoluntario,
   codAdmin,
   setConteudo,
-  onDelete,
 }: SideBarProps) {
   const [showModal, setShowModal] = useState(false);
 
@@ -103,10 +101,10 @@ export default function SideBar({
             </li>
             <li>
               <a
-                onClick={onDelete}
-                className="text-primary-dark font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
+                onClick={() => setConteudo("configurações")}
+                className="text-slate-700 font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
               >
-                Deletar Evento
+                Configurações
               </a>
             </li>
             <li>

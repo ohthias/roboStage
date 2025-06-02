@@ -1,7 +1,7 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Mensage from "@/components/Mensage";
 
 type ThemeFormProps = {
   roomId: string;
@@ -28,6 +28,8 @@ export default function ThemeForm({
   const [file, setFile] = useState<File | null>(null);
   const [wallpaperUrl, setWallpaperUrl] = useState(defaultWallpaperUrl || "");
   const [loading, setLoading] = useState(false);
+  const [mensagem, setMensagem] = useState("");
+  const [tipoMensagem, setTipoMensagem] = useState<"sucesso" | "erro" | "aviso" | "">("");
   const router = useRouter();
 
   useEffect(() => {
@@ -53,8 +55,11 @@ export default function ThemeForm({
       if (uploadRes.ok) {
         const { url } = await uploadRes.json();
         uploadedWallpaperUrl = url;
+        setTipoMensagem("sucesso");
+        setMensagem("Imagem enviada com sucesso!");
       } else {
-        alert("Erro ao fazer upload da imagem: " + (await uploadRes.text()));
+        setTipoMensagem("erro");
+        setMensagem("Erro ao enviar a imagem. Tente novamente.");
         return;
       }
     }
@@ -68,6 +73,9 @@ export default function ThemeForm({
         wallpaper_url: uploadedWallpaperUrl,
       }),
     });
+
+    setTipoMensagem("sucesso");
+    setMensagem("Tema atualizado com sucesso!");
     setLoading(false);
     router.refresh();
   };
@@ -81,6 +89,15 @@ export default function ThemeForm({
   }
 
   return (
+    <>
+    <Mensage
+            tipo={tipoMensagem}
+            mensagem={mensagem}
+            onClose={() => {
+              setMensagem("");
+              setTipoMensagem("");
+            }}
+          />
     <form
       onSubmit={handleSubmit}
       className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4"
@@ -155,5 +172,6 @@ export default function ThemeForm({
         </button>
       </div>
     </form>
-  );
+    </>
+      );
 }

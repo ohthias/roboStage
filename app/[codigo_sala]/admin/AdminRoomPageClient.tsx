@@ -4,9 +4,9 @@ import Equipes from "@/components/Equipes";
 import Loader from "@/components/loader";
 import SideBar from "@/components/ui/SideBar";
 import TabelaEquipes from "@/components/TabelaEquipes";
-import { supabase } from "@/lib/supabaseClient";
-import ThemeForm from "./ThemePage";
+import ThemeForm from "./subpages/ThemePage";
 import ThemePreview from "../visitante/ThemePreview";
+import ConfigPage from "./subpages/ConfigPage";
 interface Props {
   codigoSala: string;
 }
@@ -27,45 +27,6 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
 
   const adicionarAtualizacao = (texto: any) => {
     setAtualizacoes((prev) => [texto, ...prev]);
-  };
-
-  const deletarSala = async () => {
-    const confirmacao = confirm(
-      "Você tem certeza que deseja deletar este evento?"
-    );
-    if (!confirmacao || !codigoSala) return;
-
-    const emailAdmin = prompt("Digite seu e-mail para confirmar a exclusão:");
-
-    if (!emailAdmin || !/\S+@\S+\.\S+/.test(emailAdmin)) {
-      alert("E-mail inválido. A operação foi cancelada.");
-      return;
-    }
-
-    try {
-      console.log("Deletando sala:", codigoSala, "Email do admin:", emailAdmin);
-      const res = await fetch("/rooms/deleteRoom", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          codigo: codigoSala,
-          emailAdmin,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert("Erro ao deletar sala: " + (data.error || "Erro desconhecido"));
-        return;
-      }
-
-      alert("Sala deletada com sucesso! Um e-mail de confirmação foi enviado.");
-      window.location.href = "/";
-    } catch (error) {
-      alert("Erro inesperado ao tentar deletar a sala.");
-      console.error(error);
-    }
   };
 
   useEffect(() => {
@@ -120,7 +81,7 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
   }, [codigoSala]);
 
   const [conteudo, setConteudo] = useState<
-    "geral" | "ranking" | "equipes" | "personalização" | "visualização"
+    "geral" | "ranking" | "equipes" | "personalização" | "visualização" | "configurações"
   >("geral");
 
   const renderContent = () => {
@@ -189,13 +150,13 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
             <h2 className="text-2xl font-bold mb-4 text-primary-dark">
               Personalização
             </h2>
-            {}
+            {/*
             <ThemeForm
               roomId={codigoSala}
               defaultPrimaryColor={tema?.primary_color}
               defaultSecondaryColor={tema?.secondary_color}
               defaultWallpaperUrl={tema?.wallpaper_url}
-            />
+            />*/}
           </div>
         );
       case "visualização":
@@ -205,8 +166,14 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
               Visualização
             </h2>
             <div className="rounded-[24px] border border-none overflow-hidden">
-              <ThemePreview theme={tema} codigo_sala={codigoSala} />
+              {/*<ThemePreview theme={tema} codigo_sala={codigoSala} />*/}
             </div>
+          </div>
+        );
+      case "configurações":
+        return (
+          <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 p-6">
+            <ConfigPage codigoSala={codigoSala} />
           </div>
         );
       default:
@@ -233,7 +200,6 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
         codVoluntario={codigo_voluntario}
         codAdmin={codigo_admin}
         setConteudo={setConteudo}
-        onDelete={deletarSala}
       />
 
       <main className="ml-56 px-6 py-2 bg-white min-h-screen">

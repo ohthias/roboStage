@@ -5,6 +5,8 @@ import Loader from "@/components/loader";
 import SideBar from "@/components/ui/SideBar";
 import TabelaEquipes from "@/components/TabelaEquipes";
 import { supabase } from "@/lib/supabaseClient";
+import ThemeForm from "./ThemePage";
+import ThemePreview from "../visitante/ThemePreview";
 interface Props {
   codigoSala: string;
 }
@@ -21,6 +23,7 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
   const [sala, setSala] = useState<Sala | undefined>();
   const [carregando, setCarregando] = useState(true);
   const [atualizacoes, setAtualizacoes] = useState<string[]>([]);
+  const [tema, setTema] = useState<any>({});
 
   const adicionarAtualizacao = (texto: any) => {
     setAtualizacoes((prev) => [texto, ...prev]);
@@ -102,11 +105,23 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
     };
 
     fetchLogs();
+
+    const theme = async () => {
+      try {
+        const res = await fetch(`/rooms/${codigoSala}/theme/get/`);
+        const data = await res.json();
+        setTema(data);
+      } catch (error) {
+        console.error("Erro ao buscar tema:", error);
+      }
+    };
+
+    theme();
   }, [codigoSala]);
 
-  const [conteudo, setConteudo] = useState<"geral" | "ranking" | "equipes">(
-    "geral"
-  );
+  const [conteudo, setConteudo] = useState<
+    "geral" | "ranking" | "equipes" | "personalização" | "visualização"
+  >("geral");
 
   const renderContent = () => {
     switch (conteudo) {
@@ -153,7 +168,7 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
             <h2 className="text-2xl font-bold mb-4 text-primary-dark">
               Ranking
             </h2>
-            <TabelaEquipes codigoSala={codigoSala} />
+            <TabelaEquipes codigoSala={codigoSala} cor={undefined} />
           </div>
         );
       case "equipes":
@@ -166,6 +181,32 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
               codigoSala={codigoSala}
               onAtualizacao={adicionarAtualizacao}
             />
+          </div>
+        );
+      case "personalização":
+        return (
+          <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 p-6">
+            <h2 className="text-2xl font-bold mb-4 text-primary-dark">
+              Personalização
+            </h2>
+            {}
+            <ThemeForm
+              roomId={codigoSala}
+              defaultPrimaryColor={tema?.primary_color}
+              defaultSecondaryColor={tema?.secondary_color}
+              defaultWallpaperUrl={tema?.wallpaper_url}
+            />
+          </div>
+        );
+      case "visualização":
+        return (
+          <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 p-6">
+            <h2 className="text-2xl font-bold mb-4 text-primary-dark">
+              Visualização
+            </h2>
+            <div className="rounded-[24px] border border-none overflow-hidden">
+              <ThemePreview theme={tema} codigo_sala={codigoSala} />
+            </div>
           </div>
         );
       default:

@@ -17,14 +17,6 @@
   }
 }
 
-.container {
-  position: relative;
-  z-index: 2;
-  padding: 1rem;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
 .nomeSala {
   text-align: center;
   font-size: 1.8rem;
@@ -33,27 +25,21 @@
   color: #f3f3f3;
 }
 
-.tabela {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #f9f9f9;
-}
+/* Use these Tailwind classes in your JSX/HTML instead of CSS classes:
 
-.thead {
-  background-color: #004080;
-  color: white;
-}
-
-.tr {
-  border-bottom: 1px solid #ccc;
-}
-
-.th,
-.td {
-  text-align: center;
-  padding: 0.6rem;
-}
-
-.tbody tr:nth-child(even) {
-  background-color: #f0f0f0;
-}
+<table className="w-full border-collapse bg-gray-50">
+  <thead className="bg-blue-900 text-white">
+    <tr>
+      <th className="text-center p-2">...</th>
+      ...
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="border-b border-gray-300 even:bg-gray-100">
+      <td className="text-center p-2">...</td>
+      ...
+    </tr>
+    ...
+  </tbody>
+</table>
+*/

@@ -6,7 +6,7 @@ interface SideBarProps {
   codVisitante?: string;
   codVoluntario?: string;
   codAdmin?: string;
-  setConteudo: (tipo: "geral" | "ranking" | "equipes") => void;
+  setConteudo: (tipo: "geral" | "ranking" | "equipes" | "personalização" | "visualização") => void;
   onDelete: () => void;
 }
 
@@ -77,6 +77,14 @@ export default function SideBar({
                 Ranking
               </a>
             </li>
+            <li>
+              <a
+                onClick={() => setConteudo("visualização")}
+                className="text-slate-700 font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
+              >
+                Visualização
+              </a>
+            </li>
           </ul>
         </div>
 
@@ -85,6 +93,14 @@ export default function SideBar({
             Ações
           </h6>
           <ul className="mt-2 space-y-1">
+            <li>
+              <a
+                onClick={() => setConteudo("personalização")}
+                className="text-slate-700 font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
+              >
+                Personalização
+              </a>
+            </li>
             <li>
               <a
                 onClick={onDelete}

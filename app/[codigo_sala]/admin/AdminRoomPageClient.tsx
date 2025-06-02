@@ -104,42 +104,68 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
     fetchLogs();
   }, [codigoSala]);
 
-  const [conteudo, setConteudo] = useState<"geral" | "ranking">("geral");
+  const [conteudo, setConteudo] = useState<"geral" | "ranking" | "equipes">(
+    "geral"
+  );
 
   const renderContent = () => {
     switch (conteudo) {
       case "geral":
         return (
-          <>
-            <Equipes
-              codigoSala={codigoSala}
-              onAtualizacao={adicionarAtualizacao}
-            />
-            <div className="bg-light-smoke rounded-md p-4 my-8 shadow-md">
-              <p className="text-xl font-bold text-primary-dark">
-                Atualizações:
-              </p>
-              {atualizacoes.length === 0 ? (
-                <p className="text-sm text-gray-500 mt-2">Sem atualizações</p>
-              ) : (
-                <ul className="max-h-64 overflow-y-auto list-disc list-inside mt-2 space-y-1">
-                  {atualizacoes.slice(0, 7).map((item, idx) => (
-                    <li key={idx} className="text-sm text-gray-700">
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 flex flex-row items-center justify-between">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold">
+                  Nome do evento: {nome}
+                </h3>
+                <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                  FIRST LEGO League Challenge
+                </p>
+              </div>
+              <img
+                src="https://www.firstinspires.org/sites/default/files/uploads/resource_library/brand/thumbnails/FLL-Vertical.png"
+                alt="Logo"
+              />
             </div>
-          </>
+            <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 min-h-[200px]">
+              <div className="p-6">
+                <p className="text-xl font-bold text-primary-dark">
+                  Atualizações:
+                </p>
+                {atualizacoes.length === 0 ? (
+                  <p className="text-sm text-gray-500 mt-2">Sem atualizações</p>
+                ) : (
+                  <ul className="max-h-64 overflow-y-auto list-disc list-inside mt-2 space-y-1">
+                    {atualizacoes.slice(0, 7).map((item, idx) => (
+                      <li key={idx} className="text-sm text-gray-700">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
         );
       case "ranking":
         return (
-          <div className="text-gray-700 bg-light-smoke rounded-md p-4 my-8 shadow-md">
+          <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 p-6">
             <h2 className="text-2xl font-bold mb-4 text-primary-dark">
               Ranking
             </h2>
             <TabelaEquipes codigoSala={codigoSala} />
+          </div>
+        );
+      case "equipes":
+        return (
+          <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 p-6">
+            <h2 className="text-2xl font-bold mb-4 text-primary-dark">
+              Equipes
+            </h2>
+            <Equipes
+              codigoSala={codigoSala}
+              onAtualizacao={adicionarAtualizacao}
+            />
           </div>
         );
       default:
@@ -160,7 +186,7 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
   const { codigo_visitante, codigo_voluntario, codigo_admin, nome } = sala;
 
   return (
-    <div className="w-full bg-white">
+    <div className="w-full bg-white relative">
       <SideBar
         codVisitante={codigo_visitante}
         codVoluntario={codigo_voluntario}
@@ -169,10 +195,10 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
         onDelete={deletarSala}
       />
 
-      <main className="max-w-7xl mx-auto px-4 py-8 ml-[180px]">
+      <main className="ml-56 px-6 py-2 bg-white min-h-screen">
         <div className="my-4 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-left text-primary-dark">
-            {nome}
+            Administração
           </h1>
         </div>
 

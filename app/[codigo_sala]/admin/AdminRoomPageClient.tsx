@@ -6,7 +6,7 @@ import SideBar from "@/components/ui/SideBar";
 import TabelaEquipes from "@/components/TabelaEquipes";
 import ThemeForm from "./subpages/ThemePage";
 import ThemePreview from "../visitante/ThemePreview";
-import ConfigPage from "./subpages/ConfigPage";
+import ConfigPage from "./subpages/SettingsPage";
 interface Props {
   codigoSala: string;
 }
@@ -150,13 +150,12 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
             <h2 className="text-2xl font-bold mb-4 text-primary-dark">
               Personalização
             </h2>
-            {/*
             <ThemeForm
               roomId={codigoSala}
               defaultPrimaryColor={tema?.primary_color}
               defaultSecondaryColor={tema?.secondary_color}
               defaultWallpaperUrl={tema?.wallpaper_url}
-            />*/}
+            />
           </div>
         );
       case "visualização":
@@ -166,7 +165,7 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
               Visualização
             </h2>
             <div className="rounded-[24px] border border-none overflow-hidden">
-              {/*<ThemePreview theme={tema} codigo_sala={codigoSala} />*/}
+              <ThemePreview theme={tema} codigo_sala={codigoSala} />
             </div>
           </div>
         );

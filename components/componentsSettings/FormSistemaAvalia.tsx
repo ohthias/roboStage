@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function FormVoluntarioEvento() {
+export default function FormSistemaAvalia() {
   const [ativarAvaliacao, setAtivarAvaliacao] = useState(false);
   const [formatoAvaliacao, setFormatoAvaliacao] = useState("oficial");
   const [arquivo, setArquivo] = useState<File | null>(null);

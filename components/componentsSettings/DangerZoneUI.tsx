@@ -1,126 +1,125 @@
+"use client";
+import Cookies from "js-cookie";
+import DeleteModal from "../ui/deleteModal";
+import { useState } from "react";
+
 interface Props {
   codigoSala: string;
 }
 
 export default function DangerZoneUI({ codigoSala }: Props) {
-  const deletarSala = async () => {
-    const confirmacao = confirm(
-      "Você tem certeza que deseja deletar este evento?"
-    );
-    if (!confirmacao || !codigoSala) return;
+  const [userEmail, setUserEmail] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
 
-    const emailAdmin = prompt("Digite seu e-mail para confirmar a exclusão:");
+  const handleConfirmEmail = async (email: string): Promise<boolean> => {
+    setUserEmail(email);
+    return true;
+  };
 
-    if (!emailAdmin || !/\S+@\S+\.\S+/.test(emailAdmin)) {
-      alert("E-mail inválido. A operação foi cancelada.");
-      return;
-    }
+  const deletarSala = async (emailParam: string) => {
+    setIsDeleting(true);
+    setDeleteError(null);
+    setDeleteSuccess(false);
 
     try {
-      console.log("Deletando sala:", codigoSala, "Email do admin:", emailAdmin);
-      const res = await fetch("/rooms/deleteRoom", {
+      const res = await fetch(`/rooms/deleteRoom/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           codigo: codigoSala,
-          emailAdmin,
+          emailAdmin: emailParam,
         }),
       });
 
+      if (!res.ok) throw new Error("Erro ao deletar sala");
+
       const data = await res.json();
+      if (data.error) throw new Error(data.error);
 
-      if (!res.ok) {
-        alert("Erro ao deletar sala: " + (data.error || "Erro desconhecido"));
-        return;
-      }
+      Cookies.set("codigo_sala", "", { expires: new Date(0) });
+      Cookies.set("nivel_acesso", "", { expires: new Date(0) });
+      setDeleteSuccess(true);
+    } catch (error: any) {
+      console.error("Erro ao deletar sala:", error);
+      setDeleteError(error.message || "Erro desconhecido");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
-      alert("Sala deletada com sucesso! Um e-mail de confirmação foi enviado.");
-      window.location.href = "/";
-    } catch (error) {
-      alert("Erro inesperado ao tentar deletar a sala.");
-      console.error(error);
+  const removerEquipes = async (emailParam: string) => {
+    setIsDeleting(true);
+    setDeleteError(null);
+    setDeleteSuccess(false);
+
+    try {
+      const res = await fetch(`/rooms/${codigoSala}/deleteTeams/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          codigo: codigoSala,
+          emailAdmin: emailParam,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Erro ao remover equipes");
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      setDeleteSuccess(true);
+    } catch (error: any) {
+      console.error("Erro ao remover equipes:", error);
+      setDeleteError(error.message || "Erro desconhecido");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
-    <div className="mb-6">
-      <h2 className="text-2xl font-semibold mb-2 text-primary-dark">
-        Zona de risco
-      </h2>
-      <p className="mb-4 text-gray-500">
-        Qualquer alteração nessa área não tem como se desfazer.
-      </p>
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-row justify-between items-center">
-          <div className="flex items-start flex-col text-gray-500">
-            <span className="font-semibold">Deletar Evento</span>
-            <p className="text-sm">
-              Esta ação é irreversível. Certifique-se de que deseja excluir este
-              evento permanentemente.
-            </p>
-          </div>
-          <button
-            className="bg-primary-light text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors cursor-pointer"
-            onClick={deletarSala}
-          >
-            Deletar Evento
-          </button>
-        </div>
-        <div className="flex flex-row justify-between items-center">
-          <div className="flex items-start flex-col text-gray-500">
-            <span className="font-semibold">
-              Excluir todas as fichas de avaliação
-            </span>
-            <p className="text-sm">
-              Esta ação é irreversível. Certifique-se de que deseja excluir
-              todas as fichas de avaliação deste evento permanentemente.
-            </p>
-          </div>
-          <button
-            className="bg-primary-light text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors cursor-pointer"
-            onClick={() => {
-              // Implementar lógica de exclusão de fichas de avaliação
-              alert(
-                "Funcionalidade de exclusão de fichas de avaliação ainda não implementada."
-              );
-            }}
-          >
-            Deletar Fichas
-          </button>
-        </div>
-        <div className="flex flex-row justify-between items-center">
-          <div className="flex items-start flex-col text-gray-500">
-            <span className="font-semibold">Resetar rounds</span>
-            <p className="text-sm">
-              Reset todas as rodadas do evento. Esta ação é irreversível e
-              removerá todas as informações relacionadas às rodadas.
-            </p>
-          </div>
-          <button className="bg-primary-light text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors cursor-pointer">
-            Deletar Rounds
-          </button>
-        </div>
-        <div className="flex flex-row justify-between items-center">
-          <div className="flex items-start flex-col text-gray-500">
-            <span className="font-semibold">Excluir todas as equipes</span>
-            <p className="text-sm">
-              Esta ação é irreversível. Certifique-se de que deseja excluir
-              todas as equipes deste evento permanentemente.
-            </p>
-          </div>
-          <button
-            className="bg-primary-light text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors cursor-pointer"
-            onClick={() => {
-              // Implementar lógica de exclusão de equipes
-              alert(
-                "Funcionalidade de exclusão de equipes ainda não implementada."
-              );
-            }}
-          >
-            Deletar Equipes
-          </button>
-        </div>
+    <div className="my-8 p-6 bg-red-50 bg-opacity-50 border border-red-300 rounded-lg">
+      <h2 className="text-lg font-bold text-red-700 mb-4">Zona de Perigo</h2>
+
+      <div className="mb-4 flex flex-row items-center gap-2 w-full justify-between">
+        <p className="text-sm text-red-800 max-w-[80%]">
+          Deletar a sala apagará todos os dados vinculados a ela de forma
+          permanente. Certifique-se de que essa ação é realmente necessária.
+        </p>
+        <DeleteModal
+          textBox="sala"
+          onConfirm={handleConfirmEmail}
+          onDelete={deletarSala}
+        />
       </div>
+
+      <div className="mt-6 mb-4 flex flex-row items-center gap-2 w-full justify-between">
+        <p className="text-sm text-red-800 max-w-[80%]">
+          Deseja apenas remover as equipes da sala, mantendo-a ativa?
+        </p>
+        <DeleteModal
+          textBox="equipes"
+          onConfirm={handleConfirmEmail}
+          onDelete={removerEquipes}
+        />
+      </div>
+
+      {isDeleting && (
+        <p className="text-sm text-yellow-600 mt-4 text-right">Processando exclusão...</p>
+      )}
+      {deleteError && (
+        <p className="text-sm text-red-600 mt-2 text-right">Erro: {deleteError}</p>
+      )}
+      {deleteSuccess && (
+        <p className="text-sm text-green-600 mt-2 text-right">
+          Ação concluída com sucesso!
+        </p>
+      )}
     </div>
   );
 }

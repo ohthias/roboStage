@@ -188,7 +188,7 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
     );
   }
 
-  if (!sala) return <p>Erro: Sala não encontrada</p>;
+  if (!sala) return window.location.href = "/enter";
 
   const { codigo_visitante, codigo_voluntario, codigo_admin, nome } = sala;
 

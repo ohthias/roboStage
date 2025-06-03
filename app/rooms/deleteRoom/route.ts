@@ -20,6 +20,7 @@ export const POST = async (request: Request) => {
       .from("rooms")
       .delete()
       .eq("codigo_sala", codigo);
+    console.log(error)
     if (error) throw error;
 
     await resend.emails.send({
@@ -56,6 +57,7 @@ export const POST = async (request: Request) => {
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Erro ao deletar a sala.";
+    console.error("Erro ao deletar a sala:", message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 };

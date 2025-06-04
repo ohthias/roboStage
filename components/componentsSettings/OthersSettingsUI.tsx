@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
+import { useEffect } from "react";
 
 interface Props {
   codigoSala: string;
@@ -8,9 +9,123 @@ interface Props {
 export default function OthersSettingsUI({ codigoSala }: Props) {
   const [gerarPpt, setGerarPpt] = useState(false);
   const [premios, setPremios] = useState<string[]>([""]);
-  const handleAdicionarPremio = () => {
-    setPremios((prev: any) => [...prev, ""]);
+  const [formDataRounds, setFormDataRounds] = useState({
+    check_eventos_rounds: false,
+    check_desafio_rounds: false,
+    check_gerar_cronograma: false,
+    check_deliberacao_resultados: false,
+    check_discursos_premiacao: false,
+    check_gerar_ppt: false,
+  });
+
+  useEffect(() => {
+    const buscarConfiguracoes = async () => {
+      try {
+        const res = await fetch(`/rooms/${codigoSala}/others`);
+        if (!res.ok) throw new Error("Erro ao buscar configurações");
+
+        const data = await res.json();
+        console.log("Dados recebidos:", data);
+
+        setFormDataRounds({
+          check_eventos_rounds: data.check_eventos_rounds ?? false,
+          check_desafio_rounds: data.check_desafio_rounds ?? false,
+          check_gerar_cronograma: data.check_gerar_cronograma ?? false,
+          check_deliberacao_resultados:
+            data.check_deliberacao_resultados ?? false,
+          check_discursos_premiacao: data.check_discursos_premiacao ?? false,
+          check_gerar_ppt: data.check_gerar_ppt ?? false,
+        });
+
+        setPremios(Array.isArray(data.dados_extras) ? data.dados_extras : [""]);
+      } catch (error) {
+        console.error("Erro ao buscar configurações:", error);
+        alert("Não foi possível carregar os dados do banco.");
+      }
+    };
+
+    buscarConfiguracoes();
+  }, [codigoSala]);
+
+  const atualizarSistemaRounds = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    const payload = {
+      codigoSala,
+      check_eventos_rounds: formDataRounds.check_eventos_rounds,
+      check_desafio_rounds: formDataRounds.check_desafio_rounds,
+    };
+
+    try {
+      const res = fetch(`/rooms/${codigoSala}/rounds`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      res
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Erro ao atualizar sistema de rounds");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          alert("Sistema de rounds atualizado com sucesso!");
+        });
+    } catch (error) {
+      console.error("Erro ao atualizar sistema de rounds:", error);
+      alert("Não foi possível atualizar o sistema de rounds. Tente novamente.");
+    }
   };
+
+  const atualizarOtrosSettings = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+
+    const payload = {
+      codigoSala,
+      check_gerar_cronograma: formDataRounds.check_gerar_cronograma,
+      check_deliberacao_resultados: formDataRounds.check_deliberacao_resultados,
+      check_discursos_premiacao: formDataRounds.check_discursos_premiacao,
+      check_gerar_ppt: formDataRounds.check_gerar_ppt,
+      dados_extras: premios.filter((premio) => premio.trim() !== ""),
+    };
+
+    try {
+      const res = await fetch(`/rooms/${codigoSala}/others`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Erro ao atualizar configurações extras");
+      }
+
+      const data = await res.json();
+      alert("Configurações extras atualizadas com sucesso!");
+    } catch (error) {
+      console.error("Erro ao atualizar configurações extras:", error);
+      alert(
+        "Não foi possível atualizar as configurações extras. Tente novamente."
+      );
+    }
+  };
+
+  const handleAdicionarPremio = () => {
+    if (premios.some((p) => p.trim() === "")) {
+      alert("Preencha os prêmios existentes antes de adicionar novos.");
+      return;
+    }
+    setPremios((prev) => [...prev, ""]);
+  };
+
   const handleRemoverPremio = (index: number) => {
     setPremios((prev: any[]) =>
       prev.filter((_: any, idx: number) => idx !== index)
@@ -39,6 +154,14 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
               <input
                 type="checkbox"
                 className="accent-primary h-4 w-4 rounded border-gray-300"
+                checked={formDataRounds.check_eventos_rounds}
+                onChange={() =>
+                  setFormDataRounds((prev) => ({
+                    ...prev,
+                    check_eventos_rounds: !prev.check_eventos_rounds,
+                  }))
+                }
+                title="Habilitar semi-finais e finais"
               />
               Habilitar semi-finais e finais
             </label>
@@ -46,6 +169,14 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
               <input
                 type="checkbox"
                 className="accent-primary h-4 w-4 rounded border-gray-300"
+                checked={formDataRounds.check_desafio_rounds}
+                onChange={() =>
+                  setFormDataRounds((prev) => ({
+                    ...prev,
+                    check_desafio_rounds: !prev.check_desafio_rounds,
+                  }))
+                }
+                title="Habilitar desafio de alianças"
               />
               Habilitar desafio de alianças{" "}
               <i>(para eventos com mais de 8 equipes)</i>
@@ -53,7 +184,8 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
             <button
               type="button"
               className="mt-2 ml-auto px-3 py-1 rounded bg-primary-light text-white hover:bg-primary-dark transition-colors cursor-pointer"
-              onClick={() => alert("Configurações salvas!")}
+              onClick={atualizarSistemaRounds}
+              title="Salvar configurações do sistema de rounds"
             >
               Salvar
             </button>
@@ -75,6 +207,13 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
             <input
               type="checkbox"
               className="accent-primary h-4 w-4 rounded border-gray-300"
+              checked={formDataRounds.check_gerar_cronograma}
+              onChange={() =>
+                setFormDataRounds((prev) => ({
+                  ...prev,
+                  check_gerar_cronograma: !prev.check_gerar_cronograma,
+                }))
+              }
             />
             Habilitar geração automática de cronograma
           </label>
@@ -82,6 +221,14 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
             <input
               type="checkbox"
               className="accent-primary h-4 w-4 rounded border-gray-300"
+              checked={formDataRounds.check_deliberacao_resultados}
+              onChange={() =>
+                setFormDataRounds((prev) => ({
+                  ...prev,
+                  check_deliberacao_resultados:
+                    !prev.check_deliberacao_resultados,
+                }))
+              }
             />
             Habilitar deliberação de avaliações/rounds
           </label>
@@ -89,6 +236,13 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
             <input
               type="checkbox"
               className="accent-primary h-4 w-4 rounded border-gray-300"
+              checked={formDataRounds.check_discursos_premiacao}
+              onChange={() =>
+                setFormDataRounds((prev) => ({
+                  ...prev,
+                  check_discursos_premiacao: !prev.check_discursos_premiacao,
+                }))
+              }
             />
             Habilitar discursos de premiação
           </label>
@@ -96,12 +250,18 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
             <input
               type="checkbox"
               className="accent-primary h-4 w-4 rounded border-gray-300"
-              checked={gerarPpt}
-              onChange={() => setGerarPpt((v: any) => !v)}
+              checked={formDataRounds.check_gerar_ppt}
+              onChange={() =>
+                setFormDataRounds((prev) => ({
+                  ...prev,
+                  check_gerar_ppt: !prev.check_gerar_ppt,
+                }))
+              }
             />
-            Gerar <i className="bg-gray-100 p-1 text-sm px-4 rounded">.ppt</i> de ganhadores do evento
+            Gerar <i className="bg-gray-100 p-1 text-sm px-4 rounded">.ppt</i>{" "}
+            de ganhadores do evento
           </label>
-          {gerarPpt && (
+          {formDataRounds.check_gerar_ppt && (
             <div className="flex flex-col gap-2 border rounded p-4 bg-gray-50">
               <span className="font-semibold mb-2">Prêmios do Evento:</span>
               {premios.map((premio: string, idx: number) => (
@@ -139,7 +299,8 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
           <button
             type="button"
             className="mt-4 ml-auto px-3 py-1 rounded bg-primary-light text-white hover:bg-primary-dark transition-colors cursor-pointer"
-            onClick={() => alert("Configurações salvas!")}
+            onClick={atualizarOtrosSettings}
+            title="Salvar configurações de outros ajustes"
           >
             Salvar
           </button>

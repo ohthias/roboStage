@@ -6,7 +6,6 @@ export async function POST(request: NextRequest, { params }: { params: { codigo_
   const body = await request.json();
 
   try {
-    // Verifica se a sala existe
     const { data: room, error: roomError } = await supabase
       .from("rooms")
       .select("id")
@@ -17,7 +16,6 @@ export async function POST(request: NextRequest, { params }: { params: { codigo_
       return NextResponse.json({ error: "Sala não encontrada." }, { status: 404 });
     }
 
-    // Verifica se já existe um registro em rooms_details para essa sala
     const { data: existingDetail, error: detailError } = await supabase
       .from("rooms_details")
       .select("*")
@@ -36,10 +34,8 @@ export async function POST(request: NextRequest, { params }: { params: { codigo_
 
     let response;
     if (!existingDetail) {
-      // Criar nova linha
       response = await supabase.from("rooms_details").insert(payload);
     } else {
-      // Atualizar linha existente
       response = await supabase
         .from("rooms_details")
         .update(payload)

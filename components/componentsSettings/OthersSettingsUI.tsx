@@ -7,7 +7,6 @@ interface Props {
 }
 
 export default function OthersSettingsUI({ codigoSala }: Props) {
-  const [gerarPpt, setGerarPpt] = useState(false);
   const [premios, setPremios] = useState<string[]>([""]);
   const [formDataRounds, setFormDataRounds] = useState({
     check_eventos_rounds: false,
@@ -26,15 +25,15 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
 
         const data = await res.json();
         console.log("Dados recebidos:", data);
-
+        
         setFormDataRounds({
-          check_eventos_rounds: data.check_eventos_rounds ?? false,
-          check_desafio_rounds: data.check_desafio_rounds ?? false,
+          check_eventos_rounds: data.check_eventos_round ?? false,
+          check_desafio_rounds: data.check_desafios_round ?? false,
           check_gerar_cronograma: data.check_gerar_cronograma ?? false,
           check_deliberacao_resultados:
             data.check_deliberacao_resultados ?? false,
           check_discursos_premiacao: data.check_discursos_premiacao ?? false,
-          check_gerar_ppt: data.check_gerar_ppt ?? false,
+          check_gerar_ppt: data.check_gerar_ppt_premiacao ?? false,
         });
 
         setPremios(Array.isArray(data.dados_extras) ? data.dados_extras : [""]);
@@ -262,34 +261,36 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
             de ganhadores do evento
           </label>
           {formDataRounds.check_gerar_ppt && (
-            <div className="flex flex-col gap-2 border rounded p-4 bg-gray-50">
-              <span className="font-semibold mb-2">Prêmios do Evento:</span>
+            <div className="flex flex-col gap-2 rounded p-6 px-4 pb-4 bg-light-smoke">
+              <span className="font-semibold mb-2 text-secondary text-lg">Prêmios do Evento:</span>
               {premios.map((premio: string, idx: number) => (
                 <div
                   key={idx}
-                  className="flex flex-col gap-2 text-md text-gray-500"
+                  className={`flex flex-row gap-2 text-md text-gray-500 transition-all duration-1000 ease-out
+                  ${premios.length - 1 === idx ? "animate-in fade-in-down duration-1000" : ""}
+                  `}
                 >
                   <input
-                    type="text"
-                    className="border border-gray-300 rounded p-2 w-full"
-                    value={premio}
-                    onChange={(e) => handlePremioChange(idx, e.target.value)}
-                    placeholder={`Prêmio ${idx + 1}`}
+                  type="text"
+                  className="border border-gray-300 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-secondary-light focus:border-secondary-dark transition-colors"
+                  value={premio}
+                  onChange={(e) => handlePremioChange(idx, e.target.value)}
+                  placeholder={`Prêmio ${idx + 1}`}
                   />
                   <button
-                    type="button"
-                    className="text-red-500 hover:text-red-700 px-2"
-                    onClick={() => handleRemoverPremio(idx)}
-                    disabled={premios.length === 1}
-                    title="Remover prêmio"
+                  type="button"
+                  className="text-gray-500 hover:text-white h-10 w-10 rounded bg-gray-200 hover:bg-gray-300 transition-colors cursor-pointer"
+                  onClick={() => handleRemoverPremio(idx)}
+                  disabled={premios.length === 1}
+                  title="Remover prêmio"
                   >
-                    &times;
+                  &times;
                   </button>
                 </div>
               ))}
               <button
                 type="button"
-                className="mt-2 px-3 py-1 rounded bg-primary-light text-white hover:bg-primary-dark transition-colors"
+                className="mt-2 px-3 py-1 w-max mx-auto rounded bg-secondary text-white hover:bg-secondary-dark transition-colors cursor-pointer"
                 onClick={handleAdicionarPremio}
               >
                 Adicionar prêmio

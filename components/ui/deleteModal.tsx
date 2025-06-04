@@ -39,7 +39,6 @@ export default function DeleteModal({
     try {
       if (onConfirm) {
         const result = await onConfirm(email);
-        // Se onConfirm retornar false ou lançar erro, exibe mensagem de erro
         if (result === false) {
           setMessage("Não foi possível confirmar. Tente novamente.");
           setIsLoading(false);
@@ -51,7 +50,6 @@ export default function DeleteModal({
       }
       setMessage("Confirmação enviada com sucesso!");
       setIsLoading(false);
-      // Aqui você pode chamar onDelete ou fechar o modal, se desejar
     } catch (error) {
       setMessage("Não foi possível confirmar. Tente novamente.");
       setIsLoading(false);

@@ -11,6 +11,8 @@
   --secondary-light: #3ea1cc;
   --light: #ffffff;
   --light-smoke: #f6f6f6;
+  --details-primary: #E70047;
+  --secondary-details: #43D1D1;
 }
 
 @theme inline {
@@ -24,6 +26,8 @@
   --color-secondary-light: var(--secondary-light);
   --color-light: var(--light);
   --color-light-smoke: var(--light-smoke);
+  --color-details-primary: var(--details-primary);
+  --color-secondary-details: var(--secondary-details);
   --animate-fadein-down: fadein-down 0.3s ease-in-out;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

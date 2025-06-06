@@ -195,7 +195,7 @@ export default function DeleteModal({
       <button
         type="button"
         onClick={showModal}
-        className="mx-auto block px-4 py-2 rounded-lg text-white text-sm font-medium bg-primary-light hover:bg-primary-dark transition-colors cursor-pointer"
+        className="mx-auto block px-4 py-2 rounded-lg text-sm font-medium bg-none border border-2 border-primary-dark text-primary-dark hover:bg-primary-dark transition-colors cursor-pointer hover:text-white"
       >
         Deletar {textBox}
       </button>

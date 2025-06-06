@@ -2,6 +2,7 @@
 import Cookies from "js-cookie";
 import DeleteModal from "../ui/deleteModal";
 import { useState } from "react";
+import ToggleSwitch from "@/components/ui/toggleButton";
 
 interface Props {
   codigoSala: string;
@@ -85,6 +86,31 @@ export default function DangerZoneUI({ codigoSala }: Props) {
   return (
     <div className="my-8 p-6 bg-red-50 bg-opacity-50 border border-red-300 rounded-lg">
       <h2 className="text-lg font-bold text-red-700 mb-4">Zona de Perigo</h2>
+      
+      <div className="mt-6 mb-4 flex flex-row items-center gap-2 w-full justify-between">
+        <p className="text-sm text-red-800 max-w-[80%]">
+          <strong>Ativar/desativar</strong> edição de dados das equipes. Quando desativado, os dados das equipes não poderão ser editados.
+        </p>
+        <ToggleSwitch />
+      </div>
+      
+      <div className="mt-6 mb-4 flex flex-row items-center gap-2 w-full justify-between">
+        <p className="text-sm text-red-800 max-w-[80%]">
+          <strong>Ativar/desativar</strong> edição das premiações e discursos. Quando desativado, só é posiver editar pelo acesso voluntário.
+        </p>
+        <ToggleSwitch />
+      </div>
+
+      <div className="mt-6 mb-4 flex flex-row items-center gap-2 w-full justify-between">
+        <p className="text-sm text-red-800 max-w-[80%]">
+          <strong>Remover equipes</strong> Deseja apenas remover as equipes da sala, mantendo-a ativa?
+        </p>
+        <DeleteModal
+          textBox="equipes"
+          onConfirm={handleConfirmEmail}
+          onDelete={removerEquipes}
+        />
+      </div>
 
       <div className="mb-4 flex flex-row items-center gap-2 w-full justify-between">
         <p className="text-sm text-red-800 max-w-[80%]">
@@ -95,17 +121,6 @@ export default function DangerZoneUI({ codigoSala }: Props) {
           textBox="sala"
           onConfirm={handleConfirmEmail}
           onDelete={deletarSala}
-        />
-      </div>
-
-      <div className="mt-6 mb-4 flex flex-row items-center gap-2 w-full justify-between">
-        <p className="text-sm text-red-800 max-w-[80%]">
-          Deseja apenas remover as equipes da sala, mantendo-a ativa?
-        </p>
-        <DeleteModal
-          textBox="equipes"
-          onConfirm={handleConfirmEmail}
-          onDelete={removerEquipes}
         />
       </div>
 

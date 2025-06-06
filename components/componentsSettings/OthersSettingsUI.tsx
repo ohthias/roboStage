@@ -25,7 +25,7 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
 
         const data = await res.json();
         console.log("Dados recebidos:", data);
-        
+
         setFormDataRounds({
           check_eventos_rounds: data.check_eventos_round ?? false,
           check_desafio_rounds: data.check_desafios_round ?? false,
@@ -36,7 +36,11 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
           check_gerar_ppt: data.check_gerar_ppt_premiacao ?? false,
         });
 
-        setPremios(Array.isArray(data.dados_extras) ? data.dados_extras : [""]);
+        setPremios(
+          Array.isArray(data.dados_extras.premios)
+            ? data.dados_extras.premios
+            : [""]
+        );
       } catch (error) {
         console.error("Erro ao buscar configurações:", error);
         alert("Não foi possível carregar os dados do banco.");
@@ -118,11 +122,7 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
   };
 
   const handleAdicionarPremio = () => {
-    if (premios.some((p) => p.trim() === "")) {
-      alert("Preencha os prêmios existentes antes de adicionar novos.");
-      return;
-    }
-    setPremios((prev) => [...prev, ""]);
+        setPremios((prev) => [...prev, ""]);
   };
 
   const handleRemoverPremio = (index: number) => {
@@ -261,30 +261,49 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
             de ganhadores do evento
           </label>
           {formDataRounds.check_gerar_ppt && (
-            <div className="flex flex-col gap-2 rounded p-6 px-4 pb-4 bg-light-smoke">
-              <span className="font-semibold mb-2 text-secondary text-lg">Prêmios do Evento:</span>
+            <div className="flex flex-col gap-4 rounded-lg p-6 px-4 bg-light-smoke">
+              <div>
+              <span className="font-semibold text-secondary text-lg">
+                Prêmios do Evento:
+              </span>
+              <p className="text-sm text-gray-500">
+                Adicione os prêmios que serão entregues aos ganhadores do
+                evento.
+              </p>
+              </div>
               {premios.map((premio: string, idx: number) => (
                 <div
                   key={idx}
-                  className={`flex flex-row gap-2 text-md text-gray-500 transition-all duration-1000 ease-out
-                  ${premios.length - 1 === idx ? "animate-in fade-in-down duration-1000" : ""}
-                  `}
+                  className={`flex justify-around items-end gap-2 text-md text-gray-500 transition-all duration-1000 ease-out mb-2 p-2 rounded border border-gray-300 hover:bg-gray-100`}
                 >
-                  <input
-                  type="text"
-                  className="border border-gray-300 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-secondary-light focus:border-secondary-dark transition-colors"
-                  value={premio}
-                  onChange={(e) => handlePremioChange(idx, e.target.value)}
-                  placeholder={`Prêmio ${idx + 1}`}
-                  />
+                  <label className="flex-1">
+                    Nome do Premio:
+                    <input
+                      type="text"
+                      className="border border-gray-300 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-secondary-light focus:border-secondary-dark transition-colors"
+                      value={premio.nome}
+                      onChange={(e) => handlePremioChange(idx, e.target.value)}
+                      placeholder={`Prêmio ${idx + 1}`}
+                    />
+                  </label>
+                  <label className="flex-1">
+                    Descrição do Premio:
+                    <input
+                      type="text"
+                      className="border border-gray-300 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-secondary-light focus:border-secondary-dark transition-colors"
+                      value={premio.descricao}
+                      onChange={(e) => handlePremioChange(idx, e.target.value)}
+                      placeholder={`Descrição do prêmio ${idx + 1}`}
+                    />
+                  </label>
                   <button
-                  type="button"
-                  className="text-gray-500 hover:text-white h-10 w-10 rounded bg-gray-200 hover:bg-gray-300 transition-colors cursor-pointer"
-                  onClick={() => handleRemoverPremio(idx)}
-                  disabled={premios.length === 1}
-                  title="Remover prêmio"
+                    type="button"
+                    className="text-gray-500 hover:text-white h-10 w-10 rounded bg-gray-200 hover:bg-gray-300 transition-colors cursor-pointer"
+                    onClick={() => handleRemoverPremio(idx)}
+                    disabled={premios.length === 1}
+                    title="Remover prêmio"
                   >
-                  &times;
+                    &times;
                   </button>
                 </div>
               ))}

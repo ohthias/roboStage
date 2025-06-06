@@ -81,7 +81,12 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
   }, [codigoSala]);
 
   const [conteudo, setConteudo] = useState<
-    "geral" | "ranking" | "equipes" | "personalização" | "visualização" | "configurações"
+    | "geral"
+    | "ranking"
+    | "equipes"
+    | "personalização"
+    | "visualização"
+    | "configurações"
   >("geral");
 
   const renderContent = () => {
@@ -124,12 +129,27 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
           </div>
         );
       case "ranking":
+        // TODO: Transformar em componente separado, fazer os 2º details ser com base se o evento tem final/semifinal
         return (
           <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 p-6">
-            <h2 className="text-2xl font-bold mb-4 text-primary-dark">
-              Ranking
-            </h2>
-            <TabelaEquipes codigoSala={codigoSala} cor={undefined} />
+            <details className="flex flex-col justify-start gap-4 w-full mb-4" open>
+              <summary className="text-lg font-semibold text-primary-dark cursor-pointer">
+                Ranking das Equipes
+              </summary>
+              <p className="text-sm text-gray-500 mb-4">
+                O ranking das equipes participantes do evento é atualizado em tempo real, com base nas pontuações obtidas durante as rodadas.
+              </p>
+              <TabelaEquipes codigoSala={codigoSala} cor={undefined} />
+            </details>
+            <details className="flex flex-col justify-start gap-4 max-w-full">
+              <summary className="text-lg font-semibold text-primary-dark cursor-pointer">
+                Eventos Rounds
+              </summary>
+              <p className="text-sm text-gray-500 mb-4">
+                Ranking das equipes participantes em outros desafios/rodadas do evento.
+              </p>
+              <TabelaEquipes codigoSala={codigoSala} cor={undefined} />
+            </details>
           </div>
         );
       case "equipes":
@@ -188,7 +208,7 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
     );
   }
 
-  if (!sala) return window.location.href = "/enter";
+  if (!sala) return (window.location.href = "/enter");
 
   const { codigo_visitante, codigo_voluntario, codigo_admin, nome } = sala;
 

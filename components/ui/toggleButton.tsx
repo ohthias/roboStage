@@ -1,28 +1,24 @@
-import React, { useState } from 'react'
+'use client';
 
-const ToogleButton = () => {
-  const [isChecked, setIsChecked] = useState(false)
+import { useState } from 'react';
 
-  const handleCheckboxChange = () => {
-    setIsChecked(!isChecked)
-  }
+export default function ToggleSwitch() {
+  const [isOn, setIsOn] = useState(false);
 
   return (
-    <>
-      <label className='flex cursor-pointer select-none items-center'>
-        <div className='relative'>
-          <input
-            type='checkbox'
-            checked={isChecked}
-            onChange={handleCheckboxChange}
-            className='sr-only'
-          />
-          <div className='block h-8 w-14 rounded-full bg-primary'></div>
-          <div className='dot absolute left-1 top-1 h-6 w-6 rounded-full bg-white transition'></div>
-        </div>
-      </label>
-    </>
-  )
+    <div className="flex items-center gap-3">
+      <button
+        onClick={() => setIsOn(!isOn)}
+        className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-300 cursor-pointer ${
+          isOn ? 'bg-primary-dark' : 'bg-gray-300'
+        }`}
+      >
+        <div
+          className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+            isOn ? 'translate-x-4' : 'translate-x-0'
+          }`}
+        />
+      </button>
+    </div>
+  );
 }
-
-export default ToogleButton

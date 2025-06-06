@@ -62,7 +62,7 @@ export default function HeroVoluntario({
           {codigo_sala}
           <span
             className="mx-3 font-semibold cursor-pointer underline"
-            onClick={() => console.log("Sair do evento clicado")}
+            onClick={() => confirm("Você tem certeza que deseja sair?") ? window.location.href = "/" : null}
           >
             Sair do evento
           </span>

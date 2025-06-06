@@ -91,7 +91,7 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
       check_deliberacao_resultados: formDataRounds.check_deliberacao_resultados,
       check_discursos_premiacao: formDataRounds.check_discursos_premiacao,
       check_gerar_ppt: formDataRounds.check_gerar_ppt,
-      dados_extras: premios.filter((premio) => premio.trim() !== ""),
+      dados_extras: `'premios': '${premios.filter((premio) => premio.trim() !== "").join(", ")}'`,
     };
 
     try {

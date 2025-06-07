@@ -7,7 +7,12 @@ interface Props {
 }
 
 export default function OthersSettingsUI({ codigoSala }: Props) {
-  const [premios, setPremios] = useState<string[]>([""]);
+  interface Premio {
+    nome: string;
+    descricao: string;
+  }
+
+  const [premios, setPremios] = useState<Premio[]>([]);
   const [formDataRounds, setFormDataRounds] = useState({
     check_eventos_rounds: false,
     check_desafio_rounds: false,
@@ -67,7 +72,6 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
         },
         body: JSON.stringify(payload),
       });
-
       res
         .then((response) => {
           if (!response.ok) {
@@ -76,6 +80,7 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
           return response.json();
         })
         .then((data) => {
+
           alert("Sistema de rounds atualizado com sucesso!");
         });
     } catch (error) {
@@ -95,8 +100,15 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
       check_deliberacao_resultados: formDataRounds.check_deliberacao_resultados,
       check_discursos_premiacao: formDataRounds.check_discursos_premiacao,
       check_gerar_ppt: formDataRounds.check_gerar_ppt,
-      dados_extras: `'premios': '${premios.filter((premio) => premio.trim() !== "").join(", ")}'`,
+      dados_extras: {
+        premios: premios.map((premio) => ({
+          nome: premio.nome || "",
+          descricao: premio.descricao || "",
+        }))
+      },
     };
+
+    console.log("Payload enviado:", payload);
 
     try {
       const res = await fetch(`/rooms/${codigoSala}/others`, {
@@ -111,7 +123,6 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
         throw new Error("Erro ao atualizar configurações extras");
       }
 
-      const data = await res.json();
       alert("Configurações extras atualizadas com sucesso!");
     } catch (error) {
       console.error("Erro ao atualizar configurações extras:", error);
@@ -122,7 +133,7 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
   };
 
   const handleAdicionarPremio = () => {
-        setPremios((prev) => [...prev, ""]);
+    setPremios((prev) => [...prev, { nome: "", descricao: "" }]);
   };
 
   const handleRemoverPremio = (index: number) => {
@@ -202,67 +213,92 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
           avaliação e outros parâmetros definidos.
         </p>
         <form className="flex flex-col gap-4">
-          <label className="flex flex-row items-center gap-2 text-md text-gray-500">
-            <input
-              type="checkbox"
-              className="accent-primary h-4 w-4 rounded border-gray-300"
-              checked={formDataRounds.check_gerar_cronograma}
-              onChange={() =>
-                setFormDataRounds((prev) => ({
-                  ...prev,
-                  check_gerar_cronograma: !prev.check_gerar_cronograma,
-                }))
-              }
-            />
-            Habilitar geração automática de cronograma
-          </label>
-          <label className="flex flex-row items-center gap-2 text-md text-gray-500">
-            <input
-              type="checkbox"
-              className="accent-primary h-4 w-4 rounded border-gray-300"
-              checked={formDataRounds.check_deliberacao_resultados}
-              onChange={() =>
-                setFormDataRounds((prev) => ({
-                  ...prev,
-                  check_deliberacao_resultados:
-                    !prev.check_deliberacao_resultados,
-                }))
-              }
-            />
-            Habilitar deliberação de avaliações/rounds
-          </label>
-          <label className="flex flex-row items-center gap-2 text-md text-gray-500">
-            <input
-              type="checkbox"
-              className="accent-primary h-4 w-4 rounded border-gray-300"
-              checked={formDataRounds.check_discursos_premiacao}
-              onChange={() =>
-                setFormDataRounds((prev) => ({
-                  ...prev,
-                  check_discursos_premiacao: !prev.check_discursos_premiacao,
-                }))
-              }
-            />
-            Habilitar discursos de premiação
-          </label>
-          <label className="flex flex-row items-center gap-2 text-md text-gray-500">
-            <input
-              type="checkbox"
-              className="accent-primary h-4 w-4 rounded border-gray-300"
-              checked={formDataRounds.check_gerar_ppt}
-              onChange={() =>
-                setFormDataRounds((prev) => ({
-                  ...prev,
-                  check_gerar_ppt: !prev.check_gerar_ppt,
-                }))
-              }
-            />
-            Gerar <i className="bg-gray-100 p-1 text-sm px-4 rounded">.ppt</i>{" "}
-            de ganhadores do evento
-          </label>
-          {formDataRounds.check_gerar_ppt && (
-            <div className="flex flex-col gap-4 rounded-lg p-6 px-4 bg-light-smoke">
-              <div>
+          <div className="flex flex-col gap-2 mb-2">
+            <label className="flex flex-row items-center gap-2 text-md text-gray-500">
+              <input
+                type="checkbox"
+                className="accent-primary h-4 w-4 rounded border-gray-300"
+                checked={formDataRounds.check_gerar_cronograma}
+                onChange={() =>
+                  setFormDataRounds((prev) => ({
+                    ...prev,
+                    check_gerar_cronograma: !prev.check_gerar_cronograma,
+                  }))
+                }
+              />
+              Habilitar geração automática de cronograma
+            </label>
+            <p className="text-sm text-gray-400">
+              Essa função ativa a geração automática do cronograma do evento,
+              considerando as arenas, salas de avaliação e outros parâmetros
+              definidos em Operação.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 mb-2">
+            <label className="flex flex-row items-center gap-2 text-md text-gray-500">
+              <input
+                type="checkbox"
+                className="accent-primary h-4 w-4 rounded border-gray-300"
+                checked={formDataRounds.check_deliberacao_resultados}
+                onChange={() =>
+                  setFormDataRounds((prev) => ({
+                    ...prev,
+                    check_deliberacao_resultados:
+                      !prev.check_deliberacao_resultados,
+                  }))
+                }
+              />
+              Habilitar deliberação de avaliações/rounds
+            </label>
+            <p className="text-sm text-gray-400">
+              Essa função ativa a deliberação de avaliações e rounds, permitindo
+              que os voluntários deliberem sobre os resultados.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 mb-2">
+            <label className="flex flex-row items-center gap-2 text-md text-gray-700">
+              <input
+                type="checkbox"
+                className="accent-primary h-4 w-4 rounded border-gray-300"
+                checked={formDataRounds.check_discursos_premiacao}
+                onChange={() =>
+                  setFormDataRounds((prev) => ({
+                    ...prev,
+                    check_discursos_premiacao: !prev.check_discursos_premiacao,
+                  }))
+                }
+              />
+              Habilitar discursos de premiação
+            </label>
+            <p className="text-sm text-gray-400">
+              Essa função ativa para os voluntários atribuirem discursos e
+              prêmios às equipes participantes.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 mb-2">
+            <label className="flex flex-row items-center gap-2 text-md text-gray-700">
+              <input
+                type="checkbox"
+                className="accent-primary h-4 w-4 rounded border-gray-300"
+                checked={formDataRounds.check_gerar_ppt}
+                onChange={() =>
+                  setFormDataRounds((prev) => ({
+                    ...prev,
+                    check_gerar_ppt: !prev.check_gerar_ppt,
+                  }))
+                }
+              />
+              Gerar <i className="bg-gray-100 p-1 text-sm px-4 rounded">.ppt</i>{" "}
+              de ganhadores do evento
+            </label>
+            <p className="text-sm text-gray-400">
+              Essa função ativa a geração de um arquivo .ppt com os ganhadores
+              do evento, incluindo prêmios e discursos.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4 rounded-lg p-6 px-4 bg-light-smoke">
+            <div>
               <span className="font-semibold text-secondary text-lg">
                 Prêmios do Evento:
               </span>
@@ -270,52 +306,60 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
                 Adicione os prêmios que serão entregues aos ganhadores do
                 evento.
               </p>
-              </div>
-              {premios.map((premio: string, idx: number) => (
-                <div
-                  key={idx}
-                  className={`flex justify-around items-end gap-2 text-md text-gray-500 transition-all duration-1000 ease-out mb-2 p-2 rounded border border-gray-300 hover:bg-gray-100`}
-                >
-                  <label className="flex-1">
-                    Nome do Premio:
-                    <input
-                      type="text"
-                      className="border border-gray-300 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-secondary-light focus:border-secondary-dark transition-colors"
-                      value={premio.nome}
-                      onChange={(e) => handlePremioChange(idx, e.target.value)}
-                      placeholder={`Prêmio ${idx + 1}`}
-                    />
-                  </label>
-                  <label className="flex-1">
-                    Descrição do Premio:
-                    <input
-                      type="text"
-                      className="border border-gray-300 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-secondary-light focus:border-secondary-dark transition-colors"
-                      value={premio.descricao}
-                      onChange={(e) => handlePremioChange(idx, e.target.value)}
-                      placeholder={`Descrição do prêmio ${idx + 1}`}
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    className="text-gray-500 hover:text-white h-10 w-10 rounded bg-gray-200 hover:bg-gray-300 transition-colors cursor-pointer"
-                    onClick={() => handleRemoverPremio(idx)}
-                    disabled={premios.length === 1}
-                    title="Remover prêmio"
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                className="mt-2 px-3 py-1 w-max mx-auto rounded bg-secondary text-white hover:bg-secondary-dark transition-colors cursor-pointer"
-                onClick={handleAdicionarPremio}
-              >
-                Adicionar prêmio
-              </button>
             </div>
-          )}
+            {premios.map((premio: Premio, idx: number) => (
+              <div
+                key={idx}
+                className={`flex justify-around items-end gap-2 text-md text-gray-500 transition-all duration-1000 ease-out mb-2 p-2 rounded border border-gray-300 hover:bg-gray-100`}
+              >
+                <label className="flex-1">
+                  Nome do Premio:
+                  <input
+                    type="text"
+                    className="border border-gray-300 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-secondary-light focus:border-secondary-dark transition-colors"
+                    value={premio.nome}
+                    onChange={(e) => {
+                      const newPremios = [...premios];
+                      newPremios[idx].nome = e.target.value;
+                      setPremios(newPremios);
+                    }}
+                    placeholder={`Prêmio ${idx + 1}`}
+                  />
+                </label>
+                <label className="flex-1">
+                  Descrição do Premio:
+                  <input
+                    type="text"
+                    className="border border-gray-300 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-secondary-light focus:border-secondary-dark transition-colors"
+                    value={premio.descricao}
+                    onChange={(e) => {
+                      const newPremios = [...premios];
+                      newPremios[idx].descricao = e.target.value;
+                      setPremios(newPremios);
+                    }}
+                    placeholder={`Descrição do prêmio ${idx + 1}`}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="text-gray-500 hover:text-white h-10 w-10 rounded bg-gray-200 hover:bg-gray-300 transition-colors cursor-pointer"
+                  onClick={() => handleRemoverPremio(idx)}
+                  disabled={premios.length === 1}
+                  title="Remover prêmio"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="mt-2 px-3 py-1 w-max mx-auto rounded bg-secondary text-white hover:bg-secondary-dark transition-colors cursor-pointer"
+              onClick={handleAdicionarPremio}
+            >
+              Adicionar prêmio
+            </button>
+          </div>
+
           <button
             type="button"
             className="mt-4 ml-auto px-3 py-1 rounded bg-primary-light text-white hover:bg-primary-dark transition-colors cursor-pointer"

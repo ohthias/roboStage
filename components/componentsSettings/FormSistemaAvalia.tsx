@@ -16,204 +16,225 @@ export default function FormSistemaAvalia() {
       : Number(avaliacaoDesignRobo) + Number(avaliacaoProjetoInovacao);
 
   return (
-    <form className="p-4 py-2 max-w-full flex flex-col gap-4">
-      <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          className="accent-primary h-4 w-4 rounded border-gray-300"
-          checked={ativarAvaliacao}
-          onChange={(e) => setAtivarAvaliacao(e.target.checked)}
-        />
-        Deseja acionar sistema de avaliação de sala?
-      </label>
-
-      {ativarAvaliacao && (
-        <>
-          <label className="flex flex-col gap-1 font-medium text-gray-700">
-            Formato de avaliação:
-            <select
-              className="form-select mt-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-light transition bg-white"
-              value={formatoAvaliacao}
-              onChange={(e) => setFormatoAvaliacao(e.target.value)}
-            >
-              <option value="oficial">Formato FIRST LEGO League</option>
-              <option value="personalizado">Personalizado</option>
-            </select>
-          </label>
-
-          {formatoAvaliacao === "oficial" && (
-            <>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="accent-primary h-4 w-4 rounded border-gray-300"
-                  checked={avaliacaoProjetoInovacao}
-                  onChange={(e) =>
-                    setAvaliacaoProjetoInovacao(e.target.checked)
-                  }
-                />
-                Haverá avaliação do projeto de inovação?
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="accent-primary h-4 w-4 rounded border-gray-300"
-                  checked={avaliacaoDesignRobo}
-                  onChange={(e) => setAvaliacaoDesignRobo(e.target.checked)}
-                />
-                Haverá avaliação do design do robô?
-              </label>
-            </>
-          )}
-
-          {formatoAvaliacao === "personalizado" && (
-            <>
-              <div className="flex items-center gap-2 mb-2">
-                <button
-                  type="button"
-                  className="bg-primary-light hover:bg-primary-dark text-white font-bold py-2 px-4 rounded transition-colors cursor-pointer w-max md:w-auto"
-                  onClick={() => {
-                    const modelo =
-                      "# Modelo de Avaliação\n\n- Critério 1\n- Critério 2\n";
-                    const blob = new Blob([modelo], { type: "text/markdown" });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = "modelo-avaliacao.md";
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                  }}
-                >
-                  Baixar modelo (.md)
-                </button>
-                <span className="text-sm text-gray-500">
-                  Baixe um modelo de avaliação para personalizar.
-                </span>
-              </div>
-              <AvaliacoesPersonalizadasForm />
-            </>
-          )}
-
-          <VisualizarFichaButton
-            formatoAvaliacao={formatoAvaliacao}
-            arquivo={arquivo}
+    <div className="mb-6">
+      <h2 className="text-2xl font-semibold text-primary-dark">
+        Sistema de avaliação
+      </h2>
+      <p className="mb-4 text-gray-500">
+        Adicione/configure o sistema de avaliação de fichas ao seu evento. Ao
+        adicionar, todas as equipes deverão ser avaliadas com base em critérios
+        estabelecidos, num sistema de "Avaliação de Sala". Você pode optar pelo
+        formato da FIRST LEGO League ou personalizado, e definir se deseja
+        interligar as avaliações para geração do cronograma (caso a função esteja ativada).
+      </p>
+      <form className="p-4 py-2 max-w-full flex flex-col gap-4">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            className="accent-primary h-4 w-4 rounded border-gray-300"
+            checked={ativarAvaliacao}
+            onChange={(e) => setAtivarAvaliacao(e.target.checked)}
           />
-        </>
-      )}
-      {/* Contador de fichas de avaliação e tempo total */}
-      {ativarAvaliacao && (
-        <>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              className="accent-primary h-4 w-4 rounded border-gray-300"
-              id="interligar-avaliacoes"
-              checked={interligarAvaliacoes}
-              onChange={(e) => setInterligarAvaliacoes(e.target.checked)}
-            />
-            As avaliações serão interligadas? (Desmarque para avaliações
-            separadas)
-          </label>
+          Deseja acionar sistema de avaliação de sala?
+        </label>
 
-          <label className="flex flex-col gap-1 font-medium text-gray-700">
-            Tempo de avaliação por ficha (em minutos):
-            <input
-              type="number"
-              min={1}
-              className="form-input mt-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-light transition"
-              placeholder="Ex: 5"
-              id="tempo-avaliacao"
-              // Adicione um estado para armazenar essa opção se necessário
-            />
-          </label>
+        {ativarAvaliacao && (
+          <>
+            <label className="flex flex-col gap-1 font-medium text-gray-700">
+              Formato de avaliação:
+              <select
+                className="form-select mt-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-light transition bg-white"
+                value={formatoAvaliacao}
+                onChange={(e) => setFormatoAvaliacao(e.target.value)}
+              >
+                <option value="oficial">Formato FIRST LEGO League</option>
+                <option value="personalizado">Personalizado</option>
+              </select>
+            </label>
 
-          <label className="flex flex-col gap-1 font-medium text-gray-700">
-            Tempo de perguntas e respostas (em minutos):
-            <input
-              type="number"
-              min={1}
-              className="form-input mt-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-light transition"
-              placeholder="Ex: 5"
-              id="tempo-perguntas"
-              // Adicione um estado para armazenar essa opção se necessário
-            />
-          </label>
+            {formatoAvaliacao === "oficial" && (
+              <>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="accent-primary h-4 w-4 rounded border-gray-300"
+                    checked={avaliacaoProjetoInovacao}
+                    onChange={(e) =>
+                      setAvaliacaoProjetoInovacao(e.target.checked)
+                    }
+                  />
+                  Haverá avaliação do projeto de inovação?
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="accent-primary h-4 w-4 rounded border-gray-300"
+                    checked={avaliacaoDesignRobo}
+                    onChange={(e) => setAvaliacaoDesignRobo(e.target.checked)}
+                  />
+                  Haverá avaliação do design do robô?
+                </label>
+              </>
+            )}
 
-          <label className="flex flex-col gap-1 font-medium text-gray-700">
-            Tempo de pós avaliação (em minutos):
-            <input
-              type="number"
-              min={1}
-              className="form-input mt-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-light transition"
-              placeholder="Ex: 5"
-              id="tempo-pos-avaliacao"
-              // Adicione um estado para armazenar essa opção se necessário
-            />
-          </label>
-          <div className="flex flex-col gap-2 bg-gray-50 rounded p-3 border border-gray-200">
-            <span className="font-medium text-gray-700">
-              {formatoAvaliacao === "personalizado"
-                ? `Total de fichas de avaliação: ${
-                    document.querySelectorAll(
-                      '[placeholder^="Título da Avaliação"]'
-                    ).length || 1
-                  }`
-                : `Total de fichas de avaliação: ${fichas}`}
-            </span>
-            {(() => {
-              const tempoAvaliacao = Number(
-                (document.querySelector("#tempo-avaliacao") as HTMLInputElement)
-                  ?.value || 0
-              );
-              const tempoPerguntas = Number(
-                (document.querySelector("#tempo-perguntas") as HTMLInputElement)
-                  ?.value || 0
-              );
-              const tempoPos = Number(
-                (
-                  document.querySelector(
-                    "#tempo-pos-avaliacao"
-                  ) as HTMLInputElement
-                )?.value || 0
-              );
-              
-              let tempoTotal = 0;
-              if (interligarAvaliacoes) {
-                tempoTotal =
-                  (tempoAvaliacao + tempoPerguntas + tempoPos) * fichas;
-              } else {
-                tempoTotal =
-                  (tempoAvaliacao + tempoPerguntas + tempoPos);
-              }
-
-              return (
-                <span className="text-gray-600 text-sm">
-                  Tempo total estimado:{" "}
-                  <span className="font-semibold">
-                    {tempoTotal > 0
-                      ? `${tempoTotal} minutos`
-                      : "Preencha os tempos acima"}
+            {formatoAvaliacao === "personalizado" && (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <button
+                    type="button"
+                    className="bg-primary-light hover:bg-primary-dark text-white font-bold py-2 px-4 rounded transition-colors cursor-pointer w-max md:w-auto"
+                    onClick={() => {
+                      const modelo =
+                        "# Modelo de Avaliação\n\n- Critério 1\n- Critério 2\n";
+                      const blob = new Blob([modelo], {
+                        type: "text/markdown",
+                      });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = "modelo-avaliacao.md";
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
+                    Baixar modelo (.md)
+                  </button>
+                  <span className="text-sm text-gray-500">
+                    Baixe um modelo de avaliação para personalizar.
                   </span>
-                  {interligarAvaliacoes !== undefined &&
-                    (interligarAvaliacoes
-                      ? " (Avaliações interligadas)"
-                      : " (Avaliações separadas /cada ficha)")}
-                </span>
-              );
-            })()}
-          </div>
-        </>
-      )}
+                </div>
+                <AvaliacoesPersonalizadasForm />
+              </>
+            )}
 
-      <button
-        type="submit"
-        className="mt-4 ml-auto bg-primary-light hover:bg-primary-dark text-white font-bold py-2 px-4 rounded transition-colors cursor-pointer w-max md:w-auto"
-      >
-        Salvar
-      </button>
-    </form>
+            <VisualizarFichaButton
+              formatoAvaliacao={formatoAvaliacao}
+              arquivo={arquivo}
+            />
+          </>
+        )}
+        {/* Contador de fichas de avaliação e tempo total */}
+        {ativarAvaliacao && (
+          <>
+            {avaliacaoProjetoInovacao && avaliacaoDesignRobo && (
+              <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                className="accent-primary h-4 w-4 rounded border-gray-300"
+                id="interligar-avaliacoes"
+                checked={interligarAvaliacoes}
+                onChange={(e) => setInterligarAvaliacoes(e.target.checked)}
+                />
+              As avaliações serão interligadas? (Desmarque para avaliações
+              separadas)
+            </label>
+            )}
+
+            <label className="flex flex-col gap-1 font-medium text-gray-700">
+              Tempo de avaliação por ficha (em minutos):
+              <input
+                type="number"
+                min={1}
+                className="form-input mt-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-light transition"
+                placeholder="Ex: 5"
+                id="tempo-avaliacao"
+                // Adicione um estado para armazenar essa opção se necessário
+              />
+            </label>
+
+            <label className="flex flex-col gap-1 font-medium text-gray-700">
+              Tempo de perguntas e respostas (em minutos):
+              <input
+                type="number"
+                min={1}
+                className="form-input mt-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-light transition"
+                placeholder="Ex: 5"
+                id="tempo-perguntas"
+                // Adicione um estado para armazenar essa opção se necessário
+              />
+            </label>
+
+            <label className="flex flex-col gap-1 font-medium text-gray-700">
+              Tempo de pós avaliação (em minutos):
+              <input
+                type="number"
+                min={1}
+                className="form-input mt-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-light transition"
+                placeholder="Ex: 5"
+                id="tempo-pos-avaliacao"
+                // Adicione um estado para armazenar essa opção se necessário
+              />
+            </label>
+            <div className="flex flex-col gap-2 bg-gray-50 rounded p-3 border border-gray-200">
+              <span className="font-medium text-gray-700">
+                {formatoAvaliacao === "personalizado"
+                  ? `Total de fichas de avaliação: ${
+                      document.querySelectorAll(
+                        '[placeholder^="Título da Avaliação"]'
+                      ).length || 1
+                    }`
+                  : `Total de fichas de avaliação: ${fichas}`}
+              </span>
+              {(() => {
+                const tempoAvaliacao = Number(
+                  (
+                    document.querySelector(
+                      "#tempo-avaliacao"
+                    ) as HTMLInputElement
+                  )?.value || 0
+                );
+                const tempoPerguntas = Number(
+                  (
+                    document.querySelector(
+                      "#tempo-perguntas"
+                    ) as HTMLInputElement
+                  )?.value || 0
+                );
+                const tempoPos = Number(
+                  (
+                    document.querySelector(
+                      "#tempo-pos-avaliacao"
+                    ) as HTMLInputElement
+                  )?.value || 0
+                );
+
+                let tempoTotal = 0;
+                if (interligarAvaliacoes) {
+                  tempoTotal =
+                    (tempoAvaliacao + tempoPerguntas + tempoPos) * fichas;
+                } else {
+                  tempoTotal = tempoAvaliacao + tempoPerguntas + tempoPos;
+                }
+
+                return (
+                  <span className="text-gray-600 text-sm">
+                    Tempo total estimado:{" "}
+                    <span className="font-semibold">
+                      {tempoTotal > 0
+                        ? `${tempoTotal} minutos`
+                        : "Preencha os tempos acima"}
+                    </span>
+                    {interligarAvaliacoes !== undefined &&
+                      (interligarAvaliacoes
+                        ? " (Avaliações interligadas)"
+                        : " (Avaliações separadas /cada ficha)")}
+                  </span>
+                );
+              })()}
+            </div>
+          </>
+        )}
+
+        <button
+          type="submit"
+          className="mt-4 ml-auto bg-primary-light hover:bg-primary-dark text-white font-bold py-2 px-4 rounded transition-colors cursor-pointer w-max md:w-auto"
+        >
+          Salvar
+        </button>
+      </form>
+    </div>
   );
 }
 

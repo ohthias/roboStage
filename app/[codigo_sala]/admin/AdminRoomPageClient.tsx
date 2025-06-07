@@ -7,6 +7,14 @@ import TabelaEquipes from "@/components/TabelaEquipes";
 import ThemeForm from "./subpages/ThemePage";
 import ThemePreview from "../visitante/ThemePreview";
 import ConfigPage from "./subpages/SettingsPage";
+import iconeFundo1 from "@/public/images/icone_fundo_ppt_1.png";
+import iconeFundo2 from "@/public/images/icone_fundo_ppt_2.png";
+import protoboard from "@/public/protoboard.gif";
+import CardDeliberationRound from "@/components/componentsAdmin/CardDeliberationRound";
+import CardPowerPoint from "@/components/componentsAdmin/CardPowerPoint";
+import CardCronograma from "@/components/componentsAdmin/CardCronograma";
+import CardSystemRounds from "@/components/componentsAdmin/CardSystemRounds";
+import GeneralPage from "./subpages/GeralPage";
 interface Props {
   codigoSala: string;
 }
@@ -21,6 +29,7 @@ interface Sala {
 
 export default function AdminRoomPageClient({ codigoSala }: Props) {
   const [sala, setSala] = useState<Sala | undefined>();
+  const [roomDetails, setRoomDetails] = useState<any>({});
   const [carregando, setCarregando] = useState(true);
   const [atualizacoes, setAtualizacoes] = useState<string[]>([]);
   const [tema, setTema] = useState<any>({});
@@ -78,6 +87,19 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
     };
 
     theme();
+
+    const fetchRoom_details = async () => {
+      try {
+        const res = await fetch(`/rooms/${codigoSala}/others/`);
+        if (!res.ok) throw new Error("Erro ao buscar detalhes da sala");
+        const data = await res.json();
+        console.log("Detalhes da sala:", data);
+        setRoomDetails(data);
+      } catch (error) {
+        console.error("Erro ao buscar detalhes da sala:", error);
+      }
+    }
+    fetchRoom_details();
   }, [codigoSala]);
 
   const [conteudo, setConteudo] = useState<
@@ -93,51 +115,22 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
     switch (conteudo) {
       case "geral":
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 flex flex-row items-center justify-between">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold">
-                  Nome do evento: {nome}
-                </h3>
-                <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-                  FIRST LEGO League Challenge
-                </p>
-              </div>
-              <img
-                src="https://www.firstinspires.org/sites/default/files/uploads/resource_library/brand/thumbnails/FLL-Vertical.png"
-                alt="Logo"
-              />
-            </div>
-            <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 min-h-[200px]">
-              <div className="p-6">
-                <p className="text-xl font-bold text-primary-dark">
-                  Atualizações:
-                </p>
-                {atualizacoes.length === 0 ? (
-                  <p className="text-sm text-gray-500 mt-2">Sem atualizações</p>
-                ) : (
-                  <ul className="max-h-64 overflow-y-auto list-disc list-inside mt-2 space-y-1">
-                    {atualizacoes.slice(0, 7).map((item, idx) => (
-                      <li key={idx} className="text-sm text-gray-700">
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
-        );
+          <GeneralPage codigo_sala={codigoSala} />
+        )
       case "ranking":
         // TODO: Transformar em componente separado, fazer os 2º details ser com base se o evento tem final/semifinal
         return (
           <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 p-6">
-            <details className="flex flex-col justify-start gap-4 w-full mb-4" open>
+            <details
+              className="flex flex-col justify-start gap-4 w-full mb-4"
+              open
+            >
               <summary className="text-lg font-semibold text-primary-dark cursor-pointer">
                 Ranking das Equipes
               </summary>
               <p className="text-sm text-gray-500 mb-4">
-                O ranking das equipes participantes do evento é atualizado em tempo real, com base nas pontuações obtidas durante as rodadas.
+                O ranking das equipes participantes do evento é atualizado em
+                tempo real, com base nas pontuações obtidas durante as rodadas.
               </p>
               <TabelaEquipes codigoSala={codigoSala} cor={undefined} />
             </details>
@@ -146,7 +139,8 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
                 Eventos Rounds
               </summary>
               <p className="text-sm text-gray-500 mb-4">
-                Ranking das equipes participantes em outros desafios/rodadas do evento.
+                Ranking das equipes participantes em outros desafios/rodadas do
+                evento.
               </p>
               <TabelaEquipes codigoSala={codigoSala} cor={undefined} />
             </details>
@@ -221,7 +215,7 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
         setConteudo={setConteudo}
       />
 
-      <main className="ml-56 px-6 py-2 bg-white min-h-screen">
+      <main className="ml-56 px-6 py-2 bg-white min-h-screen bg-gradient-to-t from-gray-50 to-white">
         <div className="my-4 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-left text-primary-dark">
             Administração

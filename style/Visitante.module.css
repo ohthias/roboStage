@@ -24,22 +24,3 @@
   margin-bottom: 1rem;
   color: #f3f3f3;
 }
-
-/* Use these Tailwind classes in your JSX/HTML instead of CSS classes:
-
-<table className="w-full border-collapse bg-gray-50">
-  <thead className="bg-blue-900 text-white">
-    <tr>
-      <th className="text-center p-2">...</th>
-      ...
-    </tr>
-  </thead>
-  <tbody>
-    <tr className="border-b border-gray-300 even:bg-gray-100">
-      <td className="text-center p-2">...</td>
-      ...
-    </tr>
-    ...
-  </tbody>
-</table>
-*/

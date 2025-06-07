@@ -100,6 +100,13 @@ export default function DangerZoneUI({ codigoSala }: Props) {
         </p>
         <ToggleSwitch />
       </div>
+      
+      <div className="mt-6 mb-4 flex flex-row items-center gap-2 w-full justify-between">
+        <p className="text-sm text-red-800 max-w-[80%]">
+          <strong>Ativar/desativar</strong> sistema de reset de dados personalizados das equipes. Quando desativado, os dados personalizados não poderão ser alterados.
+        </p>
+        <ToggleSwitch />
+      </div>
 
       <div className="mt-6 mb-4 flex flex-row items-center gap-2 w-full justify-between">
         <p className="text-sm text-red-800 max-w-[80%]">
@@ -107,6 +114,17 @@ export default function DangerZoneUI({ codigoSala }: Props) {
         </p>
         <DeleteModal
           textBox="equipes"
+          onConfirm={handleConfirmEmail}
+          onDelete={removerEquipes}
+        />
+      </div>
+      
+      <div className="mt-6 mb-4 flex flex-row items-center gap-2 w-full justify-between">
+        <p className="text-sm text-red-800">
+          <strong>Limpar Fichas</strong> Deseja apenas remover as fichas de avaliação da sala feitas pelas equipes, mantendo-a ativa?
+        </p>
+        <DeleteModal
+          textBox="fichas de avaliação"
           onConfirm={handleConfirmEmail}
           onDelete={removerEquipes}
         />

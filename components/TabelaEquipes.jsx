@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import styles from "@/style/Visitante.module.css";
 import Loader from "./loader";
 
-export default function TabelaEquipes({ codigoSala }) {
+export default function TabelaEquipes({ codigoSala, cor }) {
   const [equipes, setEquipes] = useState([]);
   const [nomeSala, setNomeSala] = useState("");
   const [loading, setLoading] = useState(true);
@@ -62,34 +62,45 @@ export default function TabelaEquipes({ codigoSala }) {
     );
   }
 
+  const isVisitante = typeof window !== "undefined" && window.location.pathname.endsWith("/visitante");
+  const tableStyle = isVisitante
+    ? { backgroundColor: cor || "#d01117" }
+    : { backgroundColor: "#d01117"};
+  console.log(tableStyle)
   return (
-    <>
-      {!loading && (
-        <div className={styles.container}>
-          <table className={styles.tabela}>
-            <thead className={styles.thead}>
-              <tr className={styles.tr}>
-                <th className={styles.th}>Posição</th>
-                <th className={styles.th}>Equipe</th>
-                <th className={styles.th}>Round 1</th>
-                <th className={styles.th}>Round 2</th>
-                <th className={styles.th}>Round 3</th>
-              </tr>
-            </thead>
-            <tbody className={styles.tbody}>
-              {equipes.map((eq, idx) => (
-                <tr key={idx} className={styles.tr}>
-                  <td className={styles.td}>{idx + 1}</td>
-                  <td className={styles.td}>{eq.nome_equipe}</td>
-                  <td className={styles.td}>{eq.round1}</td>
-                  <td className={styles.td}>{eq.round2}</td>
-                  <td className={styles.td}>{eq.round3}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </>
+    <div className={styles.container}>
+      <table
+        className="w-full border-collapse bg-gray-50"
+        style={tableStyle}
+      >
+        <thead className="text-white" style={tableStyle}>
+          <tr className="border-b border-gray-300">
+            <th className="text-center p-2">Posição</th>
+            <th className="text-left p-2">Equipe</th>
+            <th className="text-center p-2">Round 1</th>
+            <th className="text-center p-2">Round 2</th>
+            <th className="text-center p-2">Round 3</th>
+          </tr>
+        </thead>
+        <tbody>
+          {equipes.map((eq, idx) => (
+            <tr
+              key={idx}
+              className={
+                idx % 2 === 0
+                  ? "bg-gray-100 border-b border-gray-300"
+                  : "bg-light border-b border-gray-300"
+              }
+            >
+              <td className="text-center p-2">{idx + 1}</td>
+              <td className="text-left p-2">{eq.nome_equipe}</td>
+              <td className="text-center p-2">{eq.round1}</td>
+              <td className="text-center p-2">{eq.round2}</td>
+              <td className="text-center p-2">{eq.round3}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

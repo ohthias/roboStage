@@ -1,13 +1,12 @@
 "use client";
 import { useState } from "react";
 import AccessModal from "@/components/AccessModal";
-
+import Image from "next/image";
 interface SideBarProps {
   codVisitante?: string;
   codVoluntario?: string;
   codAdmin?: string;
-  setConteudo: (tipo: "geral" | "ranking") => void;
-  onDelete: () => void;
+  setConteudo: (tipo: "geral" | "ranking" | "equipes" | "personalização" | "visualização" | "configurações") => void;
 }
 
 export default function SideBar({
@@ -15,7 +14,6 @@ export default function SideBar({
   codVoluntario,
   codAdmin,
   setConteudo,
-  onDelete,
 }: SideBarProps) {
   const [showModal, setShowModal] = useState(false);
 
@@ -30,10 +28,11 @@ export default function SideBar({
         />
       )}
 
-      <nav className="bg-white shadow-md border-r border-gray-200 h-screen fixed top-0 left-0 max-w-[250px] py-6 px-4 overflow-auto">
+      <nav className="bg-white shadow-md border-r border-gray-200 h-screen fixed top-0 left-0 w-56 py-6 px-4 overflow-auto">
         <ul>
-          <li>
-            <p className="font-bold px-4 py-2 cursor-default">
+          <li className="flex flex-row items-center justify-left mb-6">
+            <img src="https://robo-stage.vercel.app/Icone.png" alt="Logo" width={36} height={36} />
+            <p className="font-bold ml-2 py-2 cursor-default">
               Robo<strong className="text-primary">Stage</strong>
             </p>
           </li>
@@ -62,10 +61,26 @@ export default function SideBar({
             </li>
             <li>
               <a
+                onClick={() => setConteudo("equipes")}
+                className="text-slate-700 font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
+              >
+                Equipes
+              </a>
+            </li>
+            <li>
+              <a
                 onClick={() => setConteudo("ranking")}
                 className="text-slate-700 font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
               >
                 Ranking
+              </a>
+            </li>
+            <li>
+              <a
+                onClick={() => setConteudo("visualização")}
+                className="text-slate-700 font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
+              >
+                Visualização
               </a>
             </li>
           </ul>
@@ -78,10 +93,18 @@ export default function SideBar({
           <ul className="mt-2 space-y-1">
             <li>
               <a
-                onClick={onDelete}
-                className="text-primary-dark font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
+                onClick={() => setConteudo("personalização")}
+                className="text-slate-700 font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
               >
-                Deletar Evento
+                Personalização
+              </a>
+            </li>
+            <li>
+              <a
+                onClick={() => setConteudo("configurações")}
+                className="text-slate-700 font-medium text-[15px] block hover:text-slate-900 hover:bg-gray-100 rounded px-4 py-2 transition-all cursor-pointer"
+              >
+                Configurações
               </a>
             </li>
             <li>

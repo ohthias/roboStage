@@ -9,8 +9,7 @@ export default async function VoluntarioRoomPage() {
 
   return (
     <>
-      <Hero />
-      <div className="w-full h-full flex items-center justify-center p-6">
+      <div className="w-full h-full">
         <VoluntarioRoomClient codigoSala={codigo_sala} />
       </div>
     </>

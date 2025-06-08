@@ -103,12 +103,14 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
   }, [codigoSala]);
 
   const [conteudo, setConteudo] = useState<
-    | "geral"
-    | "ranking"
-    | "equipes"
-    | "personalização"
-    | "visualização"
-    | "configurações"
+    "geral"
+  | "ranking"
+  | "equipes"
+  | "personalização"
+  | "visualização"
+  | "configurações"
+  | "modal"
+  | "sair"
   >("geral");
 
   const renderContent = () => {

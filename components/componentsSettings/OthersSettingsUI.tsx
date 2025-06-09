@@ -175,22 +175,6 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
               />
               Habilitar semi-finais e finais
             </label>
-            <label className="flex flex-row gap-2 text-md text-gray-500 items-center">
-              <input
-                type="checkbox"
-                className="accent-primary h-4 w-4 rounded border-gray-300"
-                checked={formDataRounds.check_desafio_rounds}
-                onChange={() =>
-                  setFormDataRounds((prev) => ({
-                    ...prev,
-                    check_desafio_rounds: !prev.check_desafio_rounds,
-                  }))
-                }
-                title="Habilitar desafio de alianças"
-              />
-              Habilitar desafio de alianças{" "}
-              <i>(para eventos com mais de 8 equipes)</i>
-            </label>
             <button
               type="button"
               className="mt-2 ml-auto px-3 py-1 rounded bg-primary-light text-white hover:bg-primary-dark transition-colors cursor-pointer"
@@ -213,27 +197,6 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
           avaliação e outros parâmetros definidos.
         </p>
         <form className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2 mb-2">
-            <label className="flex flex-row items-center gap-2 text-md text-gray-500">
-              <input
-                type="checkbox"
-                className="accent-primary h-4 w-4 rounded border-gray-300"
-                checked={formDataRounds.check_gerar_cronograma}
-                onChange={() =>
-                  setFormDataRounds((prev) => ({
-                    ...prev,
-                    check_gerar_cronograma: !prev.check_gerar_cronograma,
-                  }))
-                }
-              />
-              Habilitar geração automática de cronograma
-            </label>
-            <p className="text-sm text-gray-400">
-              Essa função ativa a geração automática do cronograma do evento,
-              considerando as arenas, salas de avaliação e outros parâmetros
-              definidos em Operação.
-            </p>
-          </div>
           <div className="flex flex-col gap-2 mb-2">
             <label className="flex flex-row items-center gap-2 text-md text-gray-500">
               <input
@@ -275,28 +238,7 @@ export default function OthersSettingsUI({ codigoSala }: Props) {
               prêmios às equipes participantes.
             </p>
           </div>
-          <div className="flex flex-col gap-2 mb-2">
-            <label className="flex flex-row items-center gap-2 text-md text-gray-700">
-              <input
-                type="checkbox"
-                className="accent-primary h-4 w-4 rounded border-gray-300"
-                checked={formDataRounds.check_gerar_ppt}
-                onChange={() =>
-                  setFormDataRounds((prev) => ({
-                    ...prev,
-                    check_gerar_ppt: !prev.check_gerar_ppt,
-                  }))
-                }
-              />
-              Gerar <i className="bg-gray-100 p-1 text-sm px-4 rounded">.ppt</i>{" "}
-              de ganhadores do evento
-            </label>
-            <p className="text-sm text-gray-400">
-              Essa função ativa a geração de um arquivo .ppt com os ganhadores
-              do evento, incluindo prêmios e discursos.
-            </p>
-          </div>
-
+          
           <div className="flex flex-col gap-4 rounded-lg p-6 px-4 bg-light-smoke">
             <div>
               <span className="font-semibold text-secondary text-lg">

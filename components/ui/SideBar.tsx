@@ -205,22 +205,22 @@ export default function SideBar({
               <h4 className="text-lg text-slate-900 font-semibold mt-6">
                 Você deseja sair?
               </h4>
-              <div className="flex max-sm:flex-col gap-4">
-                <button
-                  type="button"
-                  onClick={hideExitModal}
-                  className="px-2 py-2.5 rounded-lg w-full text-sm font-medium bg-gray-200 hover:bg-gray-300"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  className="px-2 py-2.5 rounded-lg w-full text-sm font-medium text-white bg-red-500 hover:bg-red-600"
-                  onClick={() => (window.location.href = "/")}
-                >
-                  Sim
-                </button>
-              </div>
+            </div>
+            <div className="flex max-sm:flex-col gap-4">
+              <button
+                type="button"
+                onClick={hideExitModal}
+                className="px-2 py-2.5 rounded-lg w-full text-sm font-medium bg-gray-200 hover:bg-gray-300"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="px-2 py-2.5 rounded-lg w-full text-sm font-medium text-white bg-red-500 hover:bg-red-600"
+                onClick={() => (window.location.href = "/")}
+              >
+                Sim
+              </button>
             </div>
           </div>
         </div>

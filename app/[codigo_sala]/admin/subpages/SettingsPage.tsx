@@ -143,8 +143,6 @@ export default function ConfigPage({ codigoSala }: { codigoSala: string }) {
         </label>
       </div>
       <hr className="my-4 border-gray-300" />
-      <OperacaoUI codigoSala={codigoSala} />
-      <hr className="my-4 border-gray-300" />
       <FormSistemaAvalia />
       <hr className="my-4 border-gray-300" />
       <OthersSettingsUI codigoSala={codigoSala} />

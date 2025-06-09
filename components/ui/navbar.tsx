@@ -1,7 +1,5 @@
 import Link from "next/link";
 import Button from "./Button";
-import ExitButton from "./ExitButon";
-import AccessModal from "../AccessModal";
 
 interface NavbarProps {
   mode?: string;
@@ -31,18 +29,6 @@ export default function Navbar({ mode, id, admin }: NavbarProps) {
         </div>
       )}
 
-      {validMode === "admin" && (
-        <div className="flex items-center justify-end gap-5">
-          <Button
-            text="Visualização"
-            onClick={() =>
-              (window.location.href = `/${id}/visitante?admin=${admin}`)
-            }
-          />
-          <ExitButton />
-        </div>
-      )}
-
       {validMode === "visitante" && (
         <div className="flex items-center justify-end gap-5">
           <Link
@@ -51,13 +37,6 @@ export default function Navbar({ mode, id, admin }: NavbarProps) {
           >
             Início
           </Link>
-        </div>
-      )}
-
-      {validMode === "voluntario" && (
-        <div className="flex items-center justify-end gap-5">
-          <p className="text-foreground font-bold text-lg">Voluntário</p>
-          <ExitButton />
         </div>
       )}
     </nav>

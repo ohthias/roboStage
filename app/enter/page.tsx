@@ -184,64 +184,77 @@ export default function EnterRoomPage() {
           <div className="flex flex-col space-y-8">
             <div className="flex flex-col space-y-8">
               {/* INPUT DO CÓDIGO */}
-              {!showUsernameInput && (
+                {!showUsernameInput && (
                 <>
                   <div className="flex flex-row items-center justify-between mx-auto w-full max-w-xs gap-4">
-                    {codigo.map((char, index) => (
-                      <div className="w-16 h-16" key={index}>
-                        <input
-                          className="w-full h-full text-center px-2 outline-none rounded-xl border border-gray-200 text-lg bg-white focus:bg-gray-50 focus:ring-1 ring-red-700"
-                          type="text"
-                          maxLength={1}
-                          value={char}
-                          onChange={(e) => handleChange(index, e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(index, e)}
-                          onPaste={handlePaste}
-                          ref={(el) => {
-                            inputsRef.current[index] = el;
-                          }}
-                          required
-                          disabled={status.loading}
-                        />
-                      </div>
-                    ))}
+                  {codigo.map((char, index) => (
+                    <div className="w-16 h-16" key={index}>
+                    <input
+                      className="w-full h-full text-center px-2 outline-none rounded-xl border border-gray-200 text-lg bg-white focus:bg-gray-50 focus:ring-1 ring-red-700"
+                      type="text"
+                      maxLength={1}
+                      value={char}
+                      onChange={(e) => handleChange(index, e.target.value)}
+                      onKeyDown={(e) => {
+                      handleKeyDown(index, e);
+                      if (
+                        e.key === "Enter" &&
+                        codigo.every((c) => c)
+                      ) {
+                        verificarCodigo();
+                      }
+                      }}
+                      onPaste={handlePaste}
+                      ref={(el) => {
+                      inputsRef.current[index] = el;
+                      }}
+                      required
+                      disabled={status.loading}
+                    />
+                    </div>
+                  ))}
                   </div>
 
                   <button
-                    onClick={verificarCodigo}
-                    className="w-full py-3 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
-                    disabled={status.loading || codigo.some((c) => !c)}
+                  onClick={verificarCodigo}
+                  className="w-full py-3 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
+                  disabled={status.loading || codigo.some((c) => !c)}
                   >
-                    {status.loading ? "Verificando..." : "Verificar código"}
+                  {status.loading ? "Verificando..." : "Verificar código"}
                   </button>
                 </>
-              )}
+                )}
 
-              {/* INPUT DO NOME */}
-              {showUsernameInput && (
+                {/* INPUT DO NOME */}
+                {showUsernameInput && (
                 <div className="flex flex-col space-y-4 pt-4">
                   <input
-                    type="text"
-                    placeholder="Seu nome"
-                    value={nomeUsuario}
-                    onChange={(e) => setNomeUsuario(e.target.value)}
-                    className="w-full py-3 px-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                    disabled={status.loading}
+                  type="text"
+                  placeholder="Seu nome"
+                  value={nomeUsuario}
+                  onChange={(e) => setNomeUsuario(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && nomeUsuario.trim()) {
+                    handleNomeSubmit();
+                    }
+                  }}
+                  className="w-full py-3 px-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  disabled={status.loading}
                   />
                   <button
-                    type="button"
-                    onClick={handleNomeSubmit}
-                    className={`w-full py-3 text-white rounded-lg text-sm transition ${
-                      status.loading
-                        ? "bg-green-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700"
-                    }`}
-                    disabled={status.loading || !nomeUsuario.trim()}
+                  type="button"
+                  onClick={handleNomeSubmit}
+                  className={`w-full py-3 text-white rounded-lg text-sm transition ${
+                    status.loading
+                    ? "bg-green-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700"
+                  }`}
+                  disabled={status.loading || !nomeUsuario.trim()}
                   >
-                    {status.loading ? "Entrando..." : "Confirmar nome"}
+                  {status.loading ? "Entrando..." : "Confirmar nome"}
                   </button>
                 </div>
-              )}
+                )}
             </div>
           </div>
         </div>

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 
-export async function GET(req: NextRequest, { params }: { params: { codigo_sala: string } }) {
+export async function GET(request: NextRequest, context: any) {
   const { data: room, error: roomError } = await supabase
     .from('rooms')
     .select('id')
-    .eq('codigo_sala', params.codigo_sala)
+    .eq('codigo_sala', context.params.codigo_sala)
     .single();
 
   if (!room) {

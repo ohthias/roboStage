@@ -1,7 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
 import VoluntarioRoomClient from "@/components/VoluntarioRoomClient";
-import Hero from "@/components/hero";
 
 export default async function VoluntarioRoomPage() {
   const params = useParams();

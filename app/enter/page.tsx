@@ -172,91 +172,83 @@ export default function EnterRoomPage() {
   return (
     <>
       <Hero />
-      <div className="relative flex h-[calc(100vh-64px)] items-center justify-center bg-gradient-to-t from-primary/50 to-light-smoke">
-        <div className="relative mx-16 flex w-full max-w-md flex-col space-y-8 bg-light-smoke px-4 pt-8 pb-4 rounded-xl shadow-md animate-fadein-down">
-          <div className="flex flex-col items-center justify-center text-center space-y-2">
-            <p className="font-semibold text-3xl">Entrar</p>
-            <p className="text-sm font-medium text-gray-400">
+
+      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-gradient-to-t from-primary/50 to-light-smoke px-4 py-12">
+        <div className="w-full max-w-sm sm:max-w-md bg-light-smoke rounded-xl shadow-md p-6 sm:p-8 animate-fadein-down">
+          <div className="flex flex-col items-center text-center space-y-2 mb-8">
+            <p className="font-semibold text-2xl sm:text-3xl">Entrar</p>
+            <p className="text-sm text-gray-500">
               Digite o código de acesso do evento
             </p>
           </div>
 
-          <div className="flex flex-col space-y-8">
-            <div className="flex flex-col space-y-8">
-              {/* INPUT DO CÓDIGO */}
-                {!showUsernameInput && (
-                <>
-                  <div className="flex flex-row items-center justify-between mx-auto w-full max-w-xs gap-4">
-                  {codigo.map((char, index) => (
-                    <div className="w-16 h-16" key={index}>
-                    <input
-                      className="w-full h-full text-center px-2 outline-none rounded-xl border border-gray-200 text-lg bg-white focus:bg-gray-50 focus:ring-1 ring-red-700"
-                      type="text"
-                      maxLength={1}
-                      value={char}
-                      onChange={(e) => handleChange(index, e.target.value)}
-                      onKeyDown={(e) => {
+          {/* Input de código */}
+          {!showUsernameInput && (
+            <>
+              <div className="flex flex-wrap w-full gap-2 sm:gap-2 mb-6">
+                {codigo.map((char, index) => (
+                  <input
+                    key={index}
+                    className="w-11 h-20 sm:w-14 sm:h-20 text-center text-lg border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary transition"
+                    type="text"
+                    maxLength={1}
+                    value={char}
+                    onChange={(e) => handleChange(index, e.target.value)}
+                    onKeyDown={(e) => {
                       handleKeyDown(index, e);
-                      if (
-                        e.key === "Enter" &&
-                        codigo.every((c) => c)
-                      ) {
+                      if (e.key === "Enter" && codigo.every((c) => c)) {
                         verificarCodigo();
                       }
-                      }}
-                      onPaste={handlePaste}
-                      ref={(el) => {
+                    }}
+                    onPaste={handlePaste}
+                    ref={(el) => {
                       inputsRef.current[index] = el;
-                      }}
-                      required
-                      disabled={status.loading}
-                    />
-                    </div>
-                  ))}
-                  </div>
-
-                  <button
-                  onClick={verificarCodigo}
-                  className="w-full py-3 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
-                  disabled={status.loading || codigo.some((c) => !c)}
-                  >
-                  {status.loading ? "Verificando..." : "Verificar código"}
-                  </button>
-                </>
-                )}
-
-                {/* INPUT DO NOME */}
-                {showUsernameInput && (
-                <div className="flex flex-col space-y-4 pt-4">
-                  <input
-                  type="text"
-                  placeholder="Seu nome"
-                  value={nomeUsuario}
-                  onChange={(e) => setNomeUsuario(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && nomeUsuario.trim()) {
-                    handleNomeSubmit();
-                    }
-                  }}
-                  className="w-full py-3 px-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  disabled={status.loading}
+                    }}
+                    disabled={status.loading}
                   />
-                  <button
-                  type="button"
-                  onClick={handleNomeSubmit}
-                  className={`w-full py-3 text-white rounded-lg text-sm transition ${
-                    status.loading
+                ))}
+              </div>
+
+              <button
+                onClick={verificarCodigo}
+                className="w-full py-3 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
+                disabled={status.loading || codigo.some((c) => !c)}
+              >
+                {status.loading ? "Verificando..." : "Verificar código"}
+              </button>
+            </>
+          )}
+
+          {/* Input de nome do usuário */}
+          {showUsernameInput && (
+            <div className="flex flex-col space-y-4">
+              <input
+                type="text"
+                placeholder="Seu nome"
+                value={nomeUsuario}
+                onChange={(e) => setNomeUsuario(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && nomeUsuario.trim())
+                    handleNomeSubmit();
+                }}
+                className="w-full py-3 px-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                disabled={status.loading}
+              />
+
+              <button
+                type="button"
+                onClick={handleNomeSubmit}
+                className={`w-full py-3 text-white rounded-lg text-sm transition ${
+                  status.loading
                     ? "bg-green-400 cursor-not-allowed"
                     : "bg-green-600 hover:bg-green-700"
-                  }`}
-                  disabled={status.loading || !nomeUsuario.trim()}
-                  >
-                  {status.loading ? "Entrando..." : "Confirmar nome"}
-                  </button>
-                </div>
-                )}
+                }`}
+                disabled={status.loading || !nomeUsuario.trim()}
+              >
+                {status.loading ? "Entrando..." : "Confirmar nome"}
+              </button>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </>

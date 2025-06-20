@@ -60,14 +60,18 @@ export default function FormMission({
       const buttons = options.length > 0 ? options : ["Não", "Sim"];
 
       return (
-        <>
+        <div
+          className="flex flex-wrap mt-2 gap-2"
+          role="group"
+          aria-label={`Opções de pontuação para ${mission.name}`}
+        >
           {buttons.map((option) => (
             <button
               key={`${missionId}-switch-${index}-${option}`}
               className={
                 value === option
-                  ? "bg-[#ED1E25] text-white px-4 py-2 rounded-lg border-none font-bold cursor-pointer mt-2 mr-2"
-                  : "bg-[#dcdcdc] text-[#121212] px-4 py-2 rounded-lg border-none cursor-pointer mt-2 mr-2"
+                  ? "bg-[#ED1E25] text-white px-4 py-2 rounded-lg border-none font-bold cursor-pointer mt-2 mr-2 text-sm sm:text-base"
+                  : "bg-[#dcdcdc] text-[#121212] px-4 py-2 rounded-lg border-none cursor-pointer mt-2 mr-2 text-sm sm:text-base"
               }
               onClick={() => onSelect?.(missionId, index, option)}
               aria-pressed={value === option}
@@ -76,7 +80,7 @@ export default function FormMission({
               {option}
             </button>
           ))}
-        </>
+        </div>
       );
     }
 
@@ -100,11 +104,7 @@ export default function FormMission({
       }
 
       return (
-        <div
-          className="flex mt-2"
-          role="group"
-          aria-label={`Opções de pontuação para ${mission.name}`}
-        >
+        <div          >
           {pointOptions.map((val, idx) => {
             const displayLabel = idx + start;
             return (
@@ -131,17 +131,17 @@ export default function FormMission({
   };
 
   return (
-    <div className="bg-light-smoke p-4 rounded-lg max-w-4xl mx-auto">
+    <div className="bg-light-smoke p-4 rounded-lg max-w-4xl sm:mx-auto w-full">
       {Array.isArray(missions) &&
         missions.map((mission) => (
           <div
-            className="flex gap-8 rounded-lg p-4 mb-8 relative after:content-[''] after:absolute after:w-[calc(100%-32px)] after:h-0.5 after:bottom-0 after:bg-[rgba(18,18,18,0.5)] after:left-1/2 after:-translate-x-1/2 after:mt-4"
+            className="flex flex-col sm:flex-row gap-4 sm:gap-8 rounded-lg p-4 mb-8 relative after:content-[''] after:absolute after:w-[calc(100%-32px)] after:h-0.5 after:bottom-0 after:bg-[rgba(18,18,18,0.5)] after:left-1/2 after:-translate-x-1/2 after:mt-4"
             key={mission.id}
           >
-            <span className="bg-[#ED1E25] text-white rounded-lg font-bold flex items-center justify-center mb-2 w-[50px] h-[50px] text-center">
+            <span className="bg-[#ED1E25] text-white rounded-lg font-bold flex items-center justify-center mb-2 w-12 h-12 sm:w-[50px] sm:h-[50px] text-center">
               {mission.id}
             </span>
-            <div>
+            <div className="flex-1">
               <h3 className="font-bold text-[1.1rem] mb-3">
                 {mission.name.toUpperCase()}
               </h3>

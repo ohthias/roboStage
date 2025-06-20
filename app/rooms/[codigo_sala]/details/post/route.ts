@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 
-export async function POST(request: NextRequest, { params }: { params: { codigo_sala: string } }) {
-  const { codigo_sala } = params;
+export async function POST(request: NextRequest, context: any) {
+  const codigo_sala = context.params.codigo_sala;
   const body = await request.json();
   // 1. Buscar a sala pelo código
   const { data: sala, error: errorSala } = await supabase

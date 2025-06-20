@@ -2,11 +2,11 @@
 import { supabase } from '@/lib/supabaseClient';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(req: NextRequest, { params }: { params: { codigo_sala: string } }) {
+export async function POST(request: NextRequest, context: any) {
   const { data: room, error: roomError } = await supabase
     .from('rooms')
     .select('id')
-    .eq('codigo_sala', params.codigo_sala)
+    .eq('codigo_sala', context.params.codigo_sala)
     .single();
 
   if (!room) {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest, { params }: { params: { codigo_sala
   }
 
   const roomId = room.id;
-  const { primary_color, secondary_color, wallpaper_url } = await req.json();
+  const { primary_color, secondary_color, wallpaper_url } = await request.json();
 
   const { data: existing, error: fetchError } = await supabase
     .from('theme')

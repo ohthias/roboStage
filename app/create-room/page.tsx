@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { gerarCodigoAleatorio } from "@/utils/gerarCodigoAleatorio";
 import Hero from "@/components/hero";
@@ -24,13 +25,13 @@ export default function CreateRoomPage() {
     error: "",
   });
 
-  const handleChange = (e: { target: { name: any; value: any } }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
-    setLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     setStatus({ loading: true, success: "", error: "" });
 
     const res = await fetch("/rooms/create-room", {
@@ -40,6 +41,7 @@ export default function CreateRoomPage() {
     });
 
     const result = await res.json();
+
     if (res.ok) {
       await fetch("/rooms/create-room/send-email", {
         method: "POST",
@@ -52,85 +54,83 @@ export default function CreateRoomPage() {
         success: "Sala criada com sucesso!",
         error: "",
       });
+
       router.push(`/${result.room.codigo_sala}/admin`);
-      setLoading(false);
     } else {
       setStatus({
         loading: false,
         success: "",
         error: result.error || "Erro ao criar sala",
       });
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
   return (
     <>
       <Hero />
+
       {loading && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-            display: "flex",
-            justifyContent: "center",
-            backdropFilter: "blur(5px)",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <Loader />
         </div>
       )}
-      <div className="h-[calc(100vh-64px)] flex items-center justify-center bg-gradient-to-t from-secondary/50 to-light">
-        <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md animate-fadein-down">
+
+      <div className="min-h-[calc(100vh-60px)] flex items-center justify-center bg-gradient-to-t from-secondary/50 to-light px-4 py-16">
+        <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 w-full max-w-md sm:max-w-lg animate-fadein-down">
           <div className="mb-4">
-            <h1 className="text-2xl font-bold text-center">
+            <h1 className="text-2xl sm:text-3xl font-bold text-center">
               Crie seu próprio evento!
             </h1>
           </div>
-          <div className="mb-4">
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <p className="text-sm text-gray-400 mb-2">Nome do evento:</p>
 
-                <input
-                  name="nome"
-                  value={form.nome}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  placeholder="Insira o nome do evento"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <p className="text-sm text-gray-400 mb-2">Email:</p>
-
-                <input
-                  name="email"
-                  value={form.email}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  placeholder="Insira o email para receber os códigos de acesso"
-                  onChange={handleChange}
-                  type="email"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={status.loading}
-                className="w-full py-2 bg-secondary text-white rounded shadow hover:bg-secondary-dark focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 active:loading"
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label
+                htmlFor="nome"
+                className="block text-sm font-medium text-gray-600 mb-1"
               >
-                {status.loading ? "Criando..." : "Criar Sala"}
-              </button>
-            </form>
-          </div>
+                Nome do evento:
+              </label>
+              <input
+                id="nome"
+                name="nome"
+                value={form.nome}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded text-sm sm:text-base"
+                placeholder="Insira o nome do evento"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-600 mb-1"
+              >
+                Email:
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded text-sm sm:text-base"
+                placeholder="Insira o email para receber os códigos de acesso"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={status.loading}
+              className="w-full py-2 bg-secondary text-white rounded shadow hover:bg-secondary-dark focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-all duration-200"
+            >
+              {status.loading ? "Criando..." : "Criar Sala"}
+            </button>
+          </form>
         </div>
       </div>
     </>

@@ -1,9 +1,9 @@
 import { supabase } from "@/lib/supabaseClient";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function PUT(request: NextRequest, { params }: { params: { codigo_sala: string } }) {
+export async function PUT(request: NextRequest, context: any) {
   try {
-    const codigoSala = params.codigo_sala;
+    const codigoSala = context.params.codigo_sala;
     const { nome } = await request.json();
 
     const { data, error } = await supabase

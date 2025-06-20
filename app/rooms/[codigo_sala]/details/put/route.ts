@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { codigo_sala: string } }
-) {
-  const { codigo_sala } = params;
+export async function PUT(request: NextRequest, context: any) {
+  const codigo_sala = context.params.codigo_sala;
   const body = await request.json();
 
   // 1. Buscar sala

@@ -73,7 +73,7 @@ export default function ThemePreview({
       >
         {evento?.nome}
       </h1>
-      <div className="w-full max-w-3xl p-6">
+      <div className="w-full p-6">
         <TabelaEquipes codigoSala={evento?.codigo_sala} cor={theme.secondary_color} />
       </div>
       </div>

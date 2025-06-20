@@ -29,12 +29,14 @@ type ResponseType = {
 interface TeamType {
   id: string;
   nome_equipe: string;
-  round1?: number;
-  round2?: number;
-  round3?: number;
+  round1?: { nota: number };
+  round2?: { nota: number };
+  round3?: { nota: number };
   locked_round?: string;
   semiFinal?: number;
   final?: number;
+  avaliadoTop2?: boolean;
+  avaliadoMataMata?: boolean;
   [key: string]: any;
 }
 
@@ -45,15 +47,10 @@ export default function AvaliacaoRoundFinal({
   const [loading, setLoading] = useState<boolean>(true);
   const [missions, setMissions] = useState<any[]>([]);
   const [responses, setResponses] = useState<ResponseType>({});
-  const [selectedModoUso, setSelectedModoUso] = useState<
-    "mata-mata" | "top2" | ""
-  >("");
-  const [selectedModoRound, setSelectedModoRound] = useState<
-    "semifinal1" | "semifinal2" | "final" | ""
-  >("");
+  const [selectedModoUso, setSelectedModoUso] = useState<"mata-mata" | "top2" | "">("");
+  const [selectedModoRound, setSelectedModoRound] = useState<"semifinal1" | "semifinal2" | "final" | "">("");
   const [selectedEquipe, setSelectedEquipe] = useState<string>("");
-  const [semifinaisConcluidas, setSemifinaisConcluidas] =
-    useState<boolean>(false);
+  const [semifinaisConcluidas, setSemifinaisConcluidas] = useState<boolean>(false);
   const [modoLimitado, setModoLimitado] = useState(false);
   const [allRoundsCompleted, setAllRoundsCompleted] = useState(false);
 
@@ -67,25 +64,25 @@ export default function AvaliacaoRoundFinal({
 
         const data = await response.json();
 
-        const allCompleted = data.teams.every(
-          (team: { round1: number; round2: number; round3: number }) =>
-            team.round1 !== -1 && team.round2 !== -1 && team.round3 !== -1
+        // Remove equipes com notas -1
+        const equipesValidas = data.teams.filter(
+          (team: any) =>
+            team.round1?.nota !== -1 &&
+            team.round2?.nota !== -1 &&
+            team.round3?.nota !== -1
         );
-        setAllRoundsCompleted(allCompleted);
 
-        if (data.teams.length < 4) setModoLimitado(true);
-        else setModoLimitado(false);
+        setAllRoundsCompleted(equipesValidas.length === 0);
 
-        const equipesComNotas = data.teams.map((equipe: any) => {
+        setModoLimitado(equipesValidas.length < 4);
+
+        const equipesComNotas = equipesValidas.map((equipe: any) => {
           const notaTotal =
             (equipe.round1?.nota || 0) +
             (equipe.round2?.nota || 0) +
             (equipe.round3?.nota || 0);
 
-          const avaliadoTop2 =
-            equipe.round1?.nota !== undefined &&
-            equipe.round2?.nota !== undefined &&
-            equipe.avaliadoTop2 === true;
+          const avaliadoTop2 = equipe.avaliadoTop2 === true;
           const avaliadoMataMata =
             equipe.semiFinal === true ||
             equipe.final === true ||
@@ -95,16 +92,11 @@ export default function AvaliacaoRoundFinal({
         });
 
         const top4Equipes = equipesComNotas
-          .sort(
-            (a: { notaTotal: number }, b: { notaTotal: number }) =>
-              b.notaTotal - a.notaTotal
-          )
+          .sort((a: { notaTotal: number; }, b: { notaTotal: number; }) => b.notaTotal - a.notaTotal)
           .slice(0, 4);
 
-        const semi1Done =
-          top4Equipes[0]?.semiFinal && top4Equipes[1]?.semiFinal;
-        const semi2Done =
-          top4Equipes[2]?.semiFinal && top4Equipes[3]?.semiFinal;
+        const semi1Done = top4Equipes[0]?.semiFinal && top4Equipes[1]?.semiFinal;
+        const semi2Done = top4Equipes[2]?.semiFinal && top4Equipes[3]?.semiFinal;
         setSemifinaisConcluidas(Boolean(semi1Done && semi2Done));
 
         setEquipes(top4Equipes);
@@ -119,7 +111,7 @@ export default function AvaliacaoRoundFinal({
       .then((res) => res.json())
       .then((data) => setMissions(data.missions))
       .catch((error) => console.error("Erro ao carregar missões:", error));
-      
+
     fetchEquipes();
   }, [codigo_sala]);
 
@@ -160,9 +152,7 @@ export default function AvaliacaoRoundFinal({
         `/rooms/${codigo_sala}/rounds/semiFinaisFinais/`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             team_id: equipeObj.id,
             [`round_${selectedModoRound}`]: {
@@ -268,7 +258,6 @@ export default function AvaliacaoRoundFinal({
         </p>
       )}
 
-      {/* Renderiza avaliação só depois de selecionar modo uso */}
       {selectedModoUso && (
         <>
           <div className="mb-6 text-left max-w-4xl">
@@ -281,131 +270,99 @@ export default function AvaliacaoRoundFinal({
             </p>
           </div>
 
-          {loading ? (
-            <Loader />
-          ) : (
-            <>
-              {/* Se modo uso = "mata-mata", permite escolher o modo da rodada */}
-              {selectedModoUso === "mata-mata" && (
-                <div className="w-full bg-light-smoke rounded-lg mb-8 max-w-4xl flex flex-col gap-4 p-4">
-                  <div className="flex flex-col gap-2 w-full">
-                    <label
-                      htmlFor="modo-select"
-                      className="font-medium text-gray-700"
-                    >
-                      Modo da rodada
-                    </label>
-                    <select
-                      id="modo-select"
-                      className="border p-2 rounded-md bg-white text-gray-700"
-                      value={selectedModoRound}
-                      onChange={(e) => {
-                        setSelectedModoRound(
-                          e.target.value as typeof selectedModoRound
-                        );
-                        setSelectedEquipe("");
-                        setResponses({});
-                      }}
-                    >
-                      <option value="">Selecione o modo</option>
-                      {modosRound.map((modo) => (
-                        <option
-                          key={modo}
-                          value={modo}
-                          disabled={modo === "final" && !semifinaisConcluidas}
-                        >
-                          {modo === "final" && !semifinaisConcluidas
-                            ? "Final (bloqueada)"
-                            : modo.charAt(0).toUpperCase() + modo.slice(1)}
-                        </option>
-                      ))}
-                    </select>
-
-                    {finalBloqueada && (
-                      <div className="bg-yellow-100 text-yellow-800 border-l-4 border-yellow-500 p-4 rounded mt-2">
-                        A final ainda não está liberada. Avalie primeiro as duas
-                        semifinais.
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Seleção equipe */}
-              {selectedModoRound || selectedModoUso === "top2" ? (
-                <div className="flex flex-col gap-2 w-full max-w-4xl mb-6">
-                  <label
-                    htmlFor="equipe-select"
-                    className="font-medium text-gray-700"
-                  >
-                    Equipe
-                  </label>
-                  <select
-                    id="equipe-select"
-                    className="border p-2 rounded-md bg-white text-gray-700"
-                    value={selectedEquipe}
-                    onChange={(e) => setSelectedEquipe(e.target.value)}
-                    disabled={
-                      selectedModoUso === "mata-mata"
-                        ? !selectedModoRound
-                        : false
-                    }
-                  >
-                    <option value="">Selecione uma equipe</option>
-
-                    {selectedModoUso === "mata-mata"
-                      ? equipesDisponiveis.map((equipe) => (
-                          <option
-                            key={equipe.id}
-                            value={equipe.nome_equipe}
-                            disabled={equipeJaAvaliada(equipe)}
-                          >
-                            {equipe.nome_equipe}{" "}
-                            {equipeJaAvaliada(equipe) ? "(Já avaliada)" : ""}
-                          </option>
-                        ))
-                      : // modo top2 - só permite avaliar as duas com maior nota
-                        equipesTop2.map((equipe) => (
-                          <option
-                            key={equipe.id}
-                            value={equipe.nome_equipe}
-                            disabled={equipeJaAvaliada(equipe)}
-                          >
-                            {equipe.nome_equipe}{" "}
-                            {equipeJaAvaliada(equipe) ? "(Já avaliada)" : ""}
-                          </option>
-                        ))}
-                  </select>
-                </div>
-              ) : null}
-
-              {/* Formulário das missões */}
-              {selectedEquipe && (
-                <FormMission
-                  missions={missions}
-                  responses={responses}
-                  onSelect={handleSelectMission}
-                />
-              )}
-
-              {/* Botão enviar */}
-              {selectedEquipe && (
-                <button
-                  onClick={handleSubmit}
-                  disabled={equipeJaAvaliada(
-                    equipes.find((eq) => eq.nome_equipe === selectedEquipe)!
-                  )}
-                  className={`px-6 py-3 rounded font-bold text-white max-w-4xl ${
-                    equipeJaAvaliada(
-                      equipes.find((eq) => eq.nome_equipe === selectedEquipe)!
-                    )
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700"
-                  }`}
+          {selectedModoUso === "mata-mata" && (
+            <div className="w-full bg-light-smoke rounded-lg mb-8 max-w-4xl flex flex-col gap-4 p-4">
+              <div className="flex flex-col gap-2 w-full">
+                <label htmlFor="modo-select" className="font-medium text-gray-700">
+                  Modo da rodada
+                </label>
+                <select
+                  id="modo-select"
+                  className="border p-2 rounded-md bg-white text-gray-700"
+                  value={selectedModoRound}
+                  onChange={(e) => {
+                    setSelectedModoRound(
+                      e.target.value as typeof selectedModoRound
+                    );
+                    setSelectedEquipe("");
+                    setResponses({});
+                  }}
                 >
-                  Enviar Avaliação
-                </button>
-              )}
+                  <option value="">Selecione o modo</option>
+                  {modosRound.map((modo) => (
+                    <option
+                      key={modo}
+                      value={modo}
+                      disabled={modo === "final" && !semifinaisConcluidas}
+                    >
+                      {modo === "final" && !semifinaisConcluidas
+                        ? "Final (bloqueada)"
+                        : modo.charAt(0).toUpperCase() + modo.slice(1)}
+                    </option>
+                  ))}
+                </select>
+
+                {finalBloqueada && (
+                  <div className="bg-yellow-100 text-yellow-800 border-l-4 border-yellow-500 p-4 rounded mt-2">
+                    A final ainda não está liberada. Avalie primeiro as duas semifinais.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {(selectedModoRound || selectedModoUso === "top2") && (
+            <div className="flex flex-col gap-2 w-full max-w-4xl mb-6">
+              <label htmlFor="equipe-select" className="font-medium text-gray-700">
+                Equipe
+              </label>
+              <select
+                id="equipe-select"
+                className="border p-2 rounded-md bg-white text-gray-700"
+                value={selectedEquipe}
+                onChange={(e) => setSelectedEquipe(e.target.value)}
+                disabled={selectedModoUso === "mata-mata" && !selectedModoRound}
+              >
+                <option value="">Selecione uma equipe</option>
+                {(selectedModoUso === "mata-mata"
+                  ? equipesDisponiveis
+                  : equipesTop2
+                ).map((equipe) => (
+                  <option
+                    key={equipe.id}
+                    value={equipe.nome_equipe}
+                    disabled={equipeJaAvaliada(equipe)}
+                  >
+                    {equipe.nome_equipe}{" "}
+                    {equipeJaAvaliada(equipe) ? "(Já avaliada)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {selectedEquipe && (
+            <>
+              <FormMission
+                missions={missions}
+                responses={responses}
+                onSelect={handleSelectMission}
+              />
+              <button
+                onClick={handleSubmit}
+                disabled={equipeJaAvaliada(
+                  equipes.find((eq) => eq.nome_equipe === selectedEquipe)!
+                )}
+                className={`px-6 py-3 rounded font-bold text-white max-w-4xl ${
+                  equipeJaAvaliada(
+                    equipes.find((eq) => eq.nome_equipe === selectedEquipe)!
+                  )
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
+              >
+                Enviar Avaliação
+              </button>
             </>
           )}
         </>

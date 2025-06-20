@@ -2,10 +2,9 @@ import { supabase } from "@/lib/supabaseClient";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { codigo_sala: string } }
+  request: NextRequest, context: any
 ) {
-  const { codigo_sala } = params;
+  const codigo_sala = context.params.codigo_sala;
   const body = await request.json();
 
   const { premios } = body;

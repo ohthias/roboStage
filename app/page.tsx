@@ -91,13 +91,17 @@ export default function Home() {
       <Hero />
       <Banner />
       <main className="flex flex-col items-center justify-center gap-8 px-4 py-16 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-center gap-4 relative my-4 w-full max-w-4xl">
-          <div className="flex-1 flex justify-center">
-            <h1 className="text-4xl font-bold text-primary sm:text-5xl text-center" id="pontuador">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative my-4 w-full max-w-4xl">
+          <div className="flex-1 flex justify-center sm:justify-start text-center sm:text-left">
+            <h1
+              className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary"
+              id="pontuador"
+            >
               Pontuador
             </h1>
           </div>
-          <div className="bg-light-smoke flex flex-col items-center justify-center rounded-md shadow-md p-4">
+
+          <div className="bg-light-smoke flex flex-col items-center justify-center rounded-md shadow-md p-4 w-full sm:w-auto max-w-[200px]">
             <p className="text-sm font-bold text-black">Pontos</p>
             <h3 className="text-2xl font-bold text-primary">{totalPoints}</h3>
           </div>

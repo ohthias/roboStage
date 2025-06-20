@@ -1,8 +1,8 @@
 import { supabase } from '@/lib/supabaseClient';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest, { params }: { params: { codigo_sala: string } }) {
-  const { codigo_sala } = params;
+export async function POST(request: NextRequest, context: any) {
+  const codigo_sala = context.params.codigo_sala;
   const body = await request.json();
 
   try {
@@ -59,8 +59,8 @@ export async function POST(request: NextRequest, { params }: { params: { codigo_
   }
 }
 
-export async function GET(request: NextRequest, { params }: { params: { codigo_sala: string } }) {
-  const { codigo_sala } = params;
+export async function GET(request: NextRequest, context: any) {
+  const codigo_sala = context.params.codigo_sala;
 
   try {
     const { data: room, error: roomError } = await supabase

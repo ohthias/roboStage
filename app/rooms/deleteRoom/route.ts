@@ -20,7 +20,11 @@ export const POST = async (request: Request) => {
       .from("rooms")
       .delete()
       .eq("codigo_sala", codigo);
-    console.log(error)
+    if (process.env.NODE_ENV === "development") {
+      console.log(error);
+    } else {
+      console.error("An error occurred while deleting the room.");
+    }
     if (error) throw error;
 
     await resend.emails.send({

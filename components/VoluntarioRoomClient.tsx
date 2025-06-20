@@ -1,53 +1,173 @@
-// components/VoluntarioRoomClient.tsx
-"use client";
-
 import { useState } from "react";
-import AvaliacaoRounds from "@/components/AvaRound";
-import Button from "./ui/Button";
+import HeroVoluntario from "./ui/HeroVoluntario";
+import AvaliacaoRounds from "./AvaRound";
+import robo from "@/public/robo.gif";
+import AvaliacaoRoundFinal from "./componentsVoluntario/AvaFinalRound";
+import DiscursosPremiacao from "./componentsVoluntario/DiscursosPremiacao";
 
-export default function VoluntarioRoomClient({
+export default function DashboardVoluntario({
   codigoSala,
 }: {
   codigoSala: string;
 }) {
-  const [view, setView] = useState<"default" | "round">("default");
+  const [view, setView] = useState<
+    | "default"
+    | "Hub"
+    | "AvaliacaoRounds"
+    | "SemiFinal"
+    | "EventosRounds"
+    | "Discursos"
+  >("default");
 
   const renderContent = () => {
     switch (view) {
-      case "round":
+      case "Hub":
         return (
           <>
-            <button
-              className="mt-4 bg-white text-primary-dark px-4 py-2 rounded cursor-pointer hover:bg-light-smoke transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer"
-              onClick={() => setView("default")}
-            >
-              Voltar
-            </button>
+            <div className="flex items-center justify-center h-[calc(100vh-200px)] w-full gap-12 bg-gradient-to-t from-white to-light-smoke animate-fade-in">
+              <div className="flex flex-col items-start max-w-xl">
+                <h2 className="text-4xl font-extrabold mb-4 flex items-center gap-3 text-details-primary">
+                  Bem-vindo ao Hub de Voluntário!
+                </h2>
+                <p className="text-md mb-3 text-foreground max-w-md">
+                  Estamos felizes em tê-lo aqui. Explore as funções disponíveis
+                  usando a barra de navegação acima e participe das atividades
+                  como voluntário!
+                </p>
+              </div>
+              <div className="flex items-end animate-bounce-slow">
+                <img
+                  src={robo.src}
+                  alt="Voluntário"
+                  className="w-96 h-auto object-cover"
+                />
+              </div>
+              <style jsx global>{`
+                @keyframes bounce-slow {
+                  0%,
+                  100% {
+                    transform: translateY(0);
+                  }
+                  50% {
+                    transform: translateY(-20px);
+                  }
+                }
+                .animate-bounce-slow {
+                  animation: bounce-slow 2s infinite;
+                }
+              `}</style>
+            </div>
+          </>
+        );
+      case "AvaliacaoRounds":
+        return (
+          <>
             <AvaliacaoRounds codigo_sala={codigoSala} />
           </>
         );
+      case "SemiFinal":
+        return (
+          <div className="flex flex-col items-center justify-center w-full animate-fade-in">
+            <h2 className="text-4xl font-extrabold text-details-primary">
+              Avaliação de Semi-Final e Final
+            </h2>
+            <AvaliacaoRoundFinal codigo_sala={codigoSala} />
+          </div>
+        );
+      case "EventosRounds":
+        return (
+          <div className="flex items-center justify-center h-[calc(100vh-200px)] w-full gap-12 bg-gradient-to-t from-white to-light-smoke animate-fade-in">
+            <div className="flex flex-col items-start max-w-xl">
+              <h2 className="text-4xl font-extrabold mb-4 flex items-center gap-3 text-details-primary">
+                Em breve
+              </h2>
+              <p className="text-md mb-3 text-foreground max-w-md">
+                Esta funcionalidade estará disponível em breve. Fique atento
+                para mais atualizações!
+              </p>
+            </div>
+            <div className="flex items-end animate-bounce-slow">
+              <img
+                src={robo.src}
+                alt="Voluntário"
+                className="w-96 h-auto object-cover"
+              />
+            </div>
+            <style jsx global>{`
+              @keyframes bounce-slow {
+                0%,
+                100% {
+                  transform: translateY(0);
+                }
+                50% {
+                  transform: translateY(-20px);
+                }
+              }
+              .animate-bounce-slow {
+                animation: bounce-slow 2s infinite;
+              }
+            `}</style>
+          </div>
+        );
+      case "Discursos":
+        return (
+          <div className="flex flex-col items-center justify-center w-full animate-fade-in">
+            <h2 className="text-4xl font-extrabold text-details-primary">
+              Premiação e Discursos
+            </h2>
+            <DiscursosPremiacao codigo_sala={codigoSala} />
+          </div>
+        );
+
       default:
         return (
-          <div className="flex gap-8 items-center">
-            <Button text="Avaliar Round" onClick={() => setView("round")} />
-          </div>
+          <>
+            <div className="flex flex-col-reverse lg:flex-row items-center justify-center min-h-screen w-full gap-12 px-6 py-16 bg-gradient-to-t from-white to-light-smoke animate-fade-in">
+              {/* Texto */}
+              <div className="flex flex-col items-start max-w-xl text-center lg:text-left">
+                <h2 className="text-3xl sm:text-4xl font-extrabold mb-4 flex items-center gap-3 text-details-primary">
+                  Bem-vindo ao Hub de Voluntário!
+                </h2>
+                <p className="text-sm sm:text-base text-foreground mb-3 max-w-md mx-auto lg:mx-0">
+                  Estamos felizes em tê-lo aqui. Explore as funções disponíveis
+                  usando a barra de navegação acima e participe das atividades
+                  como voluntário!
+                </p>
+              </div>
+
+              {/* Imagem */}
+              <div className="flex items-end animate-bounce-slow">
+                <img
+                  src={robo.src}
+                  alt="Voluntário"
+                  className="w-64 sm:w-80 md:w-96 h-auto object-cover"
+                />
+              </div>
+            </div>
+
+            <style jsx global>{`
+              @keyframes bounce-slow {
+                0%,
+                100% {
+                  transform: translateY(0);
+                }
+                50% {
+                  transform: translateY(-20px);
+                }
+              }
+              .animate-bounce-slow {
+                animation: bounce-slow 2s infinite;
+              }
+            `}</style>
+          </>
         );
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full">
-      {view === "default" && (
-        <>
-          <h1 className="text-2xl font-bold text-primary-dark text-center">
-            Evento {codigoSala} - Acesso Voluntário
-          </h1>
-          <p className="mt-2 text-gray-600 text-center">
-            Selecione a opção de avaliação desejada.
-          </p>
-        </>
-      )}
-      <div className="mt-4">{renderContent()}</div>
-    </div>
+    <>
+      <HeroVoluntario codigo_sala={codigoSala} setView={setView} view={view} />
+      <main className="p-6">{renderContent()}</main>
+    </>
   );
 }

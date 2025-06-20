@@ -1,17 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Navbar from "@/components/ui/navbar";
-import Icone from "@/public/Icone.png"
+import Icone from "@/public/Icone.png";
 
 interface HeroProps {
   admin?: string;
 }
 
 export default function Hero({ admin }: HeroProps) {
-  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const pathname = usePathname();
   const pathParts = pathname.split("/").filter(Boolean);
   const id = pathParts[0] || undefined;
   const mode = pathParts[1] || "default";
@@ -35,36 +37,37 @@ export default function Hero({ admin }: HeroProps) {
             {mode === "default" && (
               <ul className="flex items-center gap-6 text-sm">
                 <li>
-                    <a
+                  <a
                     className="text-foreground/75 transition hover:text-foreground cursor-pointer"
                     onClick={(e) => {
                       e.preventDefault();
                       const el = document.getElementById("pontuador");
                       if (el) {
-                      el.scrollIntoView({ behavior: "smooth" });
+                        el.scrollIntoView({ behavior: "smooth" });
                       }
                     }}
-                    >
+                  >
                     Pontuador
-                    </a>
+                  </a>
                 </li>
               </ul>
             )}
           </nav>
+
           <div className="flex items-center gap-4">
             {mode === "admin" || mode === "voluntario" ? (
               <Navbar id={id} mode={mode} admin={admin} />
             ) : (
-              <div className="sm:flex sm:gap-4">
+              <div className="hidden sm:flex sm:gap-4">
                 <a
-                  className="block rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-light transition hover:bg-primary-dark"
+                  className="block rounded-md bg-primary px-5 py-2.5 text-sm text-center font-medium text-light transition hover:bg-primary-dark"
                   href="/enter"
                 >
                   Entrar
                 </a>
 
                 <a
-                  className="hidden rounded-md bg-transparent px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-light-smoke sm:block"
+                  className="rounded-md bg-transparent px-5 py-2.5 text-sm text-center font-medium text-primary transition hover:bg-light-smoke"
                   href="/create-room"
                 >
                   Criar
@@ -72,8 +75,13 @@ export default function Hero({ admin }: HeroProps) {
               </div>
             )}
 
-            <button className="block rounded-sm bg-gray-100 p-2.5 text-gray-600 transition hover:text-gray-600/75 md:hidden dark:bg-gray-800 dark:text-white dark:hover:text-white/75">
-              <span className="sr-only">Toggle menu</span>
+            {/* Toggle menu button */}
+            <button
+              className="block rounded-sm bg-gray-100 p-2.5 text-gray-600 transition hover:text-gray-600/75 md:hidden dark:bg-gray-800 dark:text-white dark:hover:text-white/75"
+              type="button"
+              aria-label="Toggle menu"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="size-5"
@@ -92,6 +100,45 @@ export default function Hero({ admin }: HeroProps) {
           </div>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {isMobileMenuOpen && mode === "default" && (
+        <div className="md:hidden px-4 py-4 bg-white border-t border-gray-200 transtion">
+          <ul className="space-y-2 text-sm">
+            <li>
+              <a
+                className="block rounded-md bg-primary px-4 py-2 text-sm font-medium text-center text-light transition hover:bg-primary-dark"
+                href="/enter"
+              >
+                Entrar
+              </a>
+            </li>
+            <li>
+              <a
+                className="block rounded-md border border-primary text-primary px-4 py-2 text-sm font-medium text-center transition hover:bg-light-smoke"
+                href="/create-room"
+              >
+                Criar
+              </a>
+            </li>
+            <li>
+              <a
+                className="block text-foreground/75 transition hover:text-foreground cursor-pointer text-center"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById("pontuador");
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth" });
+                    setIsMobileMenuOpen(false); // fecha o menu
+                  }
+                }}
+              >
+                Pontuador
+              </a>
+            </li>
+          </ul>
+        </div>
+      )}
     </header>
   );
 }

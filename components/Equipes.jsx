@@ -92,6 +92,31 @@ export default function Equipes({ codigoSala, onAtualizacao }) {
     }
   };
 
+  const handleInputKeyDown = (e) => {
+    if (e.key === "Enter") {
+      adicionarEquipe();
+    }
+  };
+
+  useEffect(() => {
+    const carregarEquipes = async () => {
+      setCarregando(true);
+      try {
+        const res = await fetch(`/rooms/${codigoSala}/get/`);
+        const data = await res.json();
+        setEquipes(data.teams || []);
+      } catch (error) {
+        console.error("Erro ao carregar equipes:", error);
+        setMensagem("Erro ao carregar as equipes.");
+        setTipoMensagem("erro");
+      } finally {
+        setCarregando(false);
+      }
+    };
+
+    carregarEquipes();
+  }, [codigoSala]);
+
   return (
     <>
       <Mensage
@@ -102,33 +127,47 @@ export default function Equipes({ codigoSala, onAtualizacao }) {
           setTipoMensagem("");
         }}
       />
-      <div className="bg-gray-100 p-4 rounded-lg shadow-md h-[400px] flex flex-col">
-        <h2 className="text-xl font-bold mb-4 text-primary-dark">Equipes</h2>
+      <div className="flex flex-row gap-4 mb-4">
+        <input
+          type="text"
+          value={nome_equipe}
+          placeholder="Nome da Equipe"
+          className="p-2 border border-gray-300 rounded w-full"
+          onChange={(e) => setNomeEquipe(e.target.value)}
+          onKeyDown={handleInputKeyDown}
+          disabled={carregando}
+        />
+        <button
+          onClick={adicionarEquipe}
+          disabled={carregando}
+          className="w-50 bg-primary text-white p-2 rounded hover:bg-primary-dark transition duration-200 cursor-pointer"
+        >
+          {carregando ? "Salvando..." : "Adicionar Equipe"}
+        </button>
+      </div>
 
-        <div className="flex flex-row gap-4 mb-4">
-          <input
-            type="text"
-            value={nome_equipe}
-            placeholder="Nome da Equipe"
-            className="p-2 border border-gray-300 rounded w-full"
-            onChange={(e) => setNomeEquipe(e.target.value)}
-          />
-          <button
-            onClick={adicionarEquipe}
-            disabled={carregando}
-            className="w-50 bg-primary text-white p-2 rounded hover:bg-primary-dark transition duration-200 cursor-pointer"
-          >
-            {carregando ? "Salvando..." : "Adicionar Equipe"}
-          </button>
-        </div>
-
-        <div className="overflow-auto flex-1">
-          <table className="w-full border-collapse border border-gray-300">
-            <thead className="bg-primary text-white top-0 z-10">
+      <div className="overflow-auto flex-1">
+        {carregando ? (
+          <div className="flex justify-center items-center flex-col p-8 gap-4">
+            <span className="text-primary font-semibold">Carregando...</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-10 animate-[spin_0.8s_linear_infinite] fill-primary-light block mx-auto"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M12 22c5.421 0 10-4.579 10-10h-2c0 4.337-3.663 8-8 8s-8-3.663-8-8c0-4.336 3.663-8 8-8V2C6.579 2 2 6.58 2 12c0 5.421 4.579 10 10 10z"
+                data-original="#000000"
+              />
+            </svg>
+          </div>
+        ) : (
+          <table className="w-full border-collapse border border-gray-300 rounded-lg">
+            <thead className="bg-primary text-white whitespace-nowrap text-left">
               <tr>
-                <th className="p-2">Nº</th>
+                <th className="p-2 w-16 text-center">Nº</th>
                 <th className="p-2">Equipe</th>
-                <th className="p-2 w-32">Ações</th>
+                <th className="p-2 w-32 text-center">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -143,7 +182,7 @@ export default function Equipes({ codigoSala, onAtualizacao }) {
                   <tr key={idx} className="border-b border-gray-300">
                     <td className="text-center text-gray-400 p-2">{idx + 1}</td>
                     <td className="p-2">{eq.nome_equipe}</td>
-                    <td className="text-center p-2">
+                    <td className="text-center p-2 flex gap-2 justify-center">
                       <button
                         onClick={() => removerEquipe(idx)}
                         disabled={carregando}
@@ -151,13 +190,20 @@ export default function Equipes({ codigoSala, onAtualizacao }) {
                       >
                         Remover
                       </button>
+                      <button
+                        onClick={() => editarEquipe(idx)}
+                        disabled={carregando}
+                        className="bg-light text-primary-dark px-2 rounded hover:bg-primary-light hover:text-white transition duration-200 cursor-pointer"
+                      >
+                        Editar
+                      </button>
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
-        </div>
+        )}
       </div>
     </>
   );

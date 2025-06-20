@@ -1,11 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import styles from "@/style/Visitante.module.css";
 import Loader from "./loader";
 
-export default function TabelaEquipes({ codigoSala }) {
+export default function TabelaEquipes({ codigoSala, cor }) {
   const [equipes, setEquipes] = useState([]);
-  const [nomeSala, setNomeSala] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,7 +15,6 @@ export default function TabelaEquipes({ codigoSala }) {
         const res = await fetch(`/rooms/${codigoSala}/get`);
         if (!res.ok) throw new Error("Erro ao buscar sala");
         const data = await res.json();
-        setNomeSala(data.nome || "Sala sem nome");
 
         const equipesOrdenadas = (data.teams || []).sort((a, b) => {
           const maxA = Math.max(a.round1 || 0, a.round2 || 0, a.round3 || 0);
@@ -43,53 +40,53 @@ export default function TabelaEquipes({ codigoSala }) {
 
   if (loading) {
     return (
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 9999,
-        }}
-      >
+      <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
         <Loader />
       </div>
     );
   }
 
+  const tableHeaderStyle = {
+    backgroundColor: cor || "#d01117",
+  };
+
+  // Função para ajustar as notas
+  const formatNota = (nota) => {
+    if (nota === -1) return "0";
+    if (nota === null || nota === undefined) return "-";
+    return nota;
+  };
+
   return (
-    <>
-      {!loading && (
-        <div className={styles.container}>
-          <table className={styles.tabela}>
-            <thead className={styles.thead}>
-              <tr className={styles.tr}>
-                <th className={styles.th}>Posição</th>
-                <th className={styles.th}>Equipe</th>
-                <th className={styles.th}>Round 1</th>
-                <th className={styles.th}>Round 2</th>
-                <th className={styles.th}>Round 3</th>
-              </tr>
-            </thead>
-            <tbody className={styles.tbody}>
-              {equipes.map((eq, idx) => (
-                <tr key={idx} className={styles.tr}>
-                  <td className={styles.td}>{idx + 1}</td>
-                  <td className={styles.td}>{eq.nome_equipe}</td>
-                  <td className={styles.td}>{eq.round1}</td>
-                  <td className={styles.td}>{eq.round2}</td>
-                  <td className={styles.td}>{eq.round3}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </>
+    <div className="w-full overflow-x-auto px-2 py-4">
+      <table
+        className="min-w-full border-collapse bg-white shadow-md rounded"
+        style={{ width: "100%" }}
+      >
+        <thead className="text-white" style={tableHeaderStyle}>
+          <tr>
+            <th className="text-center p-2">Posição</th>
+            <th className="text-left p-2">Equipe</th>
+            <th className="text-center p-2">Round 1</th>
+            <th className="text-center p-2">Round 2</th>
+            <th className="text-center p-2">Round 3</th>
+          </tr>
+        </thead>
+        <tbody className="text-gray-800">
+          {equipes.map((eq, idx) => (
+            <tr
+              key={idx}
+              className={`border-b ${idx % 2 === 0 ? "bg-gray-100" : "bg-light"}`}
+            >
+              <td className="text-center p-2">{idx + 1}</td>
+              <td className="text-left p-2 truncate">{eq.nome_equipe}</td>
+              <td className="text-center p-2">{formatNota(eq.round1)}</td>
+              <td className="text-center p-2">{formatNota(eq.round2)}</td>
+              <td className="text-center p-2">{formatNota(eq.round3)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

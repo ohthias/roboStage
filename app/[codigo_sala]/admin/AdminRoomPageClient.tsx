@@ -4,7 +4,17 @@ import Equipes from "@/components/Equipes";
 import Loader from "@/components/loader";
 import SideBar from "@/components/ui/SideBar";
 import TabelaEquipes from "@/components/TabelaEquipes";
-import { supabase } from "@/lib/supabaseClient";
+import ThemeForm from "./subpages/ThemePage";
+import ThemePreview from "../visitante/ThemePreview";
+import ConfigPage from "./subpages/SettingsPage";
+import iconeFundo1 from "@/public/images/icone_fundo_ppt_1.png";
+import iconeFundo2 from "@/public/images/icone_fundo_ppt_2.png";
+import protoboard from "@/public/protoboard.gif";
+import CardDeliberationRound from "@/components/componentsAdmin/CardDeliberationRound";
+import CardPowerPoint from "@/components/componentsAdmin/CardPowerPoint";
+import CardCronograma from "@/components/componentsAdmin/CardCronograma";
+import CardSystemRounds from "@/components/componentsAdmin/CardSystemRounds";
+import GeneralPage from "./subpages/GeralPage";
 interface Props {
   codigoSala: string;
 }
@@ -19,50 +29,13 @@ interface Sala {
 
 export default function AdminRoomPageClient({ codigoSala }: Props) {
   const [sala, setSala] = useState<Sala | undefined>();
+  const [roomDetails, setRoomDetails] = useState<any>({});
   const [carregando, setCarregando] = useState(true);
   const [atualizacoes, setAtualizacoes] = useState<string[]>([]);
+  const [tema, setTema] = useState<any>({});
 
   const adicionarAtualizacao = (texto: any) => {
     setAtualizacoes((prev) => [texto, ...prev]);
-  };
-
-  const deletarSala = async () => {
-    const confirmacao = confirm(
-      "Você tem certeza que deseja deletar este evento?"
-    );
-    if (!confirmacao || !codigoSala) return;
-
-    const emailAdmin = prompt("Digite seu e-mail para confirmar a exclusão:");
-
-    if (!emailAdmin || !/\S+@\S+\.\S+/.test(emailAdmin)) {
-      alert("E-mail inválido. A operação foi cancelada.");
-      return;
-    }
-
-    try {
-      console.log("Deletando sala:", codigoSala, "Email do admin:", emailAdmin);
-      const res = await fetch("/rooms/deleteRoom", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          codigo: codigoSala,
-          emailAdmin,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert("Erro ao deletar sala: " + (data.error || "Erro desconhecido"));
-        return;
-      }
-
-      alert("Sala deletada com sucesso! Um e-mail de confirmação foi enviado.");
-      window.location.href = "/";
-    } catch (error) {
-      alert("Erro inesperado ao tentar deletar a sala.");
-      console.error(error);
-    }
   };
 
   useEffect(() => {
@@ -102,44 +75,120 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
     };
 
     fetchLogs();
+
+    const theme = async () => {
+      try {
+        const res = await fetch(`/rooms/${codigoSala}/theme/get/`);
+        const data = await res.json();
+        setTema(data);
+      } catch (error) {
+        console.error("Erro ao buscar tema:", error);
+      }
+    };
+
+    theme();
+
+    const fetchRoom_details = async () => {
+      try {
+        const res = await fetch(`/rooms/${codigoSala}/others/`);
+        if (!res.ok) throw new Error("Erro ao buscar detalhes da sala");
+        const data = await res.json();
+        console.log("Detalhes da sala:", data);
+        setRoomDetails(data);
+      } catch (error) {
+        console.error("Erro ao buscar detalhes da sala:", error);
+      }
+    }
+    fetchRoom_details();
   }, [codigoSala]);
 
-  const [conteudo, setConteudo] = useState<"geral" | "ranking">("geral");
+  const [conteudo, setConteudo] = useState<
+    "geral"
+  | "ranking"
+  | "equipes"
+  | "personalização"
+  | "visualização"
+  | "configurações"
+  | "modal"
+  | "sair"
+  >("geral");
 
   const renderContent = () => {
     switch (conteudo) {
       case "geral":
         return (
-          <>
+          <GeneralPage codigo_sala={codigoSala} />
+        )
+      case "ranking":
+        // TODO: Transformar em componente separado, fazer os 2º details ser com base se o evento tem final/semifinal
+        return (
+          <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 p-6">
+            <details
+              className="flex flex-col justify-start gap-4 w-full mb-4"
+              open
+            >
+              <summary className="text-lg font-semibold text-primary-dark cursor-pointer">
+                Ranking das Equipes
+              </summary>
+              <p className="text-sm text-gray-500 mb-4">
+                O ranking das equipes participantes do evento é atualizado em
+                tempo real, com base nas pontuações obtidas durante as rodadas.
+              </p>
+              <TabelaEquipes codigoSala={codigoSala} cor={undefined} />
+            </details>
+            <details className="flex flex-col justify-start gap-4 max-w-full">
+              <summary className="text-lg font-semibold text-primary-dark cursor-pointer">
+                Eventos Rounds
+              </summary>
+              <p className="text-sm text-gray-500 mb-4">
+                Ranking das equipes participantes em outros desafios/rodadas do
+                evento.
+              </p>
+              <TabelaEquipes codigoSala={codigoSala} cor={undefined} />
+            </details>
+          </div>
+        );
+      case "equipes":
+        return (
+          <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 p-6">
+            <h2 className="text-2xl font-bold mb-4 text-primary-dark">
+              Equipes
+            </h2>
             <Equipes
               codigoSala={codigoSala}
               onAtualizacao={adicionarAtualizacao}
             />
-            <div className="bg-light-smoke rounded-md p-4 my-8 shadow-md">
-              <p className="text-xl font-bold text-primary-dark">
-                Atualizações:
-              </p>
-              {atualizacoes.length === 0 ? (
-                <p className="text-sm text-gray-500 mt-2">Sem atualizações</p>
-              ) : (
-                <ul className="max-h-64 overflow-y-auto list-disc list-inside mt-2 space-y-1">
-                  {atualizacoes.slice(0, 7).map((item, idx) => (
-                    <li key={idx} className="text-sm text-gray-700">
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </>
+          </div>
         );
-      case "ranking":
+      case "personalização":
         return (
-          <div className="text-gray-700 bg-light-smoke rounded-md p-4 my-8 shadow-md">
+          <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 p-6">
             <h2 className="text-2xl font-bold mb-4 text-primary-dark">
-              Ranking
+              Personalização
             </h2>
-            <TabelaEquipes codigoSala={codigoSala} />
+            <ThemeForm
+              roomId={codigoSala}
+              defaultPrimaryColor={tema?.primary_color}
+              defaultSecondaryColor={tema?.secondary_color}
+              defaultWallpaperUrl={tema?.wallpaper_url}
+            />
+          </div>
+        );
+      case "visualização":
+        return (
+          <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 p-6">
+            <h2 className="text-2xl font-bold mb-4 text-primary-dark">
+              Visualização
+            </h2>
+            <div className="rounded-[24px] border border-none overflow-hidden">
+              <ThemePreview theme={tema} codigo_sala={codigoSala} />
+            </div>
+          </div>
+        );
+      case "configurações":
+        return (
+          <div className="bg-white shadow-md w-full max-w-full rounded-lg overflow-hidden mt-4 p-6">
+            <ConfigPage codigoSala={codigoSala} />
           </div>
         );
       default:
@@ -155,24 +204,23 @@ export default function AdminRoomPageClient({ codigoSala }: Props) {
     );
   }
 
-  if (!sala) return <p>Erro: Sala não encontrada</p>;
+  if (!sala) return (window.location.href = "/enter");
 
   const { codigo_visitante, codigo_voluntario, codigo_admin, nome } = sala;
 
   return (
-    <div className="w-full bg-white">
+    <div className="w-full bg-white relative">
       <SideBar
         codVisitante={codigo_visitante}
         codVoluntario={codigo_voluntario}
         codAdmin={codigo_admin}
         setConteudo={setConteudo}
-        onDelete={deletarSala}
       />
 
-      <main className="max-w-7xl mx-auto px-4 py-8 ml-[180px]">
+      <main className="ml-56 px-6 py-2 bg-white min-h-screen bg-gradient-to-t from-gray-50 to-white">
         <div className="my-4 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-left text-primary-dark">
-            {nome}
+            Administração
           </h1>
         </div>
 

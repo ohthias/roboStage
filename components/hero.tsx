@@ -110,7 +110,7 @@ export default function Hero({ admin }: HeroProps) {
                       />
                     </svg>
                   </button>
-                  <ul className="absolute left-0 mt-2 min-w-100 max-w-screen bg-white border border-gray-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 pointer-events-auto transition z-10 flex flex-row px-4">
+                  <ul className="absolute left-0 mt-2 min-w-[100px] max-w-screen bg-white border border-gray-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 pointer-events-auto transition z-10 flex flex-row px-4">
                     <li className="flex-1 px-2 py-4">                      
                       <div className="font-semibold mb-2 text-primary">Pontuadores FLL</div>
                       <hr className="mb-2 text-gray-200" />

@@ -97,7 +97,7 @@ export default function Page() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Hero />
+      <Hero admin={false} />
       {/* Cabeçalho */}
       <header className="w-full p-4">
         <h1 className="text-2xl font-bold text-foreground">

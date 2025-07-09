@@ -34,24 +34,117 @@ export default function Hero({ admin }: HeroProps) {
 
         <div className="flex flex-1 items-center justify-end md:justify-between">
           <nav aria-label="Global" className="hidden md:block">
-            {mode === "default" && (
               <ul className="flex items-center gap-6 text-sm">
-                <li>
-                  <a
-                    className="text-foreground/75 transition hover:text-foreground cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const el = document.getElementById("pontuador");
-                      if (el) {
-                        el.scrollIntoView({ behavior: "smooth" });
-                      }
-                    }}
+                <li className="relative group">
+                  <button
+                    className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-light-smoke transition"
+                    type="button"
                   >
-                    Pontuador
-                  </a>
+                    <img
+                      src="https://flagcdn.com/w20/br.png"
+                      alt="Português"
+                      width={20}
+                      height={14}
+                      className="inline-block mr-1"
+                    />
+                    <span>PT-BR</span>
+                    <svg
+                      className="w-4 h-4 ml-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  <ul className="absolute left-0 mt-2 w-full bg-white border border-gray-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 pointer-events-auto transition z-10">
+                    <li>
+                      <button className="w-full flex items-center gap-2 text-left px-4 py-2 hover:bg-light-smoke transition cursor-pointer">
+                        <img
+                          src="https://flagcdn.com/w20/br.png"
+                          alt="Português"
+                          width={20}
+                          height={14}
+                          className="inline-block"
+                        />
+                        PT-BR
+                      </button>
+                    </li>
+                    <li>
+                      <button className="w-full flex items-center gap-2 text-left px-4 py-2 hover:bg-light-smoke transition cursor-pointer">
+                        <img
+                          src="https://flagcdn.com/w20/us.png"
+                          alt="Inglês"
+                          width={20}
+                          height={14}
+                          className="inline-block"
+                        />
+                        Inglês
+                      </button>
+                    </li>
+                  </ul>
+                </li>
+                {/* Dropdown de ferramentas */}
+                <li className="relative group">
+                  <button
+                    className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-light-smoke transition"
+                    type="button"
+                  >
+                    <span>Ferramentas</span>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  <ul className="absolute left-0 mt-2 min-w-100 max-w-screen bg-white border border-gray-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 pointer-events-auto transition z-10 flex flex-row px-4">
+                    <li className="flex-1 px-2 py-4">                      
+                      <div className="font-semibold mb-2 text-primary">Pontuadores FLL</div>
+                      <hr className="mb-2 text-gray-200" />
+                      <a
+                        href="/tools/score#uneartherd"
+                        rel="noopener noreferrer"
+                        className="block px-2 py-1 hover:bg-light-smoke transition rounded text-foreground font-semibold"
+                      >                        
+                        UNEARTHED <span className="text-xs text-gray-500 font-normal">(2025-2026)</span>
+                      </a>
+                      <a
+                        href="/tools/score#submerged"
+                        rel="noopener noreferrer"
+                        className="block px-2 py-1 hover:bg-light-smoke transition rounded text-foreground font-semibold"
+                      >                        
+                        Submerged <span className="text-xs text-gray-500 font-normal">(2024-2025)</span>
+                      </a>
+                    </li>
+                    <li className="flex-1 px-2 py-4">                      
+                      <div className="font-semibold mb-2 text-primary">
+                        Estratégia de mesa
+                      </div>
+                      <hr className="mb-2 text-gray-200" />
+                      <a
+                        href="/tools/arena#uneartherd"
+                        rel="noopener noreferrer"
+                        className="block px-2 py-1 hover:bg-light-smoke transition rounded text-foreground font-semibold"
+                      >                        
+                        UNEARTHED <span className="text-xs text-gray-500 font-normal">(2025-2026)</span>
+                      </a>
+                    </li>
+                  </ul>
                 </li>
               </ul>
-            )}
           </nav>
 
           <div className="flex items-center gap-4">

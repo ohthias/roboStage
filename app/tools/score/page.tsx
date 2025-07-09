@@ -97,7 +97,7 @@ export default function Page() {
 
   return (
     <>
-    <Hero />    
+    <Hero admin={false} />    
     <main className="flex flex-col items-center justify-center gap-8 px-4 py-16 sm:px-6 lg:px-8">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative my-4 w-full max-w-4xl">
         <div className="flex-1 flex justify-center sm:justify-start text-center sm:text-left">

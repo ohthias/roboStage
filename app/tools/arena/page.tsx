@@ -5,6 +5,7 @@ import Hero from "@/components/hero";
 
 export default function Page() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [history, setHistory] = useState<ImageData[]>([]);
   const [tool, setTool] = useState<string>("pencil");
   const [drawing, setDrawing] = useState(false);
   const [strokeColor, setStrokeColor] = useState("#ff0000");
@@ -13,10 +14,6 @@ export default function Page() {
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(
     null
   );
-  const [imgSize, setImgSize] = useState<{ width: number; height: number }>({
-    width: 0,
-    height: 0,
-  });
 
   const handleMouseDown = (e: React.MouseEvent) => {
     const canvas = canvasRef.current;
@@ -33,6 +30,10 @@ export default function Page() {
       ctx.moveTo(pos.x, pos.y);
     }
     if (tool === "eraser") eraseAt(pos);
+    if (ctx && canvas) {
+      const snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      setHistory((prev) => [...prev, snapshot]);
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -85,6 +86,34 @@ export default function Page() {
       ctx.stroke();
     }
 
+    if (tool === "arrow") {
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = strokeWidth;
+
+      // Linha principal
+      ctx.beginPath();
+      ctx.moveTo(startPos.x, startPos.y);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+
+      // Cabeça da seta
+      const angle = Math.atan2(pos.y - startPos.y, pos.x - startPos.x);
+      const headLength = 10 + strokeWidth * 1.5; // tamanho da ponta
+
+      const arrowX1 = pos.x - headLength * Math.cos(angle - Math.PI / 6);
+      const arrowY1 = pos.y - headLength * Math.sin(angle - Math.PI / 6);
+
+      const arrowX2 = pos.x - headLength * Math.cos(angle + Math.PI / 6);
+      const arrowY2 = pos.y - headLength * Math.sin(angle + Math.PI / 6);
+
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+      ctx.lineTo(arrowX1, arrowY1);
+      ctx.moveTo(pos.x, pos.y);
+      ctx.lineTo(arrowX2, arrowY2);
+      ctx.stroke();
+    }
+
     setDrawing(false);
     setStartPos(null);
   };
@@ -95,9 +124,29 @@ export default function Page() {
     ctx.clearRect(pos.x - 5, pos.y - 5, 10, 10);
   };
 
+  const undoLast = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    setHistory((prev) => {
+      if (prev.length === 0) return prev; // nada a desfazer
+
+      const newHistory = [...prev];
+      const last = newHistory.pop();
+
+      if (last) {
+        ctx.putImageData(last, 0, 0);
+      }
+
+      return newHistory;
+    });
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Hero admin={false} />
+      <Hero />
       {/* Cabeçalho */}
       <header className="w-full p-4">
         <h1 className="text-2xl font-bold text-foreground">
@@ -122,55 +171,52 @@ export default function Page() {
         <aside className="w-full md:w-14 flex-shrink-0 bg-white border border-gray-200 rounded p-2 space-y-2">
           <div className="flex gap-1 flex-wrap justify-center">
             <button
+              onClick={undoLast}
+              className="bg-yellow-100 text-yellow-800 rounded p-2 cursor-pointer hover:bg-yellow-200 transition"
+              style={{
+                lineHeight: "0"
+              }}
+              title="Desfazer último traço"
+            >
+              <i className="fi fi-rr-turn-left"></i>
+            </button>
+
+            <button
               onClick={() => setTool("rectangle")}
               className={`hover:bg-gray-100 p-2 rounded cursor-pointer ${tool === "rectangle" ? "bg-gray-200" : ""}`}
+              style={{
+                lineHeight: "0"
+              }}
               title="Quadrado"
             >
-              <svg
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <rect x="4" y="4" width="16" height="16" rx="2" />
-              </svg>
+              <i className="fi fi-rr-square"></i>
             </button>
             <button
               onClick={() => setTool("circle")}
               className={`hover:bg-gray-100 p-2 rounded cursor-pointer ${tool === "circle" ? "bg-gray-200" : ""}`}
+              style={{
+                lineHeight: "0"
+              }}
               title="Círculo"
             >
-              <svg
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle cx="12" cy="12" r="8" />
-              </svg>
+              <i className="fi fi-rr-circle"></i>
             </button>
             <button
               onClick={() => setTool("line")}
               className={`hover:bg-gray-100 p-2 rounded cursor-pointer ${tool === "line" ? "bg-gray-200" : ""}`}
+                style={{
+                    lineHeight: "0"
+                }}
               title="Linha 2 pontos"
             >
-              <svg
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <line x1="6" y1="18" x2="18" y2="6" />
-                <circle cx="6" cy="18" r="1.5" fill="currentColor" />
-                <circle cx="18" cy="6" r="1.5" fill="currentColor" />
-              </svg>
+              <i className="fi fi-rr-slash"></i>
             </button>
             <button
               onClick={() => setTool("pencil")}
               className={`hover:bg-gray-100 p-2 rounded cursor-pointer ${tool === "pencil" ? "bg-gray-200" : ""}`}
+                style={{
+                    lineHeight: "0"
+                }}
               title="Lápis"
             >
               <i className="fi fi-rr-attribution-pencil"></i>
@@ -178,61 +224,46 @@ export default function Page() {
             <button
               onClick={() => setTool("eraser")}
               className={`hover:bg-gray-100 p-2 rounded cursor-pointer ${tool === "eraser" ? "bg-gray-200" : ""}`}
+                style={{
+                    lineHeight: "0"
+                }}
               title="Borracha"
             >
               <i className="fi fi-rr-eraser"></i>
+            </button>
+            <button
+              onClick={() => setTool("arrow")}
+              className={`hover:bg-gray-100 p-2 rounded cursor-pointer ${tool === "arrow" ? "bg-gray-200" : ""}`}
+                style={{
+                    lineHeight: "0"
+                }}
+              title="Seta"
+            >
+              <i className="fi fi-rr-arrow-up-right"></i>
             </button>
           </div>
         </aside>
 
         {/* Área de desenho - centro */}
-        <section className="flex-1 bg-white border border-gray-200 rounded relative overflow-auto flex items-center justify-center">
-          <div className="relative w-full max-w-full">
-            {imgSize.width > 0 && (
-              <canvas
-                ref={canvasRef}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%", // importante
-                  height: "auto",
-                  cursor: tool === "eraser" ? "crosshair" : "default",
-                }}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-              />
-            )}
-            <img
-              src="https://pbs.twimg.com/media/Go7ivzEWoAAwCbN?format=jpg&name=4096x4096"
-              alt="tapete"
-              draggable={false}
-              onLoad={(e) => {
-                const img = e.currentTarget;
-                setImgSize({
-                  width: img.naturalWidth,
-                  height: img.naturalHeight,
-                });
-                // Ajusta o tamanho real do canvas
-                const canvas = canvasRef.current;
-                if (canvas) {
-                  canvas.width = img.naturalWidth;
-                  canvas.height = img.naturalHeight;
-                }
-              }}
-              style={{
-                display: "block",
-                height: "auto",
-                userSelect: "none",
-                pointerEvents: "none",
-              }}
-            />
-          </div>
-        </section>
+        <canvas
+          ref={canvasRef}
+          className="flex-1 border border-gray-200 rounded relative flex items-center justify-center"
+          width={950}
+          height={500}
+          style={{
+            display: "block",
+            cursor: tool === "eraser" ? "crosshair" : "default",
+            background:
+              "url('https://pbs.twimg.com/media/Go7ivzEWoAAwCbN?format=jpg&name=4096x4096') center/cover no-repeat",
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onContextMenu={(e) => e.preventDefault()}
+        />
 
         {/* Saídas e cores - direita */}
-        <aside className="w-full md:w-56 flex-shrink-0 bg-white border border-gray-200 rounded p-2 flex flex-col gap-2">
+        <aside className="w-full md:w-42 flex-shrink-0 bg-white border border-gray-200 rounded p-2 flex flex-col gap-2">
           <h2 className="text-sm font-bold text-primary-dark">
             Configurações do traço
           </h2>

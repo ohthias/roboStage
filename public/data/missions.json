@@ -1,5 +1,5 @@
 {
-  "missions": [
+  "submerged": [
     {
       "id": "EL",
       "name": "INSPEÇÃO DE EQUIPAMENTOS",
@@ -182,6 +182,28 @@
           "type": ["switch", null, null]
         }
       ]
+    },
+    {
+      "id": "PT",
+      "name": "TOKENS DE PRECISÃO",
+      "mission": "Número de tokens de precisão restantes",
+      "points": [0, 10, 15, 25, 35, 50, 50],
+      "type": ["range", 0, 6]
+    },
+    {
+      "id": "GP",
+      "name": "Gracious Professionalism®",
+      "mission": "Gracious Professionalism® demonstrados durante o round:",
+      "type": ["switch", "Em desenvolvimento", "Comprido", "Excede"]
+    }
+  ],
+  "uneartherd" : [
+    {
+      "id": "EL",
+      "name": "INSPEÇÃO DE EQUIPAMENTOS",
+      "mission": "O robô e todos os equipamentos cabem em sua totalidade na área de lançamento e respeitam o limite de altura",
+      "points": 20,
+      "type": ["switch", null, null]
     },
     {
       "id": "PT",

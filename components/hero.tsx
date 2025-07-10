@@ -60,7 +60,7 @@ export default function Hero({ admin }: HeroProps) {
                     QuickBrick Studio
                   </span>
                   <hr className="border-gray-200" />
-                  <Link href="/tool/quickbrick#uneartherd">
+                  <Link href="/tools/quickbrick#uneartherd">
                     <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm">
                       uneartherd <i className="text-gray-500">(2025-2026)</i>
                     </span>
@@ -71,18 +71,18 @@ export default function Hero({ admin }: HeroProps) {
           </div>
         </div>
 
-          <div className="flex items-center space-x-4">
-            <Link href="/enter">
-              <button className="flex items-center px-4 py-2 text-sm bg-white text-gray-700 border border-gray-700 rounded hover:bg-red-700 hover:text-white hover:border-red-700 transition cursor-pointer">
-                Entrar
-              </button>
-            </Link>
-            <Link href="/create-room">
-              <button className="flex items-center px-4 py-2 text-sm bg-red-700 text-white rounded hover:bg-red-600 cursor-pointer transition">
-                Criar Evento
-              </button>
-            </Link>
-          </div>
+        <div className="flex items-center space-x-4">
+          <Link href="/enter">
+            <button className="flex items-center px-4 py-2 text-sm bg-white text-gray-700 border border-gray-700 rounded hover:bg-red-700 hover:text-white hover:border-red-700 transition cursor-pointer">
+              Entrar
+            </button>
+          </Link>
+          <Link href="/create-room">
+            <button className="flex items-center px-4 py-2 text-sm bg-red-700 text-white rounded hover:bg-red-600 cursor-pointer transition">
+              Criar Evento
+            </button>
+          </Link>
+        </div>
 
         {/* Mobile Menu Toggle */}
         <div className="md:hidden">
@@ -99,18 +99,35 @@ export default function Hero({ admin }: HeroProps) {
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden mt-2 space-y-1">
-          <Link href="/opcao1">
-            <span className="block px-4 py-2 hover:bg-gray-100">Opção 1</span>
-          </Link>
-          <Link href="/opcao2">
-            <span className="block px-4 py-2 hover:bg-gray-100">Opção 2</span>
-          </Link>
-          <Link href="/login">
-            <span className="block px-4 py-2 hover:bg-gray-100">Login</span>
-          </Link>
-          <Link href="/cadastro">
-            <span className="block px-4 py-2 hover:bg-gray-100">Cadastro</span>
-          </Link>
+          <div className="p-4">
+            <div>
+              <span className="block py-2 font-semibold text-red-600 text-left">
+                FLL Score
+              </span>
+              <hr className="border-gray-200" />
+              <Link href="/tools/score#uneartherd">
+                <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm">
+                  uneartherd <i className="text-gray-500">(2025-2026)</i>
+                </span>
+              </Link>
+              <Link href="/tools/score#submerged">
+                <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm">
+                  submerged <i className="text-gray-500">(2024-2025)</i>
+                </span>
+              </Link>
+            </div>
+            <div className="mt-4">
+              <span className="block py-2 font-semibold text-red-600 text-left">
+                QuickBrick Studio
+              </span>
+              <hr className="border-gray-200" />
+              <Link href="/tools/quickbrick#uneartherd">
+                <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm">
+                  uneartherd <i className="text-gray-500">(2025-2026)</i>
+                </span>
+              </Link>
+            </div>
+          </div>
         </div>
       )}
     </nav>

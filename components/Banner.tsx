@@ -30,7 +30,7 @@ export default function Banner() {
         <img
           src="/robo.gif"
           alt="Banner"
-          className="mx-auto hidden w-150 text-gray-900 md:block"
+          className="mx-auto hidden w-[150px] text-gray-900 md:block"
         />
       </div>
     </section>

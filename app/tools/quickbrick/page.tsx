@@ -55,8 +55,7 @@ export default function Page() {
       const ctx = baseCanvas.getContext("2d");
       const img = new Image();
       img.crossOrigin = "anonymous";
-      img.src =
-        "/images/quickbrick_uneartherd.png";
+      img.src = "/images/quickbrick_uneartherd.png";
       img.onload = () => {
         baseCanvas.width = 900;
         baseCanvas.height = 500;
@@ -238,7 +237,7 @@ export default function Page() {
   const resetAll = () => {
     layers.forEach((layer) => {
       const ctx = layer.ref.current?.getContext("2d");
-      ctx?.clearRect(0, 0, 950, 500);
+      ctx?.clearRect(0, 0, layer.ref.current?.width || 0, 500);
     });
   };
 
@@ -258,8 +257,8 @@ export default function Page() {
           <h1 className="text-2xl font-bold">
             Quick<span className="text-red-500">Brick</span> Studio
           </h1>
-          <p>Pense, desenhe e crie estratégias!</p>
-          <p>
+          <p className="text-sm text-red-600">Pense, desenhe e crie estratégias!</p>
+          <p className="text-gray-600">
             O QuickBrick Studio é uma ferramenta que ajuda sua equipe a criar
             estratégias eficientes para o robô durante sua jornada no FIRST LEGO
             League Challenge. Basta selecionar uma das ferramentas disponíveis e
@@ -276,41 +275,55 @@ export default function Page() {
         >
           {/* Barra de Ferramentas */}
           <aside
-  className={`rounded p-2 flex items-center ${
-    isFullscreen
-      ? "flex-row justify-center bg-transparent gap-2"
-      : "flex-col bg-white border border-gray-300 space-y-2 w-14 flex-shrink-0"
-  }`}
->
-  <button onClick={undoLast} title="Desfazer" className="w-8 h-8 bg-yellow-100 rounded cursor-pointer text-yellow-600" style={{ lineHeight: 0 }}>
-    <i className="fi fi-rr-turn-left"></i>
-  </button>
+            className={`rounded p-2 flex items-center ${
+              isFullscreen
+                ? "flex-row justify-center bg-transparent gap-2"
+                : "flex-col bg-white border border-gray-300 space-y-2 w-14 flex-shrink-0"
+            }`}
+          >
+            <button
+              onClick={undoLast}
+              title="Desfazer"
+              className="w-8 h-8 bg-yellow-100 rounded cursor-pointer text-yellow-600"
+              style={{ lineHeight: 0 }}
+            >
+              <i className="fi fi-rr-turn-left"></i>
+            </button>
 
-  {[
-    { type: "pencil", icon: "fi fi-rr-attribution-pencil", label: "Lápis" },
-    { type: "eraser", icon: "fi fi-rr-eraser", label: "Borracha" },
-    { type: "rectangle", icon: "fi fi-rr-square", label: "Retângulo" },
-    { type: "circle", icon: "fi fi-rr-circle", label: "Círculo" },
-    { type: "line", icon: "fi fi-rr-slash", label: "Linha" },
-    { type: "arrow", icon: "fi fi-rr-arrow-up-right", label: "Seta" },
-  ].map(({ type, icon, label }) => (
-    <button
-      key={type}
-      onClick={() => setTool(type)}
-      className={`${
-        tool === type ? "bg-gray-300" : "bg-white"
-      } w-8 h-8 flex items-center justify-center rounded hover:bg-gray-300 transition-colors cursor-pointer`}
-      title={label}
-      style={{ lineHeight: 0 }}
-    >
-      <i className={icon}></i>
-    </button>
-  ))}
-</aside>
-
+            {[
+              {
+                type: "pencil",
+                icon: "fi fi-rr-attribution-pencil",
+                label: "Lápis",
+              },
+              { type: "eraser", icon: "fi fi-rr-eraser", label: "Borracha" },
+              {
+                type: "rectangle",
+                icon: "fi fi-rr-square",
+                label: "Retângulo",
+              },
+              { type: "circle", icon: "fi fi-rr-circle", label: "Círculo" },
+              { type: "line", icon: "fi fi-rr-slash", label: "Linha" },
+              { type: "arrow", icon: "fi fi-rr-arrow-up-right", label: "Seta" },
+            ].map(({ type, icon, label }) => (
+              <button
+                key={type}
+                onClick={() => setTool(type)}
+                className={`${
+                  tool === type ? "bg-gray-300" : "bg-white"
+                } w-8 h-8 flex items-center justify-center rounded hover:bg-gray-300 transition-colors cursor-pointer`}
+                title={label}
+                style={{ lineHeight: 0 }}
+              >
+                <i className={icon}></i>
+              </button>
+            ))}
+          </aside>
 
           {/* Área de Desenho */}
-          <div className={`relative ${isFullscreen ? "w-full mx-auto" : "w-[900px]"} h-[500px]`}>
+          <div
+            className={`relative ${isFullscreen ? "w-full mx-auto" : "w-[900px]"} h-[500px]`}
+          >
             {layers.map((layer) => (
               <canvas
                 key={layer.id}
@@ -334,20 +347,22 @@ export default function Page() {
           <aside
             className={`${isFullscreen ? "w-full flex-row gap-8" : "w-60 flex-col"} bg-white border border-gray-300 rounded p-2 flex justify-between`}
           >
-            <div className={`flex justify-between ${isFullscreen ? "items-start gap-2" : "flex-col"}`}>
+            <div
+              className={`flex justify-between ${isFullscreen ? "items-start gap-2" : "flex-col"}`}
+            >
               <div>
-                              <h2 className="text-red-700 font-bold mb-2">Traço</h2>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={strokeColor}
-                  onChange={(e) => setStrokeColor(e.target.value)}
-                  className="w-10 h-10 border rounded cursor-pointer border-gray-200"
-                />
-                <span className="text-xs text-gray-600 border-l border-gray-300 pl-2">
-                  {strokeColor.toUpperCase()}
-                </span>
-              </div>
+                <h2 className="text-red-700 font-bold mb-2">Traço</h2>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={strokeColor}
+                    onChange={(e) => setStrokeColor(e.target.value)}
+                    className="w-10 h-10 border rounded cursor-pointer border-gray-200"
+                  />
+                  <span className="text-xs text-gray-600 border-l border-gray-300 pl-2">
+                    {strokeColor.toUpperCase()}
+                  </span>
+                </div>
               </div>
 
               <div className="flex flex-col gap-1 mt-2">
@@ -366,15 +381,17 @@ export default function Page() {
               </div>
             </div>
             <hr className="border-gray-300 my-4" />
-            <div className={`flex flex-1 ${isFullscreen ? "flex-row gap-2 items-start" : "flex-col"}`}>
+            <div
+              className={`flex flex-1 ${isFullscreen ? "flex-row gap-2 items-start" : "flex-col"}`}
+            >
               <div className="w-full">
-              <h2 className="text-red-700 font-bold mb-2">Camadas</h2>
-              <button
-                onClick={createNewLayer}
-                className="bg-gray-100 text-gray-700 px-2 py-1 rounded cursor-pointer hover:bg-gray-200 transition-colors"
-              >
-                Nova camada
-              </button>
+                <h2 className="text-red-700 font-bold mb-2">Camadas</h2>
+                <button
+                  onClick={createNewLayer}
+                  className="bg-gray-100 text-gray-700 px-2 py-1 rounded cursor-pointer hover:bg-gray-200 transition-colors"
+                >
+                  Nova camada
+                </button>
               </div>
               <div
                 className="space-y-2 max-h-36 overflow-y-auto mt-2"
@@ -488,7 +505,9 @@ export default function Page() {
               </div>
             </div>
             <hr className="border-gray-300 my-4" />
-            <div className={`flex gap-2 flex-col ${isFullscreen ? "h-20 flex-wrap items-center" : ""}`}>
+            <div
+              className={`flex gap-2 flex-col ${isFullscreen ? "h-20 flex-wrap items-center" : ""}`}
+            >
               <button
                 onClick={exportMerged}
                 className="bg-gray-100 text-gray-800 rounded px-2 py-1 cursor-pointer hover:bg-gray-200 transition cursor-pointer"

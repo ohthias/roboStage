@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import FormMission from "@/components/FormMission";
 import { calculateTotalPoints } from "@/utils/calculateTotalPoints";
 import Hero from "@/components/hero";
+import Loader from "@/components/loader";
 
 // Tipos
 type MissionType = {
@@ -66,11 +67,15 @@ export default function Page() {
         setMissions(selected);
 
         switch (hash) {
-          case "uneartherd":
-            setBackground("url('/images/background_uneartherd.png') center/cover");
+          case "unearthed":
+            setBackground(
+              "url('/images/background_uneartherd.png') center/cover"
+            );
             break;
           case "submerged":
-            setBackground("url('/images/background_submerged.png') center/cover");
+            setBackground(
+              "url('/images/background_submerged.png') center/cover"
+            );
             break;
         }
         setLoading(false);
@@ -99,38 +104,42 @@ export default function Page() {
 
   if (loading || !hash) {
     return (
-      <main className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-600">Carregando...</p>
-      </main>
+      <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+        <Loader />
+      </div>
     );
   }
 
   return (
     <>
-    <Hero />    
-    <main className="flex flex-col items-center justify-center gap-8 px-4 py-16 sm:px-6 lg:px-8" style={{ background:  background }}>
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative w-full max-w-4xl bg-white px-8 py-4 rounded-md">
-        <div className="flex-1 flex justify-center sm:justify-start text-center sm:text-left">
-          <h1
-            className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary"
-            id="pontuador"
-          >
-            FLL Score <span className="capitalize">{hash && `- ${hash}`}</span>
-          </h1>
+      <Hero admin="false" />
+      <main
+        className="flex flex-col items-center justify-center gap-8 px-4 py-16 sm:px-6 lg:px-8"
+        style={{ background: background }}
+      >
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative w-full max-w-4xl bg-white px-8 py-4 rounded-md">
+          <div className="flex-1 flex justify-center sm:justify-start text-center sm:text-left">
+            <h1
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary"
+              id="pontuador"
+            >
+              FLL Score{" "}
+              <span className="capitalize">{hash && `- ${hash}`}</span>
+            </h1>
+          </div>
+
+          <div className="bg-light-smoke flex flex-col items-center justify-center rounded-md shadow-md p-4 w-full sm:w-auto max-w-[200px]">
+            <p className="text-sm font-bold text-black">Pontos</p>
+            <h3 className="text-2xl font-bold text-primary">{totalPoints}</h3>
+          </div>
         </div>
 
-        <div className="bg-light-smoke flex flex-col items-center justify-center rounded-md shadow-md p-4 w-full sm:w-auto max-w-[200px]">
-          <p className="text-sm font-bold text-black">Pontos</p>
-          <h3 className="text-2xl font-bold text-primary">{totalPoints}</h3>
-        </div>
-      </div>
-
-      <FormMission
-        missions={missions}
-        responses={responses}
-        onSelect={handleSelect}
-      />
-    </main>
+        <FormMission
+          missions={missions}
+          responses={responses}
+          onSelect={handleSelect}
+        />
+      </main>
     </>
   );
 }

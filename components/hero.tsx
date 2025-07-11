@@ -105,9 +105,9 @@ export default function Hero({ admin }: HeroProps) {
                 FLL Score
               </span>
               <hr className="border-gray-200" />
-              <Link href="/tools/score#uneartherd">
+              <Link href="/tools/score#unearthed">
                 <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm">
-                  uneartherd <i className="text-gray-500">(2025-2026)</i>
+                  unearthed <i className="text-gray-500">(2025-2026)</i>
                 </span>
               </Link>
               <Link href="/tools/score#submerged">

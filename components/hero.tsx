@@ -32,9 +32,9 @@ export default function Hero({ admin }: HeroProps) {
             onMouseEnter={() => setDropdownOpen(true)}
             onMouseLeave={() => setDropdownOpen(false)}
           >
-            <button className="flex items-center space-x-1 text-gray-700 hover:text-red-600">
+            <button className="flex items-center space-x-1 text-zinc-900 hover:text-red-600">
               <span>Ferramentas</span>
-              <i className="fi fi-rr-angle-small-down"></i>
+              <i className="fi fi-rr-angle-small-down" style={{ lineHeight: 0}}></i>
             </button>
 
             {dropdownOpen && (
@@ -44,13 +44,13 @@ export default function Hero({ admin }: HeroProps) {
                     FLL Score
                   </span>
                   <hr className="border-gray-200" />
-                  <Link href="/tools/score#uneartherd">
-                    <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm">
-                      uneartherd <i className="text-gray-500">(2025-2026)</i>
+                  <Link href="/tools/score#unearthed">
+                    <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm text-zinc-900">
+                      unearthed <i className="text-gray-500">(2025-2026)</i>
                     </span>
                   </Link>
                   <Link href="/tools/score#submerged">
-                    <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm">
+                    <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm txt-zinc-900">
                       submerged <i className="text-gray-500">(2024-2025)</i>
                     </span>
                   </Link>
@@ -60,8 +60,8 @@ export default function Hero({ admin }: HeroProps) {
                     QuickBrick Studio
                   </span>
                   <hr className="border-gray-200" />
-                  <Link href="/tools/quickbrick#uneartherd">
-                    <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm">
+                  <Link href="/tools/quickbrick#unearthed">
+                    <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm text-zinc-900">
                       uneartherd <i className="text-gray-500">(2025-2026)</i>
                     </span>
                   </Link>
@@ -73,12 +73,12 @@ export default function Hero({ admin }: HeroProps) {
 
         <div className="flex items-center space-x-4">
           <Link href="/enter">
-            <button className="flex items-center px-4 py-2 text-sm bg-white text-gray-700 border border-gray-700 rounded hover:bg-red-700 hover:text-white hover:border-red-700 transition cursor-pointer">
+            <button className="flex items-center px-4 py-2 text-sm bg-white text-gray-700 border border-gray-700 rounded hover:bg-gray-200 hover:border-gray-400 transition cursor-pointer">
               Entrar
             </button>
           </Link>
           <Link href="/create-room">
-            <button className="flex items-center px-4 py-2 text-sm bg-red-700 text-white rounded hover:bg-red-600 cursor-pointer transition">
+            <button className="flex items-center px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer transition">
               Criar Evento
             </button>
           </Link>

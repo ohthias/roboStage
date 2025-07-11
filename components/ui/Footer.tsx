@@ -13,28 +13,28 @@ export default function Footer() {
             <a
               href="/"
               className="text-sm text-neutral-50 transition duration-300 hover:bg-neutral-800 py-1 px-4 rounded"
-              aria-label="Reddit"
+              aria-label="Home"
             >
               Home
             </a>
             <a
               href="discovery/"
               className="text-sm text-neutral-50 transition duration-300 hover:bg-neutral-800 py-1 px-4 rounded"
-              aria-label="Reddit"
+              aria-label="Descubra"
             >
               Descubra
             </a>
             <a
               href="https://github.com/ohthias/roboStage/wiki"
               className="text-sm text-neutral-50 transition duration-300 hover:bg-neutral-800 py-1 px-4 rounded"
-              aria-label="Reddit"
+              aria-label="Wiki"
             >
               Wiki
             </a>
             <a
               href="https://github.com/ohthias/roboStage/wiki/Privacidade"
               className="text-sm text-neutral-50 transition duration-300 hover:bg-neutral-800 py-1 px-4 rounded"
-              aria-label="Reddit"
+              aria-label="Privacidade"
             >
               Privacidade
             </a>

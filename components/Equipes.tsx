@@ -1,15 +1,29 @@
 "use client";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import Mensage from "./Mensage";
+import EditModal from "./ui/EditModal";
 
-export default function Equipes({ codigoSala, onAtualizacao }) {
-  const [equipes, setEquipes] = useState([]);
+interface EquipesProps {
+  codigoSala: string;
+  onAtualizacao?: (mensagem: string) => void;
+}
+
+type Equipe = {
+  nome_equipe: string;
+  round1: number;
+  round2: number;
+  round3: number;
+};
+
+export default function Equipes({ codigoSala, onAtualizacao }: EquipesProps) {
+  const [equipes, setEquipes] = useState<Equipe[]>([]);
   const [nome_equipe, setNomeEquipe] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const [indexEquipeEditando, setIndexEquipeEditando] = useState<number | null>(null);
   const [mensagem, setMensagem] = useState("");
-  const [tipoMensagem, setTipoMensagem] = useState(
-    "sucesso" | "erro" | "aviso" | ""
-  );
+  type TipoMensagem = "sucesso" | "erro" | "aviso" | "";
+  const [tipoMensagem, setTipoMensagem] = useState<TipoMensagem>("");
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const carregarEquipes = async () => {
@@ -36,9 +50,9 @@ export default function Equipes({ codigoSala, onAtualizacao }) {
 
     const novaEquipe = {
       nome_equipe,
-      round1: 0,
-      round2: 0,
-      round3: 0,
+      round1: -1,
+      round2: -1,
+      round3: -1,
     };
 
     const novasEquipes = [...equipes, novaEquipe];
@@ -67,7 +81,7 @@ export default function Equipes({ codigoSala, onAtualizacao }) {
     }
   };
 
-  const removerEquipe = async (index) => {
+  const removerEquipe = async (index: number) => {
     const novasEquipes = equipes.filter((_, i) => i !== index);
     setEquipes(novasEquipes);
     setCarregando(true);
@@ -92,7 +106,39 @@ export default function Equipes({ codigoSala, onAtualizacao }) {
     }
   };
 
-  const handleInputKeyDown = (e) => {
+  const editarEquipe = (index: SetStateAction<number | null>) => {
+    setIndexEquipeEditando(index);
+    setModalOpen(true);
+  };
+
+  const alterarNomeEquipe = async (index: number, novoNome: string) => {
+    const novasEquipes = [...equipes];
+    novasEquipes[index].nome_equipe = novoNome;
+
+    setEquipes(novasEquipes);
+    setCarregando(true);
+
+    try {
+      const res = await fetch(`/rooms/${codigoSala}/post/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teams: novasEquipes }),
+      });
+
+      if (!res.ok) throw new Error("Erro ao salvar alteração");
+
+      setMensagem("Equipe renomeada com sucesso!");
+      setTipoMensagem("sucesso");
+    } catch (error) {
+      console.error("Erro ao editar equipe:", error);
+      setMensagem("Erro ao renomear equipe.");
+      setTipoMensagem("erro");
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  const handleInputKeyDown = (e: { key: string; }) => {
     if (e.key === "Enter") {
       adicionarEquipe();
     }
@@ -173,7 +219,7 @@ export default function Equipes({ codigoSala, onAtualizacao }) {
             <tbody>
               {equipes.length == 0 ? (
                 <tr>
-                  <td colSpan="3" className="text-center text-gray-500 p-4">
+                  <td colSpan={3} className="text-center text-gray-500 p-4">
                     Nenhuma equipe cadastrada.
                   </td>
                 </tr>
@@ -203,6 +249,19 @@ export default function Equipes({ codigoSala, onAtualizacao }) {
               )}
             </tbody>
           </table>
+        )}
+
+        {modalOpen && indexEquipeEditando !== null && (
+          <EditModal
+            onClose={() => setModalOpen(false)}
+            onSave={(novoNome) => {
+              alterarNomeEquipe(indexEquipeEditando, novoNome);
+              setModalOpen(false);
+            }}
+            descriptionModal="Digite o novo nome da equipe:"
+            nameModal="Renomear equipe"
+            initialValue={equipes[indexEquipeEditando].nome_equipe}
+          />
         )}
       </div>
     </>

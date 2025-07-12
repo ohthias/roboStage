@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 import DeleteModal from "../ui/deleteModal";
 import { useState } from "react";
 import ToggleSwitch from "@/components/ui/toggleButton";
+import { set } from "mermaid/dist/diagrams/state/id-cache.js";
 
 interface Props {
   codigoSala: string;
@@ -13,6 +14,37 @@ export default function DangerZoneUI({ codigoSala }: Props) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [buttonIsOne, setButtonIsOne] = useState(false);
+
+  const handleToggleButton = async () => {
+    setButtonIsOne(!buttonIsOne);
+
+    try {
+       const res = await fetch (`/rooms/${codigoSala}/others/`, {
+        method: "POST",
+        headers: {
+          "Content-Type" : "application/json",
+        },
+        body: JSON.stringify ({
+          data_teams_switch: !buttonIsOne
+        })
+       })
+
+       if(!res.ok) {
+        setButtonIsOne(false);
+         throw new Error("Erro ao atualizar configuração");
+       }
+        const data = await res.json();
+        if (data.error) {
+          setButtonIsOne(false);
+          throw new Error(data.error);
+        }
+        console.log("Configuração atualizada com sucesso:", data);
+    } catch (error) {
+      setButtonIsOne(false);
+      console.error("Erro ao atualizar configuração:", error);
+    }
+  };
 
   const handleConfirmEmail = async (email: string): Promise<boolean> => {
     setUserEmail(email);
@@ -91,17 +123,8 @@ export default function DangerZoneUI({ codigoSala }: Props) {
         <p className="text-sm text-red-800 max-w-[80%]">
           <strong>Ativar/desativar</strong> edição de dados das equipes. Quando desativado, os dados das equipes não poderão ser editados.
         </p>
-        <ToggleSwitch />
+        <ToggleSwitch isOn={buttonIsOne} onClick={handleToggleButton} />
       </div>
-      
-      <div className="mt-6 mb-4 flex flex-row items-center gap-2 w-full justify-between">
-        <p className="text-sm text-red-800 max-w-[80%]">
-          <strong>Ativar/desativar</strong> edição das premiações e discursos. Quando desativado, só é posiver editar pelo acesso voluntário.
-        </p>
-        <ToggleSwitch />
-      </div>
-      
-      
 
       <div className="mt-6 mb-4 flex flex-row items-center gap-2 w-full justify-between">
         <p className="text-sm text-red-800 max-w-[80%]">
@@ -114,17 +137,6 @@ export default function DangerZoneUI({ codigoSala }: Props) {
         />
       </div>
       
-      <div className="mt-6 mb-4 flex flex-row items-center gap-2 w-full justify-between">
-        <p className="text-sm text-red-800">
-          <strong>Limpar Fichas</strong> Deseja remover as fichas de avaliação da sala feitas pelas equipes, mantendo-a ativa?
-        </p>
-        <DeleteModal
-          textBox="fichas de avaliação"
-          onConfirm={handleConfirmEmail}
-          onDelete={removerEquipes}
-        />
-      </div>
-
       <div className="mb-4 flex flex-row items-center gap-2 w-full justify-between">
         <p className="text-sm text-red-800 max-w-[80%]">
           Deletar a sala apagará todos os dados vinculados a ela de forma

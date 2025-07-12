@@ -28,10 +28,9 @@ export async function POST(request: NextRequest, context: any) {
 
     const payload = {
       id_room: room.id,
-      check_gerar_cronograma: body.check_gerar_cronograma ?? false,
       check_deliberacao_resultados: body.check_deliberacao_resultados ?? false,
       check_discursos_premiacao: body.check_discursos_premiacao ?? false,
-      check_gerar_ppt_premiacao: body.check_gerar_ppt ?? false,
+      data_teams_switch: body.data_teams_switch ?? false,
       dados_extras: body.dados_extras ?? '',
     };
 

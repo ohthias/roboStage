@@ -1,14 +1,13 @@
-'use client';
+interface ToggleSwitchProp {
+  isOn : boolean;
+  onClick: () => void;
+}
 
-import { useState } from 'react';
-
-export default function ToggleSwitch() {
-  const [isOn, setIsOn] = useState(false);
-
+export default function ToggleSwitch({onClick, isOn} : ToggleSwitchProp) {
   return (
     <div className="flex items-center gap-3">
       <button
-        onClick={() => setIsOn(!isOn)}
+        onClick={onClick}
         className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-300 cursor-pointer ${
           isOn ? 'bg-primary-dark' : 'bg-gray-300'
         }`}

@@ -20,7 +20,7 @@ export default function Banner() {
             </a>
 
             <a
-              className="inline-block text-medium px-5 py-2 bg-white text-gray-700 border border-gray-700 rounded hover:bg-gray-200 hover:border-gray-400 transition cursor-pointer"
+              className="inline-block text-base font-medium px-5 py-2 bg-white text-gray-700 border border-gray-700 rounded hover:bg-gray-200 hover:border-gray-400 transition cursor-pointer"
               href="/enter"
             >
               Entrar

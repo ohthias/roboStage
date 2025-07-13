@@ -62,7 +62,7 @@ export default function Hero({ admin }: HeroProps) {
                   <hr className="border-gray-200" />
                   <Link href="/tools/quickbrick#unearthed">
                     <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm text-zinc-900">
-                      uneartherd <i className="text-gray-500">(2025-2026)</i>
+                      unearthed <i className="text-gray-500">(2025-2026)</i>
                     </span>
                   </Link>
                 </div>

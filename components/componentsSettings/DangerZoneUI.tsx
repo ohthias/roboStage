@@ -3,7 +3,6 @@ import Cookies from "js-cookie";
 import DeleteModal from "../ui/deleteModal";
 import { useState } from "react";
 import ToggleSwitch from "@/components/ui/toggleButton";
-import { set } from "mermaid/dist/diagrams/state/id-cache.js";
 
 interface Props {
   codigoSala: string;

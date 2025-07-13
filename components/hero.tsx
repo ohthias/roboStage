@@ -50,7 +50,7 @@ export default function Hero({ admin }: HeroProps) {
                     </span>
                   </Link>
                   <Link href="/tools/score#submerged">
-                    <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm txt-zinc-900">
+                    <span className="block py-2 hover:font-bold cursor-pointer capitalize transition text-sm text-zinc-900">
                       submerged <i className="text-gray-500">(2024-2025)</i>
                     </span>
                   </Link>

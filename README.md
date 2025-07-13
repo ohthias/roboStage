@@ -21,7 +21,7 @@ Uma plataforma web inovadora (em versão beta) projetada para o gerenciamento de
 
 [Releases](https://github.com/ohthias/roboStage/releases)
 
-- Última versão lançada: **v1.2-beta** (20 de junho de 2025)
+- Última versão lançada: **v1.3-beta** (12 de julho de 2025)
 - Novas funcionalidades e correções de bugs estão sendo constantemente implementadas.
 
 ## 📄 Licença

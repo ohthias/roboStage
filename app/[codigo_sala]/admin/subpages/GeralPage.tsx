@@ -4,6 +4,7 @@ import CardCronograma from "@/components/componentsAdmin/CardCronograma";
 import CardDeliberationRound from "@/components/componentsAdmin/CardDeliberationRound";
 import CardPowerPoint from "@/components/componentsAdmin/CardPowerPoint";
 import Loader from "@/components/loader";
+import ModalTeamsEdit from "@/components/componentsAdmin/ModalTeamsEdit";
 
 interface Props {
   codigo_sala: string;
@@ -14,6 +15,7 @@ export default function GeneralPage({ codigo_sala }: Props) {
   const [roomDetails, setRoomDetails] = useState<any>("");
   const [atualizacoes, setAtualizacoes] = useState<string[]>([]);
   const [loader, setLoader] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -129,6 +131,30 @@ export default function GeneralPage({ codigo_sala }: Props) {
         <CardPowerPoint codigo_sala={codigo_sala} />
       )}
       {/* Painel de Edição */}
+      {roomDetails?.data_teams_switch && (
+        <div className="bg-red-50 shadow-md w-full max-w-full rounded-lg overflow-hidden min-h-[200px]">
+          <div className="p-6">
+            <p className="text-xl font-bold text-primary-dark">Zona de Perigo:</p>
+            <div className="mt-2 flex flex-row items-center justify-between bg-white rounded p-2">
+              <p className="text-md text-gray-600 font-semibold">Edição de pontuação</p>
+              <button
+                className="px-4 py-2 bg-gray-100 text-gray-600 rounded
+                hover:bg-gray-200 transition-colors cursor-pointer"
+                onClick={() => setShowEditModal(true)}
+              >
+                Abrir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && (
+        <ModalTeamsEdit
+          codigo_sala={codigo_sala}
+          onClose={() => setShowEditModal(false)}
+        />
+      )}
     </div>
   );
 }

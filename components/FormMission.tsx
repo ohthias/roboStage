@@ -71,7 +71,7 @@ export default function FormMission({
               className={
                 value === option
                   ? "bg-[#ED1E25] text-white px-4 py-2 rounded-lg border-none font-bold cursor-pointer mt-2 mr-2 text-sm sm:text-base"
-                  : "bg-[#dcdcdc] text-[#121212] px-4 py-2 rounded-lg border-none cursor-pointer mt-2 mr-2 text-sm sm:text-base"
+                  : "bg-[#dcdcdc] text-[#121212] px-4 py-2 rounded-lg border-none cursor-pointer mt-2 mr-2 text-sm sm:text-base hover:bg-gray-300 transition"
               }
               onClick={() => onSelect?.(missionId, index, option)}
               aria-pressed={value === option}
@@ -113,7 +113,7 @@ export default function FormMission({
                 className={
                   value === displayLabel
                     ? "bg-[#ED1E25] text-white px-4 py-2 rounded-lg border-none font-bold cursor-pointer mt-2 mr-2"
-                    : "bg-[#dcdcdc] text-[#121212] px-4 py-2 rounded-lg border-none cursor-pointer mt-2 mr-2"
+                    : "bg-[#dcdcdc] text-[#121212] px-4 py-2 rounded-lg border-none cursor-pointer mt-2 mr-2 hover:bg-gray-300 transition"
                 }
                 onClick={() => onSelect?.(missionId, index, displayLabel)}
                 aria-pressed={value === displayLabel}
@@ -135,7 +135,7 @@ export default function FormMission({
       {Array.isArray(missions) &&
         missions.map((mission) => (
           <div
-            className="flex flex-col sm:flex-row gap-4 sm:gap-8 rounded-lg p-4 mb-8 relative after:content-[''] after:absolute after:w-[calc(100%-32px)] after:h-0.5 after:bottom-0 after:bg-[rgba(18,18,18,0.5)] after:left-1/2 after:-translate-x-1/2 after:mt-4"
+            className="flex flex-col sm:flex-row gap-4 sm:gap-8 rounded-lg p-4 mb-4 relative after:content-[''] after:absolute after:w-[calc(100%-32px)] after:h-0.5 after:bottom-0 after:bg-gray-200 after:left-1/2 after:-translate-x-1/2 after:mt-4"
             key={mission.id}
           >
             <span className="bg-[#ED1E25] text-white rounded-lg font-bold flex items-center justify-center mb-2 w-12 h-12 sm:w-[50px] sm:h-[50px] text-center">

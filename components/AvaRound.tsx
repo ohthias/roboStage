@@ -56,7 +56,7 @@ export default function AvaliacaoRounds({
 
     fetch("/data/missions.json")
       .then((res) => res.json())
-      .then((data) => setMissions(data.missions))
+      .then((data) => setMissions(data.submerged))
       .catch((error) => console.error("Erro ao carregar missões:", error));
 
     fetch(`/rooms/${codigoSala}/get`)

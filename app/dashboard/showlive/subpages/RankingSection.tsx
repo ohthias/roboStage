@@ -49,7 +49,7 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
   }
 
   if (teams.length === 0) {
-    return <p className="text-gray-600">Nenhuma equipe cadastrada.</p>;
+    return <p className="text-gray-600 p-4 text-center">Nenhuma equipe cadastrada.</p>;
   }
 
   // Ordenar pela maior pontuação atingida em qualquer rodada
@@ -68,35 +68,31 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Ranking</h2>
+      <h2 className="font-semibold text-gray-500 text-3xl">Ranking</h2>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto p-4 bg-neutral-50 rounded shadow">
         <table className="min-w-full border border-gray-300">
           <thead>
-            <tr className="bg-gray-100">
-              <th className="text-left px-4 py-2 border-b">Posição</th>
-              <th className="text-left px-4 py-2 border-b">Equipe</th>
+            <tr className="bg-red-50">
+              <th className="text-center text-red-600 px-4 py-2 border-b border-gray-300">Posição</th>
+              <th className="text-left text-red-600 px-4 py-2 border-b border-gray-300 w-2/4">Equipe</th>
               {allRounds.map((round) => (
-                <th key={round} className="text-left px-4 py-2 border-b">
+                <th key={round} className="text-center text-red-600 px-4 py-2 border-b border-gray-300">
                   {round}
                 </th>
               ))}
-              <th className="text-left px-4 py-2 border-b">Maior Pontuação</th>
             </tr>
           </thead>
           <tbody>
             {sortedTeams.map((team, index) => (
-              <tr key={team.id_team} className="hover:bg-gray-50">
-                <td className="px-4 py-2 border-b">{index + 1}</td>
-                <td className="px-4 py-2 border-b">{team.name_team}</td>
+              <tr key={team.id_team} className="border border-gray-300 hover:bg-gray-100 text-gray-600">
+                <td className="px-4 py-2 text-center">{index + 1}</td>
+                <td className="px-4 py-2 w-2/4">{team.name_team}</td>
                 {allRounds.map((round) => (
-                  <td key={round} className="px-4 py-2 border-b">
+                  <td key={round} className="px-4 py-2 text-center">
                     {team.points[round] ?? 0}
                   </td>
                 ))}
-                <td className="px-4 py-2 border-b">
-                  {Math.max(...Object.values(team.points))}
-                </td>
               </tr>
             ))}
           </tbody>

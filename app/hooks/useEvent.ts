@@ -5,6 +5,8 @@ interface EventData {
   id_evento: number;
   id_responsavel: string;
   name_event: string;
+  code_volunteer: string;
+  code_visit: string;
   code_event: string;
   created_at: string;
 }

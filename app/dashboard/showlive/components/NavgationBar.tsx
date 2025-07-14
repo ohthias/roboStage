@@ -1,6 +1,14 @@
 import { useRouter } from "next/navigation";
 
-export default function NavgationBar() {
+interface NavgationBarProps {
+  code_volunteer: string;
+  code_visitor: string;
+}
+
+export default function NavgationBar({
+  code_volunteer,
+  code_visitor,
+}: NavgationBarProps) {
   const router = useRouter();
 
   return (
@@ -8,6 +16,17 @@ export default function NavgationBar() {
       <nav className="space-y-2">
         <div className="font-bold text-zinc-900 text-2xl mb-4">
           Robo<span className="text-red-600">Stage</span>
+        </div>
+        <div>
+          <p className="text-gray-600 text-sm mb-2">Códigos</p>
+            <div className="flex items-center justify-between bg-gray-100 p-2 rounded">
+              <span className="text-gray-800 text-xs">Voluntário</span>
+              <p className="text-gray-500 text-sm">{code_volunteer}</p>
+              </div>
+            <div className="flex items-center justify-between bg-gray-100 p-2 rounded">
+              <span className="text-gray-800 text-xs">Visitante</span>
+              <p className="text-gray-500 text-sm">{code_visitor}</p>
+              </div>
         </div>
         <a
           href="#"

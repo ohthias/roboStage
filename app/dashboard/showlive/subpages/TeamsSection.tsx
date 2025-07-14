@@ -89,9 +89,10 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
+      <h4 className="font-bold text-red-600 text-3xl">Equipes</h4>
+      <form onSubmit={handleSubmit} className="flex flex-row gap-4 bg-neutral-50 p-4 rounded-md shadow items-end">
+        <div className="flex-1">
+          <label className="block text-sm font-bold text-gray-500">
             Nome da Equipe
           </label>
           <input
@@ -99,7 +100,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
             required
-            className="mt-1 p-2 w-full border rounded"
+            className="mt-1 p-2 w-full border border-gray-300 rounded outline-none focus:border-red-600 focus:ring-red-600 transition"
             placeholder="Digite o nome da equipe"
           />
         </div>
@@ -109,7 +110,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition cursor-pointer"
         >
           {loading ? "Salvando..." : "Adicionar Equipe"}
         </button>
@@ -118,7 +119,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
       {/* Lista de Equipes */}
       {teamsList.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-lg font-semibold mb-3">Equipes no evento</h2>
+          <h2 className="text-lg font-semibold mb-3 text-gray-500">Equipes no evento</h2>
           <ul className="space-y-2">
             {teamsList.map((team) => (
               <li
@@ -136,7 +137,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
       )}
 
       {teamsList.length === 0 && (
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-500 text-sm text-center">
           Nenhuma equipe cadastrada ainda.
         </p>
       )}

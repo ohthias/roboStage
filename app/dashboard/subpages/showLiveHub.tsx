@@ -335,8 +335,7 @@ export default function ShowLiveHub() {
                   </ul>
                 )}
               </div>
-            </form>
-
+            
             {/* Rodapé */}
             <div className="flex justify-end gap-4 border-t border-gray-300 pt-4">
               {error && (
@@ -351,15 +350,15 @@ export default function ShowLiveHub() {
               </button>
               <button
                 type="submit"
-                form="event-form"
                 disabled={submitting}
                 className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition cursor-ppointer"
               >
                 {submitting ? "Criando..." : "Criar Evento"}
               </button>
             </div>
-          </div>
+          </form>
         </div>
+      </div>
       )}
     </>
   );

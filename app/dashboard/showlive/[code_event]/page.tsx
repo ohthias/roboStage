@@ -70,9 +70,12 @@ export default function EventAdminPage() {
   };
 
   return (
-    <div className="p-4 flex gap-4 overflow-y-hidden">
-      <NavgationBar />
-      <main className="flex gap-4 flex-col w-full flex-1 overflow-y-auto">
+    <div className="p-4 flex gap-4 overflow-hidden max-h-screen">
+      <NavgationBar
+        code_volunteer={eventData?.code_volunteer ?? ""}
+        code_visitor={eventData?.code_visit ?? ""}
+      />
+      <main className="flex gap-4 flex-col w-full flex-1">
         {renderSection()}
       </main>
     </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 
 interface PropsConfiguracoesSection {
   idEvent: number | null;
@@ -23,6 +24,8 @@ export default function ConfiguracoesSection({
   const [season, setSeason] = useState("");
   const [rounds, setRounds] = useState<string[]>([]);
   const [roundInput, setRoundInput] = useState("");
+
+  const route = useRouter();
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -71,7 +74,7 @@ export default function ConfiguracoesSection({
 
     setLoading(true);
 
-    // Atualiza nome
+    // 1) Atualiza nome do evento
     const { error: updateEventError } = await supabase
       .from("events")
       .update({ name_event: eventName })
@@ -83,7 +86,7 @@ export default function ConfiguracoesSection({
       return;
     }
 
-    // Atualiza configuração
+    // 2) Atualiza configuração
     const { error: updateConfigError } = await supabase
       .from("typeEvent")
       .update({
@@ -101,9 +104,50 @@ export default function ConfiguracoesSection({
       return;
     }
 
+    // 3) Atualiza pontos das equipes
+    const { data: teams, error: teamsFetchError } = await supabase
+      .from("team")
+      .select("id_team, points")
+      .eq("id_event", idEvent);
+
+    if (teamsFetchError) {
+      setError("Erro ao buscar equipes: " + teamsFetchError.message);
+      setLoading(false);
+      return;
+    }
+
+    for (const team of teams || []) {
+      const oldPoints = team.points || {};
+
+      // Novo objeto points:
+      const newPoints: Record<string, number> = {};
+
+      rounds.forEach((round) => {
+        // Se já existia, mantém pontuação
+        if (oldPoints.hasOwnProperty(round)) {
+          newPoints[round] = oldPoints[round];
+        } else {
+          // Senão, inicia com 0
+          newPoints[round] = 0;
+        }
+      });
+
+      const { error: updateTeamError } = await supabase
+        .from("team")
+        .update({ points: newPoints })
+        .eq("id_team", team.id_team);
+
+      if (updateTeamError) {
+        setError("Erro ao atualizar equipes: " + updateTeamError.message);
+        setLoading(false);
+        return;
+      }
+    }
+
     setError("");
     setLoading(false);
     alert("Configuração salva com sucesso!");
+    route.refresh();
   };
 
   const handleResetScores = async () => {
@@ -135,6 +179,7 @@ export default function ConfiguracoesSection({
 
     setLoading(false);
     alert("Pontuações resetadas!");
+    route.refresh();
   };
 
   const handleResetTeams = async () => {
@@ -154,6 +199,7 @@ export default function ConfiguracoesSection({
 
     setLoading(false);
     alert("Todas as equipes foram apagadas.");
+    route.refresh();
   };
 
   const handleDeleteEvent = async () => {
@@ -167,25 +213,11 @@ export default function ConfiguracoesSection({
 
     setLoading(true);
 
-    // Apaga typeEvent
-    await supabase.from("typeEvent").delete().eq("id_event", idEvent);
-    // Apaga equipes
-    await supabase.from("team").delete().eq("id_event", idEvent);
-    // Apaga evento
-    const { error } = await supabase
-      .from("events")
-      .delete()
-      .eq("id_evento", idEvent);
-
-    if (error) {
-      setError("Erro ao apagar evento: " + error.message);
-      setLoading(false);
-      return;
-    }
+    await supabase.from("event").delete().eq("id_evento", idEvent);
 
     setLoading(false);
     alert("Evento apagado com sucesso!");
-    window.location.href = "/dashboard#showLive";
+    route.push("/dashboard#showLive");
   };
 
   if (!idEvent) {

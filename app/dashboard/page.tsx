@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import DashboardNavigation from "@/components/dashboardNavgation";
 import DashboardHubPage from "./subpages/dashboardHub";
 import ShowLiveHub from "./subpages/showLiveHub";
+import ProfilePage from "./subpages/profile";
+import SettingsPage from "./subpages/settings";
 
 export default function Dashboard() {
   const { session, profile, loading } = useUserProfile();
@@ -36,17 +38,24 @@ export default function Dashboard() {
 
   if (loading) return <p>Carregando...</p>;
 
+  const currentSectionContent = () => {
+    switch (currentSection) {
+      case "showLive":
+        return <ShowLiveHub />;
+      case "profile":
+        return <ProfilePage />;
+      case "settings":
+        return <SettingsPage />;
+      default:
+        return <DashboardHubPage profile={profile} session={session} />;
+    }
+  };
+
   return (
     <div className="p-4 flex gap-4 overflow-y-hidden">
       <DashboardNavigation handleLogout={handleLogout} />
       <main className="flex gap-4 flex-col w-full flex-1 overflow-y-auto">
-        <h1 className="text-4xl font-bold mb-2 text-zinc-900">Dashboard</h1>
-
-        {currentSection === "showLive" ? (
-          <ShowLiveHub />
-        ) : (
-          <DashboardHubPage profile={profile} session={session} />
-        )}
+          {currentSectionContent()}
       </main>
     </div>
   );

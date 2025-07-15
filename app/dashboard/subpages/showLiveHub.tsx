@@ -140,6 +140,19 @@ export default function ShowLiveHub() {
     }
   };
 
+  const bannerSrc = (type: string) => {
+    switch (type) {
+      case "UNEARTHED":
+        return "/images/showlive_banners/banner_unearthed.png";
+      case "SUBMERGED":
+        return "/images/showlive_banners/banner_submerged.png";
+      case "RS":
+        return "/images/showlive_banners/banner_rs.png";
+      default:
+        return "https://placehold.co/600x400";
+    }
+  };
+
   // Facilita acesso por id_evento
   const configsByEventId = Object.fromEntries(
     eventsConfig.map((c) => [c.id_event, c.config])
@@ -181,9 +194,9 @@ export default function ShowLiveHub() {
                 className="flex flex-col bg-white border border-gray-200 rounded shadow w-full md:w-[300px]"
               >
                 <img
-                  src="https://placehold.co/600x400?text=Evento"
+                  src={bannerSrc(config?.temporada || "UNEARTHED")}
                   alt="Evento"
-                  className="w-full h-40 object-cover rounded-t"
+                  className="w-full h-40 rounded-t"
                 />
                 <div className="p-4 flex-1 flex flex-col">
                   <h3 className="text-lg font-semibold text-zinc-900 mb-1">

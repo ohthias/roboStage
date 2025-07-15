@@ -30,14 +30,14 @@ export default function DashboardNavigation({
         </a>
         <hr className="border-gray-300" />
         <a
-          href="/profile"
+          href="#profile"
           className="block text-gray-600 hover:bg-gray-200 p-2 rounded flex items-center"
         >
           <i className="fi fi-rr-user mr-2" style={{ lineHeight: 0 }}></i>
           Perfil
         </a>
         <a
-          href="/settings"
+          href="#settings"
           className="block text-gray-600 hover:bg-gray-200 p-2 rounded flex items-center"
         >
           <i className="fi fi-rr-settings mr-2" style={{ lineHeight: 0 }}></i>

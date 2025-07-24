@@ -219,6 +219,181 @@ export default function Page() {
     setStartPos(null);
   };
 
+  const getEventPos = (e: React.MouseEvent | React.TouchEvent) => {
+    let clientX: number;
+    let clientY: number;
+
+    if ("touches" in e && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else if ("changedTouches" in e && e.changedTouches.length > 0) {
+      clientX = e.changedTouches[0].clientX;
+      clientY = e.changedTouches[0].clientY;
+    } else if ("clientX" in e) {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    } else {
+      return null;
+    }
+    return { x: clientX, y: clientY };
+  };
+
+  const handlePointerDown = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
+    e.preventDefault();
+    const canvas = layers.find((l) => l.id === activeLayerId)?.ref.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const posRaw = getEventPos(e);
+    if (!posRaw) return;
+    const pos = { x: posRaw.x - rect.left, y: posRaw.y - rect.top };
+    setStartPos(pos);
+    setDrawing(true);
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    if (tool === "pencil") {
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    }
+    if (tool === "eraser") eraseAt(pos);
+
+    const snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    setHistory((prev) => [
+      ...prev,
+      { layerId: activeLayerId!, imageData: snapshot },
+    ]);
+  };
+
+  const handlePointerMove = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
+    e.preventDefault();
+    if (!drawing) return;
+    const canvas = layers.find((l) => l.id === activeLayerId)?.ref.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const posRaw = getEventPos(e);
+    if (!posRaw) return;
+    const pos = { x: posRaw.x - rect.left, y: posRaw.y - rect.top };
+
+    if (tool === "pencil") {
+      const ctx = getActiveContext();
+      if (!ctx) return;
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    }
+
+    // Preview de formas (rectangle, circle, line, arrow)
+    if (
+      tool === "rectangle" ||
+      tool === "circle" ||
+      tool === "line" ||
+      tool === "arrow"
+    ) {
+      const previewCtx = previewRef.current?.getContext("2d");
+      if (!previewCtx || !startPos) return;
+
+      previewCtx.clearRect(0, 0, 900, 500);
+      previewCtx.strokeStyle = strokeColor;
+      previewCtx.lineWidth = 1;
+      previewCtx.setLineDash([5, 5]);
+
+      if (tool === "rectangle") {
+        previewCtx.strokeRect(
+          startPos.x,
+          startPos.y,
+          pos.x - startPos.x,
+          pos.y - startPos.y
+        );
+      }
+
+      if (tool === "circle") {
+        const r = Math.hypot(pos.x - startPos.x, pos.y - startPos.y);
+        previewCtx.beginPath();
+        previewCtx.arc(startPos.x, startPos.y, r, 0, Math.PI * 2);
+        previewCtx.stroke();
+      }
+
+      if (tool === "line" || tool === "arrow") {
+        previewCtx.beginPath();
+        previewCtx.moveTo(startPos.x, startPos.y);
+        previewCtx.lineTo(pos.x, pos.y);
+        previewCtx.stroke();
+      }
+    }
+  };
+
+  const handlePointerUp = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
+    e.preventDefault();
+    if (!drawing || !startPos) return;
+    const ctx = getActiveContext();
+    if (!ctx) return;
+
+    const canvas = layers.find((l) => l.id === activeLayerId)?.ref.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const posRaw = getEventPos(e);
+    if (!posRaw) return;
+    const pos = { x: posRaw.x - rect.left, y: posRaw.y - rect.top };
+
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = strokeWidth;
+
+    if (tool === "rectangle") {
+      const w = pos.x - startPos.x;
+      const h = pos.y - startPos.y;
+      ctx.strokeRect(startPos.x, startPos.y, w, h);
+    }
+
+    if (tool === "circle") {
+      const r = Math.hypot(pos.x - startPos.x, pos.y - startPos.y);
+      ctx.beginPath();
+      ctx.arc(startPos.x, startPos.y, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    if (tool === "line") {
+      ctx.beginPath();
+      ctx.moveTo(startPos.x, startPos.y);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    }
+
+    if (tool === "arrow") {
+      ctx.beginPath();
+      ctx.moveTo(startPos.x, startPos.y);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+
+      const angle = Math.atan2(pos.y - startPos.y, pos.x - startPos.x);
+      const headLength = 15;
+      const arrowX1 = pos.x - headLength * Math.cos(angle - Math.PI / 6);
+      const arrowY1 = pos.y - headLength * Math.sin(angle - Math.PI / 6);
+      const arrowX2 = pos.x - headLength * Math.cos(angle + Math.PI / 6);
+      const arrowY2 = pos.y - headLength * Math.sin(angle + Math.PI / 6);
+
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+      ctx.lineTo(arrowX1, arrowY1);
+      ctx.lineTo(arrowX2, arrowY2);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.fillStyle = strokeColor;
+      ctx.fill();
+    }
+
+    const previewCtx = previewRef.current?.getContext("2d");
+    previewCtx?.clearRect(0, 0, 900, 500);
+
+    setDrawing(false);
+    setStartPos(null);
+  };
+
   const eraseAt = (pos: { x: number; y: number }) => {
     const ctx = getActiveContext();
     if (!ctx) return;
@@ -418,6 +593,9 @@ export default function Page() {
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
+                onTouchStart={handlePointerDown}
+                onTouchMove={handlePointerMove}
+                onTouchEnd={handlePointerUp}
               />
             ))}
           </div>

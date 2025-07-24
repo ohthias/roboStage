@@ -52,10 +52,10 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-4 flex gap-4 overflow-y-hidden">
+    <div className="flex gap-4 overflow-y-hidden">
       <DashboardNavigation handleLogout={handleLogout} />
-      <main className="flex gap-4 flex-col w-full flex-1 overflow-y-auto">
-          {currentSectionContent()}
+      <main className="flex gap-4 flex-col w-full flex-1 overflow-y-auto pt-4 px-4">
+        {currentSectionContent()}
       </main>
     </div>
   );

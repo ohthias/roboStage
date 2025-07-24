@@ -9,6 +9,7 @@ import TeamsSection from "../subpages/TeamsSection";
 import RankingSection from "../subpages/RankingSection";
 import VisualizationSection from "../subpages/VisualizationSection";
 import ConfiguracoesSection from "../subpages/ConfiguracoesSection";
+import Loader from "@/components/loader";
 
 export default function EventAdminPage() {
   const params = useParams<{ code_event: string }>();
@@ -33,7 +34,11 @@ export default function EventAdminPage() {
     };
   }, []);
 
-  if (loading) return <p>Carregando...</p>;
+  if (loading) return (
+    <div className="flex items-center justify-center h-screen">
+      <Loader />
+    </div>
+  );
 
   const renderSection = () => {
     switch (currentSection) {
@@ -70,12 +75,12 @@ export default function EventAdminPage() {
   };
 
   return (
-    <div className="p-4 flex gap-4 overflow-hidden max-h-screen">
+    <div className="flex gap-4 overflow-hidden max-h-screen">
       <NavgationBar
         code_volunteer={eventData?.code_volunteer ?? ""}
         code_visitor={eventData?.code_visit ?? ""}
       />
-      <main className="flex gap-4 flex-col w-full flex-1">
+      <main className="flex gap-4 flex-col w-full flex-1 pt-4 px-4">
         {renderSection()}
       </main>
     </div>

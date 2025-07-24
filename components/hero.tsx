@@ -72,14 +72,14 @@ export default function Hero({ admin }: HeroProps) {
         </div>
 
         <div className="flex items-center space-x-4">
-          <Link href="/enter">
+          <Link href="/login">
             <button className="flex items-center px-4 py-2 text-sm bg-white text-gray-700 border border-gray-700 rounded hover:bg-gray-200 hover:border-gray-400 transition cursor-pointer">
               Entrar
             </button>
           </Link>
-          <Link href="/create-room">
+          <Link href="/join">
             <button className="flex items-center px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer transition">
-              Criar Evento
+              Participar de evento
             </button>
           </Link>
         </div>

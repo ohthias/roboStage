@@ -6,7 +6,7 @@ export default function DashboardNavigation({
   handleLogout,
 }: DashboardNavigationProps) {
   return (
-    <aside className="p-4 rounded max-w-[220px] w-full bg-gray-50 rounded shadow h-full flex-shrink-1 flex flex-col justify-between">
+    <aside className="p-4 rounded max-w-[220px] w-full bg-gray-50 rounded shadow h-screen flex-shrink-1 flex flex-col justify-between">
       <nav className="space-y-2">
         <div className="font-bold text-zinc-900 text-2xl mb-4">
           Robo<span className="text-red-600">Stage</span>

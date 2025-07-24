@@ -10,21 +10,17 @@ interface NavbarProps {
 export default function Navbar({ mode, id, admin }: NavbarProps) {
   const validMode = mode ?? "default";
 
-  function setShowModal(arg0: boolean): void {
-    throw new Error("Function not implemented.");
-  }
-
   return (
     <nav className="flex justify-between items-center max-w-full px-10 py-2 relative z-10">
       {validMode === "default" && (
         <div className="flex items-center justify-end gap-5">
           <Button
-            text="Criar"
-            onClick={() => (window.location.href = "/create-room")}
+            text="Cadastrar"
+            onClick={() => (window.location.href = "/sign")}
           />
           <Button
             text="Entrar"
-            onClick={() => (window.location.href = "/enter")}
+            onClick={() => (window.location.href = "/login")}
           />
         </div>
       )}

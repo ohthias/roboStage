@@ -25,47 +25,53 @@ export default function GeneralPage({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Card - Nome evento e imagem */}
-      <div className="bg-white shadow-md w-full rounded-lg overflow-hidden mt-4 flex flex-row items-center justify-between p-6">
-        <div>
-          <h3 className="text-lg font-semibold">
-            Nome do evento: {name_event}
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+      {/* Card - Evento */}
+      <section className="bg-slate-50 border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-row justify-between hover:shadow-md transition">
+        {/* Título e Info */}
+        <div className="space-y-3">
+          <h3 className="text-lg font-bold text-slate-800 line-clamp-2">
+            🎉 {name_event}
           </h3>
-          <p className="mt-2 text-sm text-slate-500">
-            Categoria:{" "}
-            <span className="font-medium">
-              {event_config?.base || "Não especificado"}
-            </span>
+
+          <p className="text-sm text-slate-600">
+            <span className="font-semibold">Categoria:</span>{" "}
+            {event_config?.base || "Não especificado"}
           </p>
+
           {event_config?.temporada && (
-            <p className="mt-1 text-sm text-slate-500">
-              Temporada:{" "}
-              <span className="font-medium">{event_config.temporada}</span>
+            <p className="text-sm text-slate-600">
+              <span className="font-semibold">Temporada:</span>{" "}
+              {event_config.temporada}
             </p>
           )}
         </div>
-        <div className="flex-shrink-0">
+
+        {/* Imagem */}
+        <div className="flex items-center justify-center rounded-xl">
           <img
             src={urlImage()}
-            alt="Temporada"
-            className="w-24 h-24 object-contain"
+            alt={`Imagem do evento ${name_event}`}
+            className="w-42 h-42 object-contain"
           />
         </div>
-      </div>
+      </section>
 
-      {/* Rodadas */}
-      {event_config?.rodadas && event_config.rodadas.length > 0 && (
-        <div className="bg-white shadow-md rounded-lg p-6">
-          <h4 className="text-md font-semibold mb-2">Rodadas</h4>
-          <ul className="list-disc list-inside space-y-1">
-            {event_config.rodadas.map((rodada, index) => (
-              <li key={index} className="text-sm text-slate-600">
+      {/* Card - Rodadas */}
+      {(event_config?.rodadas ?? []).length > 0 && (
+        <section className="bg-slate-50 border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-col hover:shadow-md transition">
+          <h4 className="text-lg font-bold text-slate-800 mb-4">🧩 Rodadas</h4>
+          <div className="flex flex-wrap gap-2">
+            {(event_config?.rodadas ?? []).map((rodada, index) => (
+              <span
+                key={index}
+                className="inline-block bg-slate-200 text-slate-800 text-sm font-medium px-3 py-1 rounded-full"
+              >
                 {rodada}
-              </li>
+              </span>
             ))}
-          </ul>
-        </div>
+          </div>
+        </section>
       )}
     </div>
   );

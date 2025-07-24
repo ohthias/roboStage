@@ -17,10 +17,16 @@ export default function Page() {
     imageData: ImageData;
   };
 
+  type ColorGuide = {
+    color: string; // ex: "#00FF00"
+    label: string; // ex: "Área de coleta"
+  };
+
   const [layers, setLayers] = useState<Layer[]>([]);
   const [activeLayerId, setActiveLayerId] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryState[]>([]);
   const [tool, setTool] = useState<string>("pencil");
+  const [colorGuide, setColorGuide] = useState<ColorGuide[]>([]);
   const [drawing, setDrawing] = useState(false);
   const [strokeColor, setStrokeColor] = useState("#ff0000");
   const [strokeWidth, setStrokeWidth] = useState(2);
@@ -28,6 +34,7 @@ export default function Page() {
   const [newLayerName, setNewLayerName] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const mainRef = useRef<HTMLDivElement | null>(null);
+  const previewRef = useRef<HTMLCanvasElement>(null);
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(
     null
   );
@@ -50,18 +57,7 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
-    const baseCanvas = layers.find((l) => l.id === "base")?.ref.current;
-    if (baseCanvas) {
-      const ctx = baseCanvas.getContext("2d");
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = "/images/quickbrick_uneartherd.png";
-      img.onload = () => {
-        baseCanvas.width = 900;
-        baseCanvas.height = 500;
-        ctx?.drawImage(img, 0, 0, 900, 500);
-      };
-    }
+    restoreBaseLayerImage();
   }, [layers]);
 
   useEffect(() => {
@@ -108,21 +104,56 @@ export default function Page() {
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!drawing) return;
-    const ctx = getActiveContext();
-    if (!ctx) return;
-
     const canvas = layers.find((l) => l.id === activeLayerId)?.ref.current;
     if (!canvas) return;
+
     const rect = canvas.getBoundingClientRect();
     const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 
     if (tool === "pencil") {
-      ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = strokeWidth;
+      const ctx = getActiveContext();
+      if (!ctx) return;
       ctx.lineTo(pos.x, pos.y);
       ctx.stroke();
-    } else if (tool === "eraser") {
-      eraseAt(pos);
+    }
+
+    // Preview de formas
+    if (
+      tool === "rectangle" ||
+      tool === "circle" ||
+      tool === "line" ||
+      tool === "arrow"
+    ) {
+      const previewCtx = previewRef.current?.getContext("2d");
+      if (!previewCtx || !startPos) return;
+
+      previewCtx.clearRect(0, 0, 900, 500);
+      previewCtx.strokeStyle = strokeColor;
+      previewCtx.lineWidth = 1;
+      previewCtx.setLineDash([5, 5]);
+
+      if (tool === "rectangle") {
+        previewCtx.strokeRect(
+          startPos.x,
+          startPos.y,
+          pos.x - startPos.x,
+          pos.y - startPos.y
+        );
+      }
+
+      if (tool === "circle") {
+        const r = Math.hypot(pos.x - startPos.x, pos.y - startPos.y);
+        previewCtx.beginPath();
+        previewCtx.arc(startPos.x, startPos.y, r, 0, Math.PI * 2);
+        previewCtx.stroke();
+      }
+
+      if (tool === "line" || tool === "arrow") {
+        previewCtx.beginPath();
+        previewCtx.moveTo(startPos.x, startPos.y);
+        previewCtx.lineTo(pos.x, pos.y);
+        previewCtx.stroke();
+      }
     }
   };
 
@@ -181,6 +212,9 @@ export default function Page() {
       ctx.fill();
     }
 
+    const previewCtx = previewRef.current?.getContext("2d");
+    previewCtx?.clearRect(0, 0, 900, 500);
+
     setDrawing(false);
     setStartPos(null);
   };
@@ -220,16 +254,41 @@ export default function Page() {
 
   const exportMerged = () => {
     const exportCanvas = document.createElement("canvas");
-    exportCanvas.width = 900;
-    exportCanvas.height = 500;
+    const canvasWidth = 900;
+    const canvasHeight = 500 + colorGuide.length * 30 + 30; // espaço p/ legenda
+    exportCanvas.width = canvasWidth;
+    exportCanvas.height = canvasHeight;
+
     const exportCtx = exportCanvas.getContext("2d");
+
+    // Desenha as camadas
     layers.forEach((layer) => {
-      if (layer.visible) {
-        exportCtx?.drawImage(layer.ref.current!, 0, 0);
+      if (layer.visible && layer.ref.current) {
+        exportCtx?.drawImage(layer.ref.current, 0, 0);
       }
     });
+
+    // Desenha a legenda
+    if (colorGuide.length && exportCtx) {
+      exportCtx.fillStyle = "#fff";
+      exportCtx.fillRect(0, 500, canvasWidth, canvasHeight - 500);
+
+      exportCtx.font = "16px sans-serif";
+      exportCtx.fillStyle = "#000";
+      exportCtx.fillText("Guia de Cores:", 10, 520);
+
+      colorGuide.forEach((guide, i) => {
+        const y = 550 + i * 30;
+        exportCtx.fillStyle = guide.color;
+        exportCtx.fillRect(10, y - 15, 20, 20);
+
+        exportCtx.fillStyle = "#000";
+        exportCtx.fillText(guide.label, 40, y);
+      });
+    }
+
     const link = document.createElement("a");
-    link.download = "quickbrick-desenho.png";
+    link.download = "quickbrick-legenda.png";
     link.href = exportCanvas.toDataURL("image/png");
     link.click();
   };
@@ -239,6 +298,8 @@ export default function Page() {
       const ctx = layer.ref.current?.getContext("2d");
       ctx?.clearRect(0, 0, layer.ref.current?.width || 0, 500);
     });
+
+    restoreBaseLayerImage();
   };
 
   const toggleFullscreen = () => {
@@ -249,15 +310,33 @@ export default function Page() {
     }
   };
 
+  const restoreBaseLayerImage = () => {
+    const baseCanvas = layers.find((l) => l.id === "base")?.ref.current;
+    if (!baseCanvas) return;
+    const ctx = baseCanvas.getContext("2d");
+    if (!ctx) return;
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = "/images/quickbrick_uneartherd.png";
+    img.onload = () => {
+      baseCanvas.width = 900;
+      baseCanvas.height = 500;
+      ctx.drawImage(img, 0, 0, 900, 500);
+    };
+  };
+
   return (
-    <>
+    <div className="flex flex-col min-h-screen bg-gray-50">
       <Hero />
-      <div className="flex flex-col min-h-screen bg-gray-50">
-        <header className="p-4">
+      <div className="max-w-screen-xl mx-auto w-full">
+        <header className="p-4 max-w-screen-lg mx-auto w-full">
           <h1 className="text-2xl font-bold">
             Quick<span className="text-red-500">Brick</span> Studio
           </h1>
-          <p className="text-sm text-red-600">Pense, desenhe e crie estratégias!</p>
+          <p className="text-sm text-red-600">
+            Pense, desenhe e crie estratégias!
+          </p>
           <p className="text-gray-600">
             O QuickBrick Studio é uma ferramenta que ajuda sua equipe a criar
             estratégias eficientes para o robô durante sua jornada no FIRST LEGO
@@ -270,15 +349,17 @@ export default function Page() {
         <main
           ref={mainRef}
           className={`flex flex-1 gap-4 p-4 ${
-            isFullscreen ? "flex-col bg-gray-200" : "flex-col md:flex-row"
+            isFullscreen
+              ? "flex-col bg-gray-200"
+              : "flex-col md:flex-row md:flex-row overflow-x-hidden"
           }`}
         >
           {/* Barra de Ferramentas */}
           <aside
             className={`rounded p-2 flex items-center ${
               isFullscreen
-                ? "flex-row justify-center bg-transparent gap-2"
-                : "flex-col bg-white border border-gray-300 space-y-2 w-14 flex-shrink-0"
+                ? "flex-row justify-center bg-transparent gap-2 overflow-x-auto"
+                : "bg-white border border-gray-300 space-y-2 flex-shrink-0 sm:flex-col sm:w-full md:flex-col md:w-14 sm:gap-2 md:gap-0"
             }`}
           >
             <button
@@ -321,16 +402,14 @@ export default function Page() {
           </aside>
 
           {/* Área de Desenho */}
-          <div
-            className={`relative ${isFullscreen ? "w-full mx-auto" : "w-[900px]"} h-[500px]`}
-          >
+          <div className={`relative w-full h-auto aspect-[9/5] max-w-full`}>
             {layers.map((layer) => (
               <canvas
                 key={layer.id}
                 ref={layer.ref}
                 width={900}
                 height={500}
-                className="absolute left-0 top-0 border border-gray-300 rounded"
+                className="absolute left-0 top-0 w-full h-full border border-gray-300 rounded"
                 style={{
                   zIndex: layers.findIndex((l) => l.id === layer.id),
                   pointerEvents: activeLayerId === layer.id ? "auto" : "none",
@@ -351,8 +430,32 @@ export default function Page() {
               className={`flex justify-between ${isFullscreen ? "items-start gap-2" : "flex-col"}`}
             >
               <div>
-                <h2 className="text-red-700 font-bold mb-2">Traço</h2>
-                <div className="flex items-center gap-2">
+                <h2 className="text-red-700 font-bold mb-2">Guia de cores</h2>
+                <div className="space-y-2">
+                  {colorGuide.map((guide, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div
+                        className="w-6 h-6 rounded"
+                        style={{ backgroundColor: guide.color }}
+                      />
+                      <span className="text-sm text-gray-700">
+                        {guide.label}
+                      </span>
+                      <button
+                        className="text-sm text-gray-400 hover:text-red-500"
+                        onClick={() =>
+                          setColorGuide((prev) =>
+                            prev.filter((_, i) => i !== index)
+                          )
+                        }
+                      >
+                        <i className="fi fi-rr-trash"></i>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2 mt-2">
                   <input
                     type="color"
                     value={strokeColor}
@@ -530,6 +633,6 @@ export default function Page() {
           </aside>
         </main>
       </div>
-    </>
+    </div>
   );
 }

@@ -45,7 +45,7 @@ export default function Home() {
                   </dt>
                   <dd className="mt-2 text-base/7 text-zinc-600">
                     Desenhe estratégias visuais para cumprir missões da FLL
-                    UNEARTHED ou desafios de resgate da OBR.
+                    UNEARTHED.
                   </dd>
                 </div>
                 <div className="relative pl-16">
@@ -53,7 +53,7 @@ export default function Home() {
                     <div className="absolute top-0 left-0 flex size-10 items-center justify-center rounded-lg bg-red-600 text-white">
                       <i className="fi fi-rr-blood-test-tube-alt" style={{ lineHeight: 0}}></i>
                     </div>
-                    lab<span className="text-red-600">Test</span><div className="ml-2 p-1 text-xs text-yellow-600 font-semibold bg-yellow-100 w-max rounded-full">Em desenvolvimento</div>
+                    lab<span className="text-red-600">Test</span><div className="ml-2 p-1 text-xs text-yellow-600 font-semibold bg-yellow-100 w-max rounded-full">Em breve</div>
                   </dt>
                   <dd className="mt-2 text-base/7 text-zinc-600">
                     Simule missões específicas, saídas ou rounds completos e
@@ -61,11 +61,11 @@ export default function Home() {
                   </dd>
                 </div>
                 <div className="relative pl-16">
-                  <dt className="text-base/7 font-semibold text-zinc-900">
+                  <dt className="text-base/7 font-semibold text-zinc-900 flex justify-start items-center">
                     <div className="absolute top-0 left-0 flex size-10 items-center justify-center rounded-lg bg-teal-500 text-white">
-                      <i className="fi fi-rr-stage-theatre" style={{ lineHeight: 0}}></i>
+                      <i className="fi fi-rr-blood-test-tube-alt" style={{ lineHeight: 0}}></i>
                     </div>
-                    show<span className="text-teal-500">Live</span>
+                    show<span className="text-red-600">Live</span><div className="ml-2 p-1 text-xs text-yellow-600 font-semibold bg-yellow-100 w-max rounded-full">Em breve</div>
                   </dt>
                   <dd className="mt-2 text-base/7 text-zinc-600">
                     Organize eventos de robótica para até 10 equipes, defina
@@ -93,7 +93,7 @@ export default function Home() {
 
             <div className="mt-4 md:mt-8">
               <a
-                href="/create-room"
+                href="/discovery"
                 className="inline-block rounded-sm bg-red-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-red-700 focus:ring-3 focus:ring-yellow-400 focus:outline-hidden"
               >
                 Explore hoje mesmo

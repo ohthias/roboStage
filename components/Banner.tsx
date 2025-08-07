@@ -12,19 +12,7 @@ export default function Banner() {
           </p>
 
           <div className="mt-4 flex gap-4 sm:mt-6">
-            <a
-              className="inline-block rounded border border-primary bg-red-600 px-5 py-2 font-medium text-light shadow-sm transition-colors hover:bg-red-700"
-              href="/join"
-            >
-              Participar
-            </a>
-
-            <a
-              className="inline-block text-base font-medium px-5 py-2 bg-white text-gray-700 border border-gray-700 rounded hover:bg-gray-200 hover:border-gray-400 transition cursor-pointer"
-              href="/sign"
-            >
-              Cadastrar
-            </a>
+            
           </div>
         </div>
         <img

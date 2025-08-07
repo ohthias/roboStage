@@ -18,8 +18,8 @@ export default function Page() {
   };
 
   type ColorGuide = {
-    color: string; // ex: "#00FF00"
-    label: string; // ex: "Área de coleta"
+    color: string;
+    label: string;
   };
 
   const [layers, setLayers] = useState<Layer[]>([]);
@@ -38,6 +38,9 @@ export default function Page() {
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(
     null
   );
+
+  const pxPerCmX = 900 / 200; // 4.5 px/cm
+  const pxPerCmY = 500 / 142; // ~3.521 px/cm
 
   useEffect(() => {
     const baseLayer: Layer = {

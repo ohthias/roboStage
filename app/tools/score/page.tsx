@@ -4,6 +4,7 @@ import FormMission from "@/components/FormMission";
 import { calculateTotalPoints } from "@/utils/calculateTotalPoints";
 import Hero from "@/components/hero";
 import Loader from "@/components/loader";
+import { usePathname, useRouter } from "next/navigation";
 
 // Tipos
 type MissionType = {
@@ -33,18 +34,12 @@ export default function Page() {
   const [background, setBackground] = useState<string>("#ffffff");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const currentHash = window.location.hash.replace("#", "");
-      setHash(currentHash || "submerged");
-    }
-  }, []);
-
-  useEffect(() => {
     const handleHashChange = () => {
       const newHash = window.location.hash.replace("#", "");
       setHash(newHash || "submerged");
     };
-
+    
+    handleHashChange();
     window.addEventListener("hashchange", handleHashChange);
 
     return () => {
@@ -54,7 +49,6 @@ export default function Page() {
 
   useEffect(() => {
     if (!hash) return;
-
     setLoading(true);
 
     fetch("/data/missions.json")
@@ -65,6 +59,7 @@ export default function Page() {
       .then((data) => {
         const selected = data[hash] || data.submerged;
         setMissions(selected);
+        setResponses({});
 
         switch (hash) {
           case "unearthed":
@@ -77,7 +72,10 @@ export default function Page() {
               "url('/images/background_submerged.png') center/cover"
             );
             break;
+          default:
+            setBackground("#ffffff");
         }
+
         setLoading(false);
       })
       .catch((error) => {
@@ -113,6 +111,7 @@ export default function Page() {
   return (
     <>
       <Hero admin="false" />
+
       <main
         className="flex flex-col items-center justify-center gap-8 px-4 py-16 sm:px-6 lg:px-8"
         style={{ background: background }}

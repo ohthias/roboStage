@@ -11,7 +11,13 @@ export default function ProfilePage() {
 
   const [editing, setEditing] = useState(false);
 
-  const [username, setUsername] = useState(profile?.username || "");
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    if (profile?.username) {
+      setUsername(profile.username);
+    }
+  }, [profile?.username]);
   const [avatarUrl, setAvatarUrl] = useState(
     session?.user?.user_metadata?.avatar_url || ""
   );

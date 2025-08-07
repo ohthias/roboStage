@@ -39,9 +39,13 @@ export default function Page() {
     null
   );
 
-  const pxPerCmX = 900 / 200; // 4.5 px/cm
-  const pxPerCmY = 500 / 142; // ~3.521 px/cm
+  const CANVAS_WIDTH_PX = 900;
+  const CANVAS_WIDTH_CM = 200;
+  const CANVAS_HEIGHT_PX = 500;
+  const CANVAS_HEIGHT_CM = 142;
 
+  const pxPerCmX = CANVAS_WIDTH_PX / CANVAS_WIDTH_CM; // 4.5 px/cm
+  const pxPerCmY = CANVAS_HEIGHT_PX / CANVAS_HEIGHT_CM; // ~3.521 px/cm
   useEffect(() => {
     const baseLayer: Layer = {
       id: "base",

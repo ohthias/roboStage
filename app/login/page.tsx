@@ -54,7 +54,7 @@ export default function LoginPage() {
             placeholder="E-mail"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 border rounded p-2 border rounded border-gray-300 outline-none focus:border-red-600"
+            className="w-full p-2 border rounded border-gray-300 outline-none focus:border-red-600"
             required
           />
           <div className="relative">

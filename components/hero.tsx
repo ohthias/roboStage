@@ -34,7 +34,10 @@ export default function Hero({ admin }: HeroProps) {
           >
             <button className="flex items-center space-x-1 text-zinc-900 hover:text-red-600">
               <span>Ferramentas</span>
-              <i className="fi fi-rr-angle-small-down" style={{ lineHeight: 0}}></i>
+              <i
+                className="fi fi-rr-angle-small-down"
+                style={{ lineHeight: 0 }}
+              ></i>
             </button>
 
             {dropdownOpen && (
@@ -69,18 +72,10 @@ export default function Hero({ admin }: HeroProps) {
               </div>
             )}
           </div>
-        </div>
-
-        <div className="flex items-center space-x-4">
-          <Link href="/enter">
-            <button className="flex items-center px-4 py-2 text-sm bg-white text-gray-700 border border-gray-700 rounded hover:bg-gray-200 hover:border-gray-400 transition cursor-pointer">
-              Entrar
-            </button>
-          </Link>
-          <Link href="/create-room">
-            <button className="flex items-center px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer transition">
-              Criar Evento
-            </button>
+          <Link href="https://www.portaldaindustria.com.br/sesi/canais/torneio-de-robotica/first-lego-league-brasil/" target="_blank" rel="noopener noreferrer">
+            <span className="hidden md:block text-zinc-900 hover:text-red-600 transition">
+              Documentação Oficial
+            </span>
           </Link>
         </div>
 

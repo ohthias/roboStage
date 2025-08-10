@@ -1,23 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
-  const nivel = req.cookies.get('nivel_acesso')?.value
-  const codigoSala = req.cookies.get('codigo_sala')?.value
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next();
 
-  const urlParts = req.nextUrl.pathname.split('/').filter(Boolean)
-  const [rotaCodigoSala, rotaNivel] = urlParts
+  const supabase = createMiddlewareClient({ req, res });
 
-  if (!codigoSala || !nivel) {
-    return NextResponse.redirect(new URL('/enter', req.url))
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    if (
+      req.nextUrl.pathname.startsWith("/dashboard") ||
+      req.nextUrl.pathname.startsWith("/configuracoes")
+    ) {
+      const loginUrl = new URL("/login", req.url);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
-  if (codigoSala !== rotaCodigoSala || nivel !== rotaNivel) {
-    return NextResponse.redirect(new URL('/enter', req.url))
-  }
-
-  return NextResponse.next()
+  return res;
 }
 
 export const config = {
-  matcher: ['/:codigo_sala/(admin|voluntario|visitante)'],
-}
+  matcher: ["/dashboard/:path*", "/configuracoes/:path*"],
+};

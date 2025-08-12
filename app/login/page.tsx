@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
-import Hero from "@/components/hero";
-import Footer from "@/components/ui/Footer";
+import { Navbar } from "@/components/Navbar";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -40,7 +39,7 @@ export default function LoginPage() {
 
   return (
     <div className="h-screen flex flex-col justify-between">
-      <Hero />
+      <Navbar />
       <div className="w-lg mx-auto my-10 bg-light-smoke p-6 rounded shadow-md">
         <h1 className="text-4xl font-bold text-center">Login</h1>
         <p className="text-center mb-4">
@@ -100,7 +99,6 @@ export default function LoginPage() {
           </button>
         </form>
       </div>
-      <Footer />
     </div>
   );
 }

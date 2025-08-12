@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
-import Footer from "@/components/ui/Footer";
-import Hero from "@/components/hero";
+import { Navbar } from "@/components/Navbar";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -45,7 +44,7 @@ export default function RegisterPage() {
 
   return (
     <div className="h-screen flex flex-col justify-between">
-      <Hero />
+      <Navbar />
       <div className="max-w-md mx-auto my-10 bg-light-smoke p-6 rounded shadow-md">
         <h1 className="text-4xl font-bold text-center text-red-600">
           Junte-se!
@@ -108,7 +107,6 @@ export default function RegisterPage() {
           </button>
         </form>
       </div>
-      <Footer />
     </div>
   );
 }

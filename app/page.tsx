@@ -1,113 +1,117 @@
 "use client";
 
-import Banner from "@/components/Banner";
-import Hero from "@/components/hero";
-import Footer from "@/components/ui/Footer";
+import { Hero } from "@/components/Hero";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/ui/Footer";
 
 export default function Home() {
   return (
     <>
+      <Navbar />
       <Hero />
-      <Banner />
-      <main className="flex flex-col items-center justify-center gap-8">
-        <div className="py-24 sm:py-12 mb-12">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-2xl lg:text-center">
-              <p className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-teal-500 sm:text-5xl lg:text-balance">
-                Potencialize sua equipe de robótica
-              </p>
-              <p className="mt-6 text-lg/8 text-zinc-900">
-                Crie estratégias, registre pontuações, conduza testes e
-                documente cada avanço do seu robô. Além disso, organize eventos
-                completos de robótica com facilidade.
-              </p>
+      {/* Icon Blocks */}
+      <div className="max-w-5xl py-10 lg:py-14 mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 items-center gap-6 md:gap-10">
+          {/* Card */}
+          <div className="size-full bg-white shadow-lg rounded-lg p-5">
+            <div className="flex items-center gap-x-4 mb-3">
+              <div className="inline-flex justify-center items-center size-15.5 rounded-full border-4 border-primary/50 bg-primary/75">
+                <i
+                  className="fi fi-rr-hundred-points text-primary-content"
+                  style={{ lineHeight: 0 }}
+                ></i>
+              </div>
+              <div className="shrink-0">
+                <h3 className="block text-lg font-semibold text-gray-800">
+                  FLL Score
+                </h3>
+              </div>
             </div>
-            <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl">
-              <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16">
-                <div className="relative pl-16">
-                  <dt className="text-base/7 font-semibold text-zinc-900">
-                    <div className="absolute top-0 left-0 flex size-10 items-center justify-center rounded-lg bg-teal-500 text-white">
-                      <i className="fi fi-rr-hundred-points" style={{ lineHeight: 0}}></i>
-                    </div>
-                    FLL Score
-                  </dt>
-                  <dd className="mt-2 text-base/7 text-zinc-600">
-                    Registre e acompanhe o desempenho do seu robô na arena da
-                    temporada UNEARTHED de forma prática
-                  </dd>
-                </div>
-                <div className="relative pl-16">
-                  <dt className="text-base/7 font-semibold text-zinc-900">
-                    <div className="absolute top-0 left-0 flex size-10 items-center justify-center rounded-lg bg-red-600 text-white">
-                      <i className="fi fi-rr-blueprint" style={{ lineHeight: 0}}></i>
-                    </div>
-                    Quick<span className="text-red-600">Brick</span> Studio
-                  </dt>
-                  <dd className="mt-2 text-base/7 text-zinc-600">
-                    Desenhe estratégias visuais para cumprir missões da FLL
-                    UNEARTHED.
-                  </dd>
-                </div>
-                <div className="relative pl-16">
-                  <dt className="text-base/7 font-semibold text-zinc-900 flex justify-start items-center">
-                    <div className="absolute top-0 left-0 flex size-10 items-center justify-center rounded-lg bg-red-600 text-white">
-                      <i className="fi fi-rr-blood-test-tube-alt" style={{ lineHeight: 0}}></i>
-                    </div>
-                    lab<span className="text-red-600">Test</span><div className="ml-2 p-1 text-xs text-yellow-600 font-semibold bg-yellow-100 w-max rounded-full">Em breve</div>
-                  </dt>
-                  <dd className="mt-2 text-base/7 text-zinc-600">
-                    Simule missões específicas, saídas ou rounds completos e
-                    analise resultados detalhados do seu robô.
-                  </dd>
-                </div>
-                <div className="relative pl-16">
-                  <dt className="text-base/7 font-semibold text-zinc-900 flex justify-start items-center">
-                    <div className="absolute top-0 left-0 flex size-10 items-center justify-center rounded-lg bg-teal-500 text-white">
-                      <i className="fi fi-rr-blood-test-tube-alt" style={{ lineHeight: 0}}></i>
-                    </div>
-                    show<span className="text-red-600">Live</span><div className="ml-2 p-1 text-xs text-yellow-600 font-semibold bg-yellow-100 w-max rounded-full">Em breve</div>
-                  </dt>
-                  <dd className="mt-2 text-base/7 text-zinc-600">
-                    Organize eventos de robótica para até 10 equipes, defina
-                    formatos de competição, fases e permissões personalizadas.
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      <section className="overflow-hidden bg-gray-50 sm:grid sm:grid-cols-2 sm:items-center">
-        <div className="p-8 md:p-12 lg:px-10 lg:py-24">
-          <div className="mx-auto max-w-xl text-center ltr:sm:text-left rtl:sm:text-right">
-            <h2 className="text-2xl font-bold text-gray-600 md:text-3xl">
-              Totalmente imerso na robótica
-            </h2>
-
-            <p className="hidden text-gray-500 md:mt-4 md:block">
-              Com o <span className="text-red-600">roboStage</span>, você amplia
-              a visão sobre o desempenho do seu time e cria eventos
-              personalizados de maneira simples e intuitiva.
+            <p className="text-gray-600">
+              Registre e acompanhe o desempenho do seu robô na arena!
             </p>
-
-            <div className="mt-4 md:mt-8">
-              <a
-                href="/discovery"
-                className="inline-block rounded-sm bg-red-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-red-700 focus:ring-3 focus:ring-yellow-400 focus:outline-hidden"
-              >
-                Explore hoje mesmo
-              </a>
-            </div>
           </div>
+          {/* End Card */}
+          {/* Card */}
+          <div className="size-full bg-white shadow-lg rounded-lg p-5">
+            <div className="flex items-center gap-x-4 mb-3">
+              <div className="inline-flex justify-center items-center size-15.5 rounded-full border-4 border-primary/50 bg-primary/75">
+                <i
+                  className="fi fi-rr-blueprint text-primary-content"
+                  style={{ lineHeight: 0 }}
+                ></i>
+              </div>
+              <div className="shrink-0">
+                <h3 className="block text-lg font-semibold text-gray-800">
+                  QuickBrick Studio
+                </h3>
+              </div>
+            </div>
+            <p className="text-gray-600">
+              Desenhe estratégias visuais para cumprir missões da FLL Challenge - UNEARTHED!
+            </p>
+          </div>
+          {/* End Card */}
+          {/* Card */}
+          <div className="size-full bg-white shadow-lg rounded-lg p-5">
+            <div className="flex items-center gap-x-4 mb-3">
+              <div className="inline-flex justify-center items-center size-15.5 rounded-full border-4 border-primary/50 bg-primary/75">
+                <i
+                  className="fi fi-rr-stage-theatre text-primary-content"
+                  style={{ lineHeight: 0 }}
+                ></i>
+              </div>
+              <div className="shrink-0">
+                <h3 className="block text-lg font-semibold text-gray-800">
+                  showLive
+                </h3>
+              </div>
+            </div>
+            <p className="text-gray-600">
+              Organize eventos de robótica para até 10 equipes, defina formatos de competição, fases e permissões personalizadas.
+            </p>
+          </div>
+          {/* End Card */}
         </div>
-
+      </div>
+      <section className="max-w-5xl mx-auto my-8">
+        <div className="container">
+          <h2 className="text-3xl font-bold mb-4">
+            FIRST Age (2025-2026) - FLL
+          </h2>
+          <p className="text-lg mb-6">
+            A temporada 2025-2026 da FIRST LEGO League Challenge traz o tema{" "}
+            <strong>UNEARTHED™</strong>, convida as equipes a explorarem e
+            identificarem um problema enfrentado por arqueólogos, propondo uma
+            solução que possa ajuda-lós. Eles usam o processo arqueológico para
+            reconstruir e entender os artefatos que descobriram. Seja na
+            escavação de um sítio arqueológico ou na análise de materiais em um
+            laboratório, é preciso que as pessoas trabalhem junto com a
+            tecnologia para encontrar as pistas necessárias para entender como
+            as gerações passadas viviam, aprendiam e celebravam.
+          </p>
+          <p className="text-lg mb-6">
+            O RoboStage está pronta para apoiar sua equipe nessa aventura,
+            disponibilizando ferramentas para auxiliar no design do robô e no
+            desafio da mesa.
+          </p>
+          <p className="text-primary font-bold">
+            Você está pronto para desenvolver soluções?
+          </p>
+          <a
+            href="https://www.portaldaindustria.com.br/sesi/canais/torneio-de-robotica/first-lego-league-brasil/#modal-temporada"
+            className="text-blue-600 hover:underline font-semibold"
+          >
+            Leia as documentações da temporada
+          </a>
+        </div>
         <img
-          alt="FLL board game"
-          src="/images/index_image.jpg"
-          className="h-full w-full object-cover sm:h-[calc(100%_-_2rem)] sm:self-end sm:rounded-ss-[30px] md:h-[calc(100%_-_4rem)] md:rounded-ss-[60px]"
+          src="/images/fll_unearthed_logo_fullcolor.png"
+          alt="FLL Logo"
+          className="w-auto h-50 mt-8 mx-auto"
         />
       </section>
+
       <Footer />
     </>
   );

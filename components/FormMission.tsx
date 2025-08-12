@@ -5,6 +5,7 @@ interface Mission {
   name: string;
   mission?: string;
   type: string[];
+  equipaments?: boolean;
   points?: number | number[];
   ["sub-mission"]?: {
     submission: string;
@@ -22,12 +23,14 @@ interface FormMissionProps {
   missions?: Mission[];
   responses?: Responses;
   onSelect?: (missionId: string, index: number, value: string | number) => void;
+  className?: string;
 }
 
 export default function FormMission({
   missions = [],
   responses = {},
   onSelect,
+  className = "",
 }: FormMissionProps) {
   const renderInput = (
     missionId: string,
@@ -70,8 +73,8 @@ export default function FormMission({
               key={`${missionId}-switch-${index}-${option}`}
               className={
                 value === option
-                  ? "bg-[#ED1E25] text-white px-4 py-2 rounded-lg border-none font-bold cursor-pointer mt-2 mr-2 text-sm sm:text-base"
-                  : "bg-[#dcdcdc] text-[#121212] px-4 py-2 rounded-lg border-none cursor-pointer mt-2 mr-2 text-sm sm:text-base hover:bg-gray-300 transition"
+                  ? "bg-accent text-white px-4 py-2 rounded-lg border-none font-bold cursor-pointer mt-2 mr-2 text-sm sm:text-base"
+                  : "bg-base-200 text-base-content px-4 py-2 rounded-lg border-none cursor-pointer mt-2 mr-2 text-sm sm:text-base hover:bg-accent/25 transition"
               }
               onClick={() => onSelect?.(missionId, index, option)}
               aria-pressed={value === option}
@@ -112,8 +115,8 @@ export default function FormMission({
                 key={`${missionId}-range-${index}-${val}-${idx}`}
                 className={
                   value === displayLabel
-                    ? "bg-[#ED1E25] text-white px-4 py-2 rounded-lg border-none font-bold cursor-pointer mt-2 mr-2"
-                    : "bg-[#dcdcdc] text-[#121212] px-4 py-2 rounded-lg border-none cursor-pointer mt-2 mr-2 hover:bg-gray-300 transition"
+                    ? "bg-accent text-white px-4 py-2 rounded-lg border-none font-bold cursor-pointer mt-2 mr-2"
+                    : "bg-base-200 text-base-content px-4 py-2 rounded-lg border-none cursor-pointer mt-2 mr-2 hover:bg-accent/25 transition"
                 }
                 onClick={() => onSelect?.(missionId, index, displayLabel)}
                 aria-pressed={value === displayLabel}
@@ -131,19 +134,22 @@ export default function FormMission({
   };
 
   return (
-    <div className="bg-light-smoke p-4 rounded-lg max-w-4xl sm:mx-auto w-full">
+    <div className={`bg-base-100 p-4 rounded-lg max-w-4xl sm:mx-auto w-full ${className}`}>
       {Array.isArray(missions) &&
         missions.map((mission) => (
           <div
             className="flex flex-col sm:flex-row gap-4 sm:gap-8 rounded-lg p-4 mb-4 relative after:content-[''] after:absolute after:w-[calc(100%-32px)] after:h-0.5 after:bottom-0 after:bg-gray-200 after:left-1/2 after:-translate-x-1/2 after:mt-4"
             key={mission.id}
           >
-            <span className="bg-[#ED1E25] text-white rounded-lg font-bold flex items-center justify-center mb-2 w-12 h-12 sm:w-[50px] sm:h-[50px] text-center">
+            <span className="bg-secondary text-white rounded-lg font-bold flex items-center justify-center mb-2 w-12 h-12 sm:w-[50px] sm:h-[50px] text-center">
               {mission.id}
             </span>
             <div className="flex-1">
-              <h3 className="font-bold text-[1.1rem] mb-3">
+              <h3 className="font-bold text-[1.1rem] mb-3 flex justify-start items-center">
                 {mission.name.toUpperCase()}
+                {mission.equipaments && (
+                  <img src="https://www.flltournament.com/images/2025/NoEquip.png" className="ml-4 w-8 h-8" />
+                )}
               </h3>
 
               {mission.mission && (

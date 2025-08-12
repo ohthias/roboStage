@@ -1,12 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import FormMission from "@/components/FormMission";
 import { calculateTotalPoints } from "@/utils/calculateTotalPoints";
-import Hero from "@/components/hero";
 import Loader from "@/components/loader";
-import { usePathname, useRouter } from "next/navigation";
+import { Navbar } from "@/components/Navbar";
 
-// Tipos
 type MissionType = {
   id: string;
   name: string;
@@ -33,12 +31,74 @@ export default function Page() {
   const [hash, setHash] = useState<string | null>(null);
   const [background, setBackground] = useState<string>("#ffffff");
 
+  // Timer states
+  const totalTime = 150; // 2 min 30 seg
+  const [timeLeft, setTimeLeft] = useState(totalTime);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sons
+  const startSound = useRef<HTMLAudioElement | null>(null);
+  const endSound = useRef<HTMLAudioElement | null>(null);
+
+  let totalPoints = calculateTotalPoints(missions, responses);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      startSound.current = new Audio("/sounds/start.mp3");
+      endSound.current = new Audio("/sounds/end.mp3");
+    }
+  }, []);
+
+  const progress = (timeLeft / totalTime) * 100;
+  const progressColor =
+    timeLeft <= 10 ? "bg-red-500" : timeLeft <= 30 ? "bg-yellow-500" : "bg-primary";
+
+  const startTimer = () => {
+    if (!timerRunning) {
+      setTimerRunning(true);
+      if (startSound.current) startSound.current.play();
+    }
+  };
+
+  const pauseTimer = () => {
+    setTimerRunning(false);
+  };
+
+  const resetTimer = () => {
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
+    setTimeLeft(totalTime);
+    window.location.reload();
+  };
+
+  useEffect(() => {
+    if (timerRunning && timeLeft > 0) {
+      timerRef.current = setTimeout(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setTimerRunning(false);
+      if (endSound.current) endSound.current.play();
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [timerRunning, timeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const m = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const s = String(seconds % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
   useEffect(() => {
     const handleHashChange = () => {
       const newHash = window.location.hash.replace("#", "");
       setHash(newHash || "submerged");
     };
-    
+
     handleHashChange();
     window.addEventListener("hashchange", handleHashChange);
 
@@ -64,12 +124,12 @@ export default function Page() {
         switch (hash) {
           case "unearthed":
             setBackground(
-              "url('/images/background_uneartherd.png') center/cover"
+              "https://static.wixstatic.com/media/381ad3_dca9f615988c479ca24a9b0b0e5bc1b0~mv2.gif"
             );
             break;
           case "submerged":
             setBackground(
-              "url('/images/background_submerged.png') center/cover"
+              "https://static.wixstatic.com/media/3a1650_a7d1c334024840d8b642e62d02ebdaaf~mv2.gif"
             );
             break;
           default:
@@ -98,8 +158,6 @@ export default function Page() {
     }));
   };
 
-  const totalPoints = calculateTotalPoints(missions, responses);
-
   if (loading || !hash) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
@@ -110,33 +168,102 @@ export default function Page() {
 
   return (
     <>
-      <Hero admin="false" />
+      <Navbar />
 
-      <main
-        className="flex flex-col items-center justify-center gap-8 px-4 py-16 sm:px-6 lg:px-8"
-        style={{ background: background }}
-      >
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative w-full max-w-4xl bg-white px-8 py-4 rounded-md">
-          <div className="flex-1 flex justify-center sm:justify-start text-center sm:text-left">
-            <h1
-              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary"
-              id="pontuador"
-            >
-              FLL Score{" "}
-              <span className="capitalize">{hash && `- ${hash}`}</span>
-            </h1>
+      {/* Barra de progresso */}
+      <div className="h-3 w-full bg-neutral">
+        <div
+          className={`h-full transition-all duration-300 ${progressColor}`}
+          style={{ width: `${progress}%` }}
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        ></div>
+      </div>
+
+      <main className="flex flex-col items-center justify-center px-4 pb-16 pt-8 sm:px-6 lg:px-8 bg-base-300">
+        <style jsx global>{`
+          @keyframes fadeInDown {
+            from {
+              opacity: 0;
+              transform: translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: none;
+            }
+          }
+          .animate-fade-in-down {
+            animation: fadeInDown 250ms ease-in;
+          }
+        `}</style>
+
+        {/* Controles do Timer */}
+        <div className="animate-fade-in-down gap-4 w-full flex max-w-4xl justify-end mb-2">
+          <span
+            className="p-2 text-primary-content bg-primary/25 rounded-md text-center font-primary-content text-lg"
+            id="timer"
+          >
+            {formatTime(timeLeft)}
+          </span>
+
+          <button className="btn btn-success cursor-pointer disabled:cursor-not-allowed" onClick={startTimer} disabled={timerRunning} style={{ lineHeight: 0 }}>
+            <i className="fi fi-bs-play"></i>
+            Iniciar
+          </button>
+
+          <button className="btn btn-warning cursor-pointer disabled:cursor-not-allowed" onClick={pauseTimer} disabled={!timerRunning} style={{ lineHeight: 0 }}>
+            <i className="fi fi-bs-pause"></i>
+            Pausar
+          </button>
+
+          <button className="btn btn-error" onClick={resetTimer} style={{ lineHeight: 0 }}>
+            <i className="fi fi-bs-rotate-right"></i>
+            Resetar
+          </button>
+        </div>
+
+        {/* Cabeçalho */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative w-full max-w-4xl bg-base-100 px-8 py-4 rounded-md animate-fade-in-down mb-8">
+          <div className="flex-1 flex justify-center sm:justify-start text-center sm:text-left items-center gap-4">
+            <img src={background} className="w-24 h-24" alt="logo" />
+            <div className="flex flex-col">
+              <h1 className="text-md font-bold text-base-content">FLL Score</h1>
+              <span className="uppercase font-bold text-secondary text-2xl sm:text-3xl lg:text-4xl">
+                {hash && `${hash}`}
+              </span>
+            </div>
           </div>
 
-          <div className="bg-light-smoke flex flex-col items-center justify-center rounded-md shadow-md p-4 w-full sm:w-auto max-w-[200px]">
-            <p className="text-sm font-bold text-black">Pontos</p>
-            <h3 className="text-2xl font-bold text-primary">{totalPoints}</h3>
+          <div className="bg-base-100 flex flex-col items-center justify-center rounded-md shadow-md p-4 w-full sm:w-auto max-w-[200px]">
+            <p className="text-sm font-bold text-base-content">Pontos</p>
+            <h3 className="text-2xl font-bold text-secondary">{totalPoints}</h3>
           </div>
         </div>
 
+        {/* Info */}
+        <div className="flex flex-col sm:flex-row items-center justify-start gap-4 relative w-full max-w-4xl bg-base-100 px-8 py-4 rounded-md animate-fade-in-down mb-8">
+          <img
+            src="https://www.flltournament.com/images/2025/NoEquip.png"
+            className="w-16 h-16 mr-4"
+          />
+          <p className="text-base-content text-sm">
+            <b>Sem restrição de equipamento:</b> Quando este símbolo aparece, aplica-se a seguinte
+            regra:{" "}
+            <i className="text-neutral">
+              “Um modelo de missão não pode ganhar pontos se estiver tocando no equipamento no final
+              da partida.”
+            </i>
+          </p>
+        </div>
+
+        {/* Lista de Missões */}
         <FormMission
           missions={missions}
           responses={responses}
           onSelect={handleSelect}
+          className="animate-fade-in-down"
         />
       </main>
     </>

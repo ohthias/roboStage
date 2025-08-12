@@ -1,53 +1,6 @@
 @import "@flaticon/flaticon-uicons/css/all/all.css";
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #121212;
-  --primary: #ed1e25;
-  --primary-dark: #d01117;
-  --primary-light: #f04248;
-  --secondary: #177191;
-  --secondary-dark: #164a61;
-  --secondary-light: #3ea1cc;
-  --light: #ffffff;
-  --light-smoke: #f6f6f6;
-  --details-primary: #E70047;
-  --secondary-details: #3cbcbc;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-dark: var(--primary-dark);
-  --color-primary-light: var(--primary-light);
-  --color-secondary: var(--secondary);
-  --color-secondary-dark: var(--secondary-dark);
-  --color-secondary-light: var(--secondary-light);
-  --color-light: var(--light);
-  --color-light-smoke: var(--light-smoke);
-  --color-details-primary: var(--details-primary);
-  --color-secondary-details: var(--secondary-details);
-  --animate-fadein-down: fadein-down 0.3s ease-in-out;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-
-  @keyframes fadein-down {
-    0% {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@plugin "daisyui" {
+    themes: bumblebee --default, acid;
 }

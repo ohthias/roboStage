@@ -6,9 +6,11 @@ export function ThemeController() {
   const [theme, setTheme] = useState<string>("bumblebee");
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "bumblebee";
-    setTheme(savedTheme);
-    document.documentElement.setAttribute("data-theme", savedTheme);
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("theme") || "bumblebee";
+      setTheme(savedTheme);
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    }
   }, []);
 
   const changeTheme = (newTheme: string) => {
@@ -53,10 +55,10 @@ export function ThemeController() {
               type="radio"
               name="theme-dropdown"
               className="theme-controller hidden"
-              checked={theme === "night"}
-              onChange={() => changeTheme("night")}
+              checked={theme === "acid"}
+              onChange={() => changeTheme("acid")}
             />
-            Escuro
+            Alternativo
           </label>
         </li>
       </ul>

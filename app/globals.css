@@ -2,5 +2,5 @@
 @import "tailwindcss";
 
 @plugin "daisyui" {
-    themes: bumblebee --default, night --prefersdark;
+    themes: bumblebee --default, acid;
 }

@@ -1,8 +1,8 @@
 "use client";
 
+import { Navbar } from "@/components/Navbar";
 import { useEffect, useState, useRef } from "react";
 import React from "react";
-import Hero from "@/components/hero";
 
 export default function Page() {
   type Layer = {
@@ -510,7 +510,7 @@ export default function Page() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Hero />
+      <Navbar />
       <div className="max-w-screen-xl mx-auto w-full">
         <header className="p-4 max-w-screen-lg mx-auto w-full">
           <h1 className="text-2xl font-bold">

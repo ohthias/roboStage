@@ -2,9 +2,8 @@
 import { useEffect, useState } from "react";
 import FormMission from "@/components/FormMission";
 import { calculateTotalPoints } from "@/utils/calculateTotalPoints";
-import Hero from "@/components/hero";
 import Loader from "@/components/loader";
-import { usePathname, useRouter } from "next/navigation";
+import { Navbar } from "@/components/Navbar";
 
 // Tipos
 type MissionType = {
@@ -38,7 +37,7 @@ export default function Page() {
       const newHash = window.location.hash.replace("#", "");
       setHash(newHash || "submerged");
     };
-    
+
     handleHashChange();
     window.addEventListener("hashchange", handleHashChange);
 
@@ -64,12 +63,12 @@ export default function Page() {
         switch (hash) {
           case "unearthed":
             setBackground(
-              "url('/images/background_uneartherd.png') center/cover"
+              "https://static.wixstatic.com/media/381ad3_dca9f615988c479ca24a9b0b0e5bc1b0~mv2.gif"
             );
             break;
           case "submerged":
             setBackground(
-              "url('/images/background_submerged.png') center/cover"
+              "https://static.wixstatic.com/media/3a1650_a7d1c334024840d8b642e62d02ebdaaf~mv2.gif"
             );
             break;
           default:
@@ -110,26 +109,42 @@ export default function Page() {
 
   return (
     <>
-      <Hero admin="false" />
-
+      <Navbar />
       <main
-        className="flex flex-col items-center justify-center gap-8 px-4 py-16 sm:px-6 lg:px-8"
-        style={{ background: background }}
+        className="flex flex-col items-center justify-center gap-8 px-4 py-16 sm:px-6 lg:px-8 bg-base-300"
       >
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative w-full max-w-4xl bg-white px-8 py-4 rounded-md">
-          <div className="flex-1 flex justify-center sm:justify-start text-center sm:text-left">
-            <h1
-              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary"
-              id="pontuador"
-            >
-              FLL Score{" "}
-              <span className="capitalize">{hash && `- ${hash}`}</span>
-            </h1>
+        <style jsx global>{`
+          @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+          }
+          .animate-fade-in-down {
+        animation: fadeInDown 250ms ease-in;
+          }
+        `}</style>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative w-full max-w-4xl bg-base-100 px-8 py-4 rounded-md animate-fade-in-down">
+          <div className="flex-1 flex justify-center sm:justify-start text-center sm:text-left items-center gap-4">
+            <img src={background} className="w-24 h-24" alt="logo" />
+            <div className="flex flex-col">
+              <h1
+                className="text-md font-bold text-base-content"
+                id="pontuador"
+              >
+                FLL Score{" "}
+              </h1>
+              <span className="uppercase font-bold text-secondary text-2xl sm:text-3xl lg:text-4xl">{hash && `${hash}`}</span>
+            </div>
           </div>
 
-          <div className="bg-light-smoke flex flex-col items-center justify-center rounded-md shadow-md p-4 w-full sm:w-auto max-w-[200px]">
-            <p className="text-sm font-bold text-black">Pontos</p>
-            <h3 className="text-2xl font-bold text-primary">{totalPoints}</h3>
+          <div className="bg-base-100 flex flex-col items-center justify-center rounded-md shadow-md p-4 w-full sm:w-auto max-w-[200px]">
+            <p className="text-sm font-bold text-base-content">Pontos</p>
+            <h3 className="text-2xl font-bold text-secondary">{totalPoints}</h3>
           </div>
         </div>
 
@@ -137,6 +152,7 @@ export default function Page() {
           missions={missions}
           responses={responses}
           onSelect={handleSelect}
+          className="animate-fade-in-down"
         />
       </main>
     </>

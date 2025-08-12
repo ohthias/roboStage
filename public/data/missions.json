@@ -5,6 +5,7 @@
       "name": "INSPEÇÃO DE EQUIPAMENTOS",
       "mission": "O robô e todos os equipamentos cabem em sua totalidade na área de lançamento e respeitam o limite de altura",
       "points": 20,
+      "equipaments" : false,
       "type": ["switch", null, null]
     },
     {
@@ -12,6 +13,7 @@
       "name": "BERÇÁRIO DE CORAIS",
       "mission": "A árvore de coral está pendurada no suporte apropriado",
       "points": 20,
+      "equipaments" : true,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -31,6 +33,7 @@
       "name": "TUBARÃO",
       "mission": "O tubarão não está tocando a caverna",
       "points": 20,
+      "equipaments" : false,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -45,6 +48,7 @@
       "name": "RECIFE DE CORAIS",
       "mission": "O recife de corais está virado para cima e não está tocando o tapete",
       "points": 20,
+      "equipaments" : true,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -59,6 +63,7 @@
       "name": "MERGULHADOR",
       "mission": "O mergulhador não está mais tocando o berçário de corais",
       "points": 20,
+      "equipaments" : false,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -73,6 +78,7 @@
       "name": "PEIXE PESCADOR",
       "mission": "O peixe-pescador está preso ao navio naufragado",
       "points": 30,
+      "equipaments" : false,
       "type": ["switch", null, null]
     },
     {
@@ -80,6 +86,7 @@
       "name": "SUBA O MASTRO",
       "mission": "O mastro do navio naufragado está totalmente de pé",
       "points": 30,
+      "equipaments" : true,
       "type": ["switch", null, null]
     },
     {
@@ -87,6 +94,7 @@
       "name": "TESOURO DO KRAKEN",
       "mission": "O baú do tesouro está completamente fora do ninho do kraken",
       "points": 20,
+      "equipaments" : true,
       "type": ["switch", null, null]
     },
     {
@@ -94,6 +102,7 @@
       "name": "HABITAT ARTIFICIAL",
       "mission": "Número de segmentos do habitat artificial empilhados, totalmente planificados e verticais",
       "points": 10,
+      "equipaments" : true,
       "type": ["range", 0, 4]
     },
     {
@@ -101,6 +110,7 @@
       "name": "UM ENCONTRO INESPERADO",
       "mission": "A criatura desconhecida foi libertada",
       "points": 20,
+      "equipaments" : false,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -115,6 +125,7 @@
       "name": "ENVIE O NAVIO",
       "mission": "A bandeira amarela da sua equipe não está hasteada",
       "points": 30,
+      "equipaments" : true,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -129,6 +140,7 @@
       "name": "DESCOBERTA DO SONAR",
       "mission": "Número de baleias revelado",
       "points": [0, 20, 30],
+      "equipaments" : false,
       "type": ["range", 0, 2]
     },
     {
@@ -136,6 +148,7 @@
       "name": "ALIMENTE A BALEIA",
       "mission": "Número de krills que estão ao menos parcialmente na boca da baleia",
       "points": 10,
+      "equipaments" : true,
       "type": ["range", 0, 5]
     },
     {
@@ -143,6 +156,7 @@
       "name": "MUDE O NAVIO DE ROTA",
       "mission": "O navio está na nova rota, tocando o tapete",
       "points": 20,
+      "equipaments" : false,
       "type": ["switch", null, null]
     },
     {
@@ -150,6 +164,7 @@
       "name": "COLETA DE AMOSTRAS",
       "mission": "A amostra de água está completamente fora da área de amostras",
       "points": 5,
+      "equipaments" : false,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -174,6 +189,7 @@
       "name": "EMBARCAÇÃO DE PESQUISA",
       "mission": "Número de amostras, partes do tridente ou baús de tesouro que estão ao menos em parte na área de carga da embarcação",
       "points": 5,
+      "equipaments" : true,
       "type": ["range", 0, 6],
       "sub-mission": [
         {
@@ -203,6 +219,7 @@
       "name": "INSPEÇÃO DE EQUIPAMENTOS",
       "mission": "O robô e todos os equipamentos cabem em sua totalidade na área de lançamento e respeitam o limite de altura",
       "points": 20,
+      "equipaments" : false,
       "type": ["switch", null, null]
     },
     {
@@ -210,6 +227,7 @@
       "name": "LIMPEZA DA SUPERFÍCIE",
       "mission": "Ausência total de resíduos de solo, tocando o tapete",
       "points": 10,
+      "equipaments" : true,
       "type": ["range", 0, 2],
       "sub-mission": [
         {
@@ -224,6 +242,7 @@
       "name": "REVELAÇÃO DO MAPA",
       "mission": "Seções superiores do solo totalmente limpas",
       "points": 10,
+      "equipaments" : false,
       "type": ["range", 0, 3]
     },
     {
@@ -231,6 +250,7 @@
       "name": "EXPLORADOR DO POÇO DE MINA",
       "mission": "O carrinho da sua equipe está no campo da equipe adversária",
       "points": 30,
+      "equipaments" : false,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -245,6 +265,7 @@
       "name": "RECUPERAÇÃO CUIDADOSA",
       "mission": "O artefato precioso não está tocando a mina",
       "points": 30,
+      "equipaments" : true,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -259,6 +280,7 @@
       "name": "QUEM MORAVA AQUI?",
       "mission": "O piso da estrutura está completamente na vertical",
       "points": 30,
+      "equipaments" : true,
       "type": ["switch", null, null]
     },
     {
@@ -266,6 +288,7 @@
       "name": "FORJA",
       "mission": "Os blocos de minério não estão tocando a forja",
       "points": 10,
+      "equipaments" : false,
       "type": ["range", 0, 3]
     },
     {
@@ -273,6 +296,7 @@
       "name": "LEVANTAMENTO DE PESO",
       "mission": "A mó não está mais tocando a base",
       "points": 30,
+      "equipaments" : false,
       "type": ["switch", null, null]
     },
     {
@@ -280,6 +304,7 @@
       "name": "Silo",
       "mission": "Peças preservadas fora do silo",
       "points": 10,
+      "equipaments" : false,
       "type": ["range", 0, 3]
     },
     {
@@ -287,6 +312,7 @@
       "name": "O QUE ESTÁ À VENDA?",
       "mission": "O telhado foi totalmente levantado",
       "points": 20,
+      "equipaments" : true,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -301,6 +327,7 @@
       "name": "INCLINE AS BALANÇAS",
       "mission": "Número de peças do solo que foram escavadas",
       "points": 20,
+      "equipaments" : false,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -315,6 +342,7 @@
       "name": "ARTEFATOS DO PESCADOR",
       "mission": "Os artefatos foram levantados acima da camada do solo",
       "points": 20,
+      "equipaments" : true,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -329,6 +357,7 @@
       "name": "OPERAÇÃO DE SALVAMENTO",
       "mission": "A areia foi totalmente limpa",
       "points": 20,
+      "equipaments" : true,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -343,6 +372,7 @@
       "name": "RECONSTRUÇÃO DA ESTÁTUA",
       "mission": "A estátua foi completamente levantada",
       "points": 30,
+      "equipaments" : true,
       "type": ["switch", null, null]
     },
     {
@@ -350,6 +380,7 @@
       "name": "FÓRUM",
       "mission": "Os artefatos estão tocando o tapete e ao menos parcialmente o fórum (Artefatos: pincel, solo, artefato precioso, carrinho de mineração da equipe adversária, minério com artefato fossilizado, mó e prato da balança)",
       "points": 5,
+      "equipaments" : true,
       "type": ["range", 0, 7]
     },
     {
@@ -357,6 +388,7 @@
       "name": "MARCAÇÃO DO SÍTIO",
       "mission": "As bandeiras estão ao menos parcialmente dentro do sítio e tocando o tapete",
       "points": 10,
+      "equipaments" : false,
       "type": ["range", 0, 3]
     },
     {

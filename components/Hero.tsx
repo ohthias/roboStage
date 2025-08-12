@@ -14,7 +14,6 @@ export function Hero() {
                     <p className="mb-5 text-lg text-base-content">
                         Facilitando sua jornada na robótica
                     </p>
-                    <button className="btn btn-secondary">Conheça agora!</button>
                 </div>
                 <div className="w-1 h-50 bg-neutral/50"></div>
                 <div className="max-w-md">

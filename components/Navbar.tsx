@@ -8,7 +8,7 @@ export function Navbar() {
             </div>
             <div className="flex-none">
                 <ul className="menu menu-horizontal px-1 gap-5">
-                    <li><a href="https://www.portaldaindustria.com.br/sesi/canais/torneio-de-robotica/first-lego-league-brasil/" target="_blank">Documentação Oficial</a></li>
+                    <li><a href="https://www.portaldaindustria.com.br/sesi/canais/torneio-de-robotica/first-lego-league-brasil/" target="_blank">Docs UNEARTHED</a></li>
                     <li>
                         <details>
                             <summary>FLL Score</summary>

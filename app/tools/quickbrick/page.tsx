@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import QuickBrickCanvas from "@/components/QuickBrickCanva";
 
-export function QuickBrickPage() {
+export default function QuickBrickPage() {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <Navbar />

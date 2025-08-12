@@ -44,8 +44,10 @@ export default function Page() {
   let totalPoints = calculateTotalPoints(missions, responses);
 
   useEffect(() => {
-    startSound.current = new Audio("/sounds/start.mp3");
-    endSound.current = new Audio("/sounds/end.mp3");
+    if (typeof window !== 'undefined') {
+      startSound.current = new Audio("/sounds/start.mp3");
+      endSound.current = new Audio("/sounds/end.mp3");
+    }
   }, []);
 
   const progress = (timeLeft / totalTime) * 100;
@@ -64,7 +66,9 @@ export default function Page() {
   };
 
   const resetTimer = () => {
-    setTimerRunning(false);
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
     setTimeLeft(totalTime);
     window.location.reload();
   };
@@ -204,25 +208,18 @@ export default function Page() {
             {formatTime(timeLeft)}
           </span>
 
-          <button className="btn btn-success cursor-pointer disabled:cursor-not-allowed" onClick={startTimer} disabled={timerRunning}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="inline w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <polygon points="5,3 19,12 5,21" fill="currentColor" />
-            </svg>
+          <button className="btn btn-success cursor-pointer disabled:cursor-not-allowed" onClick={startTimer} disabled={timerRunning} style={{ lineHeight: 0 }}>
+            <i className="fi fi-bs-play"></i>
             Iniciar
           </button>
 
-          <button className="btn btn-warning cursor-pointer disabled:cursor-not-allowed" onClick={pauseTimer} disabled={!timerRunning}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="inline w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <rect x="6" y="4" width="4" height="16" fill="currentColor" />
-              <rect x="14" y="4" width="4" height="16" fill="currentColor" />
-            </svg>
+          <button className="btn btn-warning cursor-pointer disabled:cursor-not-allowed" onClick={pauseTimer} disabled={!timerRunning} style={{ lineHeight: 0 }}>
+            <i className="fi fi-bs-pause"></i>
             Pausar
           </button>
 
-          <button className="btn btn-error" onClick={resetTimer}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="inline w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path d="M12 5V2L7 7l5 5V9c3.31 0 6 2.69 6 6a6 6 0 11-6-6" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <button className="btn btn-error" onClick={resetTimer} style={{ lineHeight: 0 }}>
+            <i className="fi fi-bs-rotate-right"></i>
             Resetar
           </button>
         </div>

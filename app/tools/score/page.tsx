@@ -1,11 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import FormMission from "@/components/FormMission";
 import { calculateTotalPoints } from "@/utils/calculateTotalPoints";
 import Loader from "@/components/loader";
 import { Navbar } from "@/components/Navbar";
 
-// Tipos
 type MissionType = {
   id: string;
   name: string;
@@ -32,6 +31,62 @@ export default function Page() {
   const [hash, setHash] = useState<string | null>(null);
   const [background, setBackground] = useState<string>("#ffffff");
 
+  // 🎯 Timer states
+  const totalTime = 150; // 2 min 30 seg
+  const [timeLeft, setTimeLeft] = useState(totalTime);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 🎵 Sons
+  const startSound = useRef<HTMLAudioElement | null>(null);
+  const endSound = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    startSound.current = new Audio("/sounds/start.mp3"); // coloque seu arquivo em public/sounds/
+    endSound.current = new Audio("/sounds/end.mp3");     // coloque seu arquivo em public/sounds/
+  }, []);
+
+  const progress = (timeLeft / totalTime) * 100;
+  const progressColor =
+    timeLeft <= 10 ? "bg-red-500" : timeLeft <= 30 ? "bg-yellow-500" : "bg-primary";
+
+  const startTimer = () => {
+    if (!timerRunning) {
+      setTimerRunning(true);
+      if (startSound.current) startSound.current.play();
+    }
+  };
+
+  const pauseTimer = () => {
+    setTimerRunning(false);
+  };
+
+  const resetTimer = () => {
+    setTimerRunning(false);
+    setTimeLeft(totalTime);
+  };
+
+  useEffect(() => {
+    if (timerRunning && timeLeft > 0) {
+      timerRef.current = setTimeout(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setTimerRunning(false);
+      if (endSound.current) endSound.current.play();
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [timerRunning, timeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const m = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const s = String(seconds % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
+  // ------------------- HASH E MISSÕES -------------------
   useEffect(() => {
     const handleHashChange = () => {
       const newHash = window.location.hash.replace("#", "");
@@ -110,35 +165,74 @@ export default function Page() {
   return (
     <>
       <Navbar />
-      <main
-        className="flex flex-col items-center justify-center gap-8 px-4 py-16 sm:px-6 lg:px-8 bg-base-300"
-      >
+
+      {/* Barra de progresso */}
+      <div className="h-3 w-full bg-neutral">
+        <div
+          className={`h-full transition-all duration-300 ${progressColor}`}
+          style={{ width: `${progress}%` }}
+          aria-progress={`${progress.toFixed(0)}%`}
+        ></div>
+      </div>
+
+      <main className="flex flex-col items-center justify-center px-4 pb-16 pt-8 sm:px-6 lg:px-8 bg-base-300">
         <style jsx global>{`
           @keyframes fadeInDown {
-        from {
-          opacity: 0;
-          transform: translateY(-20px);
-        }
-        to {
-          opacity: 1;
-          transform: none;
-        }
+            from {
+              opacity: 0;
+              transform: translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: none;
+            }
           }
           .animate-fade-in-down {
-        animation: fadeInDown 250ms ease-in;
+            animation: fadeInDown 250ms ease-in;
           }
         `}</style>
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative w-full max-w-4xl bg-base-100 px-8 py-4 rounded-md animate-fade-in-down">
+
+        {/* Controles do Timer */}
+        <div className="animate-fade-in-down gap-4 w-full flex max-w-4xl justify-end mb-2">
+          <span
+            className="p-2 text-primary-content bg-primary/25 rounded-md text-center font-primary-content text-lg"
+            id="timer"
+          >
+            {formatTime(timeLeft)}
+          </span>
+
+          <button className="btn btn-success cursor-pointer disabled:cursor-not-allowed" onClick={startTimer} disabled={timerRunning}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="inline w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <polygon points="5,3 19,12 5,21" fill="currentColor" />
+            </svg>
+            Iniciar
+          </button>
+
+          <button className="btn btn-warning cursor-pointer disabled:cursor-not-allowed" onClick={pauseTimer} disabled={!timerRunning}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="inline w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <rect x="6" y="4" width="4" height="16" fill="currentColor" />
+              <rect x="14" y="4" width="4" height="16" fill="currentColor" />
+            </svg>
+            Pausar
+          </button>
+
+          <button className="btn btn-error" onClick={resetTimer}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="inline w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M12 5V2L7 7l5 5V9c3.31 0 6 2.69 6 6a6 6 0 11-6-6" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Resetar
+          </button>
+        </div>
+
+        {/* Cabeçalho */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative w-full max-w-4xl bg-base-100 px-8 py-4 rounded-md animate-fade-in-down mb-8">
           <div className="flex-1 flex justify-center sm:justify-start text-center sm:text-left items-center gap-4">
             <img src={background} className="w-24 h-24" alt="logo" />
             <div className="flex flex-col">
-              <h1
-                className="text-md font-bold text-base-content"
-                id="pontuador"
-              >
-                FLL Score{" "}
-              </h1>
-              <span className="uppercase font-bold text-secondary text-2xl sm:text-3xl lg:text-4xl">{hash && `${hash}`}</span>
+              <h1 className="text-md font-bold text-base-content">FLL Score</h1>
+              <span className="uppercase font-bold text-secondary text-2xl sm:text-3xl lg:text-4xl">
+                {hash && `${hash}`}
+              </span>
             </div>
           </div>
 
@@ -148,6 +242,23 @@ export default function Page() {
           </div>
         </div>
 
+        {/* Info */}
+        <div className="flex flex-col sm:flex-row items-center justify-start gap-4 relative w-full max-w-4xl bg-base-100 px-8 py-4 rounded-md animate-fade-in-down mb-8">
+          <img
+            src="https://www.flltournament.com/images/2025/NoEquip.png"
+            className="w-16 h-16 mr-4"
+          />
+          <p className="text-base-content text-sm">
+            <b>Sem restrição de equipamento:</b> Quando este símbolo aparece, aplica-se a seguinte
+            regra:{" "}
+            <i className="text-neutral">
+              “Um modelo de missão não pode ganhar pontos se estiver tocando no equipamento no final
+              da partida.”
+            </i>
+          </p>
+        </div>
+
+        {/* Lista de Missões */}
         <FormMission
           missions={missions}
           responses={responses}

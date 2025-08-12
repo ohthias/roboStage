@@ -31,19 +31,21 @@ export default function Page() {
   const [hash, setHash] = useState<string | null>(null);
   const [background, setBackground] = useState<string>("#ffffff");
 
-  // 🎯 Timer states
+  // Timer states
   const totalTime = 150; // 2 min 30 seg
   const [timeLeft, setTimeLeft] = useState(totalTime);
   const [timerRunning, setTimerRunning] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 🎵 Sons
+  // Sons
   const startSound = useRef<HTMLAudioElement | null>(null);
   const endSound = useRef<HTMLAudioElement | null>(null);
 
+  let totalPoints = calculateTotalPoints(missions, responses);
+
   useEffect(() => {
-    startSound.current = new Audio("/sounds/start.mp3"); // coloque seu arquivo em public/sounds/
-    endSound.current = new Audio("/sounds/end.mp3");     // coloque seu arquivo em public/sounds/
+    startSound.current = new Audio("/sounds/start.mp3");
+    endSound.current = new Audio("/sounds/end.mp3");
   }, []);
 
   const progress = (timeLeft / totalTime) * 100;
@@ -64,6 +66,7 @@ export default function Page() {
   const resetTimer = () => {
     setTimerRunning(false);
     setTimeLeft(totalTime);
+    window.location.reload();
   };
 
   useEffect(() => {
@@ -86,7 +89,6 @@ export default function Page() {
     return `${m}:${s}`;
   };
 
-  // ------------------- HASH E MISSÕES -------------------
   useEffect(() => {
     const handleHashChange = () => {
       const newHash = window.location.hash.replace("#", "");
@@ -152,8 +154,6 @@ export default function Page() {
     }));
   };
 
-  const totalPoints = calculateTotalPoints(missions, responses);
-
   if (loading || !hash) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
@@ -171,7 +171,10 @@ export default function Page() {
         <div
           className={`h-full transition-all duration-300 ${progressColor}`}
           style={{ width: `${progress}%` }}
-          aria-progress={`${progress.toFixed(0)}%`}
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
         ></div>
       </div>
 

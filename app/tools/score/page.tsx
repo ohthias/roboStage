@@ -44,7 +44,7 @@ export default function Page() {
   let totalPoints = calculateTotalPoints(missions, responses);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       startSound.current = new Audio("/sounds/start.mp3");
       endSound.current = new Audio("/sounds/end.mp3");
     }
@@ -52,7 +52,11 @@ export default function Page() {
 
   const progress = (timeLeft / totalTime) * 100;
   const progressColor =
-    timeLeft <= 10 ? "bg-red-500" : timeLeft <= 30 ? "bg-yellow-500" : "bg-primary";
+    timeLeft <= 10
+      ? "bg-red-500"
+      : timeLeft <= 30
+      ? "bg-yellow-500"
+      : "bg-primary";
 
   const startTimer = () => {
     if (!timerRunning) {
@@ -66,7 +70,7 @@ export default function Page() {
   };
 
   const resetTimer = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.location.reload();
     }
     setTimeLeft(totalTime);
@@ -200,27 +204,43 @@ export default function Page() {
         `}</style>
 
         {/* Controles do Timer */}
-        <div className="animate-fade-in-down gap-4 w-full flex max-w-4xl justify-end mb-2">
+        <div className="animate-fade-in-down gap-2 sm:gap-4 w-full flex flex-wrap sm:flex-nowrap max-w-4xl justify-end mb-2">
+          {/* Timer */}
           <span
-            className="p-2 text-primary-content bg-primary/25 rounded-md text-center font-primary-content text-lg"
+            className="px-4 py-2 text-primary-content bg-primary/25 rounded-md text-center font-primary-content text-lg w-full sm:w-auto"
             id="timer"
           >
             {formatTime(timeLeft)}
           </span>
 
-          <button className="btn btn-success cursor-pointer disabled:cursor-not-allowed" onClick={startTimer} disabled={timerRunning} style={{ lineHeight: 0 }}>
+          {/* Botões */}
+          <button
+            className="btn btn-success flex-1 sm:flex-none min-w-[100px] cursor-pointer disabled:cursor-not-allowed"
+            onClick={startTimer}
+            disabled={timerRunning}
+            style={{ lineHeight: 0 }}
+          >
             <i className="fi fi-bs-play"></i>
-            Iniciar
+            <span className="hidden sm:inline">Iniciar</span>
           </button>
 
-          <button className="btn btn-warning cursor-pointer disabled:cursor-not-allowed" onClick={pauseTimer} disabled={!timerRunning} style={{ lineHeight: 0 }}>
+          <button
+            className="btn btn-warning flex-1 sm:flex-none min-w-[100px] cursor-pointer disabled:cursor-not-allowed"
+            onClick={pauseTimer}
+            disabled={!timerRunning}
+            style={{ lineHeight: 0 }}
+          >
             <i className="fi fi-bs-pause"></i>
-            Pausar
+            <span className="hidden sm:inline">Pausar</span>
           </button>
 
-          <button className="btn btn-error" onClick={resetTimer} style={{ lineHeight: 0 }}>
+          <button
+            className="btn btn-error flex-1 sm:flex-none min-w-[100px]"
+            onClick={resetTimer}
+            style={{ lineHeight: 0 }}
+          >
             <i className="fi fi-bs-rotate-right"></i>
-            Resetar
+            <span className="hidden sm:inline">Resetar</span>
           </button>
         </div>
 
@@ -249,11 +269,11 @@ export default function Page() {
             className="w-16 h-16 mr-4"
           />
           <p className="text-base-content text-sm">
-            <b>Sem restrição de equipamento:</b> Quando este símbolo aparece, aplica-se a seguinte
-            regra:{" "}
+            <b>Sem restrição de equipamento:</b> Quando este símbolo aparece,
+            aplica-se a seguinte regra:{" "}
             <i className="text-neutral">
-              “Um modelo de missão não pode ganhar pontos se estiver tocando no equipamento no final
-              da partida.”
+              “Um modelo de missão não pode ganhar pontos se estiver tocando no
+              equipamento no final da partida.”
             </i>
           </p>
         </div>

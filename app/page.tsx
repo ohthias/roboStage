@@ -13,7 +13,7 @@ export default function Home() {
       <div className="max-w-5xl px-4 sm:px-6 py-10 lg:py-14 mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-stretch gap-6 md:gap-10">
           {/* Card */}
-          <div className="bg-white shadow-lg rounded-lg p-5 flex flex-col">
+          <div className="bg-base-200 shadow-lg rounded-lg p-5 flex flex-col">
             <div className="flex items-center gap-x-4 mb-3">
               <div className="inline-flex justify-center items-center size-16 rounded-full border-4 border-primary/50 bg-primary/75">
                 <i
@@ -21,16 +21,16 @@ export default function Home() {
                   style={{ lineHeight: 0 }}
                 ></i>
               </div>
-              <h3 className="text-lg font-semibold text-gray-800">FLL Score</h3>
+              <h3 className="text-lg font-semibold text-primary">FLL Score</h3>
             </div>
-            <p className="text-gray-600 flex-grow">
+            <p className="text-base-content flex-grow">
               Registre e acompanhe o desempenho do seu robô na arena!
             </p>
           </div>
           {/* End Card */}
-
+    
           {/* Card */}
-          <div className="bg-white shadow-lg rounded-lg p-5 flex flex-col">
+          <div className="bg-base-200 shadow-lg rounded-lg p-5 flex flex-col">
             <div className="flex items-center gap-x-4 mb-3">
               <div className="inline-flex justify-center items-center size-16 rounded-full border-4 border-primary/50 bg-primary/75">
                 <i
@@ -38,11 +38,11 @@ export default function Home() {
                   style={{ lineHeight: 0 }}
                 ></i>
               </div>
-              <h3 className="text-lg font-semibold text-gray-800">
+              <h3 className="text-lg font-semibold text-primary">
                 QuickBrick Studio
               </h3>
             </div>
-            <p className="text-gray-600 flex-grow">
+            <p className="text-base-content flex-grow">
               Desenhe estratégias visuais para cumprir missões da FLL Challenge
               - UNEARTHED!
             </p>
@@ -50,7 +50,7 @@ export default function Home() {
           {/* End Card */}
 
           {/* Card */}
-          <div className="bg-white shadow-lg rounded-lg p-5 flex flex-col">
+          <div className="bg-base-200 shadow-lg rounded-lg p-5 flex flex-col">
             <div className="flex items-center gap-x-4 mb-3">
               <div className="inline-flex justify-center items-center size-16 rounded-full border-4 border-primary/50 bg-primary/75">
                 <i
@@ -58,9 +58,9 @@ export default function Home() {
                   style={{ lineHeight: 0 }}
                 ></i>
               </div>
-              <h3 className="text-lg font-semibold text-gray-800">showLive</h3>
+              <h3 className="text-lg font-semibold text-primary">showLive</h3>
             </div>
-            <p className="text-gray-600 flex-grow">
+            <p className="text-base-content flex-grow">
               Organize eventos de robótica para até 10 equipes, defina formatos
               de competição, fases e permissões personalizadas.
             </p>

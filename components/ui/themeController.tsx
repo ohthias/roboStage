@@ -55,10 +55,10 @@ export function ThemeController() {
               type="radio"
               name="theme-dropdown"
               className="theme-controller hidden"
-              checked={theme === "acid"}
-              onChange={() => changeTheme("acid")}
+              checked={theme === "darkScheme"}
+              onChange={() => changeTheme("darkScheme")}
             />
-            Alternativo
+            Escuro
           </label>
         </li>
       </ul>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/utils/supabase/client";
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -35,27 +35,25 @@ export function useAuth() {
     setLoading(true);
     setError(null);
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      setLoading(false);
-      setError(error.message);
-      return false;
-    }
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
 
-    if (data.user) {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert([{ id: data.user.id, username: name }]);
-      if (profileError) {
-        setLoading(false);
-        setError(profileError.message);
-        return false;
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert([{ id: data.user.id, username: name }]);
+        if (profileError) throw profileError;
       }
-    }
 
-    setLoading(false);
-    setSuccess("Cadastro realizado! Verifique seu e-mail.");
-    return true;
+      setSuccess("Cadastro realizado! Verifique seu e-mail.");
+      return true;
+    } catch (err: any) {
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const loginWithProvider = async (provider: "google" | "github") => {

@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 
 interface PropsTeamsSection {

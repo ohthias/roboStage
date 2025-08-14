@@ -27,10 +27,16 @@ export default function AuthForm() {
 
     if (isLogin) {
       const ok = await login(email, password);
-      if (ok !== null && ok !== undefined) router.push("/dashboard");
+      if (ok !== null && ok !== undefined) {
+        router.refresh();
+        router.push("/dashboard");
+      }
     } else {
       const ok = await signup(email, password, name);
-      if (ok !== null && ok !== undefined) router.push("/join");
+      if (ok !== null && ok !== undefined) {
+        router.refresh();
+        router.push("/join");
+      }
     }
   };
 
@@ -138,34 +144,6 @@ export default function AuthForm() {
         >
           {loading ? "Carregando..." : isLogin ? "Entrar" : "Cadastrar"}
         </button>
-
-        <div className="divider">Ou continue com</div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className="btn btn-outline w-1/2"
-            onClick={() => loginWithProvider("google")}
-          >
-            <img
-              src="https://www.svgrepo.com/show/512317/google-43.svg"
-              alt="Google"
-              className="w-5 h-5"
-            />
-            Google
-          </button>
-          <button
-            type="button"
-            className="btn btn-outline w-1/2"
-            onClick={() => loginWithProvider("github")}
-          >
-            <img
-              src="https://www.svgrepo.com/show/512317/github-142.svg"
-              alt="GitHub"
-              className="w-5 h-5"
-            />
-            GitHub
-          </button>
-        </div>
       </form>
     </div>
   );

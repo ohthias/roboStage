@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { useUserProfile } from "../../hooks/useUserProfile";
 import { useEffect, useState } from "react";
+import { ThemeController } from "@/components/ui/themeController";
 
 export default function Dashboard() {
   const { session, profile, loading } = useUserProfile();
@@ -49,9 +50,12 @@ export default function Dashboard() {
         return <h1 className="text-xl font-bold">Configurações</h1>;
       default:
         return (
-          <h1 className="text-xl font-bold">
-            Olá, {profile?.username || session?.user?.email || "visitante"}!
-          </h1>
+          <>
+            <h1 className="text-xl font-bold">
+              Olá, {profile?.username || session?.user?.email || "visitante"}!
+            </h1>
+            <a href="/showlive">Showlive</a>
+          </>
         );
     }
   };
@@ -59,21 +63,31 @@ export default function Dashboard() {
   return (
     <div className="flex gap-4 overflow-y-hidden">
       {/* Menu lateral simples */}
-      <aside className="w-60 bg-base-200 p-4 flex flex-col gap-2">
+      <aside className="w-32 bg-base-200 p-4 flex flex-col gap-2 h-screen">
         <button
-          className="btn btn-outline btn-sm"
+          className="btn btn-ghost btn-sm"
+          onClick={() => (window.location.hash = "hub")}
+        >
+          Hub
+        </button>
+        <button
+          className="btn btn-ghost btn-sm"
           onClick={() => (window.location.hash = "perfil")}
         >
           Perfil
         </button>
         <button
-          className="btn btn-outline btn-sm"
+          className="btn btn-ghost btn-sm"
           onClick={() => (window.location.hash = "config")}
         >
           Configurações
         </button>
         <div className="mt-auto">
-          <button className="btn btn-error btn-sm w-full" onClick={handleLogout}>
+          <ThemeController />
+          <button
+            className="btn btn-error btn-sm w-full"
+            onClick={handleLogout}
+          >
             Sair
           </button>
         </div>

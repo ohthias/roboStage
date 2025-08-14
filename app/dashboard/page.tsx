@@ -55,7 +55,7 @@ export default function Dashboard() {
       case "config":
         return <h1 className="text-xl font-bold">Configurações</h1>;
       default:
-        return <></>;
+        return <ShowLiveHub />;
     }
   };
 

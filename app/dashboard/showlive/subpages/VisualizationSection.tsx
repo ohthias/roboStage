@@ -32,13 +32,35 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
         setError("Erro ao buscar equipes: " + error.message);
       } else {
         setTeams(data as Team[]);
+
         // Pega todas as rodadas inicialmente visíveis
         const allRounds = Array.from(
-          new Set(
-            data.flatMap((team: Team) => Object.keys(team.points))
-          )
+          new Set(data.flatMap((team: Team) => Object.keys(team.points)))
         );
         setVisibleRounds(allRounds);
+
+        // Busca config existente
+        const { data: existingData } = await supabase
+          .from("typeEvent")
+          .select("id, config")
+          .eq("id_event", idEvent)
+          .single();
+
+        const mergedConfig = {
+          ...(existingData?.config || {}),
+          visibleRounds: allRounds,
+        };
+
+        if (existingData) {
+          await supabase
+            .from("typeEvent")
+            .update({ config: mergedConfig })
+            .eq("id", existingData.id);
+        } else {
+          await supabase
+            .from("typeEvent")
+            .insert({ id_event: idEvent, config: mergedConfig });
+        }
       }
       setLoading(false);
     };
@@ -46,41 +68,54 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
     fetchTeams();
   }, [idEvent]);
 
-  if (!idEvent) {
-    return <p className="text-red-500">Evento inválido.</p>;
-  }
+  if (!idEvent) return <p className="text-red-500">Evento inválido.</p>;
+  if (loading) return <p>Carregando visualização...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+  if (teams.length === 0) return <p className="text-gray-600">Nenhuma equipe cadastrada.</p>;
 
-  if (loading) {
-    return <p>Carregando visualização...</p>;
-  }
-
-  if (error) {
-    return <p className="text-red-500">{error}</p>;
-  }
-
-  if (teams.length === 0) {
-    return <p className="text-gray-600">Nenhuma equipe cadastrada.</p>;
-  }
-
-  // Ordenar pela maior pontuação em qualquer rodada
   const sortedTeams = [...teams].sort((a, b) => {
     const maxA = Math.max(...Object.values(a.points));
     const maxB = Math.max(...Object.values(b.points));
     return maxB - maxA;
   });
 
-  const allRounds = Array.from(
-    new Set(
-      sortedTeams.flatMap((team) => Object.keys(team.points))
-    )
-  );
+  const allRounds = Array.from(new Set(sortedTeams.flatMap((team) => Object.keys(team.points))));
 
-  const toggleRound = (round: string) => {
-    setVisibleRounds((prev) =>
-      prev.includes(round)
-        ? prev.filter((r) => r !== round)
-        : [...prev, round]
-    );
+  const toggleRound = async (round: string) => {
+    const newVisibleRounds = visibleRounds.includes(round)
+      ? visibleRounds.filter((r) => r !== round)
+      : [...visibleRounds, round];
+
+    setVisibleRounds(newVisibleRounds);
+
+    // Buscar o JSON atual
+    const { data: existingData } = await supabase
+      .from("typeEvent")
+      .select("id, config")
+      .eq("id_event", idEvent)
+      .single();
+
+    const mergedConfig = {
+      ...(existingData?.config || {}),
+      visibleRounds: newVisibleRounds,
+    };
+
+    if (existingData) {
+      const { error: updateError } = await supabase
+        .from("typeEvent")
+        .update({ config: mergedConfig })
+        .eq("id", existingData.id);
+
+      if (updateError)
+        console.error("Erro ao atualizar rodadas visíveis:", updateError.message);
+    } else {
+      const { error: insertError } = await supabase
+        .from("typeEvent")
+        .insert({ id_event: idEvent, config: mergedConfig });
+
+      if (insertError)
+        console.error("Erro ao inserir rodadas visíveis:", insertError.message);
+    }
   };
 
   return (

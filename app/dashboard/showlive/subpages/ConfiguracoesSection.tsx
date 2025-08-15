@@ -56,42 +56,56 @@ export default function ConfiguracoesSection({ idEvent }: PropsConfiguracoesSect
     fetchConfig();
   }, [idEvent]);
 
-  const handleSave = async () => {
-    if (!idEvent) return;
-    setLoading(true);
+const handleSave = async () => {
+  if (!idEvent) return;
+  setLoading(true);
 
-    const { error: updateEventError } = await supabase
-      .from("events")
-      .update({ name_event: eventName })
-      .eq("id_evento", idEvent);
+  const { error: updateEventError } = await supabase
+    .from("events")
+    .update({ name_event: eventName })
+    .eq("id_evento", idEvent);
 
-    if (updateEventError) {
-      setError("Erro ao atualizar nome: " + updateEventError.message);
-      setLoading(false);
-      return;
-    }
-
-    const { error: updateConfigError } = await supabase
-      .from("typeEvent")
-      .update({
-        config: {
-          base: competitionType,
-          rodadas: rounds,
-          temporada: competitionType === "FLL" ? season : "",
-        },
-      })
-      .eq("id_event", idEvent);
-
-    if (updateConfigError) {
-      setError("Erro ao atualizar configuração: " + updateConfigError.message);
-      setLoading(false);
-      return;
-    }
-
-    setError("");
+  if (updateEventError) {
+    setError("Erro ao atualizar nome: " + updateEventError.message);
     setLoading(false);
-    alert("Configuração salva com sucesso!");
-  };
+    return;
+  }
+
+  const { error: updateConfigError } = await supabase
+    .from("typeEvent")
+    .update({
+      config: {
+        base: competitionType,
+        rodadas: rounds,
+        temporada: competitionType === "FLL" ? season : "",
+      },
+    })
+    .eq("id_event", idEvent);
+
+  if (updateConfigError) {
+    setError("Erro ao atualizar configuração: " + updateConfigError.message);
+    setLoading(false);
+    return;
+  }
+
+  const defaultPoints = Object.fromEntries(rounds.map((r) => [r, -1]));
+
+  const { error: updateTeamsError } = await supabase
+    .from("team")
+    .update({ points: defaultPoints })
+    .eq("id_event", idEvent);
+
+  if (updateTeamsError) {
+    setError("Erro ao atualizar pontos das equipes: " + updateTeamsError.message);
+    setLoading(false);
+    return;
+  }
+
+  setError("");
+  setLoading(false);
+  alert("Configuração salva e pontuação padronizada!");
+};
+
 
   // Handlers drag-and-drop nativo
   const handleDragStart = (index: number) => {

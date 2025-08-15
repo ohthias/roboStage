@@ -31,6 +31,7 @@ export function Navbar() {
                         </details>
                     </li>
                     <li><a href="/tools/quickbrick">QuickBrick Studio</a></li>
+                    <li><a href="/universe" className="btn btn-accent btn-outline">Embarcar em evento</a></li>
                     <li><a href="/join" className="btn btn-primary">Entrar</a></li>
                     <ThemeController />
                 </ul>

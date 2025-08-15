@@ -1,15 +1,13 @@
-"use client";
-
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 
 interface EventModalProps {
-    session: any;
+  session: any;
 }
 
 export function EventModal({session} : EventModalProps) {
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(true); // Começa aberto
   const [nameEvent, setNameEvent] = useState("");
   const [competitionType, setCompetitionType] = useState("");
   const [rounds, setRounds] = useState<string[]>([]);
@@ -17,69 +15,71 @@ export function EventModal({session} : EventModalProps) {
   const [season, setSeason] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
-    const [error, setError] = useState("");
+  const [error, setError] = useState("");
   
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    if (rounds.length === 0) {
-      setError("Adicione ao menos uma rodada.");
-      setSubmitting(false);
-      return;
-    }
+  if (rounds.length === 0) {
+    setError("Adicione ao menos uma rodada.");
+    setSubmitting(false);
+    return;
+  }
 
-    if (!nameEvent || !competitionType) {
-      setError("Preencha todos os campos obrigatórios.");
-      setSubmitting(false);
-      return;
-    }
+  if (!nameEvent || !competitionType) {
+    setError("Preencha todos os campos obrigatórios.");
+    setSubmitting(false);
+    return;
+  }
 
-    if (competitionType === "FLL" && !season) {
-      setError("Selecione a temporada para FLL.");
-      setSubmitting(false);
-      return;
-    }
-    e.preventDefault();
+  if (competitionType === "FLL" && !season) {
+    setError("Selecione a temporada para FLL.");
+    setSubmitting(false);
+    return;
+  }
+  e.preventDefault();
 
-    setSubmitting(true);
-    setError("");
+  setSubmitting(true);
+  setError("");
 
-    try {
-      const { data: eventData, error: eventError } = await supabase
-        .from("events")
-        .insert({
-          id_responsavel: session.user.id,
-          name_event: nameEvent,
-          code_event: crypto.randomUUID().slice(0, 6).toUpperCase(),
-          code_visit: crypto.randomUUID().slice(0, 6).toUpperCase(),
-          code_volunteer: crypto.randomUUID().slice(0, 6).toUpperCase(),
-        })
-        .select("id_evento, code_event")
-        .single();
+  try {
+    const { data: eventData, error: eventError } = await supabase
+    .from("events")
+    .insert({
+      id_responsavel: session.user.id,
+      name_event: nameEvent,
+      code_event: crypto.randomUUID().slice(0, 6).toUpperCase(),
+      code_visit: crypto.randomUUID().slice(0, 6).toUpperCase(),
+      code_volunteer: crypto.randomUUID().slice(0, 6).toUpperCase(),
+    })
+    .select("id_evento, code_event")
+    .single();
 
-      if (eventError) throw eventError;
+    if (eventError) throw eventError;
 
-      const config = {
-        base: competitionType,
-        rodadas: rounds,
-        temporada: season,
-      };
+    const config = {
+    base: competitionType,
+    rodadas: rounds,
+    temporada: season,
+    };
 
-      const { error: typeError } = await supabase.from("typeEvent").insert({
-        id_event: eventData.id_evento,
-        config: config,
-      });
+    const { error: typeError } = await supabase.from("typeEvent").insert({
+    id_event: eventData.id_evento,
+    config: config,
+    });
 
-      if (typeError) throw typeError;
+    if (typeError) throw typeError;
 
-      router.push(`/dashboard/showlive/${eventData.code_event}`);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Erro ao criar evento");
-    } finally {
-      setSubmitting(false);
-    }
+    router.push(`/dashboard/showlive/${eventData.code_event}`);
+  } catch (err: any) {
+    console.error(err);
+    setError(err.message || "Erro ao criar evento");
+  } finally {
+    setSubmitting(false);
+  }
   };
+
+  if (!showModal) return null;
 
   return (
     <div className="modal modal-open">

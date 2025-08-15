@@ -65,10 +65,9 @@ export function useEvent(codeEvent: string) {
         const { data: configs, error: configError } = await supabase
           .from("typeEvent")
           .select("*")
-          .eq("id_event", event.id_evento)
+          .eq("id_event", event.id_evento);
 
         if (configError) throw configError;
-        console.log(configs)
         setEventConfig(configs && configs[0]);
 
         // Buscar equipes

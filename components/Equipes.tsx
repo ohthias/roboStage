@@ -217,7 +217,7 @@ export default function Equipes({ codigoSala, onAtualizacao }: EquipesProps) {
               </tr>
             </thead>
             <tbody>
-              {equipes.length == 0 ? (
+              {equipes.length === 0 ? (
                 <tr>
                   <td colSpan={3} className="text-center text-gray-500 p-4">
                     Nenhuma equipe cadastrada.

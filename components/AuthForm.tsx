@@ -57,14 +57,24 @@ export default function AuthForm() {
         <button
           role="tab"
           className={`tab ${isLogin ? "tab-active" : ""}`}
-          onClick={() => setIsLogin(true)}
+          onClick={() => {
+            setIsLogin(true);
+            setEmail("");
+            setPassword("");
+            setName("");
+          }}
         >
           Login
         </button>
         <button
           role="tab"
           className={`tab ${!isLogin ? "tab-active" : ""}`}
-          onClick={() => setIsLogin(false)}
+          onClick={() => {
+            setIsLogin(false);
+            setEmail("");
+            setPassword("");
+            setName("");
+          }}
         >
           Cadastro
         </button>
@@ -77,10 +87,10 @@ export default function AuthForm() {
       <form className="space-y-4" onSubmit={handleSubmit}>
         {!isLogin && (
           <label className="floating-label w-full">
-            <span>Seu Nome</span>
+            <span>Usuário</span>
             <input
               type="text"
-              placeholder="João da Silva"
+              placeholder="Nome de Usuário"
               className="input input-md w-full"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -90,10 +100,10 @@ export default function AuthForm() {
         )}
 
         <label className="floating-label w-full">
-          <span>Seu Email</span>
+          <span>Email</span>
           <input
             type="email"
-            placeholder="email@exemplo.com"
+            placeholder="Email"
             className="input input-md w-full"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -103,7 +113,7 @@ export default function AuthForm() {
 
         <div className="relative">
           <label className="floating-label w-full">
-            <span>Sua Senha</span>
+            <span>Senha</span>
             <input
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"

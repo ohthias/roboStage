@@ -20,8 +20,6 @@ export default function QuickBrickPage() {
     };
   }, []);
 
-  console.log("isMobile:", isMobile);
-
   if (isMobile) {
     return (
       <div className="flex flex-col items-center justify-center text-center">

@@ -56,7 +56,6 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
     setLoading(true);
     setErrorMsg("");
 
-    // Montar objeto points
     const pointsObject = event.points.reduce<{ [key: string]: number }>(
       (acc, round) => {
         acc[round] = 0;
@@ -81,18 +80,54 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
     } else if (data) {
       setTeamsList((prev) => [...prev, ...data]);
       setTeamName("");
-      setErrorMsg("");
     }
 
     setLoading(false);
   };
 
+  const handleDelete = async (id_team: number) => {
+    if (!confirm("Tem certeza que deseja excluir esta equipe?")) return;
+
+    const { error } = await supabase.from("team").delete().eq("id_team", id_team);
+    if (error) {
+      alert("Erro ao excluir equipe: " + error.message);
+    } else {
+      setTeamsList((prev) => prev.filter((t) => t.id_team !== id_team));
+    }
+  };
+
+  const handleEdit = (team: Team) => {
+    const novoNome = prompt("Digite o novo nome da equipe:", team.name_team);
+    if (novoNome && novoNome.trim() !== "") {
+      supabase
+        .from("team")
+        .update({ name_team: novoNome.trim() })
+        .eq("id_team", team.id_team)
+        .then(({ error }) => {
+          if (error) {
+            alert("Erro ao editar equipe: " + error.message);
+          } else {
+            setTeamsList((prev) =>
+              prev.map((t) =>
+                t.id_team === team.id_team ? { ...t, name_team: novoNome.trim() } : t
+              )
+            );
+          }
+        });
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <h4 className="font-bold text-red-600 text-3xl">Equipes</h4>
-      <form onSubmit={handleSubmit} className="flex flex-row gap-4 bg-neutral-50 p-4 rounded-md shadow items-end">
-        <div className="flex-1">
-          <label className="block text-sm font-bold text-gray-500">
+    <div className="space-y-6">
+      <h4 className="text-primary font-bold text-3xl">Equipes</h4>
+
+      {/* Formulário */}
+      <form
+        onSubmit={handleSubmit}
+        className="card bg-base-200 p-4 shadow-md flex flex-col md:flex-row gap-4 items-end"
+      >
+        <div className="flex-1 w-full">
+          <label className="block text-md font-bold text-gray-500 mb-2">
             Nome da Equipe
           </label>
           <input
@@ -100,43 +135,56 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
             required
-            className="mt-1 p-2 w-full border border-gray-300 rounded outline-none focus:border-red-600 focus:ring-red-600 transition"
+            className="input input-bordered w-full"
             placeholder="Digite o nome da equipe"
           />
         </div>
 
-        {errorMsg && <p className="text-red-600">{errorMsg}</p>}
+        {errorMsg && <p className="text-error">{errorMsg}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition cursor-pointer"
+          className="btn btn-primary w-full md:w-auto"
         >
-          {loading ? "Salvando..." : "Adicionar Equipe"}
+          {loading ? "Salvando..." : "Adicionar"}
         </button>
       </form>
 
-      {/* Lista de Equipes */}
-      {teamsList.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-lg font-semibold mb-3 text-gray-500">Equipes no evento</h2>
-          <ul className="space-y-2">
-            {teamsList.map((team) => (
-              <li
-                key={team.id_team}
-                className="flex items-center justify-between bg-gray-50 border border-gray-200 px-4 py-2 rounded"
-              >
-                <span className="text-gray-800">{team.name_team}</span>
-                <span className="text-xs text-gray-500">
-                  {new Date(team.created_at).toLocaleString()}
-                </span>
-              </li>
-            ))}
-          </ul>
+      {/* Lista */}
+      {teamsList.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {teamsList.map((team) => (
+            <div
+              key={team.id_team}
+              className="card bg-base-100 shadow-md border border-base-300"
+            >
+              <div className="card-body">
+                <h3 className="card-title text-lg font-bold break-words">
+                  {team.name_team}
+                </h3>
+                <p className="text-xs opacity-60">
+                  Criada em: {new Date(team.created_at).toLocaleString()}
+                </p>
+                <div className="mt-4 flex gap-2">
+                  <button
+                    className="btn btn-outline btn-sm flex items-center gap-1"
+                    onClick={() => handleEdit(team)}
+                  >
+                    <i className="fi fi-rr-edit"></i> Editar
+                  </button>
+                  <button
+                    className="btn btn-error btn-sm flex items-center gap-1"
+                    onClick={() => handleDelete(team.id_team)}
+                  >
+                    <i className="fi fi-rr-trash"></i> Excluir
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      )}
-
-      {teamsList.length === 0 && (
+      ) : (
         <p className="text-gray-500 text-sm text-center">
           Nenhuma equipe cadastrada ainda.
         </p>

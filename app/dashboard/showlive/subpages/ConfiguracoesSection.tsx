@@ -7,15 +7,7 @@ interface PropsConfiguracoesSection {
   idEvent: number | null;
 }
 
-interface EventConfig {
-  base: string;
-  rodadas: string[];
-  temporada?: string;
-}
-
-export default function ConfiguracoesSection({
-  idEvent,
-}: PropsConfiguracoesSection) {
+export default function ConfiguracoesSection({ idEvent }: PropsConfiguracoesSection) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [eventName, setEventName] = useState("");
@@ -23,13 +15,13 @@ export default function ConfiguracoesSection({
   const [season, setSeason] = useState("");
   const [rounds, setRounds] = useState<string[]>([]);
   const [roundInput, setRoundInput] = useState("");
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchConfig = async () => {
       if (!idEvent) return;
 
       setLoading(true);
-      // Busca evento
       const { data: eventData, error: eventError } = await supabase
         .from("events")
         .select("*")
@@ -43,7 +35,6 @@ export default function ConfiguracoesSection({
       }
       setEventName(eventData.name_event);
 
-      // Busca configuração
       const { data: configData, error: configError } = await supabase
         .from("typeEvent")
         .select("*")
@@ -59,7 +50,6 @@ export default function ConfiguracoesSection({
       setCompetitionType(configData.config.base);
       setRounds(configData.config.rodadas);
       setSeason(configData.config.temporada ?? "");
-
       setLoading(false);
     };
 
@@ -68,10 +58,8 @@ export default function ConfiguracoesSection({
 
   const handleSave = async () => {
     if (!idEvent) return;
-
     setLoading(true);
 
-    // Atualiza nome
     const { error: updateEventError } = await supabase
       .from("events")
       .update({ name_event: eventName })
@@ -83,7 +71,6 @@ export default function ConfiguracoesSection({
       return;
     }
 
-    // Atualiza configuração
     const { error: updateConfigError } = await supabase
       .from("typeEvent")
       .update({
@@ -106,33 +93,44 @@ export default function ConfiguracoesSection({
     alert("Configuração salva com sucesso!");
   };
 
+  // Handlers drag-and-drop nativo
+  const handleDragStart = (index: number) => {
+    setDraggingIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLLIElement>, index: number) => {
+    e.preventDefault();
+    if (draggingIndex === null || draggingIndex === index) return;
+
+    const newRounds = [...rounds];
+    const [movedItem] = newRounds.splice(draggingIndex, 1);
+    newRounds.splice(index, 0, movedItem);
+    setRounds(newRounds);
+    setDraggingIndex(index);
+  };
+
   const handleResetScores = async () => {
     if (!idEvent) return;
     setLoading(true);
-
     const { data, error } = await supabase
       .from("team")
       .select("*")
       .eq("id_event", idEvent);
-
     if (error) {
       setError("Erro ao buscar equipes: " + error.message);
       setLoading(false);
       return;
     }
-
     // Zerar pontuação
     for (const team of data) {
       const emptyPoints = Object.fromEntries(
         Object.keys(team.points).map((round) => [round, 0])
       );
-
       await supabase
         .from("team")
         .update({ points: emptyPoints })
         .eq("id_team", team.id_team);
     }
-
     setLoading(false);
     alert("Pontuações resetadas!");
   };
@@ -140,18 +138,15 @@ export default function ConfiguracoesSection({
   const handleResetTeams = async () => {
     if (!idEvent) return;
     setLoading(true);
-
     const { error } = await supabase
       .from("team")
       .delete()
       .eq("id_event", idEvent);
-
     if (error) {
       setError("Erro ao resetar equipes: " + error.message);
       setLoading(false);
       return;
     }
-
     setLoading(false);
     alert("Todas as equipes foram apagadas.");
   };
@@ -164,9 +159,7 @@ export default function ConfiguracoesSection({
       )
     )
       return;
-
     setLoading(true);
-
     // Apaga typeEvent
     await supabase.from("typeEvent").delete().eq("id_event", idEvent);
     // Apaga equipes
@@ -176,74 +169,63 @@ export default function ConfiguracoesSection({
       .from("events")
       .delete()
       .eq("id_evento", idEvent);
-
     if (error) {
       setError("Erro ao apagar evento: " + error.message);
       setLoading(false);
       return;
     }
-
     setLoading(false);
     alert("Evento apagado com sucesso!");
     window.location.href = "/dashboard#showLive";
   };
-
   if (!idEvent) {
     return <p className="text-red-500">Evento inválido.</p>;
   }
-
   if (loading) {
     return <p>Carregando configurações...</p>;
   }
 
+  if (!idEvent) return <p className="text-red-500">Evento inválido.</p>;
+  if (loading) return <p>Carregando configurações...</p>;
+
   return (
-    <div className="space-y-4 overflow-y-auto max-h-screen">
-      <h2 className="font-bold text-gray-500 text-3xl">
-        Configurações do Evento
-      </h2>
+    <div>
+      <h2 className="font-bold text-primary text-3xl mb-4">Configurações do Evento</h2>
 
       {error && <p className="text-red-500">{error}</p>}
 
       {/* Nome do evento */}
-      <div className="bg-neutral-50 rounded p-2">
-        <label className="block text-sm font-medium text-gray-500">
-          Nome do Evento
-        </label>
+      <div className="bg-base-200 border border-base-300 rounded-lg p-4">
+        <label className="block text-md font-medium text-base-content mb-2">Nome do Evento</label>
         <input
           type="text"
           value={eventName}
           onChange={(e) => setEventName(e.target.value)}
-          className="mt-1 p-2 w-full border border-gray-300 rounded outline-none focus:border-red-600 focus:ring-red-600 transition"
+          className="input input-bordered w-full"
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2 mt-2">
         {/* Tipo de competição */}
         <div>
-          <label className="block text-sm font-medium text-gray-500">
-            Tipo de Competição
-          </label>
+          <label className="block text-sm font-medium text-base-content mb-2">Tipo de Competição</label>
           <select
             value={competitionType}
             onChange={(e) => setCompetitionType(e.target.value)}
-            className="mt-1 p-2 w-full border border-gray-300 rounded outline-none focus:border-red-600 focus:ring-red-600 transition"
+            className="input input-bordered w-full"
           >
             <option value="">Selecione</option>
             <option value="FLL">FIRST LEGO League</option>
-            <option value="SR">Segue-linha com Resgate</option>
           </select>
         </div>
 
-        {/* Temporada */}
         {competitionType === "FLL" && (
           <div>
-            <label className="block text-sm font-medium text-gray-500">
-              Temporada
-            </label>
+            <label className="block text-sm font-medium text-base-content mb-2">Temporada</label>
             <select
               value={season}
               onChange={(e) => setSeason(e.target.value)}
-              className="mt-1 p-2 w-full border border-gray-300 rounded outline-none focus:border-red-600 focus:ring-red-600 transition"
+              className="input input-bordered w-full"
             >
               <option value="">Selecione</option>
               <option value="UNEARTHED">UNEARTHED</option>
@@ -255,16 +237,15 @@ export default function ConfiguracoesSection({
 
       {/* Rodadas */}
       <div className="p-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Rodadas
-        </label>
+        <hr className="w-full my-4 border-base-200"/>
+        <label className="block text-md font-medium text-base-content mb-2">Rodadas</label>
         <div className="flex gap-2 mb-2">
           <input
             type="text"
             value={roundInput}
             onChange={(e) => setRoundInput(e.target.value)}
             placeholder="Nova rodada"
-            className="p-2 w-full border border-gray-300 rounded outline-none focus:border-red-600 focus:ring-red-600 transition"
+            className="input input-bordered w-full"
           />
           <button
             type="button"
@@ -274,21 +255,26 @@ export default function ConfiguracoesSection({
                 setRoundInput("");
               }
             }}
-            className="bg-transparent border border-gray-300 text-gray-600 px-4 py-2 rounded hover:bg-gray-200 transition cursor-pointer"
+            className="btn btn-default"
           >
             Adicionar
           </button>
         </div>
-        <ul className="mt-4 space-y-1">
+
+        {/* Lista de rodadas com drag-and-drop nativo */}
+        <ul className="mt-4 space-y-2">
           {rounds.map((r, i) => (
             <li
               key={i}
-              className="flex justify-between items-center bg-gray-50 p-2 rounded"
+              draggable
+              onDragStart={() => handleDragStart(i)}
+              onDragOver={(e) => handleDragOver(e, i)}
+              className="flex justify-between items-center bg-base-100 p-2 rounded border border-base-200 cursor-move"
             >
-              <span>{r}</span>
+              <span className="text-error-content">{r}</span>
               <button
                 onClick={() => setRounds(rounds.filter((_, idx) => idx !== i))}
-                className="text-red-500 text-sm hover:text-red-700"
+                className="btn btn-ghost btn-error"
               >
                 Remover
               </button>
@@ -297,62 +283,59 @@ export default function ConfiguracoesSection({
         </ul>
       </div>
 
-      {/* Salvar alterações */}
-      <div className="flex justify-end">
+      <div className="flex justify-end mr-2 mt-2">
         <button
           onClick={handleSave}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 w-max"
+          className="btn btn-accent btn-dash"
         >
+          <i className="fi fi-rr-check"></i>
           Salvar Configurações
         </button>
       </div>
 
       {/* Ações perigosas */}
-      <div className="mt-8 border border-red-300 bg-red-50 rounded-lg p-4">
-        <div className="mb-4 flex items-start gap-2 flex-col">
-          <span className="text-2xl font-bold text-red-600">
-            Zona de Perigo
+      <div className="mt-8 border border-error bg-error/10 rounded-lg p-4">
+        <div className="mb-4 flex flex-col gap-2">
+          <span className="text-2xl font-bold text-error">
+        Zona de Perigo
           </span>
-          <span className="text-zinc-900 text-sm">
-            Ações irreversíveis. Tenha certeza antes de prosseguir.
+          <span className="text-base-content text-sm">
+        Ações irreversíveis. Tenha certeza antes de prosseguir.
           </span>
         </div>
         <div className="space-y-4">
           <div className="flex justify-between items-center flex-row-reverse">
-            <button
-              onClick={handleResetScores}
-              className="bg-transparent border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-600 hover:text-white w-max cursor-pointer transition"
-            >
-              Resetar Pontuações
-            </button>
-            <p className="text-xs text-gray-600 mt-1 ml-1">
-              Zera a pontuação de todas as equipes deste evento. Os dados das
-              equipes permanecem.
-            </p>
+        <button
+          onClick={handleResetScores}
+          className="btn btn-outline btn-error"
+        >
+          Resetar Pontuações
+        </button>
+        <p className="text-xs text-base-content mt-1 ml-1">
+          Zera a pontuação de todas as equipes deste evento. Os dados das equipes permanecem.
+        </p>
           </div>
           <div className="flex justify-between items-center flex-row-reverse">
-            <button
-              onClick={handleResetTeams}
-              className="bg-transparent border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-600 hover:text-white w-max cursor-pointer transition"
-            >
-              Resetar Equipes
-            </button>
-            <p className="text-xs text-gray-600 mt-1 ml-1">
-              Remove todas as equipes deste evento. As configurações e
-              pontuações serão apagadas.
-            </p>
+        <button
+          onClick={handleResetTeams}
+          className="btn btn-outline btn-error"
+        >
+          Resetar Equipes
+        </button>
+        <p className="text-xs text-base-content mt-1 ml-1">
+          Remove todas as equipes deste evento. As configurações e pontuações serão apagadas.
+        </p>
           </div>
           <div className="flex justify-between items-center flex-row-reverse">
-            <button
-              onClick={handleDeleteEvent}
-              className="bg-transparent border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-600 hover:text-white w-max cursor-pointer transition"
-            >
-              Apagar Evento
-            </button>
-            <p className="text-xs text-gray-600 mt-1 ml-1">
-              Apaga o evento, todas as equipes e configurações permanentemente.
-              Esta ação não pode ser desfeita.
-            </p>
+        <button
+          onClick={handleDeleteEvent}
+          className="btn btn-error"
+        >
+          Apagar Evento
+        </button>
+        <p className="text-xs text-base-content mt-1 ml-1">
+          Apaga o evento, todas as equipes e configurações permanentemente. Esta ação não pode ser desfeita.
+        </p>
           </div>
         </div>
       </div>

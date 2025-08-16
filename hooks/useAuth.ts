@@ -22,17 +22,6 @@ export function useAuth() {
   };
 
   const login = async (email: string, password: string, turnstileToken?: string) => {
-    if (!turnstileToken) {
-      setError("Por favor, complete a verificação de segurança.");
-      return false;
-    }
-
-    const isHuman = await validateTurnstile(turnstileToken);
-    if (!isHuman) {
-      setError("Falha na verificação do Turnstile.");
-      return false;
-    }
-
     setLoading(true);
     setError(null);
 
@@ -60,17 +49,6 @@ export function useAuth() {
     name: string,
     turnstileToken?: string
   ) => {
-    if (!turnstileToken) {
-      setError("Por favor, complete a verificação de segurança.");
-      return false;
-    }
-
-    const isHuman = await validateTurnstile(turnstileToken);
-    if (!isHuman) {
-      setError("Falha na verificação do Turnstile.");
-      return false;
-    }
-
     setLoading(true);
     setError(null);
 

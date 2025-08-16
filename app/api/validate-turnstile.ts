@@ -5,7 +5,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { token } = req.body;
 
-  const secretKey = process.env.TURNSTILE_SECRET_KEY; // coloque no .env
+  const secretKey = process.env.TURNSTILE_SECRET_KEY;
   const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },

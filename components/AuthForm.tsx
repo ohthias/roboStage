@@ -12,7 +12,6 @@ export default function AuthForm() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [turnstileToken, setTurnstileToken] = useState("");
 
   const { login, signup, loading, error, success } = useAuth();
   const router = useRouter();
@@ -20,26 +19,27 @@ export default function AuthForm() {
   const passwordRules = [
     { label: "Mínimo 8 caracteres", test: (pw: string) => pw.length >= 8 },
     { label: "Pelo menos 1 número", test: (pw: string) => /\d/.test(pw) },
-    { label: "Pelo menos 1 letra maiúscula", test: (pw: string) => /[A-Z]/.test(pw) },
-    { label: "Pelo menos 1 caractere especial", test: (pw: string) => /[!@#$%^&*]/.test(pw) },
+    {
+      label: "Pelo menos 1 letra maiúscula",
+      test: (pw: string) => /[A-Z]/.test(pw),
+    },
+    {
+      label: "Pelo menos 1 caractere especial",
+      test: (pw: string) => /[!@#$%^&*]/.test(pw),
+    },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!turnstileToken) {
-      alert("Por favor, complete a verificação do Turnstile.");
-      return;
-    }
-
     if (isLogin) {
-      const ok = await login(email, password, turnstileToken);
+      const ok = await login(email, password);
       if (ok) {
         router.refresh();
         router.push("/dashboard");
       }
     } else {
-      const ok = await signup(email, password, name, turnstileToken);
+      const ok = await signup(email, password, name);
       if (ok) {
         router.refresh();
         router.push("/join");
@@ -49,44 +49,93 @@ export default function AuthForm() {
 
   return (
     <div className="w-full max-w-md mx-auto my-10 p-6 shadow-lg rounded-xl bg-base-200">
-      {/* Script do Cloudflare Turnstile */}
-      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" />
 
       {/* Seu título, tabs, mensagens e formulário */}
       <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold">{isLogin ? "Entrar" : "Criar Conta"}</h1>
+        <h1 className="text-3xl font-bold">
+          {isLogin ? "Entrar" : "Criar Conta"}
+        </h1>
         <p className="text-sm text-base-content/70">
-          {isLogin ? "Acesse sua conta para continuar." : "Preencha os campos abaixo para se cadastrar."}
+          {isLogin
+            ? "Acesse sua conta para continuar."
+            : "Preencha os campos abaixo para se cadastrar."}
         </p>
       </div>
 
       <div role="tablist" className="tabs tabs-border mb-6">
-        <button className={`tab ${isLogin ? "tab-active" : ""}`} onClick={() => { setIsLogin(true); setEmail(""); setPassword(""); setName(""); }}>Login</button>
-        <button className={`tab ${!isLogin ? "tab-active" : ""}`} onClick={() => { setIsLogin(false); setEmail(""); setPassword(""); setName(""); }}>Cadastro</button>
+        <button
+          className={`tab ${isLogin ? "tab-active" : ""}`}
+          onClick={() => {
+            setIsLogin(true);
+            setEmail("");
+            setPassword("");
+            setName("");
+          }}
+        >
+          Login
+        </button>
+        <button
+          className={`tab ${!isLogin ? "tab-active" : ""}`}
+          onClick={() => {
+            setIsLogin(false);
+            setEmail("");
+            setPassword("");
+            setName("");
+          }}
+        >
+          Cadastro
+        </button>
       </div>
 
       {error && <div className="alert alert-error text-sm my-4">{error}</div>}
-      {success && <div className="alert alert-success text-sm my-4">{success}</div>}
+      {success && (
+        <div className="alert alert-success text-sm my-4">{success}</div>
+      )}
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         {!isLogin && (
           <label className="floating-label w-full">
             <span>Usuário</span>
-            <input type="text" placeholder="Nome de Usuário" className="input input-md w-full" value={name} onChange={(e) => setName(e.target.value)} required />
+            <input
+              type="text"
+              placeholder="Nome de Usuário"
+              className="input input-md w-full"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           </label>
         )}
 
         <label className="floating-label w-full">
           <span>Email</span>
-          <input type="email" placeholder="Email" className="input input-md w-full" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input
+            type="email"
+            placeholder="Email"
+            className="input input-md w-full"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </label>
 
         <div className="relative">
           <label className="floating-label w-full">
             <span>Senha</span>
-            <input type={showPassword ? "text" : "password"} placeholder="••••••••" className="input input-md w-full pr-10" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              className="input input-md w-full pr-10"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </label>
-          <button type="button" className="absolute right-3 top-3 text-base-content/70" onClick={() => setShowPassword(!showPassword)}>
+          <button
+            type="button"
+            className="absolute right-3 top-3 text-base-content/70"
+            onClick={() => setShowPassword(!showPassword)}
+          >
             {showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
           </button>
         </div>
@@ -94,21 +143,23 @@ export default function AuthForm() {
         {!isLogin && (
           <ul className="text-sm space-y-1 mt-2">
             {passwordRules.map((rule, i) => (
-              <li key={i} className={`flex items-center gap-2 ${rule.test(password) ? "text-success" : "text-error"}`}>
+              <li
+                key={i}
+                className={`flex items-center gap-2 ${
+                  rule.test(password) ? "text-success" : "text-error"
+                }`}
+              >
                 <span>•</span> {rule.label}
               </li>
             ))}
           </ul>
         )}
 
-        {/* Widget do Turnstile */}
-        <div
-          className="my-4 cf-turnstile"
-          data-sitekey="0x4AAAAAABsSe7iqBV1tZvPy"
-          data-callback={(token: string) => setTurnstileToken(token)}
-        ></div>
-
-        <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+        <button
+          type="submit"
+          className="btn btn-primary w-full"
+          disabled={loading}
+        >
           {loading ? "Carregando..." : isLogin ? "Entrar" : "Cadastrar"}
         </button>
       </form>

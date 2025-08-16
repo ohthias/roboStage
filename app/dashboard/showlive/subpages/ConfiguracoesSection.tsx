@@ -7,7 +7,9 @@ interface PropsConfiguracoesSection {
   idEvent: number | null;
 }
 
-export default function ConfiguracoesSection({ idEvent }: PropsConfiguracoesSection) {
+export default function ConfiguracoesSection({
+  idEvent,
+}: PropsConfiguracoesSection) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [eventName, setEventName] = useState("");
@@ -56,56 +58,81 @@ export default function ConfiguracoesSection({ idEvent }: PropsConfiguracoesSect
     fetchConfig();
   }, [idEvent]);
 
-const handleSave = async () => {
-  if (!idEvent) return;
-  setLoading(true);
+  const handleSave = async () => {
+    if (!idEvent) return;
+    setLoading(true);
 
-  const { error: updateEventError } = await supabase
-    .from("events")
-    .update({ name_event: eventName })
-    .eq("id_evento", idEvent);
+    // Atualiza nome do evento
+    const { error: updateEventError } = await supabase
+      .from("events")
+      .update({ name_event: eventName })
+      .eq("id_evento", idEvent);
 
-  if (updateEventError) {
-    setError("Erro ao atualizar nome: " + updateEventError.message);
+    if (updateEventError) {
+      setError("Erro ao atualizar nome: " + updateEventError.message);
+      setLoading(false);
+      return;
+    }
+
+    // Atualiza config do evento
+    const { error: updateConfigError } = await supabase
+      .from("typeEvent")
+      .update({
+        config: {
+          base: competitionType,
+          rodadas: rounds,
+          temporada: competitionType === "FLL" ? season : "",
+        },
+      })
+      .eq("id_event", idEvent);
+
+    if (updateConfigError) {
+      setError("Erro ao atualizar configuração: " + updateConfigError.message);
+      setLoading(false);
+      return;
+    }
+
+    // Busca equipes para preservar pontos já lançados
+    const { data: teams, error: fetchTeamsError } = await supabase
+      .from("team")
+      .select("id_team, points")
+      .eq("id_event", idEvent);
+
+    if (fetchTeamsError) {
+      setError("Erro ao buscar equipes: " + fetchTeamsError.message);
+      setLoading(false);
+      return;
+    }
+
+    // Para cada equipe, mescla os pontos existentes com os rounds novos
+    for (const team of teams || []) {
+      const currentPoints = team.points || {};
+      const newPoints = { ...currentPoints };
+
+      for (const r of rounds) {
+        if (!(r in newPoints)) {
+          newPoints[r] = -1; // só adiciona se não existir
+        }
+      }
+
+      const { error: updateTeamError } = await supabase
+        .from("team")
+        .update({ points: newPoints })
+        .eq("id_team", team.id_team);
+
+      if (updateTeamError) {
+        setError(
+          "Erro ao atualizar pontos da equipe: " + updateTeamError.message
+        );
+        setLoading(false);
+        return;
+      }
+    }
+
+    setError("");
     setLoading(false);
-    return;
-  }
-
-  const { error: updateConfigError } = await supabase
-    .from("typeEvent")
-    .update({
-      config: {
-        base: competitionType,
-        rodadas: rounds,
-        temporada: competitionType === "FLL" ? season : "",
-      },
-    })
-    .eq("id_event", idEvent);
-
-  if (updateConfigError) {
-    setError("Erro ao atualizar configuração: " + updateConfigError.message);
-    setLoading(false);
-    return;
-  }
-
-  const defaultPoints = Object.fromEntries(rounds.map((r) => [r, -1]));
-
-  const { error: updateTeamsError } = await supabase
-    .from("team")
-    .update({ points: defaultPoints })
-    .eq("id_event", idEvent);
-
-  if (updateTeamsError) {
-    setError("Erro ao atualizar pontos das equipes: " + updateTeamsError.message);
-    setLoading(false);
-    return;
-  }
-
-  setError("");
-  setLoading(false);
-  alert("Configuração salva e pontuação padronizada!");
-};
-
+    alert("Configuração salva e pontuação padronizada!");
+  };
 
   // Handlers drag-and-drop nativo
   const handleDragStart = (index: number) => {
@@ -125,6 +152,12 @@ const handleSave = async () => {
 
   const handleResetScores = async () => {
     if (!idEvent) return;
+    if (
+      !confirm(
+        "Tem certeza que deseja resetar todas as pontuações das equipes? Essa ação não pode ser desfeita!"
+      )
+    )
+      return;
     setLoading(true);
     const { data, error } = await supabase
       .from("team")
@@ -138,7 +171,7 @@ const handleSave = async () => {
     // Zerar pontuação
     for (const team of data) {
       const emptyPoints = Object.fromEntries(
-        Object.keys(team.points).map((round) => [round, 0])
+        Object.keys(team.points).map((round) => [round, -1])
       );
       await supabase
         .from("team")
@@ -150,6 +183,11 @@ const handleSave = async () => {
   };
 
   const handleResetTeams = async () => {
+    if (
+      !confirm("Tem certeza que deseja apagar todas as equipes deste evento?")
+    )
+      return;
+
     if (!idEvent) return;
     setLoading(true);
     const { error } = await supabase
@@ -204,13 +242,17 @@ const handleSave = async () => {
 
   return (
     <div>
-      <h2 className="font-bold text-primary text-3xl mb-4">Configurações do Evento</h2>
+      <h2 className="font-bold text-primary text-3xl mb-4">
+        Configurações do Evento
+      </h2>
 
       {error && <p className="text-red-500">{error}</p>}
 
       {/* Nome do evento */}
       <div className="bg-base-200 border border-base-300 rounded-lg p-4">
-        <label className="block text-md font-medium text-base-content mb-2">Nome do Evento</label>
+        <label className="block text-md font-medium text-base-content mb-2">
+          Nome do Evento
+        </label>
         <input
           type="text"
           value={eventName}
@@ -222,7 +264,9 @@ const handleSave = async () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2 mt-2">
         {/* Tipo de competição */}
         <div>
-          <label className="block text-sm font-medium text-base-content mb-2">Tipo de Competição</label>
+          <label className="block text-sm font-medium text-base-content mb-2">
+            Tipo de Competição
+          </label>
           <select
             value={competitionType}
             onChange={(e) => setCompetitionType(e.target.value)}
@@ -235,7 +279,9 @@ const handleSave = async () => {
 
         {competitionType === "FLL" && (
           <div>
-            <label className="block text-sm font-medium text-base-content mb-2">Temporada</label>
+            <label className="block text-sm font-medium text-base-content mb-2">
+              Temporada
+            </label>
             <select
               value={season}
               onChange={(e) => setSeason(e.target.value)}
@@ -251,8 +297,10 @@ const handleSave = async () => {
 
       {/* Rodadas */}
       <div className="p-2">
-        <hr className="w-full my-4 border-base-200"/>
-        <label className="block text-md font-medium text-base-content mb-2">Rodadas</label>
+        <hr className="w-full my-4 border-base-200" />
+        <label className="block text-md font-medium text-base-content mb-2">
+          Rodadas
+        </label>
         <div className="flex gap-2 mb-2">
           <input
             type="text"
@@ -298,10 +346,7 @@ const handleSave = async () => {
       </div>
 
       <div className="flex justify-end mr-2 mt-2">
-        <button
-          onClick={handleSave}
-          className="btn btn-accent btn-dash"
-        >
+        <button onClick={handleSave} className="btn btn-accent btn-dash">
           <i className="fi fi-rr-check"></i>
           Salvar Configurações
         </button>
@@ -310,46 +355,44 @@ const handleSave = async () => {
       {/* Ações perigosas */}
       <div className="mt-8 border border-error bg-error/10 rounded-lg p-4">
         <div className="mb-4 flex flex-col gap-2">
-          <span className="text-2xl font-bold text-error">
-        Zona de Perigo
-          </span>
+          <span className="text-2xl font-bold text-error">Zona de Perigo</span>
           <span className="text-base-content text-sm">
-        Ações irreversíveis. Tenha certeza antes de prosseguir.
+            Ações irreversíveis. Tenha certeza antes de prosseguir.
           </span>
         </div>
         <div className="space-y-4">
           <div className="flex justify-between items-center flex-row-reverse">
-        <button
-          onClick={handleResetScores}
-          className="btn btn-outline btn-error"
-        >
-          Resetar Pontuações
-        </button>
-        <p className="text-xs text-base-content mt-1 ml-1">
-          Zera a pontuação de todas as equipes deste evento. Os dados das equipes permanecem.
-        </p>
+            <button
+              onClick={handleResetScores}
+              className="btn btn-outline btn-error"
+            >
+              Resetar Pontuações
+            </button>
+            <p className="text-xs text-base-content mt-1 ml-1">
+              Zera a pontuação de todas as equipes deste evento. Os dados das
+              equipes permanecem.
+            </p>
           </div>
           <div className="flex justify-between items-center flex-row-reverse">
-        <button
-          onClick={handleResetTeams}
-          className="btn btn-outline btn-error"
-        >
-          Resetar Equipes
-        </button>
-        <p className="text-xs text-base-content mt-1 ml-1">
-          Remove todas as equipes deste evento. As configurações e pontuações serão apagadas.
-        </p>
+            <button
+              onClick={handleResetTeams}
+              className="btn btn-outline btn-error"
+            >
+              Resetar Equipes
+            </button>
+            <p className="text-xs text-base-content mt-1 ml-1">
+              Remove todas as equipes deste evento. As configurações e
+              pontuações serão apagadas.
+            </p>
           </div>
           <div className="flex justify-between items-center flex-row-reverse">
-        <button
-          onClick={handleDeleteEvent}
-          className="btn btn-error"
-        >
-          Apagar Evento
-        </button>
-        <p className="text-xs text-base-content mt-1 ml-1">
-          Apaga o evento, todas as equipes e configurações permanentemente. Esta ação não pode ser desfeita.
-        </p>
+            <button onClick={handleDeleteEvent} className="btn btn-error">
+              Apagar Evento
+            </button>
+            <p className="text-xs text-base-content mt-1 ml-1">
+              Apaga o evento, todas as equipes e configurações permanentemente.
+              Esta ação não pode ser desfeita.
+            </p>
           </div>
         </div>
       </div>

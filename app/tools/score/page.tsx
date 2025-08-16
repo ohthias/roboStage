@@ -271,7 +271,7 @@ export default function Page() {
           <p className="text-base-content text-sm">
             <b>Sem restrição de equipamento:</b> Quando este símbolo aparece,
             aplica-se a seguinte regra:{" "}
-            <i className="text-neutral">
+            <i className="text-secondary">
               “Um modelo de missão não pode ganhar pontos se estiver tocando no
               equipamento no final da partida.”
             </i>

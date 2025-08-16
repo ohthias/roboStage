@@ -4,98 +4,73 @@ import { supabase } from "@/utils/supabase/client";
 
 interface EventModalProps {
   session: any;
+  onClose: () => void; // nova prop
 }
 
-export function EventModal({session} : EventModalProps) {
-  const [showModal, setShowModal] = useState(true); // Começa aberto
+export function EventModal({ session, onClose }: EventModalProps) {
   const [nameEvent, setNameEvent] = useState("");
   const [competitionType, setCompetitionType] = useState("");
   const [rounds, setRounds] = useState<string[]>([]);
   const [roundInput, setRoundInput] = useState("");
   const [season, setSeason] = useState("");
-
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  
+
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-  if (rounds.length === 0) {
-    setError("Adicione ao menos uma rodada.");
-    setSubmitting(false);
-    return;
-  }
+    e.preventDefault();
+    // validações...
+    setSubmitting(true);
+    setError("");
 
-  if (!nameEvent || !competitionType) {
-    setError("Preencha todos os campos obrigatórios.");
-    setSubmitting(false);
-    return;
-  }
+    try {
+      const { data: eventData, error: eventError } = await supabase
+        .from("events")
+        .insert({
+          id_responsavel: session.user.id,
+          name_event: nameEvent,
+          code_event: crypto.randomUUID().slice(0, 6).toUpperCase(),
+          code_visit: crypto.randomUUID().slice(0, 6).toUpperCase(),
+          code_volunteer: crypto.randomUUID().slice(0, 6).toUpperCase(),
+        })
+        .select("id_evento, code_event")
+        .single();
 
-  if (competitionType === "FLL" && !season) {
-    setError("Selecione a temporada para FLL.");
-    setSubmitting(false);
-    return;
-  }
-  e.preventDefault();
+      if (eventError) throw eventError;
 
-  setSubmitting(true);
-  setError("");
+      const config = {
+        base: competitionType,
+        rodadas: rounds,
+        temporada: season,
+      };
 
-  try {
-    const { data: eventData, error: eventError } = await supabase
-    .from("events")
-    .insert({
-      id_responsavel: session.user.id,
-      name_event: nameEvent,
-      code_event: crypto.randomUUID().slice(0, 6).toUpperCase(),
-      code_visit: crypto.randomUUID().slice(0, 6).toUpperCase(),
-      code_volunteer: crypto.randomUUID().slice(0, 6).toUpperCase(),
-    })
-    .select("id_evento, code_event")
-    .single();
+      const { error: typeError } = await supabase.from("typeEvent").insert({
+        id_event: eventData.id_evento,
+        config: config,
+      });
 
-    if (eventError) throw eventError;
+      if (typeError) throw typeError;
 
-    const config = {
-    base: competitionType,
-    rodadas: rounds,
-    temporada: season,
-    };
-
-    const { error: typeError } = await supabase.from("typeEvent").insert({
-    id_event: eventData.id_evento,
-    config: config,
-    });
-
-    if (typeError) throw typeError;
-
-    router.push(`/dashboard/showlive/${eventData.code_event}`);
-  } catch (err: any) {
-    console.error(err);
-    setError(err.message || "Erro ao criar evento");
-  } finally {
-    setSubmitting(false);
-  }
+      router.push(`/dashboard/showlive/${eventData.code_event}`);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Erro ao criar evento");
+    } finally {
+      setSubmitting(false);
+    }
   };
-
-  if (!showModal) return null;
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box w-full max-w-4xl p-0 overflow-hidden">
-        {/* Cabeçalho */}
+      <div className="modal-box w-full max-w-4xl p-0 overflow-hidden mx-auto">
         <div className="flex justify-between items-center border-b border-base-300 p-4">
           <h3 className="text-lg font-semibold text-info">Criar Evento</h3>
-          <button
-            onClick={() => setShowModal(false)}
-            className="btn btn-sm btn-ghost"
-          >
+          <button onClick={onClose} className="btn btn-sm btn-ghost">
             ✕
           </button>
         </div>
 
-        {/* Formulário */}
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-6 p-4 max-h-[70vh] overflow-y-auto"
@@ -209,11 +184,7 @@ export function EventModal({session} : EventModalProps) {
           {/* Rodapé */}
           <div className="flex justify-end gap-4 border-t border-base-300 pt-4">
             {error && <div className="text-error text-sm mr-auto">{error}</div>}
-            <button
-              type="button"
-              onClick={() => setShowModal(false)}
-              className="btn"
-            >
+            <button type="button" onClick={onClose} className="btn">
               Fechar
             </button>
             <button

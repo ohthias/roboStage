@@ -165,7 +165,7 @@ export default function ShowLiveHub() {
         )}
       </section>
 
-      {showModal && <EventModal session={session} />}
+      {showModal && <EventModal session={session}  onClose={() => setShowModal(false)}/>}
     </div>
   );
 }

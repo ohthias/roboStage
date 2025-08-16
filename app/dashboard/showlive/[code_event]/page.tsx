@@ -10,6 +10,7 @@ import RankingSection from "../subpages/RankingSection";
 import VisualizationSection from "../subpages/VisualizationSection";
 import ConfiguracoesSection from "../subpages/ConfiguracoesSection";
 import Loader from "@/components/loader";
+import ComingSoon from "@/components/ComingSoon";
 
 export default function EventAdminPage() {
   const params = useParams<{ code_event: string }>();
@@ -62,7 +63,7 @@ export default function EventAdminPage() {
       case "visualizacao":
         return <VisualizationSection idEvent={eventData?.id_evento || null} />;
       case "personalizacao":
-        return "<p>Personalização em breve...</p>";
+        return <ComingSoon />;
       case "configuracoes":
         return <ConfiguracoesSection idEvent={eventData?.id_evento ?? null} />;
       default:

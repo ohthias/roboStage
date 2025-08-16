@@ -58,7 +58,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
 
     const pointsObject = event.points.reduce<{ [key: string]: number }>(
       (acc, round) => {
-        acc[round] = 0;
+        acc[round] = -1;
         return acc;
       },
       {}

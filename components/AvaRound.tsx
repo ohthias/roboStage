@@ -172,6 +172,11 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
         )
       );
       router.refresh();
+      setTeams((prev) =>
+        prev.map((t) =>
+          t.id_team === equipe.id_team ? { ...t, points: updatedPoints } : t
+        )
+      );
     } catch (err) {
       console.error("Erro ao salvar avaliação:", err);
       alert("Erro ao atualizar equipe.");

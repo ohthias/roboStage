@@ -82,7 +82,30 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-3xl font-bold text-primary">Ranking</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-3xl font-bold text-primary">Ranking</h2>
+        <div
+          className="tooltip tooltip-left"
+          data-tip="As pontuações estão -1 porque nenhuma foi lançada por voluntários."
+        >
+          <button className="btn btn-circle btn-sm btn-primary">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
 
       <div className="overflow-x-auto bg-base-100 rounded-lg shadow-md">
         <table className="table table-zebra w-full">

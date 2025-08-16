@@ -13,7 +13,9 @@ interface Team {
   points: { [key: string]: number };
 }
 
-export default function VisualizationSection({ idEvent }: PropsVisualizationSection) {
+export default function VisualizationSection({
+  idEvent,
+}: PropsVisualizationSection) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
@@ -33,13 +35,11 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
       } else {
         setTeams(data as Team[]);
 
-        // Pega todas as rodadas inicialmente visíveis
         const allRounds = Array.from(
           new Set(data.flatMap((team: Team) => Object.keys(team.points)))
         );
         setVisibleRounds(allRounds);
 
-        // Busca config existente
         const { data: existingData } = await supabase
           .from("typeEvent")
           .select("id, config")
@@ -69,9 +69,24 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
   }, [idEvent]);
 
   if (!idEvent) return <p className="text-red-500">Evento inválido.</p>;
-  if (loading) return <p>Carregando visualização...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-  if (teams.length === 0) return <p className="text-gray-600">Nenhuma equipe cadastrada.</p>;
+  if (loading)
+    return (
+      <div className="flex justify-center py-8">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  if (error)
+    return (
+      <div className="alert alert-error shadow-lg">
+        <span>{error}</span>
+      </div>
+    );
+  if (teams.length === 0)
+    return (
+      <p className="text-gray-500 text-center py-4">
+        Nenhuma equipe cadastrada.
+      </p>
+    );
 
   const sortedTeams = [...teams].sort((a, b) => {
     const maxA = Math.max(...Object.values(a.points));
@@ -79,7 +94,9 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
     return maxB - maxA;
   });
 
-  const allRounds = Array.from(new Set(sortedTeams.flatMap((team) => Object.keys(team.points))));
+  const allRounds = Array.from(
+    new Set(sortedTeams.flatMap((team) => Object.keys(team.points)))
+  );
 
   const toggleRound = async (round: string) => {
     const newVisibleRounds = visibleRounds.includes(round)
@@ -88,7 +105,6 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
 
     setVisibleRounds(newVisibleRounds);
 
-    // Buscar o JSON atual
     const { data: existingData } = await supabase
       .from("typeEvent")
       .select("id, config")
@@ -107,7 +123,10 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
         .eq("id", existingData.id);
 
       if (updateError)
-        console.error("Erro ao atualizar rodadas visíveis:", updateError.message);
+        console.error(
+          "Erro ao atualizar rodadas visíveis:",
+          updateError.message
+        );
     } else {
       const { error: insertError } = await supabase
         .from("typeEvent")
@@ -119,50 +138,60 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Visualização do Ranking</h2>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-primary">
+          Visualização do Ranking
+        </h2>
+        <div
+          className="tooltip tooltip-left"
+          data-tip="Clique nas rodadas para mostrar/ocultar colunas para os visitantes."
+        >
+          <button className="btn btn-sm btn-circle btn-primary">
+            <span className="text-primary-content font-bold">i</span>
+          </button>
+        </div>
+      </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-2">
         {allRounds.map((round) => (
           <button
             key={round}
             onClick={() => toggleRound(round)}
-            className={`px-3 py-1 rounded border text-sm ${
-              visibleRounds.includes(round)
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700"
+            className={`btn btn-sm ${
+              visibleRounds.includes(round) ? "btn-primary" : "btn-ghost"
             }`}
           >
-            {visibleRounds.includes(round) ? "Ocultar" : "Mostrar"} {round}
+            {round}
           </button>
         ))}
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="text-left px-4 py-2 border-b">Posição</th>
-              <th className="text-left px-4 py-2 border-b">Equipe</th>
+      <div className="overflow-x-auto bg-base-100 rounded-lg shadow-lg border border-base-300">
+        <table className="table table-zebra w-full">
+          <thead className="bg-primary/25 text-primary-content">
+            <tr>
+              <th className="text-center">Posição</th>
+              <th>Equipe</th>
               {visibleRounds.map((round) => (
-                <th key={round} className="text-left px-4 py-2 border-b">
+                <th key={round} className="text-center">
                   {round}
                 </th>
               ))}
-              <th className="text-left px-4 py-2 border-b">Maior Pontuação</th>
+              <th className="text-center">Maior Pontuação</th>
             </tr>
           </thead>
           <tbody>
             {sortedTeams.map((team, index) => (
-              <tr key={team.id_team} className="hover:bg-gray-50">
-                <td className="px-4 py-2 border-b">{index + 1}</td>
-                <td className="px-4 py-2 border-b">{team.name_team}</td>
+              <tr key={team.id_team} className="hover:bg-base-200">
+                <td className="text-center font-bold">{index + 1}</td>
+                <td className="font-medium">{team.name_team}</td>
                 {visibleRounds.map((round) => (
-                  <td key={round} className="px-4 py-2 border-b">
+                  <td key={round} className="text-center">
                     {team.points[round] ?? 0}
                   </td>
                 ))}
-                <td className="px-4 py-2 border-b">
+                <td className="text-center font-bold">
                   {Math.max(...Object.values(team.points))}
                 </td>
               </tr>

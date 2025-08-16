@@ -21,7 +21,7 @@ export function ThemeController() {
 
   return (
     <div className="dropdown">
-      <div tabIndex={0} role="button" className="btn btn-default" style={{lineHeight:0}}>
+      <div tabIndex={0} role="button" className="btn btn-default leading-none">
         <i className="fi fi-br-palette text-base-content"></i>
       </div>
       <ul

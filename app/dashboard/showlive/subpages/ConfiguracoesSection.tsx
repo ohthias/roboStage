@@ -333,9 +333,15 @@ export default function ConfiguracoesSection({
               onDragOver={(e) => handleDragOver(e, i)}
               className="flex justify-between items-center bg-base-100 p-2 rounded border border-base-200 cursor-move"
             >
-              <span className="text-error-content">{r}</span>
+              <span className="text-base-content">{r}</span>
               <button
-                onClick={() => setRounds(rounds.filter((_, idx) => idx !== i))}
+                onClick={() => {
+                  if (rounds.length <= 1) {
+                    alert("Não é possível remover a única rodada!");
+                    return;
+                  }
+                  setRounds(rounds.filter((_, idx) => idx !== i));
+                }}
                 className="btn btn-ghost btn-error"
               >
                 Remover

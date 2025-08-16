@@ -78,9 +78,18 @@ export function useEvent(codeEvent: string) {
 
         if (teamsError) throw teamsError;
         setTeams(teamsData || []);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
-        setError(err.message || "Erro ao carregar dados.");
+        if (
+          typeof err === "object" &&
+          err !== null &&
+          "message" in err &&
+          typeof (err as { message?: unknown }).message === "string"
+        ) {
+          setError((err as { message: string }).message);
+        } else {
+          setError("Erro ao carregar dados.");
+        }
       } finally {
         setLoading(false);
       }

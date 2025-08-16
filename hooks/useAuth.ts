@@ -21,11 +21,18 @@ export function useAuth() {
     }
   };
 
-  const login = async (email: string, password: string, turnstileToken?: string) => {
+  const login = async (
+    email: string,
+    password: string,
+    turnstileToken?: string
+  ) => {
     setLoading(true);
     setError(null);
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     setLoading(false);
 
@@ -65,8 +72,18 @@ export function useAuth() {
 
       setSuccess("Cadastro realizado! Clique em login para entrar.");
       return true;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "message" in err &&
+        typeof (err as any).message === "string"
+      ) {
+        setError((err as { message: string }).message);
+      } else {
+        setError("Ocorreu um erro desconhecido.");
+      }
+
       return false;
     } finally {
       setLoading(false);

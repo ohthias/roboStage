@@ -4,7 +4,7 @@ import { supabase } from "@/utils/supabase/client";
 
 interface EventModalProps {
   session: any;
-  onClose: () => void; // nova prop
+  onClose: () => void;
 }
 
 export function EventModal({ session, onClose }: EventModalProps) {
@@ -20,7 +20,13 @@ export function EventModal({ session, onClose }: EventModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // validações...
+
+    // Validação: precisa de pelo menos uma rodada
+    if (rounds.length === 0) {
+      setError("É necessário adicionar pelo menos uma rodada.");
+      return; // impede execução abaixo
+    }
+
     setSubmitting(true);
     setError("");
 
@@ -44,11 +50,9 @@ export function EventModal({ session, onClose }: EventModalProps) {
         rodadas: rounds,
         temporada: season,
       };
-
-      const { error: typeError } = await supabase.from("typeEvent").insert({
-        id_event: eventData.id_evento,
-        config: config,
-      });
+      const { error: typeError } = await supabase
+        .from("typeEvent")
+        .insert({ id_event: eventData.id_evento, config });
 
       if (typeError) throw typeError;
 
@@ -157,7 +161,7 @@ export function EventModal({ session, onClose }: EventModalProps) {
                 </button>
               </div>
 
-              {rounds.length > 0 && (
+              {rounds.length > 0 ? (
                 <ul className="space-y-1 max-h-40 overflow-y-auto">
                   {rounds.map((r, i) => (
                     <li
@@ -177,6 +181,10 @@ export function EventModal({ session, onClose }: EventModalProps) {
                     </li>
                   ))}
                 </ul>
+              ) : (
+                <div className="text-warning text-sm mt-1">
+                  Adicione pelo menos uma rodada para criar o evento.
+                </div>
               )}
             </div>
           </div>
@@ -189,7 +197,7 @@ export function EventModal({ session, onClose }: EventModalProps) {
             </button>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || rounds.length === 0}
               className="btn btn-info"
             >
               {submitting ? (

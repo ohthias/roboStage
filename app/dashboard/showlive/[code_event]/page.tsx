@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import NavgationBar from "../components/NavgationBar";
+import NavgationBar from "../components/NavigationBar";
 import GeneralPage from "../subpages/GeneralPage";
 import { useEvent } from "@/hooks/useEvent";
 import TeamsSection from "../subpages/TeamsSection";

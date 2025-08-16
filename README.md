@@ -2,35 +2,81 @@
   robo<span style="color:red;">Stage</span>
 </h1>
 
-Uma plataforma web inovadora (em versão beta) projetada para o gerenciamento de equipes em eventos da **FLLC (First Lego League Challenge)**. A aplicação oferece uma interface intuitiva e recursos robustos para facilitar a organização de competições e experiências colaborativas.
+<p align="center">
+  Uma plataforma web para equipes e entusiastas da <strong>FLLC (First Lego League Challenge)</strong>.<br>
+  Crie torneios de robótica, planeje estratégias de mesa para a nova temporada e acompanhe pontuações em tempo real.
+</p>
 
-<br>
+<p align="center">
+  <a href="https://robo-stage.vercel.app/"><strong>🌐 Acesse Online »</strong></a>
+  <br>
+  <a href="https://github.com/ohthias/roboStage/releases">📦 Últimas Releases</a>
+  <br>
+  <a href="https://github.com/ohthias/roboStage/issues">🐞 Reportar Problemas</a>
+</p>
+
+---
 
 ## 🚀 Principais Recursos
 
 - **Personalização de Tema**  
-  Customize a aparência da plataforma para se adequar ao seu evento.
+  Adapte a aparência da plataforma para refletir seu evento ou estilo da equipe.
+
 - **Rankings em Tempo Real**  
-  Acompanhe o desempenho das equipes com rankings dinâmicos.
+  Acompanhe o desempenho das equipes com atualizações instantâneas.
+
 - **Configurações Avançadas**  
-  Ajuste as preferências do evento conforme suas necessidades específicas.
-- **Integração com Supabase**  
-  Utilize um banco de dados em tempo real para gerenciar dados de forma eficiente.
+  Ajuste preferências do evento, incluindo rounds, pontuação e regras customizadas.
+
+- **Gestão de Torneios**  
+  Crie e gerencie torneios completos de forma intuitiva.
+
+- **Monitoramento de Pontuação**  
+  Visualize resultados e estatísticas em tempo real.
+
+---
+
+## 📸 Screenshots
+
+![Dashboard](./assets/screenshot_dashboard.png)  
+*Exemplo do dashboard da plataforma.*
+
+![Ranking](./assets/screenshot_quickbrick.png)  
+*Visualização do ranking das equipes.*
+
+---
+
+## 🛠 Tecnologias Usadas
+
+- [Next.js](https://nextjs.org/) – Framework React moderno
+- [TailwindCSS + DaisyUI](https://daisyui.com/) – Estilização responsiva e componentes prontos
+- [Supabase](https://supabase.com/) – Backend em tempo real e autenticação
+- [Vercel](https://vercel.com/) – Deploy contínuo e hospedagem
+
+---
 
 ## 📝 Atividades Recentes
 
-[Releases](https://github.com/ohthias/roboStage/releases)
+- Última versão lançada: **v2.0**  
+- Novos recursos e correções de bugs implementados continuamente.  
+- Confira todos os lançamentos: [Releases](https://github.com/ohthias/roboStage/releases)
 
-- Última versão lançada: **v1.3-beta** (12 de julho de 2025)
-- Novas funcionalidades e correções de bugs estão sendo constantemente implementadas.
+---
 
 ## 📄 Licença
 
-Este projeto está licenciado sob a **Licença MIT** – veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está licenciado sob a **Licença MIT** – consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
 
 ## 🙏 Créditos de Recursos
 
-- **Bracketry** (MIT) – [Repositório](https://github.com/sbachinin/bracketry)
-- **Slidev** (MIT) – [Repositório](https://github.com/slidevjs/slidev)
-- Ícones por [Flaticon](https://www.flaticon.com/br/icones-animados-gratis/robo)  
-  Robô ícones animados criados por **Freepik** – Flaticon
+- Ícones animados de robôs por [Flaticon](https://www.flaticon.com/br/icones-animados-gratis/robo) – criados por **Freepik**  
+- UI components por [DaisyUI](https://daisyui.com/)  
+
+---
+
+## 📬 Suporte e Contato
+
+- Projeto no GitHub: [https://github.com/ohthias/roboStage](https://github.com/ohthias/roboStage)  
+- Relatar problemas ou sugestões: [Issues](https://github.com/ohthias/roboStage/issues)  

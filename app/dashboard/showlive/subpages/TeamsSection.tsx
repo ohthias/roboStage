@@ -19,7 +19,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
   const [teamName, setTeamName] = useState<string>("");
   const [teamsList, setTeamsList] = useState<Team[]>([]);
   const [errorMsg, setErrorMsg] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
   const fetchTeams = async (id_event: number) => {
     const { data, error } = await supabase
@@ -89,7 +89,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
     if (!confirm("Tem certeza que deseja excluir esta equipe?")) return;
 
     const { error } = await supabase.from("team").delete().eq("id_team", id_team);
-    console.log(error)
+
     if (error) {
       alert("Erro ao excluir equipe: " + error.message);
     } else {

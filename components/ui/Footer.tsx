@@ -1,15 +1,44 @@
+import pkg from "@/package.json";
+
 export function Footer() {
-    return (
-        <footer className="footer sm:footer-horizontal bg-neutral text-neutral-content items-center p-4">
-            <aside className="grid-flow-col items-center">
-                <img src="/Icone.png" alt="logo" className="w-12 h-12"/>
-                <p>Copyright © {new Date().getFullYear()} - Todos os direitos Reservados</p>
-            </aside>
-            <nav className="grid-flow-col gap-4 md:place-self-center md:justify-self-end">
-                <a href="https://github.com/ohthias/roboStage" style={{ lineHeight: 0 }} target="_blank" rel="noopener noreferrer" className="text-lg">
-                    <i className="fi fi-brands-github"></i>
-                </a>
-            </nav>
-        </footer>
-    )
+  return (
+    <footer className="footer flex flex-col sm:flex-row justify-between bg-neutral text-neutral-content items-center p-6 gap-4 text-center sm:text-left">
+      {/* Logo e Copyright */}
+      <aside className="flex flex-col sm:flex-row items-center gap-3">
+        <img src="/Icone.png" alt="logo" className="w-12 h-12" />
+        <p className="text-sm">
+          <span className="block sm:inline">
+            Copyright © {new Date().getFullYear()} - Todos os direitos reservados
+          </span>
+          <br className="sm:hidden" />
+          <span className="text-xs opacity-75">roboStage v{pkg.version}</span>
+        </p>
+      </aside>
+
+      {/* Links */}
+      <nav className="flex gap-6">
+        {/* Repo principal */}
+        <a
+          href="https://github.com/ohthias/roboStage"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-2xl hover:text-primary transition-colors"
+          title="Repositório no GitHub"
+        >
+          <i className="fi fi-brands-github"></i>
+        </a>
+
+        {/* Wiki */}
+        <a
+          href="https://github.com/ohthias/roboStage/wiki"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-2xl hover:text-primary transition-colors"
+          title="Documentação na Wiki"
+        >
+          <i className="fi fi-br-book-alt"></i>
+        </a>
+      </nav>
+    </footer>
+  );
 }

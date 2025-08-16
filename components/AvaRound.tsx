@@ -93,7 +93,7 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
             (round: string | number) => team.points[round] !== -1
           )
         );
-        console.log(allCompleted);
+
         setAllRoundsCompleted(allCompleted);
       } catch (err) {
         console.error("Erro ao carregar dados:", err);

@@ -17,7 +17,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("Deletando usuário:", userId);
 
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
@@ -29,7 +28,6 @@ export async function POST(req: NextRequest) {
       userId
     );
     if (authError) {
-      console.error("Erro ao deletar usuário do Auth:", authError);
       return NextResponse.json(
         { error: "Erro ao deletar usuário do Auth" },
         { status: 500 }
@@ -39,17 +37,14 @@ export async function POST(req: NextRequest) {
     // Deleta profile
 
     if (profileError) {
-      console.error("Erro ao deletar profile:", profileError);
       return NextResponse.json(
         { error: "Erro ao deletar perfil do usuário" },
         { status: 500 }
       );
     }
 
-    console.log("Usuário deletado com sucesso:", userId);
     return NextResponse.json({ message: "Conta deletada com sucesso!" });
   } catch (err) {
-    console.error("Erro interno do endpoint:", err);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }

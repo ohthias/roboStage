@@ -30,11 +30,12 @@ export default function Page() {
   const [loading, setLoading] = useState<boolean>(true);
   const [hash, setHash] = useState<string | null>(null);
   const [background, setBackground] = useState<string>("#ffffff");
-
+  
   // Timer states
   const totalTime = 150; // 2 min 30 seg
   const [timeLeft, setTimeLeft] = useState(totalTime);
   const [timerRunning, setTimerRunning] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Sons
@@ -58,10 +59,20 @@ export default function Page() {
       ? "bg-yellow-500"
       : "bg-primary";
 
+
   const startTimer = () => {
+    if (timeLeft === 0) {
+      setTimeLeft(totalTime);
+      setHasStarted(false);
+    }
+
     if (!timerRunning) {
       setTimerRunning(true);
-      if (startSound.current) startSound.current.play();
+
+      if (!hasStarted) {
+        if (startSound.current) startSound.current.play();
+        setHasStarted(true);
+      }
     }
   };
 
@@ -70,11 +81,12 @@ export default function Page() {
   };
 
   const resetTimer = () => {
-    if (typeof window !== "undefined") {
-      window.location.reload();
-    }
+    setTimerRunning(false);
     setTimeLeft(totalTime);
-    window.location.reload();
+    setHasStarted(false);
+  };
+  const resetScores = () => {
+    setResponses({});
   };
 
   useEffect(() => {
@@ -218,7 +230,7 @@ export default function Page() {
             className="btn btn-success flex-1 sm:flex-none min-w-[100px] cursor-pointer disabled:cursor-not-allowed"
             onClick={startTimer}
             disabled={timerRunning}
-            style={{ lineHeight: 0 }}
+            title="Iniciar o timer"
           >
             <i className="fi fi-bs-play"></i>
             <span className="hidden sm:inline">Iniciar</span>
@@ -228,7 +240,7 @@ export default function Page() {
             className="btn btn-warning flex-1 sm:flex-none min-w-[100px] cursor-pointer disabled:cursor-not-allowed"
             onClick={pauseTimer}
             disabled={!timerRunning}
-            style={{ lineHeight: 0 }}
+            title="Pausar o timer"
           >
             <i className="fi fi-bs-pause"></i>
             <span className="hidden sm:inline">Pausar</span>
@@ -237,10 +249,19 @@ export default function Page() {
           <button
             className="btn btn-error flex-1 sm:flex-none min-w-[100px]"
             onClick={resetTimer}
-            style={{ lineHeight: 0 }}
+            title="Resetar o timer"
           >
             <i className="fi fi-bs-rotate-right"></i>
-            <span className="hidden sm:inline">Resetar</span>
+            <span className="hidden sm:inline">Resetar Tempo</span>
+          </button>
+
+          <button
+            className="btn btn-info flex-1 sm:flex-none min-w-[100px]"
+            onClick={resetScores}
+            title="Resetar os pontos"
+          >
+            <i className="fi fi-bs-trash"></i>
+            <span className="hidden sm:inline">Resetar Pontos</span>
           </button>
         </div>
 

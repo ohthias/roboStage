@@ -46,7 +46,7 @@ export default function Navbar({
             </a>
             <button
               onClick={handleLogout}
-              className="btn btn-error btn-outline"
+              className="btn btn-error"
             >
               <i className="fi fi-br-sign-out-alt"></i> Sair
             </button>
@@ -103,7 +103,7 @@ export default function Navbar({
                 handleLogout();
                 setIsOpen(false);
               }}
-              className="btn btn-error btn-outline w-full"
+              className="btn btn-error w-full"
             >
               <i className="fi fi-br-sign-out-alt"></i> Sair
             </button>

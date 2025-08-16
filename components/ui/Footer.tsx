@@ -8,7 +8,8 @@ export function Footer() {
         <img src="/Icone.png" alt="logo" className="w-12 h-12" />
         <p className="text-sm">
           <span className="block sm:inline">
-            Copyright © {new Date().getFullYear()} - Todos os direitos reservados
+            Copyright © {new Date().getFullYear()} - Todos os direitos
+            reservados
           </span>
           <br className="sm:hidden" />
           <span className="text-xs opacity-75">roboStage v{pkg.version}</span>
@@ -16,7 +17,7 @@ export function Footer() {
       </aside>
 
       {/* Links */}
-      <nav className="flex gap-6">
+      <nav className="flex gap-6 items-center">
         {/* Repo principal */}
         <a
           href="https://github.com/ohthias/roboStage"
@@ -37,6 +38,18 @@ export function Footer() {
           title="Documentação na Wiki"
         >
           <i className="fi fi-br-book-alt"></i>
+        </a>
+
+        <a
+          href="https://patreon.com/roboStage"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-warning btn-outline gap-2"
+          title="Apoie no Patreon"
+          style={{ lineHeight: 0 }}
+        >
+          <i className="fi fi-brands-patreon"></i>
+          Apoiar
         </a>
       </nav>
     </footer>

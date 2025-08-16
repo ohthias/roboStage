@@ -18,6 +18,7 @@ export default function ShowLiveHub() {
   const [loadingEvents, setLoadingEvents] = useState(true);
 
   useEffect(() => {
+    router.refresh();
     const fetchEvents = async () => {
       if (!session) return;
 

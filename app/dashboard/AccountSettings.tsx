@@ -100,9 +100,9 @@ export default function AccountSettings() {
   return (
     <div className="max-w-2xl mx-auto bg-base-200 rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
       {/* Banner de perfil */}
-      <div className="bg-primary p-6 flex flex-col items-center justify-center md:w-1/3">
+      <div className="bg-secondary p-6 flex flex-col items-center justify-center md:w-1/3">
         <img
-          src="/images/default-avatar.png"
+          src="/images/icons/UserDefaultPhoto.jpg"
           alt="Foto de perfil"
           className="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white mb-4"
         />

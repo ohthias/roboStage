@@ -60,7 +60,7 @@ export default function UniversePage() {
     flex items-center justify-center
   "
         style={{
-          backgroundImage: "url('/fundoPadrao.gif')",
+          backgroundImage: "url('/images/fundoPadrao.gif')",
         }}
       >
         <div className="hero">

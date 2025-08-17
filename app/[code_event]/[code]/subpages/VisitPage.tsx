@@ -93,7 +93,7 @@ export default function VisitPage() {
             >
               Sair
             </button>
-            <h1 className="text-4xl font-bold mb-4 text-secondary">{eventName}</h1>
+            <h1 className="text-4xl font-bold mb-4 text-secondary-content">{eventName}</h1>
             <TabelaEquipes idEvent={id_evento} />
           </>
         )}

@@ -286,7 +286,7 @@ export default function Page() {
         {/* Info */}
         <div className="flex flex-col sm:flex-row items-center justify-start gap-4 relative w-full max-w-4xl bg-base-100 px-8 py-4 rounded-md animate-fade-in-down mb-8">
           <img
-            src="https://www.flltournament.com/images/2025/NoEquip.png"
+            src="/images/icons/NoEquip.png"
             className="w-16 h-16 mr-4"
           />
           <p className="text-base-content text-sm">

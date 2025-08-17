@@ -71,14 +71,11 @@ export default function ShowLiveHub() {
 
   if (loading) return <p>Carregando...</p>;
 
-  if (!session)
-    return (
-      <div className="text-center text-red-500 font-semibold">
-        Você precisa estar autenticado para criar eventos.
-      </div>
-    );
+  if (!session) {
+    router.push("/join")
+  }
 
-  const sessionBackground = (session : string) => {
+  const sessionBackground = (session: string) => {
     switch (session) {
       case "UNEARTHED":
         return "/images/background_uneartherd.png";
@@ -166,7 +163,7 @@ export default function ShowLiveHub() {
         )}
       </section>
 
-      {showModal && <EventModal session={session}  onClose={() => setShowModal(false)}/>}
+      {showModal && <EventModal session={session} onClose={() => setShowModal(false)} />}
     </div>
   );
 }

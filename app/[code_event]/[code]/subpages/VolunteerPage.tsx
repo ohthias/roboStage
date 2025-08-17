@@ -2,14 +2,40 @@
 import { useParams } from "next/navigation";
 import { NavigationBar } from "../components/NavigationBar";
 import { useState, useEffect } from "react";
+import { supabase } from "@/utils/supabase/client";
 import AvaliacaoRounds from "@/components/AvaRound";
 import robo from "@/public/robo.gif";
+import Loader from "@/components/loader";
 
 export default function VolunteerPage() {
   const params = useParams();
-  const id_evento = params?.id as string;
+  const code_event = params?.code_event as string;
 
+  const [id_evento, setId_event] = useState<string>("");
+  const [loading, setLoading] = useState(true);
   const [currentSection, setCurrentSection] = useState<string>("");
+
+  useEffect(() => {
+    const fetchEvent = async () => {
+      if (!code_event) return;
+      setLoading(true);
+
+      const { data, error } = await supabase
+        .from("events")
+        .select("id_evento")
+        .eq("code_event", code_event)
+        .maybeSingle();
+
+      if (!error && data) {
+        setId_event(data.id_evento);
+      }
+
+      setLoading(false);
+    };
+
+    fetchEvent();
+  }, [code_event]);
+
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
     setCurrentSection(hash);
@@ -28,7 +54,13 @@ export default function VolunteerPage() {
   const currentSectionContent = () => {
     switch (currentSection) {
       case "avalia":
-        return <AvaliacaoRounds idEvento={id_evento} />;
+        return id_evento ? (
+          <AvaliacaoRounds idEvento={id_evento} />
+        ) : (
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+            <Loader />
+          </div>
+        );
       default:
         return (
           <div className="w-full bg-gradient-to-tr from-base-100 to-base-300 rounded-2xl shadow-lg p-6 md:p-12 flex flex-col-reverse md:flex-row items-center justify-between gap-8 animate-fade-in">
@@ -42,7 +74,10 @@ export default function VolunteerPage() {
                 usando a barra de navegação acima e participe das atividades
                 como voluntário!
               </p>
-              <a href="#avaliar" className="btn btn-info btn-wide shadow-md hover:scale-105 transition-transform">
+              <a
+                href="#avalia"
+                className="btn btn-info btn-wide shadow-md hover:scale-105 transition-transform"
+              >
                 Avalie Agora!
               </a>
             </div>
@@ -79,7 +114,9 @@ export default function VolunteerPage() {
   return (
     <div className="p-4">
       <NavigationBar />
-      <main className="pt-4 px-4">{currentSectionContent()}</main>
+      <main className="pt-4 px-4">
+        {loading ? <p>Carregando evento...</p> : currentSectionContent()}
+      </main>
     </div>
   );
 }

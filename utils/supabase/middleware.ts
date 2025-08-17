@@ -8,10 +8,7 @@ export async function middleware(req: NextRequest) {
 
   const path = req.nextUrl.pathname;
 
-  const protectedPaths = ["/dashboard", "/configuracoes"];
-  const isProtected = protectedPaths.some((p) => path.startsWith(p));
-
-  if (isProtected) {
+  if (path.startsWith("/dashboard")) {
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -22,19 +19,36 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  const eventMatch = path.match(/^\/(volunteer|visit)\/(\d+)$/);
+  const eventMatch = path.match(/^\/([^/]+)\/([^/]+)$/); 
   if (eventMatch) {
-    const eventId = parseInt(eventMatch[2], 10);
+    const code_event = eventMatch[1];
+    const code = eventMatch[2];
+
+    const cookieToken = req.cookies.get("event_access")?.value;
+    if (cookieToken) {
+      // já autorizado → segue
+      return res;
+    }
 
     const { data, error } = await supabase
       .from("public_event_lookup")
       .select("id_evento")
-      .eq("id_evento", eventId)
-      .maybeSingle(); 
+      .eq("code_event", code_event)
+      .eq("code", code)
+      .maybeSingle();
 
     if (error || !data) {
       return NextResponse.redirect(new URL("/", req.url));
     }
+
+    res.cookies.set("event_access", `${code_event}:${code}`, {
+      maxAge: 60 * 60 * 24,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+
+    return res;
   }
 
   return res;
@@ -43,8 +57,6 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
-    "/configuracoes/:path*",
-    "/volunteer/:id*",
-    "/visit/:id*",
+    "/:code_event/:code",
   ],
 };

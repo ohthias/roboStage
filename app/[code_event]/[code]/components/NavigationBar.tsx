@@ -4,6 +4,8 @@ export function NavigationBar() {
   const router = useRouter();
 
   const handleLogout = async () => {
+    sessionStorage.removeItem("event_access");
+    document.cookie = "event_access=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.push("/universe");
   };
 

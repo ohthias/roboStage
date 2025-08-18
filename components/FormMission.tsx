@@ -73,7 +73,7 @@ export default function FormMission({
               key={`${missionId}-switch-${index}-${option}`}
               className={
                 value === option
-                  ? "bg-accent text-white px-4 py-2 rounded-lg border-none font-bold cursor-pointer mt-2 mr-2 text-sm sm:text-base"
+                  ? "bg-accent px-4 py-2 rounded-lg border-none font-bold cursor-pointer mt-2 mr-2 text-sm sm:text-base text-accent-content"
                   : "bg-base-200 text-base-content px-4 py-2 rounded-lg border-none cursor-pointer mt-2 mr-2 text-sm sm:text-base hover:bg-accent/25 transition"
               }
               onClick={() => onSelect?.(missionId, index, option)}
@@ -115,7 +115,7 @@ export default function FormMission({
                 key={`${missionId}-range-${index}-${val}-${idx}`}
                 className={
                   value === displayLabel
-                    ? "bg-accent text-white px-4 py-2 rounded-lg border-none font-bold cursor-pointer mt-2 mr-2"
+                    ? "bg-accent text-accent-content px-4 py-2 rounded-lg border-none font-bold cursor-pointer mt-2 mr-2"
                     : "bg-base-200 text-base-content px-4 py-2 rounded-lg border-none cursor-pointer mt-2 mr-2 hover:bg-accent/25 transition"
                 }
                 onClick={() => onSelect?.(missionId, index, displayLabel)}

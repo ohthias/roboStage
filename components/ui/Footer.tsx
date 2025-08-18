@@ -5,7 +5,7 @@ export function Footer() {
     <footer className="footer flex flex-col sm:flex-row justify-between bg-neutral text-neutral-content items-center p-6 gap-4 text-center sm:text-left">
       {/* Logo e Copyright */}
       <aside className="flex flex-col sm:flex-row items-center gap-3">
-        <img src="/Icone.png" alt="logo" className="w-12 h-12" />
+        <img src="/images/logos/Icone.png" alt="logo" className="w-12 h-12" />
         <p className="text-sm">
           <span className="block sm:inline">
             Copyright © {new Date().getFullYear()} - Todos os direitos

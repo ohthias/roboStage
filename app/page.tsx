@@ -61,8 +61,7 @@ export default function Home() {
               <h3 className="text-lg font-semibold text-primary">showLive</h3>
             </div>
             <p className="text-base-content flex-grow">
-              Organize eventos de robótica para até 10 equipes, defina formatos
-              de competição, fases e permissões personalizadas.
+              Crie eventos de robótica, defina os aspectos da temporada e organize as rodadas que irão acontecer.
             </p>
           </div>
           {/* End Card */}

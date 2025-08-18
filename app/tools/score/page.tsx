@@ -271,7 +271,7 @@ export default function Page() {
             <img src={background} className="w-24 h-24" alt="logo" />
             <div className="flex flex-col">
               <h1 className="text-md font-bold text-base-content">FLL Score</h1>
-              <span className="uppercase font-bold text-secondary text-2xl sm:text-3xl lg:text-4xl">
+              <span className="uppercase font-bold text-primary text-2xl sm:text-3xl lg:text-4xl">
                 {hash && `${hash}`}
               </span>
             </div>
@@ -279,7 +279,7 @@ export default function Page() {
 
           <div className="bg-base-100 flex flex-col items-center justify-center rounded-md shadow-md p-4 w-full sm:w-auto max-w-[200px]">
             <p className="text-sm font-bold text-base-content">Pontos</p>
-            <h3 className="text-2xl font-bold text-secondary">{totalPoints}</h3>
+            <h3 className="text-2xl font-bold text-primary">{totalPoints}</h3>
           </div>
         </div>
 
@@ -292,7 +292,7 @@ export default function Page() {
           <p className="text-base-content text-sm">
             <b>Sem restrição de equipamento:</b> Quando este símbolo aparece,
             aplica-se a seguinte regra:{" "}
-            <i className="text-secondary">
+            <i className="text-info">
               “Um modelo de missão não pode ganhar pontos se estiver tocando no
               equipamento no final da partida.”
             </i>

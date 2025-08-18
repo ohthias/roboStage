@@ -312,7 +312,7 @@ export default function FLLPaintPro() {
 
         <hr className="border border-gray-300 my-2 w-1/2 mx-auto" />
         <h6 className="text-base-content font-bold text-sm">Zona de Risco</h6>
-        <button onClick={undoLast} className="btn btn-soft btn-warning">
+        <button onClick={undoLast} className="btn btn-default btn-warning">
           <i className="fi fi-bs-rotate-right"></i> Desfazer
         </button>
         <button
@@ -321,7 +321,7 @@ export default function FLLPaintPro() {
               clearLayer();
             }
           }}
-          className="btn btn-soft btn-error"
+          className="btn default btn-error"
         >
           <i className="fi fi-bs-gallery"></i> Limpar Camada
         </button>
@@ -331,7 +331,7 @@ export default function FLLPaintPro() {
               clearAll();
             }
           }}
-          className="btn btn-soft btn-error"
+          className="btn default btn-error"
         >
           <i className="fi fi-bs-trash"></i> Limpar Tudo
         </button>
@@ -349,7 +349,7 @@ export default function FLLPaintPro() {
 
         <hr className="border border-gray-300 my-2 w-1/2 mx-auto" />
 
-        <button onClick={addLayer} className="btn btn-soft btn-secondary" style={{ lineHeight: 0 }}>
+        <button onClick={addLayer} className="btn btn-default btn-secondary" style={{ lineHeight: 0 }}>
           <i className="fi fi-bs-layer-plus"></i> Nova Camada
         </button>
 
@@ -357,7 +357,7 @@ export default function FLLPaintPro() {
           {layers.map(layer => (
             <div
               key={layer.id}
-              className={`my-1 btn w-full btn-neutral cursor-pointer ${activeLayerId === layer.id ? "btn-info" : "btn-outline"}`}
+              className={`my-1 btn w-full btn-accent cursor-pointer ${activeLayerId === layer.id ? "btn-info" : "btn-outline"}`}
               onClick={() => setActiveLayerId(layer.id)}
             >
               <div className="flex justify-between items-center w-full">

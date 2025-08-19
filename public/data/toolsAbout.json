@@ -1,0 +1,60 @@
+[
+    {
+        "name": "FLL Score",
+        "description": "Ferramenta criada para registrar e acompanhar a pontuação da temporada da FLLC. Permite simulações rápidas de missões ou acompanhamento completo de rounds com cronômetro integrado. Foi pensada para ajudar tanto em treinos de preparação quanto em situações oficiais, trazendo praticidade e confiabilidade.",
+        "details": [
+            {
+                "title": "Quais modos existem?",
+                "content": "Modo simples: registre apenas a pontuação das missões, ideal para treinamentos rápidos e revisões pontuais.\nModo round: inclui um cronômetro de tempo padrão (2:30), permitindo simular com precisão a dinâmica de uma rodada oficial."
+            },
+            {
+                "title": "Para que serve?",
+                "content": "O FLL Score é usado para testar estratégias de mesa, avaliar desempenhos em treinos e cronometrar rounds completos, garantindo maior realismo durante as simulações."
+            }
+        ]
+    },
+    {
+        "name": "QuickBrick Studio",
+        "description": "Um estúdio virtual para criação de estratégias de mesa com base no tapete oficial da FLLC, respeitando suas proporções reais. É ideal para planejar trajetórias de robôs, comparar ideias da equipe e exportar estratégias de forma clara para treinos e reuniões.",
+        "details": [
+            {
+                "title": "Como criar estratégias?",
+                "content": "Selecione uma cor e arraste o mouse para criar linhas com medidas exatas, representando o trajeto que o robô deve seguir na mesa."
+            },
+            {
+                "title": "Posso gerenciar camadas?",
+                "content": "Sim! É possível criar, ocultar e apagar camadas personalizadas para organizar estratégias diferentes sem misturar as trajetórias."
+            },
+            {
+                "title": "Como exportar minhas estratégias?",
+                "content": "Você pode exportar em PNG ou PDF todas as camadas visíveis, facilitando o compartilhamento com sua equipe ou o uso em apresentações."
+            },
+            {
+                "title": "Existe modo livre?",
+                "content": "Sim. O modo livre permite desenhar trajetórias sem medidas automáticas, ajustando a linha com liberdade criativa para rascunhos ou ideias rápidas."
+            }
+        ]
+    },
+    {
+        "name": "ShowLive",
+        "description": "Plataforma voltada para organização e acompanhamento de eventos da FLL. Com ela, é possível criar torneios personalizados, gerenciar equipes, rounds e pontuações em tempo real. Foi feita para simplificar a gestão de competições e permitir que voluntários e visitantes acompanhem o progresso de forma prática e transparente.",
+        "details": [
+            {
+                "title": "O que posso configurar?",
+                "content": "Defina nome do evento, escolha a temporada oficial e configure os rounds disponíveis. É necessário login para criar e gerenciar eventos."
+            },
+            {
+                "title": "Quantas equipes posso adicionar?",
+                "content": "Você pode cadastrar quantas equipes desejar, mas o recomendado é até 10 por evento para garantir fluidez no acompanhamento das partidas."
+            },
+            {
+                "title": "Como os voluntários lançam pontuações?",
+                "content": "Cada evento gera um código exclusivo de acesso para voluntários. Eles podem selecionar a equipe e o round e registrar os resultados diretamente na plataforma."
+            },
+            {
+                "title": "Como os visitantes acompanham?",
+                "content": "Os visitantes recebem outro código de acesso, exclusivo para acompanhamento. Com ele, podem visualizar a tabela de classificação em tempo real, acompanhando cada round à medida que os resultados são lançados."
+            }
+        ]
+    }
+]

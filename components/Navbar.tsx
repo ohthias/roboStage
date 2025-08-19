@@ -31,11 +31,8 @@ export function Navbar() {
             <ul className="menu menu-horizontal px-1 gap-5">
               <li>
                 <a
-                  href="https://www.portaldaindustria.com.br/sesi/canais/torneio-de-robotica/first-lego-league-brasil/"
-                  target="_blank"
-                >
-                  Docs UNEARTHED
-                </a>
+                  href="/about"
+                >Sobre</a>
               </li>
               <li>
                 <details>
@@ -52,6 +49,13 @@ export function Navbar() {
               </li>
               <li>
                 <a href="/tools/quickbrick">QuickBrick Studio</a>
+              </li>
+              <li>
+                <a
+                  href="/fll-docs"
+                >
+                  Docs
+                </a>
               </li>
               <li>
                 <a href="/universe" className="btn btn-accent btn-outline">
@@ -107,35 +111,46 @@ export function Navbar() {
             <a className="font-bold text-lg cursor-pointer" href="/">
               robo<span className="text-primary">Stage</span>
             </a>
-            <a
-              href="https://www.portaldaindustria.com.br/sesi/canais/torneio-de-robotica/first-lego-league-brasil/"
-              target="_blank"
-              className="btn btn-ghost w-full justify-start mt-4"
-            >
-              Docs UNEARTHED
-            </a>
-            <li>
-              <details className="w-full">
-                <summary className="btn btn-ghost w-full justify-between">
-                  FLL Score
-                </summary>
-                <ul className="menu p-2 rounded-box mt-2 space-y-1 w-full">
-                  <li>
-                    <a href="/tools/score#unearthed">UNEARTHED</a>
-                  </li>
-                  <li>
-                    <a href="/tools/score#submerged">SUBMERGED</a>
-                  </li>
-                </ul>
-              </details>
-            </li>
+            <ul className="menu menu-vertical px-1 gap-5 w-full">
+              <li>
+                <a
+                  href="/about"
+                  className="btn btn-ghost w-full justify-start"
+                >Sobre</a>
+              </li>
+              <li>
+                <details className="w-full">
+                  <summary className="btn btn-ghost w-full justify-between">
+                    FLL Score
+                  </summary>
+                  <ul className="menu p-2 rounded-box mt-2 space-y-1 w-full">
+                    <li>
+                      <a href="/tools/score#unearthed">UNEARTHED</a>
+                    </li>
+                    <li>
+                      <a href="/tools/score#submerged">SUBMERGED</a>
+                    </li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <a
+                  href="/tools/quickbrick"
+                  className="btn btn-ghost w-full justify-start"
+                >
+                  QuickBrick Studio
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/fll-docs"
+                  className="btn btn-ghost w-full justify-start"
+                >
+                  Docs
+                </a>
+              </li>
+            </ul>
 
-            <a
-              href="/tools/quickbrick"
-              className="btn btn-ghost w-full justify-start"
-            >
-              QuickBrick Studio
-            </a>
             <hr />
             <a href="/universe" className="btn btn-accent btn-outline w-full">
               Embarcar em evento

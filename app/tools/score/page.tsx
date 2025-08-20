@@ -145,7 +145,17 @@ export default function Page() {
             break;
           case "submerged":
             setBackground(
-              "https://static.wixstatic.com/media/3a1650_a7d1c334024840d8b642e62d02ebdaaf~mv2.gif"
+              "/images/logos/Submerged.webp"
+            );
+            break;
+          case "masterpiece":
+            setBackground(
+              "/images/logos/Masterpiece.png"
+            );
+            break;
+          case "superpowered":
+            setBackground(
+              "/images/logos/Superpowered.png"
             );
             break;
           default:
@@ -268,7 +278,7 @@ export default function Page() {
         {/* Cabeçalho */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative w-full max-w-4xl bg-base-100 px-8 py-4 rounded-md animate-fade-in-down mb-8">
           <div className="flex-1 flex justify-center sm:justify-start text-center sm:text-left items-center gap-4">
-            <img src={background} className="w-24 h-24" alt="logo" />
+            <img src={background} className="w-24 h-24 object-contain" alt="logo" />
             <div className="flex flex-col">
               <h1 className="text-md font-bold text-base-content">FLL Score</h1>
               <span className="uppercase font-bold text-primary text-2xl sm:text-3xl lg:text-4xl">

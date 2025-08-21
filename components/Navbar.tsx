@@ -1,9 +1,21 @@
 "use client"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ThemeController } from "./ui/themeController";
+
+interface SeasonsData {
+  [key: string]: any[];
+}
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [seasons, setSeasons] = useState<SeasonsData>({})
+
+  useEffect(() => {
+    fetch("/data/missions.json")
+      .then((res) => res.json())
+      .then((data) => setSeasons(data))
+      .catch((err) => console.error("Erro ao carregar as temporadas:", err))
+  }, []);
 
   return (
     <div className="drawer drawer-start">
@@ -15,34 +27,28 @@ export function Navbar() {
         readOnly
       />
 
-      {/* Conteúdo da página com navbar */}
       <div className="drawer-content flex flex-col">
         <div className="navbar bg-base-100 shadow-sm px-2">
-          {/* Lado esquerdo - Logo */}
           <div className="flex-1">
             <a className="font-bold text-lg cursor-pointer" href="/">
               robo<span className="text-primary">Stage</span>
             </a>
           </div>
 
-          {/* Menu desktop */}
           <div className="hidden lg:flex flex-none">
             <ul className="menu menu-horizontal px-1 gap-5">
-              <li>
-                <a
-                  href="/about"
-                >Sobre</a>
-              </li>
+              <li><a href="/about">Sobre</a></li>
               <li>
                 <details>
                   <summary>FLL Score</summary>
                   <ul className="bg-base-200 rounded-t-none p-2 z-20">
-                    <li>
-                      <a href="/tools/score#unearthed">UNEARTHED</a>
-                    </li>
-                    <li>
-                      <a href="/tools/score#submerged">SUBMERGED</a>
-                    </li>
+                    {Object.keys(seasons).map((seasonKey) => (
+                      <li key={seasonKey}>
+                        <a href={`/tools/score#${seasonKey.toLowerCase()}`}>
+                          {seasonKey.toUpperCase()}
+                        </a>
+                      </li>
+                    ))}
                   </ul>
                 </details>
               </li>
@@ -50,11 +56,7 @@ export function Navbar() {
                 <a href="/tools/quickbrick">QuickBrick Studio</a>
               </li>
               <li>
-                <a
-                  href="/fll-docs"
-                >
-                  Docs
-                </a>
+                <a href="/fll-docs">Docs</a>
               </li>
               <li>
                 <a href="/universe" className="btn btn-accent btn-outline">
@@ -62,9 +64,7 @@ export function Navbar() {
                 </a>
               </li>
               <li>
-                <a href="/join" className="btn btn-primary">
-                  Entrar
-                </a>
+                <a href="/join" className="btn btn-primary">Entrar</a>
               </li>
               <ThemeController />
             </ul>
@@ -85,12 +85,7 @@ export function Navbar() {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
               </svg>
             </label>
           </div>
@@ -112,10 +107,9 @@ export function Navbar() {
             </a>
             <ul className="menu menu-vertical px-1 gap-5 w-full">
               <li>
-                <a
-                  href="/about"
-                  className="btn btn-ghost w-full justify-start"
-                >Sobre</a>
+                <a href="/about" className="btn btn-ghost w-full justify-start">
+                  Sobre
+                </a>
               </li>
               <li>
                 <details className="w-full">
@@ -123,28 +117,23 @@ export function Navbar() {
                     FLL Score
                   </summary>
                   <ul className="menu p-2 rounded-box mt-2 space-y-1 w-full">
-                    <li>
-                      <a href="/tools/score#unearthed">UNEARTHED</a>
-                    </li>
-                    <li>
-                      <a href="/tools/score#submerged">SUBMERGED</a>
-                    </li>
+                    {Object.keys(seasons).map((seasonKey) => (
+                      <li key={seasonKey}>
+                        <a href={`/tools/score#${seasonKey.toLowerCase()}`}>
+                          {seasonKey.toUpperCase()}
+                        </a>
+                      </li>
+                    ))}
                   </ul>
                 </details>
               </li>
               <li>
-                <a
-                  href="/tools/quickbrick"
-                  className="btn btn-ghost w-full justify-start"
-                >
+                <a href="/tools/quickbrick" className="btn btn-ghost w-full justify-start">
                   QuickBrick Studio
                 </a>
               </li>
               <li>
-                <a
-                  href="/fll-docs"
-                  className="btn btn-ghost w-full justify-start"
-                >
+                <a href="/fll-docs" className="btn btn-ghost w-full justify-start">
                   Docs
                 </a>
               </li>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EventModal } from "@/components/EventModal";
 import Loader from "@/components/loader";
-import { useUser } from "../context/UserContext/page";
+import { useUser } from "../context/UserContext";
 import { useEvents } from "@/hooks/useEventsLoad";
 
 export default function ShowLiveHub() {

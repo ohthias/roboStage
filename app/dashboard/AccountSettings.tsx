@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
-import { useUser } from "../context/UserContext/page";
+import { useUser } from "../context/UserContext";
 
 export default function AccountSettings() {
   const router = useRouter();

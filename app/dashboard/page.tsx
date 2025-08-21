@@ -7,7 +7,7 @@ import Loader from "@/components/loader";
 import ShowLiveHub from "./showLiveHub";
 import Navbar from "./component/Navbar";
 import AccountSettings from "./AccountSettings";
-import { useUser } from "../context/UserContext/page";
+import { useUser } from "../context/UserContext";
 
 export default function Dashboard() {
   const { session, profile, loading } = useUser();

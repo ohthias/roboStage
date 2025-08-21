@@ -36,7 +36,7 @@ export default function ShowLiveHub() {
       <section className="bg-base-200 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300">
         <div>
           <h2 className="text-base-content font-bold mb-2 text-3xl">
-            show<span className="text-primary">Live</span> Hub
+            show<span className="text-primary">Live</span>
           </h2>
           <p className="text-sm text-base-content">
             Gerencie seus eventos de robótica ao vivo aqui.

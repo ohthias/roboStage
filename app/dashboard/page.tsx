@@ -8,6 +8,8 @@ import ShowLiveHub from "./showLiveHub";
 import Navbar from "./component/Navbar";
 import AccountSettings from "./AccountSettings";
 import { useUser } from "../context/UserContext";
+import ComingSoon from "@/components/ComingSoon";
+import { StyleLab } from "@/components/StyleLab";
 
 export default function Dashboard() {
   const { session, profile, loading } = useUser();
@@ -49,21 +51,27 @@ export default function Dashboard() {
     );
   }
 
-  const   currentSectionContent = () => {
+  const currentSectionContent = () => {
     switch (currentSection) {
+      case "showLive":
+        return <ShowLiveHub />;
+      case "labTest":
+        return <ComingSoon />;
+      case "styleLab":
+        return <StyleLab />;
       case "config":
         return <AccountSettings />;
       default:
-        return <ShowLiveHub />;
+        return <></>;
     }
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-4 w-full p-4">
       <Navbar profile={profile} session={session} handleLogout={handleLogout} />
 
       {/* Conteúdo principal */}
-      <main className="flex gap-4 flex-col w-full flex-1 overflow-y-auto pt-4 px-4">
+      <main className="flex gap-4 flex-col w-full flex-1 overflow-y-auto pt-4">
         {currentSectionContent()}
       </main>
     </div>

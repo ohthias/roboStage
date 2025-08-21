@@ -26,9 +26,9 @@ export default function Navbar({
       />
 
       <div className="drawer-content flex flex-col">
-        <nav className="navbar bg-base-200 shadow-md px-4">
+        <nav className="navbar bg-base-200 border-b border-base-300 rounded-lg px-4">
           <div className="flex-1">
-            <span className="text-xl font-bold text-primary">
+            <span className="text-xl font-bold text-base-content">
               Olá, {profile?.username || session?.user?.email || "visitante"}!
             </span>
           </div>
@@ -36,18 +36,33 @@ export default function Navbar({
           {/* Botões desktop */}
           <div className="flex-none space-x-2 hidden md:flex">
             <a href="#hub"
-              className="btn btn-ghost"
+              className="btn btn-ghost leading-none place-content-center"
             >
               <i className="fi fi-br-home"></i> Hub
             </a>
-            <a href="#config"
-              className="btn btn-ghost"
+            <a href="#labTest"
+              className="btn btn-ghost leading-none place-content-center"
             >
-              <i className="fi fi-br-settings"></i> Config.
+              <i className="fi fi-br-dashboard"></i> LabTest
+            </a>
+            <a href="#showLive"
+              className="btn btn-ghost leading-none place-content-center"
+            >
+              <i className="fi fi-br-stage-theatre"></i> ShowLive
+            </a>
+            <a href="#styleLab"
+              className="btn btn-ghost leading-none place-content-center"
+            >
+              <i className="fi fi-br-palette"></i> Style Lab
+            </a>
+            <a href="#config"
+              className="btn btn-ghost leading-none place-content-center"
+            >
+              <i className="fi fi-br-settings"></i> Configurações
             </a>
             <button
               onClick={handleLogout}
-              className="btn btn-error"
+              className="btn btn-error leading-none"
             >
               <i className="fi fi-br-sign-out-alt"></i> Sair
             </button>
@@ -82,18 +97,27 @@ export default function Navbar({
               onClick={() => {
                 setIsOpen(false);
               }}
-              className="btn btn-ghost flex items-center justify-start gap-2"
+              className="btn btn-ghost flex place-content-center justify-start gap-2"
             >
               <i className="fi fi-br-home"></i> Hub
+            </a>
+            <a
+              href="#styleLab"
+              onClick={() => {
+                setIsOpen(false);
+              }}
+              className="btn btn-ghost flex place-content-center justify-start gap-2"
+            >
+              <i className="fi fi-br-home"></i> Style Lab
             </a>
             <a
               href="#config"
               onClick={() => {
                 setIsOpen(false);
               }}
-              className="btn btn-ghost flex items-center justify-start gap-2"
+              className="btn btn-ghost flex place-content-center justify-start gap-2"
             >
-              <i className="fi fi-br-settings"></i> Config.
+              <i className="fi fi-br-settings"></i> Configurações
             </a>
           </div>
 

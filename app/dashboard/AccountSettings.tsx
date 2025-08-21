@@ -3,70 +3,56 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
+import { useUser } from "../context/UserContext";
 
 export default function AccountSettings() {
   const router = useRouter();
+  const { session, profile, loading: loadingUser } = useUser();
+
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchProfile() {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+    if (profile?.username) setUsername(profile.username);
+  }, [profile]);
 
-      if (authError || !user) {
-        setError("Não foi possível carregar o usuário");
-        return;
-      }
-
-      setUserId(user.id);
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("id", user.id)
-        .single();
-
-      if (error) {
-        setError("Erro ao carregar o perfil");
-      } else {
-        setUsername(data.username);
-      }
-    }
-
-    fetchProfile();
-  }, []);
+  if (loadingUser) return <p>Carregando perfil...</p>;
+  if (!session) {
+    router.push("/join");
+    return null;
+  }
 
   const handleUpdateUsername = async () => {
-    if (!userId) return;
+    if (!session?.user?.id) return;
+
     setLoading(true);
     setError("");
     setSuccess("");
 
-    const { error } = await supabase
+    const { error: updateError } = await supabase
       .from("profiles")
       .update({ username })
-      .eq("id", userId);
+      .eq("id", session.user.id);
 
     setLoading(false);
 
-    if (error) {
+    if (updateError) {
       setError("Erro ao atualizar o nome de usuário");
     } else {
       setSuccess("Nome de usuário atualizado com sucesso!");
-        setTimeout(() => {
-            window.location.hash = "hub";
-        }, 1000);
+      localStorage.setItem("userProfile", JSON.stringify({ username }));
     }
+
+    setTimeout(() => {
+      setError("");
+      setSuccess("");
+    }, 3000);
   };
 
   const handleDeleteAccount = async () => {
-    if (!userId) return;
+    if (!session?.user?.id) return;
     const confirm = window.confirm(
       "Tem certeza que deseja deletar sua conta? Isso é irreversível!"
     );
@@ -79,7 +65,7 @@ export default function AccountSettings() {
       const res = await fetch("/api/delete-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId: session.user.id }),
       });
 
       const data = await res.json();
@@ -90,7 +76,7 @@ export default function AccountSettings() {
         alert(data.message);
         router.push("/");
       }
-    } catch (err) {
+    } catch {
       setError("Erro ao deletar a conta");
     } finally {
       setLoading(false);

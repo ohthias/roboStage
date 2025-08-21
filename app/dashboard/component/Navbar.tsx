@@ -1,3 +1,4 @@
+"use client"
 import { ThemeController } from "@/components/ui/themeController";
 import { useState } from "react";
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
+import { UserProvider } from "./context/UserContext/page";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <body className={`${roboto.variable} antialiased`}>
-        {children}
+        <UserProvider>
+          {children}
+        </UserProvider>
       </body>
     </html>
   );

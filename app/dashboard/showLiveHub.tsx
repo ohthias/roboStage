@@ -1,88 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabase/client";
-import { useUserProfile } from "@/hooks/useUserProfile";
 import { EventModal } from "@/components/EventModal";
 import Loader from "@/components/loader";
+import { useUser } from "../context/UserContext/page";
+import { useEvents } from "@/hooks/useEventsLoad";
 
 export default function ShowLiveHub() {
-  const { session, loading } = useUserProfile();
   const router = useRouter();
+  const { session, loading } = useUser();
+  const { events, loading: loadingEvents } = useEvents(session?.user?.id);
 
   const [showModal, setShowModal] = useState(false);
 
-  const [events, setEvents] = useState<any[]>([]);
-  const [eventsConfig, setEventConfigs] = useState<any[]>([]);
-  const [loadingEvents, setLoadingEvents] = useState(true);
-
-  useEffect(() => {
-    router.refresh();
-    const fetchEvents = async () => {
-      if (!session) return;
-
-      setLoadingEvents(true);
-
-      // 1. Buscar todos os eventos do usuário
-      const { data: eventsData, error: eventsError } = await supabase
-        .from("events")
-        .select("id_evento, name_event, code_event")
-        .eq("id_responsavel", session.user.id)
-        .order("created_at", { ascending: false });
-
-      if (eventsError) {
-        console.error(eventsError);
-        setLoadingEvents(false);
-        return;
-      }
-
-      if (!eventsData || eventsData.length === 0) {
-        setEvents([]);
-        setLoadingEvents(false);
-        return;
-      }
-
-      // 2. Buscar todos os configs correspondentes
-      const eventIds = eventsData.map((e) => e.id_evento);
-      const { data: configsData, error: configsError } = await supabase
-        .from("typeEvent")
-        .select("id_event, config")
-        .in("id_event", eventIds);
-
-      if (configsError) {
-        console.error(configsError);
-      }
-
-      const merged = eventsData.map((ev) => {
-        const cfg = configsData?.find((c) => c.id_event === ev.id_evento);
-        return {
-          ...ev,
-          config: cfg?.config || null,
-        };
-      });
-
-      setEvents(merged);
-      setLoadingEvents(false);
-    };
-
-    fetchEvents();
-  }, [session]);
-
-  if (loading) return <p>Carregando...</p>;
-
+  if (loading) return <Loader />;
   if (!session) {
-    router.push("/join")
+    router.push("/join");
+    return null;
   }
 
-  const sessionBackground = (session: string) => {
-    switch (session) {
+  const sessionBackground = (temporada: string) => {
+    switch (temporada) {
       case "UNEARTHED":
-        return "/images/background_uneartherd.png";
+        return "/images/showLive/banners/banner_uneartherd.webp";
       case "SUBMERGED":
-        return "/images/background_submerged.png";
+        return "/images/showLive/banners/banner_submerged.webp";
       default:
-        return "/images/background_uneartherd.png";
+        return "/images/showLive/banners/banner_default.webp";
     }
   };
 
@@ -97,25 +42,21 @@ export default function ShowLiveHub() {
             Gerencie seus eventos de robótica ao vivo aqui.
           </p>
         </div>
-        <div>
-          <button
-            className="btn btn-soft btn-accent"
-            onClick={() => setShowModal(true)}
-          >
-            Criar Evento
-          </button>
-        </div>
+        <button
+          className="btn btn-soft btn-accent"
+          onClick={() => setShowModal(true)}
+        >
+          Criar Evento
+        </button>
       </section>
 
       <section className="flex gap-4 flex-wrap mt-4">
         {loadingEvents ? (
           <Loader />
         ) : events.length === 0 ? (
-          <p className="text-base-content">
-            Nenhum evento ao vivo criado ainda.
-          </p>
+          <p className="text-base-content">Nenhum evento ao vivo criado ainda.</p>
         ) : (
-          events.map((event) => (
+          events.map(event => (
             <div
               key={event.id_evento}
               className="card w-full md:w-80 bg-base-200 shadow-xl"
@@ -163,7 +104,9 @@ export default function ShowLiveHub() {
         )}
       </section>
 
-      {showModal && <EventModal session={session} onClose={() => setShowModal(false)} />}
+      {showModal && (
+        <EventModal session={session} onClose={() => setShowModal(false)} />
+      )}
     </div>
   );
 }

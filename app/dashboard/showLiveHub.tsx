@@ -50,16 +50,22 @@ export default function ShowLiveHub() {
         </button>
       </section>
 
-      <section className="flex gap-4 flex-wrap mt-4">
+      <section className="flex flex-wrap justify-around mt-4">
+        <div
+          className="card w-72 flex flex-col justify-center items-center bg-base-100 border border-dashed border-base-300 cursor-pointer hover:bg-base-200 transition"
+          onClick={() => setShowModal(true)}
+        >
+          <span className="text-xl font-semibold text-gray-400">
+            + Criar Novo Evento
+          </span>
+        </div>
         {loadingEvents ? (
           <Loader />
-        ) : events.length === 0 ? (
-          <p className="text-base-content">Nenhum evento ao vivo criado ainda.</p>
         ) : (
           events.map(event => (
             <div
               key={event.id_evento}
-              className="card w-full md:w-80 bg-base-200 shadow-xl"
+              className="card w-full md:w-72 bg-base-200 shadow-xl"
             >
               <figure>
                 <img

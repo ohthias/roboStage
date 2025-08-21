@@ -233,7 +233,7 @@
       "id": "M02",
       "name": "Mudança de cena teatral",
       "mission": "",
-      "points": [10,20,30],
+      "points": [0, 10, 15, 25, 35, 50, 50],
       "equipaments" : false,
       "type": ["switch", "Azul", "Rosa", "Laranja"],
       "sub-mission": [

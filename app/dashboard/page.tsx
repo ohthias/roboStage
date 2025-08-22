@@ -10,6 +10,7 @@ import AccountSettings from "./AccountSettings";
 import { useUser } from "../context/UserContext";
 import ComingSoon from "@/components/ComingSoon";
 import { StyleLab } from "@/components/StyleLab";
+import LabTestForm from "@/components/LabTestForm";
 
 export default function Dashboard() {
   const { session, profile, loading } = useUser();
@@ -56,7 +57,9 @@ export default function Dashboard() {
       case "showLive":
         return <ShowLiveHub />;
       case "labTest":
-        return <ComingSoon />;
+        return <div>
+          <LabTestForm /> 
+        </div>;
       case "styleLab":
         return <StyleLab />;
       case "config":

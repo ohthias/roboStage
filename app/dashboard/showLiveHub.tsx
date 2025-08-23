@@ -26,6 +26,8 @@ export default function ShowLiveHub() {
         return "/images/showLive/banners/banner_uneartherd.webp";
       case "SUBMERGED":
         return "/images/showLive/banners/banner_submerged.webp";
+      case "MASTERPIECE":
+        return "/images/showLive/banners/banner_masterpiece.webp";
       default:
         return "/images/showLive/banners/banner_default.webp";
     }
@@ -49,43 +51,39 @@ export default function ShowLiveHub() {
           Criar Evento
         </button>
       </section>
-
-      <section className="flex flex-wrap justify-around mt-4">
+      <section className="flex flex-wrap justify-start gap-6 mt-6">
         <div
-          className="card w-72 flex flex-col justify-center items-center bg-base-100 border border-dashed border-base-300 cursor-pointer hover:bg-base-200 transition"
+          className="card w-full sm:w-72 h-80 flex flex-col justify-center items-center bg-base-100 border-2 border-dashed border-base-300 rounded-lg cursor-pointer hover:bg-base-200 transition-all duration-300 shadow-md hover:shadow-lg"
           onClick={() => setShowModal(true)}
         >
-          <span className="text-xl font-semibold text-gray-400">
-            + Criar Novo Evento
-          </span>
+          <span className="text-xl font-semibold text-gray-400">+ Criar Novo Evento</span>
         </div>
+
         {loadingEvents ? (
           <Loader />
         ) : (
-          events.map(event => (
+          events.map((event) => (
             <div
               key={event.id_evento}
-              className="card w-full md:w-72 bg-base-200 shadow-xl"
+              className="card w-full sm:w-72 h-80 bg-base-200 shadow-lg rounded-lg grayscale-80 hover:grayscale-0 transform transition-all duration-300"
             >
-              <figure>
+              <figure className="overflow-hidden rounded-t-lg h-40">
                 <img
                   src={sessionBackground(event.config?.temporada)}
                   alt="Evento"
-                  className="object-cover h-40 w-full"
+                  className="object-cover h-full w-full transition-transform duration-300 hover:scale-110"
                 />
               </figure>
 
-              <div className="card-body">
-                <h2 className="card-title">
+              <div className="card-body flex flex-col justify-between">
+                <h2 className="card-title justify-between items-center">
                   {event.name_event}
                   <div className="badge badge-success">Ativo</div>
                 </h2>
 
                 <p className="text-sm text-base-content">
                   Categoria:{" "}
-                  {event.config?.base === "FLL"
-                    ? "FIRST LEGO League"
-                    : "Robótica"}
+                  {event.config?.base === "FLL" ? "FIRST LEGO League" : "Robótica"}
                 </p>
 
                 {event.config?.base === "FLL" && (
@@ -99,7 +97,7 @@ export default function ShowLiveHub() {
                     onClick={() =>
                       router.push(`/dashboard/showlive/${event.code_event}`)
                     }
-                    className="btn btn-primary"
+                    className="btn btn-primary btn-sm"
                   >
                     Acessar Hub
                   </button>

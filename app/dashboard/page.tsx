@@ -14,15 +14,16 @@ import LabTestForm from "@/components/LabTestForm";
 export default function Dashboard() {
   const { session, profile, loading } = useUser();
   const router = useRouter();
-  const [currentSection, setCurrentSection] = useState<string>("");
+  const [currentSection, setCurrentSection] = useState<string>("hub");
 
+  // Atualiza seção conforme hash
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
-    setCurrentSection(hash);
+    if (hash) setCurrentSection(hash);
 
     const handleHashChange = () => {
       const newHash = window.location.hash.replace("#", "");
-      setCurrentSection(newHash);
+      if (newHash) setCurrentSection(newHash);
     };
 
     window.addEventListener("hashchange", handleHashChange);
@@ -31,17 +32,33 @@ export default function Dashboard() {
     };
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/join");
-  };
-
+  // Redireciona se não estiver logado
   useEffect(() => {
     if (!loading && !session) {
       router.push("/join");
     }
   }, [loading, session, router]);
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/join");
+  };
+
+  // Conteúdo da seção atual
+  const currentSectionContent = () => {
+    switch (currentSection) {
+      case "showLive":
+        return <ShowLiveHub />;
+      case "labTest":
+        return <LabTestForm />;
+      case "styleLab":
+        return <StyleLab />;
+      case "config":
+        return <AccountSettings />;
+      default:
+        return <div>Bem-vindo ao Hub!</div>;
+    }
+  };
 
   if (loading) {
     return (
@@ -51,29 +68,16 @@ export default function Dashboard() {
     );
   }
 
-  const currentSectionContent = () => {
-    switch (currentSection) {
-      case "showLive":
-        return <ShowLiveHub />;
-      case "labTest":
-        return <div>
-          <LabTestForm /> 
-        </div>;
-      case "styleLab":
-        return <StyleLab />;
-      case "config":
-        return <AccountSettings />;
-      default:
-        return <></>;
-    }
-  };
-
   return (
-    <div className="flex flex-col gap-4 w-full p-4">
-      <Navbar profile={profile} session={session} handleLogout={handleLogout} />
+    <div className="flex flex-col md:flex-row h-screen w-full p-4 gap-4 overflow-y-hidden">
+      <Navbar
+        profile={profile}
+        session={session}
+        handleLogout={handleLogout}
+        className="flex-shrink-0 w-full md:max-w-[256px]"
+      />
 
-      {/* Conteúdo principal */}
-      <main className="flex gap-4 flex-col w-full flex-1 overflow-y-auto pt-4">
+      <main className="flex-1 overflow-y-auto">
         {currentSectionContent()}
       </main>
     </div>

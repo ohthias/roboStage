@@ -20,6 +20,8 @@ export default function GeneralPage({
 }: GeneralPageProps) {
   const urlBackground = () => {
     switch (event_config?.temporada) {
+      case "MASTERPIECE":
+        return "/images/showLive/banners/banner_masterpiece.webp";
       case "SUBMERGED":
         return "/images/showLive/banners/banner_submerged.webp";
       case "UNEARTHED":

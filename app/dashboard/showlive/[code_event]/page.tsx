@@ -18,6 +18,7 @@ export default function EventAdminPage() {
   const { loading, error, eventData, eventConfig, teams } = useEvent(codeEvent);
 
   const [currentSection, setCurrentSection] = useState<string>("");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
@@ -77,21 +78,33 @@ export default function EventAdminPage() {
     }
   };
 
-  return (
+   return (
     <div className="flex w-full">
-      <Sidebar code_volunteer={eventData?.code_volunteer ?? ""} code_visitor={eventData?.code_visit ?? ""} />
+      {/* Sidebar */}
+      <Sidebar
+        code_volunteer={eventData?.code_volunteer ?? ""}
+        code_visitor={eventData?.code_visit ?? ""}
+        open={sidebarOpen}
+        setOpen={setSidebarOpen}
+      />
 
-      <div className="flex-1 ml-72 p-4">
+      {/* Conteúdo principal */}
+      <div
+        className={`
+          flex-1 p-4 transition-all duration-300
+          ${sidebarOpen ? "lg:ml-72" : "lg:ml-72"}
+        `}
+      >
         {loading ? (
           <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
             <Loader />
           </div>
         ) : (
-          <main className="flex flex-col gap-4 w-full flex-1 overflow-y-auto pt-4">
+          <main className="flex flex-col gap-4 w-full flex-1 overflow-y-auto pt-4 mt-8 sm:mt-0">
             {renderSection()}
           </main>
         )}
       </div>
     </div>
-  );
+   )
 }

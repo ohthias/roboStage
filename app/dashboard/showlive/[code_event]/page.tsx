@@ -2,15 +2,15 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import NavgationBar from "../components/NavigationBar";
-import GeneralPage from "../subpages/GeneralPage";
+import GeneralPage from "@/components/showLive/subpages/GeneralPage";
 import { useEvent } from "@/hooks/useEvent";
-import TeamsSection from "../subpages/TeamsSection";
-import RankingSection from "../subpages/RankingSection";
-import VisualizationSection from "../subpages/VisualizationSection";
-import ConfiguracoesSection from "../subpages/ConfiguracoesSection";
+import TeamsSection from "@/components/showLive/subpages/TeamsSection";
+import RankingSection from "@/components/showLive/subpages/RankingSection";
+import VisualizationSection from "@/components/showLive/subpages/VisualizationSection";
+import ConfiguracoesSection from "@/components/showLive/subpages/ConfiguracoesSection";
 import Loader from "@/components/loader";
 import ComingSoon from "@/components/ComingSoon";
+import Sidebar from "@/components/showLive/Sidebar";
 
 export default function EventAdminPage() {
   const params = useParams<{ code_event: string }>();
@@ -51,9 +51,9 @@ export default function EventAdminPage() {
             event={
               eventData?.id_evento && eventConfig?.config.rodadas
                 ? {
-                    id_event: eventData.id_evento,
-                    points: eventConfig.config.rodadas,
-                  }
+                  id_event: eventData.id_evento,
+                  points: eventConfig.config.rodadas,
+                }
                 : null
             }
           />
@@ -78,14 +78,20 @@ export default function EventAdminPage() {
   };
 
   return (
-    <div className="p-4">
-      <NavgationBar
-        code_volunteer={eventData?.code_volunteer ?? ""}
-        code_visitor={eventData?.code_visit ?? ""}
-      />
-      <main className="mt-8">
-        {renderSection()}
-      </main>
+    <div className="flex w-full">
+      <Sidebar code_volunteer={eventData?.code_volunteer ?? ""} code_visitor={eventData?.code_visit ?? ""} />
+
+      <div className="flex-1 ml-72 p-4">
+        {loading ? (
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+            <Loader />
+          </div>
+        ) : (
+          <main className="flex flex-col gap-4 w-full flex-1 overflow-y-auto pt-4">
+            {renderSection()}
+          </main>
+        )}
+      </div>
     </div>
   );
 }

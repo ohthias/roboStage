@@ -8,7 +8,6 @@ import ShowLiveHub from "./showLiveHub";
 import Navbar from "./component/Navbar";
 import AccountSettings from "./AccountSettings";
 import { useUser } from "../context/UserContext";
-import ComingSoon from "@/components/ComingSoon";
 import { StyleLab } from "@/components/StyleLab";
 import LabTestForm from "@/components/LabTestForm";
 

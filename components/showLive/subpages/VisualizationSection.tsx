@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
+import { useToast } from "@/app/context/ToastContext";
 
 interface PropsVisualizationSection {
   idEvent: number | null;
@@ -18,8 +19,8 @@ export default function VisualizationSection({
 }: PropsVisualizationSection) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
   const [visibleRounds, setVisibleRounds] = useState<string[]>([]);
+  const { addToast } = useToast();
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -31,7 +32,7 @@ export default function VisualizationSection({
         .eq("id_event", idEvent);
 
       if (error) {
-        setError("Erro ao buscar equipes: " + error.message);
+        addToast("Erro ao buscar equipes: " + error.message);
       } else {
         setTeams(data as Team[]);
 
@@ -75,12 +76,7 @@ export default function VisualizationSection({
         <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
-  if (error)
-    return (
-      <div className="alert alert-error shadow-lg">
-        <span>{error}</span>
-      </div>
-    );
+
   if (teams.length === 0)
     return (
       <p className="text-gray-500 text-center py-4">
@@ -123,17 +119,17 @@ export default function VisualizationSection({
         .eq("id", existingData.id);
 
       if (updateError)
-        console.error(
-          "Erro ao atualizar rodadas visíveis:",
-          updateError.message
-        );
+        addToast("Erro ao atualizar rodadas visíveis: " + updateError.message, "error");
+
+      addToast("Configuração de rodadas visíveis atualizada.", "success");
     } else {
       const { error: insertError } = await supabase
         .from("typeEvent")
         .insert({ id_event: idEvent, config: mergedConfig });
 
       if (insertError)
-        console.error("Erro ao inserir rodadas visíveis:", insertError.message);
+        addToast("Erro ao inserir rodadas visíveis: " + insertError.message, "error");
+      addToast("Configuração de rodadas visíveis salva.", "success");
     }
   };
 
@@ -158,9 +154,8 @@ export default function VisualizationSection({
           <button
             key={round}
             onClick={() => toggleRound(round)}
-            className={`btn btn-sm ${
-              visibleRounds.includes(round) ? "btn-primary" : "btn-ghost"
-            }`}
+            className={`btn btn-sm ${visibleRounds.includes(round) ? "btn-primary" : "btn-ghost"
+              }`}
           >
             {round}
           </button>
@@ -169,7 +164,7 @@ export default function VisualizationSection({
 
       <div className="overflow-x-auto bg-base-100 rounded-lg shadow-lg border border-base-300">
         <table className="table table-zebra w-full">
-          <thead className="bg-primary/25 text-primary-content">
+          <thead className="bg-primary text-primary-content">
             <tr>
               <th className="text-center">Posição</th>
               <th>Equipe</th>

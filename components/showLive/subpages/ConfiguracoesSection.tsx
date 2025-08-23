@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
+import { useToast } from "@/app/context/ToastContext";
+import Loader from "@/components/loader";
 
 interface PropsConfiguracoesSection {
   idEvent: number | null;
@@ -11,13 +13,13 @@ export default function ConfiguracoesSection({
   idEvent,
 }: PropsConfiguracoesSection) {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [eventName, setEventName] = useState("");
   const [competitionType, setCompetitionType] = useState("");
   const [season, setSeason] = useState("");
   const [rounds, setRounds] = useState<string[]>([]);
   const [roundInput, setRoundInput] = useState("");
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const { addToast } = useToast();
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -31,7 +33,7 @@ export default function ConfiguracoesSection({
         .single();
 
       if (eventError) {
-        setError("Erro ao buscar evento: " + eventError.message);
+        addToast("Erro ao buscar evento: " + eventError.message, "error");
         setLoading(false);
         return;
       }
@@ -44,7 +46,7 @@ export default function ConfiguracoesSection({
         .single();
 
       if (configError) {
-        setError("Erro ao buscar configuração: " + configError.message);
+        addToast("Erro ao buscar configuração: " + configError.message, "error");
         setLoading(false);
         return;
       }
@@ -69,7 +71,7 @@ export default function ConfiguracoesSection({
       .eq("id_evento", idEvent);
 
     if (updateEventError) {
-      setError("Erro ao atualizar nome: " + updateEventError.message);
+      addToast("Erro ao atualizar nome: " + updateEventError.message, "error");
       setLoading(false);
       return;
     }
@@ -87,7 +89,7 @@ export default function ConfiguracoesSection({
       .eq("id_event", idEvent);
 
     if (updateConfigError) {
-      setError("Erro ao atualizar configuração: " + updateConfigError.message);
+      addToast("Erro ao atualizar configuração: " + updateConfigError.message, "error");
       setLoading(false);
       return;
     }
@@ -99,7 +101,7 @@ export default function ConfiguracoesSection({
       .eq("id_event", idEvent);
 
     if (fetchTeamsError) {
-      setError("Erro ao buscar equipes: " + fetchTeamsError.message);
+      addToast("Erro ao buscar equipes: " + fetchTeamsError.message, "error");
       setLoading(false);
       return;
     }
@@ -121,17 +123,17 @@ export default function ConfiguracoesSection({
         .eq("id_team", team.id_team);
 
       if (updateTeamError) {
-        setError(
-          "Erro ao atualizar pontos da equipe: " + updateTeamError.message
+        addToast(
+          "Erro ao atualizar pontos da equipe: " + updateTeamError.message,
+          "error"
         );
         setLoading(false);
         return;
       }
     }
 
-    setError("");
     setLoading(false);
-    alert("Configuração salva e pontuação padronizada!");
+    addToast("Configuração salva e pontuação padronizada!", "success");
   };
 
   // Handlers drag-and-drop nativo
@@ -164,11 +166,11 @@ export default function ConfiguracoesSection({
       .select("*")
       .eq("id_event", idEvent);
     if (error) {
-      setError("Erro ao buscar equipes: " + error.message);
+      addToast("Erro ao buscar equipes: " + error.message, "error");
       setLoading(false);
       return;
     }
-    // Zerar pontuação
+
     for (const team of data) {
       const emptyPoints = Object.fromEntries(
         Object.keys(team.points).map((round) => [round, -1])
@@ -179,7 +181,7 @@ export default function ConfiguracoesSection({
         .eq("id_team", team.id_team);
     }
     setLoading(false);
-    alert("Pontuações resetadas!");
+    addToast("Pontuações resetadas com sucesso!", "success");
   };
 
   const handleResetTeams = async () => {
@@ -195,12 +197,12 @@ export default function ConfiguracoesSection({
       .delete()
       .eq("id_event", idEvent);
     if (error) {
-      setError("Erro ao resetar equipes: " + error.message);
+      addToast("Erro ao resetar equipes: " + error.message, "error");
       setLoading(false);
       return;
     }
     setLoading(false);
-    alert("Todas as equipes foram apagadas.");
+    addToast("Todas as equipes foram apagadas.", "success");
   };
 
   const handleDeleteEvent = async () => {
@@ -212,41 +214,33 @@ export default function ConfiguracoesSection({
     )
       return;
     setLoading(true);
-    // Apaga typeEvent
     await supabase.from("typeEvent").delete().eq("id_event", idEvent);
-    // Apaga equipes
     await supabase.from("team").delete().eq("id_event", idEvent);
-    // Apaga evento
+
     const { error } = await supabase
       .from("events")
       .delete()
       .eq("id_evento", idEvent);
     if (error) {
-      setError("Erro ao apagar evento: " + error.message);
+      addToast("Erro ao apagar evento: " + error.message, "error");
       setLoading(false);
       return;
     }
     setLoading(false);
-    alert("Evento apagado com sucesso!");
+    addToast("Evento apagado com sucesso!", "success");
     window.location.href = "/dashboard#showLive";
   };
   if (!idEvent) {
     return <p className="text-red-500">Evento inválido.</p>;
   }
-  if (loading) {
-    return <p>Carregando configurações...</p>;
-  }
-
   if (!idEvent) return <p className="text-red-500">Evento inválido.</p>;
-  if (loading) return <p>Carregando configurações...</p>;
+  if (loading) return <div className="h-screen flex justify-center"><Loader /></div>;
 
   return (
     <div>
       <h2 className="font-bold text-primary text-3xl mb-4">
         Configurações do Evento
       </h2>
-
-      {error && <p className="text-red-500">{error}</p>}
 
       {/* Nome do evento */}
       <div className="bg-base-200 border border-base-300 rounded-lg p-4">

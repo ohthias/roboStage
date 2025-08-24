@@ -2,50 +2,38 @@ export function calculateTotalPoints(missions, responses) {
   let total = 0;
 
   missions.forEach((mission) => {
-    const missionResponses = responses[mission.id] || [];
+    const missionResponses = responses[mission.id] || {};
 
-    // Pontuação da missão principal
-    if (mission.type?.[0] === "switch") {
-      const response = missionResponses[0];
-      const options = mission.type.slice(1).filter(Boolean);
-      const isValid =
-        options.length > 0
-          ? response && options.includes(response)
-          : response === "Sim";
-      if (isValid) total += mission.points || 0;
+    // ===== Missão principal =====
+    const mainResponse = missionResponses[0];
 
+    if (typeof mainResponse === "number") {
+      total += mainResponse;
     } else if (mission.type?.[0] === "range") {
-      const value = missionResponses[0];
-      if (!isNaN(value)) {
+      const idx = Number(mainResponse);
+      if (!isNaN(idx)) {
         if (Array.isArray(mission.points)) {
-          // Se points é array, some o valor no índice selecionado (igual para PT, M11 e outros casos similares)
-          const pointsValue = mission.points[value] ?? 0;
-          total += pointsValue;
+          total += mission.points[idx] ?? 0;
         } else {
-          // Se points é número, multiplica normalmente
-          total += value * (mission.points || 0);
+          total += idx * (mission.points || 0);
         }
       }
     }
 
-    // Pontuação das sub-missões
+    // ===== Sub-missões =====
     if (Array.isArray(mission["sub-mission"])) {
       mission["sub-mission"].forEach((sub, index) => {
         const response = missionResponses[index + 1];
-        if (sub.type?.[0] === "switch") {
-          const options = sub.type.slice(1).filter(Boolean);
-          const isValid =
-            options.length > 0
-              ? response && options.includes(response)
-              : response === "Sim";
-          if (isValid) total += sub.points || 0;
+
+        if (typeof response === "number") {
+          total += response;
         } else if (sub.type?.[0] === "range") {
-          if (!isNaN(response)) {
+          const idx = Number(response);
+          if (!isNaN(idx)) {
             if (Array.isArray(sub.points)) {
-              const pointsValue = sub.points[response] ?? 0;
-              total += pointsValue;
+              total += sub.points[idx] ?? 0;
             } else {
-              total += response * (sub.points || 0);
+              total += idx * (sub.points || 0);
             }
           }
         }

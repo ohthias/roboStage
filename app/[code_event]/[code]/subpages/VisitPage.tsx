@@ -67,8 +67,10 @@ export default function VisitPage() {
         return "/images/background_uneartherd.png";
       case "SUBMERGED":
         return "/images/background_submerged.png";
+      case "MASTERPIECE":
+        return "/images/showLive/banners/banner_masterpiece.webp";
       default:
-        return "/images/background_default.png"; // melhor usar uma imagem default
+        return "/images/background_default.png";
     }
   };
 
@@ -83,6 +85,11 @@ export default function VisitPage() {
           backgroundPosition: 'center'
         }}
       >
+        <div
+          className="absolute inset-0 bg-black opacity-60 pointer-events-none"
+          style={{ zIndex: 0 }}
+        />
+        <div className="relative z-10 w-full flex flex-col items-center"></div>
         {loading ? (
           <p className="text-lg font-medium">Carregando evento...</p>
         ) : (
@@ -93,7 +100,7 @@ export default function VisitPage() {
             >
               Sair
             </button>
-            <h1 className="text-4xl font-bold mb-4 text-secondary-content">{eventName}</h1>
+            <h1 className="text-4xl font-bold mb-4 text-secondary-content z-10">{eventName}</h1>
             <TabelaEquipes idEvent={id_evento} />
           </>
         )}

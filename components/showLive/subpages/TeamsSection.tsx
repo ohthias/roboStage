@@ -1,4 +1,7 @@
+import { useToast } from "@/app/context/ToastContext";
+import CardDefault from "@/components/ui/Cards/CardDefault";
 import { supabase } from "@/utils/supabase/client";
+import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
 interface PropsTeamsSection {
@@ -20,6 +23,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
   const [teamsList, setTeamsList] = useState<Team[]>([]);
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const { addToast } = useToast();
 
   const fetchTeams = async (id_event: number) => {
     const { data, error } = await supabase
@@ -29,7 +33,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
       .order("id_team", { ascending: true });
 
     if (error) {
-      setErrorMsg("Erro ao buscar equipes: " + error.message);
+      addToast("Erro ao buscar equipes: " + error.message, "error");
     } else {
       setTeamsList(data as Team[]);
     }
@@ -45,11 +49,11 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
     e.preventDefault();
 
     if (!teamName.trim()) {
-      setErrorMsg("O nome da equipe não pode estar vazio.");
+      addToast("O nome da equipe não pode estar vazio.", "warning");
       return;
     }
     if (!event) {
-      setErrorMsg("Evento não encontrado.");
+      addToast("Evento não encontrado.", "error");
       return;
     }
 
@@ -76,10 +80,12 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
       .select();
 
     if (error) {
-      setErrorMsg("Erro ao adicionar equipe: " + error.message);
+      addToast("Erro ao adicionar equipe: " + error.message, "error");
+      addToast("Equipe adicionada com sucesso.", "success");
     } else if (data) {
       setTeamsList((prev) => [...prev, ...data]);
       setTeamName("");
+      addToast("Equipe adicionada com sucesso.", "success");
     }
 
     setLoading(false);
@@ -91,9 +97,11 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
     const { error } = await supabase.from("team").delete().eq("id_team", id_team);
 
     if (error) {
-      alert("Erro ao excluir equipe: " + error.message);
+      addToast("Erro ao excluir equipe: " + error.message, "error");
+      addToast("Equipe excluída com sucesso.", "success");
     } else {
       setTeamsList((prev) => prev.filter((t) => t.id_team !== id_team));
+      addToast("Equipe excluída com sucesso.", "success");
     }
   };
 
@@ -115,6 +123,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
             );
           }
         });
+      addToast("Equipe editada com sucesso.", "success");
     }
   };
 
@@ -128,7 +137,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
         className="card bg-base-200 p-4 shadow-md flex flex-col md:flex-row gap-4 items-end"
       >
         <div className="flex-1 w-full">
-          <label className="block text-md font-bold text-gray-500 mb-2">
+          <label className="block text-md font-semibold text-base-content mb-2">
             Nome da Equipe
           </label>
           <input
@@ -136,7 +145,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
             required
-            className="input input-bordered w-full"
+            className="input input-bordered w-full input-primary"
             placeholder="Digite o nome da equipe"
           />
         </div>
@@ -154,37 +163,41 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
 
       {/* Lista */}
       {teamsList.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teamsList.map((team) => (
-            <div
-              key={team.id_team}
-              className="card bg-base-100 shadow-md border border-base-300"
-            >
-              <div className="card-body">
-                <h3 className="card-title text-lg font-bold break-words">
-                  {team.name_team}
-                </h3>
-                <p className="text-xs opacity-60">
-                  Criada em: {new Date(team.created_at).toLocaleString()}
-                </p>
-                <div className="mt-4 flex gap-2">
-                  <button
-                    className="btn btn-outline btn-sm flex items-center gap-1"
-                    onClick={() => handleEdit(team)}
-                  >
-                    <i className="fi fi-rr-edit"></i> Editar
-                  </button>
-                  <button
-                    className="btn btn-error btn-sm flex items-center gap-1"
-                    onClick={() => handleDelete(team.id_team)}
-                  >
-                    <i className="fi fi-rr-trash"></i> Excluir
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 min-h-[350px]">
+          {teamsList.map((team, i) => {
+            const hasPoints = Object.values(team.points).some((p) => p !== -1);
+
+            const buttons = [
+              { label: "Editar", onClick: () => handleEdit(team) },
+              { label: "Excluir", onClick: () => handleDelete(team.id_team) },
+            ];
+            if (hasPoints) {
+              buttons.unshift({
+                label: "Pontos",
+                onClick: () => {
+                  alert("Função de mudar pontuação ainda não implementada.");
+                },
+              });
+            }
+
+            return (
+              <motion.div
+                key={team.id_team}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <CardDefault
+                  title={team.name_team}
+                  description={`Criada em: ${new Date(team.created_at).toLocaleString()}`}
+                  buttons={buttons}
+                  size="sm"
+                />
+              </motion.div>
+            );
+          })}
         </div>
+
       ) : (
         <p className="text-gray-500 text-sm text-center">
           Nenhuma equipe cadastrada ainda.

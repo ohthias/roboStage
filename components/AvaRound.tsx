@@ -13,6 +13,7 @@ type MissionType = {
   type: string[];
   points: number[] | number;
   "sub-mission"?: {
+    points: number;
     submission: string;
     type: string[];
   }[];
@@ -282,7 +283,15 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
       </div>
 
       <FormMission
-        missions={missions}
+        missions={missions.map((mission) => ({
+          ...mission,
+          ["sub-mission"]: mission["sub-mission"]
+            ? mission["sub-mission"].map((sub) => ({
+                ...sub,
+                points: sub.points ?? 0
+              }))
+            : undefined,
+        }))}
         responses={responses}
         onSelect={handleSelectMission}
       />

@@ -2,15 +2,15 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import NavgationBar from "../components/NavigationBar";
-import GeneralPage from "../subpages/GeneralPage";
+import GeneralPage from "@/components/showLive/subpages/GeneralPage";
 import { useEvent } from "@/hooks/useEvent";
-import TeamsSection from "../subpages/TeamsSection";
-import RankingSection from "../subpages/RankingSection";
-import VisualizationSection from "../subpages/VisualizationSection";
-import ConfiguracoesSection from "../subpages/ConfiguracoesSection";
+import TeamsSection from "@/components/showLive/subpages/TeamsSection";
+import RankingSection from "@/components/showLive/subpages/RankingSection";
+import VisualizationSection from "@/components/showLive/subpages/VisualizationSection";
+import ConfiguracoesSection from "@/components/showLive/subpages/ConfiguracoesSection";
 import Loader from "@/components/loader";
 import ComingSoon from "@/components/ComingSoon";
+import Sidebar from "@/components/showLive/Sidebar";
 
 export default function EventAdminPage() {
   const params = useParams<{ code_event: string }>();
@@ -18,6 +18,7 @@ export default function EventAdminPage() {
   const { loading, error, eventData, eventConfig, teams } = useEvent(codeEvent);
 
   const [currentSection, setCurrentSection] = useState<string>("");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
@@ -51,9 +52,9 @@ export default function EventAdminPage() {
             event={
               eventData?.id_evento && eventConfig?.config.rodadas
                 ? {
-                    id_event: eventData.id_evento,
-                    points: eventConfig.config.rodadas,
-                  }
+                  id_event: eventData.id_evento,
+                  points: eventConfig.config.rodadas,
+                }
                 : null
             }
           />
@@ -77,15 +78,33 @@ export default function EventAdminPage() {
     }
   };
 
-  return (
-    <div className="p-4">
-      <NavgationBar
+   return (
+    <div className="flex w-full">
+      {/* Sidebar */}
+      <Sidebar
         code_volunteer={eventData?.code_volunteer ?? ""}
         code_visitor={eventData?.code_visit ?? ""}
+        open={sidebarOpen}
+        setOpen={setSidebarOpen}
       />
-      <main className="mt-8">
-        {renderSection()}
-      </main>
+
+      {/* Conteúdo principal */}
+      <div
+        className={`
+          flex-1 p-4 transition-all duration-300
+          ${sidebarOpen ? "lg:ml-72" : "lg:ml-72"}
+        `}
+      >
+        {loading ? (
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+            <Loader />
+          </div>
+        ) : (
+          <main className="flex flex-col gap-4 w-full flex-1 overflow-y-auto pt-4 mt-8 sm:mt-0">
+            {renderSection()}
+          </main>
+        )}
+      </div>
     </div>
-  );
+   )
 }

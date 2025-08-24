@@ -1,103 +1,138 @@
 "use client";
 import { ThemeController } from "@/components/ui/themeController";
-import { useState, useEffect } from "react";
+import {
+  Cog6ToothIcon,
+  HomeIcon,
+  PresentationChartBarIcon,
+  SignalIcon,
+  SparklesIcon,
+} from "@heroicons/react/16/solid";
+import { useState } from "react";
 
 interface NavbarProps {
   profile: any;
   session: any;
   handleLogout: () => void;
-  className?: string;
 }
 
 export default function Navbar({
   profile,
   session,
   handleLogout,
-  className
-}: NavbarProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  children,
+}: React.PropsWithChildren<NavbarProps>) {
   const [activeSection, setActiveSection] = useState<string>("hub");
 
-  // Atualiza a seção ativa conforme o hash
-  useEffect(() => {
-    const hash = window.location.hash.replace("#", "");
-    if (hash) setActiveSection(hash);
-
-    const handleHashChange = () => {
-      const newHash = window.location.hash.replace("#", "");
-      if (newHash) setActiveSection(newHash);
-    };
-
-    window.addEventListener("hashchange", handleHashChange);
-    return () => {
-      window.removeEventListener("hashchange", handleHashChange);
-    };
-  }, []);
-
-  // Função que retorna a classe do botão conforme ativo
   const linkClass = (section: string) =>
-    `btn btn-ghost w-full justify-start gap-2 ${activeSection === section ? "btn-outline text-primary" : ""}`;
+    `btn btn-ghost justify-start gap-2 w-full transition-colors duration-200
+     ${activeSection === section
+      ? "bg-base-300 text-primary font-semibold"
+      : "hover:bg-base-200"
+    }`;
 
   return (
-    <div className="flex h-screen">
-      {/* Sidebar desktop */}
-      <aside className={`hidden md:flex flex-col w-64 bg-base-200 border-r border-base-300 p-4 md:h-[calc(100vh-2rem)] h-auto overflow-y-auto rounded-lg ${className}`}>
-        <div className="flex-1 flex flex-col justify-between h-full">
-          <div className="space-y-2">
-            <span className="text-lg font-bold block mb-4">
-              Olá, <span className="text-primary">{profile?.username || session?.user?.email || "visitante"}!</span>
+    <div className="drawer md:drawer-open max-h-screen overflow-y-hidden p-4">
+      <input id="app-drawer" type="checkbox" className="drawer-toggle" />
+
+      {/* Conteúdo principal */}
+      <div className="drawer-content flex flex-col gap-4">
+        {/* Navbar mobile */}
+        <nav className="navbar bg-base-200 border-b border-base-300 px-4 md:hidden flex flex-row justify-between rounded-box shadow-md">
+          <div className="flex-1 flex items-center">
+            <span className="text-lg font-bold">
+              Olá,{" "}
+              <span className="text-primary">
+                {profile?.username || session?.user?.email || "visitante"}!
+              </span>
             </span>
-            <a href="#hub" className={linkClass("hub")}> <i className="fi fi-br-home"></i> Hub </a>
-            <a href="#labTest" className={linkClass("labTest")}> <i className="fi fi-br-dashboard"></i> LabTest </a>
-            <a href="#showLive" className={linkClass("showLive")}> <i className="fi fi-br-stage-theatre"></i> ShowLive </a>
-            <a href="#styleLab" className={linkClass("styleLab")}> <i className="fi fi-br-palette"></i> Style Lab </a>
-            <a href="#config" className={linkClass("config")}> <i className="fi fi-br-settings"></i> Configurações </a>
+          </div>
+          <div className="flex-none">
+            <label htmlFor="app-drawer" className="btn btn-square btn-ghost">
+              <i className="fi fi-br-menu-burger text-xl"></i>
+            </label>
+          </div>
+        </nav>
+
+        <main className="flex-1 md:ml-4 max-h-screen overflow-y-auto pb-10">
+          {children}
+        </main>
+      </div>
+
+      {/* Sidebar */}
+      <div className="drawer-side">
+        <label htmlFor="app-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
+
+        <aside className="menu p-4 w-60 bg-base-200 text-base-content flex flex-col justify-between h-screen md:h-[calc(100vh-2rem)] md:rounded-box shadow-lg md:sticky md:top-0 overflow-y-auto">
+          <div>
+            <span className="text-lg font-bold block mb-4 border-b border-base-300 pb-2">
+              Olá,{" "}
+              <span className="text-primary">
+                {profile?.username || session?.user?.email || "visitante"}!
+              </span>
+            </span>
+
+            <ul className="space-y-1">
+              <li>
+                <a
+                  href="#hub"
+                  onClick={() => setActiveSection("hub")}
+                  className={linkClass("hub")}
+                  aria-current={activeSection === "hub" ? "page" : undefined}
+                >
+                  <HomeIcon className="size-6" /> Hub
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#labTest"
+                  onClick={() => setActiveSection("labTest")}
+                  className={linkClass("labTest")}
+                  aria-current={activeSection === "labTest" ? "page" : undefined}
+                >
+                  <PresentationChartBarIcon className="size-6" /> LabTest
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#showLive"
+                  onClick={() => setActiveSection("showLive")}
+                  className={linkClass("showLive")}
+                  aria-current={activeSection === "showLive" ? "page" : undefined}
+                >
+                  <SignalIcon className="size-6" /> ShowLive
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#styleLab"
+                  onClick={() => setActiveSection("styleLab")}
+                  className={linkClass("styleLab")}
+                  aria-current={activeSection === "styleLab" ? "page" : undefined}
+                >
+                  <SparklesIcon className="size-6" /> StyleLab
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#config"
+                  onClick={() => setActiveSection("config")}
+                  className={linkClass("config")}
+                  aria-current={activeSection === "config" ? "page" : undefined}
+                >
+                  <Cog6ToothIcon className="size-6" /> Configurações
+                </a>
+              </li>
+            </ul>
           </div>
 
-          <div className="space-y-2">
+          {/* Footer da sidebar */}
+          <div className="mt-6 space-y-2">
             <ThemeController />
             <button onClick={handleLogout} className="btn btn-error w-full">
               <i className="fi fi-br-sign-out-alt"></i> Sair
             </button>
           </div>
-        </div>
-      </aside>
-
-      {/* Mobile navbar + drawer */}
-      <div className="flex-1 flex flex-col">
-        <nav className="navbar bg-base-200 border-b border-base-300 px-4 md:hidden rounded-lg">
-          <div className="flex-1">
-            <span className="text-lg font-bold">
-              Olá, <span className="text-primary">{profile?.username || session?.user?.email || "visitante"}!</span>
-            </span>
-          </div>
-          <div className="flex-none">
-            <button className="btn btn-square btn-ghost" onClick={() => setIsOpen(!isOpen)}>
-              <i className="fi fi-br-menu-burger text-xl"></i>
-            </button>
-          </div>
-        </nav>
-
-        {/* Drawer mobile */}
-        <div className={`fixed inset-0 z-50 md:hidden transition-transform ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
-          <div className="absolute inset-0 bg-black/50" onClick={() => setIsOpen(false)}></div>
-          <aside className="relative w-64 h-full bg-base-200 p-4 flex flex-col justify-between overflow-y-auto">
-            <div className="space-y-2">
-              <a href="#hub" className={linkClass("hub")} onClick={() => setIsOpen(false)}> <i className="fi fi-br-home"></i> Hub </a>
-              <a href="#labTest" className={linkClass("labTest")} onClick={() => setIsOpen(false)}> <i className="fi fi-br-dashboard"></i> LabTest </a>
-              <a href="#showLive" className={linkClass("showLive")} onClick={() => setIsOpen(false)}> <i className="fi fi-br-stage-theatre"></i> ShowLive </a>
-              <a href="#styleLab" className={linkClass("styleLab")} onClick={() => setIsOpen(false)}> <i className="fi fi-br-palette"></i> Style Lab </a>
-              <a href="#config" className={linkClass("config")} onClick={() => setIsOpen(false)}> <i className="fi fi-br-settings"></i> Configurações </a>
-            </div>
-
-            <div className="space-y-2">
-              <ThemeController />
-              <button onClick={() => { handleLogout(); setIsOpen(false); }} className="btn btn-error w-full">
-                <i className="fi fi-br-sign-out-alt"></i> Sair
-              </button>
-            </div>
-          </aside>
-        </div>
+        </aside>
       </div>
     </div>
   );

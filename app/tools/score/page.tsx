@@ -14,7 +14,7 @@ type MissionType = {
   "sub-mission"?: {
     submission: string;
     type: string[];
-    points?: number | number[];
+    points: number | number[];
   }[];
 };
 

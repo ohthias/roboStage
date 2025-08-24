@@ -34,7 +34,7 @@ export default function ShowLiveHub() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-y-auto">
       <section className="bg-base-200 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300">
         <div>
           <h2 className="text-base-content font-bold mb-2 text-3xl">

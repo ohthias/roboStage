@@ -8,21 +8,23 @@ import ShowLiveHub from "./showLiveHub";
 import Navbar from "./component/Navbar";
 import AccountSettings from "./AccountSettings";
 import { useUser } from "../context/UserContext";
-import ComingSoon from "@/components/ComingSoon";
 import { StyleLab } from "@/components/StyleLab";
+import LabTestForm from "@/components/LabTestForm";
+import ComingSoon from "@/components/ComingSoon";
 
 export default function Dashboard() {
   const { session, profile, loading } = useUser();
   const router = useRouter();
-  const [currentSection, setCurrentSection] = useState<string>("");
+  const [currentSection, setCurrentSection] = useState<string>("hub");
 
+  // Atualiza seção conforme hash
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
-    setCurrentSection(hash);
+    if (hash) setCurrentSection(hash);
 
     const handleHashChange = () => {
       const newHash = window.location.hash.replace("#", "");
-      setCurrentSection(newHash);
+      if (newHash) setCurrentSection(newHash);
     };
 
     window.addEventListener("hashchange", handleHashChange);
@@ -31,17 +33,45 @@ export default function Dashboard() {
     };
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/join");
-  };
-
+  // Redireciona se não estiver logado
   useEffect(() => {
     if (!loading && !session) {
       router.push("/join");
     }
   }, [loading, session, router]);
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/join");
+  };
+
+  // Conteúdo da seção atual
+  const currentSectionContent = () => {
+    switch (currentSection) {
+      case "hub":
+        return (
+            <div className="flex flex-col md:flex-row items-center justify-between p-4 md:p-8 bg-neutral rounded-box shadow-xl md:h-[calc(50vh-2rem)]">
+            <div className="mb-4 md:mb-0 md:mr-8 flex-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-neutral-content mb-2">Bem-vindo ao Hub!</h1>
+              <p className="text-neutral-content text-base md:text-lg">Explore os recursos disponíveis e aproveite a experiência.</p>
+            </div>
+            <img
+              src="/images/icons/DashboardBanner.png"
+              alt="Banner do Hub"
+              className="w-auto max-w-xs md:max-w-md h-auto md:h-full mb-4 md:mb-6"
+            />
+            </div>
+        );
+      case "showLive":
+        return <ShowLiveHub />;
+      case "labTest":
+        return <ComingSoon />;
+      case "styleLab":
+        return <StyleLab />;
+      case "config":
+        return <AccountSettings />;
+    }
+  };
 
   if (loading) {
     return (
@@ -51,29 +81,14 @@ export default function Dashboard() {
     );
   }
 
-  const currentSectionContent = () => {
-    switch (currentSection) {
-      case "showLive":
-        return <ShowLiveHub />;
-      case "labTest":
-        return <ComingSoon />;
-      case "styleLab":
-        return <StyleLab />;
-      case "config":
-        return <AccountSettings />;
-      default:
-        return <></>;
-    }
-  };
-
   return (
-    <div className="flex flex-col gap-4 w-full p-4">
-      <Navbar profile={profile} session={session} handleLogout={handleLogout} />
-
-      {/* Conteúdo principal */}
-      <main className="flex gap-4 flex-col w-full flex-1 overflow-y-auto pt-4">
-        {currentSectionContent()}
-      </main>
+    <div className="">
+      <Navbar
+        profile={profile}
+        session={session}
+        handleLogout={handleLogout}
+        children={currentSectionContent()}
+      />
     </div>
   );
 }

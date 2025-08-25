@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "./context/UserContext";
+import { ToastProvider } from "./context/ToastContext";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -22,7 +23,9 @@ export default function RootLayout({
     <html lang="pt-br">
       <body className={`${roboto.variable} antialiased`}>
         <UserProvider>
-          {children}
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </UserProvider>
       </body>
     </html>

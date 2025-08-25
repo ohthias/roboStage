@@ -129,6 +129,7 @@ export function EventModal({ session, onClose }: EventModalProps) {
                     <option value="">Selecione a temporada</option>
                     <option value="UNEARTHED">UNEARTHED</option>
                     <option value="SUBMERGED">SUBMERGED</option>
+                    <option value="MASTERPIECE">MASTERPIECE</option>
                   </select>
                 </div>
               )}

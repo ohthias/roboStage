@@ -1,217 +1,4 @@
 {
-  "superpowered": [
-     {
-      "id": "EL",
-      "name": "INSPEÇÃO DE EQUIPAMENTOS",
-      "mission": "O robô e todos os equipamentos cabem em sua totalidade na área de lançamento e respeitam o limite de altura",
-      "points": 20,
-      "equipaments" : false,
-      "type": ["switch", null, null]
-    },
-    {
-      "id": "M01",
-      "name": "MODELO DO PROJETO DE INOVAÇÃO",
-      "mission": "Se o modelo do Projeto de Inovação da equipe estiver pelo menos parcialmente dentro da área alvo da usina de hidrogênio",
-      "points": "10",
-      "equipaments":false,
-      "type": ["switch", null, null]
-    },
-    {
-      "id": "M02",
-      "name": "PLATAFORMA DE PETRÓLEO",
-      "mission": "Se uma unidade de combustível estiver dentro do caminhão-tanque",
-      "points": "5",
-      "equipaments":false,
-      "type": ["range", 0, 3],
-      "sub-mission": [
-        {
-          "submission": "Bônus: Se houver, pelo menos, uma unidade de combustível no caminhão-tanque e o caminhão estiver pelo menos parcialmente sobre a área alvo do posto de abastecimento",
-          "points": 10,
-          "type": ["switch", null, null]
-        }
-      ]
-    },
-    {
-      "id": "M03",
-      "name": "ARMAZENAMENTO DE ENERGIA",
-      "mission": "Se uma unidade de energia estiver completamente dentro do depósito de energia (máximo de três)",
-      "points": "10",
-      "equipaments":true,
-      "type": ["range", 0, 3],
-      "sub-mission": [
-        {
-          "submission": "Se a unidade de energia for completamente removida da bandeja do modelo do armazenamento de energia",
-          "points": 5,
-          "type": ["switch", null, null]
-        }
-      ]
-    },
-    {
-      "id": "M04",
-      "name": "FAZENDA SOLAR",
-      "mission": "Se uma unidade de energia for completamente removida de seu círculo inicial",
-      "points": "5",
-      "equipaments":false,
-      "type": ["range", 0, 3],
-      "sub-mission": [
-        {
-          "submission": "Bônus: Se todas as três unidades de energia forem completamente removidas de seus círculos iniciais",
-          "points": 5,
-          "type": ["switch", null, null]
-        }
-      ]
-    },
-    {
-      "id": "M05",
-      "name": "REDE ELÉTRICA INTELIGENTE (SMART GRID)",
-      "mission": "Se o conector laranja da sua arena estiver completamente levantado",
-      "points": "20",
-      "equipaments":true,
-      "type": ["switch", null, null],
-      "sub-mission": [
-        {
-          "submission": "Bônus: Se os conectores laranjas de ambas as equipes estiverem completamente levantados",
-          "points": 10,
-          "type": ["switch", null, null]
-        }
-      ]
-    },
-    {
-      "id": "M06",
-      "name": "CARRO HÍBRIDO",
-      "mission": "Se o carro híbrido não estiver mais tocando na rampa",
-      "points": "10",
-      "equipaments":false,
-      "type": ["switch", null, null],
-      "sub-mission": [
-        {
-          "submission": "Se a unidade híbrida estiver dentro do carro híbrido",
-          "points": 10,
-          "type": ["switch", null, null]
-        }
-      ]
-    },
-    {
-      "id": "M07",
-      "name": "TURBINA EÓLICA",
-      "mission": "Se uma unidade de energia não estiver mais tocando na turbina eólica",
-      "points": "10",
-      "equipaments":false,
-      "type": ["range", 0, 3]
-    },
-    {
-      "id": "M08",
-      "name": "ASSISTIR TELEVISÃO",
-      "mission": "Se a televisão estiver completamente levantada",
-      "points": "10",
-      "equipaments":true,
-      "type": ["switch", null, null],
-      "sub-mission": [
-        {
-          "submission": "Se uma unidade de energia estiver completamente dentro do encaixe verde da televisão",
-          "points": 10,
-          "type": ["switch", null, null]
-        }
-      ]
-    },
-    {
-      "id": "M09",
-      "name": "DINOSSAURO DE BRINQUEDO",
-      "mission": "Se o dinossauro de brinquedo estiver completamente dentro da área do robô esquerda",
-      "points": "10",
-      "equipaments":false,
-      "type": ["switch", null, null],
-      "sub-mission": [
-        {
-          "submission": "Se a tampa do dinossauro de brinquedo estiver completamente fechada",
-          "points": [10,20],
-          "type": ["switch", "Unidade de Bateria", "Bateria Recarregável"]
-        }
-      ]
-    },
-    {
-      "id": "M10",
-      "name": "USINA ELÉTRICA",
-      "mission": "Se uma unidade de energia não estiver mais tocando na usina elétrica",
-      "points": "5",
-      "equipaments":false,
-      "type": ["range", 0, 3],
-      "sub-mission": [
-        {
-          "submission": "Bônus: Se todas as três unidades de energia não estiverem mais tocando na usina elétrica",
-          "points": 10,
-          "type": ["switch", null, null]
-        }
-      ]
-    },
-    {
-      "id": "M11",
-      "name": "BARRAGEM HIDRELÉTRICA",
-      "mission": "Se a unidade de energia não estiver mais tocando na barragem hidrelétrica",
-      "points": "20",
-      "equipaments":false,
-      "type": ["switch", null, null]
-    },
-    {
-      "id": "M12",
-      "name": "RESERVATÓRIO DE ÁGUA",
-      "mission": "Se uma unidade de água com alça estiver completamente dentro do reservatório de água, tocando no tapete",
-      "points": "5",
-      "equipaments":true,
-      "type": ["range", 0, 3],
-      "sub-mission": [
-        {
-          "submission": "Se uma unidade de água com alça estiver pendurada em um único gancho vermelho",
-          "points": 10,
-          "type": ["range", 0, 2]
-        }
-      ]
-    },
-    {
-      "id": "M13",
-      "name": "POWER-TO-X",
-      "mission": "Se uma unidade de energia estiver completamente dentro da área alvo da usina de hidrogênio (máx. de três)",
-      "points": "5",
-      "equipaments":false,
-      "type": ["range", 0, 3]
-    },
-    {
-      "id": "M14",
-      "name": "FÁBRICA DE BRINQUEDOS",
-      "mission": "Se uma unidade de energia estiver pelo menos parcialmente dentro do espaço na parte de trás da fábrica de brinquedos (ou sobre o funil vermelho) (máximo de três)",
-      "points": "5",
-      "equipaments":true,
-      "type": ["range", 0, 3],
-      "sub-mission": [
-        {
-          "submission": "Se o mini dinossauro for solto",
-          "points": 10,
-          "type": ["switch", null, null]
-        }
-      ]
-    },
-    {
-      "id": "M15",
-      "name": "BATERIA RECARREGÁVEL",
-      "mission": "Se uma unidade de energia estiver completamente dentro da área alvo da bateria recarregável (máx. de três)",
-      "points": "5",
-      "equipaments":true,
-      "type": ["range", 0, 3]
-    },
-    {
-      "id": "PT",
-      "name": "TOKENS DE PRECISÃO",
-      "mission": "Número de tokens de precisão restantes",
-      "points": [0, 10, 15, 25, 35, 50, 50],
-      "type": ["range", 0, 6]
-    },
-    {
-      "id": "GP",
-      "name": "Gracious Professionalism®",
-      "mission": "Gracious Professionalism® demonstrados durante o round:",
-      "type": ["switch", "Em desenvolvimento", "Comprido", "Excede"]
-    }
-  ],
   "masterpiece": [
      {
       "id": "EL",
@@ -232,13 +19,13 @@
      {
       "id": "M02",
       "name": "Mudança de cena teatral",
-      "mission": "",
-      "points": [0, 10, 15, 25, 35, 50, 50],
+      "mission": "A bandeira vermelha do seu teatro está baixa e a cor da cena ativa está?",
+      "points": [10,20,30],
       "equipaments" : false,
       "type": ["switch", "Azul", "Rosa", "Laranja"],
       "sub-mission": [
         {
-          "submission": "Se a alavanca laranja estiver completamente levantada",
+          "submission": "As cenas ativas de ambas as equipes correspondem?",
           "points": [20,30,10],
           "type": ["switch", "Azul", "Rosa", "Laranja"]
         }
@@ -378,14 +165,14 @@
         {
           "submission": "Se um destino-alvo tiver pelo menos um membro do público completamente dentro dele",
           "points": 5,
-          "type": ["switch", 0, 5]
+          "type": ["range", 0, 7]
         }
       ]
     },
     {
       "id":"M15",
       "name":"ENTREGA DE ESPECIALISTAS",
-      "mission": "• Se os seguintes especialistas estiverem, pelo menos parcialmente, em seus destinos-alvo (Sam, o gerente de palco, no Set de Filmagens, Anna, a curadora, no Museu, Noah, o engenheiro de som, no Show de Música, Izzy, a skatista, na Pista de Skate, Emily, a diretora de efeitos visuais, no Cinema)",
+      "mission": "Se os seguintes especialistas estiverem, pelo menos parcialmente, em seus destinos-alvo (Sam, o gerente de palco, no Set de Filmagens, Anna, a curadora, no Museu, Noah, o engenheiro de som, no Show de Música, Izzy, a skatista, na Pista de Skate, Emily, a diretora de efeitos visuais, no Cinema)",
       "points": 10,
       "equipaments":false,
       "type": ["range", 0, 5]
@@ -396,12 +183,6 @@
       "mission": "Número de tokens de precisão restantes",
       "points": [0, 10, 15, 25, 35, 50, 50],
       "type": ["range", 0, 6]
-    },
-    {
-      "id": "GP",
-      "name": "Gracious Professionalism®",
-      "mission": "Gracious Professionalism® demonstrados durante o round:",
-      "type": ["switch", "Em desenvolvimento", "Comprido", "Excede"]
     }
   ],
   "submerged": [
@@ -610,12 +391,6 @@
       "mission": "Número de tokens de precisão restantes",
       "points": [0, 10, 15, 25, 35, 50, 50],
       "type": ["range", 0, 6]
-    },
-    {
-      "id": "GP",
-      "name": "Gracious Professionalism®",
-      "mission": "Gracious Professionalism® demonstrados durante o round:",
-      "type": ["switch", "Em desenvolvimento", "Comprido", "Excede"]
     }
   ],
   "unearthed": [
@@ -802,12 +577,6 @@
       "mission": "Número de tokens de precisão restantes",
       "points": [0, 10, 15, 25, 35, 50, 50],
       "type": ["range", 0, 6]
-    },
-    {
-      "id": "GP",
-      "name": "Gracious Professionalism®",
-      "mission": "Gracious Professionalism® demonstrados durante o round:",
-      "type": ["switch", "Em desenvolvimento", "Comprido", "Excede"]
     }
   ]
 }

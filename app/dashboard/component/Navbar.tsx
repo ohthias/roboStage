@@ -1,5 +1,12 @@
-"use client"
+"use client";
 import { ThemeController } from "@/components/ui/themeController";
+import {
+  Cog6ToothIcon,
+  HomeIcon,
+  PresentationChartBarIcon,
+  SignalIcon,
+  SparklesIcon,
+} from "@heroicons/react/16/solid";
 import { useState } from "react";
 
 interface NavbarProps {
@@ -12,128 +19,120 @@ export default function Navbar({
   profile,
   session,
   handleLogout,
-}: NavbarProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  children,
+}: React.PropsWithChildren<NavbarProps>) {
+  const [activeSection, setActiveSection] = useState<string>("hub");
+
+  const linkClass = (section: string) =>
+    `btn btn-ghost justify-start gap-2 w-full transition-colors duration-200
+     ${activeSection === section
+      ? "bg-base-300 text-primary font-semibold"
+      : "hover:bg-base-200"
+    }`;
 
   return (
-    <div className="drawer drawer-start">
-      <input
-        id="navbar-drawer"
-        type="checkbox"
-        className="drawer-toggle"
-        checked={isOpen}
-        readOnly
-      />
+    <div className="drawer md:drawer-open max-h-screen overflow-y-hidden p-4">
+      <input id="app-drawer" type="checkbox" className="drawer-toggle" />
 
-      <div className="drawer-content flex flex-col">
-        <nav className="navbar bg-base-200 border-b border-base-300 rounded-lg px-4">
-          <div className="flex-1">
-            <span className="text-xl font-bold text-base-content">
-              Olá, {profile?.username || session?.user?.email || "visitante"}!
+      {/* Conteúdo principal */}
+      <div className="drawer-content flex flex-col gap-4">
+        {/* Navbar mobile */}
+        <nav className="navbar bg-base-200 border-b border-base-300 px-4 md:hidden flex flex-row justify-between rounded-box shadow-md">
+          <div className="flex-1 flex items-center">
+            <span className="text-lg font-bold">
+              Olá,{" "}
+              <span className="text-primary">
+                {profile?.username || session?.user?.email || "visitante"}!
+              </span>
             </span>
           </div>
-
-          {/* Botões desktop */}
-          <div className="flex-none space-x-2 hidden md:flex">
-            <a href="#hub"
-              className="btn btn-ghost leading-none place-content-center"
-            >
-              <i className="fi fi-br-home"></i> Hub
-            </a>
-            <a href="#labTest"
-              className="btn btn-ghost leading-none place-content-center"
-            >
-              <i className="fi fi-br-dashboard"></i> LabTest
-            </a>
-            <a href="#showLive"
-              className="btn btn-ghost leading-none place-content-center"
-            >
-              <i className="fi fi-br-stage-theatre"></i> ShowLive
-            </a>
-            <a href="#styleLab"
-              className="btn btn-ghost leading-none place-content-center"
-            >
-              <i className="fi fi-br-palette"></i> Style Lab
-            </a>
-            <a href="#config"
-              className="btn btn-ghost leading-none place-content-center"
-            >
-              <i className="fi fi-br-settings"></i> Configurações
-            </a>
-            <button
-              onClick={handleLogout}
-              className="btn btn-error leading-none"
-            >
-              <i className="fi fi-br-sign-out-alt"></i> Sair
-            </button>
-            <ThemeController />
-          </div>
-
-          {/* Botão mobile */}
-          <div className="flex-none md:hidden">
-            <label
-              htmlFor="navbar-drawer"
-              className="btn btn-square btn-ghost"
-              onClick={() => setIsOpen(!isOpen)}
-            >
+          <div className="flex-none">
+            <label htmlFor="app-drawer" className="btn btn-square btn-ghost">
               <i className="fi fi-br-menu-burger text-xl"></i>
             </label>
           </div>
         </nav>
+
+        <main className="flex-1 md:ml-4 max-h-screen overflow-y-auto pb-10">
+          {children}
+        </main>
       </div>
 
-      {/* Sidebar drawer ocupando toda a altura */}
+      {/* Sidebar */}
       <div className="drawer-side">
-        <label
-          htmlFor="navbar-drawer"
-          className="drawer-overlay"
-          onClick={() => setIsOpen(false)}
-        ></label>
-        <div className="menu flex flex-col justify-between h-full p-4 w-64 bg-base-200">
-          {/* Parte superior */}
-          <div className="space-y-2 flex flex-col">
-            <a
-              href="#hub"
-              onClick={() => {
-                setIsOpen(false);
-              }}
-              className="btn btn-ghost flex place-content-center justify-start gap-2"
-            >
-              <i className="fi fi-br-home"></i> Hub
-            </a>
-            <a
-              href="#styleLab"
-              onClick={() => {
-                setIsOpen(false);
-              }}
-              className="btn btn-ghost flex place-content-center justify-start gap-2"
-            >
-              <i className="fi fi-br-home"></i> Style Lab
-            </a>
-            <a
-              href="#config"
-              onClick={() => {
-                setIsOpen(false);
-              }}
-              className="btn btn-ghost flex place-content-center justify-start gap-2"
-            >
-              <i className="fi fi-br-settings"></i> Configurações
-            </a>
+        <label htmlFor="app-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
+
+        <aside className="menu p-4 w-60 bg-base-200 text-base-content flex flex-col justify-between h-screen md:h-[calc(100vh-2rem)] md:rounded-box shadow-lg md:sticky md:top-0 overflow-y-auto">
+          <div>
+            <span className="text-lg font-bold block mb-4 border-b border-base-300 pb-2">
+              Olá,{" "}
+              <span className="text-primary">
+                {profile?.username || session?.user?.email || "visitante"}!
+              </span>
+            </span>
+
+            <ul className="space-y-1">
+              <li>
+                <a
+                  href="#hub"
+                  onClick={() => setActiveSection("hub")}
+                  className={linkClass("hub")}
+                  aria-current={activeSection === "hub" ? "page" : undefined}
+                >
+                  <HomeIcon className="size-6" /> Hub
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#labTest"
+                  onClick={() => setActiveSection("labTest")}
+                  className={linkClass("labTest")}
+                  aria-current={activeSection === "labTest" ? "page" : undefined}
+                >
+                  <PresentationChartBarIcon className="size-6" /> LabTest
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#showLive"
+                  onClick={() => setActiveSection("showLive")}
+                  className={linkClass("showLive")}
+                  aria-current={activeSection === "showLive" ? "page" : undefined}
+                >
+                  <SignalIcon className="size-6" /> ShowLive
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#styleLab"
+                  onClick={() => setActiveSection("styleLab")}
+                  className={linkClass("styleLab")}
+                  aria-current={activeSection === "styleLab" ? "page" : undefined}
+                >
+                  <SparklesIcon className="size-6" /> StyleLab
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#config"
+                  onClick={() => setActiveSection("config")}
+                  className={linkClass("config")}
+                  aria-current={activeSection === "config" ? "page" : undefined}
+                >
+                  <Cog6ToothIcon className="size-6" /> Configurações
+                </a>
+              </li>
+            </ul>
           </div>
 
-          {/* Parte inferior */}
-          <div className="space-y-2">
-            <button
-              onClick={() => {
-                handleLogout();
-                setIsOpen(false);
-              }}
-              className="btn btn-error w-full"
-            >
+          {/* Footer da sidebar */}
+          <div className="mt-6 space-y-2">
+            <ThemeController />
+            <button onClick={handleLogout} className="btn btn-error w-full">
               <i className="fi fi-br-sign-out-alt"></i> Sair
             </button>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );

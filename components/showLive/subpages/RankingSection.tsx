@@ -81,7 +81,7 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-h-screen overlay-hidden">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-3xl font-bold text-primary">Ranking</h2>
         <div
@@ -107,9 +107,9 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
         </div>
       </div>
 
-      <div className="overflow-x-auto bg-base-100 rounded-lg shadow-md">
+      <div className="overflow-x-auto bg-base-100 rounded-lg shadow-md border border-base-200">
         <table className="table table-zebra w-full">
-          <thead className="bg-primary/25 border border-primary/50">
+          <thead className="bg-primary border border-primary/50">
             <tr>
               <th className="text-center text-primary-content">Posição</th>
               <th className="text-primary-content">Equipe</th>

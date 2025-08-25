@@ -19,7 +19,6 @@ export function StyleLab() {
   const [themes, setThemes] = useState<StyleLabTheme[]>([]);
   const { session } = useUser();
 
-  // 🔹 Buscar temas do usuário e gerar URLs corretas
   const fetchThemes = async () => {
     if (!session?.user) return;
 
@@ -32,10 +31,8 @@ export function StyleLab() {
     if (error || !themesData) return;
 
     setThemes(themesData);
-    console.log("Fetched themes:", themesData);
   };
 
-  // 🔹 Excluir tema com confirmação
   const deleteTheme = async (id_theme: number) => {
     const confirmed = confirm("Tem certeza que deseja excluir este tema?");
     if (!confirmed) return;

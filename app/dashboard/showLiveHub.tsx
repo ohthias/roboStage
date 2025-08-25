@@ -50,7 +50,7 @@ export default function ShowLiveHub() {
         </button>
       </section>
 
-      <section className="flex flex-wrap justify-around mt-4">
+      <section className="flex flex-wrap justify-start gap-2 mt-4">
         <div
           className="card w-72 flex flex-col justify-center items-center bg-base-100 border border-dashed border-base-300 cursor-pointer hover:bg-base-200 transition"
           onClick={() => setShowModal(true)}

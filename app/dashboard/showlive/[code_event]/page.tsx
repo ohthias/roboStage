@@ -10,8 +10,8 @@ import VisualizationSection from "@/components/showLive/subpages/VisualizationSe
 import ConfiguracoesSection from "@/components/showLive/subpages/ConfiguracoesSection";
 import Loader from "@/components/loader";
 import ComingSoon from "@/components/ComingSoon";
-import ThemeSection from "../subpages/ThemePage";
 import Sidebar from "@/components/showLive/Sidebar";
+import ThemeSection from "@/components/showLive/subpages/ThemePage";
 
 export default function EventAdminPage() {
   const params = useParams<{ code_event: string }>();

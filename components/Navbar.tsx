@@ -28,16 +28,15 @@ export function Navbar() {
       />
 
       <div className="drawer-content flex flex-col">
-        <div className="navbar bg-base-100 shadow-sm px-2">
+        <div className="navbar bg-base-200 shadow-sm px-2">
           <div className="flex-1">
             <a className="font-bold text-lg cursor-pointer" href="/">
-              robo<span className="text-primary">Stage</span>
+              Robo<span className="text-primary">Stage</span>
             </a>
           </div>
 
           <div className="hidden lg:flex flex-none">
             <ul className="menu menu-horizontal px-1 gap-5">
-              <li><a href="/about">Sobre</a></li>
               <li>
                 <details>
                   <summary>FLL Score</summary>
@@ -54,9 +53,6 @@ export function Navbar() {
               </li>
               <li>
                 <a href="/tools/quickbrick">QuickBrick Studio</a>
-              </li>
-              <li>
-                <a href="/fll-docs">Docs</a>
               </li>
               <li>
                 <a href="/universe" className="btn btn-accent btn-outline">

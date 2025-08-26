@@ -44,20 +44,19 @@ export default function UniversePage() {
       return;
     }
 
-
     router.push(`/${data.code_event}/${data.code}`);
     setLoading(false);
   };
 
   return (
-    <div className="flex flex-col min-h-screen justify-between">
+    <div className="flex flex-col justify-between">
       <Navbar />
 
       <main
         className="
     flex-1 relative bg-cover bg-center
     before:content-[''] before:absolute before:inset-0 before:bg-black/50
-    flex items-center justify-center
+    flex items-center justify-center min-h-[calc(100vh-1rem)]
   "
         style={{
           backgroundImage: "url('/images/fundoPadrao.gif')",

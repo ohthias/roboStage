@@ -1,6 +1,6 @@
 {
   "name": "robostage",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "private": true,
   "start": "react-scripts --max-http-header-size=1024 start",
   "scripts": {

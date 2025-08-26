@@ -25,10 +25,11 @@ export default function Navbar({
 
   const linkClass = (section: string) =>
     `btn btn-ghost justify-start gap-2 w-full transition-colors duration-200
-     ${activeSection === section
-      ? "bg-base-300 text-primary font-semibold"
-      : "hover:bg-base-200"
-    }`;
+     ${
+       activeSection === section
+         ? "bg-base-300 text-primary font-semibold"
+         : "hover:bg-base-200"
+     }`;
 
   return (
     <div className="drawer md:drawer-open max-h-screen overflow-y-hidden p-4">
@@ -46,21 +47,53 @@ export default function Navbar({
               </span>
             </span>
           </div>
-          <div className="flex-none">
+          <div className="flex-none flex items-center gap-2">
+            <a href="#config" onClick={() => setActiveSection("config")}>
+              <img
+                src="/images/icons/UserDefaultPhoto.jpg"
+                alt="Logo"
+                className="h-10 rounded-full "
+              />
+            </a>
             <label htmlFor="app-drawer" className="btn btn-square btn-ghost">
               <i className="fi fi-br-menu-burger text-xl"></i>
             </label>
           </div>
         </nav>
 
-        <main className="flex-1 md:ml-4 max-h-screen overflow-y-auto pb-10">
+        <main className="flex-1 md:ml-4 max-h-screen overflow-y-auto">
+          <nav className="flex justify-between items-center gap-2 flex-row mb-4 hidden sm:flex sticky top-0 z-10 backdrop-blur-md bg-base-300/30 p-2 rounded-box shadow-md">
+            <a
+              href="#hub"
+              onClick={() => setActiveSection("hub")}
+              className="text-lg font-bold"
+            >
+              Robo<strong className="text-primary">Stage</strong>
+            </a>
+            <a
+              href="#config"
+              onClick={() => setActiveSection("config")}
+              className="tooltip tooltip-bottom"
+              data-tip="Perfil"
+            >
+              <img
+                src="/images/icons/UserDefaultPhoto.jpg"
+                alt="Logo"
+                className="h-10 rounded-full hover:scale-105 hover:shadow-md transition-transform duration-200 ease-in-out"
+              />
+            </a>
+          </nav>
           {children}
         </main>
       </div>
 
       {/* Sidebar */}
       <div className="drawer-side">
-        <label htmlFor="app-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
+        <label
+          htmlFor="app-drawer"
+          aria-label="close sidebar"
+          className="drawer-overlay"
+        ></label>
 
         <aside className="menu p-4 w-60 bg-base-200 text-base-content flex flex-col justify-between h-screen md:h-[calc(100vh-2rem)] md:rounded-box shadow-lg md:sticky md:top-0 overflow-y-auto">
           <div>
@@ -87,7 +120,9 @@ export default function Navbar({
                   href="#labTest"
                   onClick={() => setActiveSection("labTest")}
                   className={linkClass("labTest")}
-                  aria-current={activeSection === "labTest" ? "page" : undefined}
+                  aria-current={
+                    activeSection === "labTest" ? "page" : undefined
+                  }
                 >
                   <PresentationChartBarIcon className="size-6" /> LabTest
                 </a>
@@ -97,7 +132,9 @@ export default function Navbar({
                   href="#showLive"
                   onClick={() => setActiveSection("showLive")}
                   className={linkClass("showLive")}
-                  aria-current={activeSection === "showLive" ? "page" : undefined}
+                  aria-current={
+                    activeSection === "showLive" ? "page" : undefined
+                  }
                 >
                   <SignalIcon className="size-6" /> ShowLive
                 </a>
@@ -107,21 +144,14 @@ export default function Navbar({
                   href="#styleLab"
                   onClick={() => setActiveSection("styleLab")}
                   className={linkClass("styleLab")}
-                  aria-current={activeSection === "styleLab" ? "page" : undefined}
+                  aria-current={
+                    activeSection === "styleLab" ? "page" : undefined
+                  }
                 >
                   <SparklesIcon className="size-6" /> StyleLab
                 </a>
               </li>
-              <li>
-                <a
-                  href="#config"
-                  onClick={() => setActiveSection("config")}
-                  className={linkClass("config")}
-                  aria-current={activeSection === "config" ? "page" : undefined}
-                >
-                  <Cog6ToothIcon className="size-6" /> Configurações
-                </a>
-              </li>
+              <li></li>
             </ul>
           </div>
 

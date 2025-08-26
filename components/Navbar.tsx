@@ -8,13 +8,13 @@ interface SeasonsData {
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [seasons, setSeasons] = useState<SeasonsData>({})
+  const [seasons, setSeasons] = useState<SeasonsData>({});
 
   useEffect(() => {
     fetch("/data/missions.json")
       .then((res) => res.json())
       .then((data) => setSeasons(data))
-      .catch((err) => console.error("Erro ao carregar as temporadas:", err))
+      .catch((err) => console.error("Erro ao carregar as temporadas:", err));
   }, []);
 
   return (
@@ -24,9 +24,10 @@ export function Navbar() {
         type="checkbox"
         className="drawer-toggle"
         checked={isOpen}
-        readOnly
+        onChange={() => setIsOpen(!isOpen)}
       />
 
+      {/* Conteúdo principal */}
       <div className="drawer-content flex flex-col">
         <div className="navbar bg-base-200 shadow-sm px-2">
           <div className="flex-1">
@@ -35,13 +36,14 @@ export function Navbar() {
             </a>
           </div>
 
+          {/* Menu desktop */}
           <div className="hidden lg:flex flex-none">
             <ul className="menu menu-horizontal px-1 gap-5">
               <li>
                 <details>
                   <summary>FLL Score</summary>
-                  <ul className="bg-base-200 rounded-t-none p-2 z-20">
-                    {Object.keys(seasons).map((seasonKey) => (
+                  <ul className="bg-base-200 rounded-t-none p-2 z-50">
+                    {Object.keys(seasons).sort().map((seasonKey) => (
                       <li key={seasonKey}>
                         <a href={`/tools/score#${seasonKey.toLowerCase()}`}>
                           {seasonKey.toUpperCase()}
@@ -60,7 +62,9 @@ export function Navbar() {
                 </a>
               </li>
               <li>
-                <a href="/join" className="btn btn-primary">Entrar</a>
+                <a href="/join" className="btn btn-primary">
+                  Entrar
+                </a>
               </li>
               <ThemeController />
             </ul>
@@ -96,14 +100,21 @@ export function Navbar() {
           onClick={() => setIsOpen(false)}
         ></label>
         <div className="menu flex flex-col justify-between h-full p-4 w-64 bg-base-200">
-          {/* Parte superior */}
           <div className="space-y-2">
-            <a className="font-bold text-lg cursor-pointer" href="/">
-              robo<span className="text-primary">Stage</span>
+            <a
+              className="font-bold text-lg cursor-pointer"
+              href="/"
+              onClick={() => setIsOpen(false)}
+            >
+              Robo<span className="text-primary">Stage</span>
             </a>
             <ul className="menu menu-vertical px-1 gap-5 w-full">
               <li>
-                <a href="/about" className="btn btn-ghost w-full justify-start">
+                <a
+                  href="/about"
+                  className="btn btn-ghost w-full justify-start"
+                  onClick={() => setIsOpen(false)}
+                >
                   Sobre
                 </a>
               </li>
@@ -113,9 +124,12 @@ export function Navbar() {
                     FLL Score
                   </summary>
                   <ul className="menu p-2 rounded-box mt-2 space-y-1 w-full">
-                    {Object.keys(seasons).map((seasonKey) => (
+                    {Object.keys(seasons).sort().map((seasonKey) => (
                       <li key={seasonKey}>
-                        <a href={`/tools/score#${seasonKey.toLowerCase()}`}>
+                        <a
+                          href={`/tools/score#${seasonKey.toLowerCase()}`}
+                          onClick={() => setIsOpen(false)}
+                        >
                           {seasonKey.toUpperCase()}
                         </a>
                       </li>
@@ -124,22 +138,38 @@ export function Navbar() {
                 </details>
               </li>
               <li>
-                <a href="/tools/quickbrick" className="btn btn-ghost w-full justify-start">
+                <a
+                  href="/tools/quickbrick"
+                  className="btn btn-ghost w-full justify-start"
+                  onClick={() => setIsOpen(false)}
+                >
                   QuickBrick Studio
                 </a>
               </li>
               <li>
-                <a href="/fll-docs" className="btn btn-ghost w-full justify-start">
+                <a
+                  href="/fll-docs"
+                  className="btn btn-ghost w-full justify-start"
+                  onClick={() => setIsOpen(false)}
+                >
                   Docs
                 </a>
               </li>
             </ul>
 
             <hr />
-            <a href="/universe" className="btn btn-accent btn-outline w-full">
+            <a
+              href="/universe"
+              className="btn btn-accent btn-outline w-full"
+              onClick={() => setIsOpen(false)}
+            >
               Embarcar em evento
             </a>
-            <a href="/join" className="btn btn-primary w-full">
+            <a
+              href="/join"
+              className="btn btn-primary w-full"
+              onClick={() => setIsOpen(false)}
+            >
               Entrar
             </a>
           </div>

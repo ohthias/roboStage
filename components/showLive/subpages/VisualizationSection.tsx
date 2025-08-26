@@ -173,7 +173,6 @@ export default function VisualizationSection({
                   {round}
                 </th>
               ))}
-              <th className="text-center">Maior Pontuação</th>
             </tr>
           </thead>
           <tbody>
@@ -186,9 +185,6 @@ export default function VisualizationSection({
                     {team.points[round] ?? 0}
                   </td>
                 ))}
-                <td className="text-center font-bold">
-                  {Math.max(...Object.values(team.points))}
-                </td>
               </tr>
             ))}
           </tbody>

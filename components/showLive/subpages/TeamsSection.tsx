@@ -1,8 +1,13 @@
 import { useToast } from "@/app/context/ToastContext";
 import CardDefault from "@/components/ui/Cards/CardDefault";
+import ModalConfirm, {
+  ModalConfirmRef,
+} from "@/components/ui/Modal/ModalConfirm";
+import ModalInput, { ModalInputRef } from "@/components/ui/Modal/ModalInput";
+import ModalPoints, { ModalPointsRef } from "@/components/ui/Modal/ModalPoints";
 import { supabase } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface PropsTeamsSection {
   event: {
@@ -24,6 +29,10 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
+
+  const modalEditRef = useRef<ModalInputRef>(null);
+  const modalDeleteRef = useRef<ModalConfirmRef>(null);
+  const modalPointsRef = useRef<ModalPointsRef>(null);
 
   const fetchTeams = async (id_event: number) => {
     const { data, error } = await supabase
@@ -81,7 +90,6 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
 
     if (error) {
       addToast("Erro ao adicionar equipe: " + error.message, "error");
-      addToast("Equipe adicionada com sucesso.", "success");
     } else if (data) {
       setTeamsList((prev) => [...prev, ...data]);
       setTeamName("");
@@ -91,40 +99,74 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
     setLoading(false);
   };
 
-  const handleDelete = async (id_team: number) => {
-    if (!confirm("Tem certeza que deseja excluir esta equipe?")) return;
+  const handleDelete = (team: Team) => {
+    modalDeleteRef.current?.open(
+      `Deseja realmente excluir a equipe "${team.name_team}"?`,
+      async () => {
+        const { error } = await supabase
+          .from("team")
+          .delete()
+          .eq("id_team", team.id_team);
 
-    const { error } = await supabase.from("team").delete().eq("id_team", id_team);
-
-    if (error) {
-      addToast("Erro ao excluir equipe: " + error.message, "error");
-      addToast("Equipe excluída com sucesso.", "success");
-    } else {
-      setTeamsList((prev) => prev.filter((t) => t.id_team !== id_team));
-      addToast("Equipe excluída com sucesso.", "success");
-    }
+        if (error) {
+          addToast("Erro ao excluir equipe: " + error.message, "error");
+        } else {
+          setTeamsList((prev) =>
+            prev.filter((t) => t.id_team !== team.id_team)
+          );
+          addToast("Equipe excluída com sucesso.", "success");
+        }
+      }
+    );
   };
 
   const handleEdit = (team: Team) => {
-    const novoNome = prompt("Digite o novo nome da equipe:", team.name_team);
-    if (novoNome && novoNome.trim() !== "") {
-      supabase
+    modalEditRef.current?.open(team.name_team, async (novoNome: string) => {
+      if (!novoNome.trim()) return;
+
+      const { error } = await supabase
         .from("team")
         .update({ name_team: novoNome.trim() })
-        .eq("id_team", team.id_team)
-        .then(({ error }) => {
-          if (error) {
-            alert("Erro ao editar equipe: " + error.message);
-          } else {
-            setTeamsList((prev) =>
-              prev.map((t) =>
-                t.id_team === team.id_team ? { ...t, name_team: novoNome.trim() } : t
-              )
-            );
-          }
-        });
-      addToast("Equipe editada com sucesso.", "success");
-    }
+        .eq("id_team", team.id_team);
+
+      if (error) {
+        addToast("Erro ao editar equipe: " + error.message, "error");
+      } else {
+        setTeamsList((prev) =>
+          prev.map((t) =>
+            t.id_team === team.id_team
+              ? { ...t, name_team: novoNome.trim() }
+              : t
+          )
+        );
+        addToast("Equipe editada com sucesso.", "success");
+      }
+    });
+  };
+
+  const handlePoints = (team: Team) => {
+    modalPointsRef.current?.open(
+      team.name_team,
+      team.points,
+      async (newPoints) => {
+        console.log(newPoints)
+        const { error } = await supabase
+          .from("team")
+          .update({ points: newPoints })
+          .eq("id_team", team.id_team);
+
+        if (error) {
+          addToast("Erro ao atualizar pontos: " + error.message, "error");
+        } else {
+          setTeamsList((prev) =>
+            prev.map((t) =>
+              t.id_team === team.id_team ? { ...t, points: newPoints } : t
+            )
+          );
+          addToast("Pontos atualizados com sucesso.", "success");
+        }
+      }
+    );
   };
 
   return (
@@ -169,14 +211,12 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
 
             const buttons = [
               { label: "Editar", onClick: () => handleEdit(team) },
-              { label: "Excluir", onClick: () => handleDelete(team.id_team) },
+              { label: "Excluir", onClick: () => handleDelete(team) },
             ];
             if (hasPoints) {
               buttons.unshift({
                 label: "Pontos",
-                onClick: () => {
-                  alert("Função de mudar pontuação ainda não implementada.");
-                },
+                onClick: () => handlePoints(team),
               });
             }
 
@@ -189,7 +229,9 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
               >
                 <CardDefault
                   title={team.name_team}
-                  description={`Criada em: ${new Date(team.created_at).toLocaleString()}`}
+                  description={`Criada em: ${new Date(
+                    team.created_at
+                  ).toLocaleString()}`}
                   buttons={buttons}
                   size="sm"
                 />
@@ -197,12 +239,27 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
             );
           })}
         </div>
-
       ) : (
         <p className="text-gray-500 text-sm text-center">
           Nenhuma equipe cadastrada ainda.
         </p>
       )}
+
+      {/* Modais */}
+      <ModalInput
+        ref={modalEditRef}
+        title="Editar equipe"
+        description="Digite o novo nome da equipe abaixo:"
+        confirmLabel="Salvar"
+        cancelLabel="Cancelar"
+      />
+      <ModalConfirm
+        ref={modalDeleteRef}
+        title="Confirmar exclusão"
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+      />
+      <ModalPoints ref={modalPointsRef} title="Editar Pontos" />
     </div>
   );
 }

@@ -81,7 +81,7 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
   );
 
   return (
-    <div className="space-y-4 min-h-screen overlay-hidden">
+    <div className="space-y-4 min-h-screen overlay-hidden px-4 md:px-8">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-3xl font-bold text-primary">Ranking</h2>
         <div

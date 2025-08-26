@@ -128,7 +128,7 @@ export default function TeamsSection({ event }: PropsTeamsSection) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 md:px-8">
       <h4 className="text-primary font-bold text-3xl">Equipes</h4>
 
       {/* Formulário */}

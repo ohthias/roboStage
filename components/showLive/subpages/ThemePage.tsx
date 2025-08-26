@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useUser } from "@/app/context/UserContext";
-import { toast } from "sonner";
+import { useToast } from "@/app/context/ToastContext";
+import PreviewEvent from "../PreviewEvent";
+import { EyeIcon, PaintBrushIcon } from "@heroicons/react/24/outline";
 
 interface StyleLabTheme {
-  id_theme: string;
+  id_theme: number;
   id_user: string;
   name?: string;
   background_url: string | null;
@@ -16,15 +18,32 @@ interface StyleLabTheme {
 
 export default function ThemeSection({ eventId }: { eventId: string }) {
   const { session } = useUser();
-  const [themes, setThemes] = useState<StyleLabTheme[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
-  const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
+  const { addToast } = useToast();
 
+  const [themes, setThemes] = useState<StyleLabTheme[]>([]);
+  const [presets, setPresets] = useState<StyleLabTheme[]>([]);
+  const [selectedTheme, setSelectedTheme] = useState<StyleLabTheme | null>(null);
+  const [typeEventId, setTypeEventId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"themes" | "preview">("themes");
+
+  // Fetch presets locais
   useEffect(() => {
-    if (session?.user) {
-      fetchThemes(session.user.id);
-    }
+    const fetchPresets = async () => {
+      try {
+        const response = await fetch("/data/presets.json");
+        const data = await response.json();
+        setPresets(data);
+      } catch (err) {
+        console.error("Erro ao carregar presets:", err);
+      }
+    };
+    fetchPresets();
+  }, []);
+
+  // Fetch temas do usuário
+  useEffect(() => {
+    if (session?.user) fetchThemes(session.user.id);
   }, [session]);
 
   const fetchThemes = async (userId: string) => {
@@ -34,16 +53,23 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
       .eq("id_user", userId)
       .order("created_at", { ascending: false });
 
-    if (error || !themesData) return;
+    if (error) {
+      console.error("Erro ao buscar temas:", error.message);
+      return;
+    }
+
     setThemes(themesData);
   };
 
+  // Fetch tema selecionado do evento
   useEffect(() => {
+    if (!themes.length) return;
+
     const fetchSelectedTheme = async () => {
       const { data, error } = await supabase
         .from("typeEvent")
-        .select("config")
-        .eq("id", parseInt(eventId))
+        .select("*")
+        .eq("id_event", parseInt(eventId))
         .single();
 
       if (error) {
@@ -51,102 +77,156 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
         return;
       }
 
-      if (data?.config?.preset?.url_background) {
-        setSelectedTheme(data.config.preset.url_background);
+      setTypeEventId(data.id);
+
+      const urlSaved = data?.config?.preset?.url_background;
+      if (urlSaved) {
+        const themeFound =
+          themes.find((t) => t.background_url === urlSaved) ||
+          presets.find((t) => t.background_url === urlSaved);
+        if (themeFound) setSelectedTheme(themeFound);
       }
     };
 
     fetchSelectedTheme();
-  }, []);
+  }, [eventId, themes, presets]);
 
   const handleSelectTheme = async (theme: StyleLabTheme) => {
+    if (!typeEventId) return;
+
     setLoading(true);
+    addToast("Salvando tema...", "info");
 
-    const { data: eventData, error: fetchError } = await supabase
-      .from("typeEvent")
-      .select("config")
-      .eq("id", parseInt(eventId))
-      .single();
+    try {
+      const { data: eventData, error: fetchError } = await supabase
+        .from("typeEvent")
+        .select("*")
+        .eq("id", typeEventId)
+        .single();
 
-    if (fetchError || !eventData) {
-      console.error(fetchError);
-      toast.error("Erro ao carregar configurações do evento.");
+      if (fetchError || !eventData) throw fetchError;
+
+      const currentConfigs = eventData.config ?? {};
+      const updatedConfigs = {
+        ...currentConfigs,
+        preset: {
+          ...currentConfigs.preset,
+          url_background: theme.background_url,
+          colors: theme.colors,
+        },
+      };
+
+      const { error: updateError } = await supabase
+        .from("typeEvent")
+        .update({ config: updatedConfigs })
+        .eq("id", typeEventId);
+
+      if (updateError) throw updateError;
+
+      setSelectedTheme(theme);
+      addToast("Tema atualizado com sucesso!", "success");
+    } catch (err) {
+      console.error(err);
+      addToast("Erro ao atualizar tema.", "error");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const currentConfigs = eventData.config ?? {};
-
-    const updatedConfigs = {
-      ...currentConfigs,
-      preset: {
-        url_background: theme.background_url,
-        colors: theme.colors,
-      },
-    };
-
-    const { error: updateError } = await supabase
-      .from("typeEvent")
-      .update({ config: updatedConfigs })
-      .eq("id", parseInt(eventId));
-
-    if (updateError) {
-      console.error(updateError);
-      toast.error("Erro ao salvar tema.");
-    } else {
-      setSelectedThemeId(theme.id_theme);
-      toast.success(`Tema "${theme.name || theme.id_theme}" selecionado!`);
-    }
-
-    setLoading(false);
   };
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-      {themes.map((theme, index) => (
-        <div
-          key={theme.id_theme || index}
-          onClick={() => handleSelectTheme(theme)}
-          className={`card w-72 h-52 bg-base-100 shadow-lg border relative overflow-hidden flex flex-col justify-end cursor-pointer transition ${
-            selectedThemeId === theme.id_theme
-              ? "ring-4 ring-primary scale-105"
-              : "hover:scale-105"
-          } ${selectedTheme === theme.background_url
-            ? "ring-4 ring-primary scale-105"
-            : "border-transparent"
-          }`}
-          style={{
-            backgroundImage: `url(${
-              theme.background_url ||
-              "/images/showLive/banners/banner_default.webp"
-            })`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        >
-          {/* overlay escura */}
-          <div className="absolute inset-0 bg-black/35 pointer-events-none" />
-
-          {/* conteúdo */}
-          <div className="relative z-10 p-4">
-            <h3 className="font-bold text-lg text-white drop-shadow">
-              {theme.name || `Tema #${theme.id_theme}`}
-            </h3>
-            <div className="flex justify-between items-center mt-2">
-              <div className="flex gap-2">
-                {theme.colors.map((c, i) => (
-                  <div
-                    key={`${theme.id_theme}-${i}`}
-                    className="w-6 h-6 rounded border border-base-300"
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
+  const renderThemeCard = (theme: StyleLabTheme) => (
+    <div
+      key={theme.id_theme}
+      onClick={() => handleSelectTheme(theme)}
+      className={`card relative bg-base-100 shadow-xl cursor-pointer transform transition hover:scale-105 rounded-xl overflow-hidden ${
+        selectedTheme?.id_theme === theme.id_theme ? "ring-2 ring-primary" : ""
+      }`}
+      style={{
+        backgroundImage: `url(${
+          theme.background_url || "/images/showLive/banners/banner_default.webp"
+        })`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <div className="absolute inset-0 bg-black/40" />
+      <div className="card-body relative z-10 justify-end">
+        <h3 className="card-title text-white drop-shadow">
+          {theme.name || `Tema #${theme.id_theme}`}
+        </h3>
+        <div className="flex gap-2 mt-2">
+          {theme.colors.map((c, i) => (
+            <div
+              key={`${theme.id_theme}-${i}`}
+              className="w-6 h-6 rounded border border-base-300"
+              style={{ backgroundColor: c }}
+            />
+          ))}
         </div>
-      ))}
-      {loading && <p className="col-span-full text-center">Salvando tema...</p>}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen px-4 md:px-8">
+      {/* Tabs */}
+      <div className="tabs tabs-lift mb-6">
+        <label
+          className={`tab flex items-center gap-2 ${
+            activeTab === "themes" ? "tab-active" : ""
+          }`}
+          onClick={() => setActiveTab("themes")}
+        >
+          <PaintBrushIcon className="w-5 h-5" />
+          Temas
+        </label>
+        <label
+          className={`tab flex items-center gap-2 ${
+            activeTab === "preview" ? "tab-active" : ""
+          }`}
+          onClick={() => setActiveTab("preview")}
+        >
+          <EyeIcon className="w-5 h-5" />
+          Pré-visualização
+        </label>
+      </div>
+
+      {/* Temas */}
+      {activeTab === "themes" && (
+        <>
+          <h4 className="text-primary font-bold text-3xl mb-2">Temas</h4>
+          <p className="text-base-content/80">
+            Selecione um tema para o seu evento. Seja ele criado no{" "}
+            <i>StyleLab</i> ou um dos presets disponíveis!
+          </p>
+
+          {/* Presets */}
+          <h4 className="text-xl font-bold mt-6 mb-6 border-b border-base-content max-w-max text-base-content">Presets</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {presets.map(renderThemeCard)}
+          </div>
+
+          {/* Seus temas */}
+          <h4 className="text-xl font-bold mt-6 mb-6 border-b border-base-content max-w-max text-base-content">Seus temas</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {themes.map(renderThemeCard)}
+          </div>
+        </>
+      )}
+
+      {/* Pré-visualização */}
+      {activeTab === "preview" && (
+        <div className="mt-8">
+          <h4 className="text-primary font-bold text-3xl">Pré-visualização</h4>
+          <p className="text-base-content/80 mb-4">
+            Veja como seu evento ficará com o tema selecionado.
+          </p>
+          <PreviewEvent
+            eventId={eventId}
+            backgroundUrl={selectedTheme?.background_url}
+            colors={selectedTheme?.colors || []}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -12,10 +12,12 @@ interface Equipe {
 
 interface TabelaEquipesProps {
   idEvent: string;
-  cor?: string;
+  primaryColor: string;
+  secondaryColor: string;
+  textColor?: string;
 }
 
-export default function TabelaEquipes({ idEvent, cor }: TabelaEquipesProps) {
+export default function TabelaEquipes({ idEvent, primaryColor, secondaryColor, textColor }: TabelaEquipesProps) {
   const [equipes, setEquipes] = useState<Equipe[]>([]);
   const [visibleRounds, setVisibleRounds] = useState<string[]>([]);
   const [rodadas, setRodadas] = useState<string[]>([]);
@@ -28,7 +30,6 @@ export default function TabelaEquipes({ idEvent, cor }: TabelaEquipesProps) {
       if (showLoader) setLoading(true);
 
       try {
-        // 1️⃣ Buscar equipes do evento na view
         const { data: teamsData, error: teamsError } = await supabase
           .from("view_team_json")
           .select("*")
@@ -36,7 +37,6 @@ export default function TabelaEquipes({ idEvent, cor }: TabelaEquipesProps) {
 
         if (teamsError) throw teamsError;
 
-        // 2️⃣ Buscar configuração do evento
         const { data: typeEvent, error: typeEventError } = await supabase
           .from("typeEvent")
           .select("*")
@@ -51,7 +51,6 @@ export default function TabelaEquipes({ idEvent, cor }: TabelaEquipesProps) {
           rounds: team.rounds || {},
         }));
 
-        // 3️⃣ Extrair todas as rodadas presentes no JSON de todas as equipes
         const allRounds = new Set<string>();
         equipesFormatadas.forEach(team =>
           Object.keys(team.rounds).forEach(r => allRounds.add(r))
@@ -59,13 +58,11 @@ export default function TabelaEquipes({ idEvent, cor }: TabelaEquipesProps) {
 
         const roundsArray = Array.from(allRounds);
 
-        // 4️⃣ Definir quais rodadas serão exibidas
         const roundsToShow =
           typeEvent.config.visibleRounds && typeEvent.config.visibleRounds.length > 0
             ? typeEvent.config.visibleRounds
             : roundsArray;
 
-        // 5️⃣ Ordenar equipes pelo maior valor de qualquer rodada visível
         const equipesOrdenadas = equipesFormatadas.sort((a, b) => {
           const maxA = Math.max(...roundsToShow.map((r: string | number) => a.rounds[r] ?? 0));
           const maxB = Math.max(...roundsToShow.map((r: string | number) => b.rounds[r] ?? 0));
@@ -107,7 +104,7 @@ export default function TabelaEquipes({ idEvent, cor }: TabelaEquipesProps) {
   return (
     <div className="overflow-x-auto w-full p-4">
       <table className="table table-zebra w-full bg-base-100">
-        <thead className="bg-primary text-primary-content">
+        <thead className="bg-primary text-primary-content" style={{ backgroundColor: secondaryColor, color: textColor }}>
           <tr>
             <th className="text-center">Posição</th>
             <th>Equipe</th>

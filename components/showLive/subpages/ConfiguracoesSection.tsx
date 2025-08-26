@@ -237,7 +237,7 @@ export default function ConfiguracoesSection({
   if (loading) return <div className="h-screen flex justify-center"><Loader /></div>;
 
   return (
-    <div>
+    <div className="px-4 md:px-8">
       <h2 className="font-bold text-primary text-3xl mb-4">
         Configurações do Evento
       </h2>

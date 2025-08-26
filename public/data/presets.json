@@ -1,0 +1,20 @@
+[
+  {
+    "id_theme": 1001,
+    "name": "Dark Neon",
+    "background_url": "/images/presets/dark_neon.webp",
+    "colors": ["#ff007c", "#00e5ff", "#ffffff"]
+  },
+  {
+    "id_theme": 1002,
+    "name": "Nature",
+    "background_url": "/images/presets/nature.webp",
+    "colors": ["#2ecc71", "#27ae60", "#145a32"]
+  },
+  {
+    "id_theme": 1003,
+    "name": "Sunset",
+    "background_url": "/images/presets/sunset.webp",
+    "colors": ["#ff9a76", "#ff6b6b", "#c44536"]
+  }
+]

@@ -1,4 +1,5 @@
 "use client";
+
 import { ThemeController } from "@/components/ui/themeController";
 import {
   Cog6ToothIcon,
@@ -32,13 +33,13 @@ export default function Navbar({
      }`;
 
   return (
-    <div className="drawer md:drawer-open max-h-screen overflow-y-hidden p-4">
+    <div className="drawer md:drawer-open h-screen">
       <input id="app-drawer" type="checkbox" className="drawer-toggle" />
 
       {/* Conteúdo principal */}
-      <div className="drawer-content flex flex-col gap-4">
+      <div className="drawer-content flex flex-col h-screen">
         {/* Navbar mobile */}
-        <nav className="navbar bg-base-200 border-b border-base-300 px-4 md:hidden flex flex-row justify-between rounded-box shadow-md">
+        <nav className="navbar bg-base-200 border-b border-base-300 px-4 md:hidden flex flex-row justify-between shadow-md">
           <div className="flex-1 flex items-center">
             <span className="text-lg font-bold">
               Olá,{" "}
@@ -52,7 +53,7 @@ export default function Navbar({
               <img
                 src="/images/icons/UserDefaultPhoto.jpg"
                 alt="Logo"
-                className="h-10 rounded-full "
+                className="h-10 rounded-full"
               />
             </a>
             <label htmlFor="app-drawer" className="btn btn-square btn-ghost">
@@ -61,7 +62,8 @@ export default function Navbar({
           </div>
         </nav>
 
-        <main className="flex-1 md:ml-4 max-h-screen overflow-y-auto">
+        {/* Área de conteúdo com scroll */}
+        <main className="flex-1 overflow-y-auto p-4 md:ml-4">
           <nav className="flex justify-between items-center gap-2 flex-row mb-4 hidden sm:flex sticky top-0 z-10 backdrop-blur-md bg-base-300/30 p-2 rounded-box shadow-md">
             <a
               href="#hub"
@@ -95,7 +97,7 @@ export default function Navbar({
           className="drawer-overlay"
         ></label>
 
-        <aside className="menu p-4 w-60 bg-base-200 text-base-content flex flex-col justify-between h-screen md:h-[calc(100vh-2rem)] md:rounded-box shadow-lg md:sticky md:top-0 overflow-y-auto">
+        <aside className="menu p-4 w-60 bg-base-200 text-base-content flex flex-col justify-between h-full md:rounded-r-box shadow-lg md:shadow-right md:sticky md:top-0 overflow-y-auto">
           <div>
             <span className="text-lg font-bold block mb-4 border-b border-base-300 pb-2">
               Olá,{" "}
@@ -151,7 +153,6 @@ export default function Navbar({
                   <SparklesIcon className="size-6" /> StyleLab
                 </a>
               </li>
-              <li></li>
             </ul>
           </div>
 

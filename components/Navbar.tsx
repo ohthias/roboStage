@@ -7,7 +7,6 @@ interface SeasonsData {
 }
 
 export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
   const [seasons, setSeasons] = useState<SeasonsData>({});
 
   useEffect(() => {
@@ -19,13 +18,7 @@ export function Navbar() {
 
   return (
     <div className="drawer drawer-start">
-      <input
-        id="navbar-drawer"
-        type="checkbox"
-        className="drawer-toggle"
-        checked={isOpen}
-        onChange={() => setIsOpen(!isOpen)}
-      />
+      <input id="navbar-drawer" type="checkbox" className="drawer-toggle" />
 
       {/* Conteúdo principal */}
       <div className="drawer-content flex flex-col">
@@ -53,19 +46,9 @@ export function Navbar() {
                   </ul>
                 </details>
               </li>
-              <li>
-                <a href="/tools/quickbrick">QuickBrick Studio</a>
-              </li>
-              <li>
-                <a href="/universe" className="btn btn-accent btn-outline">
-                  Embarcar em evento
-                </a>
-              </li>
-              <li>
-                <a href="/join" className="btn btn-primary">
-                  Entrar
-                </a>
-              </li>
+              <li><a href="/tools/quickbrick">QuickBrick Studio</a></li>
+              <li><a href="/universe" className="btn btn-accent btn-outline">Embarcar em evento</a></li>
+              <li><a href="/join" className="btn btn-primary">Entrar</a></li>
               <ThemeController />
             </ul>
           </div>
@@ -73,19 +56,11 @@ export function Navbar() {
           {/* Botão mobile */}
           <div className="flex-none lg:hidden space-x-2">
             <ThemeController />
-            <label
-              htmlFor="navbar-drawer"
-              className="btn btn-square btn-ghost"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
+            <label htmlFor="navbar-drawer" className="btn btn-square btn-ghost">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M4 6h16M4 12h16M4 18h16"/>
               </svg>
             </label>
           </div>
@@ -94,42 +69,21 @@ export function Navbar() {
 
       {/* Sidebar Drawer */}
       <div className="drawer-side">
-        <label
-          htmlFor="navbar-drawer"
-          className="drawer-overlay"
-          onClick={() => setIsOpen(false)}
-        ></label>
+        <label htmlFor="navbar-drawer" className="drawer-overlay"></label>
         <div className="menu flex flex-col justify-between h-full p-4 w-64 bg-base-200">
           <div className="space-y-2">
-            <a
-              className="font-bold text-lg cursor-pointer"
-              href="/"
-              onClick={() => setIsOpen(false)}
-            >
+            <a className="font-bold text-lg cursor-pointer" href="/">
               Robo<span className="text-primary">Stage</span>
             </a>
             <ul className="menu menu-vertical px-1 gap-5 w-full">
-              <li>
-                <a
-                  href="/about"
-                  className="btn btn-ghost w-full justify-start"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Sobre
-                </a>
-              </li>
+              <li><a href="/about" className="btn btn-ghost w-full justify-start">Sobre</a></li>
               <li>
                 <details className="w-full">
-                  <summary className="btn btn-ghost w-full justify-between">
-                    FLL Score
-                  </summary>
+                  <summary className="btn btn-ghost w-full justify-between">FLL Score</summary>
                   <ul className="menu p-2 rounded-box mt-2 space-y-1 w-full">
                     {Object.keys(seasons).sort().map((seasonKey) => (
                       <li key={seasonKey}>
-                        <a
-                          href={`/tools/score#${seasonKey.toLowerCase()}`}
-                          onClick={() => setIsOpen(false)}
-                        >
+                        <a href={`/tools/score#${seasonKey.toLowerCase()}`}>
                           {seasonKey.toUpperCase()}
                         </a>
                       </li>
@@ -137,41 +91,12 @@ export function Navbar() {
                   </ul>
                 </details>
               </li>
-              <li>
-                <a
-                  href="/tools/quickbrick"
-                  className="btn btn-ghost w-full justify-start"
-                  onClick={() => setIsOpen(false)}
-                >
-                  QuickBrick Studio
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/fll-docs"
-                  className="btn btn-ghost w-full justify-start"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Docs
-                </a>
-              </li>
+              <li><a href="/tools/quickbrick" className="btn btn-ghost w-full justify-start">QuickBrick Studio</a></li>
+              <li><a href="/fll-docs" className="btn btn-ghost w-full justify-start">Docs</a></li>
             </ul>
-
             <hr />
-            <a
-              href="/universe"
-              className="btn btn-accent btn-outline w-full"
-              onClick={() => setIsOpen(false)}
-            >
-              Embarcar em evento
-            </a>
-            <a
-              href="/join"
-              className="btn btn-primary w-full"
-              onClick={() => setIsOpen(false)}
-            >
-              Entrar
-            </a>
+            <a href="/universe" className="btn btn-accent btn-outline w-full">Embarcar em evento</a>
+            <a href="/join" className="btn btn-primary w-full">Entrar</a>
           </div>
         </div>
       </div>

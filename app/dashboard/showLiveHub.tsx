@@ -52,12 +52,16 @@ export default function ShowLiveHub() {
         </button>
       </section>
       <section className="flex flex-wrap justify-start gap-6 mt-6">
-        <div
-          className="card w-full sm:w-72 h-80 flex flex-col justify-center items-center bg-base-100 border-2 border-dashed border-base-300 rounded-lg cursor-pointer hover:bg-base-200 transition-all duration-300 shadow-md hover:shadow-lg"
-          onClick={() => setShowModal(true)}
-        >
-          <span className="text-xl font-semibold text-gray-400">+ Criar Novo Evento</span>
-        </div>
+        {events.length === 0 && (
+          <div
+            className="card w-full sm:w-72 h-80 flex flex-col justify-center items-center bg-base-100 border-2 border-dashed border-base-300 rounded-lg cursor-pointer hover:bg-base-200 transition-all duration-300 shadow-md hover:shadow-lg"
+            onClick={() => setShowModal(true)}
+          >
+            <span className="text-xl font-semibold text-gray-400">
+              + Criar Novo Evento
+            </span>
+          </div>
+        )}
 
         {loadingEvents ? (
           <Loader />
@@ -83,7 +87,9 @@ export default function ShowLiveHub() {
 
                 <p className="text-sm text-base-content">
                   Categoria:{" "}
-                  {event.config?.base === "FLL" ? "FIRST LEGO League" : "Robótica"}
+                  {event.config?.base === "FLL"
+                    ? "FIRST LEGO League"
+                    : "Robótica"}
                 </p>
 
                 {event.config?.base === "FLL" && (

@@ -215,9 +215,9 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
 
       {/* Pré-visualização */}
       {activeTab === "preview" && (
-        <div className="mt-8">
+        <div className="mt-8 max-w-screen">
           <h4 className="text-primary font-bold text-3xl">Pré-visualização</h4>
-          <p className="text-base-content/80 mb-4">
+          <p className="text-base-content/80 mb-4 text-sm sm:text-md">
             Veja como seu evento ficará com o tema selecionado.
           </p>
           <PreviewEvent

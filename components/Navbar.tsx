@@ -55,6 +55,7 @@ export function Navbar() {
 
           {/* Botão mobile */}
           <div className="flex-none lg:hidden space-x-2">
+            <a href="/join" className="btn btn-primary btn-sm">Entrar</a>
             <ThemeController />
             <label htmlFor="navbar-drawer" className="btn btn-square btn-ghost">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6"

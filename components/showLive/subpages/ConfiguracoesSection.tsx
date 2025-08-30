@@ -284,6 +284,7 @@ export default function ConfiguracoesSection({
               <option value="">Selecione</option>
               <option value="UNEARTHED">UNEARTHED</option>
               <option value="SUBMERGED">SUBMERGED</option>
+              <option value="MASTERPIECE">MASTERPIECE</option>
             </select>
           </div>
         )}

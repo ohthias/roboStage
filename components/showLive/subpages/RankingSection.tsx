@@ -81,11 +81,11 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
   );
 
   return (
-    <div className="space-y-4 min-h-screen overlay-hidden px-4 md:px-8">
+    <div className="space-y-4 overlay-hidden px-4 md:px-8">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-3xl font-bold text-primary">Ranking</h2>
         <div
-          className="tooltip tooltip-left"
+          className="tooltip tooltip-left tooltip-custom"
           data-tip="As pontuações estão -1 porque nenhuma foi lançada por voluntários."
         >
           <button className="btn btn-circle btn-sm btn-primary">
@@ -100,7 +100,8 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
+                d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 
+           8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
               />
             </svg>
           </button>
@@ -108,7 +109,7 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
       </div>
 
       <div className="overflow-x-auto bg-base-100 rounded-lg shadow-md border border-base-200">
-        <table className="table table-zebra w-full">
+        <table className="table table-zebra w-full overflow-x-auto">
           <thead className="bg-primary border border-primary/50">
             <tr>
               <th className="text-center text-primary-content">Posição</th>

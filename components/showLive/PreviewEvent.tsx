@@ -18,14 +18,14 @@ interface EventPreviewProps {
 export default function PreviewEvent({
   eventId,
   backgroundUrl,
-  colors
+  colors,
 }: EventPreviewProps) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [titleEvent, setTitleEvent] = useState<string>("Evento");
 
   useEffect(() => {
-    console.log(colors)
+    console.log(colors);
     const fetchTeams = async () => {
       const { data, error } = await supabase
         .from("team")
@@ -89,7 +89,10 @@ export default function PreviewEvent({
       <div className="absolute inset-0 bg-black/50 pointer-events-none rounded-lg" />
 
       <div className="relative z-10 w-full max-w-5xl text-center">
-        <h1 className={`text-4xl md:text-6xl font-bold text-white drop-shadow mb-8 text-[${colors[0]}]`}>
+        <h1
+          className={`text-4xl md:text-6xl font-bold text-white drop-shadow mb-8 text-[${colors[0]}]`}
+          style={{ color: colors[0] }}
+        >
           {titleEvent}
         </h1>
 
@@ -97,13 +100,16 @@ export default function PreviewEvent({
           <p className="text-white text-xl">Carregando equipes...</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-white border border-white/50 backdrop-blur-md">
-              <thead>
-                <tr className={`bg-[${colors[1]}]/20`}>
-                  <th className={`p-3 border-b border-white/50 text-[${colors[2]}]`}>#</th>
-                  <th className={`p-3 border-b border-white/50 text-[${colors[2]}]`}>Equipe</th>
+            <table className="table table-zebra w-full bg-base-100">
+              <thead
+                className="bg-primary text-primary-content"
+                style={{ backgroundColor: colors[1], color: colors[2] }}
+              >
+                <tr>
+                  <th className="text-center">Posição</th>
+                  <th>Equipe</th>
                   {pointCategories.map((cat) => (
-                    <th key={cat} className="p-3 border-b border-white/50">
+                    <th key={cat} className="text-center">
                       {cat}
                     </th>
                   ))}
@@ -111,24 +117,23 @@ export default function PreviewEvent({
               </thead>
               <tbody>
                 {teams.map((team, index) => (
-                  <tr key={team.id_team} className="hover:bg-white/20 transition">
-                    <td className="p-3 border-b border-white/50 text-center">
-                      {index + 1}
-                    </td>
-                    <td className="p-3 border-b border-white/50 text-center">
-                      {team.name_team}
-                    </td>
+                  <tr key={team.id_team}>
+                    <td className="text-center">{index + 1}</td>
+                    <td className="truncate">{team.name_team}</td>
                     {pointCategories.map((cat, i) => {
                       let value: number | undefined;
                       if (Array.isArray(team.points)) {
                         value = team.points[i];
-                      } else if (team.points && typeof team.points === "object") {
+                      } else if (
+                        team.points &&
+                        typeof team.points === "object"
+                      ) {
                         value = team.points[cat];
                       }
                       return (
                         <td
                           key={`${team.id_team}-${cat}`}
-                          className="p-3 border-b border-white/50 text-center"
+                          className="text-center"
                         >
                           {value ?? "-"}
                         </td>

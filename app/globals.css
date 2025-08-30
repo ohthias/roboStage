@@ -75,3 +75,8 @@
 @plugin "daisyui" {
   themes: "lightScheme" --default, "darkScheme";
 }
+
+.tooltip-custom[data-tip]::before {
+  @apply text-xs whitespace-normal;
+  max-width: 9rem !important;
+}

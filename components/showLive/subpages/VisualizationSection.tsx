@@ -119,7 +119,10 @@ export default function VisualizationSection({
         .eq("id", existingData.id);
 
       if (updateError)
-        addToast("Erro ao atualizar rodadas visíveis: " + updateError.message, "error");
+        addToast(
+          "Erro ao atualizar rodadas visíveis: " + updateError.message,
+          "error"
+        );
 
       addToast("Configuração de rodadas visíveis atualizada.", "success");
     } else {
@@ -128,13 +131,16 @@ export default function VisualizationSection({
         .insert({ id_event: idEvent, config: mergedConfig });
 
       if (insertError)
-        addToast("Erro ao inserir rodadas visíveis: " + insertError.message, "error");
+        addToast(
+          "Erro ao inserir rodadas visíveis: " + insertError.message,
+          "error"
+        );
       addToast("Configuração de rodadas visíveis salva.", "success");
     }
   };
 
   return (
-    <div className="space-y-6 px-4 md:px-8">
+    <div className="space-y-6 px-2 md:px-8">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-primary">
           Visualização do Ranking
@@ -154,16 +160,18 @@ export default function VisualizationSection({
           <button
             key={round}
             onClick={() => toggleRound(round)}
-            className={`btn btn-sm ${visibleRounds.includes(round) ? "btn-primary" : "btn-ghost"
-              }`}
+            className={`btn btn-sm ${
+              visibleRounds.includes(round) ? "btn-primary" : "btn-ghost"
+            }`}
           >
             {round}
           </button>
         ))}
       </div>
 
+      {/* Wrapper com scroll horizontal apenas na tabela */}
       <div className="overflow-x-auto bg-base-100 rounded-lg shadow-lg border border-base-300">
-        <table className="table table-zebra w-full">
+        <table className="table table-zebra w-full min-w-max">
           <thead className="bg-primary text-primary-content">
             <tr>
               <th className="text-center">Posição</th>
@@ -173,7 +181,6 @@ export default function VisualizationSection({
                   {round}
                 </th>
               ))}
-              <th className="text-center">Maior Pontuação</th>
             </tr>
           </thead>
           <tbody>
@@ -186,9 +193,6 @@ export default function VisualizationSection({
                     {team.points[round] ?? 0}
                   </td>
                 ))}
-                <td className="text-center font-bold">
-                  {Math.max(...Object.values(team.points))}
-                </td>
               </tr>
             ))}
           </tbody>

@@ -54,7 +54,7 @@ export function StyleLab() {
   }, [session]);
 
   return (
-    <div className="min-h-screen">
+    <div className="h-full overflow-y-auto">
       <section className="bg-base-200 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300">
         <div>
           <h2 className="text-base-content font-bold mb-2 text-3xl">
@@ -73,52 +73,64 @@ export function StyleLab() {
       </section>
 
       <section className="flex gap-4 flex-wrap mt-4">
-        <div
-          className="card w-72 h-52 flex flex-col justify-center items-center bg-base-100 border border-dashed border-base-300 cursor-pointer hover:bg-base-200 transition"
-          onClick={() => setShowModal(true)}
-        >
-          <span className="text-xl font-semibold text-gray-400">
-            + Criar Novo Tema
-          </span>
-        </div>
+        {themes.length === 0 && (
+          <div
+            className="card w-72 h-52 flex flex-col justify-center items-center bg-base-100 border border-dashed border-base-300 cursor-pointer hover:bg-base-200 transition"
+            onClick={() => setShowModal(true)}
+          >
+            <span className="text-xl font-semibold text-gray-400">
+              + Criar Novo Tema
+            </span>
+          </div>
+        )}
 
         {/* Cards dos temas existentes */}
         {themes.map((theme) => (
-            <div
+          <div
             key={theme.id_theme}
-            className="card w-72 h-52 bg-base-100 shadow-lg border border-base-300 relative overflow-hidden flex flex-col justify-end"
+            className="card w-full sm:w-72 bg-base-100 shadow-xl border border-base-300 relative overflow-hidden h-42"
             style={{
-              backgroundImage: `url(${theme.background_url || "/images/showLive/banners/banner_default.webp"})`,
+              backgroundImage: `url(${
+                theme.background_url ||
+                "/images/showLive/banners/banner_default.webp"
+              })`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
-            >
-            <div className="absolute inset-0 bg-black/35 pointer-events-none" />
-            <div className="relative z-10 p-4">
-              <h3 className="font-bold text-lg text-white drop-shadow">
-              {theme.name || `Tema #${theme.id_theme}`}
+          >
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black/40" />
+
+            {/* Conteúdo */}
+            <div className="card-body relative z-1 p-4 sm:p-5 justify-end">
+              <h3 className="card-title text-base sm:text-lg text-white drop-shadow line-clamp-2">
+                {theme.name || `Tema #${theme.id_theme}`}
               </h3>
-              <div className="flex justify-between items-center mt-2">
-              <div className="flex gap-2">
-                {theme.colors.map((c, i) => (
-                <div
-                  key={i}
-                  className="w-6 h-6 rounded border border-base-300"
-                  style={{ backgroundColor: c }}
-                />
-                ))}
-              </div>
-              <div className="card-actions">
-                <button
-                className="btn btn-error btn-sm"
-                onClick={() => deleteTheme(theme.id_theme)}
-                >
-                Excluir
-                </button>
-              </div>
+
+              <div className="flex flex-wrap justify-between items-center gap-2 mt-2">
+                {/* Cores */}
+                <div className="flex gap-1 sm:gap-2 flex-wrap">
+                  {theme.colors.map((c, i) => (
+                    <div
+                      key={i}
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded border border-base-300"
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+
+                {/* Ações */}
+                <div className="card-actions">
+                  <button
+                    className="btn btn-error btn-xs sm:btn-sm"
+                    onClick={() => deleteTheme(theme.id_theme)}
+                  >
+                    Excluir
+                  </button>
+                </div>
               </div>
             </div>
-            </div>
+          </div>
         ))}
       </section>
 
@@ -127,7 +139,7 @@ export function StyleLab() {
         <StyleLabModal
           onClose={() => {
             setShowModal(false);
-            fetchThemes(); // Atualiza lista após criar
+            fetchThemes();
           }}
         />
       )}

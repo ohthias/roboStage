@@ -11,6 +11,7 @@ import { useUser } from "../context/UserContext";
 import { StyleLab } from "@/components/StyleLab";
 import LabTestForm from "@/components/LabTestForm";
 import ComingSoon from "@/components/ComingSoon";
+import LabTestPage from "@/components/LabTestPage";
 
 export default function Dashboard() {
   const { session, profile, loading } = useUser();
@@ -65,7 +66,7 @@ export default function Dashboard() {
       case "showLive":
         return <ShowLiveHub />;
       case "labTest":
-        return <ComingSoon />;
+        return <LabTestPage />;
       case "styleLab":
         return <StyleLab />;
       case "config":

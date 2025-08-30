@@ -3,21 +3,21 @@ interface CardButton {
   onClick: () => void;
 }
 
-type CardSize = 'sm' | 'md' | 'lg';
+type CardSize = "sm" | "md" | "lg";
 
 interface PropCardOverlay {
   bgUrl?: string;
   title: string;
   description: string;
   buttons?: CardButton[];
-  badge?: string; 
+  badge?: string;
   size?: CardSize;
 }
 
 const sizeClasses: Record<CardSize, string> = {
-  sm: 'w-64 h-48',
-  md: 'w-80 h-56',
-  lg: 'w-96 h-64',
+  sm: "sm:w-64 sm:h-48",
+  md: "sm:w-80 sm:h-56",
+  lg: "sm:w-96 sm:h-64",
 };
 
 export default function CardOverlay({
@@ -26,12 +26,13 @@ export default function CardOverlay({
   description,
   buttons = [],
   badge,
-  size = 'md'
+  size = "md",
 }: PropCardOverlay) {
   return (
     <div
-      className={`relative card shadow-lg flex flex-col justify-between overflow-hidden ${sizeClasses[size]} 
-        min-w-[200px] max-w-full mx-auto sm:mx-0 transition-all duration-300`}
+      className={`relative card shadow-lg flex flex-col justify-between overflow-hidden 
+        w-full h-auto max-w-full mx-auto transition-all duration-300
+        ${sizeClasses[size]}`}
     >
       {/* Background com overlay */}
       {bgUrl && (
@@ -46,21 +47,21 @@ export default function CardOverlay({
       )}
 
       {/* Conteúdo */}
-      <div className="card-body relative flex flex-col justify-between h-full">
+      <div className="card-body relative flex flex-col justify-between h-full p-3 sm:p-4">
         <h2 className="card-title flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <span className="text-white">{title}</span>
+          <span className="text-white text-base sm:text-lg">{title}</span>
           {badge && <div className="badge badge-secondary">{badge}</div>}
         </h2>
 
         <p className="text-sm sm:text-base mt-2">{description}</p>
 
         {buttons.length > 0 && (
-          <div className="card-actions justify-end mt-4 flex flex-wrap gap-2">
+          <div className="card-actions justify-end mt-4 flex flex-col sm:flex-row gap-2">
             {buttons.map((btn, index) => (
               <button
                 key={index}
                 onClick={btn.onClick}
-                className="btn btn-primary btn-sm flex-1 sm:flex-none"
+                className="btn btn-primary btn-sm w-full sm:w-auto"
               >
                 {btn.label}
               </button>

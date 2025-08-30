@@ -37,14 +37,6 @@ export default function EventAdminPage() {
     };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
-        <Loader />
-      </div>
-    );
-  }
-
   const renderSection = () => {
     switch (currentSection) {
       case "equipes":
@@ -89,10 +81,9 @@ export default function EventAdminPage() {
         setOpen={setSidebarOpen}
       />
 
-      {/* Conteúdo principal */}
       <div
         className={`
-          flex-1 p-4 transition-all duration-300
+          flex-1 p-4 sm:p-2 transition-all duration-300
           ${sidebarOpen ? "lg:ml-72" : "lg:ml-72"}
         `}
       >
@@ -101,7 +92,7 @@ export default function EventAdminPage() {
             <Loader />
           </div>
         ) : (
-          <main className="flex flex-col gap-4 w-full flex-1 overflow-y-auto pt-4 mt-8 sm:mt-0">
+          <main className="flex-1 overflow-y-auto pt-4 mt-8 sm:mt-0">
             {renderSection()}
           </main>
         )}

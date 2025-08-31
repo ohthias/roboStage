@@ -16,12 +16,10 @@ export default function ModalLabTest() {
 
       <dialog ref={modalRef} className="modal">
         <div className="modal-box w-11/12 max-w-3xl max-h-[80vh] overflow-y-auto">
-          <h3 className="font-bold text-xl mb-4 text-primary">Criar Novo Teste</h3>
-          <LabTestForm />
-
-          <div className="modal-action">
-            <button className="btn" onClick={close}>Cancelar</button>
-          </div>
+          <h3 className="font-bold text-xl mb-4 text-primary">
+            Criar Novo Teste
+          </h3>
+          <LabTestForm onSuccess={close} onCancel={close} />
         </div>
         <form method="dialog" className="modal-backdrop">
           <button>Fechar</button>

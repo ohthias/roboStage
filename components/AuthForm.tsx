@@ -49,7 +49,6 @@ export default function AuthForm() {
 
   return (
     <div className="w-full max-w-md mx-auto my-10 p-6 shadow-lg rounded-xl bg-base-200">
-
       {/* Seu título, tabs, mensagens e formulário */}
       <div className="text-center mb-6">
         <h1 className="text-3xl font-bold">
@@ -87,7 +86,25 @@ export default function AuthForm() {
         </button>
       </div>
 
-      {error && <div className="alert alert-error text-sm my-4">{error}</div>}
+      {error && (
+        <div className="alert alert-error text-sm my-4">
+          {(() => {
+            switch (error) {
+              case "Invalid login credentials":
+                return "Email ou senha incorretos.";
+              case "User already registered":
+                return "Usuário já cadastrado.";
+              case "Password should be at least 6 characters":
+                return "A senha deve ter pelo menos 6 caracteres.";
+              case "Invalid email address":
+                return "Email inválido. Verifique o formato.";
+              default:
+                return "Ocorreu um erro. Tente novamente mais tarde.";
+            }
+          })()}
+        </div>
+      )}
+
       {success && (
         <div className="alert alert-success text-sm my-4">{success}</div>
       )}

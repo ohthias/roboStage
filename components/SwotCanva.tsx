@@ -2,6 +2,7 @@
 import jsPDF from "jspdf";
 import { useState, useRef } from "react";
 import html2canvas from "html2canvas";
+import { useToast } from "@/app/context/ToastContext";
 
 const seasonLogos: Record<string, { name: string; image: string }> = {
   submerged: {
@@ -33,6 +34,7 @@ export const SWOTCanvas = ({
     { id: "opportunities", label: "Oportunidades", color: "#BFDBFE" },
     { id: "threats", label: "Ameaças", color: "#FEF08A" },
   ];
+  const { addToast } = useToast();
 
   const [swot, setSwot] = useState<Record<string, any[]>>({
     strengths: [],
@@ -62,7 +64,7 @@ export const SWOTCanvas = ({
   // Export PDF
   const exportPDF = async () => {
     if (!quadrantsRef.current) return;
-
+    addToast("Salvando...", "info");
     await document.fonts.ready;
     const originalHeight = quadrantsRef.current.style.height;
     quadrantsRef.current.style.height = "auto";
@@ -77,11 +79,12 @@ export const SWOTCanvas = ({
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save(`SWOT-${selectedSeason}.pdf`);
+    addToast("PDF salvo com sucesso!", "success");
   };
 
   const exportPNG = async () => {
     if (!quadrantsRef.current) return;
-
+    addToast("Salvando...", "info");
     await document.fonts.ready;
     const originalHeight = quadrantsRef.current.style.height;
     quadrantsRef.current.style.height = "auto";
@@ -94,12 +97,13 @@ export const SWOTCanvas = ({
     link.download = `SWOT-${selectedSeason}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
+    addToast("PNG salvo com sucesso!", "success");
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full pb-2">
       {/* cards de temporadas */}
-      <div className="flex flex-wrap justify-center gap-4">
+      <div className="flex flex-wrap justify-start gap-4 ml-4">
         {seasons.map((id) => {
           const season = seasonLogos[id];
           return (
@@ -114,8 +118,8 @@ export const SWOTCanvas = ({
                   threats: [],
                 });
               }}
-              className={`cursor-pointer card w-24 shadow-md border aspect-square ${
-                selectedSeason === id ? "border-primary" : "border-base-200"
+              className={`cursor-pointer card w-24 shadow-md border aspect-square bg-base-200 ${
+                selectedSeason === id ? "border-primary" : "border-base-300"
               }`}
             >
               <figure className="p-2">
@@ -165,12 +169,12 @@ export const SWOTCanvas = ({
           {quadrants.map((q) => (
             <div
               key={q.id}
-              className={`flex flex-col items-center justify-start border rounded-lg p-2`}
+              className={`flex flex-col items-center justify-start border border-base-300 rounded-lg p-2`}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => handleDrop(e, q.id)}
               style={{ backgroundColor: q.color }}
             >
-              <h2 className="font-bold mb-2">{q.label}</h2>
+              <h2 className="font-bold mb-2 text-black">{q.label}</h2>
               <div className="flex flex-wrap gap-2 justify-start items-start overflow-y-auto h-[200px]">
                 {swot[q.id].map((m) => (
                   <div
@@ -194,7 +198,7 @@ export const SWOTCanvas = ({
       </div>
 
       {/* botões de exportação */}
-      <div className="flex gap-4 justify-center mt-4">
+      <div className="flex gap-4 justify-center">
         <button onClick={exportPDF} className="btn btn-primary">
           Exportar PDF
         </button>

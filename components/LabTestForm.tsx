@@ -102,7 +102,8 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
 
       addToast("Teste criado com sucesso!", "success");
       resetForm();
-      onSuccess?.(); // fecha o modal
+      onSuccess?.();
+      window.location.reload();
     } catch (err) {
       console.error(err);
       addToast("Erro ao criar teste.", "error");

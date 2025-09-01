@@ -155,6 +155,7 @@ export default function ModalResultForm() {
       setMissions([]);
       setParameters([]);
       modalRef.current?.close();
+      window.location.reload();
     } else {
       console.error(error);
       alert("Erro ao salvar resultado.");

@@ -3,21 +3,25 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import FormMission from "./FormMission/FormMission";
 import Loader from "./loader";
-import { calculateTotalPoints } from "@/utils/calculateTotalPoints";
 import { useRouter } from "next/navigation";
+import { sumAllMissions } from "@/utils/scores";
 
-type MissionType = {
+interface SubMission {
+  submission: string;
+  points: number | number[];
+  type: ["switch" | "range", ...(string | number | null)[]];
+}
+
+interface MissionType {
   id: string;
   name: string;
-  mission?: string;
-  type: string[];
-  points: number[] | number;
-  "sub-mission"?: {
-    points: number;
-    submission: string;
-    type: string[];
-  }[];
-};
+  mission: string;
+  points: number | number[];
+  equipaments: boolean;
+  type: ["switch" | "range", ...(string | number | null)[]];
+  image?: string;
+  ["sub-mission"]?: SubMission[];
+}
 
 type ResponseType = {
   [missionId: string]: {
@@ -132,7 +136,7 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
     }));
   };
 
-  const totalPoints = calculateTotalPoints(missions, responses);
+  const totalPoints = sumAllMissions(missions, responses);
 
   const handleSubmit = async () => {
     if (!selectedRound || !selectedEquipe) {

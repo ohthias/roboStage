@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
-import FormMission from "./FormMission";
+import FormMission from "./FormMission/FormMission";
 import Loader from "./loader";
 import { calculateTotalPoints } from "@/utils/calculateTotalPoints";
 import { useRouter } from "next/navigation";

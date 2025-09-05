@@ -3,6 +3,29 @@ import { useRef, useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import jsPDF from "jspdf";
 
+interface Point {
+  x: number;
+  y: number;
+}
+interface Line {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  color: string;
+}
+interface FreePath {
+  points: Point[];
+  color: string;
+}
+interface Layer {
+  id: string;
+  name: string;
+  visible: boolean;
+  lines: Line[];
+  freePaths: FreePath[];
+}
+
 export default function FLLPaintPro() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
@@ -19,6 +42,7 @@ export default function FLLPaintPro() {
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentLine, setCurrentLine] = useState<Line | null>(null);
   const [currentPath, setCurrentPath] = useState<Point[]>([]);
+  const [showLabels, setShowLabels] = useState(true)
 
   const backgroundImage = "/images/quickbrick_unearthed.png";
 
@@ -50,7 +74,7 @@ export default function FLLPaintPro() {
 
       // Desenhar linhas
       layer.lines.forEach(line => {
-        drawLine(ctx, line, escalaX, escalaY);
+        drawLine(ctx, line, escalaX, escalaY, showLabels);
       });
 
       // Desenhar paths livres
@@ -61,22 +85,52 @@ export default function FLLPaintPro() {
 
     // Linha atual
     if (tool === "line" && currentLine) {
-      drawLine(ctx, currentLine, escalaX, escalaY);
+      drawLine(ctx, currentLine, escalaX, escalaY, showLabels);
     }
 
     // Path atual
     if (tool === "free" && currentPath.length > 0) {
       drawPath(ctx, { points: currentPath, color: currentColor }, escalaX, escalaY);
     }
-  }, [layers, currentLine, currentPath, tool]);
+  }, [layers, currentLine, currentPath, tool, showLabels]);
 
-  const drawLine = (ctx: CanvasRenderingContext2D, line: Line, escalaX: number, escalaY: number) => {
+  const drawLine = (
+    ctx: CanvasRenderingContext2D,
+    line: Line,
+    escalaX: number,
+    escalaY: number,
+    showLabel: boolean
+  ) => {
     ctx.beginPath();
     ctx.moveTo(line.x1, line.y1);
     ctx.lineTo(line.x2, line.y2);
     ctx.strokeStyle = line.color;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 4;
     ctx.stroke();
+
+    // Desenha a seta na ponta da linha
+    const arrowLength = 18;
+    const arrowWidth = 8;
+    const angle = Math.atan2(line.y2 - line.y1, line.x2 - line.x1);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(line.x2, line.y2);
+    ctx.lineTo(
+      line.x2 - arrowLength * Math.cos(angle - Math.PI / 8),
+      line.y2 - arrowLength * Math.sin(angle - Math.PI / 8)
+    );
+    ctx.lineTo(
+      line.x2 - arrowLength * Math.cos(angle + Math.PI / 8),
+      line.y2 - arrowLength * Math.sin(angle + Math.PI / 8)
+    );
+    ctx.lineTo(line.x2, line.y2);
+    ctx.closePath();
+    ctx.fillStyle = line.color;
+    ctx.fill();
+    ctx.restore();
+
+    if (!showLabel) return; // 👈 só desenha legenda se ativado
 
     const dx = (line.x2 - line.x1) * escalaX;
     const dy = (line.y2 - line.y1) * escalaY;
@@ -93,9 +147,8 @@ export default function FLLPaintPro() {
     const paddingY = 4;
     const metrics = ctx.measureText(text);
     const textWidth = metrics.width;
-    const textHeight = 18; // Aproximação da altura da fonte
+    const textHeight = 18;
 
-    // Desenha o fundo branco arredondado
     ctx.save();
     ctx.beginPath();
     const radius = 8;
@@ -115,7 +168,6 @@ export default function FLLPaintPro() {
     ctx.globalAlpha = 1;
     ctx.restore();
 
-    // Desenha o texto por cima
     ctx.fillStyle = "black";
     ctx.fillText(text, textX, textY);
   };
@@ -281,8 +333,8 @@ export default function FLLPaintPro() {
   return (
     <div className="flex flex-col md:flex-row gap-4 p-4">
       {/* Painel lateral */}
-      <div className="w-full md:w-64 flex flex-col gap-2 bg-base-200 border border-primary/50 shadow-md p-4 rounded-lg  ">
-        <div className="flex gap-2">
+      <div className="w-full md:w-64 flex flex-col gap-2 bg-base-200 border border-base-300 shadow-md p-4 rounded-lg">
+        <div className="flex gap-2 items-center justify-center">
           <div className="tooltip tooltip-bottom animate-fade-in" data-tip="Linha com régua">
             <button
               onClick={() => setTool("line")}
@@ -304,55 +356,26 @@ export default function FLLPaintPro() {
             </button>
           </div>
         </div>
-
-        <label className="mt-2 font-bold flex items-center">
-          Cor:
-          <input type="color" value={currentColor} onChange={e => setCurrentColor(e.target.value)} className="ml-2 cursor-pointer" />
-        </label>
-
-        <hr className="border border-gray-300 my-2 w-1/2 mx-auto" />
-        <h6 className="text-base-content font-bold text-sm">Zona de Risco</h6>
-        <button onClick={undoLast} className="btn btn-default btn-warning">
-          <i className="fi fi-bs-rotate-right"></i> Desfazer
-        </button>
-        <button
-          onClick={() => {
-            if (window.confirm("Tem certeza que deseja limpar esta camada?")) {
-              clearLayer();
-            }
-          }}
-          className="btn default btn-error"
-        >
-          <i className="fi fi-bs-gallery"></i> Limpar Camada
-        </button>
-        <button
-          onClick={() => {
-            if (window.confirm("Tem certeza que deseja limpar todas as camadas?")) {
-              clearAll();
-            }
-          }}
-          className="btn default btn-error"
-        >
-          <i className="fi fi-bs-trash"></i> Limpar Tudo
-        </button>
-
-        <hr className="border border-gray-300 my-2 w-1/2 mx-auto" />
-        <h6 className="text-base-content font-bold text-sm">Exportação</h6>
-        <div className="flex flex-row gap-4">
-          <button onClick={exportPNG} className="btn btn-soft btn-accent flex-1">
-            <i className="fi fi-bs-picture"></i> PNG
-          </button>
-          <button onClick={exportPDF} className="btn btn-soft btn-accent flex-1">
-            <i className="fi fi-bs-file-pdf"></i> PDF
-          </button>
+        <div className="flex flex-row">
+          <label className="font-semibold flex items-center label-text text-sm border-r border-base-300 pr-2">
+            Cor:
+            <input type="color" value={currentColor} onChange={e => setCurrentColor(e.target.value)} className="ml-2 cursor-pointer w-6 h-6" />
+          </label>
+          <label className="font-semibold flex items-center label-text text-sm flex items-center gap-2 pl-2">
+            <input
+              type="checkbox"
+              className="toggle toggle-primary bg-base-200 checked:bg-primary/50 toggle-sm"
+              checked={showLabels}
+              onChange={() => setShowLabels(!showLabels)}
+            />
+            <span className="label-text font-bold">Exibir legendas</span>
+          </label>
         </div>
 
         <hr className="border border-gray-300 my-2 w-1/2 mx-auto" />
-
         <button onClick={addLayer} className="btn btn-default btn-secondary" style={{ lineHeight: 0 }}>
           <i className="fi fi-bs-layer-plus"></i> Nova Camada
         </button>
-
         <div className="overflow-y-auto max-h-16">
           {layers.map(layer => (
             <div
@@ -396,6 +419,42 @@ export default function FLLPaintPro() {
             </div>
           ))}
         </div>
+        <hr className="border border-gray-300 my-2 w-1/2 mx-auto" />
+        <h6 className="text-base-content font-bold text-sm">Zona de Risco</h6>
+        <button onClick={undoLast} className="btn btn-default btn-warning">
+          <i className="fi fi-bs-rotate-right"></i> Desfazer
+        </button>
+        <button
+          onClick={() => {
+            if (window.confirm("Tem certeza que deseja limpar esta camada?")) {
+              clearLayer();
+            }
+          }}
+          className="btn default btn-error"
+        >
+          <i className="fi fi-bs-gallery"></i> Limpar Camada
+        </button>
+        <button
+          onClick={() => {
+            if (window.confirm("Tem certeza que deseja limpar todas as camadas?")) {
+              clearAll();
+            }
+          }}
+          className="btn default btn-error"
+        >
+          <i className="fi fi-bs-trash"></i> Limpar Tudo
+        </button>
+
+        <hr className="border border-gray-300 my-2 w-1/2 mx-auto" />
+        <h6 className="text-base-content font-bold text-sm">Exportação</h6>
+        <div className="flex flex-row gap-4">
+          <button onClick={exportPNG} className="btn btn-soft btn-accent flex-1">
+            <i className="fi fi-bs-picture"></i> PNG
+          </button>
+          <button onClick={exportPDF} className="btn btn-soft btn-accent flex-1">
+            <i className="fi fi-bs-file-pdf"></i> PDF
+          </button>
+        </div>
       </div>
 
       {/* Área de desenho */}
@@ -414,27 +473,4 @@ export default function FLLPaintPro() {
       />
     </div>
   );
-}
-
-interface Point {
-  x: number;
-  y: number;
-}
-interface Line {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  color: string;
-}
-interface FreePath {
-  points: Point[];
-  color: string;
-}
-interface Layer {
-  id: string;
-  name: string;
-  visible: boolean;
-  lines: Line[];
-  freePaths: FreePath[];
 }

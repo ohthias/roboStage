@@ -2,6 +2,11 @@
 import { useRef, useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import jsPDF from "jspdf";
+import {
+  ArrowTurnUpLeftIcon,
+  Square3Stack3DIcon,
+  TrashIcon,
+} from "@heroicons/react/24/solid";
 
 interface Point {
   x: number;
@@ -35,14 +40,14 @@ export default function FLLPaintPro() {
   const [tool, setTool] = useState<Tool>("line");
 
   const [layers, setLayers] = useState<Layer[]>([
-    { id: uuidv4(), name: "Camada 1", visible: true, lines: [], freePaths: [] }
+    { id: uuidv4(), name: "Camada 1", visible: true, lines: [], freePaths: [] },
   ]);
   const [activeLayerId, setActiveLayerId] = useState(layers[0].id);
   const [currentColor, setCurrentColor] = useState("#ff0000");
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentLine, setCurrentLine] = useState<Line | null>(null);
   const [currentPath, setCurrentPath] = useState<Point[]>([]);
-  const [showLabels, setShowLabels] = useState(true)
+  const [showLabels, setShowLabels] = useState(true);
 
   const backgroundImage = "/images/quickbrick_unearthed.png";
 
@@ -69,16 +74,16 @@ export default function FLLPaintPro() {
 
     const { escalaX, escalaY } = getScale();
 
-    layers.forEach(layer => {
+    layers.forEach((layer) => {
       if (!layer.visible) return;
 
       // Desenhar linhas
-      layer.lines.forEach(line => {
+      layer.lines.forEach((line) => {
         drawLine(ctx, line, escalaX, escalaY, showLabels);
       });
 
       // Desenhar paths livres
-      layer.freePaths.forEach(path => {
+      layer.freePaths.forEach((path) => {
         drawPath(ctx, path, escalaX, escalaY);
       });
     });
@@ -90,7 +95,12 @@ export default function FLLPaintPro() {
 
     // Path atual
     if (tool === "free" && currentPath.length > 0) {
-      drawPath(ctx, { points: currentPath, color: currentColor }, escalaX, escalaY);
+      drawPath(
+        ctx,
+        { points: currentPath, color: currentColor },
+        escalaX,
+        escalaY
+      );
     }
   }, [layers, currentLine, currentPath, tool, showLabels]);
 
@@ -130,7 +140,7 @@ export default function FLLPaintPro() {
     ctx.fill();
     ctx.restore();
 
-    if (!showLabel) return; // 👈 só desenha legenda se ativado
+    if (!showLabel) return;
 
     const dx = (line.x2 - line.x1) * escalaX;
     const dy = (line.y2 - line.y1) * escalaY;
@@ -152,15 +162,50 @@ export default function FLLPaintPro() {
     ctx.save();
     ctx.beginPath();
     const radius = 8;
-    ctx.moveTo(textX - textWidth / 2 - paddingX + radius, textY - textHeight / 2 - paddingY);
-    ctx.lineTo(textX + textWidth / 2 + paddingX - radius, textY - textHeight / 2 - paddingY);
-    ctx.quadraticCurveTo(textX + textWidth / 2 + paddingX, textY - textHeight / 2 - paddingY, textX + textWidth / 2 + paddingX, textY - textHeight / 2 - paddingY + radius);
-    ctx.lineTo(textX + textWidth / 2 + paddingX, textY + textHeight / 2 + paddingY - radius);
-    ctx.quadraticCurveTo(textX + textWidth / 2 + paddingX, textY + textHeight / 2 + paddingY, textX + textWidth / 2 + paddingX - radius, textY + textHeight / 2 + paddingY);
-    ctx.lineTo(textX - textWidth / 2 - paddingX + radius, textY + textHeight / 2 + paddingY);
-    ctx.quadraticCurveTo(textX - textWidth / 2 - paddingX, textY + textHeight / 2 + paddingY, textX - textWidth / 2 - paddingX, textY + textHeight / 2 + paddingY - radius);
-    ctx.lineTo(textX - textWidth / 2 - paddingX, textY - textHeight / 2 - paddingY + radius);
-    ctx.quadraticCurveTo(textX - textWidth / 2 - paddingX, textY - textHeight / 2 - paddingY, textX - textWidth / 2 - paddingX + radius, textY - textHeight / 2 - paddingY);
+    ctx.moveTo(
+      textX - textWidth / 2 - paddingX + radius,
+      textY - textHeight / 2 - paddingY
+    );
+    ctx.lineTo(
+      textX + textWidth / 2 + paddingX - radius,
+      textY - textHeight / 2 - paddingY
+    );
+    ctx.quadraticCurveTo(
+      textX + textWidth / 2 + paddingX,
+      textY - textHeight / 2 - paddingY,
+      textX + textWidth / 2 + paddingX,
+      textY - textHeight / 2 - paddingY + radius
+    );
+    ctx.lineTo(
+      textX + textWidth / 2 + paddingX,
+      textY + textHeight / 2 + paddingY - radius
+    );
+    ctx.quadraticCurveTo(
+      textX + textWidth / 2 + paddingX,
+      textY + textHeight / 2 + paddingY,
+      textX + textWidth / 2 + paddingX - radius,
+      textY + textHeight / 2 + paddingY
+    );
+    ctx.lineTo(
+      textX - textWidth / 2 - paddingX + radius,
+      textY + textHeight / 2 + paddingY
+    );
+    ctx.quadraticCurveTo(
+      textX - textWidth / 2 - paddingX,
+      textY + textHeight / 2 + paddingY,
+      textX - textWidth / 2 - paddingX,
+      textY + textHeight / 2 + paddingY - radius
+    );
+    ctx.lineTo(
+      textX - textWidth / 2 - paddingX,
+      textY - textHeight / 2 - paddingY + radius
+    );
+    ctx.quadraticCurveTo(
+      textX - textWidth / 2 - paddingX,
+      textY - textHeight / 2 - paddingY,
+      textX - textWidth / 2 - paddingX + radius,
+      textY - textHeight / 2 - paddingY
+    );
     ctx.closePath();
     ctx.fillStyle = "white";
     ctx.globalAlpha = 0.85;
@@ -172,11 +217,16 @@ export default function FLLPaintPro() {
     ctx.fillText(text, textX, textY);
   };
 
-  const drawPath = (ctx: CanvasRenderingContext2D, path: FreePath, _escalaX: number, _escalaY: number) => {
+  const drawPath = (
+    ctx: CanvasRenderingContext2D,
+    path: FreePath,
+    _escalaX: number,
+    _escalaY: number
+  ) => {
     if (path.points.length < 2) return;
     ctx.beginPath();
     ctx.moveTo(path.points[0].x, path.points[0].y);
-    path.points.forEach(p => ctx.lineTo(p.x, p.y));
+    path.points.forEach((p) => ctx.lineTo(p.x, p.y));
     ctx.strokeStyle = path.color;
     ctx.lineWidth = 2;
     ctx.stroke();
@@ -203,7 +253,13 @@ export default function FLLPaintPro() {
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     const pos = getPos(e);
     if (tool === "line") {
-      setCurrentLine({ x1: pos.x, y1: pos.y, x2: pos.x, y2: pos.y, color: currentColor });
+      setCurrentLine({
+        x1: pos.x,
+        y1: pos.y,
+        x2: pos.x,
+        y2: pos.y,
+        color: currentColor,
+      });
     } else {
       setCurrentPath([{ x: pos.x, y: pos.y }]);
     }
@@ -217,20 +273,26 @@ export default function FLLPaintPro() {
     if (tool === "line" && currentLine) {
       setCurrentLine({ ...currentLine, x2: pos.x, y2: pos.y });
     } else if (tool === "free") {
-      setCurrentPath(prev => [...prev, { x: pos.x, y: pos.y }]);
+      setCurrentPath((prev) => [...prev, { x: pos.x, y: pos.y }]);
     }
   };
 
   const endDrawing = () => {
     if (!isDrawing) return;
 
-    setLayers(prev =>
-      prev.map(layer => {
+    setLayers((prev) =>
+      prev.map((layer) => {
         if (layer.id !== activeLayerId) return layer;
         if (tool === "line" && currentLine) {
           return { ...layer, lines: [...layer.lines, currentLine] };
         } else if (tool === "free" && currentPath.length > 0) {
-          return { ...layer, freePaths: [...layer.freePaths, { points: currentPath, color: currentColor }] };
+          return {
+            ...layer,
+            freePaths: [
+              ...layer.freePaths,
+              { points: currentPath, color: currentColor },
+            ],
+          };
         }
         return layer;
       })
@@ -264,15 +326,15 @@ export default function FLLPaintPro() {
       name: `Camada ${layers.length + 1}`,
       visible: true,
       lines: [],
-      freePaths: []
+      freePaths: [],
     };
     setLayers([...layers, newLayer]);
     setActiveLayerId(newLayer.id);
   };
 
   const toggleLayerVisibility = (id: string) => {
-    setLayers(prev =>
-      prev.map(layer =>
+    setLayers((prev) =>
+      prev.map((layer) =>
         layer.id === id ? { ...layer, visible: !layer.visible } : layer
       )
     );
@@ -280,9 +342,11 @@ export default function FLLPaintPro() {
 
   // Funções de ferramentas
   const clearLayer = () => {
-    setLayers(prev =>
-      prev.map(layer =>
-        layer.id === activeLayerId ? { ...layer, lines: [], freePaths: [] } : layer
+    setLayers((prev) =>
+      prev.map((layer) =>
+        layer.id === activeLayerId
+          ? { ...layer, lines: [], freePaths: [] }
+          : layer
       )
     );
   };
@@ -294,15 +358,15 @@ export default function FLLPaintPro() {
         name: "Camada 1",
         visible: true,
         lines: [],
-        freePaths: []
-      }
+        freePaths: [],
+      },
     ]);
     setActiveLayerId(layers[0].id);
   };
 
   const undoLast = () => {
-    setLayers(prev =>
-      prev.map(layer => {
+    setLayers((prev) =>
+      prev.map((layer) => {
         if (layer.id !== activeLayerId) return layer;
         if (tool === "line" && layer.lines.length > 0) {
           return { ...layer, lines: layer.lines.slice(0, -1) };
@@ -333,22 +397,32 @@ export default function FLLPaintPro() {
   return (
     <div className="flex flex-col md:flex-row gap-4 p-4">
       {/* Painel lateral */}
-      <div className="w-full md:w-64 flex flex-col gap-2 bg-base-200 border border-base-300 shadow-md p-4 rounded-lg">
+      <div className="w-full md:w-64 flex flex-col gap-2 bg-base-200 border border-base-300 shadow-md p-4 rounded-lg justify-between">
         <div className="flex gap-2 items-center justify-center">
-          <div className="tooltip tooltip-bottom animate-fade-in" data-tip="Linha com régua">
+          <div
+            className="tooltip tooltip-bottom animate-fade-in"
+            data-tip="Linha com régua"
+          >
             <button
               onClick={() => setTool("line")}
-              className={`btn btn-soft border border-neutral ${tool === "line" ? "btn-primary border-primary" : ""} cursor-pointer`}
+              className={`btn btn-soft border border-neutral ${
+                tool === "line" ? "btn-primary border-primary" : ""
+              } cursor-pointer`}
               title="Linha com régua"
               style={{ lineHeight: 0 }}
             >
               <i className="fi fi-bs-pencil-ruler"></i>
             </button>
           </div>
-          <div className="tooltip tooltip-bottom animate-fade-in" data-tip="Desenho livre">
+          <div
+            className="tooltip tooltip-bottom animate-fade-in"
+            data-tip="Desenho livre"
+          >
             <button
               onClick={() => setTool("free")}
-              className={`btn btn-soft border border-neutral ${tool === "free" ? "btn-primary border-primary" : ""} cursor-pointer`}
+              className={`btn btn-soft border border-neutral ${
+                tool === "free" ? "btn-primary border-primary" : ""
+              } cursor-pointer`}
               title="Desenho livre"
               style={{ lineHeight: 0 }}
             >
@@ -359,7 +433,12 @@ export default function FLLPaintPro() {
         <div className="flex flex-row">
           <label className="font-semibold flex items-center label-text text-sm border-r border-base-300 pr-2">
             Cor:
-            <input type="color" value={currentColor} onChange={e => setCurrentColor(e.target.value)} className="ml-2 cursor-pointer w-6 h-6" />
+            <input
+              type="color"
+              value={currentColor}
+              onChange={(e) => setCurrentColor(e.target.value)}
+              className="ml-2 cursor-pointer w-6 h-6"
+            />
           </label>
           <label className="font-semibold flex items-center label-text text-sm flex items-center gap-2 pl-2">
             <input
@@ -373,36 +452,54 @@ export default function FLLPaintPro() {
         </div>
 
         <hr className="border border-gray-300 my-2 w-1/2 mx-auto" />
-        <button onClick={addLayer} className="btn btn-default btn-secondary" style={{ lineHeight: 0 }}>
+        <button
+          onClick={addLayer}
+          className="btn btn-default btn-secondary"
+          style={{ lineHeight: 0 }}
+        >
           <i className="fi fi-bs-layer-plus"></i> Nova Camada
         </button>
-        <div className="overflow-y-auto max-h-16">
-          {layers.map(layer => (
+        <div className="overflow-y-auto max-h-24">
+          {layers.map((layer) => (
             <div
               key={layer.id}
-              className={`my-1 btn w-full btn-accent cursor-pointer ${activeLayerId === layer.id ? "btn-info" : "btn-outline"}`}
+              className={`my-1 btn w-full btn-accent cursor-pointer ${
+                activeLayerId === layer.id ? "btn-info" : "btn-outline"
+              }`}
               onClick={() => setActiveLayerId(layer.id)}
             >
               <div className="flex justify-between items-center w-full">
                 <span>{layer.name}</span>
                 <div className="flex gap-2">
                   <button
-                    onClick={e => {
+                    onClick={(e) => {
                       e.stopPropagation();
                       toggleLayerVisibility(layer.id);
                     }}
                     style={{ lineHeight: 0 }}
                   >
-                    {layer.visible ? <i className="fi fi-bs-eye"></i> : <i className="fi fi-bs-eye-crossed"></i>}
+                    {layer.visible ? (
+                      <i className="fi fi-bs-eye"></i>
+                    ) : (
+                      <i className="fi fi-bs-eye-crossed"></i>
+                    )}
                   </button>
                   {layers.length > 1 && (
                     <button
-                      onClick={e => {
+                      onClick={(e) => {
                         e.stopPropagation();
-                        if (window.confirm("Tem certeza que deseja deletar esta camada?")) {
-                          setLayers(prev => prev.filter(l => l.id !== layer.id));
+                        if (
+                          window.confirm(
+                            "Tem certeza que deseja deletar esta camada?"
+                          )
+                        ) {
+                          setLayers((prev) =>
+                            prev.filter((l) => l.id !== layer.id)
+                          );
                           if (activeLayerId === layer.id && layers.length > 1) {
-                            const idx = layers.findIndex(l => l.id === layer.id);
+                            const idx = layers.findIndex(
+                              (l) => l.id === layer.id
+                            );
                             const nextLayer = layers[idx === 0 ? 1 : 0];
                             setActiveLayerId(nextLayer.id);
                           }
@@ -421,8 +518,22 @@ export default function FLLPaintPro() {
         </div>
         <hr className="border border-gray-300 my-2 w-1/2 mx-auto" />
         <h6 className="text-base-content font-bold text-sm">Zona de Risco</h6>
-        <button onClick={undoLast} className="btn btn-default btn-warning">
-          <i className="fi fi-bs-rotate-right"></i> Desfazer
+        <button onClick={undoLast} className="btn btn-soft btn-warning">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-4"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+            />
+          </svg>
+          Desfazer
         </button>
         <button
           onClick={() => {
@@ -430,28 +541,36 @@ export default function FLLPaintPro() {
               clearLayer();
             }
           }}
-          className="btn default btn-error"
+          className="btn btn-soft btn-error"
         >
-          <i className="fi fi-bs-gallery"></i> Limpar Camada
+          <Square3Stack3DIcon className="size-4" />Limpar Camada
         </button>
         <button
           onClick={() => {
-            if (window.confirm("Tem certeza que deseja limpar todas as camadas?")) {
+            if (
+              window.confirm("Tem certeza que deseja limpar todas as camadas?")
+            ) {
               clearAll();
             }
           }}
-          className="btn default btn-error"
+          className="btn btn-soft btn-error"
         >
-          <i className="fi fi-bs-trash"></i> Limpar Tudo
+          <TrashIcon className="size-4" />Limpar Tudo
         </button>
 
         <hr className="border border-gray-300 my-2 w-1/2 mx-auto" />
         <h6 className="text-base-content font-bold text-sm">Exportação</h6>
         <div className="flex flex-row gap-4">
-          <button onClick={exportPNG} className="btn btn-soft btn-accent flex-1">
+          <button
+            onClick={exportPNG}
+            className="btn btn-soft btn-accent flex-1"
+          >
             <i className="fi fi-bs-picture"></i> PNG
           </button>
-          <button onClick={exportPDF} className="btn btn-soft btn-accent flex-1">
+          <button
+            onClick={exportPDF}
+            className="btn btn-soft btn-accent flex-1"
+          >
             <i className="fi fi-bs-file-pdf"></i> PDF
           </button>
         </div>
@@ -462,7 +581,16 @@ export default function FLLPaintPro() {
         ref={canvasRef}
         width={1000}
         height={(1000 * 115) / 200}
-        style={{ border: "2px solid black", maxWidth: "100%", maxHeight: "100%", height: "auto", width: "auto", cursor: isDrawing ? "crosshair" : "default", borderRadius: "8px", borderColor: "#d6d6d6" }}
+        style={{
+          border: "2px solid black",
+          maxWidth: "100%",
+          maxHeight: "100%",
+          height: "auto",
+          width: "auto",
+          cursor: isDrawing ? "crosshair" : "default",
+          borderRadius: "8px",
+          borderColor: "#d6d6d6",
+        }}
         onMouseDown={startDrawing}
         onMouseMove={drawMove}
         onMouseUp={endDrawing}

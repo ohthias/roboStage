@@ -143,11 +143,8 @@ export default function QuickBrickPage() {
 
       <div className="w-full px-4 mb-4">
         {tab === "canvas" && (
-          <div className="flex flex-col items-start">
-            <h1 className="text-2xl font-bold my-4 ml-4 text-primary">
-              Estratégias
-            </h1>
-            <p className="text-sm mb-2 text-base-content ml-2 px-2 max-w-3xl">
+          <div className="flex flex-col items-center">
+            <p className="text-sm mb-2 text-base-content max-w-3xl text-center">
               Selecione uma das ferramentas disponíveis e desenhar diretamente
               sobre a imagem do tapete, planejando cada movimento com precisão
               e facilidade. Ao final exporte e use como desejar!

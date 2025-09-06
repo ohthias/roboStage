@@ -459,7 +459,7 @@ export default function FLLPaintPro() {
         >
           <i className="fi fi-bs-layer-plus"></i> Nova Camada
         </button>
-        <div className="overflow-y-auto max-h-24">
+        <div className="overflow-y-auto h-24">
           {layers.map((layer) => (
             <div
               key={layer.id}

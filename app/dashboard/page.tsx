@@ -1,50 +1,18 @@
 "use client";
 
-import { supabase } from "@/utils/supabase/client";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import Loader from "@/components/loader";
 import ShowLiveHub from "./showLiveHub";
-import Navbar from "./component/Navbar";
 import AccountSettings from "./AccountSettings";
 import { useUser } from "../context/UserContext";
 import { StyleLab } from "@/components/StyleLab";
-import LabTestForm from "@/components/LabTestForm";
-import ComingSoon from "@/components/ComingSoon";
-import LabTestPage from "@/components/LabTestPage";
+import LabTestPage from "./LabTestPage";
+import { logout } from "@/utils/logout";
+import { useHashSection } from "@/hooks/useHashSection";
+import Navbar from "@/components/ui/dashboard/Navbar";
 
 export default function Dashboard() {
-  const { session, profile, loading } = useUser();
-  const router = useRouter();
-  const [currentSection, setCurrentSection] = useState<string>("hub");
-
-  // Atualiza seção conforme hash
-  useEffect(() => {
-    const hash = window.location.hash.replace("#", "");
-    if (hash) setCurrentSection(hash);
-
-    const handleHashChange = () => {
-      const newHash = window.location.hash.replace("#", "");
-      if (newHash) setCurrentSection(newHash);
-    };
-
-    window.addEventListener("hashchange", handleHashChange);
-    return () => {
-      window.removeEventListener("hashchange", handleHashChange);
-    };
-  }, []);
-
-  // Redireciona se não estiver logado
-  useEffect(() => {
-    if (!loading && !session) {
-      router.push("/join");
-    }
-  }, [loading, session, router]);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/join");
-  };
+  const { session, profile } = useUser();
+  const currentSection = useHashSection("hub");
 
   // Conteúdo da seção atual
   const currentSectionContent = () => {
@@ -74,20 +42,12 @@ export default function Dashboard() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
-        <Loader />
-      </div>
-    );
-  }
-
   return (
     <div className="">
       <Navbar
         profile={profile}
         session={session}
-        handleLogout={handleLogout}
+        handleLogout={logout}
         children={currentSectionContent()}
       />
     </div>

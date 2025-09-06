@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import CardTest from "@/components/ui/Cards/CardTest";
-import CardSeason from "./ui/Cards/CardSeason";
+import CardSeason from "../ui/Cards/CardSeason";
 import { supabase } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/app/context/ToastContext";

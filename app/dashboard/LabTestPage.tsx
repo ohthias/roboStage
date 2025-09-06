@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
-import ModalLabTest from "./ui/Modal/ModalLabTest";
-import ModalResultForm from "./ResultForm";
-import TestResultsCharts from "./ResultsSection";
+import ModalLabTest from "../../components/ui/Modal/ModalLabTest";
+import ModalResultForm from "../../components/LabTest/ResultForm";
+import TestResultsCharts from "../../components/LabTest/ResultsSection";
 
 export default function LabTestPage() {
   const [tests, setTests] = useState<any[]>([]);
@@ -16,7 +16,6 @@ export default function LabTestPage() {
     const fetchTypesAndTests = async () => {
       setLoading(true);
 
-      // Buscar tipos de teste
       const { data: typesData, error: typesError } = await supabase
         .from("test_types")
         .select("*");

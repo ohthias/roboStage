@@ -1,5 +1,4 @@
 "use client";
-import clsx from "classnames";
 
 interface SwitchInputProps {
   missionId: string;
@@ -35,10 +34,7 @@ export function SwitchInput({
       {buttons.map((label, idx) => (
         <button
           key={`${missionId}-switch-${index}-${idx}`}
-          className={clsx(
-            "btn btn-md rounded-lg",
-            value === values[idx] ? "btn-primary" : "btn-default"
-          )}
+          className={`btn btn-md rounded-lg ${value === values[idx] ? "btn-primary" : "btn-default"}`}
           onClick={() => onSelect(missionId, index, values[idx])}
           aria-pressed={value === values[idx]}
           type="button"

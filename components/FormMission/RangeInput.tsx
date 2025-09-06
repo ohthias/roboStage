@@ -1,5 +1,4 @@
 "use client";
-import clsx from "classnames";
 
 interface RangeInputProps {
   missionId: string;
@@ -7,8 +6,8 @@ interface RangeInputProps {
   points: number | number[];
   start?: number;
   end?: number;
-  value?: number | string; // pode ser idx (recomendado) ou pontos antigos
-  onSelect: (missionId: string, index: number, value: number) => void; // envia IDX
+  value?: number | string; 
+  onSelect: (missionId: string, index: number, value: number) => void;
 }
 
 export function RangeInput({
@@ -65,10 +64,9 @@ export function RangeInput({
         return (
           <button
             key={`${missionId}-range-${index}-${idx}`}
-            className={clsx(
-              "btn btn-md rounded-lg",
-              isActive ? "btn-primary" : "btn-default"
-            )}
+            className={
+              `btn btn-md rounded-lg ${isActive ? "btn-primary" : "btn-default"}`
+            }
             onClick={() => onSelect(missionId, index, idx)}
             aria-pressed={isActive}
             type="button"

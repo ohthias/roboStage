@@ -1,9 +1,22 @@
 "use client";
 
 import { supabase } from "@/utils/supabase/client";
-import { useState, useEffect, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+  useRef,
+  useCallback,
+} from "react";
+import { RangeInput } from "../FormMission/RangeInput";
+import { SwitchInput } from "../FormMission/SwitchInput";
 
-export default function ModalResultForm() {
+export interface ModalResultFormRef {
+  openWithTest: (testId: string) => void;
+}
+
+const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
   const [tests, setTests] = useState<any[]>([]);
   const [testTypes, setTestTypes] = useState<any>({});
   const [selectedTest, setSelectedTest] = useState<any>(null);
@@ -37,53 +50,64 @@ export default function ModalResultForm() {
     fetchTests();
   }, []);
 
-  // Ao selecionar teste
-  const handleTestChange = async (testId: string) => {
-    const test = tests.find((t) => t.id === testId);
-    if (!test) return;
+  // Selecionar teste
+  const handleTestChange = useCallback(
+    async (testId: string) => {
+      const test = tests.find((t) => t.id === testId);
+      if (!test) return;
 
-    const typeName = testTypes[test.type_id];
-    setSelectedTest({ ...test, type: typeName });
+      const typeName = testTypes[test.type_id] || "";
+      setSelectedTest({ ...test, type: typeName });
 
-    // Buscar missões relacionadas
-    try {
-      const { data: testMissions } = await supabase
-        .from("test_missions")
-        .select("*")
-        .eq("test_id", test.id);
+      try {
+        const { data: testMissions, error: missionsErr } = await supabase
+          .from("test_missions")
+          .select("*")
+          .eq("test_id", test.id);
 
-      if (testMissions && testMissions.length > 0) {
-        const season = testMissions[0].season;
-        const res = await fetch("/data/missions.json");
-        const missionsData = await res.json();
-        const filteredMissions = testMissions
-          .map((tm: any) =>
-            missionsData[season]?.find((m: any) => m.id === tm.mission_key)
-          )
-          .filter(Boolean);
-        setMissions(filteredMissions || []);
-      } else {
+        if (missionsErr) throw missionsErr;
+
+        if (testMissions?.length) {
+          const season = testMissions[0].season;
+          const res = await fetch("/data/missions.json");
+          const missionsData = await res.json();
+
+          const filteredMissions = testMissions
+            .map((tm: any) =>
+              missionsData[season]?.find((m: any) => m.id === tm.mission_key)
+            )
+            .filter(Boolean);
+
+          setMissions(filteredMissions || []);
+        } else {
+          setMissions([]);
+        }
+
+        if (typeName === "personalizado") {
+          const { data: params, error: paramErr } = await supabase
+            .from("test_parameters")
+            .select("*")
+            .eq("test_id", test.id);
+
+          if (paramErr) throw paramErr;
+
+          setParameters(params || []);
+          setCustomVars([{ name: "", values: {} }]);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar dados do teste:", err);
         setMissions([]);
       }
-    } catch (err) {
-      console.error(err);
-      setMissions([]);
-    }
+    },
+    [tests, testTypes]
+  );
 
-    // Buscar parâmetros se teste for personalizado
-    if (typeName === "personalizado") {
-      const { data: params } = await supabase
-        .from("test_parameters")
-        .select("*")
-        .eq("test_id", test.id);
-      setParameters(params || []);
-      setCustomVars([{ name: "", values: {} }]); // reset
-    }
-  };
-
-  const handleChange = (key: string, value: any) => {
-    setFormData((prev: any) => ({ ...prev, [key]: value }));
-  };
+  useImperativeHandle(ref, () => ({
+    openWithTest: async (testId: string) => {
+      await handleTestChange(testId);
+      modalRef.current?.showModal();
+    },
+  }));
 
   const handleCustomVarChange = (index: number, value: string) => {
     const updated = [...customVars];
@@ -104,57 +128,108 @@ export default function ModalResultForm() {
   const addCustomVar = () =>
     setCustomVars([...customVars, { name: "", values: {} }]);
 
+  // Função recursiva para renderizar sub-missões
+  const renderMissionFields = (mission: any, missionKey: string) => {
+    const isMainMission = !missionKey.includes("-sub-");
+
+    const content = (
+      <>
+        <div className="flex flex-col mb-2">
+          <div className="flex items-center justify-between">
+            <p className="font-medium flex-1 text-left">
+              {mission.name || mission.submission}
+            </p>
+            {isMainMission && (
+              <span className="badge badge-primary badge-outline ml-2">{missionKey}</span>
+            )}
+          </div>
+          <p>{mission.mission}</p>
+        </div>
+
+        {(mission.type?.[0] === "range" || mission.type?.[0] === "switch") && (
+          <div className="mb-2">{renderFieldInput(mission, missionKey, 0)}</div>
+        )}
+
+        {mission["sub-mission"]?.length > 0 && (
+          <div className="ml-4 border-l-2 border-primary pl-4 mt-2">
+            {mission["sub-mission"].map((sub: any, subIdx: number) =>
+              renderMissionFields(sub, `${missionKey}-sub-${subIdx}`)
+            )}
+          </div>
+        )}
+      </>
+    );
+
+    // Aplica borda e fundo apenas na missão principal
+    if (isMainMission) {
+      return (
+        <div key={missionKey} className="mb-4 border rounded-lg p-4 bg-base-100 border-base-300 shadow-sm">
+          {content}
+        </div>
+      );
+    }
+
+    return <div key={missionKey}>{content}</div>;
+  };
+
+
+  const renderFieldInput = (field: any, missionKey: string, index: number) => {
+    if (field.type?.[0] === "range") {
+      return (
+        <RangeInput
+          missionId={missionKey}
+          index={index}
+          points={field.type[1] || 1}
+          start={field.type[1] || 0}
+          end={field.type[2] || 10}
+          value={formData[missionKey]?.[index]}
+          onSelect={(mId, idx, val) =>
+            setFormData((prev: any) => ({
+              ...prev,
+              [mId]: { ...(prev[mId] || {}), [idx]: val },
+            }))
+          }
+        />
+      );
+    }
+
+    if (field.type?.[0] === "switch") {
+      return (
+        <SwitchInput
+          missionId={missionKey}
+          index={index}
+          points={field.type[1] || 1}
+          options={field.type.slice(1).filter(Boolean).map(String)}
+          value={formData[missionKey]?.[index]}
+          onSelect={(mId, idx, val) =>
+            setFormData((prev: any) => ({
+              ...prev,
+              [mId]: { ...(prev[mId] || {}), [index]: val },
+            }))
+          }
+        />
+      );
+    }
+
+    return null;
+  };
+
   const handleSubmit = async () => {
     if (!selectedTest) return;
 
-    let payload: any[] = [];
-
-    if (selectedTest.type === "personalizado") {
-      // Junta todas as variáveis e seus parâmetros em um único objeto
-      const resultObj = customVars.map((v) => ({
-        nome: v.name,
-        parametros: v.values,
-      }));
-
-      payload.push({
+    const payload: any[] = [
+      {
         test_id: selectedTest.id,
-        metric: "personalizado",
-        value: resultObj, // jsonb
-      });
-    } else if (selectedTest.type === "grupo") {
-      // Junta todas as missões em um único objeto
-      const resultObj: Record<string, number> = {};
-      for (const [missionKey, val] of Object.entries(formData)) {
-        resultObj[missionKey] = val === "true" ? 1 : 0;
-      }
-
-      payload.push({
-        test_id: selectedTest.id,
-        metric: "grupo",
-        value: resultObj, // jsonb
-      });
-    } else if (selectedTest.type === "missao_individual") {
-      const missionKey = formData.mission;
-      const doneValue = formData.done === "true" ? 1 : 0;
-
-      payload.push({
-        test_id: selectedTest.id,
-        mission_key: missionKey,
-        metric: "missao_individual",
-        value: doneValue,
-      });
-    }
+        value: formData,
+        created_at: new Date(),
+      },
+    ];
 
     const { error } = await supabase.from("results").insert(payload);
 
     if (!error) {
       alert("Resultado salvo com sucesso!");
-      setFormData({});
-      setCustomVars([{ name: "", values: {} }]);
-      setSelectedTest(null);
-      setMissions([]);
-      setParameters([]);
-      modalRef.current?.close();
+      closeModal();
       window.location.reload();
     } else {
       console.error(error);
@@ -185,65 +260,32 @@ export default function ModalResultForm() {
         >
           <h2 className="text-xl font-bold mb-4">Adicionar Resultado</h2>
 
-          {/* Select de testes */}
-          <select
-            className="select select-bordered w-full mb-4"
-            onChange={(e) => handleTestChange(e.target.value)}
-          >
-            <option value="">Selecione um teste</option>
-            {tests.map((test) => (
-              <option key={test.id} value={test.id}>
-                {test.name_test} ({testTypes[test.type_id]})
-              </option>
-            ))}
-          </select>
-
-          {/* missao_individual */}
-          {selectedTest?.type === "missao_individual" && (
-            <div>
-              <h3 className="font-semibold">Missão</h3>
-              <select
-                className="select select-bordered w-full"
-                onChange={(e) => handleChange("mission", e.target.value)}
-              >
-                <option value="">Selecione a missão</option>
-                {missions.map((m: any) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-              <label className="label mt-2">Concluiu?</label>
-              <select
-                className="select select-bordered w-full"
-                onChange={(e) => handleChange("done", e.target.value)}
-              >
-                <option value="">Selecione</option>
-                <option value="true">Sim</option>
-                <option value="false">Não</option>
-              </select>
-            </div>
-          )}
-
-          {/* grupo */}
-          {selectedTest?.type === "grupo" && (
-            <div>
-              <h3 className="font-semibold mb-2">Missões</h3>
-              {missions.map((m: any) => (
-                <div key={m.id} className="border p-2 mb-2 rounded">
-                  <p className="font-medium">{m.name}</p>
-                  <select
-                    className="select select-bordered w-full mt-1"
-                    onChange={(e) => handleChange(m.id, e.target.value)}
-                  >
-                    <option value="">Concluiu?</option>
-                    <option value="true">Sim</option>
-                    <option value="false">Não</option>
-                  </select>
-                </div>
+          {!selectedTest && (
+            <select
+              className="select select-bordered w-full mb-4"
+              onChange={(e) => handleTestChange(e.target.value)}
+            >
+              <option value="">Selecione um teste</option>
+              {tests.map((test) => (
+                <option key={test.id} value={test.id}>
+                  {test.name_test} ({testTypes[test.type_id]})
+                </option>
               ))}
+            </select>
+          )}
+
+          {selectedTest && (
+            <div className="mb-4">
+              <p className="text-sm text-gray-600">
+                Teste selecionado:{" "}
+                <span className="font-semibold">{selectedTest.name_test}</span> (
+                {selectedTest.type})
+              </p>
             </div>
           )}
+
+          {/* Renderizar missões e sub-missões */}
+          {missions.map((m) => renderMissionFields(m, m.id))}
 
           {/* personalizado */}
           {selectedTest?.type === "personalizado" && (
@@ -298,4 +340,6 @@ export default function ModalResultForm() {
       </dialog>
     </>
   );
-}
+});
+
+export default ModalResultForm;

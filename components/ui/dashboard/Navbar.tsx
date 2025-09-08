@@ -187,6 +187,26 @@ export default function Navbar({
                   <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </a>
               </li>
+              <li>
+                <a
+                  href="#"
+                  target="_blank"
+                  className="group relative inline-block transition-colors duration-200 hover:text-primary bg-transparent"
+                >
+                  Jogo rápido (BrainShot)
+                  <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  target="_blank"
+                  className="group relative inline-block transition-colors duration-200 hover:text-primary bg-transparent"
+                >
+                  Timer
+                  <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                </a>
+              </li>
             </ul>
           </div>
 

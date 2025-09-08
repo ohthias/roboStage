@@ -3,15 +3,15 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/utils/supabase/client";
 import ModalLabTest from "../../../components/ui/Modal/ModalLabTest";
-import ModalResultForm from "../../../components/LabTest/ResultForm";
 import TestResultsCharts from "../../../components/LabTest/ResultsSection";
 import { BeakerIcon } from "@heroicons/react/24/outline";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import ModalConfirm, { ModalConfirmRef } from "../../../components/ui/Modal/ModalConfirm";
 import ModalInput, { ModalInputRef } from "../../../components/ui/Modal/ModalInput";
 import { useRef } from "react";
 import { useToast } from "@/app/context/ToastContext";
-
+import ModalResultForm, { ModalResultFormRef } from "../../../components/LabTest/ResultForm";
+import Loader from "@/components/loader";
 
 type Mission = {
   id: string;
@@ -36,6 +36,7 @@ export default function LabTestPage() {
 
   const modalConfirmRef = useRef<ModalConfirmRef>(null);
   const modalInputRef = useRef<ModalInputRef>(null);
+  const modalResultFormRef = useRef<ModalResultFormRef>(null);
   const { addToast } = useToast();
 
   // Carregar missões
@@ -150,7 +151,7 @@ export default function LabTestPage() {
             Resultados
           </button>
         </div>
-        <ModalResultForm />
+        <ModalResultForm ref={modalResultFormRef} />
       </div>
 
       {/* Filtros aba "Testes" */}
@@ -190,7 +191,7 @@ export default function LabTestPage() {
       {/* Conteúdo aba "Testes" */}
       {activeTab === "tests" && (
         <section className="flex gap-4 flex-wrap">
-          {loading && <p>Carregando testes...</p>}
+          {loading && <Loader />}
 
           {!loading && filteredTests.length === 0 && (
             <div className="col-span-full flex flex-col justify-center items-center p-6 border border-base-300 rounded-lg bg-base-100 shadow-md">
@@ -282,6 +283,13 @@ export default function LabTestPage() {
 
                   {/* Botões de ação */}
                   <div className="absolute bottom-2 right-2 flex gap-2">
+                    <button
+                      onClick={() => modalResultFormRef.current?.openWithTest(test.id)}
+                      className="btn btn-default btn-xs p-1"
+                      title="Adicionar resultado"
+                    >
+                      <PlusIcon className="size-4" />
+                    </button>
                     <button
                       onClick={() => handleRename(test.id, test.name_test)}
                       className="btn btn-ghost btn-xs p-1 text-primary"

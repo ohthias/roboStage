@@ -136,12 +136,6 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
             selected={type === "grupo"}
             onSelect={() => setType("grupo")}
           />
-          <CardTest
-            imageBackground="/images/CardsTest/Teste_Generico.webp"
-            nameTest="Personalizado"
-            selected={type === "personalizado"}
-            onSelect={() => setType("personalizado")}
-          />
         </div>
       </div>
 
@@ -219,46 +213,6 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
               )
             )}
           </div>
-        </div>
-      )}
-
-      {/* Personalizado */}
-      {type === "personalizado" && (
-        <div className="form-control space-y-2">
-          <div className="flex justify-between">
-            <label className="label">Parâmetros</label>
-            <button
-              type="button"
-              onClick={addParameter}
-              className="btn btn-outline btn-sm"
-            >
-              + Adicionar Parâmetro
-            </button>
-          </div>
-          {parameters.map((p, i) => (
-            <div key={i} className="flex gap-2 items-center">
-              <input
-                type="text"
-                placeholder="Nome"
-                className="input input-bordered w-full"
-                value={p.name}
-                onChange={(e) => {
-                  const newParams = [...parameters];
-                  newParams[i].name = e.target.value;
-                  setParameters(newParams);
-                }}
-              />
-              <button
-                type="button"
-                className="btn btn-error btn-sm"
-                onClick={() => {
-                  setParameters(parameters.filter((_, idx) => idx !== i));
-                }}
-              >
-                Remover
-              </button>
-            </div>
-          ))}
         </div>
       )}
 

@@ -26,6 +26,7 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
     { name: string; values: Record<number, string> }[]
   >([{ name: "", values: {} }]);
   const [parameters, setParameters] = useState<any[]>([]);
+  const [season, setSeason] = useState<string | null>(null);
   const modalRef = useRef<HTMLDialogElement | null>(null);
 
   // Buscar tipos de teste
@@ -68,7 +69,9 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
         if (missionsErr) throw missionsErr;
 
         if (testMissions?.length) {
-          const season = testMissions[0].season;
+          const season = testMissions[0].season; // pegar a season aqui
+          setSeason(season); // salvar no estado
+
           const res = await fetch("/data/missions.json");
           const missionsData = await res.json();
 
@@ -81,6 +84,7 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
           setMissions(filteredMissions || []);
         } else {
           setMissions([]);
+          setSeason(null);
         }
 
         if (typeName === "personalizado") {
@@ -97,6 +101,7 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
       } catch (err) {
         console.error("Erro ao buscar dados do teste:", err);
         setMissions([]);
+        setSeason(null);
       }
     },
     [tests, testTypes]
@@ -140,7 +145,9 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
               {mission.name || mission.submission}
             </p>
             {isMainMission && (
-              <span className="badge badge-primary badge-outline ml-2">{missionKey}</span>
+              <span className="badge badge-primary badge-outline ml-2">
+                {missionKey}
+              </span>
             )}
           </div>
           <p>{mission.mission}</p>
@@ -163,7 +170,10 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
     // Aplica borda e fundo apenas na missão principal
     if (isMainMission) {
       return (
-        <div key={missionKey} className="mb-4 border rounded-lg p-4 bg-base-100 border-base-300 shadow-sm">
+        <div
+          key={missionKey}
+          className="mb-4 border rounded-lg p-4 bg-base-100 border-base-300 shadow-sm"
+        >
           {content}
         </div>
       );
@@ -171,7 +181,6 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
 
     return <div key={missionKey}>{content}</div>;
   };
-
 
   const renderFieldInput = (field: any, missionKey: string, index: number) => {
     if (field.type?.[0] === "range") {
@@ -216,12 +225,15 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
 
   const handleSubmit = async () => {
     if (!selectedTest) return;
+    console.log(missions[0]?.season);
 
     const payload: any[] = [
       {
         test_id: selectedTest.id,
+        metric: selectedTest.type,
         value: formData,
         created_at: new Date(),
+        season: season,
       },
     ];
 
@@ -249,7 +261,10 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
 
   return (
     <>
-      <button className="btn btn-neutral btn-outline btn-sm" onClick={openModal}>
+      <button
+        className="btn btn-neutral btn-outline btn-sm"
+        onClick={openModal}
+      >
         Adicionar Resultado
       </button>
 
@@ -278,8 +293,8 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
             <div className="mb-4">
               <p className="text-sm text-gray-600">
                 Teste selecionado:{" "}
-                <span className="font-semibold">{selectedTest.name_test}</span> (
-                {selectedTest.type})
+                <span className="font-semibold">{selectedTest.name_test}</span>{" "}
+                ({selectedTest.type})
               </p>
             </div>
           )}

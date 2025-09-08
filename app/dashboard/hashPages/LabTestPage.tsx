@@ -6,11 +6,17 @@ import ModalLabTest from "../../../components/ui/Modal/ModalLabTest";
 import TestResultsCharts from "../../../components/LabTest/ResultsSection";
 import { BeakerIcon } from "@heroicons/react/24/outline";
 import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
-import ModalConfirm, { ModalConfirmRef } from "../../../components/ui/Modal/ModalConfirm";
-import ModalInput, { ModalInputRef } from "../../../components/ui/Modal/ModalInput";
+import ModalConfirm, {
+  ModalConfirmRef,
+} from "../../../components/ui/Modal/ModalConfirm";
+import ModalInput, {
+  ModalInputRef,
+} from "../../../components/ui/Modal/ModalInput";
 import { useRef } from "react";
 import { useToast } from "@/app/context/ToastContext";
-import ModalResultForm, { ModalResultFormRef } from "../../../components/LabTest/ResultForm";
+import ModalResultForm, {
+  ModalResultFormRef,
+} from "../../../components/LabTest/ResultForm";
 import Loader from "@/components/loader";
 
 type Mission = {
@@ -74,16 +80,23 @@ export default function LabTestPage() {
   // Função para pegar imagens da missão
   const getMissionImages = (season: string, missionKeys: string[] | string) => {
     if (!missionsData[season]) return [];
-    const keys = Array.isArray(missionKeys) ? missionKeys.slice(0, 4) : [missionKeys];
-    return keys.map((key) => missionsData[season].find((m) => m.id === key)?.image || "");
+    const keys = Array.isArray(missionKeys)
+      ? missionKeys.slice(0, 4)
+      : [missionKeys];
+    return keys.map(
+      (key) => missionsData[season].find((m) => m.id === key)?.image || ""
+    );
   };
 
   // Filtragem e ordenação local
   const filteredTests = useMemo(() => {
     return tests
       .filter((test) => {
-        const matchesSearch = test.name_test.toLowerCase().includes(searchText.toLowerCase());
-        const matchesType = selectedType === "all" || test.type_id.toString() === selectedType;
+        const matchesSearch = test.name_test
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
+        const matchesType =
+          selectedType === "all" || test.type_id.toString() === selectedType;
         return matchesSearch && matchesType;
       })
       .sort((a, b) => {
@@ -92,6 +105,30 @@ export default function LabTestPage() {
         return order === "asc" ? dateA - dateB : dateB - dateA;
       });
   }, [tests, searchText, selectedType, order]);
+
+  // Adicione esses estados junto com os outros estados de filtros
+  const [searchResultText, setSearchResultText] = useState("");
+  const [selectedResultType, setSelectedResultType] = useState<string>("all");
+  const [resultOrder, setResultOrder] = useState<"desc" | "asc">("desc");
+
+  // Filtragem e ordenação para resultados
+  const filteredResults = useMemo(() => {
+    return tests
+      .filter((test) => {
+        const matchesSearch = test.name_test
+          .toLowerCase()
+          .includes(searchResultText.toLowerCase());
+        const matchesType =
+          selectedResultType === "all" ||
+          test.type_id.toString() === selectedResultType;
+        return matchesSearch && matchesType;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return resultOrder === "asc" ? dateA - dateB : dateB - dateA;
+      });
+  }, [tests, searchResultText, selectedResultType, resultOrder]);
 
   // Excluir
   const handleDelete = (testId: string) => {
@@ -109,7 +146,10 @@ export default function LabTestPage() {
   const handleRename = (testId: string, oldName: string) => {
     modalInputRef.current?.open(oldName, async (newName) => {
       if (newName && newName.trim() && newName !== oldName) {
-        await supabase.from("tests").update({ name_test: newName }).eq("id", testId);
+        await supabase
+          .from("tests")
+          .update({ name_test: newName })
+          .eq("id", testId);
         setTests((prev) =>
           prev.map((t) => (t.id === testId ? { ...t, name_test: newName } : t))
         );
@@ -127,7 +167,8 @@ export default function LabTestPage() {
             Lab<span className="text-primary">Test</span>
           </h2>
           <p className="text-sm text-base-content">
-            Crie e gerencie seus testes personalizados para avaliar o desempenho do robô.
+            Crie e gerencie seus testes personalizados para avaliar o desempenho
+            do robô.
           </p>
         </div>
         <ModalLabTest />
@@ -209,10 +250,14 @@ export default function LabTestPage() {
             filteredTests.map((test) => {
               const testTypeName = testTypes[test.type_id] || "Desconhecido";
               const temporada = test.test_missions?.[0]?.season;
-              const missionKeys = test.test_missions?.map((m: any) => m.mission_key);
+              const missionKeys = test.test_missions?.map(
+                (m: any) => m.mission_key
+              );
 
               // Pegar imagens
-              const images = temporada ? getMissionImages(temporada, missionKeys) : [];
+              const images = temporada
+                ? getMissionImages(temporada, missionKeys)
+                : [];
 
               return (
                 <div
@@ -224,16 +269,18 @@ export default function LabTestPage() {
                     {images.length > 1 ? (
                       // Grid 2x2 para grupos
                       <div className="grid grid-cols-2 grid-rows-2 gap-1 w-24 h-24">
-                        {images.slice(0, 4).map((img, idx) =>
-                          img ? (
-                            <img
-                              key={idx}
-                              src={img}
-                              alt={`Missão ${missionKeys[idx]}`}
-                              className="w-full h-full object-contain rounded"
-                            />
-                          ) : null
-                        )}
+                        {images
+                          .slice(0, 4)
+                          .map((img, idx) =>
+                            img ? (
+                              <img
+                                key={idx}
+                                src={img}
+                                alt={`Missão ${missionKeys[idx]}`}
+                                className="w-full h-full object-contain rounded"
+                              />
+                            ) : null
+                          )}
                       </div>
                     ) : (
                       // Única imagem
@@ -258,7 +305,8 @@ export default function LabTestPage() {
 
                     {temporada && (
                       <p className="text-sm text-base-content">
-                        <span className="font-bold">Temporada:</span> {temporada.toUpperCase()}
+                        <span className="font-bold">Temporada:</span>{" "}
+                        {temporada.toUpperCase()}
                       </p>
                     )}
 
@@ -277,14 +325,17 @@ export default function LabTestPage() {
                     )}
 
                     <p className="text-xs text-base-content mt-1">
-                      Criado em: {new Date(test.created_at).toLocaleDateString("pt-BR")}
+                      Criado em:{" "}
+                      {new Date(test.created_at).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
 
                   {/* Botões de ação */}
                   <div className="absolute bottom-2 right-2 flex gap-2">
                     <button
-                      onClick={() => modalResultFormRef.current?.openWithTest(test.id)}
+                      onClick={() =>
+                        modalResultFormRef.current?.openWithTest(test.id)
+                      }
                       className="btn btn-default btn-xs p-1"
                       title="Adicionar resultado"
                     >
@@ -313,29 +364,80 @@ export default function LabTestPage() {
 
       {/* Conteúdo aba "Resultados" */}
       {activeTab === "results" && (
-        <section className="grid grid-cols-1 gap-6">
-          {tests.map((test) => (
-            <div
-              key={test.id}
-              className="card bg-base-100 shadow-md border border-base-300 p-4"
+        <>
+          {/* Filtros */}
+          <section className="flex flex-col sm:flex-row gap-4 mb-4 items-start sm:items-center">
+            <input
+              type="text"
+              className="input input-bordered w-full sm:w-64 flex-1"
+              placeholder="Buscar resultado por nome..."
+              value={searchResultText}
+              onChange={(e) => setSearchResultText(e.target.value)}
+            />
+            <select
+              className="select select-bordered w-full sm:w-52"
+              value={selectedResultType}
+              onChange={(e) => setSelectedResultType(e.target.value)}
             >
-              <h2 className="text-xl font-bold mb-2">{test.name_test}</h2>
-              <p className="text-sm text-base-content mb-4">
-                Tipo: {testTypes[test.type_id] || "Desconhecido"} | Criado em:{" "}
-                {new Date(test.created_at).toLocaleDateString("pt-BR")}
-              </p>
+              <option value="all">Todos os tipos</option>
+              {Object.entries(testTypes).map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name as string}
+                </option>
+              ))}
+            </select>
 
-              <TestResultsCharts
-                testId={test.id}
-                season={test.test_missions[0]?.season}
-              />
-            </div>
-          ))}
-        </section>
+            <select
+              className="select select-bordered w-full sm:w-52"
+              value={resultOrder}
+              onChange={(e) => setResultOrder(e.target.value as "desc" | "asc")}
+            >
+              <option value="desc">Mais recentes primeiro</option>
+              <option value="asc">Mais antigos primeiro</option>
+            </select>
+          </section>
+
+          {/* Conteúdo aba "Resultados" */}
+          <section className="grid grid-cols-1 gap-6">
+            {filteredResults.map((test) => (
+              <div
+                key={test.id}
+                className="collapse collapse-arrow bg-base-100 shadow-md border border-base-300"
+              >
+                <input type="checkbox" className="peer" />
+                <div className="collapse-title text-xl font-bold flex flex-col gap-1">
+                  <span>{test.name_test}</span>
+                  <span className="text-sm font-normal text-base-content">
+                    Tipo: {testTypes[test.type_id] || "Desconhecido"} | Criado
+                    em: {new Date(test.created_at).toLocaleDateString("pt-BR")}
+                  </span>
+                </div>
+                <div className="collapse-content">
+                  <TestResultsCharts testId={test.id} />
+                </div>
+              </div>
+            ))}
+            {filteredResults.length === 0 && (
+              <div className="col-span-full flex flex-col justify-center items-center p-6 border border-base-300 rounded-lg bg-base-100 shadow-md">
+                <BeakerIcon className="w-12 h-12 text-gray-400 mb-2" />
+                <h2 className="text-center text-lg font-bold text-gray-500">
+                  Nenhum resultado encontrado!
+                </h2>
+                <p className="text-center text-sm text-gray-400 mt-1">
+                  Ajuste os filtros ou aguarde novos resultados.
+                </p>
+              </div>
+            )}
+          </section>
+        </>
       )}
       {/* Modais globais */}
       <ModalConfirm ref={modalConfirmRef} title="Confirmação" />
-      <ModalInput ref={modalInputRef} title="Renomear Teste" placeholder="Digite o novo nome..." />
+      <ModalInput
+        ref={modalInputRef}
+        title="Renomear Teste"
+        placeholder="Digite o novo nome..."
+      />
     </div>
   );
 }

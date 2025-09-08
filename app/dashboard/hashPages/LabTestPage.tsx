@@ -327,7 +327,7 @@ export default function LabTestPage() {
 
               <TestResultsCharts
                 testId={test.id}
-                testType={testTypes[test.type_id] || "personalizado"}
+                season={test.test_missions[0]?.season}
               />
             </div>
           ))}

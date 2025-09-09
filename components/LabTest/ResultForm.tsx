@@ -11,6 +11,7 @@ import {
 } from "react";
 import { RangeInput } from "../FormMission/RangeInput";
 import { SwitchInput } from "../FormMission/SwitchInput";
+import { useToast } from "@/app/context/ToastContext";
 
 export interface ModalResultFormRef {
   openWithTest: (testId: string) => void;
@@ -27,6 +28,8 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
   >([{ name: "", values: {} }]);
   const [parameters, setParameters] = useState<any[]>([]);
   const [season, setSeason] = useState<string | null>(null);
+  const [description, setDescription] = useState<string>("");
+  const { addToast } = useToast();
   const modalRef = useRef<HTMLDialogElement | null>(null);
 
   // Buscar tipos de teste
@@ -234,18 +237,19 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
         value: formData,
         created_at: new Date(),
         season: season,
+        description: description || null,
       },
     ];
 
     const { error } = await supabase.from("results").insert(payload);
 
     if (!error) {
-      alert("Resultado salvo com sucesso!");
+      addToast("Resultado salvo com sucesso!", "success");
       closeModal();
       window.location.reload();
     } else {
       console.error(error);
-      alert("Erro ao salvar resultado.");
+      addToast("Erro ao salvar resultado.", "error");
     }
   };
 
@@ -338,6 +342,26 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
               </button>
             </div>
           )}
+
+          {/* Descrição do que foi mudado */}
+          <div className="form-control mt-4">
+            <label className="label">
+              <span className="label-text">Descrição do que foi mudado (opcional)</span>
+            </label>
+            <textarea
+              className="textarea textarea-bordered w-full"
+              placeholder="Digite aqui uma descrição (opcional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              maxLength={450}
+            ></textarea>
+            {description.length >= 450 && (
+              <span className="text-error text-xs mt-1 block">
+                Limite máximo de 450 caracteres atingido.
+              </span>
+            )}
+          </div>
 
           <div className="modal-action mt-4">
             <button type="button" className="btn" onClick={closeModal}>

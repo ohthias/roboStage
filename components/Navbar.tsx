@@ -35,7 +35,7 @@ export function Navbar() {
               <li>
                 <details>
                   <summary>FLL Score</summary>
-                  <ul className="bg-base-200 rounded-t-none p-2 z-50">
+                  <ul className="bg-base-200 rounded-t-none p-2 z-50 text-md">
                     {Object.keys(seasons).sort().map((seasonKey) => (
                       <li key={seasonKey}>
                         <a href={`/fll-score#${seasonKey.toLowerCase()}`}>
@@ -46,7 +46,7 @@ export function Navbar() {
                   </ul>
                 </details>
               </li>
-              <li><a href="/quickbrick">QuickBrick Studio</a></li>
+              <li><a href="/quickbrick" className="text-md">QuickBrick Studio</a></li>
               <li><a href="/universe" className="btn btn-accent btn-outline">Embarcar em evento</a></li>
               <li><a href="/join" className="btn btn-primary">Entrar</a></li>
               <ThemeController />

@@ -1,7 +1,7 @@
 export function Hero() {
   return (
     <div
-      className="hero min-h-[500px] relative overflow-hidden"
+      className="hero h-[calc(100vh-80px)] relative overflow-hidden"
       style={{ backgroundImage: "url(/images/fundoPadrao.gif)" }}
     >
       <div className="hero-overlay bg-black/50"></div>

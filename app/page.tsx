@@ -28,7 +28,7 @@ export default function Home() {
             </p>
           </div>
           {/* End Card */}
-    
+
           {/* Card */}
           <div className="bg-base-200 shadow-lg rounded-lg p-5 flex flex-col">
             <div className="flex items-center gap-x-4 mb-3">
@@ -61,13 +61,15 @@ export default function Home() {
               <h3 className="text-lg font-semibold text-primary">showLive</h3>
             </div>
             <p className="text-base-content flex-grow">
-              Crie eventos de robótica, defina os aspectos da temporada e organize as rodadas que irão acontecer.
+              Crie eventos de robótica, defina os aspectos da temporada e
+              organize as rodadas que irão acontecer.
             </p>
           </div>
           {/* End Card */}
         </div>
       </div>
 
+      <img src="/images/Listra.svg" />
       <section className="max-w-5xl px-4 sm:px-6 mx-auto my-8">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">

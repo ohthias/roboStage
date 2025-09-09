@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 
 interface CardTestProps {
   imageBackground: string;
@@ -19,8 +18,9 @@ export default function CardTest({
       onClick={onSelect}
       style={{ backgroundImage: `url(${imageBackground})` }}
       className={`
-        relative h-64 w-48 cursor-pointer rounded-2xl overflow-hidden 
+        relative cursor-pointer rounded-2xl overflow-hidden 
         bg-cover bg-center shadow-md transition-all duration-300 rounded-box group
+        h-40 w-32 sm:h-52 sm:w-40 md:h-64 md:w-48
         ${
           selected
             ? "ring-4 ring-primary scale-105"
@@ -28,10 +28,10 @@ export default function CardTest({
         }
       `}
     >
-      {/* Nome embaixo aparece no hover OU se estiver selecionado */}
+      {/* Nome aparece no hover OU se estiver selecionado */}
       <div
         className={`
-          absolute bottom-0 w-full h-16 flex justify-center items-center text-lg font-semibold text-white
+          absolute bottom-0 w-full h-14 flex justify-center items-center text-base sm:text-lg font-semibold text-white text-center px-2
           transition-all duration-500
           ${
             selected

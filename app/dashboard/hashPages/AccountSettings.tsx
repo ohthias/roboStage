@@ -34,14 +34,12 @@ export default function AccountSettings() {
         });
         setCreatedAt(formatted);
       }
-
     };
 
     fetchUserCreatedAt();
 
     if (profile?.username) setUsername(profile.username);
   }, [profile, session]);
-
 
   if (loadingUser) return <p>Carregando perfil...</p>;
   if (!session) {
@@ -103,21 +101,21 @@ export default function AccountSettings() {
   return (
     <section className="pb-8 space-y-8">
       {/* Banner de perfil */}
-      <div className="hero bg-gradient-to-r from-base-200 to-primary/50 rounded-xl mb-6 p-0 md:p-0 shadow-md">
-        <div className="hero-content w-full flex flex-row items-center justify-start gap-2 text-left p-2 md:p-8">
+      <div className="hero bg-gradient-to-r from-base-200 to-primary/50 rounded-xl mb-6 p-0 shadow-md">
+        <div className="hero-content w-full flex flex-col md:flex-row items-center md:items-center justify-center md:justify-start gap-4 md:gap-8 text-center md:text-left p-4 md:p-8">
           <div className="relative flex-shrink-0">
             <img
               src="https://static.vecteezy.com/system/resources/previews/055/591/320/non_2x/chatbot-avatar-sending-and-receiving-messages-using-artificial-intelligence-vector.jpg"
               alt="Foto de perfil"
-              className="w-28 h-28 md:w-32 md:h-32 rounded-full border-2 border-accent shadow-lg object-cover"
+              className="w-24 h-24 md:w-32 md:h-32 rounded-full border-2 border-accent shadow-lg object-cover"
             />
             <span className="absolute bottom-2 right-2 bg-success rounded-full w-4 h-4"></span>
           </div>
-          <div className="ml-0 md:ml-8 mt-4 md:mt-0 flex flex-col items-center md:items-start">
-            <h2 className="text-2xl md:text-3xl font-bold text-base-content">
+          <div className="mt-3 md:mt-0 flex flex-col items-center md:items-start">
+            <h2 className="text-xl md:text-3xl font-bold text-base-content">
               {username || "Usuário"}
             </h2>
-            <p className="text-base-content/70 mt-1 text-center md:text-left">
+            <p className="text-sm md:text-base text-base-content/70 mt-1">
               {createdAt ? `Na plataforma desde ${createdAt}` : "Carregando..."}
             </p>
           </div>
@@ -127,8 +125,9 @@ export default function AccountSettings() {
       {/* Configurações */}
       <div className="collapse collapse-arrow bg-base-200">
         <input type="checkbox" className="peer" />
-        <div className="collapse-title text-xl font-bold text-base-content flex items-center gap-2">
-          <WrenchScrewdriverIcon className="size-6" /> Configurações da Conta
+        <div className="collapse-title text-lg md:text-xl font-bold text-base-content flex items-center gap-2">
+          <WrenchScrewdriverIcon className="size-5 md:size-6" /> Configurações
+          da Conta
         </div>
         <div className="collapse-content space-y-6">
           <div className="form-control w-full">
@@ -164,7 +163,8 @@ export default function AccountSettings() {
           <div className="space-y-2">
             <h3 className="text-lg font-semibold text-error">Zona de Risco</h3>
             <p className="text-sm text-base-content/70">
-              Essa ação não pode ser desfeita. Tenha certeza antes de prosseguir.
+              Essa ação não pode ser desfeita. Tenha certeza antes de
+              prosseguir.
             </p>
             <button
               onClick={handleDeleteAccount}

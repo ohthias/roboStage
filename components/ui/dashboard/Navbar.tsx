@@ -49,9 +49,9 @@ export default function Navbar({
             </span>
           </div>
           <div className="flex-none flex items-center gap-2">
-            <a href="#config" onClick={() => setActiveSection("config")}>
+            <a href="#profile" onClick={() => setActiveSection("profile")}>
               <img
-                src="/images/icons/UserDefaultPhoto.jpg"
+                src="https://static.vecteezy.com/system/resources/previews/055/591/320/non_2x/chatbot-avatar-sending-and-receiving-messages-using-artificial-intelligence-vector.jpg"
                 alt="Logo"
                 className="h-10 rounded-full"
               />
@@ -64,7 +64,7 @@ export default function Navbar({
 
         {/* Área de conteúdo com scroll */}
         <main className="flex-1 overflow-y-auto">
-          <nav className="flex justify-between items-center gap-2 flex-row mb-4 hidden sm:flex sticky top-0 z-10 border-b border-base-300 bg-base-100 px-4 py-2 shadow-xs">
+          <nav className="flex justify-between items-center gap-2 flex-row hidden sm:flex sticky top-0 z-10 border-b border-base-300 bg-base-100 px-4 py-2 shadow-xs">
             <a
               href="#hub"
               onClick={() => setActiveSection("hub")}
@@ -94,7 +94,7 @@ export default function Navbar({
               </a>
             </div>
           </nav>
-          <div className="px-4 mt-4 md:mt-6 lg:mt-4">
+          <div className="px-4 py-4 bg-base-200 min-h-[calc(100vh-70px)]">
             {children}
           </div>
         </main>
@@ -189,9 +189,12 @@ export default function Navbar({
               </li>
               <li>
                 <a
-                  href="#"
-                  target="_blank"
+                  href="#brainShot"
                   className="group relative inline-block transition-colors duration-200 hover:text-primary bg-transparent"
+                  onClick={() => setActiveSection("brainShot")}
+                  aria-current={
+                    activeSection === "brainShot" ? "page" : undefined
+                  }
                 >
                   Jogo rápido (BrainShot)
                   <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
@@ -199,9 +202,12 @@ export default function Navbar({
               </li>
               <li>
                 <a
-                  href="#"
-                  target="_blank"
+                  href="#timer"
                   className="group relative inline-block transition-colors duration-200 hover:text-primary bg-transparent"
+                  onClick={() => setActiveSection("timer")}
+                  aria-current={
+                    activeSection === "timer" ? "page" : undefined
+                  }
                 >
                   Timer
                   <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>

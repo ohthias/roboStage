@@ -200,7 +200,7 @@ export default function LabTestPage() {
         <section className="flex flex-col sm:flex-row gap-4 mb-4 items-start sm:items-center">
           <input
             type="text"
-            className="input input-bordered w-full sm:w-64 flex-1"
+            className="input input-bordered w-full sm:w-64 flex-1 py-2"
             placeholder="Buscar teste por nome..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -231,11 +231,11 @@ export default function LabTestPage() {
 
       {/* Conteúdo aba "Testes" */}
       {activeTab === "tests" && (
-        <section className="flex gap-4 flex-wrap">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {loading && <Loader />}
 
           {!loading && filteredTests.length === 0 && (
-            <div className="col-span-full flex flex-col justify-center items-center p-6 border border-base-300 rounded-lg bg-base-100 shadow-md">
+            <div className="col-span-full flex flex-col justify-center items-center p-6 border border-base-300 rounded-xl bg-base-100 shadow-md">
               <BeakerIcon className="w-12 h-12 text-gray-400 mb-2" />
               <h2 className="text-center text-lg font-bold text-gray-500">
                 Nenhum teste encontrado!
@@ -254,7 +254,6 @@ export default function LabTestPage() {
                 (m: any) => m.mission_key
               );
 
-              // Pegar imagens
               const images = temporada
                 ? getMissionImages(temporada, missionKeys)
                 : [];
@@ -262,13 +261,12 @@ export default function LabTestPage() {
               return (
                 <div
                   key={test.id}
-                  className="card bg-base-100 shadow-md border border-base-300 flex flex-row p-4 items-center gap-4 w-80 h-48 relative"
+                  className="card bg-base-100 shadow-lg border border-base-300 rounded-xl flex flex-col overflow-hidden transition-transform hover:scale-[1.02]"
                 >
                   {/* Imagens */}
-                  <div className="flex-shrink-0">
+                  <div className="bg-base-200 flex items-center justify-center p-4 h-40">
                     {images.length > 1 ? (
-                      // Grid 2x2 para grupos
-                      <div className="grid grid-cols-2 grid-rows-2 gap-1 w-24 h-24">
+                      <div className="grid grid-cols-2 grid-rows-2 gap-1 w-28 h-28">
                         {images
                           .slice(0, 4)
                           .map((img, idx) =>
@@ -283,39 +281,39 @@ export default function LabTestPage() {
                           )}
                       </div>
                     ) : (
-                      // Única imagem
                       images[0] && (
                         <img
                           src={images[0]}
                           alt={`Missão ${missionKeys?.[0]}`}
-                          className="w-24 h-24 object-contain rounded"
+                          className="w-full h-full object-contain rounded"
                         />
                       )
                     )}
                   </div>
 
                   {/* Conteúdo */}
-                  <div className="flex-1 flex flex-col gap-1 overflow-hidden items-start">
-                    <h3 className="card-title text-lg font-bold truncate">
+                  <div className="flex flex-col flex-1 p-4 gap-2">
+                    <h3 className="text-lg font-bold text-base-content truncate">
                       {test.name_test}
                     </h3>
                     <p className="text-sm text-base-content">
-                      <span className="font-bold">Tipo:</span> {testTypeName}
+                      <span className="font-semibold">Tipo:</span>{" "}
+                      {testTypeName}
                     </p>
 
                     {temporada && (
                       <p className="text-sm text-base-content">
-                        <span className="font-bold">Temporada:</span>{" "}
+                        <span className="font-semibold">Temporada:</span>{" "}
                         {temporada.toUpperCase()}
                       </p>
                     )}
 
                     {missionKeys && missionKeys.length > 0 && (
-                      <div className="flex items-center gap-1 flex-wrap max-h-6 overflow-hidden">
+                      <div className="flex flex-wrap gap-1 mt-1">
                         {missionKeys.map((key: string) => (
                           <span
                             key={key}
-                            className="inline-flex items-center justify-center w-6 h-6 rounded bg-primary/45 text-primary-content text-[10px] font-bold cursor-default"
+                            className="px-2 py-1 rounded-lg bg-primary/20 text-primary text-xs font-bold"
                             title={key}
                           >
                             {key}
@@ -324,33 +322,33 @@ export default function LabTestPage() {
                       </div>
                     )}
 
-                    <p className="text-xs text-base-content mt-1">
+                    <p className="text-xs text-base-content/70 mt-auto">
                       Criado em:{" "}
                       {new Date(test.created_at).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
 
                   {/* Botões de ação */}
-                  <div className="absolute bottom-2 right-2 flex gap-2">
+                  <div className="flex justify-end gap-2 p-3 border-t border-base-300 bg-base-50">
                     <button
                       onClick={() =>
                         modalResultFormRef.current?.openWithTest(test.id)
                       }
-                      className="btn btn-default btn-xs p-1"
+                      className="btn btn-primary btn-xs"
                       title="Adicionar resultado"
                     >
                       <PlusIcon className="size-4" />
                     </button>
                     <button
                       onClick={() => handleRename(test.id, test.name_test)}
-                      className="btn btn-ghost btn-xs p-1 text-primary"
+                      className="btn btn-ghost btn-xs text-primary"
                       title="Renomear teste"
                     >
                       <PencilIcon className="size-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(test.id)}
-                      className="btn btn-ghost btn-xs p-1 text-error"
+                      className="btn btn-ghost btn-xs text-error"
                       title="Excluir teste"
                     >
                       <TrashIcon className="size-4" />

@@ -51,7 +51,6 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
     }
 
     try {
-      // 1. Pegar type_id do test_types
       const { data: typeData, error: typeError } = await supabase
         .from("test_types")
         .select("id")
@@ -78,7 +77,7 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
         await supabase.from("test_missions").insert({
           test_id: testId,
           mission_key: selectedMissions[0],
-          season: season
+          season: season,
         });
       }
 
@@ -86,7 +85,7 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
         const missionsInsert = selectedMissions.map((m) => ({
           test_id: testId,
           mission_key: m,
-          season: season
+          season: season,
         }));
         await supabase.from("test_missions").insert(missionsInsert);
       }
@@ -111,19 +110,27 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-6 space-y-6">
+    <form
+      onSubmit={handleSubmit}
+      className="p-2 space-y-6 w-full max-w-2xl mx-auto"
+    >
+      {/* Nome */}
       <div>
-        <label className="label">Nome do teste</label>
+        <label className="label font-medium">Nome do Teste</label>
         <input
           type="text"
           className="input input-bordered w-full"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          placeholder="Ex: Teste de Missão 01"
+          required
         />
       </div>
+
+      {/* Tipo */}
       <div>
-        <label className="label">Tipo de Teste</label>
-        <div className="flex gap-6 justify-center mt-4 min-w-[350px]">
+        <label className="label font-medium">Tipo de Teste</label>
+        <div className="flex flex-row gap-8 justify-start mt-4">
           <CardTest
             imageBackground="/images/CardsTest/Teste_individual.webp"
             nameTest="Individual"
@@ -141,9 +148,9 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
 
       {/* Temporada */}
       {type !== "personalizado" && (
-        <div className="form-control">
-          <label className="label">Temporada</label>
-          <div className="flex gap-6 justify-start mt-4">
+        <div>
+          <label className="label font-medium">Temporada</label>
+          <div className="flex flex-wrap gap-4 justify-start mt-4">
             <CardSeason
               image="/images/logos/Submerged.webp"
               name="Submerged"
@@ -162,8 +169,8 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
 
       {/* Missão individual */}
       {type === "missao_individual" && (
-        <div className="form-control">
-          <label className="label">Missão</label>
+        <div>
+          <label className="label font-medium">Missão</label>
           <select
             className="select select-bordered w-full"
             onChange={(e) => setSelectedMissions([e.target.value])}
@@ -178,57 +185,95 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
         </div>
       )}
 
-      {/* Conjunto de missões */}
+      {/* Grupo de missões */}
       {type === "grupo" && (
-        <div className="form-control">
-          <label className="label">Selecione Missões</label>
-          <div className="grid grid-cols-2 gap-2">
-            {Array.from({ length: Math.ceil(missions.length / 2) }).map(
-              (_, rowIdx) => (
-                <div key={rowIdx} className="flex flex-col gap-2">
-                  {missions
-                    .filter((_, idx) => idx % 2 === rowIdx)
-                    .map((m) => (
-                      <label key={m.id} className="cursor-pointer label">
-                        <input
-                          type="checkbox"
-                          className="checkbox checkbox-primary"
-                          value={m.id}
-                          checked={selectedMissions.includes(m.id)}
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-                            setSelectedMissions((prev) =>
-                              checked
-                                ? [...prev, m.id]
-                                : prev.filter((id) => id !== m.id)
-                            );
-                          }}
-                        />
-                        <span className="label-text">
-                          {m.id} - {m.name}
-                        </span>
-                      </label>
-                    ))}
-                </div>
-              )
-            )}
+        <div>
+          <label className="label font-medium">Selecione Missões</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+            {missions.map((m) => (
+              <label
+                key={m.id}
+                className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-base-200 transition"
+              >
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-primary"
+                  value={m.id}
+                  checked={selectedMissions.includes(m.id)}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setSelectedMissions((prev) =>
+                      checked
+                        ? [...prev, m.id]
+                        : prev.filter((id) => id !== m.id)
+                    );
+                  }}
+                />
+                <span className="text-sm">
+                  {m.id} - {m.name}
+                </span>
+              </label>
+            ))}
           </div>
         </div>
       )}
 
-      <div className="flex gap-2">
-        <button type="submit" className="btn btn-primary flex-1">
-          Criar Teste
-        </button>
+      {/* Personalizado */}
+      {type === "personalizado" && (
+        <div>
+          <label className="label font-medium">Parâmetros</label>
+          <div className="space-y-3">
+            {parameters.map((p, idx) => (
+              <div key={idx} className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Nome"
+                  className="input input-bordered flex-1"
+                  value={p.name}
+                  onChange={(e) => {
+                    const updated = [...parameters];
+                    updated[idx].name = e.target.value;
+                    setParameters(updated);
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Valor"
+                  className="input input-bordered flex-1"
+                  value={p.value}
+                  onChange={(e) => {
+                    const updated = [...parameters];
+                    updated[idx].value = e.target.value;
+                    setParameters(updated);
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={addParameter}
+            className="btn btn-outline btn-sm mt-2"
+          >
+            + Adicionar Parâmetro
+          </button>
+        </div>
+      )}
+
+      {/* Botões */}
+      <div className="flex flex-row gap-3 justify-center">
         <button
           type="button"
-          className="btn btn-ghost flex-1"
+          className="btn btn-ghost"
           onClick={() => {
             resetForm();
             onCancel?.();
           }}
         >
           Cancelar
+        </button>
+        <button type="submit" className="btn btn-primary">
+          Criar Teste
         </button>
       </div>
     </form>

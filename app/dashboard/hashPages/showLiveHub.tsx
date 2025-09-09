@@ -44,9 +44,7 @@ export default function ShowLiveHub() {
         event.name_event.toLowerCase().includes(searchText.toLowerCase())
       )
       .filter((event) =>
-        seasonFilter === "all"
-          ? true
-          : event.config?.temporada === seasonFilter
+        seasonFilter === "all" ? true : event.config?.temporada === seasonFilter
       )
       .sort((a, b) => {
         const dateA = new Date(a.created_at).getTime();
@@ -74,45 +72,44 @@ export default function ShowLiveHub() {
             Gerencie seus eventos de robótica ao vivo aqui.
           </p>
         </div>
-        <button
-          className="btn btn-accent"
-          onClick={() => setShowModal(true)}
-        >
+        <button className="btn btn-accent" onClick={() => setShowModal(true)}>
           Criar Evento
         </button>
       </section>
 
       {/* 🔍 Filtros */}
-      <section className="flex flex-col sm:flex-row gap-4 mt-4 mb-4 items-start sm:items-center">
+      <section className="flex flex-col gap-3 mt-4 mb-4 w-full sm:flex-row sm:gap-4 sm:items-center">
         <input
           type="text"
-          className="input input-bordered w-full sm:w-64 flex-1"
+          className="input input-bordered w-full sm:w-64 flex-1 py-2"
           placeholder="Buscar evento por nome..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
 
-        <select
-          className="select select-bordered w-full sm:w-52"
-          value={seasonFilter}
-          onChange={(e) => setSeasonFilter(e.target.value)}
-        >
-          <option value="all">Todas as temporadas</option>
-          {seasons.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
+        <div className="flex flex-col w-full gap-3 sm:flex-row sm:w-auto sm:gap-4">
+          <select
+            className="select select-bordered w-full sm:w-52"
+            value={seasonFilter}
+            onChange={(e) => setSeasonFilter(e.target.value)}
+          >
+            <option value="all">Todas as temporadas</option>
+            {seasons.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
 
-        <select
-          className="select select-bordered w-full sm:w-52"
-          value={order}
-          onChange={(e) => setOrder(e.target.value as "desc" | "asc")}
-        >
-          <option value="desc">Mais recentes primeiro</option>
-          <option value="asc">Mais antigos primeiro</option>
-        </select>
+          <select
+            className="select select-bordered w-full sm:w-52"
+            value={order}
+            onChange={(e) => setOrder(e.target.value as "desc" | "asc")}
+          >
+            <option value="desc">Mais recentes primeiro</option>
+            <option value="asc">Mais antigos primeiro</option>
+          </select>
+        </div>
       </section>
 
       <section className="flex flex-wrap justify-start gap-6 mt-6">
@@ -147,54 +144,60 @@ export default function ShowLiveHub() {
             )}
 
             {/* Lista de eventos filtrados */}
-            {filteredEvents.map((event) => (
-              <div
-                key={event.id_evento}
-                className="card w-full sm:w-[525px] h-42 bg-base-200 shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-lg flex flex-row overflow-hidden transform hover:-translate-y-1 transition-transform duration-300"
-              >
-                {/* Logo da Temporada */}
-                <figure className="w-1/3 h-full overflow-hidden flex items-center justify-center bg-base-300 rounded-lg">
-                  <img
-                    src={sessionBackground(event.config?.temporada)}
-                    alt="Evento"
-                    className="object-cover h-full w-full transition-transform duration-500 hover:scale-105"
-                  />
-                </figure>
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+              {filteredEvents.map((event) => (
+                <div
+                  key={event.id_evento}
+                  className="card bg-base-100 shadow-md border border-base-300 rounded-xl flex flex-col md:flex-row overflow-hidden transition-transform hover:scale-[1.02]"
+                >
+                  {/* Logo da Temporada */}
+                  <figure className="w-full md:w-1/3 h-40 md:h-auto flex items-center justify-center bg-base-200 ronded-lg">
+                    <img
+                      src={sessionBackground(event.config?.temporada)}
+                      alt="Evento"
+                      className="object-cover w-full h-full transition-transform duration-500 hover:scale-105"
+                    />
+                  </figure>
 
-                {/* Conteúdo */}
-                <div className="card-body flex flex-col justify-between p-4">
-                  <div className="flex justify-between items-start">
-                    <h2 className="card-title text-lg font-semibold">
-                      {event.name_event}
-                    </h2>
-                    <div className="badge badge-success badge-sm">Ativo</div>
-                  </div>
+                  {/* Conteúdo */}
+                  <div className="flex flex-col flex-1 p-4 gap-3">
+                    <div className="flex justify-between items-start">
+                      <h2 className="text-lg font-bold text-base-content truncate">
+                        {event.name_event}
+                      </h2>
+                      <span className="badge badge-success text-xs">Ativo</span>
+                    </div>
 
-                  <div className="text-sm text-base-content mt-1 flex flex-col gap-1">
-                    <p>
-                      Categoria:{" "}
-                      {event.config?.base === "FLL"
-                        ? "FIRST LEGO League"
-                        : "Robótica"}
-                    </p>
-                    {event.config?.base === "FLL" && (
-                      <p>Temporada: {event.config?.temporada}</p>
-                    )}
-                  </div>
+                    <div className="text-sm text-base-content flex flex-col gap-1">
+                      <p>
+                        <span className="font-semibold">Categoria:</span>{" "}
+                        {event.config?.base === "FLL"
+                          ? "FIRST LEGO League"
+                          : "Robótica"}
+                      </p>
+                      {event.config?.base === "FLL" && (
+                        <p>
+                          <span className="font-semibold">Temporada:</span>{" "}
+                          {event.config?.temporada}
+                        </p>
+                      )}
+                    </div>
 
-                  <div className="card-actions justify-end mt-2">
-                    <button
-                      onClick={() =>
-                        router.push(`/dashboard/showlive/${event.code_event}`)
-                      }
-                      className="btn btn-primary btn-sm flex items-center gap-2 transition-transform duration-300 hover:scale-105"
-                    >
-                      Acessar Hub
-                    </button>
+                    {/* Botão no rodapé */}
+                    <div className="mt-auto flex justify-end">
+                      <button
+                        onClick={() =>
+                          router.push(`/dashboard/showlive/${event.code_event}`)
+                        }
+                        className="btn btn-primary btn-sm flex items-center gap-2 transition-transform hover:scale-105"
+                      >
+                        Acessar Hub
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </section>
           </>
         )}
       </section>

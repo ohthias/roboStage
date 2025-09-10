@@ -228,7 +228,6 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
 
   const handleSubmit = async () => {
     if (!selectedTest) return;
-    console.log(missions[0]?.season);
 
     const payload: any[] = [
       {

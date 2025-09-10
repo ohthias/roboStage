@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/app/context/ToastContext";
-import { a } from "framer-motion/client";
 
 type StyleLabModalProps = {
   onClose: () => void;

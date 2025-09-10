@@ -13,14 +13,12 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="pt-br">
-            <body className="min-h-screen bg-base-100">
-                <UserProvider>
-                    <ToastProvider>
-                        {children}
-                    </ToastProvider>
-                </UserProvider>
-            </body>
-        </html>
+        <main className="min-h-screen bg-base-100">
+            <UserProvider>
+                <ToastProvider>
+                    {children}
+                </ToastProvider>
+            </UserProvider>
+        </main>
     );
 }

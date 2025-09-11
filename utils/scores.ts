@@ -9,7 +9,7 @@ interface Mission {
   name: string;
   mission: string;
   points: number | number[];
-  equipment: boolean;
+  equipaments: boolean;
   type: ["switch" | "range", ...(string | number | null)[]];
   image?: string;
   ["sub-mission"]?: SubMission[];

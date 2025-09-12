@@ -87,7 +87,7 @@ export default function FeaturesSection() {
         <h3 className="text-xl font-medium mb-4 text-base-content">
           Pronto para começar sua jornada com o <span className="text-primary">RoboStage</span>?
         </h3>
-        <button className="btn btn-primary px-8 py-3 rounded-xl shadow-lg hover:scale-105 transition-transform">
+        <button className="btn btn-primary px-8 py-3 rounded-xl shadow-lg hover:scale-105 transition-transform" onClick={() => window.location.href = '/join'}>
           Experimente Agora
         </button>
       </motion.div>

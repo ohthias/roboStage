@@ -1,12 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
 
-  // Função para validar o Turnstile no backend
+  // 🔹 Sempre que montar o hook, busca sessão atual
+  useEffect(() => {
+    const getSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error(error);
+        return;
+      }
+      setUser(data.session?.user ?? null);
+    };
+
+    getSession();
+
+    // 🔹 Listener pra mudar user em tempo real (login/logout)
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Turnstile validate (continua igual)
   const validateTurnstile = async (token: string) => {
     try {
       const res = await fetch("/api/validate-turnstile", {
@@ -15,7 +41,7 @@ export function useAuth() {
         body: JSON.stringify({ token }),
       });
       const data = await res.json();
-      return data.success; // true ou false
+      return data.success;
     } catch {
       return false;
     }
@@ -42,6 +68,7 @@ export function useAuth() {
     }
 
     if (data.session) {
+      setUser(data.session.user); // 🔹 seta o usuário
       setSuccess("Login realizado com sucesso!");
       return true;
     }
@@ -64,6 +91,7 @@ export function useAuth() {
       if (error) throw error;
 
       if (data.user) {
+        setUser(data.user); // 🔹 seta usuário novo
         const { error: profileError } = await supabase
           .from("profiles")
           .insert([{ id: data.user.id, username: name }]);
@@ -95,5 +123,10 @@ export function useAuth() {
     await supabase.auth.signInWithOAuth({ provider });
   };
 
-  return { login, signup, loginWithProvider, loading, error, success };
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
+  return { user, login, signup, loginWithProvider, logout, loading, error, success };
 }

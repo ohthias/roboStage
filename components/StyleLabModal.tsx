@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/utils/supabase/client";
+import { useToast } from "@/app/context/ToastContext";
 
 type StyleLabModalProps = {
   onClose: () => void;
@@ -15,6 +16,7 @@ export default function StyleLabModal({ onClose }: StyleLabModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const { addToast } = useToast();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -35,11 +37,41 @@ export default function StyleLabModal({ onClose }: StyleLabModalProps) {
     exit: { opacity: 0, x: -50 },
   };
 
+  // Função para converter imagem em WebP
+  const convertToWebP = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("Canvas não suportado"));
+
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", { type: "image/webp" }));
+            } else {
+              reject(new Error("Erro ao converter imagem para WebP"));
+            }
+          },
+          "image/webp",
+          0.8 // qualidade do WebP
+        );
+      };
+      img.onerror = (err) => reject(err);
+    });
+  };
+
   // Função para salvar no banco
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId) {
-      alert("Usuário não encontrado. Faça login novamente.");
+      addToast("Usuário não encontrado. Faça login novamente.", "error");
       return;
     }
 
@@ -48,12 +80,13 @@ export default function StyleLabModal({ onClose }: StyleLabModalProps) {
     try {
       let backgroundUrl = null;
 
-      // Upload da imagem no Storage
+      // Upload da imagem no Storage (convertendo antes para webp)
       if (file) {
-        const path = `themes/${userId}/${Date.now()}-${file.name}`;
+        const webpFile = await convertToWebP(file);
+        const path = `themes/${userId}/${Date.now()}-${webpFile.name}`;
         const { error: uploadError } = await supabase.storage
           .from("style-backgrounds")
-          .upload(path, file);
+          .upload(path, webpFile);
 
         if (uploadError) throw uploadError;
 
@@ -73,11 +106,11 @@ export default function StyleLabModal({ onClose }: StyleLabModalProps) {
 
       if (error) throw error;
 
-      alert("Tema criado com sucesso!");
+      addToast("Tema criado com sucesso!", "success");
       onClose();
     } catch (err: any) {
       console.error(err);
-      alert("Erro ao criar tema: " + err.message);
+      addToast("Erro ao criar tema: " + err.message, "error");
     } finally {
       setLoading(false);
     }
@@ -86,17 +119,42 @@ export default function StyleLabModal({ onClose }: StyleLabModalProps) {
   return (
     <div className="modal modal-open">
       <div className="modal-box max-w-lg relative">
-        <h2 className="text-xl font-bold mb-4">✨ Criar Tema</h2>
+        <button
+          type="button"
+          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+
+        <h2 className="text-xl font-bold mb-4">Criar Tema</h2>
 
         {/* Barra de progresso de steps */}
         <ul className="steps w-full mb-6">
-          <li className={`step ${step >= 1 ? "step-primary" : ""}`}>Nome</li>
-          <li className={`step ${step >= 2 ? "step-primary" : ""}`}>Cores</li>
-          <li className={`step ${step >= 3 ? "step-primary" : ""}`}>Imagem</li>
-          <li className={`step ${step >= 4 ? "step-primary" : ""}`}>Finalizar</li>
+          <li className={`step ${step >= 1 ? "step-primary text-primary font-semibold" : ""} text-base-content/75 text-sm`}>Nome</li>
+          <li className={`step ${step >= 2 ? "step-primary text-primary font-semibold" : ""} text-base-content/75 text-sm`}>Cores</li>
+          <li className={`step ${step >= 3 ? "step-primary text-primary font-semibold" : ""} text-base-content/75 text-sm`}>Imagem</li>
+          <li className={`step ${step >= 4 ? "step-primary text-primary font-semibold" : ""} text-base-content/75 text-sm`}>Finalizar</li>
         </ul>
 
-        <form className="relative" onSubmit={handleSubmit}>
+        <form
+          className="relative"
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              if (step < 4) {
+                e.preventDefault();
+                if (
+                  (step === 1 && name.trim() !== "") ||
+                  (step === 2 && colors.every((c) => !!c)) ||
+                  (step === 3 && file)
+                ) {
+                  next();
+                }
+              }
+            }
+          }}
+        >
           <AnimatePresence mode="wait">
             {/* Step 1 */}
             {step === 1 && (
@@ -119,6 +177,7 @@ export default function StyleLabModal({ onClose }: StyleLabModalProps) {
                     className="input input-bordered w-full"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    required
                   />
                 </div>
               </motion.div>
@@ -149,6 +208,7 @@ export default function StyleLabModal({ onClose }: StyleLabModalProps) {
                         newColors[i] = e.target.value;
                         setColors(newColors);
                       }}
+                      required
                     />
                   </div>
                 ))}
@@ -177,6 +237,7 @@ export default function StyleLabModal({ onClose }: StyleLabModalProps) {
                     const f = e.target.files?.[0] || null;
                     setFile(f);
                   }}
+                  required
                 />
                 {file && (
                   <div className="mt-4 flex justify-center">
@@ -202,10 +263,7 @@ export default function StyleLabModal({ onClose }: StyleLabModalProps) {
                 className="text-center space-y-4 w-full"
               >
                 <p className="text-lg font-semibold">
-                  🎉 Pronto para criar o tema?
-                </p>
-                <p className="text-sm text-gray-500">
-                  Revise as informações e clique em <b>Criar</b> para salvar seu tema.
+                  Criando o tema <span className="text-primary">{name}</span>
                 </p>
               </motion.div>
             )}
@@ -233,6 +291,11 @@ export default function StyleLabModal({ onClose }: StyleLabModalProps) {
                   type="button"
                   className="btn btn-primary"
                   onClick={next}
+                  disabled={
+                    (step === 1 && name.trim() === "") ||
+                    (step === 2 && colors.some((c) => !c)) ||
+                    (step === 3 && !file)
+                  }
                 >
                   Próximo
                 </button>
@@ -241,9 +304,6 @@ export default function StyleLabModal({ onClose }: StyleLabModalProps) {
                   Criar Tema
                 </button>
               )}
-              <button type="button" className="btn btn-ghost ml-2" onClick={onClose}>
-                Cancelar
-              </button>
             </div>
           </div>
         </form>

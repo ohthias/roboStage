@@ -35,10 +35,10 @@ export function Navbar() {
               <li>
                 <details>
                   <summary>FLL Score</summary>
-                  <ul className="bg-base-200 rounded-t-none p-2 z-50">
+                  <ul className="bg-base-200 rounded-t-none p-2 z-50 text-md">
                     {Object.keys(seasons).sort().map((seasonKey) => (
                       <li key={seasonKey}>
-                        <a href={`/tools/score#${seasonKey.toLowerCase()}`}>
+                        <a href={`/fll-score#${seasonKey.toLowerCase()}`}>
                           {seasonKey.toUpperCase()}
                         </a>
                       </li>
@@ -46,7 +46,7 @@ export function Navbar() {
                   </ul>
                 </details>
               </li>
-              <li><a href="/tools/quickbrick">QuickBrick Studio</a></li>
+              <li><a href="/quickbrick" className="text-md">QuickBrick Studio</a></li>
               <li><a href="/universe" className="btn btn-accent btn-outline">Embarcar em evento</a></li>
               <li><a href="/join" className="btn btn-primary">Entrar</a></li>
               <ThemeController />
@@ -84,7 +84,7 @@ export function Navbar() {
                   <ul className="menu p-2 rounded-box mt-2 space-y-1 w-full">
                     {Object.keys(seasons).sort().map((seasonKey) => (
                       <li key={seasonKey}>
-                        <a href={`/tools/score#${seasonKey.toLowerCase()}`}>
+                        <a href={`/fll-score#${seasonKey.toLowerCase()}`}>
                           {seasonKey.toUpperCase()}
                         </a>
                       </li>
@@ -92,7 +92,7 @@ export function Navbar() {
                   </ul>
                 </details>
               </li>
-              <li><a href="/tools/quickbrick" className="btn btn-ghost w-full justify-start">QuickBrick Studio</a></li>
+              <li><a href="/quickbrick" className="btn btn-ghost w-full justify-start">QuickBrick Studio</a></li>
               <li><a href="/fll-docs" className="btn btn-ghost w-full justify-start">Docs</a></li>
             </ul>
             <hr />

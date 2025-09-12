@@ -200,6 +200,7 @@
       "mission": "A árvore de coral está pendurada no suporte apropriado",
       "points": 20,
       "equipaments" : true,
+      "image": "/images/missions/submerged/thumb-mission-01.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -220,6 +221,7 @@
       "mission": "O tubarão não está tocando a caverna",
       "points": 20,
       "equipaments" : false,
+      "image": "/images/missions/submerged/thumb-mission-02.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -235,6 +237,7 @@
       "mission": "O recife de corais está virado para cima e não está tocando o tapete",
       "points": 20,
       "equipaments" : true,
+      "image": "/images/missions/submerged/thumb-mission-03.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -250,6 +253,7 @@
       "mission": "O mergulhador não está mais tocando o berçário de corais",
       "points": 20,
       "equipaments" : false,
+      "image": "/images/missions/submerged/thumb-mission-04.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -265,6 +269,7 @@
       "mission": "O peixe-pescador está preso ao navio naufragado",
       "points": 30,
       "equipaments" : false,
+      "image": "/images/missions/submerged/thumb-mission-05.png",
       "type": ["switch", null, null]
     },
     {
@@ -273,6 +278,7 @@
       "mission": "O mastro do navio naufragado está totalmente de pé",
       "points": 30,
       "equipaments" : true,
+      "image": "/images/missions/submerged/thumb-mission-06.png",
       "type": ["switch", null, null]
     },
     {
@@ -281,6 +287,7 @@
       "mission": "O baú do tesouro está completamente fora do ninho do kraken",
       "points": 20,
       "equipaments" : true,
+      "image": "/images/missions/submerged/thumb-mission-07.png",
       "type": ["switch", null, null]
     },
     {
@@ -289,6 +296,7 @@
       "mission": "Número de segmentos do habitat artificial empilhados, totalmente planificados e verticais",
       "points": 10,
       "equipaments" : true,
+      "image": "/images/missions/submerged/thumb-mission-08.png",
       "type": ["range", 0, 4]
     },
     {
@@ -297,6 +305,7 @@
       "mission": "A criatura desconhecida foi libertada",
       "points": 20,
       "equipaments" : false,
+      "image": "/images/missions/submerged/thumb-mission-09.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -312,6 +321,7 @@
       "mission": "A bandeira amarela da sua equipe não está hasteada",
       "points": 30,
       "equipaments" : true,
+      "image": "/images/missions/submerged/thumb-mission-10.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -327,6 +337,7 @@
       "mission": "Número de baleias revelado",
       "points": [0, 20, 30],
       "equipaments" : false,
+      "image": "/images/missions/submerged/thumb-mission-11.png",
       "type": ["range", 0, 2]
     },
     {
@@ -335,6 +346,7 @@
       "mission": "Número de krills que estão ao menos parcialmente na boca da baleia",
       "points": 10,
       "equipaments" : true,
+      "image": "/images/missions/submerged/thumb-mission-12.png",
       "type": ["range", 0, 5]
     },
     {
@@ -343,6 +355,7 @@
       "mission": "O navio está na nova rota, tocando o tapete",
       "points": 20,
       "equipaments" : false,
+      "image": "/images/missions/submerged/thumb-mission-13.png",
       "type": ["switch", null, null]
     },
     {
@@ -351,6 +364,7 @@
       "mission": "A amostra de água está completamente fora da área de amostras",
       "points": 5,
       "equipaments" : false,
+      "image": "/images/missions/submerged/thumb-mission-14.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -376,6 +390,7 @@
       "mission": "Número de amostras, partes do tridente ou baús de tesouro que estão ao menos em parte na área de carga da embarcação",
       "points": 5,
       "equipaments" : true,
+      "image": "/images/missions/submerged/thumb-mission-15.png",
       "type": ["range", 0, 6],
       "sub-mission": [
         {
@@ -408,6 +423,7 @@
       "mission": "Ausência total de resíduos de solo, tocando o tapete",
       "points": 10,
       "equipaments" : true,
+      "image": "/images/missions/unearthed/thumb-mission-01.png",
       "type": ["range", 0, 2],
       "sub-mission": [
         {
@@ -423,6 +439,7 @@
       "mission": "Seções superiores do solo totalmente limpas",
       "points": 10,
       "equipaments" : false,
+      "image": "/images/missions/unearthed/thumb-mission-02.png",
       "type": ["range", 0, 3]
     },
     {
@@ -431,6 +448,7 @@
       "mission": "O carrinho da sua equipe está no campo da equipe adversária",
       "points": 30,
       "equipaments" : false,
+      "image": "/images/missions/unearthed/thumb-mission-03.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -446,6 +464,7 @@
       "mission": "O artefato precioso não está tocando a mina",
       "points": 30,
       "equipaments" : true,
+      "image": "/images/missions/unearthed/thumb-mission-04.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -461,6 +480,7 @@
       "mission": "O piso da estrutura está completamente na vertical",
       "points": 30,
       "equipaments" : true,
+      "image": "/images/missions/unearthed/thumb-mission-05.png",
       "type": ["switch", null, null]
     },
     {
@@ -469,6 +489,7 @@
       "mission": "Os blocos de minério não estão tocando a forja",
       "points": 10,
       "equipaments" : false,
+      "image": "/images/missions/unearthed/thumb-mission-06.png",
       "type": ["range", 0, 3]
     },
     {
@@ -477,14 +498,16 @@
       "mission": "A mó não está mais tocando a base",
       "points": 30,
       "equipaments" : false,
+      "image": "/images/missions/unearthed/thumb-mission-07.png",
       "type": ["switch", null, null]
     },
     {
       "id": "M08",
-      "name": "Silo",
+      "name": "SILO",
       "mission": "Peças preservadas fora do silo",
       "points": 10,
       "equipaments" : false,
+      "image": "/images/missions/unearthed/thumb-mission-08.png",
       "type": ["range", 0, 3]
     },
     {
@@ -493,6 +516,7 @@
       "mission": "O telhado foi totalmente levantado",
       "points": 20,
       "equipaments" : true,
+      "image": "/images/missions/unearthed/thumb-mission-09.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -508,6 +532,7 @@
       "mission": "Número de peças do solo que foram escavadas",
       "points": 20,
       "equipaments" : false,
+      "image": "/images/missions/unearthed/thumb-mission-10.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -523,6 +548,7 @@
       "mission": "Os artefatos foram levantados acima da camada do solo",
       "points": 20,
       "equipaments" : true,
+      "image": "/images/missions/unearthed/thumb-mission-11.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -538,6 +564,7 @@
       "mission": "A areia foi totalmente limpa",
       "points": 20,
       "equipaments" : true,
+      "image": "/images/missions/unearthed/thumb-mission-12.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -553,6 +580,7 @@
       "mission": "A estátua foi completamente levantada",
       "points": 30,
       "equipaments" : true,
+      "image": "/images/missions/unearthed/thumb-mission-13.png",
       "type": ["switch", null, null]
     },
     {
@@ -561,6 +589,7 @@
       "mission": "Os artefatos estão tocando o tapete e ao menos parcialmente o fórum (Artefatos: pincel, solo, artefato precioso, carrinho de mineração da equipe adversária, minério com artefato fossilizado, mó e prato da balança)",
       "points": 5,
       "equipaments" : true,
+      "image": "/images/missions/unearthed/thumb-mission-14.png",
       "type": ["range", 0, 7]
     },
     {
@@ -569,6 +598,7 @@
       "mission": "As bandeiras estão ao menos parcialmente dentro do sítio e tocando o tapete",
       "points": 10,
       "equipaments" : false,
+      "image": "/images/missions/unearthed/thumb-mission-15.png",
       "type": ["range", 0, 3]
     },
     {

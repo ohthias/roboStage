@@ -1,22 +1,26 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import FormMission from "@/components/FormMission";
-import { calculateTotalPoints } from "@/utils/calculateTotalPoints";
+import FormMission from "@/components/FormMission/FormMission";
 import Loader from "@/components/loader";
 import { Navbar } from "@/components/Navbar";
+import { sumAllMissions } from "@/utils/scores";
 
-type MissionType = {
+interface SubMission {
+  submission: string;
+  points: number | number[];
+  type: ["switch" | "range", ...(string | number | null)[]];
+}
+
+interface MissionType {
   id: string;
   name: string;
-  mission?: string;
-  type: string[];
-  points: number[] | number;
-  "sub-mission"?: {
-    submission: string;
-    type: string[];
-    points: number | number[];
-  }[];
-};
+  mission: string;
+  points: number | number[];
+  equipaments: boolean;
+  type: ["switch" | "range", ...(string | number | null)[]];
+  image?: string;
+  ["sub-mission"]?: SubMission[];
+}
 
 type ResponseType = {
   [missionId: string]: {
@@ -42,7 +46,7 @@ export default function Page() {
   const startSound = useRef<HTMLAudioElement | null>(null);
   const endSound = useRef<HTMLAudioElement | null>(null);
 
-  let totalPoints = calculateTotalPoints(missions, responses);
+  const totalPoints = sumAllMissions(missions, responses);
 
   useEffect(() => {
     if (typeof window !== "undefined") {

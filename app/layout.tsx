@@ -3,6 +3,8 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "./context/UserContext";
 import { ToastProvider } from "./context/ToastContext";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -22,6 +24,8 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <body className={`${roboto.variable} antialiased`}>
+        <Analytics />
+        <SpeedInsights />
         <UserProvider>
           <ToastProvider>
             {children}

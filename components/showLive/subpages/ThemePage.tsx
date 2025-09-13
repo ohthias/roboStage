@@ -6,6 +6,7 @@ import { useUser } from "@/app/context/UserContext";
 import { useToast } from "@/app/context/ToastContext";
 import PreviewEvent from "../PreviewEvent";
 import { EyeIcon, PaintBrushIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassCircleIcon } from "@heroicons/react/24/solid";
 
 interface StyleLabTheme {
   id_theme: number;
@@ -26,6 +27,7 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
   const [typeEventId, setTypeEventId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"themes" | "preview">("themes");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch presets locais
   useEffect(() => {
@@ -206,10 +208,28 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
           </div>
 
           {/* Seus temas */}
-          <h4 className="text-xl font-bold mt-6 mb-6 border-b border-base-content max-w-max text-base-content">Seus temas</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {themes.map(renderThemeCard)}
-          </div>
+            <h4 className="text-xl font-bold mt-6 mb-6 border-b border-base-content max-w-max text-base-content">Seus temas</h4>
+            <div className="relative mb-4">
+              <input
+              type="text"
+              placeholder="Buscar tema..."
+              className="input input-bordered w-full pr-10 flex-1"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 pointer-events-none">
+              <MagnifyingGlassCircleIcon className="size-6" />
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {themes
+              .filter((theme) =>
+              theme.name
+                ? theme.name.toLowerCase().includes(searchTerm.toLowerCase())
+                : `Tema #${theme.id_theme}`.toLowerCase().includes(searchTerm.toLowerCase())
+              )
+              .map(renderThemeCard)}
+            </div>
         </>
       )}
 

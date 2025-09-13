@@ -31,7 +31,7 @@ export default function CardOverlay({
   return (
     <div
       className={`relative card shadow-lg flex flex-col justify-between overflow-hidden 
-        w-full h-auto max-w-full mx-auto transition-all duration-300
+        w-full h-auto max-w-full transition-all duration-300
         ${sizeClasses[size]}`}
     >
       {/* Background com overlay */}

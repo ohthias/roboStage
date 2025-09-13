@@ -32,9 +32,9 @@ export default function GeneralPage({
   }
 
   return (
-    <>
-      <h1 className="text-primary font-bold text-3xl mb-4 px-4 md:px-8">Geral</h1>
-      <div className="flex flex-col lg:flex-row gap-4 w-full">
+    <div className="px-4 md:px-6">
+      <h1 className="text-primary font-bold text-3xl mb-4">Geral</h1>
+      <div className="flex flex-col lg:flex-row gap-4 w-full justify-start">
         <CardOverlay
           bgUrl={urlBackground()}
           title={name_event}
@@ -52,6 +52,6 @@ export default function GeneralPage({
           buttons={[]}
         />
       </div>
-    </>
+    </div>
   );
 }

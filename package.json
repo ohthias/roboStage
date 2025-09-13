@@ -1,13 +1,12 @@
 {
   "name": "robostage",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "private": true,
-  "start": "react-scripts --max-http-header-size=1024 start",
+  "start": "react-scripts",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "next start"
   },
   "dependencies": {
     "@flaticon/flaticon-uicons": "^3.3.1",
@@ -17,6 +16,8 @@
     "@supabase/supabase-js": "^2.49.8",
     "@types/classnames": "^2.3.4",
     "@types/jspdf": "^2.0.0",
+    "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
     "classnames": "^2.5.1",
     "framer-motion": "^12.23.12",
     "js-cookie": "^3.0.5",

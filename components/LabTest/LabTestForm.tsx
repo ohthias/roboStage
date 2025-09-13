@@ -6,6 +6,10 @@ import CardSeason from "../ui/Cards/CardSeason";
 import { supabase } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/app/context/ToastContext";
+import CardIndividaualBackground from "@/public/images/CardsTest/Teste_individual.webp";
+import CardGroupBackground from "@/public/images/CardsTest/Teste_grupo.webp";
+import UnearthedLogo from "@/public/images/logos/Unearthed.webp";
+import SubmergedLogo from "@/public/images/logos/Submerged.webp";
 
 interface LabTestFormProps {
   onSuccess?: () => void;
@@ -25,7 +29,7 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
   const { addToast } = useToast();
 
   useEffect(() => {
-    fetch("/data/missions.json")
+    fetch("/api/data/missions.json")
       .then((res) => res.json())
       .then((data) => setMissions(data[season] || []));
   }, [season]);
@@ -132,13 +136,13 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
         <label className="label font-medium">Tipo de Teste</label>
         <div className="flex flex-row gap-8 justify-start mt-4">
           <CardTest
-            imageBackground="/images/CardsTest/Teste_individual.webp"
+            imageBackground={CardIndividaualBackground.src}
             nameTest="Individual"
             selected={type === "missao_individual"}
             onSelect={() => setType("missao_individual")}
           />
           <CardTest
-            imageBackground="/images/CardsTest/Teste_grupo.webp"
+            imageBackground={CardGroupBackground.src}
             nameTest="Grupo"
             selected={type === "grupo"}
             onSelect={() => setType("grupo")}
@@ -152,13 +156,13 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
           <label className="label font-medium">Temporada</label>
           <div className="flex flex-wrap gap-4 justify-start mt-4">
             <CardSeason
-              image="/images/logos/Submerged.webp"
+              image={SubmergedLogo.src}
               name="Submerged"
               selected={season === "submerged"}
               onSelect={() => setSeason("submerged")}
             />
             <CardSeason
-              image="/images/logos/Unearthed.webp"
+              image={UnearthedLogo.src}
               name="Unearthed"
               selected={season === "unearthed"}
               onSelect={() => setSeason("unearthed")}

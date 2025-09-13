@@ -9,5 +9,5 @@ export default function QuickBrickLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <section>{children}</section>;
+  return <body>{children}</body>;
 }

@@ -57,7 +57,7 @@
 
 ## 📝 Atividades Recentes
 
-- Última versão lançada: **v2.0**  
+- Última versão lançada: **v3.0**  
 - Novos recursos e correções de bugs implementados continuamente.  
 - Confira todos os lançamentos: [Releases](https://github.com/ohthias/roboStage/releases)
 

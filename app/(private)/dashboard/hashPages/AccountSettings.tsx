@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
-import { useUser } from "../../../context/UserContext";
-import { useToast } from "../../../context/ToastContext";
+import { useUser } from "@/app/context/UserContext";
+import { useToast } from "@/app/context/ToastContext";
 import { WrenchScrewdriverIcon } from "@heroicons/react/24/solid";
 
 export default function AccountSettings() {

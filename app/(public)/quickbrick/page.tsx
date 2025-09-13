@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import QuickBrickCanvas from "@/components/QuickBrick/QuickBrickCanva";
 import { SWOTCanvas } from "@/components/QuickBrick/SwotCanva";
 import { Footer } from "@/components/ui/Footer";
-import Head from "next/head";
 
 const seasonLogos: Record<string, { name: string; image: string }> = {
   submerged: {
@@ -37,7 +36,7 @@ export default function QuickBrickPage() {
   }, []);
 
   useEffect(() => {
-    fetch("/data/missions.json")
+    fetch("/api/data/missions")
       .then((res) => res.json())
       .then((data) => {
         const availableSeasons: string[] = [];
@@ -56,7 +55,7 @@ export default function QuickBrickPage() {
 
   useEffect(() => {
     if (!selectedSeason) return;
-    fetch("/data/missions.json")
+    fetch("/api/data/missions")
       .then((res) => res.json())
       .then((data) => {
         const seasonMissions = data[selectedSeason] || [];

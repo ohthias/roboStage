@@ -65,7 +65,7 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
         setRoundsOrder(visibleRounds);
 
         const season = (config.temporada || "").toLowerCase();
-        const missionsRes = await fetch("/data/missions.json");
+        const missionsRes = await fetch("/api/data/missions.json");
         const missionsData = await missionsRes.json();
 
         if (missionsData[season]) {

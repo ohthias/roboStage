@@ -9,7 +9,6 @@ import RankingSection from "@/components/showLive/subpages/RankingSection";
 import VisualizationSection from "@/components/showLive/subpages/VisualizationSection";
 import ConfiguracoesSection from "@/components/showLive/subpages/ConfiguracoesSection";
 import Loader from "@/components/loader";
-import ComingSoon from "@/components/ComingSoon";
 import Sidebar from "@/components/showLive/Sidebar";
 import ThemeSection from "@/components/showLive/subpages/ThemePage";
 

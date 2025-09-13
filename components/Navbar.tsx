@@ -10,7 +10,7 @@ export function Navbar() {
   const [seasons, setSeasons] = useState<SeasonsData>({});
 
   useEffect(() => {
-    fetch("/data/missions.json")
+    fetch("/api/data/missions")
       .then((res) => res.json())
       .then((data) => setSeasons(data))
       .catch((err) => console.error("Erro ao carregar as temporadas:", err));

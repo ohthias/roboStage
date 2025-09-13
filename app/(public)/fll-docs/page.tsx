@@ -14,7 +14,7 @@ export default function FllDocs() {
     const [docs, setDocs] = useState<DocCard[]>([]);
 
     useEffect(() => {
-        fetch("/data/fllDocs.json")
+        fetch("/api/data/fllDocs.json")
             .then((res) => res.json())
             .then((data) => setDocs(data))
             .catch((err) => console.error("Erro ao carregar documentos:", err));

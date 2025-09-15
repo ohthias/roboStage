@@ -2,8 +2,8 @@
 
 import ShowLiveHub from "./hashPages/showLiveHub";
 import AccountSettings from "./hashPages/AccountSettings";
-import { useUser } from "../../context/UserContext";
-import { StyleLab } from "@/app/(private)/dashboard/hashPages/StyleLab";
+import { useUser } from "../context/UserContext";
+import { StyleLab } from "@/app/dashboard/hashPages/StyleLab";
 import LabTestPage from "./hashPages/LabTestPage";
 import { useHashSection } from "@/hooks/useHashSection";
 import Navbar from "@/components/ui/dashboard/Navbar";

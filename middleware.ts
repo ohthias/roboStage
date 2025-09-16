@@ -86,7 +86,6 @@ export async function middleware(req: NextRequest) {
 
 export const config: MiddlewareConfig = {
   matcher: [
-    "/((?!api|robots.txt).*)",
     "/universe",
     "/join",
   ],

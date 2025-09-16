@@ -5,6 +5,7 @@ import { Footer } from "@/components/ui/Footer";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import FundoPadrao from "@/public/images/fundoPadrao.gif";
 
 export default function UniversePage() {
   const [code, setCode] = useState("");
@@ -59,7 +60,7 @@ export default function UniversePage() {
     flex items-center justify-center min-h-[calc(100vh-1rem)]
   "
         style={{
-          backgroundImage: "url('/images/fundoPadrao.gif')",
+          backgroundImage: `url(${FundoPadrao.src})`,
         }}
       >
         <div className="hero">

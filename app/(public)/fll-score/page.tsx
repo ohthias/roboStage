@@ -4,6 +4,9 @@ import FormMission from "@/components/FormMission/FormMission";
 import Loader from "@/components/loader";
 import { Navbar } from "@/components/Navbar";
 import { sumAllMissions } from "@/utils/scores";
+import { Footer } from "@/components/ui/Footer";
+import SubmergedLogo from "@/public/images/logos/Submerged.webp";
+import MasterpieceLogo from "@/public/images/logos/Masterpiece.png";
 
 interface SubMission {
   submission: string;
@@ -131,7 +134,7 @@ export default function Page() {
     if (!hash) return;
     setLoading(true);
 
-    fetch("/data/missions.json")
+    fetch("/api/data/missions")
       .then((res) => {
         if (!res.ok) throw new Error("Erro ao buscar as missões");
         return res.json();
@@ -149,17 +152,12 @@ export default function Page() {
             break;
           case "submerged":
             setBackground(
-              "/images/logos/Submerged.webp"
+              SubmergedLogo.src
             );
             break;
           case "masterpiece":
             setBackground(
-              "/images/logos/Masterpiece.png"
-            );
-            break;
-          case "superpowered":
-            setBackground(
-              "/images/logos/Superpowered.png"
+              MasterpieceLogo.src
             );
             break;
           default:
@@ -321,6 +319,7 @@ export default function Page() {
           className="animate-fade-in-down"
         />
       </main>
+      <Footer />
     </>
   );
 }

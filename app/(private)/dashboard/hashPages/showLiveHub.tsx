@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { EventModal } from "@/components/EventModal";
 import Loader from "@/components/loader";
-import { useUser } from "../../context/UserContext";
+import { useUser } from "@/app/context/UserContext";
 import { useEvents } from "@/hooks/useEventsLoad";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 

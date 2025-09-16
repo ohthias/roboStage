@@ -1,27 +1,31 @@
 "use client";
 
 import { motion } from "framer-motion";
+import QuickBrickImage from "@/public/images/icons/3.png";
+import LabTestImage from "@/public/images/icons/2.png";
+import ShowLiveImage from "@/public/images/icons/1.png";
+import StyleLabImage from "@/public/images/icons/4.png";
 
 const features = [
   {
     title: "QuickBrick Studio",
     text: "Desenhe estratégias visuais para cumprir missões da FLL Challenge - UNEARTHED!",
-    icon: "/images/icons/3.png",
+    icon: QuickBrickImage.src,
   },
   {
     title: "LabTest",
     text: "Teste e valide suas estratégias para as missões da FLL Challenge - UNEARTHED! Tendo acesso a estatísticas detalhadas do desempenho de seus lançamentos.",
-    icon: "/images/icons/2.png",
+    icon: LabTestImage.src,
   },
   {
     title: "ShowLive",
     text: "Crie campeonatos da FIRST LEGO League, defina as rodadas, as equipes participantes e tenha uma experiência de torneio!",
-    icon: "/images/icons/1.png",
+    icon: ShowLiveImage.src,
   },
   {
     title: "StyleLab",
     text: "Crie temas e dê vida aos seus eventos com os seus próprios estilos!",
-    icon: "/images/icons/4.png",
+    icon: StyleLabImage.src,
   },
 ];
 

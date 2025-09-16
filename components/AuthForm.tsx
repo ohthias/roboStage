@@ -4,7 +4,6 @@ import { useState } from "react";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import Script from "next/script";
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);

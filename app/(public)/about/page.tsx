@@ -23,7 +23,7 @@ export default function HelpDesk() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/data/toolsAbout.json")
+    fetch("/api/data/toolsAbout.json")
       .then((res) => res.json())
       .then((data) => setTools(data))
       .catch((err) => console.error("Erro ao carregar tools:", err))

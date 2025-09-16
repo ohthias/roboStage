@@ -4,6 +4,9 @@ import FeaturesSection from "@/components/FeaturesSection";
 import { Hero } from "@/components/Hero";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/ui/Footer";
+import background from "@/public/images/background_uneartherd.png";
+import listra from "@/public/images/Listra.svg";
+import FLLLogo from "@/public/images/fll_unearthed_logo_fullcolor.png";
 
 export default function Home() {
   return (
@@ -11,12 +14,12 @@ export default function Home() {
       <Navbar />
       <Hero />
       <FeaturesSection />
-      <img src="/images/Listra.svg" />
+      <img src={listra.src} />
       <div className="p-4 md:p-0">
         <section
           className="max-w-5xl p-4 sm:p-6 mx-auto my-12 flex flex-col sm:flex-row rounded-lg bg-yellow-100 gap-6"
           style={{
-            backgroundImage: 'url("/images/background_uneartherd.png")',
+            backgroundImage: `url(${background.src})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -40,7 +43,7 @@ export default function Home() {
           </div>
           <div className="flex flex-col items-center sm:items-end justify-between w-full sm:w-1/3">
             <img
-              src="/images/fll_unearthed_logo_fullcolor.png"
+              src={FLLLogo.src}
               alt="FLL Logo"
               className="w-40 h-24 sm:w-auto sm:h-32 mt-4 sm:mt-8 object-contain"
             />

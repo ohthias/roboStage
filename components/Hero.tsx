@@ -1,8 +1,10 @@
+import FundoPadrao from "@/public/images/fundoPadrao.gif";
+
 export function Hero() {
   return (
     <div
       className="hero h-[calc(100vh-80px)] relative overflow-hidden"
-      style={{ backgroundImage: "url(/images/fundoPadrao.gif)" }}
+      style={{ backgroundImage: `url(${FundoPadrao.src})` }}
     >
       <div className="hero-overlay bg-black/50"></div>
 

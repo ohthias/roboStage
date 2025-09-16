@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/utils/supabase/client";
-import StyleLabModal from "../../../components/StyleLabModal";
+import StyleLabModal from "@/components/StyleLabModal";
 import { useUser } from "@/app/context/UserContext";
 import Loader from "@/components/loader";
-import { PaintBrushIcon } from "@heroicons/react/24/outline"; // Ícone adicionado
+import { PaintBrushIcon } from "@heroicons/react/24/outline";
 
 interface StyleLabTheme {
   id_theme: number;

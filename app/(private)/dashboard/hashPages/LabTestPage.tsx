@@ -2,21 +2,21 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/utils/supabase/client";
-import ModalLabTest from "../../../components/ui/Modal/ModalLabTest";
-import TestResultsCharts from "../../../components/LabTest/ResultsSection";
+import ModalLabTest from "@/components/ui/Modal/ModalLabTest";
+import TestResultsCharts from "@/components/LabTest/ResultsSection";
 import { BeakerIcon } from "@heroicons/react/24/outline";
 import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import ModalConfirm, {
   ModalConfirmRef,
-} from "../../../components/ui/Modal/ModalConfirm";
+} from "@/components/ui/Modal/ModalConfirm";
 import ModalInput, {
   ModalInputRef,
-} from "../../../components/ui/Modal/ModalInput";
+} from "@/components/ui/Modal/ModalInput";
 import { useRef } from "react";
 import { useToast } from "@/app/context/ToastContext";
 import ModalResultForm, {
   ModalResultFormRef,
-} from "../../../components/LabTest/ResultForm";
+} from "@/components/LabTest/ResultForm";
 import Loader from "@/components/loader";
 
 type Mission = {

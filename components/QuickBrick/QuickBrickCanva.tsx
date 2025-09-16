@@ -3,33 +3,10 @@ import { useRef, useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import jsPDF from "jspdf";
 import {
-  ArrowTurnUpLeftIcon,
   Square3Stack3DIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
-
-interface Point {
-  x: number;
-  y: number;
-}
-interface Line {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  color: string;
-}
-interface FreePath {
-  points: Point[];
-  color: string;
-}
-interface Layer {
-  id: string;
-  name: string;
-  visible: boolean;
-  lines: Line[];
-  freePaths: FreePath[];
-}
+import CanvaImage from "@/public/images/quickbrick_unearthed.png";
 
 export default function FLLPaintPro() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -49,7 +26,7 @@ export default function FLLPaintPro() {
   const [currentPath, setCurrentPath] = useState<Point[]>([]);
   const [showLabels, setShowLabels] = useState(true);
 
-  const backgroundImage = "/images/quickbrick_unearthed.png";
+  const backgroundImage = CanvaImage.src;
 
   // Escala para cálculo em cm
   const getScale = () => {

@@ -86,7 +86,7 @@ export async function middleware(req: NextRequest) {
 
 export const config: MiddlewareConfig = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    "/((?!api|robots.txt).*)",
     "/universe",
     "/join",
   ],

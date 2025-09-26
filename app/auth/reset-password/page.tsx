@@ -1,23 +1,38 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
+import { supabase } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
-export default function SignupPage() {
-  const { signup, loading, error, success } = useAuth();
-  const [email, setEmail] = useState("");
+export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [name, setName] = useState("");
+  const [status, setStatus] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setStatus(null);
+
     if (password !== confirm) {
-      alert("As senhas não coincidem!");
+      setStatus("As senhas não coincidem!");
       return;
     }
-    await signup(email, password, name);
+
+    setLoading(true);
+
+    const { error } = await supabase.auth.updateUser({ password });
+
+    setLoading(false);
+
+    if (error) {
+      setStatus(error.message);
+    } else {
+      setStatus("Senha redefinida com sucesso! Faça login novamente.");
+        router.push("/auth/login");
+    }
   };
 
   return (
@@ -35,40 +50,26 @@ export default function SignupPage() {
       <div className="w-full md:w-1/3 flex items-center justify-center bg-base-100 p-6">
         <div className="card w-full max-w-md shadow-2xl">
           <div className="card-body">
-            <h2 className="text-3xl font-bold text-center mb-4">Criar Conta</h2>
+            <h2 className="text-3xl font-bold text-center mb-4">
+              Redefinir Senha
+            </h2>
+            <p className="text-center mb-4 text-sm text-gray-500">
+              Digite sua nova senha abaixo.
+            </p>
 
-            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-            {success && <p className="text-green-500 text-sm mb-2">{success}</p>}
+            {status && (
+              <p
+                className={`text-center text-sm mb-2 ${
+                  status.includes("sucesso") ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                {status}
+              </p>
+            )}
 
             <form className="form-control" onSubmit={handleSubmit}>
-              <label className="label" htmlFor="name">
-                <span className="label-text">Nome de Usuário</span>
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Seu nome de usuário"
-                className="input input-bordered w-full"
-                required
-              />
-
-              <label className="label mt-4" htmlFor="email">
-                <span className="label-text">Email</span>
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="robostage@email.com"
-                className="input input-bordered w-full"
-                required
-              />
-
-              <label className="label mt-4" htmlFor="password">
-                <span className="label-text">Senha</span>
+              <label className="label" htmlFor="password">
+                <span className="label-text">Nova Senha</span>
               </label>
               <input
                 id="password"
@@ -98,14 +99,13 @@ export default function SignupPage() {
                 className="btn btn-primary w-full mt-6"
                 disabled={loading}
               >
-                {loading ? "Cadastrando..." : "Cadastrar"}
+                {loading ? "Atualizando..." : "Redefinir Senha"}
               </button>
             </form>
 
             <p className="text-center mt-4">
-              Já tem conta?{" "}
               <Link href="/auth/login" className="link link-primary">
-                Entre aqui
+                Voltar ao Login
               </Link>
             </p>
           </div>

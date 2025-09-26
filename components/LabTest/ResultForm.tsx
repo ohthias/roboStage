@@ -23,9 +23,7 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
   const [selectedTest, setSelectedTest] = useState<any>(null);
   const [missions, setMissions] = useState<any[]>([]);
   const [formData, setFormData] = useState<any>({});
-  const [customVars, setCustomVars] = useState<
-    { name: string; values: Record<number, string> }[]
-  >([{ name: "", values: {} }]);
+  const [customVars, setCustomVars] = useState<{ name: string; values: Record<number, string> }[]>([{ name: "", values: {} }]);
   const [parameters, setParameters] = useState<any[]>([]);
   const [season, setSeason] = useState<string | null>(null);
   const [description, setDescription] = useState<string>("");
@@ -64,6 +62,7 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
       setSelectedTest({ ...test, type: typeName });
 
       try {
+        // Buscar missões do teste
         const { data: testMissions, error: missionsErr } = await supabase
           .from("test_missions")
           .select("*")
@@ -72,16 +71,22 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
         if (missionsErr) throw missionsErr;
 
         if (testMissions?.length) {
-          const season = testMissions[0].season; // pegar a season aqui
-          setSeason(season); // salvar no estado
+          const season = testMissions[0].season;
+          setSeason(season);
 
-          const res = await fetch("/data/missions.json");
+          // Buscar missões do JSON
+          const res = await fetch("/api/data/missions");
           const missionsData = await res.json();
 
           const filteredMissions = testMissions
-            .map((tm: any) =>
-              missionsData[season]?.find((m: any) => m.id === tm.mission_key)
-            )
+            .map((tm: any) => {
+              const missionData = missionsData[season]?.find((m: any) => m.id === tm.mission_key);
+              if (!missionData) return null;
+              return {
+                ...missionData,
+                maxValue: tm.max_value ?? missionData.type?.[2] ?? null // usa max_value do banco ou default
+              };
+            })
             .filter(Boolean);
 
           setMissions(filteredMissions || []);
@@ -123,11 +128,7 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
     setCustomVars(updated);
   };
 
-  const handleCustomParamChange = (
-    varIndex: number,
-    paramId: number,
-    value: string
-  ) => {
+  const handleCustomParamChange = (varIndex: number, paramId: number, value: string) => {
     const updated = [...customVars];
     updated[varIndex].values[paramId] = value;
     setCustomVars(updated);
@@ -136,7 +137,7 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
   const addCustomVar = () =>
     setCustomVars([...customVars, { name: "", values: {} }]);
 
-  // Função recursiva para renderizar sub-missões
+  // Renderiza missões e sub-missões
   const renderMissionFields = (mission: any, missionKey: string) => {
     const isMainMission = !missionKey.includes("-sub-");
 
@@ -144,13 +145,9 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
       <>
         <div className="flex flex-col mb-2">
           <div className="flex items-center justify-between">
-            <p className="font-medium flex-1 text-left">
-              {mission.name || mission.submission}
-            </p>
+            <p className="font-medium flex-1 text-left">{mission.name || mission.submission}</p>
             {isMainMission && (
-              <span className="badge badge-primary badge-outline ml-2">
-                {missionKey}
-              </span>
+              <span className="badge badge-primary badge-outline ml-2">{missionKey}</span>
             )}
           </div>
           <p>{mission.mission}</p>
@@ -170,13 +167,9 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
       </>
     );
 
-    // Aplica borda e fundo apenas na missão principal
     if (isMainMission) {
       return (
-        <div
-          key={missionKey}
-          className="mb-4 border rounded-lg p-4 bg-base-100 border-base-300 shadow-sm"
-        >
+        <div key={missionKey} className="mb-4 border rounded-lg p-4 bg-base-100 border-base-300 shadow-sm">
           {content}
         </div>
       );
@@ -187,20 +180,22 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
 
   const renderFieldInput = (field: any, missionKey: string, index: number) => {
     if (field.type?.[0] === "range") {
+      const max = field.maxValue ?? field.type[2] ?? 10;
       return (
         <RangeInput
           missionId={missionKey}
           index={index}
           points={field.type[1] || 1}
           start={field.type[1] || 0}
-          end={field.type[2] || 10}
+          end={max}
           value={formData[missionKey]?.[index]}
-          onSelect={(mId, idx, val) =>
+          onSelect={(mId, idx, val) => {
+            const clamped = Math.min(val, max);
             setFormData((prev: any) => ({
               ...prev,
-              [mId]: { ...(prev[mId] || {}), [idx]: val },
-            }))
-          }
+              [mId]: { ...(prev[mId] || {}), [idx]: clamped },
+            }));
+          }}
         />
       );
     }
@@ -229,6 +224,34 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
   const handleSubmit = async () => {
     if (!selectedTest) return;
 
+    // Validar campos obrigatórios
+    if (selectedTest.type === "personalizado") {
+      for (const v of customVars) {
+        if (!v.name || parameters.some((p) => !v.values[p.id])) {
+          addToast("Por favor, preencha todas as variáveis e valores.", "error");
+          return;
+        }
+      }
+    } else {
+      // Verificar missões
+      for (const m of missions) {
+        if (m.type?.[0] === "range") {
+          const val = formData[m.id]?.[0];
+          if (val === undefined || val === null || val === "") {
+            addToast(`Preencha o valor da missão ${m.name || m.id}`, "error");
+            return;
+          }
+        }
+        if (m.type?.[0] === "switch") {
+          const val = formData[m.id]?.[0];
+          if (val === undefined || val === null || val === "") {
+            addToast(`Selecione uma opção para a missão ${m.name || m.id}`, "error");
+            return;
+          }
+        }
+      }
+    }
+
     const payload: any[] = [
       {
         test_id: selectedTest.id,
@@ -236,7 +259,7 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
         value: formData,
         created_at: new Date(),
         season: season,
-        description: description || null,
+        description: description,
       },
     ];
 
@@ -260,28 +283,25 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
     setSelectedTest(null);
     setMissions([]);
     setParameters([]);
+    setDescription("");
+    setSeason(null);
   };
 
   return (
     <>
-      <button
-        className="btn btn-neutral btn-outline btn-sm"
-        onClick={openModal}
-      >
+      <button className="btn btn-neutral btn-outline btn-sm" onClick={openModal}>
         Adicionar Resultado
       </button>
 
       <dialog ref={modalRef} className="modal">
-        <form
-          method="dialog"
-          className="modal-box w-11/12 max-w-3xl max-h-[80vh] overflow-y-auto"
-        >
+        <form method="dialog" className="modal-box w-11/12 max-w-3xl max-h-[80vh] overflow-y-auto">
           <h2 className="text-xl font-bold mb-4">Adicionar Resultado</h2>
 
           {!selectedTest && (
             <select
               className="select select-bordered w-full mb-4"
               onChange={(e) => handleTestChange(e.target.value)}
+              required
             >
               <option value="">Selecione um teste</option>
               {tests.map((test) => (
@@ -295,14 +315,12 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
           {selectedTest && (
             <div className="mb-4">
               <p className="text-sm text-gray-600">
-                Teste selecionado:{" "}
-                <span className="font-semibold">{selectedTest.name_test}</span>{" "}
-                ({selectedTest.type})
+                Teste selecionado: <span className="font-semibold">{selectedTest.name_test}</span> ({selectedTest.type})
               </p>
             </div>
           )}
 
-          {/* Renderizar missões e sub-missões */}
+          {/* Renderizar missões */}
           {missions.map((m) => renderMissionFields(m, m.id))}
 
           {/* personalizado */}
@@ -317,6 +335,7 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
                     className="input input-bordered w-full mb-2"
                     value={v.name}
                     onChange={(e) => handleCustomVarChange(idx, e.target.value)}
+                    required
                   />
                   {parameters.map((p) => (
                     <input
@@ -325,24 +344,19 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
                       placeholder={p.name}
                       className="input input-bordered w-full mb-1"
                       value={v.values[p.id] || ""}
-                      onChange={(e) =>
-                        handleCustomParamChange(idx, p.id, e.target.value)
-                      }
+                      onChange={(e) => handleCustomParamChange(idx, p.id, e.target.value)}
+                      required
                     />
                   ))}
                 </div>
               ))}
-              <button
-                type="button"
-                className="btn btn-sm btn-outline"
-                onClick={addCustomVar}
-              >
+              <button type="button" className="btn btn-sm btn-outline" onClick={addCustomVar}>
                 + Adicionar variável
               </button>
             </div>
           )}
 
-          {/* Descrição do que foi mudado */}
+          {/* Descrição */}
           <div className="form-control mt-4">
             <label className="label">
               <span className="label-text">Descrição do que foi mudado (opcional)</span>
@@ -354,7 +368,7 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               maxLength={450}
-            ></textarea>
+            />
             {description.length >= 450 && (
               <span className="text-error text-xs mt-1 block">
                 Limite máximo de 450 caracteres atingido.
@@ -366,11 +380,7 @@ const ModalResultForm = forwardRef<ModalResultFormRef>((_, ref) => {
             <button type="button" className="btn" onClick={closeModal}>
               Cancelar
             </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleSubmit}
-            >
+            <button type="button" className="btn btn-primary" onClick={handleSubmit}>
               Salvar Resultado
             </button>
           </div>

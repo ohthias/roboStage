@@ -1,19 +1,6 @@
 "use client";
 import { MissionCard } from "./MissionCard";
 
-interface Responses {
-  [missionId: string]: {
-    [index: number]: string | number;
-  };
-}
-
-interface FormMissionProps {
-  missions?: any[];
-  responses?: Responses;
-  onSelect?: (missionId: string, index: number, value: string | number) => void;
-  className?: string;
-}
-
 export default function FormMission({
   missions = [],
   responses = {},

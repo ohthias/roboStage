@@ -1,14 +1,5 @@
 "use client";
 
-interface SwitchInputProps {
-  missionId: string;
-  index: number;
-  points: number | number[];
-  options?: string[];
-  value?: string | number;
-  onSelect: (missionId: string, index: number, value: number) => void;
-}
-
 export function SwitchInput({
   missionId,
   index,

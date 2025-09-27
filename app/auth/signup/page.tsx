@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
   const { signup, loading, error, success } = useAuth();
@@ -10,6 +11,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [name, setName] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,7 +19,10 @@ export default function SignupPage() {
       alert("As senhas não coincidem!");
       return;
     }
-    await signup(email, password, name);
+    const ok = await signup(email, password, name);
+    if (ok) {
+      router.push("/dashboard");
+    }
   };
 
   return (

@@ -57,7 +57,7 @@ export default function UniversePage() {
         className="
     flex-1 relative bg-cover bg-center
     before:content-[''] before:absolute before:inset-0 before:bg-black/50
-    flex items-center justify-center min-h-[calc(100vh-1rem)]
+    flex items-center justify-center min-h-screen
   "
         style={{
           backgroundImage: `url(${FundoPadrao.src})`,
@@ -69,10 +69,6 @@ export default function UniversePage() {
               <h1 className="mb-4 text-4xl font-bold text-primary">
                 Embarque num evento!
               </h1>
-              <p className="mb-6">
-                Insira o código disponibilizado pelo administrador do evento e
-                aproveite!
-              </p>
               <form className="form-control" onSubmit={handleSubmit}>
                 <input
                   type="text"
@@ -98,8 +94,6 @@ export default function UniversePage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

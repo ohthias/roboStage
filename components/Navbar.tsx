@@ -48,14 +48,14 @@ export function Navbar() {
               </li>
               <li><a href="/quickbrick" className="text-md">QuickBrick Studio</a></li>
               <li><a href="/universe" className="btn btn-accent btn-outline">Embarcar em evento</a></li>
-              <li><a href="/join" className="btn btn-primary">Entrar</a></li>
+              <li><a href="/auth/login" className="btn btn-primary">Entrar</a></li>
               <ThemeController />
             </ul>
           </div>
 
           {/* Botão mobile */}
           <div className="flex-none lg:hidden space-x-2">
-            <a href="/join" className="btn btn-primary btn-sm">Entrar</a>
+            <a href="/auth/login" className="btn btn-primary btn-sm">Entrar</a>
             <ThemeController />
             <label htmlFor="navbar-drawer" className="btn btn-square btn-ghost">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6"
@@ -97,7 +97,7 @@ export function Navbar() {
             </ul>
             <hr />
             <a href="/universe" className="btn btn-accent btn-outline w-full">Embarcar em evento</a>
-            <a href="/join" className="btn btn-primary w-full">Entrar</a>
+            <a href="/auth/login" className="btn btn-primary w-full">Entrar</a>
           </div>
         </div>
       </div>

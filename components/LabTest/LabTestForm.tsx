@@ -10,6 +10,7 @@ import CardIndividaualBackground from "@/public/images/CardsTest/Teste_individua
 import CardGroupBackground from "@/public/images/CardsTest/Teste_grupo.webp";
 import UnearthedLogo from "@/public/images/logos/Unearthed.webp";
 import SubmergedLogo from "@/public/images/logos/Submerged.webp";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface LabTestFormProps {
   onSuccess?: () => void;
@@ -29,9 +30,15 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
   const { addToast } = useToast();
 
   useEffect(() => {
-    fetch("/api/data/missions.json")
+    fetch("/api/data/missions")
       .then((res) => res.json())
-      .then((data) => setMissions(data[season] || []));
+      .then((data) => {
+        const seasonMissions = data[season] || [];
+        const filteredMissions = seasonMissions.filter(
+          (m: any) => m.id != "EL" && m.id != "PT"
+        );
+        setMissions(filteredMissions);
+      });
   }, [season]);
 
   const resetForm = () => {
@@ -78,19 +85,28 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
       const testId = testData.id;
 
       if (type === "missao_individual" && selectedMissions.length === 1) {
-        await supabase.from("test_missions").insert({
-          test_id: testId,
-          mission_key: selectedMissions[0],
-          season: season,
+        const missionsInsert = selectedMissions.map((mId) => {
+          const mission = missions.find((m) => m.id === mId);
+          return {
+            test_id: testId,
+            mission_key: mission?.id,
+            season: season,
+            max_value: mission?.type[0] === "range" ? mission?.maxValue : null,
+          };
         });
+        await supabase.from("test_missions").insert(missionsInsert);
       }
 
       if (type === "grupo" && selectedMissions.length > 0) {
-        const missionsInsert = selectedMissions.map((m) => ({
-          test_id: testId,
-          mission_key: m,
-          season: season,
-        }));
+        const missionsInsert = selectedMissions.map((mId) => {
+          const mission = missions.find((m) => m.id === mId);
+          return {
+            test_id: testId,
+            mission_key: mission?.id,
+            season: season,
+            max_value: mission?.type[0] === "range" ? mission?.maxValue : null,
+          };
+        });
         await supabase.from("test_missions").insert(missionsInsert);
       }
 
@@ -170,57 +186,76 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
           </div>
         </div>
       )}
+      <div className="divider text-base-content/75">Missões</div>
+      {/* Missões */}
+      <AnimatePresence>
+        {missions.map((m) => {
+          const isSelected = selectedMissions.includes(m.id);
 
-      {/* Missão individual */}
-      {type === "missao_individual" && (
-        <div>
-          <label className="label font-medium">Missão</label>
-          <select
-            className="select select-bordered w-full"
-            onChange={(e) => setSelectedMissions([e.target.value])}
-          >
-            <option value="">Selecione...</option>
-            {missions.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Grupo de missões */}
-      {type === "grupo" && (
-        <div>
-          <label className="label font-medium">Selecione Missões</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-            {missions.map((m) => (
+          return (
+            <motion.div
+              key={m.id}
+              layout
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+              className="flex flex-col gap-2 p-2 rounded-lg hover:bg-base-200 transition"
+            >
               <label
-                key={m.id}
-                className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-base-200 transition"
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={() => {
+                  if (type === "missao_individual") {
+                    setSelectedMissions([m.id]);
+                  }
+                }}
               >
-                <input
-                  type="checkbox"
-                  className="checkbox checkbox-primary"
-                  value={m.id}
-                  checked={selectedMissions.includes(m.id)}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setSelectedMissions((prev) =>
-                      checked
-                        ? [...prev, m.id]
-                        : prev.filter((id) => id !== m.id)
-                    );
-                  }}
-                />
-                <span className="text-sm">
+                {type === "grupo" && (
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-primary"
+                    value={m.id}
+                    checked={isSelected}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setSelectedMissions((prev) =>
+                        checked ? [...prev, m.id] : prev.filter((id) => id !== m.id)
+                      );
+                    }}
+                  />
+                )}
+                <span className={isSelected ? "font-bold" : ""}>
                   {m.id} - {m.name}
                 </span>
               </label>
-            ))}
-          </div>
-        </div>
-      )}
+
+              {m.type[0] === "range" && isSelected && (
+                <motion.input
+                  type="number"
+                  min={m.type[1]}
+                  max={m.type[2]}
+                  placeholder={`Quanto será feito? (mín: 1, máx: ${m.type[2]})`}
+                  className="input input-bordered w-full"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  value={m.maxValue || ""}
+                  onChange={(e) => {
+                    const updated = missions.map((mission) =>
+                      mission.id === m.id
+                        ? { ...mission, maxValue: Number(e.target.value) }
+                        : mission
+                    );
+                    setMissions(updated);
+                  }}
+                />
+              )}
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+
 
       {/* Personalizado */}
       {type === "personalizado" && (

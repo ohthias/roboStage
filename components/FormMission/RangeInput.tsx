@@ -1,15 +1,5 @@
 "use client";
 
-interface RangeInputProps {
-  missionId: string;
-  index: number;
-  points: number | number[];
-  start?: number;
-  end?: number;
-  value?: number | string; 
-  onSelect: (missionId: string, index: number, value: number) => void;
-}
-
 export function RangeInput({
   missionId,
   index,

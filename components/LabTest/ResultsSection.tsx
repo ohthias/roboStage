@@ -119,7 +119,7 @@ export default function TestResultsCharts({ testId }: { testId: string }) {
     if (
       !missionMenosFeita ||
       allValues.length <
-        (missionsGrouped[missionMenosFeita]?.allValues.length || Infinity)
+      (missionsGrouped[missionMenosFeita]?.allValues.length || Infinity)
     ) {
       missionMenosFeita = missionKey;
     }
@@ -135,9 +135,83 @@ export default function TestResultsCharts({ testId }: { testId: string }) {
   const submissionMenosFeita =
     missaoMenosFeitaData?.submission || missionMenosFeita;
 
+  const isMissaoIndividual = Object.keys(missionsGrouped).length === 1;
+
+  // --- Renderização Teste Individual ---
+  if (isMissaoIndividual) {
+    const missionKey = Object.keys(missionsGrouped)[0];
+    const { season, allValues } = missionsGrouped[missionKey];
+    const missionData = getMissionByKey(missionKey, season);
+    if (!missionData)
+      return <p>Missão não encontrada para a chave: {missionKey}</p>;
+
+    const type = missionData.type?.[0];
+
+    return (
+      <div className="card bg-base-100 border border-base-300 shadow p-4 flex flex-col items-center">
+        <h3 className="text-xl font-bold mb-4 text-center">
+          {missionData.submission || missionData.name || "Missão"} - {missionKey}
+        </h3>
+        <div className="w-full h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            {type === "switch" ? (
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: "Deu certo", value: allValues.filter(v => v.value === 1).length },
+                    { name: "Não deu certo", value: allValues.filter(v => v.value === 0).length },
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={120}
+                  label
+                  dataKey="value"
+                >
+                  <Cell key="acertos" fill={COLORS[0]} />
+                  <Cell key="erros" fill={COLORS[1]} />
+                </Pie>
+                <Tooltip formatter={(value: any, name: any) => [`${value}`, name]} />
+                <Legend />
+              </PieChart>
+            ) : type === "range" ? (
+              <LineChart
+                data={allValues.map((v, idx) => ({
+                  tentativa: `Lançamento ${idx + 1}`,
+                  valor: v.value,
+                  hora: v.created_at,
+                }))}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="tentativa" />
+                <YAxis
+                  allowDecimals={false}
+                  domain={["dataMin", "dataMax"]}
+                  label={{ value: "Itens feitos", angle: -90, position: "insideLeft" }}
+                />
+                <Tooltip
+                  formatter={(value) => [value, "Valor"]}
+                  labelFormatter={(label) => {
+                    const item = allValues[label.split(" ")[1] - 1];
+                    if (!item?.created_at) return "";
+                    const date = new Date(item.created_at);
+                    return `Feito em: ${date.toLocaleDateString("pt-BR")} às ${date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+                  }}
+                />
+                <Legend />
+                <Line type="monotone" dataKey="valor" stroke="#e7000b" strokeWidth={4} />
+              </LineChart>
+            ) : (
+              <p>Tipo de missão desconhecido.</p>
+            )}
+          </ResponsiveContainer>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Visão geral com múltiplas missões ---
   return (
     <div className="space-y-8">
-      {/* --- Card Geral --- */}
       <div className="card bg-info/25 shadow p-4 text-center">
         <h2 className="text-xl font-bold mb-2 text-info-content">
           Aproveitamento Geral da Saída
@@ -261,7 +335,7 @@ export default function TestResultsCharts({ testId }: { testId: string }) {
                           allowDecimals={false}
                           domain={["dataMin", "dataMax"]}
                           label={{
-                            value: "Valor",
+                            value: "Itens feitos",
                             angle: -90,
                             position: "insideLeft",
                           }}
@@ -283,7 +357,7 @@ export default function TestResultsCharts({ testId }: { testId: string }) {
                         <Legend />
                         <Line
                           type="monotone"
-                          dataKey="valor"
+                          dataKey="Items Feitos"
                           stroke="#e7000b"
                           strokeWidth={4}
                         />
@@ -297,6 +371,7 @@ export default function TestResultsCharts({ testId }: { testId: string }) {
             );
           }
         )}
+        {/** TODO: Sistema de exportação em aquivo PDF */}
       </div>
     </div>
   );

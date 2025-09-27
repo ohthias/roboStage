@@ -2,29 +2,6 @@
 import { SwitchInput } from "./SwitchInput";
 import { RangeInput } from "./RangeInput";
 
-interface SubMission {
-  submission: string;
-  points: number | number[];
-  type: ["switch" | "range", ...(string | number | null)[]];
-}
-
-interface Mission {
-  id: string;
-  name: string;
-  mission: string;
-  points: number | number[];
-  equipaments: boolean;
-  type: ["switch" | "range", ...(string | number | null)[]];
-  image?: string;
-  ["sub-mission"]?: SubMission[];
-}
-
-interface MissionCardProps {
-  mission: Mission;
-  responses?: { [index: number]: string | number };
-  onSelect: (missionId: string, index: number, value: string | number) => void;
-}
-
 function resolveRangePoints(
   selection: number | string | undefined,
   points: number | number[],

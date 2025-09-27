@@ -21,7 +21,7 @@ export default function Dashboard() {
 
   const logout = async () => {
     await supabase.auth.signOut();
-    router.push("/join");
+    router.push("/auth/login");
   };
 
   // Conteúdo da seção atual

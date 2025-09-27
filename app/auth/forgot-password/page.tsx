@@ -26,17 +26,14 @@ export default function ForgotPasswordPage() {
 
     return (
         <div className="flex h-screen">
-            <div className="w-2/3 hidden md:flex flex-col justify-between bg-base-300 p-8">
-                <Link href="/" className="inline-block">
-                    <img
-                        src="/images/logos/Icone.png"
-                        alt="Logo"
-                        className="h-12 w-auto hover:scale-105 transition-transform"
-                    />
-                </Link>
-            </div>
-
-            <div className="w-full md:w-1/3 flex items-center justify-center bg-base-100 p-6">
+            <Link href="/" className="absolute m-4">
+                <img
+                    src="/images/logos/Icone.png"
+                    alt="Logo"
+                    className="h-12 w-auto hover:scale-105 transition-transform"
+                />
+            </Link>
+            <div className="w-full flex items-center justify-center bg-base-100 p-6">
                 <div className="card w-full max-w-md shadow-2xl">
                     <div className="card-body">
                         <h2 className="text-3xl font-bold text-center mb-4">
@@ -59,7 +56,7 @@ export default function ForgotPasswordPage() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="exemplo@email.com"
+                                placeholder="robostage@email.com"
                                 className="input input-bordered w-full"
                                 required
                             />

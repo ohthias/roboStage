@@ -22,12 +22,13 @@ export default function SignupPage() {
 
   return (
     <div className="flex h-screen">
-      <div className="w-2/3 hidden md:flex flex-col justify-between bg-base-300 p-8">
+      <div className="w-2/3 hidden md:flex flex-col justify-between bg-base-300 p-8" style={{ backgroundImage: 'url("/images/background_auth.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', backdropFilter: 'brightness(0.3)' }}>
         <Link href="/" className="inline-block">
           <img
             src="/images/logos/Icone.png"
             alt="Logo"
-            className="h-12 w-auto hover:scale-105 transition-transform"
+            className="h-12 w-auto hover:scale-105 transition-transform bg-base-100/50 rounded-full p-1"
+            style={{ backdropFilter: 'blur(10px)' }}
           />
         </Link>
       </div>

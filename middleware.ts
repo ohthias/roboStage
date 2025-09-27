@@ -3,7 +3,7 @@ import { MiddlewareConfig, NextRequest, NextResponse } from "next/server";
 import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 
 const publicRoutes = [
-  { path: "/join", whenAuthenticated: "redirect" },
+  { path: "/auth/login", whenAuthenticated: "redirect" },
   { path: "/about", whenAuthenticated: "next" },
   { path: "/fll-docs", whenAuthenticated: "next" },
   { path: "/fll-score", whenAuthenticated: "next" },
@@ -12,7 +12,7 @@ const publicRoutes = [
   { path: "/", whenAuthenticated: "next" },
 ] as const;
 
-const REDIRECT_WHEN_NOT_AUTHENTICATED = "/join";
+const REDIRECT_WHEN_NOT_AUTHENTICATED = "/auth/login";
 
 // Funções auxiliares
 function isPublicRoute(path: string) {
@@ -53,7 +53,7 @@ export async function middleware(req: NextRequest) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    if (!session) return redirect(req, "/join");
+    if (!session) return redirect(req, "/auth/login");
   }
 
   // 4. Evento público (/:code_event/:code)
@@ -87,6 +87,5 @@ export async function middleware(req: NextRequest) {
 export const config: MiddlewareConfig = {
   matcher: [
     "/universe",
-    "/join",
   ],
 };

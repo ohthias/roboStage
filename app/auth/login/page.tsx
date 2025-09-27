@@ -22,14 +22,13 @@ export default function LoginPage() {
 
     return (
         <div className="flex h-screen">
-            <div className="w-2/3 hidden md:flex flex-col justify-between bg-gradient-to-br from-primary via-secondary to-accent p-8 relative overflow-hidden">
-                <div className="absolute top-10 left-10 w-40 h-40 bg-gradient-to-tr from-accent via-secondary to-primary rounded-full opacity-30 blur-2xl"></div>
-                <div className="absolute bottom-20 right-20 w-56 h-56 bg-gradient-to-bl from-primary via-secondary to-info rounded-full opacity-20 blur-3xl"></div>
+            <div className="w-2/3 hidden md:flex flex-col justify-between bg-gradient-to-br from-primary via-secondary to-accent p-8 relative overflow-hidden" style={{ backgroundImage: 'url("/images/background_auth.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', backdropFilter: 'brightness(0.3)' }}>
                 <Link href="/" className="inline-block">
                     <img
                         src="/images/logos/Icone.png"
                         alt="Logo"
-                        className="h-12 w-auto hover:scale-105 transition-transform" />
+                        className="h-12 w-auto hover:scale-105 transition-transform bg-base-100/50 rounded-full p-1" 
+                        style={{ backdropFilter: 'blur(10px)' }}/>
                 </Link>
             </div>
             <div className="w-full md:w-1/3 flex items-center justify-center bg-base-100 p-6">

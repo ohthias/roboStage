@@ -7,7 +7,6 @@ import {
   SignalIcon,
   SparklesIcon,
 } from "@heroicons/react/16/solid";
-import { HomeModernIcon } from "@heroicons/react/24/outline";
 import { ArrowLeftStartOnRectangleIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
 

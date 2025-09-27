@@ -33,7 +33,7 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
   useEffect(() => {
     const fetchPresets = async () => {
       try {
-        const response = await fetch("/api/data/presets.json");
+        const response = await fetch("/api/data/presets");
         const data = await response.json();
         setPresets(data);
       } catch (err) {

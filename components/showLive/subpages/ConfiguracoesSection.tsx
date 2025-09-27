@@ -1,3 +1,4 @@
+/** TODO - Dividir o código em partes */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -265,6 +266,7 @@ export default function ConfiguracoesSection({
             value={competitionType}
             onChange={(e) => setCompetitionType(e.target.value)}
             className="input input-bordered w-full"
+            disabled={true}
           >
             <option value="">Selecione</option>
             <option value="FLL">FIRST LEGO League</option>
@@ -353,6 +355,74 @@ export default function ConfiguracoesSection({
         </button>
       </div>
 
+      <div className="divider">Outras configurações</div>
+      <div className="w-full max-w-full space-y-6">
+        {/* Voluntários */}
+        <fieldset className="fieldset bg-base-100 border border-base-300 rounded-box p-4">
+          <legend className="fieldset-legend font-semibold text-lg">Voluntários</legend>
+
+          <label className="label flex items-center mb-3 break-words">
+            <input type="checkbox" className="toggle mb-1" />
+            Permitir que voluntários editem pontuações após a confirmação do administrador do evento.
+          </label>
+
+          <label className="label flex items-center mb-3 break-words">
+            <input type="checkbox" className="toggle mb-1" />
+            Exibir apenas a rodada atual para os voluntários. Caso desativado, todas as rodadas serão visíveis.
+          </label>
+
+          <label className="label flex items-center mb-3 break-words">
+            <input type="checkbox" className="toggle mb-1" />
+            Ativar inspeção pré-rodada das equipes, permitindo que voluntários verifiquem detalhes e requisitos antes da liberação.
+          </label>
+        </fieldset>
+
+        {/* Semifinais & Finais */}
+        <fieldset className="fieldset bg-base-100 border border-base-300 rounded-box p-4">
+          <legend className="fieldset-legend font-semibold text-lg">Semifinais & Finais</legend>
+
+          <label className="label flex items-center mb-3 break-words">
+            <input type="checkbox" className="toggle mb-1" />
+            Ativar rodadas específicas para semifinais e finais.
+          </label>
+
+          <label className="label flex items-center mb-3 break-words">
+            <input type="checkbox" className="toggle mb-1" />
+            Ativar semifinais automaticamente para eventos com mais de 4 equipes.
+          </label>
+
+          <label className="label flex items-center mb-3 break-words">
+            <input type="checkbox" className="toggle mb-1" />
+            Exibir brackets no estilo mata-mata.
+          </label>
+        </fieldset>
+
+        {/* Visualização */}
+        <fieldset className="fieldset bg-base-100 border border-base-300 rounded-box p-4">
+          <legend className="fieldset-legend font-semibold text-lg">Visualização</legend>
+
+          <label className="label flex items-center mb-3 break-words">
+            <input type="checkbox" className="toggle mb-1" />
+            Mostrar pontuações apenas após todas as equipes serem avaliadas na rodada.
+          </label>
+
+          <label className="label flex items-center mb-3 break-words">
+            <input type="checkbox" className="toggle mb-1" />
+            Destacar a equipe vencedora no final do evento.
+          </label>
+
+          <label className="label flex items-center mb-3 break-words">
+            <input type="checkbox" className="toggle mb-1" />
+            Ativar visualização de avançada: layout otimizado para telas grandes, exibindo logo, ranqueamento e alertas.
+          </label>
+
+          <label className="label flex items-center mb-3 break-words">
+            <input type="checkbox" className="toggle mb-1" />
+            Mostrar cronômetro regressivo da rodada atual.
+          </label>
+        </fieldset>
+      </div>
+
       {/* Ações perigosas */}
       <div className="mt-8 border border-error bg-error/10 rounded-lg p-4">
         <div className="mb-4 flex flex-col gap-2">
@@ -362,6 +432,16 @@ export default function ConfiguracoesSection({
           </span>
         </div>
         <div className="space-y-4">
+          <div className="flex justify-between items-center flex-row-reverse">
+            <button
+              className="btn btn-outline btn-error"
+            >
+              Alterar estado do Evento
+            </button>
+            <p className="text-xs text-base-content mt-1 ml-1">
+              Altera o estado do evento entre Ativo e Inativo. Voluntários e visitantes não poderão mais acessar o evento se for Inativo.
+            </p>
+          </div>
           <div className="flex justify-between items-center flex-row-reverse">
             <button
               onClick={handleResetScores}

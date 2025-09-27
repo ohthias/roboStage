@@ -105,6 +105,27 @@ export default function Sidebar({
             </li>
             <hr className="my-2 border border-base-300" />
             <li>
+              <a href="#" className="btn btn-ghost justify-start">
+                Gracius Professionalism
+              </a>
+            </li>
+            <li>
+              <a href="#" className="btn btn-ghost justify-start">
+                Inspeção Pré-Rodada
+              </a>
+            </li>
+            <li>
+              <a href="#" className="btn btn-ghost justify-start">
+                Visualização Avançada
+              </a>
+            </li>
+            <li>
+              <a href="#" className="btn btn-ghost justify-start">
+                Brackets 
+              </a>
+            </li>
+            <hr className="my-2 border border-base-300" />
+            <li>
               <a href="#personalizacao" className="btn btn-ghost justify-start">
                 <i className="fi fi-rr-customize-edit mr-2" />
                 Personalização

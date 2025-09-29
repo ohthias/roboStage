@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/utils/supabase/client";
 import ModalLabTest from "@/components/ui/Modal/ModalLabTest";
 import TestResultsCharts from "@/components/LabTest/ResultsSection";
-import { BeakerIcon } from "@heroicons/react/24/outline";
+import { BeakerIcon, PresentationChartBarIcon } from "@heroicons/react/24/outline";
 import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import ModalConfirm, {
   ModalConfirmRef,
@@ -161,15 +161,18 @@ export default function LabTestPage() {
   return (
     <div className="pb-8 flex flex-col">
       {/* Header */}
-      <section className="bg-base-200 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300 mb-4">
-        <div>
-          <h2 className="text-base-content font-bold mb-2 text-3xl">
-            Lab<span className="text-primary">Test</span>
-          </h2>
-          <p className="text-sm text-base-content">
-            Crie e gerencie seus testes personalizados para avaliar o desempenho
-            do robô.
-          </p>
+      <section className="bg-base-100 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300 mb-4">
+        <div className="flex items-center gap-4">
+          <PresentationChartBarIcon className="size-16 text-primary/75" />
+          <div>
+            <h2 className="text-base-content font-bold mb-2 text-3xl">
+              Lab<span className="text-primary">Test</span>
+            </h2>
+            <p className="text-sm text-base-content">
+              Crie e gerencie seus testes personalizados para avaliar o desempenho
+              do robô.
+            </p>
+          </div>
         </div>
         <ModalLabTest />
       </section>

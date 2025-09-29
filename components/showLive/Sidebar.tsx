@@ -121,7 +121,7 @@ export default function Sidebar({
             </li>
             <li>
               <a href="#" className="btn btn-ghost justify-start">
-                Brackets 
+                Brackets
               </a>
             </li>
             <hr className="my-2 border border-base-300" />

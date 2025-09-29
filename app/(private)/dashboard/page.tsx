@@ -12,6 +12,7 @@ import TimerPage from "./hashPages/TimerPage";
 import BrainShotPage from "./hashPages/BrainShot";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import InnoLab from "./hashPages/InnoLab";
 
 export default function Dashboard() {
   const { session, profile } = useUser();
@@ -41,6 +42,10 @@ export default function Dashboard() {
         return <TimerPage />;
       case "brainShot":
         return <BrainShotPage />;
+      case "innoLab":
+        return <InnoLab />;
+      default:
+        return <HubHero />;
     }
   };
 

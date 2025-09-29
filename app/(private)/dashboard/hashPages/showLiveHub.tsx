@@ -6,7 +6,7 @@ import { EventModal } from "@/components/EventModal";
 import Loader from "@/components/loader";
 import { useUser } from "@/app/context/UserContext";
 import { useEvents } from "@/hooks/useEventsLoad";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, SignalIcon } from "@heroicons/react/24/outline";
 
 export default function ShowLiveHub() {
   const router = useRouter();
@@ -63,16 +63,19 @@ export default function ShowLiveHub() {
 
   return (
     <div>
-      <section className="bg-base-200 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300">
-        <div>
-          <h2 className="text-base-content font-bold mb-2 text-3xl">
-            Show<span className="text-primary">Live</span>
-          </h2>
-          <p className="text-sm text-base-content">
-            Gerencie seus eventos de robótica ao vivo aqui.
-          </p>
+      <section className="bg-base-100 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300 mb-4">
+        <div className="flex items-center gap-4">
+          <SignalIcon className="size-16 text-primary/75" />
+          <div>
+            <h2 className="text-base-content font-bold mb-2 text-3xl">
+              Show<span className="text-primary">Live</span>
+            </h2>
+            <p className="text-sm text-base-content">
+              Gerencie seus eventos de robótica ao vivo aqui.
+            </p>
+          </div>
         </div>
-        <button className="btn btn-accent" onClick={() => setShowModal(true)}>
+        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
           Criar Evento
         </button>
       </section>

@@ -3,7 +3,7 @@ import { supabase } from "@/utils/supabase/client";
 import StyleLabModal from "@/components/StyleLabModal";
 import { useUser } from "@/app/context/UserContext";
 import Loader from "@/components/loader";
-import { PaintBrushIcon } from "@heroicons/react/24/outline";
+import { PaintBrushIcon, SparklesIcon } from "@heroicons/react/24/outline";
 
 interface StyleLabTheme {
   id_theme: number;
@@ -75,17 +75,20 @@ export function StyleLab() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <section className="bg-base-200 p-4 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-md border border-base-300 gap-3">
-        <div>
-          <h2 className="text-base-content font-bold mb-1 text-2xl sm:text-3xl">
-            Style<span className="text-violet-800">Lab</span>
-          </h2>
-          <p className="text-sm text-base-content">
-            Crie temas personalizados para seus eventos no showLive.
-          </p>
+      <section className="bg-base-100 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300 mb-4">
+        <div className="flex items-center gap-4">
+          <SparklesIcon className="size-16 text-secondary/75" />
+          <div>
+            <h2 className="text-base-content font-bold mb-1 text-2xl sm:text-3xl">
+              Style<span className="text-secondary">Lab</span>
+            </h2>
+            <p className="text-sm text-base-content">
+              Crie temas personalizados para seus eventos no showLive.
+            </p>
+          </div>
         </div>
         <button
-          className="btn btn-accent w-full sm:w-auto"
+          className="btn btn-secondary w-full sm:w-auto"
           onClick={() => setShowModal(true)}
         >
           Criar Tema
@@ -146,10 +149,9 @@ export function StyleLab() {
               key={theme.id_theme}
               className="card h-40 bg-base-100 shadow-md border border-base-300 relative overflow-hidden"
               style={{
-                backgroundImage: `url(${
-                  theme.background_url ||
+                backgroundImage: `url(${theme.background_url ||
                   "/images/showLive/banners/banner_default.webp"
-                })`,
+                  })`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}

@@ -357,9 +357,11 @@ export default function TestResultsCharts({ testId }: { testId: string }) {
                         <Legend />
                         <Line
                           type="monotone"
-                          dataKey="Items Feitos"
+                          dataKey="valor"
                           stroke="#e7000b"
                           strokeWidth={4}
+                          name="Itens Feitos"
+
                         />
                       </LineChart>
                     ) : (

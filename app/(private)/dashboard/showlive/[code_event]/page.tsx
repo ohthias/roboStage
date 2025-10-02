@@ -11,6 +11,7 @@ import ConfiguracoesSection from "@/components/showLive/subpages/ConfiguracoesSe
 import Loader from "@/components/loader";
 import Sidebar from "@/components/showLive/Sidebar";
 import ThemeSection from "@/components/showLive/subpages/ThemePage";
+import TabelaGracious from "@/components/showLive/subpages/TabelaGracious";
 
 export default function EventAdminPage() {
   const params = useParams<{ code_event: string }>();
@@ -60,7 +61,7 @@ export default function EventAdminPage() {
       case "configuracoes":
         return <ConfiguracoesSection idEvent={eventData?.id_evento ?? null} />;
       case "gracious-professionalism":
-        return <div>Gracious Professionalism Section - Em desenvolvimento</div>;
+        return <TabelaGracious eventId={eventData?.id_evento || 0} />;
       case "brackets":
         return <div>Brackets Section - Em desenvolvimento</div>;
       case "pre-round-inspection":

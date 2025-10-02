@@ -46,7 +46,7 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
   const [loading, setLoading] = useState(true);
   const [allRoundsCompleted, setAllRoundsCompleted] = useState(false);
 
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     const loadData = async () => {
@@ -65,7 +65,7 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
         setRoundsOrder(visibleRounds);
 
         const season = (config.temporada || "").toLowerCase();
-        const missionsRes = await fetch("/api/data/missions.json");
+        const missionsRes = await fetch("/api/data/missions");
         const missionsData = await missionsRes.json();
 
         if (missionsData[season]) {
@@ -136,7 +136,10 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
     }));
   };
 
-  const totalPoints = sumAllMissions(missions, responses);
+  const totalPoints = sumAllMissions(
+    missions.filter((m) => m.id !== "GP"),
+    responses
+  );
 
   const handleSubmit = async () => {
     if (!selectedRound || !selectedEquipe) {
@@ -160,9 +163,63 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
 
       const updatedPoints = { ...equipe.points, [selectedRound]: totalPoints };
 
+      // 🔎 GP e PT armazenados no data_extra
+      const roundExtra: Record<string, any> = {};
+      ["GP", "PT"].forEach((id) => {
+        const mission = missions.find((m) => m.id === id);
+        const response = responses[id];
+
+        if (mission && response) {
+          const index = Object.values(response)[0];
+          let value: string | number = index;
+          let points = 0;
+
+          // Calcula pontos
+          if (Array.isArray(mission.points)) {
+            points = mission.points[index as number] ?? 0;
+          } else {
+            points = mission.points as number;
+          }
+
+          // Ajusta o "value" de acordo com o tipo
+          if (typeof index === "number") {
+            if (mission.type[0] === "range") {
+              // para range → pega label (mission.type[index+1]) ou mantém index
+              value = mission.type[index + 1] ?? index;
+            } else if (mission.type[0] === "switch") {
+              // para switch → pega label (mission.type[index+1]) ou mantém index
+              value = mission.type[index + 1] ?? index;
+            }
+          }
+
+          roundExtra[id] = { value, points };
+        }
+      });
+
+      // 🔎 Pega data_extra atual para não sobrescrever
+      const { data: current, error: fetchError } = await supabase
+        .from("team")
+        .select("data_extra")
+        .eq("id_team", equipe.id_team)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+
+      const currentExtra = current?.data_extra || {};
+
+      // Mescla com round atual
+      const newExtra = {
+        ...currentExtra,
+        [selectedRound]: roundExtra,
+      };
+
+      // 🔄 Atualiza no banco
       const { error } = await supabase
         .from("team")
-        .update({ points: updatedPoints })
+        .update({
+          points: updatedPoints,
+          data_extra: newExtra,
+        })
         .eq("id_team", equipe.id_team);
 
       if (error) throw error;
@@ -171,17 +228,15 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
         `Pontuação salva para ${selectedEquipe} no ${selectedRound}: ${totalPoints}`
       );
 
+      // Atualiza estado local
       setTeams((prev) =>
         prev.map((t) =>
-          t.id_team === equipe.id_team ? { ...t, points: updatedPoints } : t
+          t.id_team === equipe.id_team
+            ? { ...t, points: updatedPoints, data_extra: newExtra }
+            : t
         )
       );
       router.refresh();
-      setTeams((prev) =>
-        prev.map((t) =>
-          t.id_team === equipe.id_team ? { ...t, points: updatedPoints } : t
-        )
-      );
     } catch (err) {
       console.error("Erro ao salvar avaliação:", err);
       alert("Erro ao atualizar equipe.");
@@ -230,10 +285,7 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-start gap-4 relative w-full max-w-4xl bg-base-200 px-8 py-4 rounded-md animate-fade-in-down mb-8">
-        <img
-          src="/images/icons/NoEquip.png"
-          className="w-16 h-16 mr-4"
-        />
+        <img src="/images/icons/NoEquip.png" className="w-16 h-16 mr-4" />
         <p className="text-base-content text-sm">
           <b>Sem restrição de equipamento:</b> Quando este símbolo aparece,
           aplica-se a seguinte regra:{" "}
@@ -291,9 +343,9 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
           ...mission,
           ["sub-mission"]: mission["sub-mission"]
             ? mission["sub-mission"].map((sub) => ({
-                ...sub,
-                points: sub.points ?? 0
-              }))
+              ...sub,
+              points: sub.points ?? 0,
+            }))
             : undefined,
         }))}
         responses={responses}

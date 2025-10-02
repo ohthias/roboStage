@@ -1,12 +1,15 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/utils/supabase/client";
 
 interface NavigationBarProps {
   code_volunteer: string;
   code_visitor: string;
   open: boolean;
   setOpen: (value: boolean) => void;
+  eventId: number;
 }
 
 export default function Sidebar({
@@ -14,8 +17,49 @@ export default function Sidebar({
   code_visitor,
   open,
   setOpen,
+  eventId,
 }: NavigationBarProps) {
   const router = useRouter();
+  const [settings, setSettings] = useState({
+    enable_playoffs: false,
+    pre_round_inspection: false,
+    advanced_view: false,
+  });
+
+  // Função para carregar os settings iniciais
+  const loadSettings = async () => {
+    const { data, error } = await supabase
+      .from("event_settings")
+      .select("enable_playoffs, pre_round_inspection, advanced_view")
+      .eq("id_evento", eventId)
+      .maybeSingle();
+
+    if (data) {
+      setSettings({
+        enable_playoffs: data.enable_playoffs,
+        pre_round_inspection: data.pre_round_inspection,
+        advanced_view: data.advanced_view,
+      });
+    } else if (error) {
+      console.error(error);
+    }
+  };
+
+  // Carregar settings inicialmente
+  useEffect(() => {
+    loadSettings();
+  }, [eventId]);
+
+  // Configurar Supabase Realtime para atualizar a sidebar em tempo real
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      loadSettings();
+    }, 5000); // Poll every 5 seconds
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [eventId]);
 
   return (
     <>
@@ -49,7 +93,6 @@ export default function Sidebar({
           <h3 className="font-bold text-lg">
             Show<span className="text-primary">Live</span>
           </h3>
-          {/* Botão fechar em mobile */}
           <button
             className="btn btn-sm btn-circle btn-ghost lg:hidden"
             onClick={() => setOpen(false)}
@@ -81,50 +124,50 @@ export default function Sidebar({
             </li>
             <li>
               <a href="#equipes" className="btn btn-ghost justify-start">
-                <i
-                  className="fi fi-rr-employees-woman-man mr-2"
-                  style={{ lineHeight: 0 }}
-                />
+                <i className="fi fi-rr-employees-woman-man mr-2" />
                 Equipes
               </a>
             </li>
             <li>
               <a href="#ranking" className="btn btn-ghost justify-start">
-                <i
-                  className="fi fi-rr-ranking-star mr-2"
-                  style={{ lineHeight: 0 }}
-                />
+                <i className="fi fi-rr-ranking-star mr-2" />
                 Ranking
               </a>
             </li>
             <li>
               <a href="#visualizacao" className="btn btn-ghost justify-start">
-                <i className="fi fi-rr-eye mr-2" style={{ lineHeight: 0 }} />
+                <i className="fi fi-rr-eye mr-2" />
                 Visualização
               </a>
             </li>
+
             <hr className="my-2 border border-base-300" />
-            <li>
-              <a href="#" className="btn btn-ghost justify-start">
-                Gracius Professionalism
-              </a>
-            </li>
-            <li>
-              <a href="#" className="btn btn-ghost justify-start">
-                Inspeção Pré-Rodada
-              </a>
-            </li>
-            <li>
-              <a href="#" className="btn btn-ghost justify-start">
-                Visualização Avançada
-              </a>
-            </li>
-            <li>
-              <a href="#" className="btn btn-ghost justify-start">
-                Brackets
-              </a>
-            </li>
+            <li> <a href="#gracious-professionalism" className="btn btn-ghost justify-start"> Gracious Professionalism </a> </li>
+            {/* Itens dinâmicos */}
+            {settings.enable_playoffs && (
+              <li>
+                <a href="#brackets" className="btn btn-ghost justify-start">
+                  Brackets
+                </a>
+              </li>
+            )}
+            {settings.pre_round_inspection && (
+              <li>
+                <a href="#pre-round-inspection" className="btn btn-ghost justify-start">
+                  Inspeção Pré-Rodada
+                </a>
+              </li>
+            )}
+            {settings.advanced_view && (
+              <li>
+                <a href="#advanced-view" className="btn btn-ghost justify-start">
+                  Visualização Avançada
+                </a>
+              </li>
+            )}
+
             <hr className="my-2 border border-base-300" />
+
             <li>
               <a href="#personalizacao" className="btn btn-ghost justify-start">
                 <i className="fi fi-rr-customize-edit mr-2" />

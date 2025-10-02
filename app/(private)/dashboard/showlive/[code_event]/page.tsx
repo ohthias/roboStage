@@ -59,6 +59,14 @@ export default function EventAdminPage() {
         return <ThemeSection eventId={eventData?.id_evento ? String(eventData.id_evento) : ""} />;
       case "configuracoes":
         return <ConfiguracoesSection idEvent={eventData?.id_evento ?? null} />;
+      case "gracious-professionalism":
+        return <div>Gracious Professionalism Section - Em desenvolvimento</div>;
+      case "brackets":
+        return <div>Brackets Section - Em desenvolvimento</div>;
+      case "pre-round-inspection":
+        return <div>Inspeção Pré-Rodada Section - Em desenvolvimento</div>;
+      case "advanced-view":
+        return <div>Visualização Avançada Section - Em desenvolvimento</div>;
       default:
         return (
           <GeneralPage
@@ -78,6 +86,7 @@ export default function EventAdminPage() {
         code_visitor={eventData?.code_visit ?? ""}
         open={sidebarOpen}
         setOpen={setSidebarOpen}
+        eventId={eventData?.id_evento || 0}
       />
 
       <div

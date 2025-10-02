@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/app/context/ToastContext";
 import Loader from "@/components/loader";
+import EventSettings from "../configs/EventSettings";
+import DangerZone from "../configs/DangerZone";
 
 interface PropsConfiguracoesSection {
   idEvent: number | null;
@@ -153,87 +155,6 @@ export default function ConfiguracoesSection({
     setDraggingIndex(index);
   };
 
-  const handleResetScores = async () => {
-    if (!idEvent) return;
-    if (
-      !confirm(
-        "Tem certeza que deseja resetar todas as pontuações das equipes? Essa ação não pode ser desfeita!"
-      )
-    )
-      return;
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("team")
-      .select("*")
-      .eq("id_event", idEvent);
-    if (error) {
-      addToast("Erro ao buscar equipes: " + error.message, "error");
-      setLoading(false);
-      return;
-    }
-
-    for (const team of data) {
-      const emptyPoints = Object.fromEntries(
-        Object.keys(team.points).map((round) => [round, -1])
-      );
-      await supabase
-        .from("team")
-        .update({ points: emptyPoints })
-        .eq("id_team", team.id_team);
-    }
-    setLoading(false);
-    addToast("Pontuações resetadas com sucesso!", "success");
-  };
-
-  const handleResetTeams = async () => {
-    if (
-      !confirm("Tem certeza que deseja apagar todas as equipes deste evento?")
-    )
-      return;
-
-    if (!idEvent) return;
-    setLoading(true);
-    const { error } = await supabase
-      .from("team")
-      .delete()
-      .eq("id_event", idEvent);
-    if (error) {
-      addToast("Erro ao resetar equipes: " + error.message, "error");
-      setLoading(false);
-      return;
-    }
-    setLoading(false);
-    addToast("Todas as equipes foram apagadas.", "success");
-  };
-
-  const handleDeleteEvent = async () => {
-    if (!idEvent) return;
-    if (
-      !confirm(
-        "Tem certeza que deseja apagar este evento? Essa ação não pode ser desfeita!"
-      )
-    )
-      return;
-    setLoading(true);
-    await supabase.from("typeEvent").delete().eq("id_event", idEvent);
-    await supabase.from("team").delete().eq("id_event", idEvent);
-
-    const { error } = await supabase
-      .from("events")
-      .delete()
-      .eq("id_evento", idEvent);
-    if (error) {
-      addToast("Erro ao apagar evento: " + error.message, "error");
-      setLoading(false);
-      return;
-    }
-    setLoading(false);
-    addToast("Evento apagado com sucesso!", "success");
-    window.location.href = "/dashboard#showLive";
-  };
-  if (!idEvent) {
-    return <p className="text-red-500">Evento inválido.</p>;
-  }
   if (!idEvent) return <p className="text-red-500">Evento inválido.</p>;
   if (loading) return <div className="h-screen flex justify-center"><Loader /></div>;
 
@@ -355,128 +276,8 @@ export default function ConfiguracoesSection({
         </button>
       </div>
 
-      <div className="divider">Outras configurações</div>
-      <div className="w-full max-w-full space-y-6">
-        {/* Voluntários */}
-        <fieldset className="fieldset bg-base-100 border border-base-300 rounded-box p-4">
-          <legend className="fieldset-legend font-semibold text-lg">Voluntários</legend>
-
-          <label className="label flex items-center mb-3 break-words">
-            <input type="checkbox" className="toggle mb-1" />
-            Permitir que voluntários editem pontuações após a confirmação do administrador do evento.
-          </label>
-
-          <label className="label flex items-center mb-3 break-words">
-            <input type="checkbox" className="toggle mb-1" />
-            Exibir apenas a rodada atual para os voluntários. Caso desativado, todas as rodadas serão visíveis.
-          </label>
-
-          <label className="label flex items-center mb-3 break-words">
-            <input type="checkbox" className="toggle mb-1" />
-            Ativar inspeção pré-rodada das equipes, permitindo que voluntários verifiquem detalhes e requisitos antes da liberação.
-          </label>
-        </fieldset>
-
-        {/* Semifinais & Finais */}
-        <fieldset className="fieldset bg-base-100 border border-base-300 rounded-box p-4">
-          <legend className="fieldset-legend font-semibold text-lg">Semifinais & Finais</legend>
-
-          <label className="label flex items-center mb-3 break-words">
-            <input type="checkbox" className="toggle mb-1" />
-            Ativar rodadas específicas para semifinais e finais.
-          </label>
-
-          <label className="label flex items-center mb-3 break-words">
-            <input type="checkbox" className="toggle mb-1" />
-            Ativar semifinais automaticamente para eventos com mais de 4 equipes.
-          </label>
-
-          <label className="label flex items-center mb-3 break-words">
-            <input type="checkbox" className="toggle mb-1" />
-            Exibir brackets no estilo mata-mata.
-          </label>
-        </fieldset>
-
-        {/* Visualização */}
-        <fieldset className="fieldset bg-base-100 border border-base-300 rounded-box p-4">
-          <legend className="fieldset-legend font-semibold text-lg">Visualização</legend>
-
-          <label className="label flex items-center mb-3 break-words">
-            <input type="checkbox" className="toggle mb-1" />
-            Mostrar pontuações apenas após todas as equipes serem avaliadas na rodada.
-          </label>
-
-          <label className="label flex items-center mb-3 break-words">
-            <input type="checkbox" className="toggle mb-1" />
-            Destacar a equipe vencedora no final do evento.
-          </label>
-
-          <label className="label flex items-center mb-3 break-words">
-            <input type="checkbox" className="toggle mb-1" />
-            Ativar visualização de avançada: layout otimizado para telas grandes, exibindo logo, ranqueamento e alertas.
-          </label>
-
-          <label className="label flex items-center mb-3 break-words">
-            <input type="checkbox" className="toggle mb-1" />
-            Mostrar cronômetro regressivo da rodada atual.
-          </label>
-        </fieldset>
-      </div>
-
-      {/* Ações perigosas */}
-      <div className="mt-8 border border-error bg-error/10 rounded-lg p-4">
-        <div className="mb-4 flex flex-col gap-2">
-          <span className="text-2xl font-bold text-error">Zona de Perigo</span>
-          <span className="text-base-content text-sm">
-            Ações irreversíveis. Tenha certeza antes de prosseguir.
-          </span>
-        </div>
-        <div className="space-y-4">
-          <div className="flex justify-between items-center flex-row-reverse">
-            <button
-              className="btn btn-outline btn-error"
-            >
-              Alterar estado do Evento
-            </button>
-            <p className="text-xs text-base-content mt-1 ml-1">
-              Altera o estado do evento entre Ativo e Inativo. Voluntários e visitantes não poderão mais acessar o evento se for Inativo.
-            </p>
-          </div>
-          <div className="flex justify-between items-center flex-row-reverse">
-            <button
-              onClick={handleResetScores}
-              className="btn btn-outline btn-error"
-            >
-              Resetar Pontuações
-            </button>
-            <p className="text-xs text-base-content mt-1 ml-1">
-              Zera a pontuação de todas as equipes deste evento. Os dados das
-              equipes permanecem.
-            </p>
-          </div>
-          <div className="flex justify-between items-center flex-row-reverse">
-            <button
-              onClick={handleResetTeams}
-              className="btn btn-outline btn-error"
-            >
-              Resetar Equipes
-            </button>
-            <p className="text-xs text-base-content mt-1 ml-1">
-              Remove todas as equipes deste evento. As configurações e
-              pontuações serão apagadas.
-            </p>
-          </div>
-          <div className="flex justify-between items-center flex-row-reverse">
-            <button onClick={handleDeleteEvent} className="btn btn-error">
-              Apagar Evento
-            </button>
-            <p className="text-xs text-base-content mt-1 ml-1">
-              Apaga o evento, todas as equipes e configurações permanentemente.
-              Esta ação não pode ser desfeita.
-            </p>
-          </div>
-        </div>
-      </div>
+      <EventSettings eventId={idEvent} />
+      <DangerZone eventId={String(idEvent)} />
     </div>
   );
 }

@@ -12,6 +12,7 @@ import Loader from "@/components/loader";
 import Sidebar from "@/components/showLive/Sidebar";
 import ThemeSection from "@/components/showLive/subpages/ThemePage";
 import TabelaGracious from "@/components/showLive/subpages/TabelaGracious";
+import Brackets from "@/components/showLive/subpages/BracketsSection";
 
 export default function EventAdminPage() {
   const params = useParams<{ code_event: string }>();
@@ -63,7 +64,7 @@ export default function EventAdminPage() {
       case "gracious-professionalism":
         return <TabelaGracious eventId={eventData?.id_evento || 0} />;
       case "brackets":
-        return <div>Brackets Section - Em desenvolvimento</div>;
+        return <Brackets eventId={eventData?.id_evento || 0} />;
       case "pre-round-inspection":
         return <div>Inspeção Pré-Rodada Section - Em desenvolvimento</div>;
       case "advanced-view":

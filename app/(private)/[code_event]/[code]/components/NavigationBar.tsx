@@ -1,13 +1,47 @@
-import { useRouter } from "next/navigation";
+"use client";
 
-export function NavigationBar() {
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { supabase } from "@/utils/supabase/client";
+
+interface EventSettings {
+  enable_playoffs: boolean;
+}
+
+export function NavigationBar({eventId} : {eventId: number}) {
+  const [settings, setSettings] = useState<EventSettings | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+      if (!eventId) return;
+
+      const fetchSettings = async () => {
+        const { data, error } = await supabase
+          .from("event_settings")
+          .select("enable_playoffs")
+          .eq("id_evento", eventId)
+          .single();
+        console.log("Configurações carregadas:", data, error);
+
+        if (error) {
+          console.error("Erro ao buscar configurações:", error);
+          return;
+        }
+
+        setSettings(data);
+      };
+
+      fetchSettings();
+  }, [eventId]);
 
   const handleLogout = async () => {
     sessionStorage.removeItem("event_access");
-    document.cookie = "event_access=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie =
+      "event_access=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.push("/universe");
   };
+
+  const showPlayoffsButton = settings?.enable_playoffs ?? false;
 
   return (
     <nav className="navbar bg-base-200 border-b border-base-300 rounded-lg px-4">
@@ -30,9 +64,17 @@ export function NavigationBar() {
           <a href="#" className="btn btn-default">
             Hub
           </a>
+
           <a href="#avalia" className="btn btn-primary">
-            Avaliar
-          </a>
+              Avaliar
+            </a>
+
+          {showPlayoffsButton && (
+            <a href="#playoffs" className="btn btn-default">
+              Playoffs
+            </a>
+          )}
+
           <button onClick={handleLogout} className="btn btn-error">
             <i className="fi fi-br-sign-out-alt"></i> Sair
           </button>
@@ -65,13 +107,26 @@ export function NavigationBar() {
                 Hub
               </a>
             </li>
+
             <li>
               <a href="#avalia" className="text-lg">
                 Avaliar
               </a>
             </li>
+
+            {showPlayoffsButton && (
+              <li>
+                <a href="#playoffs" className="text-lg">
+                  Playoffs
+                </a>
+              </li>
+            )}
+
             <li>
-              <button onClick={handleLogout} className="text-error flex gap-2 text-lg">
+              <button
+                onClick={handleLogout}
+                className="text-error flex gap-2 text-lg"
+              >
                 <i className="fi fi-br-sign-out-alt"></i> Sair
               </button>
             </li>

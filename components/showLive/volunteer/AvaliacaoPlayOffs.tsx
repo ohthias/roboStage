@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { sumAllMissions } from "@/utils/scores";
@@ -49,31 +49,48 @@ export default function AvaliacaoPlayOffs({ idEvento }: { idEvento: number }) {
       try {
         setLoading(true);
 
-        // ⚙️ Buscar configurações playoffs
-        const { data: settings } = await supabase
-          .from("event_settings")
-          .select("enable_playoffs, auto_semifinals")
-          .eq("id_evento", idEvento)
-          .single();
+        // ⚙️ Buscar configurações e dados do evento em paralelo
+        const [
+          { data: settings },
+          { data: eventConfig, error: configError },
+          { data: teamsData, error: teamsError },
+          missionsRes,
+        ] = await Promise.all([
+          supabase
+            .from("event_settings")
+            .select("enable_playoffs, auto_semifinals")
+            .eq("id_evento", idEvento)
+            .single(),
 
+          supabase
+            .from("typeEvent")
+            .select("config")
+            .eq("id_event", idEvento)
+            .maybeSingle(),
+
+          supabase
+            .from("view_team_json")
+            .select("id_team, name_team, rounds")
+            .eq("id_event", idEvento),
+
+          fetch("/api/data/missions"),
+        ]);
+
+        if (configError) throw configError;
+        if (teamsError) throw teamsError;
+
+        // ⚙️ Verificar se playoffs estão habilitados
         if (!settings || !settings.enable_playoffs) {
           setLabel("Playoffs não habilitados");
-          setLoading(false);
           return;
         }
 
-        setFase(settings.auto_semifinals ? "Semi-final" : "Final");
-        setLabel(settings.auto_semifinals ? "Modo: Semi-finais" : "Modo: Finais");
+        // 🏁 Definir fase e rótulo
+        const isSemi = settings.auto_semifinals;
+        setFase(isSemi ? "Semi-final" : "Final");
+        setLabel(isSemi ? "Modo: Semi-finais" : "Modo: Finais");
 
-        // ⚙️ Buscar config do evento (temporada e rodadas)
-        const { data: eventConfig, error: configError } = await supabase
-          .from("typeEvent")
-          .select("config")
-          .eq("id_event", idEvento)
-          .maybeSingle();
-
-        if (configError) throw configError;
-
+        // 🧩 Configuração do evento
         const config = eventConfig?.config || {};
         const visibleRounds = config.rodadas || [];
         setRoundsOrder(visibleRounds);
@@ -81,9 +98,7 @@ export default function AvaliacaoPlayOffs({ idEvento }: { idEvento: number }) {
         const season = (config.temporada || "").toLowerCase();
 
         // 📂 Missões da temporada
-        const missionsRes = await fetch("/api/data/missions");
         const missionsData = await missionsRes.json();
-
         if (missionsData[season]) {
           setMissions(missionsData[season]);
         } else {
@@ -91,21 +106,14 @@ export default function AvaliacaoPlayOffs({ idEvento }: { idEvento: number }) {
           setMissions([]);
         }
 
-        // 👥 Buscar equipes
-        const { data: teamsData, error: teamsError } = await supabase
-          .from("view_team_json")
-          .select("id_team, name_team, rounds")
-          .eq("id_event", idEvento);
-
-        if (teamsError) throw teamsError;
-
-        const formattedTeams = teamsData.map((t) => ({
+        // 👥 Equipes
+        const formattedTeams = (teamsData || []).map((t) => ({
           ...t,
           points: t.rounds || Object.fromEntries(visibleRounds.map((r: any) => [r, -1])),
         }));
 
-        // 🏆 Ranking pela maior pontuação registrada em qualquer rodada
-        const rankedTeams = (formattedTeams || [])
+        // 🏆 Ranking pela melhor pontuação
+        const rankedTeams = formattedTeams
           .map((t) => {
             const scores = Object.values(t.points || {}) as number[];
             const validScores = scores.filter((s) => typeof s === "number" && s >= 0);
@@ -114,54 +122,44 @@ export default function AvaliacaoPlayOffs({ idEvento }: { idEvento: number }) {
           })
           .sort((a, b) => b.bestScore - a.bestScore);
 
-        setTeams(settings.auto_semifinals ? rankedTeams.slice(0, 4) : rankedTeams.slice(0, 2));
+        const topTeams = isSemi ? rankedTeams.slice(0, 4) : rankedTeams.slice(0, 2);
+        setTeams(topTeams);
 
-        // ✅ Verificar se todas rodadas estão preenchidas (sem -1)
+        // ✅ Verificar se todas as rodadas estão completas
         const allCompleted = formattedTeams.every((team) =>
           visibleRounds.every((round: string | number) => team.points[round] !== -1)
         );
         setAllRoundsCompleted(allCompleted);
 
-        if (settings.auto_semifinals) {
-          // ✅ Verifica se todas as 4 equipes da semi-final já foram avaliadas
-          const semiCompleted = formattedTeams
-            .slice(0, 4)
-            .every((t) => t.points?.["Semi-final"] !== undefined && t.points?.["Semi-final"] !== -1);
+        if (isSemi) {
+          // ✅ Semi-final concluída
+          const semiCompleted = topTeams.every(
+            (t) => t.points?.["Semi-final"] !== undefined && t.points?.["Semi-final"] !== -1
+          );
 
           if (semiCompleted) {
-            // Seleciona os 2 melhores da semi-final com base na pontuação da Semi-final
-            const top2 = formattedTeams
-              .slice(0, 4)
+            // 🏁 Selecionar finalistas
+            const top2 = topTeams
               .sort((a, b) => (b.points?.["Semi-final"] ?? 0) - (a.points?.["Semi-final"] ?? 0))
               .slice(0, 2);
 
-            // Avança para Final
             setTeams(top2);
             setFase("Final");
             setLabel("Modo: Finais");
-            setPlayoffState("final"); // estado "final" indica que a final está em andamento
-            if (!top2.every((t) => t.points?.["Final"] !== undefined && t.points?.["Final"] !== -1)) {
-              setPlayoffState("andamento"); // se a final ainda não foi preenchida, mantém como "andamento"
-            } else {
-              setPlayoffState("encerrado"); // se a final já foi preenchida, marca como encerrado
-            }
+
+            const finalCompleted = top2.every(
+              (t) => t.points?.["Final"] !== undefined && t.points?.["Final"] !== -1
+            );
+            setPlayoffState(finalCompleted ? "encerrado" : "andamento");
           } else {
-            // Se ainda não completaram, mantém as 4 equipes e estado "andamento"
-            setTeams(formattedTeams.slice(0, 4));
             setPlayoffState("andamento");
           }
         } else {
-          // Caso não haja semi-final, apenas verifica se a final já foi preenchida
-          const finalCompleted = formattedTeams
-            .slice(0, 2)
-            .every((t) => t.points?.["Final"] !== undefined && t.points?.["Final"] !== -1);
-
-          if (finalCompleted) {
-            setPlayoffState("encerrado");
-          } else {
-            setTeams(formattedTeams.slice(0, 2));
-            setPlayoffState("andamento");
-          }
+          // ⚙️ Finais diretas
+          const finalCompleted = topTeams.every(
+            (t) => t.points?.["Final"] !== undefined && t.points?.["Final"] !== -1
+          );
+          setPlayoffState(finalCompleted ? "encerrado" : "andamento");
         }
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
@@ -170,7 +168,7 @@ export default function AvaliacaoPlayOffs({ idEvento }: { idEvento: number }) {
       }
     };
 
-    loadData();
+    if (idEvento) loadData();
   }, [idEvento]);
 
   const handleSelectMission = (missionId: string, index: number, value: string | number) => {
@@ -180,10 +178,11 @@ export default function AvaliacaoPlayOffs({ idEvento }: { idEvento: number }) {
     }));
   };
 
-  const totalPoints = sumAllMissions(
+  const totalPoints = useMemo(() => sumAllMissions(
     missions.filter((m) => m.id !== "GP"),
     responses
-  );
+  ), [missions, responses]);
+
 
   const handleSubmit = async () => {
     if (!selectedTeam || !fase) {
@@ -260,6 +259,42 @@ export default function AvaliacaoPlayOffs({ idEvento }: { idEvento: number }) {
 
   if (loading) return <Loader />;
 
+  if (!allRoundsCompleted) {
+    return (
+      <main className="flex flex-col items-center justify-center min-h-screen">
+        <div className="alert bg-warning/25 border border-warning/50 shadow-lg flex flex-col items-center max-w-3xl">
+          <h1 className="text-3xl font-bold text-warning">
+            Ate o momento, a avaliação dos playoffs não está disponível! ⏳
+          </h1>
+          <p className="text-base-content text-lg font-semibold">
+            Aguarde até que todas as equipes tenham suas rodadas avaliadas.
+          </p>
+          <p className="text-base-content/75 mt-2 font-italic text-center">
+            A avaliação dos playoffs será liberada automaticamente assim que todas as equipes tiverem suas rodadas avaliadas. Fique atento!
+          </p>
+        </div>
+      </main>
+    )
+  }
+
+  if (fase && playoffState === "encerrado") {
+    return (
+      <main className="flex flex-col items-center justify-center min-h-screen">
+        <div className="alert bg-success/25 border border-success/50 shadow-lg flex flex-col items-center max-w-3xl">
+          <h1 className="text-3xl font-bold text-success">
+            Avaliação dos Playoffs Encerrada! 🎉
+          </h1>
+          <p className="text-base-content text-lg font-semibold">
+            A fase de playoffs foi concluída com sucesso.
+          </p>
+          <p className="text-base-content/75 mt-2 font-italic text-center">
+            Parabéns a todos os participantes e à equipe vencedora! Obrigado por fazerem parte deste evento. Os resultados finais já estão disponíveis para o administrador do evento.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="flex flex-col items-center py-6">
       <section className="w-full max-w-4xl flex flex-row items-center justify-between mb-6">
@@ -279,12 +314,6 @@ export default function AvaliacaoPlayOffs({ idEvento }: { idEvento: number }) {
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          {!allRoundsCompleted && (
-            <div className="alert alert-warning shadow-lg">
-              ⚠️ Nem todas as rodadas foram concluídas ainda.
-            </div>
-          )}
-
           {selectedTeam && missions.length === 0 && (
             <div className="alert alert-warning">
               ⚠️ Nenhuma missão encontrada para esta temporada.
@@ -295,12 +324,6 @@ export default function AvaliacaoPlayOffs({ idEvento }: { idEvento: number }) {
           {fase && playoffState === "andamento" && (
             <div className="alert alert-info shadow-lg">
               ⏳ A fase <b>{fase}</b> está em andamento.
-            </div>
-          )}
-
-          {fase && playoffState === "encerrado" && (
-            <div className="alert alert-success shadow-lg">
-              ✅ Todas as equipes da <b>{fase}</b> foram avaliadas. Pontuações encerradas!
             </div>
           )}
 

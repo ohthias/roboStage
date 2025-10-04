@@ -68,16 +68,33 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
     );
   }
 
-  // Ordenar pela maior pontuação atingida em qualquer rodada
+  // 🔹 Filtrar rodadas válidas (excluindo "Semi-final" e "Final")
+  const excludedRounds = ["Semi-final", "Final"];
+
+  const getFilteredPoints = (points: { [key: string]: number }) => {
+    return Object.fromEntries(
+      Object.entries(points).filter(
+        ([key]) => !excludedRounds.includes(key)
+      )
+    );
+  };
+
+  // 🔹 Ordenar pela maior pontuação nas rodadas válidas
   const sortedTeams = [...teams].sort((a, b) => {
-    const maxA = Math.max(...Object.values(a.points));
-    const maxB = Math.max(...Object.values(b.points));
+    const validA = getFilteredPoints(a.points);
+    const validB = getFilteredPoints(b.points);
+    const maxA = Math.max(...Object.values(validA), 0);
+    const maxB = Math.max(...Object.values(validB), 0);
     return maxB - maxA;
   });
 
-  // Obter todas as rodadas
+  // 🔹 Obter todas as rodadas (sem semifinais/finais)
   const allRounds = Array.from(
-    new Set(sortedTeams.flatMap((team) => Object.keys(team.points)))
+    new Set(
+      sortedTeams.flatMap((team) =>
+        Object.keys(getFilteredPoints(team.points))
+      )
+    )
   );
 
   return (
@@ -101,7 +118,7 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
                 strokeLinejoin="round"
                 strokeWidth={2}
                 d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 
-           8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
+               8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
               />
             </svg>
           </button>
@@ -122,17 +139,20 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
             </tr>
           </thead>
           <tbody>
-            {sortedTeams.map((team, index) => (
-              <tr key={team.id_team}>
-                <td className="text-center font-bold">{index + 1}</td>
-                <td className="font-medium">{team.name_team}</td>
-                {allRounds.map((round) => (
-                  <td key={round} className="text-center">
-                    {team.points[round] ?? 0}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {sortedTeams.map((team, index) => {
+              const filteredPoints = getFilteredPoints(team.points);
+              return (
+                <tr key={team.id_team}>
+                  <td className="text-center font-bold">{index + 1}</td>
+                  <td className="font-medium">{team.name_team}</td>
+                  {allRounds.map((round) => (
+                    <td key={round} className="text-center">
+                      {filteredPoints[round] ?? 0}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

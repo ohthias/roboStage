@@ -14,13 +14,17 @@ interface Team {
   points: { [key: string]: number };
 }
 
-export default function VisualizationSection({
-  idEvent,
-}: PropsVisualizationSection) {
+export default function VisualizationSection({ idEvent }: PropsVisualizationSection) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleRounds, setVisibleRounds] = useState<string[]>([]);
   const { addToast } = useToast();
+
+  // 🔹 Rodadas que devem ser excluídas da exibição e configuração
+  const excludedRounds = ["Semi-final", "Final"];
+
+  const getFilteredPoints = (points: { [key: string]: number }) =>
+    Object.fromEntries(Object.entries(points).filter(([key]) => !excludedRounds.includes(key)));
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -36,11 +40,17 @@ export default function VisualizationSection({
       } else {
         setTeams(data as Team[]);
 
+        // 🔹 Monta apenas rodadas válidas (sem semifinal/final)
         const allRounds = Array.from(
-          new Set(data.flatMap((team: Team) => Object.keys(team.points)))
+          new Set(
+            data.flatMap((team: Team) =>
+              Object.keys(getFilteredPoints(team.points))
+            )
+          )
         );
         setVisibleRounds(allRounds);
 
+        // 🔹 Atualiza config no Supabase
         const { data: existingData } = await supabase
           .from("typeEvent")
           .select("id, config")
@@ -70,6 +80,7 @@ export default function VisualizationSection({
   }, [idEvent]);
 
   if (!idEvent) return <p className="text-red-500">Evento inválido.</p>;
+
   if (loading)
     return (
       <div className="flex justify-center py-8">
@@ -84,17 +95,27 @@ export default function VisualizationSection({
       </p>
     );
 
+  // 🔹 Ordenar pela maior pontuação nas rodadas válidas
   const sortedTeams = [...teams].sort((a, b) => {
-    const maxA = Math.max(...Object.values(a.points));
-    const maxB = Math.max(...Object.values(b.points));
+    const validA = getFilteredPoints(a.points);
+    const validB = getFilteredPoints(b.points);
+    const maxA = Math.max(...Object.values(validA), 0);
+    const maxB = Math.max(...Object.values(validB), 0);
     return maxB - maxA;
   });
 
+  // 🔹 Rodadas exibidas (sem semifinal/final)
   const allRounds = Array.from(
-    new Set(sortedTeams.flatMap((team) => Object.keys(team.points)))
+    new Set(
+      sortedTeams.flatMap((team) =>
+        Object.keys(getFilteredPoints(team.points))
+      )
+    )
   );
 
   const toggleRound = async (round: string) => {
+    if (excludedRounds.includes(round)) return; // 🔹 Ignora semifinal/final
+
     const newVisibleRounds = visibleRounds.includes(round)
       ? visibleRounds.filter((r) => r !== round)
       : [...visibleRounds, round];
@@ -123,8 +144,7 @@ export default function VisualizationSection({
           "Erro ao atualizar rodadas visíveis: " + updateError.message,
           "error"
         );
-
-      addToast("Configuração de rodadas visíveis atualizada.", "success");
+      else addToast("Configuração de rodadas visíveis atualizada.", "success");
     } else {
       const { error: insertError } = await supabase
         .from("typeEvent")
@@ -135,16 +155,14 @@ export default function VisualizationSection({
           "Erro ao inserir rodadas visíveis: " + insertError.message,
           "error"
         );
-      addToast("Configuração de rodadas visíveis salva.", "success");
+      else addToast("Configuração de rodadas visíveis salva.", "success");
     }
   };
 
   return (
     <div className="space-y-6 px-2 md:px-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-primary">
-          Visualização do Ranking
-        </h2>
+        <h2 className="text-2xl font-bold text-primary">Visualização do Ranking</h2>
         <div
           className="tooltip tooltip-left"
           data-tip="Clique nas rodadas para mostrar/ocultar colunas para os visitantes."
@@ -155,6 +173,7 @@ export default function VisualizationSection({
         </div>
       </div>
 
+      {/* 🔹 Botões apenas para rodadas normais */}
       <div className="flex flex-wrap gap-2">
         {allRounds.map((round) => (
           <button
@@ -169,7 +188,7 @@ export default function VisualizationSection({
         ))}
       </div>
 
-      {/* Wrapper com scroll horizontal apenas na tabela */}
+      {/* 🔹 Tabela sem semifinal/final */}
       <div className="overflow-x-auto bg-base-100 rounded-lg shadow-lg border border-base-300">
         <table className="table table-zebra w-full min-w-max">
           <thead className="bg-primary text-primary-content">
@@ -184,17 +203,20 @@ export default function VisualizationSection({
             </tr>
           </thead>
           <tbody>
-            {sortedTeams.map((team, index) => (
-              <tr key={team.id_team} className="hover:bg-base-200">
-                <td className="text-center font-bold">{index + 1}</td>
-                <td className="font-medium">{team.name_team}</td>
-                {visibleRounds.map((round) => (
-                  <td key={round} className="text-center">
-                    {team.points[round] ?? 0}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {sortedTeams.map((team, index) => {
+              const filteredPoints = getFilteredPoints(team.points);
+              return (
+                <tr key={team.id_team} className="hover:bg-base-200">
+                  <td className="text-center font-bold">{index + 1}</td>
+                  <td className="font-medium">{team.name_team}</td>
+                  {visibleRounds.map((round) => (
+                    <td key={round} className="text-center">
+                      {filteredPoints[round] ?? 0}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

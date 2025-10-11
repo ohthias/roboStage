@@ -613,8 +613,7 @@
       "name": "Gracious Professionalism®",
       "mission": "Gracious Professionalism® demonstrados durante o round:",
       "points": [2,3,4],
-      "type": ["switch", "Em desenvolvimento", "Cumprido", "Excedido"],
-      "equipaments" : false
+      "type": ["switch", "Em desenvolvimento", "Cumprido", "Excedido"]
     }
   ]
 }

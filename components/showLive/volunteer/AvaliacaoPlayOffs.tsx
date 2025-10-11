@@ -264,7 +264,7 @@ export default function AvaliacaoPlayOffs({ idEvento }: { idEvento: number }) {
       <main className="flex flex-col items-center justify-center min-h-screen">
         <div className="alert bg-warning/25 border border-warning/50 shadow-lg flex flex-col items-center max-w-3xl">
           <h1 className="text-3xl font-bold text-warning">
-            Ate o momento, a avaliação dos playoffs não está disponível! ⏳
+            Até o momento, a avaliação dos playoffs não está disponível! ⏳
           </h1>
           <p className="text-base-content text-lg font-semibold">
             Aguarde até que todas as equipes tenham suas rodadas avaliadas.

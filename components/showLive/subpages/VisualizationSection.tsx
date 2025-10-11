@@ -144,7 +144,9 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
           "Erro ao atualizar rodadas visíveis: " + updateError.message,
           "error"
         );
-      else addToast("Configuração de rodadas visíveis atualizada.", "success");
+      else {
+        addToast("Configuração de rodadas visíveis atualizada.", "success");
+      }
     } else {
       const { error: insertError } = await supabase
         .from("typeEvent")
@@ -155,7 +157,9 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
           "Erro ao inserir rodadas visíveis: " + insertError.message,
           "error"
         );
-      else addToast("Configuração de rodadas visíveis salva.", "success");
+      else {
+        addToast("Configuração de rodadas visíveis salva.", "success");
+      }
     }
   };
 
@@ -179,9 +183,8 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
           <button
             key={round}
             onClick={() => toggleRound(round)}
-            className={`btn btn-sm ${
-              visibleRounds.includes(round) ? "btn-primary" : "btn-ghost"
-            }`}
+            className={`btn btn-sm ${visibleRounds.includes(round) ? "btn-primary" : "btn-ghost"
+              }`}
           >
             {round}
           </button>

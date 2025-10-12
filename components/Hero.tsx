@@ -4,15 +4,48 @@ import FundoPadrao from "@/public/images/fundoPadrao.gif";
 
 export function Hero() {
   const [showVideo, setShowVideo] = useState(false);
+  const [typedText, setTypedText] = useState("");
+  const [index, setIndex] = useState(0);
+  const [subIndex, setSubIndex] = useState(0);
+  const [deleting, setDeleting] = useState(false);
   const playerRef = useRef<any>(null);
 
+  const words = ["sua jornada na robótica", "seus projetos", "suas estratégias", "seus eventos", "seus testes", "seus diagramas", "sua documentação"];
+
+  // --- EFEITO DE DIGITAÇÃO ---
   useEffect(() => {
-    // Cria e injeta o script da API do YouTube
+    if (index >= words.length) setIndex(0);
+
+    const timeout = setTimeout(() => {
+      const word = words[index];
+      if (!deleting) {
+        // Digitando
+        setTypedText(word.substring(0, subIndex + 1));
+        setSubIndex(subIndex + 1);
+        if (subIndex === word.length) {
+          setDeleting(true);
+          setTimeout(() => {}, 10000);
+        }
+      } else {
+        // Apagando
+        setTypedText(word.substring(0, subIndex - 1));
+        setSubIndex(subIndex - 1);
+        if (subIndex === 0) {
+          setDeleting(false);
+          setIndex((prev) => (prev + 1) % words.length);
+        }
+      }
+    }, deleting ? 70 : 120);
+
+    return () => clearTimeout(timeout);
+  }, [subIndex, deleting, index]);
+
+  // --- YOUTUBE PLAYER ---
+  useEffect(() => {
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
     document.body.appendChild(tag);
 
-    // Quando a API estiver pronta
     (window as any).onYouTubeIframeAPIReady = () => {
       playerRef.current = new (window as any).YT.Player("hero-video", {
         videoId: "exWkcUBS0j8",
@@ -43,14 +76,13 @@ export function Hero() {
                   setShowVideo(true);
                   playerRef.current.playVideo();
                 }
-              }, 10000); // tempo do GIF entre vídeos
+              }, 10000);
             }
           },
         },
       });
     };
 
-    // Limpeza ao desmontar
     return () => {
       document.body.removeChild(tag);
     };
@@ -71,7 +103,7 @@ export function Hero() {
         />
       </div>
 
-      {/* Fundo vídeo (tela cheia e imersivo) */}
+      {/* Fundo vídeo */}
       <div
         className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
           showVideo ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -84,13 +116,19 @@ export function Hero() {
 
       <div className="absolute inset-0 bg-black/50 z-10"></div>
 
+      {/* Conteúdo */}
       <div className="hero-content text-neutral-content relative z-20 flex flex-col lg:flex-row lg:items-center lg:space-x-6 space-y-6 lg:space-y-0">
         <div className="max-w-md text-center lg:text-left">
           <h1 className="mb-5 text-4xl lg:text-5xl font-bold text-white">
             Robo<strong className="text-primary">Stage</strong>
           </h1>
+
           <p className="mb-5 text-lg text-white">
-            Facilitando sua jornada na robótica
+            Facilitando{" "}
+            <span className="font-semibold">
+              {typedText}
+              <span className="animate-pulse">|</span>
+            </span>
           </p>
         </div>
 

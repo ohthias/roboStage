@@ -22,7 +22,7 @@ export default function LoginPage() {
 
     return (
         <div className="flex h-screen">
-            <div className="w-2/3 hidden md:flex flex-col justify-between bg-gradient-to-br from-primary via-secondary to-accent p-8 relative overflow-hidden" style={{ backgroundImage: 'url("/images/background_auth.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', backdropFilter: 'brightness(0.3)' }}>
+            <div className="hidden md:flex flex-col justify-between bg-secondary p-8 relative overflow-hidden flex-1">
                 <Link href="/" className="inline-block">
                     <img
                         src="/images/logos/Icone.png"
@@ -31,8 +31,8 @@ export default function LoginPage() {
                         style={{ backdropFilter: 'blur(10px)' }}/>
                 </Link>
             </div>
-            <div className="w-full md:w-1/3 flex items-center justify-center bg-base-100 p-6">
-                <div className="card w-full max-w-md shadow-2xl">
+            <div className="w-full md:w-2/5 flex items-center justify-center p-6">
+                <div className="card w-full max-w-md">
                     <div className="card-body">
                         <h2 className="text-3xl font-bold text-center mb-4">
                             Bem-vindo de volta!
@@ -90,7 +90,7 @@ export default function LoginPage() {
                             <label className="label">
                                 <Link
                                     href="/auth/forgot-password"
-                                    className="label-text-alt link link-hover"
+                                    className="label-text-alt link link-hover mt-2"
                                 >
                                     Esqueceu a senha?
                                 </Link>

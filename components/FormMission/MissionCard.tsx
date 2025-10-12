@@ -127,9 +127,11 @@ export function MissionCard({
                   <span className="max-w-3/4">
                     {mission.mission}
                   </span>
-                  <span className="badge badge-neutral rounded-md badge-outline w-auto text-center badge-sm h-auto">
+                  {mission.id !== "GP" && (
+                    <span className="badge badge-neutral rounded-md badge-outline w-auto text-center badge-sm h-auto">
                     Pontos: {mainPoints}
                   </span>
+                  )}
                 </p>
                 {renderInput(0, mission.type, mission.points)}
               </div>

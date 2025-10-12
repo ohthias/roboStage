@@ -408,13 +408,16 @@ export default function LabTestPage() {
                 <input type="checkbox" className="peer" />
                 <div className="collapse-title text-xl font-bold flex flex-col gap-1">
                   <span>{test.name_test}</span>
-                  <span className="text-sm font-normal text-base-content">
-                    Tipo: {testTypes[test.type_id] || "Desconhecido"} | Criado
-                    em: {new Date(test.created_at).toLocaleDateString("pt-BR")}
-                  </span>
                 </div>
                 <div className="collapse-content">
                   <TestResultsCharts testId={test.id} />
+                </div>
+                <div className="collapse-footer py-2 px-4 border-t border-base-300 flex justify-between items-center">
+                  <span className="text-sm font-normal text-base-content">
+                    Tipo: {testTypes[test.type_id].toUpperCase() || "Desconhecido"} | Criado
+                    em: {new Date(test.created_at).toLocaleDateString("pt-BR")}
+                  </span>
+                  <button className="btn btn-primary btn-outline btn-sm">Exportar Teste</button>
                 </div>
               </div>
             ))}

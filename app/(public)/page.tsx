@@ -7,6 +7,7 @@ import { Footer } from "@/components/ui/Footer";
 import background from "@/public/images/background_uneartherd.png";
 import listra from "@/public/images/Listra.svg";
 import FLLLogo from "@/public/images/fll_unearthed_logo_fullcolor.png";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -14,21 +15,31 @@ export default function Home() {
       <Navbar />
       <Hero />
       <FeaturesSection />
-      <img src={listra.src} />
+      <Image src={listra.src} alt="Listra" width={500} height={50} className="w-full" />
       <div className="p-4 md:p-0">
         <section
-          className="max-w-5xl p-4 sm:p-6 mx-auto my-12 flex flex-col sm:flex-row rounded-lg bg-yellow-100 gap-6"
+          className="max-w-5xl p-4 sm:p-6 mx-auto my-12 flex flex-col sm:flex-row rounded-lg bg-yellow-100 gap-6 relative unearthed-section"
           style={{
             backgroundImage: `url(${background.src})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
-          <div className="w-full sm:w-2/3">
+          <style>{`
+            .unearthed-section::after{
+              content: '';
+              position: absolute;
+              inset: 0;
+              background: rgba(0,0,0,0.25);
+              border-radius: inherit;
+              pointer-events: none;
+            }
+          `}</style>
+          <div className="w-full sm:w-2/3 text-base-content z-10">
             <h2 className="text-xl sm:text-3xl font-bold mb-4">
               FIRST Age (2025-2026)
             </h2>
-            <p className="text-base-content text-sm sm:text-base mb-2">
+            <p className="text-sm sm:text-base mb-2">
               A temporada 2025-2026 da FIRST LEGO League Challenge traz o tema{" "}
               <strong>UNEARTHED™</strong>, convidando as equipes a explorarem e
               identificarem um problema enfrentado por arqueólogos, propondo uma
@@ -41,7 +52,7 @@ export default function Home() {
             </p>
             <p className="font-bold">Você está pronto para desenvolver soluções?</p>
           </div>
-          <div className="flex flex-col items-center sm:items-end justify-between w-full sm:w-1/3">
+          <div className="flex flex-col items-center sm:items-end justify-between w-full sm:w-1/3 z-10">
             <img
               src={FLLLogo.src}
               alt="FLL Logo"

@@ -7,6 +7,7 @@ import { sumAllMissions } from "@/utils/scores";
 import { Footer } from "@/components/ui/Footer";
 import SubmergedLogo from "@/public/images/logos/Submerged.webp";
 import MasterpieceLogo from "@/public/images/logos/Masterpiece.png";
+import { ArrowUturnLeftIcon, PauseIcon, PlayIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 interface SubMission {
   submission: string;
@@ -49,7 +50,10 @@ export default function Page() {
   const startSound = useRef<HTMLAudioElement | null>(null);
   const endSound = useRef<HTMLAudioElement | null>(null);
 
-  const totalPoints = sumAllMissions(missions, responses);
+  const totalPoints = sumAllMissions(
+    missions.filter((m) => m.id !== "GP"),
+    responses
+  );
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -244,7 +248,7 @@ export default function Page() {
             disabled={timerRunning}
             title="Iniciar o timer"
           >
-            <i className="fi fi-bs-play"></i>
+            <PlayIcon className="size-4" />
             <span className="hidden sm:inline">Iniciar</span>
           </button>
 
@@ -254,7 +258,7 @@ export default function Page() {
             disabled={!timerRunning}
             title="Pausar o timer"
           >
-            <i className="fi fi-bs-pause"></i>
+            <PauseIcon className="size-4" />
             <span className="hidden sm:inline">Pausar</span>
           </button>
 
@@ -263,7 +267,7 @@ export default function Page() {
             onClick={resetTimer}
             title="Resetar o timer"
           >
-            <i className="fi fi-bs-rotate-right"></i>
+            <ArrowUturnLeftIcon className="size-4" />
             <span className="hidden sm:inline">Resetar Tempo</span>
           </button>
 
@@ -272,7 +276,7 @@ export default function Page() {
             onClick={resetScores}
             title="Resetar os pontos"
           >
-            <i className="fi fi-bs-trash"></i>
+            <TrashIcon className="size-4" />
             <span className="hidden sm:inline">Resetar Pontos</span>
           </button>
         </div>

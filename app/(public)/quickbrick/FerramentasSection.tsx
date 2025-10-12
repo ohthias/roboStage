@@ -43,7 +43,6 @@ export default function FerramentasSection({
         "Escolha uma temporada para organizar as missões em Forças, Fraquezas, Oportunidades e Ameaças.",
       categoria: "Documentar",
       icon: <DocumentTextIcon className="w-5 h-5" />,
-      link: "/quickbrick/matriz-swot",
       customContent: (
         seasons: string[],
         seasonLogos: { [x: string]: any },
@@ -89,17 +88,28 @@ export default function FerramentasSection({
       feitoPor: "Tomboly",
     },
     {
-        id: 4,
-        titulo: "Análise de Risco",
-        descricao:
-            "Identifique e avalie os riscos potenciais para o sucesso do seu robô.",
-        categoria: "Documentar",
-        icon: <DocumentTextIcon className="w-5 h-5" />,
-        link: "/quickbrick/analise-de-risco",
-        customContent: null,
-        badge: "Novo!",
-    }
+      id: 4,
+      titulo: "Análise de Risco",
+      descricao:
+        "Identifique e avalie os riscos potenciais para o sucesso do seu robô.",
+      categoria: "Documentar",
+      icon: <DocumentTextIcon className="w-5 h-5" />,
+      link: "/quickbrick/analise-de-risco",
+      customContent: null,
+      badge: "Novo!",
+    },
   ];
+
+  // Gera array de links (expande links dependentes de seasons, como Matriz SWOT)
+  const links = ferramentas.flatMap((f) => {
+    if (f.titulo === "Matriz SWOT") {
+      return seasons.map((s) => `/quickbrick/matriz-swot/${s}`);
+    }
+    return f.link ? [f.link] : [];
+  });
+
+  // Opcional: array de links únicos
+  const uniqueLinks = Array.from(new Set(links));
 
   const filtradas =
     filtro === "Todos"
@@ -144,7 +154,9 @@ export default function FerramentasSection({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
               className="card bg-base-100 shadow-sm border border-base-300 hover:shadow-xl hover:border-secondary transition-all duration-200 cursor-pointer relative"
-              onClick={() => router.push(ferramenta.link)}
+              onClick={() => {
+                if (ferramenta.link) router.push(ferramenta.link);
+              }}
             >
               {ferramenta.badge && (
                 <div className="absolute top-3 right-3 badge badge-secondary">

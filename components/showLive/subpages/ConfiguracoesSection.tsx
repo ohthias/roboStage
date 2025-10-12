@@ -1,4 +1,3 @@
-/** TODO - Dividir o código em partes */
 "use client";
 
 import { useEffect, useState } from "react";

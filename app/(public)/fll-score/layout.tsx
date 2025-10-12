@@ -6,7 +6,6 @@ export default function FllScoreLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  document.title = "FLL Score";
   useEffect(() => {
     const updateTitle = () => {
       const hash = window.location.hash.replace("#", "");

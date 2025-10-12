@@ -19,7 +19,7 @@ const features = [
   },
   {
     title: "InnoLab",
-    text: "Crie driagramas focados no processo do projeto de inovação da sua equipe!",
+    text: "Crie diagramas focados no processo do projeto de inovação da sua equipe!",
     icon: ShowLiveImage.src,
   },
   {

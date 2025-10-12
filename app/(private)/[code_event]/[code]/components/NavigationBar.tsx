@@ -21,16 +21,12 @@ export function NavigationBar({eventId} : {eventId: number}) {
           .select("enable_playoffs")
           .eq("id_evento", eventId)
           .single();
-        console.log("Configurações carregadas:", data, error);
-
         if (error) {
           console.error("Erro ao buscar configurações:", error);
           return;
         }
-
         setSettings(data);
       };
-
       fetchSettings();
   }, [eventId]);
 

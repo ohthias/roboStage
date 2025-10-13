@@ -24,6 +24,12 @@ export default function AccountSettings() {
 
   const [username, setUsername] = useState("");
   const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [stats, setStats] = useState<{
+    total_testes: number;
+    total_eventos: number;
+    total_temas: number;
+    total_documentos: number;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const [avatarUrl, setAvatarUrl] = useState(
@@ -85,8 +91,28 @@ export default function AccountSettings() {
       }
     };
 
+    const fetchUserStats = async () => {
+      if (!session?.user?.id) return;
+
+      const { data, error } = await supabase
+        .from("user_activity_summary")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (!error && data) {
+        setStats({
+          total_testes: data.total_testes || 0,
+          total_eventos: data.total_eventos || 0,
+          total_temas: data.total_temas || 0,
+          total_documentos: data.total_documentos || 0,
+        });
+      }
+    };
+
     fetchProfileImages();
     fetchUserCreatedAt();
+    fetchUserStats();
 
     if (profile?.username) setUsername(profile.username);
   }, [profile, session]);
@@ -170,9 +196,7 @@ export default function AccountSettings() {
               {username || "Usuário"}
             </h2>
             <p className="text-sm md:text-base text-base-content/70 mt-2">
-              {createdAt
-                ? `Na plataforma desde ${createdAt}`
-                : "Carregando..."}
+              {createdAt ? `Na plataforma desde ${createdAt}` : "Carregando..."}
             </p>
           </div>
         </div>
@@ -194,7 +218,7 @@ export default function AccountSettings() {
             <DocumentChartBarIcon className="w-8 h-8" />
           </div>
           <div className="stat-title">Testes</div>
-          <div className="stat-value text-primary">12</div>
+          <div className="stat-value text-primary">{stats?.total_testes ?? 0}</div>
           <div className="stat-desc">criados</div>
         </div>
 
@@ -203,7 +227,7 @@ export default function AccountSettings() {
             <CalendarDaysIcon className="w-8 h-8" />
           </div>
           <div className="stat-title">Eventos</div>
-          <div className="stat-value text-secondary">5</div>
+          <div className="stat-value text-secondary">{stats?.total_eventos ?? 0}</div>
           <div className="stat-desc">registrados</div>
         </div>
 
@@ -212,7 +236,7 @@ export default function AccountSettings() {
             <PuzzlePieceIcon className="w-8 h-8" />
           </div>
           <div className="stat-title">Diagramas</div>
-          <div className="stat-value text-accent">8</div>
+          <div className="stat-value text-accent">{stats?.total_documentos ?? 0}</div>
           <div className="stat-desc">documentados</div>
         </div>
 
@@ -221,17 +245,8 @@ export default function AccountSettings() {
             <PuzzlePieceIcon className="w-8 h-8" />
           </div>
           <div className="stat-title">Temas</div>
-          <div className="stat-value text-info">3</div>
+          <div className="stat-value text-info">{stats?.total_temas ?? 0}</div>
           <div className="stat-desc">personalizados</div>
-        </div>
-
-        <div className="stat place-items-center">
-          <div className="stat-figure text-warning">
-            <ClockIcon className="w-8 h-8" />
-          </div>
-          <div className="stat-title">Timer</div>
-          <div className="stat-value text-warning">20m</div>
-          <div className="stat-desc">de sessões lançadas</div>
         </div>
       </div>
 
@@ -280,7 +295,8 @@ export default function AccountSettings() {
               Zona de Risco
             </h3>
             <p className="text-sm text-base-content/70 mt-1">
-              Essa ação não pode ser desfeita. Tenha certeza antes de prosseguir.
+              Essa ação não pode ser desfeita. Tenha certeza antes de
+              prosseguir.
             </p>
             <button
               onClick={handleDeleteAccount}

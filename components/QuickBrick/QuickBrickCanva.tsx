@@ -2,10 +2,7 @@
 import { useRef, useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import jsPDF from "jspdf";
-import {
-  Square3Stack3DIcon,
-  TrashIcon,
-} from "@heroicons/react/24/solid";
+import { Square3Stack3DIcon, TrashIcon } from "@heroicons/react/24/solid";
 import CanvaImage from "@/public/images/quickbrick_unearthed.png";
 
 export default function FLLPaintPro() {
@@ -13,7 +10,7 @@ export default function FLLPaintPro() {
   const imgRef = useRef<HTMLImageElement | null>(null);
 
   // Ferramentas disponíveis
-  type Tool = "line" | "free";
+  type Tool = "line" | "free" | "zone";
   const [tool, setTool] = useState<Tool>("line");
 
   const [layers, setLayers] = useState<Layer[]>([
@@ -25,6 +22,20 @@ export default function FLLPaintPro() {
   const [currentLine, setCurrentLine] = useState<Line | null>(null);
   const [currentPath, setCurrentPath] = useState<Point[]>([]);
   const [showLabels, setShowLabels] = useState(true);
+
+  type Zone = {
+    id: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    color: string;
+    name: string;
+  };
+
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [isDrawingZone, setIsDrawingZone] = useState(false);
+  const [currentZone, setCurrentZone] = useState<Zone | null>(null);
 
   const backgroundImage = CanvaImage.src;
 
@@ -45,41 +56,77 @@ export default function FLLPaintPro() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Desenha o fundo
     if (imgRef.current) {
       ctx.drawImage(imgRef.current, 0, 0, canvas.width, canvas.height);
     }
 
     const { escalaX, escalaY } = getScale();
 
+    // Desenha linhas e paths
     layers.forEach((layer) => {
       if (!layer.visible) return;
-
-      // Desenhar linhas
-      layer.lines.forEach((line) => {
-        drawLine(ctx, line, escalaX, escalaY, showLabels);
-      });
-
-      // Desenhar paths livres
-      layer.freePaths.forEach((path) => {
-        drawPath(ctx, path, escalaX, escalaY);
-      });
+      layer.lines.forEach((line) =>
+        drawLine(ctx, line, escalaX, escalaY, showLabels)
+      );
+      layer.freePaths.forEach((path) => drawPath(ctx, path, escalaX, escalaY));
     });
 
     // Linha atual
-    if (tool === "line" && currentLine) {
-      drawLine(ctx, currentLine, escalaX, escalaY, showLabels);
-    }
-
-    // Path atual
-    if (tool === "free" && currentPath.length > 0) {
+    if (currentLine) drawLine(ctx, currentLine, escalaX, escalaY, showLabels);
+    if (currentPath.length > 0)
       drawPath(
         ctx,
         { points: currentPath, color: currentColor },
         escalaX,
         escalaY
       );
+
+    // Desenha todas as zonas
+    zones.forEach((zone) => {
+      ctx.fillStyle = zone.color + "55";
+      ctx.fillRect(zone.x, zone.y, zone.width, zone.height);
+      ctx.strokeStyle = zone.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(zone.x, zone.y, zone.width, zone.height);
+
+      ctx.font = "14px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "black";
+      ctx.fillText(
+        zone.name,
+        zone.x + zone.width / 2,
+        zone.y + zone.height / 2
+      );
+    });
+
+    // Zona atual sendo desenhada
+    if (currentZone) {
+      ctx.fillStyle = currentZone.color + "55";
+      ctx.fillRect(
+        currentZone.x,
+        currentZone.y,
+        currentZone.width,
+        currentZone.height
+      );
+      ctx.strokeStyle = currentZone.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(
+        currentZone.x,
+        currentZone.y,
+        currentZone.width,
+        currentZone.height
+      );
+
+      ctx.fillStyle = "black";
+      ctx.fillText(
+        currentZone.name,
+        currentZone.x + currentZone.width / 2,
+        currentZone.y + currentZone.height / 2
+      );
     }
-  }, [layers, currentLine, currentPath, tool, showLabels]);
+  }, [layers, currentLine, currentPath, showLabels, zones, currentZone]);
 
   const drawLine = (
     ctx: CanvasRenderingContext2D,
@@ -229,6 +276,8 @@ export default function FLLPaintPro() {
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     const pos = getPos(e);
+
+    // Cria linha ou path normalmente
     if (tool === "line") {
       setCurrentLine({
         x1: pos.x,
@@ -241,28 +290,50 @@ export default function FLLPaintPro() {
       setCurrentPath([{ x: pos.x, y: pos.y }]);
     }
     setIsDrawing(true);
+
+    // Cria zona automaticamente
+    const newZone: Zone = {
+      id: uuidv4(),
+      x: pos.x,
+      y: pos.y,
+      width: 0,
+      height: 0,
+      color: currentColor,
+      name: `Zona ${zones.length + 1}`,
+    };
+    setCurrentZone(newZone);
+    setIsDrawingZone(true);
   };
 
   const drawMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDrawing) return;
     const pos = getPos(e);
 
-    if (tool === "line" && currentLine) {
-      setCurrentLine({ ...currentLine, x2: pos.x, y2: pos.y });
-    } else if (tool === "free") {
+    // Atualiza linha ou path
+    if (currentLine) setCurrentLine({ ...currentLine, x2: pos.x, y2: pos.y });
+    if (currentPath.length > 0)
       setCurrentPath((prev) => [...prev, { x: pos.x, y: pos.y }]);
+
+    // Atualiza zona
+    if (currentZone) {
+      setCurrentZone({
+        ...currentZone,
+        width: pos.x - currentZone.x,
+        height: pos.y - currentZone.y,
+      });
     }
   };
 
   const endDrawing = () => {
     if (!isDrawing) return;
 
+    // Salva linha ou path na camada ativa
     setLayers((prev) =>
       prev.map((layer) => {
         if (layer.id !== activeLayerId) return layer;
-        if (tool === "line" && currentLine) {
+        if (currentLine)
           return { ...layer, lines: [...layer.lines, currentLine] };
-        } else if (tool === "free" && currentPath.length > 0) {
+        if (currentPath.length > 0)
           return {
             ...layer,
             freePaths: [
@@ -270,14 +341,19 @@ export default function FLLPaintPro() {
               { points: currentPath, color: currentColor },
             ],
           };
-        }
         return layer;
       })
     );
 
+    // Salva zona
+    if (currentZone) setZones((prev) => [...prev, currentZone]);
+
+    // Reset
     setCurrentLine(null);
     setCurrentPath([]);
+    setCurrentZone(null);
     setIsDrawing(false);
+    setIsDrawingZone(false);
   };
 
   // Carregar imagem da mesa
@@ -406,6 +482,21 @@ export default function FLLPaintPro() {
               <i className="fi fi-bs-pencil"></i>
             </button>
           </div>
+          <div
+            className="tooltip tooltip-bottom animate-fade-in"
+            data-tip="Zona"
+          >
+            <button
+              onClick={() => setTool("zone")}
+              className={`btn btn-soft border border-neutral ${
+                tool === "zone" ? "btn-primary border-primary" : ""
+              } cursor-pointer`}
+              title="Zona"
+              style={{ lineHeight: 0 }}
+            >
+              <i className="fi fi-bs-square"></i>
+            </button>
+          </div>
         </div>
         <div className="flex flex-row">
           <label className="font-semibold flex items-center label-text text-sm border-r border-base-300 pr-2">
@@ -520,7 +611,8 @@ export default function FLLPaintPro() {
           }}
           className="btn btn-soft btn-error"
         >
-          <Square3Stack3DIcon className="size-4" />Limpar Camada
+          <Square3Stack3DIcon className="size-4" />
+          Limpar Camada
         </button>
         <button
           onClick={() => {
@@ -532,24 +624,36 @@ export default function FLLPaintPro() {
           }}
           className="btn btn-soft btn-error"
         >
-          <TrashIcon className="size-4" />Limpar Tudo
+          <TrashIcon className="size-4" />
+          Limpar Tudo
         </button>
 
         <hr className="border border-gray-300 my-2 w-1/2 mx-auto" />
-        <h6 className="text-base-content font-bold text-sm">Exportação</h6>
-        <div className="flex flex-row gap-4">
-          <button
-            onClick={exportPNG}
-            className="btn btn-soft btn-accent flex-1"
+        <div className="dropdown">
+          <label tabIndex={0} className="btn btn-soft btn-accent ml-auto">
+            Exportar <i className="fi fi-bs-download ml-2"></i>
+          </label>
+          <ul
+            tabIndex={0}
+            className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-44"
           >
-            <i className="fi fi-bs-picture"></i> PNG
-          </button>
-          <button
-            onClick={exportPDF}
-            className="btn btn-soft btn-accent flex-1"
-          >
-            <i className="fi fi-bs-file-pdf"></i> PDF
-          </button>
+            <li>
+              <button
+                onClick={exportPNG}
+                className="btn btn-ghost justify-start w-full"
+              >
+                <i className="fi fi-bs-picture mr-2"></i> PNG
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={exportPDF}
+                className="btn btn-ghost justify-start w-full"
+              >
+                <i className="fi fi-bs-file-pdf mr-2"></i> PDF
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
 

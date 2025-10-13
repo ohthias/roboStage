@@ -88,7 +88,7 @@ export function StyleLab() {
           </div>
         </div>
         <button
-          className="btn btn-secondary w-full sm:w-auto"
+          className="btn btn-secondary"
           onClick={() => setShowModal(true)}
         >
           Criar Tema
@@ -99,7 +99,7 @@ export function StyleLab() {
       <section className="flex flex-col sm:flex-row gap-3 mt-4 mb-2 items-stretch sm:items-center">
         <input
           type="text"
-          className="input input-bordered w-full sm:w-64 flex-1"
+          className="input input-bordered w-full sm:w-64 flex-1 p-2"
           placeholder="Buscar tema por nome..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}

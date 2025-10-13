@@ -15,6 +15,7 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/solid";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import EditProfileModal from "@/components/ui/Modal/ModalEditProfile";
 
 export default function AccountSettings() {
   const router = useRouter();
@@ -28,9 +29,7 @@ export default function AccountSettings() {
   const [avatarUrl, setAvatarUrl] = useState(
     "https://static.vecteezy.com/system/resources/previews/055/591/320/non_2x/chatbot-avatar-sending-and-receiving-messages-using-artificial-intelligence-vector.jpg"
   );
-  const [bannerUrl, setBannerUrl] = useState(
-    "bg-gradient-to-r from-primary/20 via-base-200 to-accent/20"
-  );
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [openEditModal, setOpenEditModal] = useState(false);
 
   useEffect(() => {
@@ -53,15 +52,46 @@ export default function AccountSettings() {
       }
     };
 
+    const fetchProfileImages = async () => {
+      if (!session?.user?.id) return;
+
+      // Pega os paths do banco
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("avatar_url, banner_url")
+        .eq("id", session.user.id)
+        .single();
+
+      if (!error && data) {
+        // Avatar
+        if (data.avatar_url) {
+          const { data: avatarSigned, error: avatarError } =
+            await supabase.storage
+              .from("photos")
+              .createSignedUrl(data.avatar_url, 60); // expira em 60s
+          if (!avatarError && avatarSigned?.signedUrl)
+            setAvatarUrl(avatarSigned.signedUrl);
+        }
+
+        // Banner
+        if (data.banner_url) {
+          const { data: bannerSigned, error: bannerError } =
+            await supabase.storage
+              .from("photos")
+              .createSignedUrl(data.banner_url, 60);
+          if (!bannerError && bannerSigned?.signedUrl)
+            setBannerUrl(bannerSigned.signedUrl);
+        }
+      }
+    };
+
+    fetchProfileImages();
     fetchUserCreatedAt();
+
     if (profile?.username) setUsername(profile.username);
   }, [profile, session]);
 
   if (loadingUser) return <p>Carregando perfil...</p>;
-  if (!session) {
-    router.push("/join");
-    return null;
-  }
 
   const handleUpdateUsername = async () => {
     if (!session?.user?.id) return;
@@ -114,27 +144,16 @@ export default function AccountSettings() {
     }
   };
 
-  const handleUpdateImages = async () => {
-    if (!session?.user?.id) return;
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({ avatar_url: avatarUrl, banner_url: bannerUrl })
-      .eq("id", session.user.id);
-
-    if (error) {
-      addToast("Erro ao atualizar imagens", "error");
-    } else {
-      addToast("Imagens atualizadas com sucesso!", "success");
-      setOpenEditModal(false);
-    }
-  };
-
   return (
     <section className="pb-12 space-y-8 max-w-5xl mx-auto">
       {/* Banner do Perfil */}
       <div
-        className={`hero ${bannerUrl} rounded-xl shadow-lg relative`}
+        className="hero rounded-xl shadow-lg relative bg-base-100"
+        style={{
+          backgroundImage: bannerUrl ? `url(${bannerUrl})` : undefined,
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+        }}
       >
         <div className="hero-content w-full flex flex-col md:flex-row items-center gap-6 p-6 md:p-10">
           <div className="relative">
@@ -167,6 +186,7 @@ export default function AccountSettings() {
           Editar Perfil
         </button>
       </div>
+
       {/* Estatísticas */}
       <div className="stats stats-vertical md:stats-horizontal shadow w-full bg-base-100">
         <div className="stat place-items-center">
@@ -214,7 +234,9 @@ export default function AccountSettings() {
           <div className="stat-desc">de sessões lançadas</div>
         </div>
       </div>
+
       <hr className="my-4 border-base-300" />
+
       {/* Configurações */}
       <div className="collapse collapse-arrow bg-base-300 shadow-md rounded-lg">
         <input type="checkbox" className="peer" />
@@ -251,7 +273,7 @@ export default function AccountSettings() {
             {loading ? "Atualizando..." : "Atualizar Nome"}
           </button>
 
-          {/* Danger zone */}
+          {/* Zona de risco */}
           <div className="p-4 border border-error rounded-lg bg-error/10">
             <h3 className="text-lg font-semibold text-error flex items-center gap-2">
               <TrashIcon className="w-5 h-5" />
@@ -270,136 +292,16 @@ export default function AccountSettings() {
           </div>
         </div>
       </div>
-       {/* Modal de edição */}
+
+      {/* Modal de edição */}
       {openEditModal && (
-        <div className="modal modal-open">
-          <div className="modal-box space-y-6">
-            <h3 className="font-bold text-lg">Editar Perfil</h3>
-
-            {/* FOTO DE PERFIL */}
-            <div className="space-y-3">
-              <h4 className="font-semibold">Foto de Perfil</h4>
-
-              {/* Preview Avatar */}
-              <div className="flex flex-col items-center gap-3">
-                <img
-                  src={avatarUrl}
-                  alt="Preview avatar"
-                  className="w-28 h-28 rounded-full border-2 border-primary object-cover"
-                />
-                <span className="text-sm text-base-content/70">
-                  Pré-visualização
-                </span>
-              </div>
-
-              {/* Upload Avatar */}
-              <input
-                type="file"
-                accept="image/*"
-                className="file-input file-input-bordered w-full"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file || !session?.user?.id) return;
-
-                  const fileExt = file.name.split(".").pop();
-                  const fileName = `${session.user.id}-avatar-${Date.now()}.${fileExt}`;
-                  const { error } = await supabase.storage
-                    .from("avatars") // bucket
-                    .upload(fileName, file, { upsert: true });
-
-                  if (error) {
-                    addToast("Erro ao enviar foto de perfil", "error");
-                  } else {
-                    const {
-                      data: { publicUrl },
-                    } = supabase.storage.from("avatars").getPublicUrl(fileName);
-                    setAvatarUrl(publicUrl);
-                    addToast("Foto de perfil atualizada!", "success");
-                  }
-                }}
-              />
-
-              {/* URL Avatar */}
-              <input
-                type="text"
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                className="input input-bordered w-full"
-                placeholder="https://..."
-              />
-            </div>
-
-            <hr className="border-base-300" />
-
-            {/* BANNER */}
-            <div className="space-y-3">
-              <h4 className="font-semibold">Banner do Perfil</h4>
-
-              {/* Preview Banner */}
-              <div
-                className="h-24 rounded-lg border-2 border-primary flex items-center justify-center text-sm text-base-content/70"
-                style={{
-                  backgroundImage: bannerUrl.startsWith("http")
-                    ? `url(${bannerUrl})`
-                    : undefined,
-                }}
-              >
-                {bannerUrl.startsWith("http")
-                  ? "Pré-visualização do banner"
-                  : `Preview: ${bannerUrl}`}
-              </div>
-
-              {/* Upload Banner */}
-              <input
-                type="file"
-                accept="image/*"
-                className="file-input file-input-bordered w-full"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file || !session?.user?.id) return;
-
-                  const fileExt = file.name.split(".").pop();
-                  const fileName = `${session.user.id}-banner-${Date.now()}.${fileExt}`;
-                  const { error } = await supabase.storage
-                    .from("banners") // bucket
-                    .upload(fileName, file, { upsert: true });
-
-                  if (error) {
-                    addToast("Erro ao enviar banner", "error");
-                  } else {
-                    const {
-                      data: { publicUrl },
-                    } = supabase.storage.from("banners").getPublicUrl(fileName);
-                    setBannerUrl(publicUrl);
-                    addToast("Banner atualizado!", "success");
-                  }
-                }}
-              />
-
-              {/* URL Banner */}
-              <input
-                type="text"
-                value={bannerUrl}
-                onChange={(e) => setBannerUrl(e.target.value)}
-                className="input input-bordered w-full"
-                placeholder="https://... ou classes Tailwind ex: bg-gradient-to-r from-primary to-accent"
-              />
-            </div>
-
-            {/* Ações */}
-            <div className="modal-action">
-              <button
-                onClick={() => setOpenEditModal(false)}
-                className="btn btn-ghost"
-              >
-                Cancelar
-              </button>
-              <button onClick={handleUpdateImages} className="btn btn-primary">
-                Salvar Alterações
-              </button>
-            </div>
-          </div>
-        </div>
+        <EditProfileModal
+          open={openEditModal}
+          onClose={() => setOpenEditModal(false)}
+          session={session}
+          supabase={supabase}
+          addToast={addToast}
+        />
       )}
     </section>
   );

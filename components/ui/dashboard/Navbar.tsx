@@ -6,10 +6,11 @@ import {
   PresentationChartBarIcon,
   SignalIcon,
   SparklesIcon,
-  ArrowLeftStartOnRectangleIcon,
-  BookOpenIcon
+  BookOpenIcon,
+  Cog6ToothIcon
 } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import ArrowLeftStartOnRectangleIcon from "@heroicons/react/24/solid/ArrowLeftStartOnRectangleIcon";
+import { useState, useEffect } from "react";
 
 interface NavbarProps {
   profile: any;
@@ -25,6 +26,16 @@ export default function Navbar({
 }: React.PropsWithChildren<NavbarProps>) {
   const [activeSection, setActiveSection] = useState<string>("hub");
 
+  useEffect(() => {
+    const currentHash = window.location.hash.replace("#", "");
+    if (currentHash) setActiveSection(currentHash);
+    const handleHashChange = () => {
+      setActiveSection(window.location.hash.replace("#", "") || "hub");
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
   const linkClass = (section: string) =>
     `flex items-center gap-2 px-3 py-2 pl-4 rounded-full font-semibold w-full
      ${activeSection === section
@@ -33,7 +44,7 @@ export default function Navbar({
     }`;
 
   return (
-    <div className="drawer md:drawer-open h-screen">
+    <div className="drawer md:drawer-open h-screen z-50">
       <input id="app-drawer" type="checkbox" className="drawer-toggle" />
 
       {/* Conteúdo principal */}
@@ -76,7 +87,6 @@ export default function Navbar({
               </span>
             </a>
             <div className="flex items-center gap-4 justify-end">
-              <ThemeController />
               <a
                 href="#profile"
                 onClick={() => setActiveSection("profile")}
@@ -84,7 +94,7 @@ export default function Navbar({
                 data-tip="Perfil"
               >
                 <div className="avatar">
-                  <div className="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 hover:scale-105 hover:shadow-md transition-transform duration-200 ease-in-out">
+                  <div className="w-8 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 hover:scale-105 hover:shadow-md transition-transform duration-200 ease-in-out">
                     <img
                       src="https://static.vecteezy.com/system/resources/previews/055/591/320/non_2x/chatbot-avatar-sending-and-receiving-messages-using-artificial-intelligence-vector.jpg"
                       alt="Logo"
@@ -92,9 +102,35 @@ export default function Navbar({
                   </div>
                 </div>
               </a>
+              <div className="relative group dropdown dropdown-end">
+                <div
+                  className="btn btn-circle hover:scale-105 hover:shadow-md transition-transform duration-200 ease-in-out cursor-pointer hover:bg-base-300"
+                  role="button"
+                  tabIndex={0}
+                >
+                  <Cog6ToothIcon className="size-6" />
+                </div>
+                <span className="absolute bottom-[-35px] right-0 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto bg-neutral text-neutral-content text-sm px-2 py-1 rounded-md shadow-md transition-all duration-200 ease-out">
+                  Configurações
+                </span>
+                <ul
+                  tabIndex={-1}
+                  className="dropdown-content menu bg-base-100 rounded-box z-1 w-30 p-2 shadow-sm"
+                >
+                  <li><ThemeController /></li>
+                  <li>
+                    <button
+                      onClick={handleLogout}
+                      className="btn btn-ghost w-full justify-start"
+                    >
+                      <ArrowLeftStartOnRectangleIcon className="size-5 mr-2" /> Sair
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </div>
           </nav>
-          <div className="px-4 py-4 bg-base-200 min-h-[calc(100vh-70px)]">
+          <div className="px-4 py-4 bg-base-200 min-h-screen">
             {children}
           </div>
         </main>
@@ -226,13 +262,6 @@ export default function Navbar({
                 </a>
               </li>
             </ul>
-          </div>
-
-          {/* Footer da sidebar */}
-          <div className="mt-6 space-y-2 border-t border-base-300 pt-4">
-            <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 rounded-lg w-full hover:bg-error/75 bg-error/50 cursor-pointer font-semibold text-error-content transition-colors duration-200">
-              <ArrowLeftStartOnRectangleIcon className="size-6" /> Sair
-            </button>
           </div>
         </aside>
       </div>

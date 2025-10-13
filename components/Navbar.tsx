@@ -15,7 +15,7 @@ const seasons: Season[] = [
 
 export function Navbar() {
   return (
-    <div className="drawer drawer-start">
+    <div className="drawer drawer-start z-50">
       <input id="navbar-drawer" type="checkbox" className="drawer-toggle" />
 
       {/* Conteúdo principal */}

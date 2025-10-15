@@ -2,8 +2,8 @@ import { ToastProvider } from "@/app/context/ToastContext";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "RoboStage | Dashboard",
-  description: "Seu painel de controle no RoboStage",
+  title: "ShowLive | Dashboard",
+  description: "Seu painel de controle no ShowLive",
 };
 
 export default function DashboardLayout({
@@ -12,7 +12,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main>
+    <main className="min-h-screen bg-base-100">
       <ToastProvider>{children}</ToastProvider>
     </main>
   );

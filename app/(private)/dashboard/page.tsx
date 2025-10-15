@@ -12,19 +12,25 @@ import TimerPage from "./hashPages/TimerPage";
 import BrainShotPage from "./hashPages/BrainShot";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import InnoLab from "./hashPages/InnoLab";
+import { useEffect } from "react";
 
 export default function Dashboard() {
   const { session, profile } = useUser();
   const currentSection = useHashSection("hub");
-
   const router = useRouter();
+
+  useEffect(() => {
+    if (!session) {
+      router.push("/auth/login");
+    }
+  }, [session, router]);
 
   const logout = async () => {
     await supabase.auth.signOut();
     router.push("/auth/login");
   };
 
-  // Conteúdo da seção atual
   const currentSectionContent = () => {
     switch (currentSection) {
       case "hub":
@@ -41,11 +47,15 @@ export default function Dashboard() {
         return <TimerPage />;
       case "brainShot":
         return <BrainShotPage />;
+      case "innoLab":
+        return <InnoLab />;
+      default:
+        return <HubHero />;
     }
   };
 
   return (
-    <div className="">
+    <div>
       <Navbar
         profile={profile}
         session={session}

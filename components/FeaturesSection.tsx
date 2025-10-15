@@ -9,13 +9,18 @@ import StyleLabImage from "@/public/images/icons/4.png";
 const features = [
   {
     title: "QuickBrick Studio",
-    text: "Desenhe estratégias visuais para cumprir missões da FLL Challenge - UNEARTHED!",
+    text: "Doumente, crie e simule seu robô com o QuickBrick Studio, a ferramenta que ajuda planejar suas estratégias na FLL Challenge - UNEARTHED!",
     icon: QuickBrickImage.src,
   },
   {
     title: "LabTest",
     text: "Teste e valide suas estratégias para as missões da FLL Challenge - UNEARTHED! Tendo acesso a estatísticas detalhadas do desempenho de seus lançamentos.",
     icon: LabTestImage.src,
+  },
+  {
+    title: "InnoLab",
+    text: "Crie diagramas focados no processo do projeto de inovação da sua equipe!",
+    icon: ShowLiveImage.src,
   },
   {
     title: "ShowLive",

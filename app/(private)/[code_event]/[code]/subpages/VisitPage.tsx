@@ -116,7 +116,6 @@ export default function VisitPage() {
 
   return (
     <div className="min-h-full flex flex-col justify-between">
-      <Navbar />
       <main
         ref={mainRef}
         className="flex-1 flex flex-col items-center justify-center w-full p-4 min-h-screen relative"
@@ -188,7 +187,6 @@ export default function VisitPage() {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

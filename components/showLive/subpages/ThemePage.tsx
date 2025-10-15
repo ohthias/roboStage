@@ -33,7 +33,7 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
   useEffect(() => {
     const fetchPresets = async () => {
       try {
-        const response = await fetch("/api/data/presets.json");
+        const response = await fetch("/api/data/preset");
         const data = await response.json();
         setPresets(data);
       } catch (err) {
@@ -167,6 +167,14 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen px-4 md:px-8">

@@ -11,6 +11,8 @@ import ConfiguracoesSection from "@/components/showLive/subpages/ConfiguracoesSe
 import Loader from "@/components/loader";
 import Sidebar from "@/components/showLive/Sidebar";
 import ThemeSection from "@/components/showLive/subpages/ThemePage";
+import TabelaGracious from "@/components/showLive/subpages/TabelaGracious";
+import Brackets from "@/components/showLive/subpages/BracketsSection";
 
 export default function EventAdminPage() {
   const params = useParams<{ code_event: string }>();
@@ -59,6 +61,14 @@ export default function EventAdminPage() {
         return <ThemeSection eventId={eventData?.id_evento ? String(eventData.id_evento) : ""} />;
       case "configuracoes":
         return <ConfiguracoesSection idEvent={eventData?.id_evento ?? null} />;
+      case "gracious-professionalism":
+        return <TabelaGracious eventId={eventData?.id_evento || 0} />;
+      case "brackets":
+        return <Brackets eventId={eventData?.id_evento || 0} />;
+      case "pre-round-inspection":
+        return <div>Inspeção Pré-Rodada Section - Em desenvolvimento</div>;
+      case "advanced-view":
+        return <div>Visualização Avançada Section - Em desenvolvimento</div>;
       default:
         return (
           <GeneralPage
@@ -78,6 +88,7 @@ export default function EventAdminPage() {
         code_visitor={eventData?.code_visit ?? ""}
         open={sidebarOpen}
         setOpen={setSidebarOpen}
+        eventId={eventData?.id_evento || 0}
       />
 
       <div

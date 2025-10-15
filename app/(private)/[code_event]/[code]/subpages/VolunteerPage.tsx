@@ -6,6 +6,7 @@ import { supabase } from "@/utils/supabase/client";
 import AvaliacaoRounds from "@/components/AvaRound";
 import robo from "@/public/robo.gif";
 import Loader from "@/components/loader";
+import AvaliacaoPlayOffs from "@/components/showLive/volunteer/AvaliacaoPlayOffs";
 
 export default function VolunteerPage() {
   const params = useParams();
@@ -24,9 +25,9 @@ export default function VolunteerPage() {
         .from("events")
         .select("id_evento")
         .eq("code_event", code_event)
-        .maybeSingle();
+        .single();
 
-      if (!error && data) {
+      if (data) {
         setId_event(data.id_evento);
       }
 
@@ -61,6 +62,8 @@ export default function VolunteerPage() {
             <Loader />
           </div>
         );
+      case "playoffs":
+        return <AvaliacaoPlayOffs idEvento={Number(id_evento)} />;
       default:
         return (
           <div className="w-full bg-gradient-to-tr from-base-100 to-base-300 rounded-2xl shadow-lg p-6 md:p-12 flex flex-col-reverse md:flex-row items-center justify-between gap-8 animate-fade-in">
@@ -113,7 +116,7 @@ export default function VolunteerPage() {
 
   return (
     <div className="p-4">
-      <NavigationBar />
+      <NavigationBar eventId={Number(id_evento)} />
       <main className="pt-4 px-4">
         {loading ? <p>Carregando evento...</p> : currentSectionContent()}
       </main>

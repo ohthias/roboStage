@@ -30,12 +30,39 @@ export function Footer() {
           >
             Wiki
           </a>
-          <a className="link link-hover" href="/about">Dúvidas</a>
+          <a className="link link-hover" href="/help">Dúvidas</a>
+          <a className="link link-hover" href="/fll-docs">Documentações UNEARTHED</a>
+          <nav className="mt-4 flex flex-col">
+            <h6 className="footer-title">Comunidade</h6>
+            <a className="link link-hover" href="https://discord.gg/4yNfXb3m">Discord</a>
+            <a className="link link-hover" href="https://www.instagram.com/robo.stage/">Instagram</a>
+          </nav>
         </nav>
         <nav>
-          <h6 className="footer-title">Suporte</h6>
-          <a className="link link-hover" href="https://github.com/ohthias/roboStage/issues">Reportar bugs</a>
-          <a className="link link-hover" href="/fll-docs">Documentações UNEARTHED</a>
+          <h6 className="footer-title">Tutoriais</h6>
+          <a className="link link-hover" href="#">QuickBrick Studio Aplicado</a>
+          <a className="link link-hover" href="#">LabTest na prática</a>
+          <a className="link link-hover" href="#">InnoLab - Documentando seu projeto</a>
+          <a className="link link-hover" href="#">ShowLive: Básico</a>
+          <a className="link link-hover" href="#">ShowLive: Avançado</a>
+        </nav>
+        <nav>
+          <h6 className="footer-title">Legal</h6>
+          <a className="link link-hover" href="https://github.com/ohthias/roboStage/wiki/terms">Termos de Serviço</a>
+          <a className="link link-hover" href="https://github.com/ohthias/roboStage/wiki/privacy">Política de Privacidade</a>
+          <a className="link link-hover" href="https://github.com/ohthias/roboStage/wiki/cookies">Política de Cookies</a>
+          <nav className="mt-4 flex flex-col">
+            <h6 className="footer-title">Suporte</h6>
+            <a className="link link-hover" href="https://github.com/ohthias/roboStage/issues">Reportar bugs</a>
+          </nav>
+        </nav>
+        <nav>
+          <h6 className="footer-title">Desenvolvedores</h6>
+          <a className="link link-hover" href="https://github.com/ohthias">@ohthias</a>
+          <nav className="mt-4 flex flex-col">
+            <h6 className="footer-title">Parceiros</h6>
+            <a className="link link-hover" href="https://github.com/G-Tomboly/">@G-Tomboly</a>
+          </nav>
         </nav>
       </footer>
       <footer className="footer sm:footer-horizontal footer-center bg-base-300 text-base-content p-4">

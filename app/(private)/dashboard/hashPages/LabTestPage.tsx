@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/utils/supabase/client";
 import ModalLabTest from "@/components/ui/Modal/ModalLabTest";
 import TestResultsCharts from "@/components/LabTest/ResultsSection";
-import { BeakerIcon } from "@heroicons/react/24/outline";
+import { BeakerIcon, PresentationChartBarIcon } from "@heroicons/react/24/outline";
 import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import ModalConfirm, {
   ModalConfirmRef,
@@ -161,15 +161,18 @@ export default function LabTestPage() {
   return (
     <div className="pb-8 flex flex-col">
       {/* Header */}
-      <section className="bg-base-200 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300 mb-4">
-        <div>
-          <h2 className="text-base-content font-bold mb-2 text-3xl">
-            Lab<span className="text-primary">Test</span>
-          </h2>
-          <p className="text-sm text-base-content">
-            Crie e gerencie seus testes personalizados para avaliar o desempenho
-            do robô.
-          </p>
+      <section className="bg-base-100 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300 mb-4">
+        <div className="flex items-center gap-4">
+          <PresentationChartBarIcon className="size-16 text-primary/75" />
+          <div>
+            <h2 className="text-base-content font-bold mb-2 text-3xl">
+              Lab<span className="text-primary">Test</span>
+            </h2>
+            <p className="text-sm text-base-content">
+              Crie e gerencie seus testes personalizados para avaliar o desempenho
+              do robô.
+            </p>
+          </div>
         </div>
         <ModalLabTest />
       </section>
@@ -405,13 +408,16 @@ export default function LabTestPage() {
                 <input type="checkbox" className="peer" />
                 <div className="collapse-title text-xl font-bold flex flex-col gap-1">
                   <span>{test.name_test}</span>
-                  <span className="text-sm font-normal text-base-content">
-                    Tipo: {testTypes[test.type_id] || "Desconhecido"} | Criado
-                    em: {new Date(test.created_at).toLocaleDateString("pt-BR")}
-                  </span>
                 </div>
                 <div className="collapse-content">
                   <TestResultsCharts testId={test.id} />
+                </div>
+                <div className="collapse-footer py-2 px-4 border-t border-base-300 flex justify-between items-center">
+                  <span className="text-sm font-normal text-base-content">
+                    Tipo: {testTypes[test.type_id].toUpperCase() || "Desconhecido"} | Criado
+                    em: {new Date(test.created_at).toLocaleDateString("pt-BR")}
+                  </span>
+                  <button className="btn btn-primary btn-outline btn-sm">Exportar Teste</button>
                 </div>
               </div>
             ))}

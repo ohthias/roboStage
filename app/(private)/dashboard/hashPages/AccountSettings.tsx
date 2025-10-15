@@ -5,7 +5,17 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { useUser } from "@/app/context/UserContext";
 import { useToast } from "@/app/context/ToastContext";
-import { WrenchScrewdriverIcon } from "@heroicons/react/24/solid";
+import {
+  WrenchScrewdriverIcon,
+  TrashIcon,
+  UserIcon,
+  DocumentChartBarIcon,
+  CalendarDaysIcon,
+  PuzzlePieceIcon,
+  ClockIcon,
+} from "@heroicons/react/24/solid";
+import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import EditProfileModal from "@/components/ui/Modal/ModalEditProfile";
 
 export default function AccountSettings() {
   const router = useRouter();
@@ -14,7 +24,19 @@ export default function AccountSettings() {
 
   const [username, setUsername] = useState("");
   const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [stats, setStats] = useState<{
+    total_testes: number;
+    total_eventos: number;
+    total_temas: number;
+    total_documentos: number;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const [avatarUrl, setAvatarUrl] = useState(
+    "https://static.vecteezy.com/system/resources/previews/055/591/320/non_2x/chatbot-avatar-sending-and-receiving-messages-using-artificial-intelligence-vector.jpg"
+  );
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
+  const [openEditModal, setOpenEditModal] = useState(false);
 
   useEffect(() => {
     const fetchUserCreatedAt = async () => {
@@ -36,16 +58,66 @@ export default function AccountSettings() {
       }
     };
 
+    const fetchProfileImages = async () => {
+      if (!session?.user?.id) return;
+
+      // Pega os paths do banco
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("avatar_url, banner_url")
+        .eq("id", session.user.id)
+        .single();
+
+      if (!error && data) {
+        // Avatar
+        if (data.avatar_url) {
+          const { data: avatarSigned, error: avatarError } =
+            await supabase.storage
+              .from("photos")
+              .createSignedUrl(data.avatar_url, 60); // expira em 60s
+          if (!avatarError && avatarSigned?.signedUrl)
+            setAvatarUrl(avatarSigned.signedUrl);
+        }
+
+        // Banner
+        if (data.banner_url) {
+          const { data: bannerSigned, error: bannerError } =
+            await supabase.storage
+              .from("photos")
+              .createSignedUrl(data.banner_url, 60);
+          if (!bannerError && bannerSigned?.signedUrl)
+            setBannerUrl(bannerSigned.signedUrl);
+        }
+      }
+    };
+
+    const fetchUserStats = async () => {
+      if (!session?.user?.id) return;
+
+      const { data, error } = await supabase
+        .from("user_activity_summary")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (!error && data) {
+        setStats({
+          total_testes: data.total_testes || 0,
+          total_eventos: data.total_eventos || 0,
+          total_temas: data.total_temas || 0,
+          total_documentos: data.total_documentos || 0,
+        });
+      }
+    };
+
+    fetchProfileImages();
     fetchUserCreatedAt();
+    fetchUserStats();
 
     if (profile?.username) setUsername(profile.username);
   }, [profile, session]);
 
   if (loadingUser) return <p>Carregando perfil...</p>;
-  if (!session) {
-    router.push("/join");
-    return null;
-  }
 
   const handleUpdateUsername = async () => {
     if (!session?.user?.id) return;
@@ -99,37 +171,96 @@ export default function AccountSettings() {
   };
 
   return (
-    <section className="pb-8 space-y-8">
-      {/* Banner de perfil */}
-      <div className="hero bg-gradient-to-r from-base-200 to-primary/50 rounded-xl mb-6 p-0 shadow-md">
-        <div className="hero-content w-full flex flex-col md:flex-row items-center md:items-center justify-center md:justify-start gap-4 md:gap-8 text-center md:text-left p-4 md:p-8">
-          <div className="relative flex-shrink-0">
+    <section className="pb-12 space-y-8 max-w-5xl mx-auto">
+      {/* Banner do Perfil */}
+      <div
+        className="hero rounded-xl shadow-lg relative bg-base-100"
+        style={{
+          backgroundImage: bannerUrl ? `url(${bannerUrl})` : undefined,
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+        }}
+      >
+        <div className="hero-content w-full flex flex-col md:flex-row items-center gap-6 p-6 md:p-10">
+          <div className="relative">
             <img
-              src="https://static.vecteezy.com/system/resources/previews/055/591/320/non_2x/chatbot-avatar-sending-and-receiving-messages-using-artificial-intelligence-vector.jpg"
+              src={avatarUrl}
               alt="Foto de perfil"
-              className="w-24 h-24 md:w-32 md:h-32 rounded-full border-2 border-accent shadow-lg object-cover"
+              className="w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-primary shadow-md object-cover"
             />
-            <span className="absolute bottom-2 right-2 bg-success rounded-full w-4 h-4"></span>
+            <span className="absolute bottom-2 right-2 bg-success rounded-full w-5 h-5 border-2 border-white"></span>
           </div>
-          <div className="mt-3 md:mt-0 flex flex-col items-center md:items-start">
-            <h2 className="text-xl md:text-3xl font-bold text-base-content">
+          <div className="flex flex-col items-center md:items-start">
+            <h2 className="text-2xl md:text-4xl font-bold text-base-content flex items-center gap-2">
+              <UserIcon className="w-7 h-7 text-primary" />
               {username || "Usuário"}
             </h2>
-            <p className="text-sm md:text-base text-base-content/70 mt-1">
+            <p className="text-sm md:text-base text-base-content/70 mt-2">
               {createdAt ? `Na plataforma desde ${createdAt}` : "Carregando..."}
             </p>
           </div>
         </div>
+
+        {/* Botão editar */}
+        <button
+          onClick={() => setOpenEditModal(true)}
+          className="btn btn-sm btn-outline btn-primary absolute top-4 right-4 flex items-center gap-1"
+        >
+          <PencilSquareIcon className="w-4 h-4" />
+          Editar Perfil
+        </button>
       </div>
 
+      {/* Estatísticas */}
+      <div className="stats stats-vertical md:stats-horizontal shadow w-full bg-base-100">
+        <div className="stat place-items-center">
+          <div className="stat-figure text-primary">
+            <DocumentChartBarIcon className="w-8 h-8" />
+          </div>
+          <div className="stat-title">Testes</div>
+          <div className="stat-value text-primary">{stats?.total_testes ?? 0}</div>
+          <div className="stat-desc">criados</div>
+        </div>
+
+        <div className="stat place-items-center">
+          <div className="stat-figure text-secondary">
+            <CalendarDaysIcon className="w-8 h-8" />
+          </div>
+          <div className="stat-title">Eventos</div>
+          <div className="stat-value text-secondary">{stats?.total_eventos ?? 0}</div>
+          <div className="stat-desc">registrados</div>
+        </div>
+
+        <div className="stat place-items-center">
+          <div className="stat-figure text-accent">
+            <PuzzlePieceIcon className="w-8 h-8" />
+          </div>
+          <div className="stat-title">Diagramas</div>
+          <div className="stat-value text-accent">{stats?.total_documentos ?? 0}</div>
+          <div className="stat-desc">documentados</div>
+        </div>
+
+        <div className="stat place-items-center">
+          <div className="stat-figure text-info">
+            <PuzzlePieceIcon className="w-8 h-8" />
+          </div>
+          <div className="stat-title">Temas</div>
+          <div className="stat-value text-info">{stats?.total_temas ?? 0}</div>
+          <div className="stat-desc">personalizados</div>
+        </div>
+      </div>
+
+      <hr className="my-4 border-base-300" />
+
       {/* Configurações */}
-      <div className="collapse collapse-arrow bg-base-200">
+      <div className="collapse collapse-arrow bg-base-300 shadow-md rounded-lg">
         <input type="checkbox" className="peer" />
-        <div className="collapse-title text-lg md:text-xl font-bold text-base-content flex items-center gap-2">
-          <WrenchScrewdriverIcon className="size-5 md:size-6" /> Configurações
-          da Conta
+        <div className="collapse-title text-lg md:text-xl font-bold flex items-center gap-2">
+          <WrenchScrewdriverIcon className="size-6 text-primary" />
+          Configurações da Conta
         </div>
         <div className="collapse-content space-y-6">
+          {/* Nome de usuário */}
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text font-semibold">Nome de usuário</span>
@@ -157,25 +288,37 @@ export default function AccountSettings() {
             {loading ? "Atualizando..." : "Atualizar Nome"}
           </button>
 
-          <hr className="my-6 border-base-300" />
-
-          {/* Danger zone */}
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-error">Zona de Risco</h3>
-            <p className="text-sm text-base-content/70">
+          {/* Zona de risco */}
+          <div className="p-4 border border-error rounded-lg bg-error/10">
+            <h3 className="text-lg font-semibold text-error flex items-center gap-2">
+              <TrashIcon className="w-5 h-5" />
+              Zona de Risco
+            </h3>
+            <p className="text-sm text-base-content/70 mt-1">
               Essa ação não pode ser desfeita. Tenha certeza antes de
               prosseguir.
             </p>
             <button
               onClick={handleDeleteAccount}
               disabled={loading}
-              className="btn btn-error w-full"
+              className="btn btn-error w-full mt-4"
             >
               {loading ? "Processando..." : "Deletar Conta"}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Modal de edição */}
+      {openEditModal && (
+        <EditProfileModal
+          open={openEditModal}
+          onClose={() => setOpenEditModal(false)}
+          session={session}
+          supabase={supabase}
+          addToast={addToast}
+        />
+      )}
     </section>
   );
 }

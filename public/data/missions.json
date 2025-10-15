@@ -607,6 +607,13 @@
       "mission": "Número de tokens de precisão restantes",
       "points": [0, 10, 15, 25, 35, 50, 50],
       "type": ["range", 0, 6]
+    },
+    {
+      "id": "GP",
+      "name": "Gracious Professionalism®",
+      "mission": "Gracious Professionalism® demonstrados durante o round:",
+      "points": [2,3,4],
+      "type": ["switch", "Em desenvolvimento", "Cumprido", "Excedido"]
     }
   ]
 }

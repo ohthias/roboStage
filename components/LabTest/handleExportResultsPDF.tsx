@@ -1,7 +1,7 @@
 "use client";
 
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import html2canvas from "html2canvas-pro";
 import { supabase } from "@/utils/supabase/client";
 
 export const handleExportResultsPDF = async (testId: string, addToast: (msg: string, type?: string) => void) => {

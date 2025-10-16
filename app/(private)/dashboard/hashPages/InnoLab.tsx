@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import CreateDiagramModal from "@/components/ui/Modal/CreateDiagramModal";
-import { BookOpenIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { BookOpenIcon } from "@heroicons/react/24/outline";
 
 interface Document {
   id: string;
@@ -135,7 +135,7 @@ export default function InnoLab() {
           filteredDocs.map((doc) => (
             <div
               key={doc.id}
-              onClick={() => router.push(`/dashboard/innolab/${doc.id}`)}
+              onClick={() => router.push(`/dashboard/innolab/${doc.id}/${doc.diagram_type}`)}
               className="card bg-base-100 border border-base-300 hover:shadow-lg transition-all cursor-pointer"
             >
               <div className="card-body">

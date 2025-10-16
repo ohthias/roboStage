@@ -18,6 +18,7 @@ import ModalResultForm, {
   ModalResultFormRef,
 } from "@/components/LabTest/ResultForm";
 import Loader from "@/components/loader";
+import { handleExportResultsPDF } from "@/components/LabTest/handleExportResultsPDF";
 
 type Mission = {
   id: string;
@@ -417,7 +418,17 @@ export default function LabTestPage() {
                     Tipo: {testTypes[test.type_id].toUpperCase() || "Desconhecido"} | Criado
                     em: {new Date(test.created_at).toLocaleDateString("pt-BR")}
                   </span>
-                  <button className="btn btn-primary btn-outline btn-sm">Exportar Teste</button>
+                  <button
+                    className="btn btn-primary btn-outline btn-sm"
+                    onClick={() =>
+                      handleExportResultsPDF(
+                        test.id,
+                        (msg: string, type?: string) => addToast(msg, type as any)
+                      )
+                    }
+                  >
+                    Exportar Teste
+                  </button>
                 </div>
               </div>
             ))}

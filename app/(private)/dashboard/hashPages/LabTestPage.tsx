@@ -6,7 +6,7 @@ import ModalInput, { ModalInputRef } from "@/components/ui/Modal/ModalInput";
 import ModalResultForm, { ModalResultFormRef } from "@/components/LabTest/ResultForm";
 import Loader from "@/components/loader";
 import { useToast } from "@/app/context/ToastContext";
-import { BeakerIcon, PresentationChartBarIcon } from "@heroicons/react/24/outline";
+import { PresentationChartBarIcon } from "@heroicons/react/24/outline";
 import { useLabTests } from "@/hooks/useLabTests";
 import TestTabs from "../labtest/components/TestTabs";
 import TestList from "../labtest/components/TestList";
@@ -30,7 +30,6 @@ export default function LabTestPage() {
   const modalResultFormRef = useRef<ModalResultFormRef>(null);
   const { addToast } = useToast();
 
-  // missions.json is fetched client-side in old code; keep the same pattern (optional improvement: import statically)
   const [missionsData, setMissionsData] = useState<Record<string, any[]>>({});
   React.useEffect(() => {
     fetch("/data/missions.json")

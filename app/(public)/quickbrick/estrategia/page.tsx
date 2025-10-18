@@ -36,15 +36,15 @@ export default function StrategyPage() {
   return (
     <div className="flex flex-col items-start justify-center w-full">
       <Navbar />
-        <Breadcrumbs />
+      <Breadcrumbs />
       <div className="flex flex-col items-center w-full">
         <h1 className="text-2xl font-bold my-4 text-primary">
           QuickBrick Studio - Estratégias
         </h1>
         <p className="text-sm mb-2 text-base-content px-2 text-center max-w-3xl">
           Selecione uma das ferramentas disponíveis e desenhar diretamente sobre
-          a imagem do tapete, planejando cada movimento com precisão e facilidade.
-          Ao final, exporte e use como desejar!
+          a imagem do tapete, planejando cada movimento com precisão e
+          facilidade. Ao final, exporte e use como desejar!
         </p>
         <QuickBrickCanvas />
       </div>

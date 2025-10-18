@@ -23,3 +23,13 @@ interface Layer {
   lines: Line[];
   freePaths: FreePath[];
 }
+
+type Zone = {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  name: string;
+};

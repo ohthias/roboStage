@@ -81,7 +81,7 @@ export default function InnoLab() {
       {/* 🔹 Cabeçalho */}
       <section className="bg-base-100 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300 mb-6">
         <div className="flex items-center gap-4">
-          <BookOpenIcon className="size-16 text-secondary/75" />
+          <BookOpenIcon className="hidden sm:block size-16 text-secondary/75" />
           <div>
             <h2 className="text-base-content font-bold mb-2 text-3xl">
               Inno<span className="text-secondary">Lab</span>

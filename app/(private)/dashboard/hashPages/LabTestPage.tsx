@@ -99,7 +99,7 @@ export default function LabTestPage() {
     <div className="pb-8 flex flex-col">
       <section className="bg-base-100 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300 mb-4">
         <div className="flex items-center gap-4">
-          <PresentationChartBarIcon className="w-10 h-10 text-primary/75" />
+          <PresentationChartBarIcon className="hidden sm:block w-10 h-10 text-primary/75" />
           <div>
             <h2 className="text-base-content font-bold mb-2 text-3xl">
               Lab<span className="text-primary">Test</span>
@@ -140,7 +140,7 @@ export default function LabTestPage() {
       {activeTab === "results" && (
         <>
           <section className="flex flex-col sm:flex-row gap-4 mb-4 items-start sm:items-center">
-            <input type="text" className="input input-bordered w-full sm:w-64 flex-1" placeholder="Buscar resultado por nome..." value={searchResultText} onChange={(e) => setSearchResultText(e.target.value)} />
+            <input type="text" className="input input-bordered w-full sm:w-64 flex-1 py-2" placeholder="Buscar resultado por nome..." value={searchResultText} onChange={(e) => setSearchResultText(e.target.value)} />
             <select className="select select-bordered w-full sm:w-52" value={selectedResultType} onChange={(e) => setSelectedResultType(e.target.value)}>
               <option value="all">Todos os tipos</option>
               {Object.entries(testTypes).map(([id, name]) => (

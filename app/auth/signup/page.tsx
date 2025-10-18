@@ -32,36 +32,22 @@ export default function SignupPage() {
         href="/"
         className="absolute top-4 left-4 z-10 md:hidden"
       >
-        <img
-          src="/images/logos/Icone.png"
-          alt="Logo"
-          className="h-10 w-auto hover:scale-105 transition-transform bg-base-100/70 rounded-full p-1 shadow-md"
-        />
+        Voltar para Home
       </Link>
 
       {/* Lado esquerdo (somente desktop/tablet) */}
       <div
-        className="w-2/3 hidden md:flex flex-col justify-between bg-base-300 p-8"
-        style={{
-          backgroundImage: 'url("/images/background_auth.jpg")',
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backdropFilter: "brightness(0.3)",
-        }}
+        className="w-2/3 hidden md:flex flex-col justify-between bg-accent p-8 relative overflow-hidden"
       >
         <Link href="/" className="inline-block">
-          <img
-            src="/images/logos/Icone.png"
-            alt="Logo"
-            className="h-12 w-auto hover:scale-105 transition-transform bg-base-100/50 rounded-full p-1"
-            style={{ backdropFilter: "blur(10px)" }}
-          />
+          <h1 className="text-2xl font-bold text-white">Robo<strong className="text-primary">stage</strong></h1>
         </Link>
       </div>
 
+
       {/* Formulário */}
       <div className="w-full md:w-1/3 flex items-center justify-center bg-base-100 p-6">
-        <div className="card w-full max-w-md shadow-2xl">
+        <div className="card w-full max-w-md">
           <div className="card-body">
             <h2 className="text-3xl font-bold text-center mb-4">Criar Conta</h2>
 

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useState, useRef, useEffect } from "react";
 import MatrizRisco from "@/components/QuickBrick/MatrizRisco/MatrizRisco";
 import { Impacto, Probabilidade, Risco } from "@/types/MatrizRisco";
@@ -9,9 +9,11 @@ import { Navbar } from "@/components/Navbar";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { Footer } from "@/components/ui/Footer";
 import html2canvas from "html2canvas-pro";
+import { useToast } from "@/app/context/ToastContext";
 
-export default function App() {
+export default function MatrizDeRiscoPage() {
   const [riscos, setRiscos] = useState<Risco[]>(INITIAL_RISCOS);
+  const { addToast } = useToast();
 
   useEffect(() => {
     try {
@@ -81,18 +83,21 @@ export default function App() {
           r.id === riscoData.id ? ({ ...r, ...riscoData } as Risco) : r
         )
       );
+      addToast("Risco atualizado com sucesso!", "success");
     } else {
       // Adding new risk
       const newId =
         riscos.length > 0 ? Math.max(...riscos.map((r) => r.id)) + 1 : 1;
       const newRisco: Risco = { ...riscoData, id: newId };
       setRiscos([...riscos, newRisco]);
+      addToast("Risco adicionado com sucesso!", "success");
     }
   };
 
   const handleRemoveRisco = (riskId: number) => {
     if (window.confirm("Tem certeza que deseja remover este risco?")) {
       setRiscos(riscos.filter((r) => r.id !== riskId));
+      addToast("Risco removido com sucesso!", "success");
     }
   };
 
@@ -108,6 +113,7 @@ export default function App() {
   };
 
   const handleExport = () => {
+    addToast("Exportando matriz...", "info");
     if (matrixRef.current) {
       html2canvas(matrixRef.current, {
         useCORS: true,
@@ -120,6 +126,7 @@ export default function App() {
         link.click();
       });
     }
+    addToast("Matriz exportada com sucesso!", "success");
   };
 
   const handleResetRiscos = () => {
@@ -147,10 +154,8 @@ export default function App() {
           Ops! Ferramenta não está disponível no celular
         </h1>
         <p className="text-sm mb-2 text-base-content px-5">
-          O QuickBrick Studio é um conjunto de ferramentas que ajuda sua equipe
-          a criar estratégias eficientes para o robô durante sua jornada no
-          FIRST LEGO League Challenge. Basta selecionar uma das ferramentas
-          disponíveis e aproveitá-las.
+          O criador de Matriz de Risco é uma ferramenta que ajuda sua equipe a
+          identificar e avaliar os riscos potenciais para o sucesso do seu robô.
         </p>
       </div>
     );
@@ -165,14 +170,16 @@ export default function App() {
           <section className="w-full flex flex-col items-center text-center px-4 py-8">
             <article className="max-w-3xl">
               <h1 className="text-4xl font-bold text-primary mb-4">
-                Matriz de Risco Interativa
+                Matriz de Risco
               </h1>
               <p className="text-base-content/75 text-lg leading-relaxed">
                 Identifique e avalie os riscos potenciais para o sucesso do seu
-                robô na FIRST LEGO League.
+                robô.
                 <br />
-                <strong className="text-base-content">Arraste e solte</strong> os cartões para reavaliar os
-                riscos.
+                <strong className="text-base-content">
+                  Arraste e solte
+                </strong>{" "}
+                os cartões para reavaliar os riscos.
               </p>
             </article>
           </section>

@@ -89,12 +89,12 @@ export default function FerramentasSection({
     },
     {
       id: 4,
-      titulo: "Análise de Risco",
+      titulo: "Matriz de Risco",
       descricao:
         "Identifique e avalie os riscos potenciais para o sucesso do seu robô.",
       categoria: "Documentar",
       icon: <DocumentTextIcon className="w-5 h-5" />,
-      link: "/quickbrick/analise-de-risco",
+      link: "/quickbrick/matriz-de-risco",
       customContent: null,
       badge: "Novo!",
     },

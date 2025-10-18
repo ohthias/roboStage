@@ -1,6 +1,7 @@
 "use client";
 import DiagramCanvas from "@/components/InnoLab/DiagramCanvas";
 import Toolbar from "@/components/InnoLab/Toolbar";
+import { getDiagramById, updateDiagram } from "@/lib/supabase/diagrams";
 import { DiagramType } from "@/types/InnoLabType";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDiagram } from "@/hooks/useDiagram";
@@ -14,9 +15,10 @@ export default function InnoLab() {
   const router = useRouter();
   const params = useParams();
   const [diagramType, setDiagramType] = useState<DiagramType>("Mapa Mental");
+  const [diagramName, setDiagramName] = useState<string>("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [loading, setLoading] = useState(true);
-  const {addToast} = useToast();
+  const { addToast } = useToast();
 
   const {
     nodes,
@@ -52,33 +54,112 @@ export default function InnoLab() {
 
   const selectedNodeData = nodes.find((n) => n.id === selectedNode);
 
-  useEffect(() => {
-    setLoading(true);
-    setDiagramType(() => {
-      const raw = String(params?.diagram_type ?? "");
-      const decoded = decodeURIComponent(raw);
-      const cleaned = decoded.replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
-      const lower = cleaned.toLowerCase();
+  // Função para decodificar o tipo de diagrama do parâmetro
+  const decodeDiagramType = (raw: string): DiagramType => {
+    const decoded = decodeURIComponent(raw);
+    const cleaned = decoded
+      .replace(/[^a-zA-Z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    const lower = cleaned.toLowerCase();
 
-      if (lower.includes("ishikawa")) return "Ishikawa";
-      if (lower.includes("5w2h") || /5\s*w\s*2\s*h/.test(lower)) return "5W2H";
-      if (lower.includes("mapa") || lower.includes("mental") || lower.includes("mind")) return "Mapa Mental";
-
+    if (lower.includes("ishikawa")) return "Ishikawa";
+    if (lower.includes("5w2h") || /5\s*w\s*2\s*h/.test(lower)) return "5W2H";
+    if (
+      lower.includes("mapa") ||
+      lower.includes("mental") ||
+      lower.includes("mind")
+    )
       return "Mapa Mental";
-    });
-    const { nodes: initialNodes, connections: initialConnections } =
-      generateInitialNodes(diagramType);
-    setNodes(initialNodes);
-    setConnections(initialConnections);
-    setSelectedNode(null);
-    setZoom(1);
-    setLoading(false);
-  }, [diagramType, setNodes, setConnections, setSelectedNode, setZoom]);
+
+    return "Mapa Mental";
+  };
+
+  useEffect(() => {
+    const fetchOrCreateDiagram = async () => {
+      setLoading(true);
+      try {
+        const id = String(params?.id);
+        const rawType = String(params?.diagram_type ?? "");
+        const detectedType = decodeDiagramType(rawType);
+        setDiagramType(detectedType);
+
+        // 🔹 Tenta carregar do banco
+        const data = await getDiagramById(id);
+
+        if (data && data.content && data.content.nodes?.length) {
+          // ✅ Caso exista e tenha conteúdo
+          setDiagramType(data.diagram_type);
+          const content = data.content;
+          setNodes(content.nodes || []);
+          setConnections(content.connections || []);
+          setZoom(content.zoom || 1);
+          setFont(content.font || "Arial");
+          setFontSize(content.fontSize || 16);
+          setFontColor(content.fontColor || "#000000");
+          setDiagramName(data.title || "");
+        } else {
+          // ⚙️ Caso não exista ou esteja vazio → gerar modelo inicial
+          const { nodes: initialNodes, connections: initialConnections } =
+            generateInitialNodes(detectedType);
+
+          const initialContent = {
+            nodes: initialNodes,
+            connections: initialConnections,
+            zoom: 1,
+            font: "Arial",
+            fontSize: 16,
+            fontColor: "#000000",
+          };
+
+          setNodes(initialNodes);
+          setConnections(initialConnections);
+          setZoom(1);
+          setFont("Arial");
+          setFontSize(16);
+          setFontColor("#000000");
+
+          // 🔸 Cria ou atualiza o registro no banco
+          await updateDiagram(id, {
+            content: initialContent,
+            diagram_type: detectedType,
+          });
+
+          addToast("Modelo inicial criado!", "info");
+        }
+      } catch (err) {
+        console.error("Erro ao carregar ou criar diagrama:", err);
+        addToast("Erro ao carregar o diagrama.", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrCreateDiagram();
+  }, [params?.id, params?.diagram_type]);
+
+  const handleAutoSave = useCallback(async () => {
+    try {
+      const content = {
+        nodes,
+        connections,
+        zoom,
+        font,
+        fontSize,
+        fontColor,
+      };
+      await updateDiagram(String(params?.id), { content });
+      addToast("Alterações salvas!", "success");
+    } catch (error) {
+      console.error(error);
+      addToast("Erro ao salvar o diagrama.", "error");
+    }
+  }, [nodes, connections, zoom, font, fontSize, fontColor, params?.id]);
 
   const handleExport = useCallback(() => {
     if (canvasRef.current) {
       exportCanvasAsPNG(canvasRef.current, diagramType);
-      addToast('Diagrama exportado como PNG!', 'success');
+      addToast("Diagrama exportado como PNG!", "success");
     }
   }, [diagramType]);
 
@@ -94,7 +175,10 @@ export default function InnoLab() {
     <main className="w-full h-screen overflow-hidden flex flex-col font-sans text-base-content">
       <header className="navbar bg-base-100 shadow-md z-20 border-b border-base-300 px-2">
         <div className="flex items-center gap-2">
-          <button className="btn btn-accent btn-outline btn-sm flex items-center gap-2" onClick={() => router.back()}>
+          <button
+            className="btn btn-accent btn-outline btn-sm flex items-center gap-2"
+            onClick={() => router.push("/dashboard#innolab")}
+          >
             Voltar
           </button>
           <span className="font-bold text-lg text-secondary">InnoLab</span>
@@ -102,6 +186,7 @@ export default function InnoLab() {
 
         <div className="flex-1 flex justify-center items-center">
           <span className="font-semibold text-base-content/70">
+            {diagramName} -{" "}
             {diagramType === "Mapa Mental"
               ? "Mapa Mental"
               : diagramType === "Ishikawa"
@@ -111,6 +196,12 @@ export default function InnoLab() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            className="btn btn-primary btn-sm flex items-center gap-2"
+            onClick={handleAutoSave}
+          >
+            💾 Salvar
+          </button>
           <button
             className="btn btn-secondary btn-sm flex items-center gap-2"
             onClick={handleExport}

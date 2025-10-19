@@ -23,7 +23,7 @@ export function Footer() {
         </aside>
         <nav>
           <h6 className="footer-title">Sobre</h6>
-          <a className="link link-hover" href="#">Sobre o projeto</a>
+          <a className="link link-hover" href="/about">Sobre o projeto</a>
           <a
             href="https://github.com/ohthias/roboStage/wiki"
             className="link link-hover"
@@ -34,7 +34,6 @@ export function Footer() {
           <a className="link link-hover" href="/fll-docs">Documentações UNEARTHED</a>
           <nav className="mt-4 flex flex-col">
             <h6 className="footer-title">Comunidade</h6>
-            <a className="link link-hover" href="https://discord.gg/4yNfXb3m">Discord</a>
             <a className="link link-hover" href="https://www.instagram.com/robo.stage/">Instagram</a>
           </nav>
         </nav>

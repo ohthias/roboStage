@@ -89,7 +89,7 @@ export function Hero() {
   }, []);
 
   return (
-    <div className="hero h-[calc(100vh-64px)] relative overflow-hidden">
+    <div className="hero h-64 sm:h-80 lg:h-[calc(100vh-64px)] relative overflow-hidden">
       {/* Fundo GIF */}
       <div
         className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
@@ -134,7 +134,7 @@ export function Hero() {
 
         <div className="hidden lg:block w-px h-40 bg-white/50"></div>
 
-        <div className="max-w-50 lg:max-w-xs">
+        <div className="max-w-50 lg:max-w-xs hidden lg:block">
           <img
             src="https://www.cvrobotics.org/wp-content/uploads/2016/05/FIRSTLego_iconHorz_RGB_reverse.png"
             className="w-full h-auto"

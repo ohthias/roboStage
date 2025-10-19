@@ -75,6 +75,12 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
         <h1 className="text-2xl font-bold my-4 text-primary">
           Ops! Ferramenta não está disponível no celular
         </h1>
+        <p className="text-sm mb-2 text-base-content px-5">
+          A Matriz SWOT é uma ferramenta que ajuda sua equipe a organizar as missões
+          da FIRST LEGO League Challenge em quatro quadrantes: Forças, Fraquezas,
+          Oportunidades e Ameaças. No momento, ela está disponível apenas em telas maiores,
+          como notebooks e desktops.
+        </p>
       </div>
     );
   }

@@ -198,8 +198,9 @@ const RobotTrackPage = () => {
           Ops! Ferramenta não está disponível no celular
         </h1>
         <p className="text-sm mb-2 text-base-content px-5">
-          O criador de Matriz de Risco é uma ferramenta que ajuda sua equipe a
-          identificar e avaliar os riscos potenciais para o sucesso do seu robô.
+          O Robot Track é uma ferramenta que ajuda seu time a planejar e visualizar
+          as trajetórias do robô na FIRST LEGO League Challenge. No momento, ela está disponível apenas
+          em telas maiores, como notebooks e desktops.
         </p>
       </div>
     );

@@ -1,67 +1,74 @@
-// middleware.ts
-import { MiddlewareConfig, NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 
-const publicRoutes = [
-  { path: "/auth/login", whenAuthenticated: "redirect" },
-  { path: "/about", whenAuthenticated: "next" },
-  { path: "/fll-docs", whenAuthenticated: "next" },
-  { path: "/fll-score", whenAuthenticated: "next" },
-  { path: "/quickbrick", whenAuthenticated: "next" },
-  { path: "/universe", whenAuthenticated: "next" },
-  { path: "/", whenAuthenticated: "next" },
-] as const;
+const PUBLIC_ROUTES = [
+  "/", 
+  "/about", 
+  "/fll-docs", 
+  "/fll-score", 
+  "/help",
+  "/quickbrick", 
+  "/universe",
+  "/auth/login", 
+  "/auth/signup",
+];
 
-const REDIRECT_WHEN_NOT_AUTHENTICATED = "/auth/login";
+const LOGIN_ROUTE = "/auth/login";
+const DASHBOARD_ROUTE = "/dashboard";
 
-// Funções auxiliares
-function isPublicRoute(path: string) {
-  return publicRoutes.find((route) => route.path === path);
-}
+// Checa se a rota é pública
+const isPublicRoute = (path: string) =>
+  PUBLIC_ROUTES.some(route => path === route || path.startsWith(route));
 
+// Checa se a rota é privada (qualquer rota dentro de /dashboard)
+const isPrivateRoute = (path: string) =>
+  path.startsWith(DASHBOARD_ROUTE);
+
+// Função auxiliar de redirecionamento
 function redirect(req: NextRequest, pathname: string) {
   const url = req.nextUrl.clone();
   url.pathname = pathname;
   return NextResponse.redirect(url);
 }
 
-// Middleware principal
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
-
   const path = req.nextUrl.pathname;
-  const {
-    data: { session: authToken },
-  } = await supabase.auth.getSession();
+
+  const { data: { session } } = await supabase.auth.getSession();
   const publicRoute = isPublicRoute(path);
+  const privateRoute = isPrivateRoute(path);
+  const isAuthPage = path.startsWith("/auth");
 
-  // 1. Sem token
-  if (!authToken) {
-    if (publicRoute) return res; // rota pública
-    return redirect(req, REDIRECT_WHEN_NOT_AUTHENTICATED); // rota privada
+  // Usuário não autenticado tentando acessar rota privada
+  if (!session && privateRoute) {
+    const url = req.nextUrl.clone();
+    url.pathname = LOGIN_ROUTE;
+    url.searchParams.set("redirectTo", path);
+    return NextResponse.redirect(url);
   }
 
-  // 2. Com token em rota pública
-  if (publicRoute?.whenAuthenticated === "redirect") {
-    return redirect(req, "/dashboard");
+  // Usuário não autenticado tentando acessar qualquer rota não pública
+  if (!session && !publicRoute) {
+    const url = req.nextUrl.clone();
+    url.pathname = LOGIN_ROUTE;
+    url.searchParams.set("redirectTo", path);
+    return NextResponse.redirect(url);
   }
 
-  // 3. Dashboard (rota protegida)
-  if (path.startsWith("/dashboard")) {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) return redirect(req, "/auth/login");
+  // Usuário autenticado tentando acessar login/signup
+  if (session && isAuthPage) {
+    return redirect(req, DASHBOARD_ROUTE);
   }
 
-  // 4. Evento público (/:code_event/:code)
+  // Rotas de evento público tipo /[code_event]/[code]
   const eventMatch = path.match(/^\/([^/]+)\/([^/]+)$/);
   if (eventMatch) {
     const [_, code_event, code] = eventMatch;
     const cookieToken = req.cookies.get("event_access")?.value;
 
+    // Se não existe cookie, verifica na tabela public_event_lookup
     if (!cookieToken) {
       const { data, error } = await supabase
         .from("public_event_lookup")
@@ -84,7 +91,6 @@ export async function middleware(req: NextRequest) {
   return res;
 }
 
-export const config: MiddlewareConfig = {
-  matcher: [
-  ],
+export const config = {
+  matcher: [],
 };

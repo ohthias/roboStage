@@ -20,7 +20,7 @@ export default function ShowLiveHub() {
 
   if (loading) return <Loader />;
   if (!session) {
-    router.push("/join");
+    router.push("/auth/login");
     return null;
   }
 

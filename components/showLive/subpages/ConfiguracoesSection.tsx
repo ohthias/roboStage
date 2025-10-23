@@ -275,7 +275,6 @@ export default function ConfiguracoesSection({
         </button>
       </div>
 
-      <EventSettings eventId={idEvent} />
       <DangerZone eventId={String(idEvent)} />
     </div>
   );

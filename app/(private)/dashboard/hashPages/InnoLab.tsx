@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import CreateDiagramModal from "@/components/ui/Modal/CreateDiagramModal";
 import { BookOpenIcon } from "@heroicons/react/24/outline";
+import { useToast } from "@/app/context/ToastContext";
 
 interface Document {
   id: string;
@@ -15,6 +16,7 @@ interface Document {
 
 export default function InnoLab() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string | null>(null);
@@ -64,7 +66,9 @@ export default function InnoLab() {
 
   // Filtros e busca
   const filteredDocs = documents.filter((doc) => {
-    const matchesSearch = doc.title.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = doc.title
+      .toLowerCase()
+      .includes(search.toLowerCase());
     const matchesFilter = filter ? doc.diagram_type === filter : true;
     return matchesSearch && matchesFilter;
   });
@@ -87,7 +91,8 @@ export default function InnoLab() {
               Inno<span className="text-secondary">Lab</span>
             </h2>
             <p className="text-sm text-base-content">
-              Dê vida às suas ideias: crie diagramas diversos para impulsionar seu projeto!
+              Dê vida às suas ideias: crie diagramas diversos para impulsionar
+              seu projeto!
             </p>
           </div>
         </div>
@@ -135,7 +140,16 @@ export default function InnoLab() {
           filteredDocs.map((doc) => (
             <div
               key={doc.id}
-              onClick={() => router.push(`/dashboard/innolab/${doc.id}/${doc.diagram_type}`)}
+              onClick={() => {
+                if (typeof window === "undefined") return;
+                const isMobile = window.innerWidth < 640;
+                if (!isMobile)
+                  router.push(
+                    `/dashboard/innolab/${doc.id}/${doc.diagram_type}`
+                  );
+                else
+                  addToast("Diagrama só pode ser aberto em desktop!", "warning");
+              }}
               className="card bg-base-100 border border-base-300 hover:shadow-lg transition-all cursor-pointer"
             >
               <div className="card-body">
@@ -144,7 +158,8 @@ export default function InnoLab() {
                   {doc.diagram_type}
                 </div>
                 <p className="text-xs text-base-content/60 mt-2">
-                  Criado em {new Date(doc.created_at).toLocaleDateString("pt-BR")}
+                  Criado em{" "}
+                  {new Date(doc.created_at).toLocaleDateString("pt-BR")}
                 </p>
               </div>
             </div>

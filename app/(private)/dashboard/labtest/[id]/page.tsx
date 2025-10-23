@@ -44,7 +44,7 @@ export default function LabTestResultsExtended() {
           Resultados do Teste: {test?.name_test}
         </h1>
 
-        {/* 👇 tudo que será exportado precisa estar dentro desse div com ref */}
+        {/* 🔗 Conteúdo que será exportado */}
         <div ref={chartRef} className="card p-4">
           <h2 className="font-semibold mb-2">Visão Completa</h2>
           <p className="text-sm text-base-content/70 mb-4">
@@ -54,13 +54,6 @@ export default function LabTestResultsExtended() {
           <TestResultsCharts testId={id} />
         </div>
       </div>
-
-      <ExportResultsPDF
-        testId={id}
-        chartRef={chartRef as React.RefObject<HTMLDivElement>}
-        testTitle={test?.name_test}
-        logoSrc="/images/logos/Icone.png"
-      />
     </div>
   );
 }

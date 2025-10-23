@@ -1,106 +1,54 @@
 "use client";
+import React, { useState } from "react";
 
-import { useState } from "react";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas-pro";
+interface ExportResultsPDFProps {
+  chartRef: React.RefObject<HTMLDivElement | null>;
+  testTitle: string;
+}
 
 export default function ExportResultsPDF({
   chartRef,
-  testId,
-  testTitle = "Relatório de Resultados",
-  logoSrc = "/logo.png",
-}: {
-  chartRef: React.RefObject<HTMLDivElement>;
-  testId: string;
-  testTitle?: string;
-  logoSrc?: string;
-}) {
-  const [exporting, setExporting] = useState(false);
-
-  const handleExportPDF = async () => {
+  testTitle,
+}: ExportResultsPDFProps) {
+  const handlePrint = () => {
     if (!chartRef.current) return;
-    setExporting(true);
 
-    try {
-      // Captura a área completa
-      const canvas = await html2canvas(chartRef.current, {
-        scale: 2,
-        useCORS: true,
-        scrollX: 0,
-        scrollY: -window.scrollY,
-      });
+    const printContents = chartRef.current.innerHTML;
+    const originalContents = document.body.innerHTML;
 
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "pt", "a4");
+    const printWindow = window.open("", "_blank", "width=1200,height=800");
 
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
+    if (!printWindow) return;
 
-      const imgWidth = pageWidth - 40;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>${testTitle || "Relatório"}</title>
+          <style>
+            @media print {
+              body { padding: 10mm; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1 style="text-align:center;">${testTitle || "Relatório de Teste"}</h1>
+          ${printContents}
+        </body>
+      </html>
+    `);
 
-      let heightLeft = imgHeight;
-      let position = 70; // margem superior, deixando espaço pro cabeçalho
+    printWindow.document.close();
 
-      let pageCount = 0;
-      const totalPages = Math.ceil(imgHeight / (pageHeight - 100));
-
-      // Função para adicionar cabeçalho e rodapé em cada página
-      const addHeaderFooter = (pageNum: number) => {
-        // Cabeçalho
-        const logoWidth = 40;
-        const logoHeight = 40;
-        pdf.addImage(logoSrc, "PNG", 20, 20, logoWidth, logoHeight);
-        pdf.setFontSize(14);
-        pdf.text(testTitle, 70, 40);
-        pdf.setFontSize(10);
-        pdf.text(`ID do teste: ${testId}`, 70, 55);
-
-        // Rodapé
-        pdf.setFontSize(9);
-        pdf.text(
-          `Página ${pageNum} de ${totalPages}`,
-          pageWidth - 80,
-          pageHeight - 20
-        );
-      };
-
-      // Primeira página
-      addHeaderFooter(++pageCount);
-      pdf.addImage(imgData, "PNG", 20, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight - 100;
-
-      // Páginas subsequentes
-      while (heightLeft > 0) {
-        pdf.addPage();
-        addHeaderFooter(++pageCount);
-        pdf.addImage(
-          imgData,
-          "PNG",
-          20,
-          position - heightLeft,
-          imgWidth,
-          imgHeight
-        );
-        heightLeft -= pageHeight - 100;
-      }
-
-      pdf.save(`resultados_${testId}.pdf`);
-    } catch (err) {
-      console.error("Erro ao exportar PDF:", err);
-    } finally {
-      setExporting(false);
-    }
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
   };
 
   return (
-    <div className="flex justify-end mt-4">
-      <button
-        className="btn btn-primary btn-outline"
-        onClick={handleExportPDF}
-        disabled={exporting}
-      >
-        {exporting ? "Exportando..." : "Exportar PDF"}
+    <div className="flex justify-center mt-6">
+      <button className="btn btn-primary btn-outline" onClick={handlePrint}>
+        🖨️ Imprimir / Salvar como PDF
       </button>
     </div>
   );

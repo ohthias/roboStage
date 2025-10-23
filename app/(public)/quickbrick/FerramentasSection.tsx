@@ -77,7 +77,7 @@ export default function FerramentasSection({
     },
     {
       id: 3,
-      titulo: "Robot Track",
+      titulo: "UNEARTHED Sharks Simulator",
       descricao:
         "Planeje e visualize o percurso do seu robô no tapete, ajustando ângulos e distâncias.",
       categoria: "Simular",
@@ -85,7 +85,7 @@ export default function FerramentasSection({
       image: "/images/quickbrick_robottrack.png",
       link: "/quickbrick/robot-track",
       badge: "Novo!",
-      feitoPor: "Tomboly",
+      feitoPor: "Sharks",
     },
     {
       id: 4,

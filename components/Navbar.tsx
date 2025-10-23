@@ -165,7 +165,7 @@ export function Navbar() {
                   href="/fll-docs"
                   className="btn btn-ghost w-full justify-start"
                 >
-                  Docs
+                  Documentações UNEARTHED
                 </a>
               </li>
             </ul>

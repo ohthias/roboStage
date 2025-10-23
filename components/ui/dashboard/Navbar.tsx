@@ -7,7 +7,7 @@ import {
   SignalIcon,
   SparklesIcon,
   BookOpenIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 import ArrowLeftStartOnRectangleIcon from "@heroicons/react/24/solid/ArrowLeftStartOnRectangleIcon";
 import { useState, useEffect } from "react";
@@ -38,10 +38,11 @@ export default function Navbar({
 
   const linkClass = (section: string) =>
     `flex items-center gap-2 px-3 py-2 pl-4 rounded-full font-semibold w-full
-     ${activeSection === section
-      ? "bg-primary/75 text-primary-content"
-      : "hover:bg-base-200"
-    }`;
+     ${
+       activeSection === section
+         ? "bg-primary/75 text-primary-content"
+         : "hover:bg-base-200"
+     }`;
 
   return (
     <div className="drawer md:drawer-open h-screen z-50">
@@ -67,6 +68,35 @@ export default function Navbar({
                 className="h-10 rounded-full"
               />
             </a>
+            <div className="relative group dropdown dropdown-end">
+              <div
+                className="btn btn-circle hover:scale-105 hover:shadow-md transition-transform duration-200 ease-in-out cursor-pointer hover:bg-base-300"
+                role="button"
+                tabIndex={0}
+              >
+                <Cog6ToothIcon className="size-6" />
+              </div>
+              <span className="absolute bottom-[-35px] right-0 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto bg-neutral text-neutral-content text-sm px-2 py-1 rounded-md shadow-md transition-all duration-200 ease-out">
+                Configurações
+              </span>
+              <ul
+                tabIndex={-1}
+                className="dropdown-content menu bg-base-100 rounded-box z-1 w-30 p-2 shadow-sm"
+              >
+                <li>
+                  <ThemeController />
+                </li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="btn btn-ghost w-full justify-start"
+                  >
+                    <ArrowLeftStartOnRectangleIcon className="size-5 mr-2" />{" "}
+                    Sair
+                  </button>
+                </li>
+              </ul>
+            </div>
             <label htmlFor="app-drawer" className="btn btn-square btn-ghost">
               <i className="fi fi-br-menu-burger text-xl"></i>
             </label>
@@ -117,27 +147,28 @@ export default function Navbar({
                   tabIndex={-1}
                   className="dropdown-content menu bg-base-100 rounded-box z-1 w-30 p-2 shadow-sm"
                 >
-                  <li><ThemeController /></li>
+                  <li>
+                    <ThemeController />
+                  </li>
                   <li>
                     <button
                       onClick={handleLogout}
                       className="btn btn-ghost w-full justify-start"
                     >
-                      <ArrowLeftStartOnRectangleIcon className="size-5 mr-2" /> Sair
+                      <ArrowLeftStartOnRectangleIcon className="size-5 mr-2" />{" "}
+                      Sair
                     </button>
                   </li>
                 </ul>
               </div>
             </div>
           </nav>
-          <div className="px-4 py-4 bg-base-200 min-h-screen">
-            {children}
-          </div>
+          <div className="px-4 py-4 bg-base-200 min-h-screen">{children}</div>
         </main>
       </div>
 
       {/* Sidebar */}
-      <div className="drawer-side">
+      <div className="drawer-side z-50">
         <label
           htmlFor="app-drawer"
           aria-label="close sidebar"
@@ -148,9 +179,7 @@ export default function Navbar({
           <div>
             <span className="text-lg font-bold block mb-4 pb-2">
               Robo
-              <span className="text-primary">
-                Stage
-              </span>
+              <span className="text-primary">Stage</span>
             </span>
 
             <ul className="space-y-2">
@@ -213,7 +242,9 @@ export default function Navbar({
                 </a>
               </li>
             </ul>
-            <div className="divider text-base-content/75">Outras ferramentas</div>
+            <div className="divider text-base-content/75">
+              Outras ferramentas
+            </div>
             <ul className="space-y-2">
               <li>
                 <a
@@ -253,9 +284,7 @@ export default function Navbar({
                   href="#timer"
                   className="group relative inline-block transition-all duration-200 hover:font-semibold bg-transparent"
                   onClick={() => setActiveSection("timer")}
-                  aria-current={
-                    activeSection === "timer" ? "page" : undefined
-                  }
+                  aria-current={activeSection === "timer" ? "page" : undefined}
                 >
                   Timer
                   <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>

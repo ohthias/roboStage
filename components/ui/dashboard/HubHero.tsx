@@ -56,19 +56,6 @@ export default function HubHero() {
                     </ul>
                 </div>
             </div>
-
-            {/* Atividades Recentes */}
-            <section>
-                <h2 className="text-2xl font-bold text-base-content mb-4 border-b border-base-content/75 pb-1 w-fit">
-                    Atividades Recentes
-                </h2>
-                <div className="flex flex-col items-center justify-center gap-4 py-8 border-2 border-dashed border-base-content/25 rounded-lg">
-                    <RectangleGroupIcon className="size-24 text-base-content/50 inline-block mr-2" />
-                    <p className="text-base-content/75">
-                        Nenhuma atividade recente. Comece explorando as ferramentas para gerenciar seus eventos, projetos, ou testes!
-                    </p>
-                </div>
-            </section>
         </section>
     );
 }

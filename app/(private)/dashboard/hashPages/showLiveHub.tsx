@@ -20,7 +20,7 @@ export default function ShowLiveHub() {
 
   if (loading) return <Loader />;
   if (!session) {
-    router.push("/join");
+    router.push("/auth/login");
     return null;
   }
 
@@ -65,7 +65,7 @@ export default function ShowLiveHub() {
     <div>
       <section className="bg-base-100 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300 mb-4">
         <div className="flex items-center gap-4">
-          <SignalIcon className="size-16 text-primary/75" />
+          <SignalIcon className="hidden sm:block size-16 text-primary/75" />
           <div>
             <h2 className="text-base-content font-bold mb-2 text-3xl">
               Show<span className="text-primary">Live</span>

@@ -57,8 +57,12 @@
 
 ## 📝 Atividades Recentes
 
-- Última versão lançada: **v3.0**  
+- Última versão lançada: **v3.1**  
 - Novos recursos e correções de bugs implementados continuamente.  
+
+*Destaques*
+- InnoLab: Crie diagramas focados no projeto
+- Robot Track
 - Confira todos os lançamentos: [Releases](https://github.com/ohthias/roboStage/releases)
 
 ---

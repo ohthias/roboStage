@@ -181,7 +181,7 @@ export default function TimerPage() {
       </div>
 
       {/* Centro: Timer com animação e nova fonte */}
-      <div className="flex-1 flex items-center justify-center relative z-10">
+      <div className="flex-1 flex items-center justify-center relative z-3">
         <motion.div
           key={timeLeft}
           animate={

@@ -5,37 +5,47 @@ import jsPDF from "jspdf";
 import { Square3Stack3DIcon, TrashIcon } from "@heroicons/react/24/solid";
 import CanvaImage from "@/public/images/quickbrick_unearthed.png";
 
+import { saveAs } from "file-saver";
+import JSZip from "jszip";
+import { HandRaisedIcon } from "@heroicons/react/24/outline";
+import { useToast } from "@/app/context/ToastContext";
+
 export default function FLLPaintPro() {
+  const {addToast} = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
 
   // Ferramentas disponíveis
-  type Tool = "line" | "free" | "zone";
-  const [tool, setTool] = useState<Tool>("line");
+  type Tool = "hand" | "line" | "free" | "zone";
+  const [tool, setTool] = useState<Tool>("hand");
 
   const [layers, setLayers] = useState<Layer[]>([
     { id: uuidv4(), name: "Camada 1", visible: true, lines: [], freePaths: [] },
   ]);
   const [activeLayerId, setActiveLayerId] = useState(layers[0].id);
+  const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [currentColor, setCurrentColor] = useState("#ff0000");
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentLine, setCurrentLine] = useState<Line | null>(null);
   const [currentPath, setCurrentPath] = useState<Point[]>([]);
   const [showLabels, setShowLabels] = useState(true);
-
-  type Zone = {
-    id: string;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    color: string;
-    name: string;
-  };
-
+  const [showZones, setShowZones] = useState(true);
   const [zones, setZones] = useState<Zone[]>([]);
   const [isDrawingZone, setIsDrawingZone] = useState(false);
   const [currentZone, setCurrentZone] = useState<Zone | null>(null);
+  const [editingZone, setEditingZone] = useState<{
+    id: string;
+    x: number;
+    y: number;
+    name: string;
+  } | null>(null);
+  const [draggingZone, setDraggingZone] = useState<{
+    id: string;
+    offsetX: number;
+    offsetY: number;
+  } | null>(null);
+  const [exportZones, setExportZones] = useState(false);
+  const [exportLayersSeparadas, setExportLayersSeparadas] = useState(false);
 
   const backgroundImage = CanvaImage.src;
 
@@ -48,7 +58,7 @@ export default function FLLPaintPro() {
     };
   };
 
-  // Renderização
+  // Dentro do useEffect, na parte de desenhar zonas:
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -82,51 +92,61 @@ export default function FLLPaintPro() {
         escalaY
       );
 
-    // Desenha todas as zonas
-    zones.forEach((zone) => {
-      ctx.fillStyle = zone.color + "55";
-      ctx.fillRect(zone.x, zone.y, zone.width, zone.height);
-      ctx.strokeStyle = zone.color;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(zone.x, zone.y, zone.width, zone.height);
+    // Zonas visíveis
+    if (showZones) {
+      zones.forEach((zone) => {
+        ctx.fillStyle = zone.color + "55";
+        ctx.fillRect(zone.x, zone.y, zone.width, zone.height);
+        ctx.strokeStyle = zone.color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(zone.x, zone.y, zone.width, zone.height);
 
-      ctx.font = "14px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "black";
-      ctx.fillText(
-        zone.name,
-        zone.x + zone.width / 2,
-        zone.y + zone.height / 2
-      );
-    });
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "black";
+        ctx.fillText(
+          zone.name,
+          zone.x + zone.width / 2,
+          zone.y + zone.height / 2
+        );
+      });
 
-    // Zona atual sendo desenhada
-    if (currentZone) {
-      ctx.fillStyle = currentZone.color + "55";
-      ctx.fillRect(
-        currentZone.x,
-        currentZone.y,
-        currentZone.width,
-        currentZone.height
-      );
-      ctx.strokeStyle = currentZone.color;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(
-        currentZone.x,
-        currentZone.y,
-        currentZone.width,
-        currentZone.height
-      );
+      // Zona atual sendo desenhada
+      if (currentZone) {
+        ctx.fillStyle = currentZone.color + "55";
+        ctx.fillRect(
+          currentZone.x,
+          currentZone.y,
+          currentZone.width,
+          currentZone.height
+        );
+        ctx.strokeStyle = currentZone.color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(
+          currentZone.x,
+          currentZone.y,
+          currentZone.width,
+          currentZone.height
+        );
 
-      ctx.fillStyle = "black";
-      ctx.fillText(
-        currentZone.name,
-        currentZone.x + currentZone.width / 2,
-        currentZone.y + currentZone.height / 2
-      );
+        ctx.fillStyle = "black";
+        ctx.fillText(
+          currentZone.name,
+          currentZone.x + currentZone.width / 2,
+          currentZone.y + currentZone.height / 2
+        );
+      }
     }
-  }, [layers, currentLine, currentPath, showLabels, zones, currentZone]);
+  }, [
+    layers,
+    currentLine,
+    currentPath,
+    showLabels,
+    zones,
+    currentZone,
+    showZones,
+  ]);
 
   const drawLine = (
     ctx: CanvasRenderingContext2D,
@@ -277,7 +297,24 @@ export default function FLLPaintPro() {
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     const pos = getPos(e);
 
-    // Cria linha ou path normalmente
+    // Se estiver desenhando uma zona, ignora qualquer outro tipo de desenho
+    if (tool === "zone") {
+      const newZone: Zone = {
+        id: uuidv4(),
+        x: pos.x,
+        y: pos.y,
+        width: 0,
+        height: 0,
+        color: currentColor,
+        name: `Zona ${zones.length + 1}`,
+      };
+      setCurrentZone(newZone);
+      setIsDrawingZone(true);
+      setIsDrawing(true);
+      return; // <- impede a criação de linha/path
+    }
+
+    // Lógica normal para linha ou desenho livre
     if (tool === "line") {
       setCurrentLine({
         x1: pos.x,
@@ -286,54 +323,53 @@ export default function FLLPaintPro() {
         y2: pos.y,
         color: currentColor,
       });
-    } else {
+    } else if (tool === "free") {
       setCurrentPath([{ x: pos.x, y: pos.y }]);
     }
-    setIsDrawing(true);
 
-    // Cria zona automaticamente
-    const newZone: Zone = {
-      id: uuidv4(),
-      x: pos.x,
-      y: pos.y,
-      width: 0,
-      height: 0,
-      color: currentColor,
-      name: `Zona ${zones.length + 1}`,
-    };
-    setCurrentZone(newZone);
-    setIsDrawingZone(true);
+    setIsDrawing(true);
   };
 
   const drawMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDrawing) return;
     const pos = getPos(e);
 
-    // Atualiza linha ou path
-    if (currentLine) setCurrentLine({ ...currentLine, x2: pos.x, y2: pos.y });
-    if (currentPath.length > 0)
-      setCurrentPath((prev) => [...prev, { x: pos.x, y: pos.y }]);
-
-    // Atualiza zona
-    if (currentZone) {
+    // Atualiza zona se for o modo zona
+    if (tool === "zone" && currentZone) {
       setCurrentZone({
         ...currentZone,
         width: pos.x - currentZone.x,
         height: pos.y - currentZone.y,
       });
+      return; // <- impede atualização de linha/path
     }
+
+    // Atualiza linha ou path
+    if (tool === "line" && currentLine)
+      setCurrentLine({ ...currentLine, x2: pos.x, y2: pos.y });
+
+    if (tool === "free" && currentPath.length > 0)
+      setCurrentPath((prev) => [...prev, { x: pos.x, y: pos.y }]);
   };
 
   const endDrawing = () => {
     if (!isDrawing) return;
 
+    if (tool === "zone" && currentZone) {
+      setZones((prev) => [...prev, currentZone]);
+      setCurrentZone(null);
+      setIsDrawing(false);
+      setIsDrawingZone(false);
+      return; // <- impede salvar linha/path
+    }
+
     // Salva linha ou path na camada ativa
     setLayers((prev) =>
       prev.map((layer) => {
         if (layer.id !== activeLayerId) return layer;
-        if (currentLine)
+        if (tool === "line" && currentLine)
           return { ...layer, lines: [...layer.lines, currentLine] };
-        if (currentPath.length > 0)
+        if (tool === "free" && currentPath.length > 0)
           return {
             ...layer,
             freePaths: [
@@ -345,15 +381,80 @@ export default function FLLPaintPro() {
       })
     );
 
-    // Salva zona
-    if (currentZone) setZones((prev) => [...prev, currentZone]);
-
     // Reset
     setCurrentLine(null);
     setCurrentPath([]);
-    setCurrentZone(null);
     setIsDrawing(false);
-    setIsDrawingZone(false);
+  };
+
+  // Detectar clique em zona existente
+  const handleZoneClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (tool !== "hand") return; // Só renomeia se estiver no modo "hand"
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const clickedZone = zones.find(
+      (z) => x >= z.x && x <= z.x + z.width && y >= z.y && y <= z.y + z.height
+    );
+
+    if (clickedZone) {
+      setEditingZone({
+        id: clickedZone.id,
+        x: clickedZone.x + rect.left,
+        y: clickedZone.y + rect.top,
+        name: clickedZone.name,
+      });
+    } else {
+      setEditingZone(null);
+    }
+  };
+
+  // Atualiza nome da zona ao editar
+  const handleZoneRename = (id: string, newName: string) => {
+    setZones((prev) =>
+      prev.map((z) => (z.id === id ? { ...z, name: newName } : z))
+    );
+    setEditingZone(null);
+  };
+
+  const handleZoneMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (tool !== "hand") return;
+
+    const rect = canvasRef.current!.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const clickedZone = zones.find(
+      (z) => x >= z.x && x <= z.x + z.width && y >= z.y && y <= z.y + z.height
+    );
+
+    if (clickedZone) {
+      // Preparar para mover
+      setDraggingZone({
+        id: clickedZone.id,
+        offsetX: x - clickedZone.x,
+        offsetY: y - clickedZone.y,
+      });
+      setEditingZone(null); // Desativa input ao arrastar
+    } else {
+      setEditingZone(null);
+    }
+  };
+
+  const handleZoneMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!draggingZone) return;
+    const rect = canvasRef.current!.getBoundingClientRect();
+    const x = e.clientX - rect.left - draggingZone.offsetX;
+    const y = e.clientY - rect.top - draggingZone.offsetY;
+    setZones((prev) =>
+      prev.map((z) => (z.id === draggingZone.id ? { ...z, x, y } : z))
+    );
+  };
+
+  const handleZoneMouseUp = () => {
+    setDraggingZone(null);
   };
 
   // Carregar imagem da mesa
@@ -405,16 +506,16 @@ export default function FLLPaintPro() {
   };
 
   const clearAll = () => {
-    setLayers([
-      {
-        id: uuidv4(),
-        name: "Camada 1",
-        visible: true,
-        lines: [],
-        freePaths: [],
-      },
-    ]);
-    setActiveLayerId(layers[0].id);
+    const newLayer = {
+      id: uuidv4(),
+      name: "Camada 1",
+      visible: true,
+      lines: [],
+      freePaths: [],
+    };
+    setLayers([newLayer]);
+    setActiveLayerId(newLayer.id);
+    setZones([]);
   };
 
   const undoLast = () => {
@@ -430,18 +531,242 @@ export default function FLLPaintPro() {
         return layer;
       })
     );
+
+    if (tool === "zone" && zones.length > 0) {
+      setZones((prev) => prev.slice(0, -1));
+    }
   };
 
-  const exportPNG = () => {
-    const dataURL = canvasRef.current!.toDataURL("image/png");
+  const exportPNG = async () => {
+    addToast("Exportando imagem...", "info");
+    const canvas = canvasRef.current!;
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const ctx = tempCanvas.getContext("2d")!;
+    const { escalaX, escalaY } = getScale();
+
+    // Exportar camadas separadas
+    if (exportLayersSeparadas) {
+      const zip = new JSZip();
+
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext("2d")!;
+
+      for (const layer of layers) {
+        if (!layer.visible) continue;
+
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+        // Fundo
+        if (imgRef.current)
+          tempCtx.drawImage(
+            imgRef.current,
+            0,
+            0,
+            tempCanvas.width,
+            tempCanvas.height
+          );
+
+        // Apenas a camada atual
+        layer.lines.forEach((line) =>
+          drawLine(tempCtx, line, escalaX, escalaY, showLabels)
+        );
+        layer.freePaths.forEach((path) =>
+          drawPath(tempCtx, path, escalaX, escalaY)
+        );
+
+        // Zonas
+        if (exportZones) {
+          zones.forEach((zone) => {
+            tempCtx.fillStyle = zone.color + "55";
+            tempCtx.fillRect(zone.x, zone.y, zone.width, zone.height);
+            tempCtx.strokeStyle = zone.color;
+            tempCtx.lineWidth = 2;
+            tempCtx.strokeRect(zone.x, zone.y, zone.width, zone.height);
+
+            tempCtx.font = "14px Arial";
+            tempCtx.textAlign = "center";
+            tempCtx.textBaseline = "middle";
+            tempCtx.fillStyle = "black";
+            tempCtx.fillText(
+              zone.name,
+              zone.x + zone.width / 2,
+              zone.y + zone.height / 2
+            );
+          });
+        }
+
+        const dataURL = tempCanvas.toDataURL("image/png");
+        const base64 = dataURL.split(",")[1];
+        zip.file(`${layer.name}.png`, base64, { base64: true });
+      }
+
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, "camadas.zip");
+      addToast("Imagem exportada com sucesso!", "success");
+      return;
+    }
+
+    // Exportação normal (todas camadas visíveis e/ou zonas)
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (imgRef.current)
+      ctx.drawImage(imgRef.current, 0, 0, canvas.width, canvas.height);
+
+    layers.forEach((layer) => {
+      if (!layer.visible) return;
+      layer.lines.forEach((line) =>
+        drawLine(ctx, line, escalaX, escalaY, showLabels)
+      );
+      layer.freePaths.forEach((path) => drawPath(ctx, path, escalaX, escalaY));
+    });
+
+    if (exportZones) {
+      zones.forEach((zone) => {
+        ctx.fillStyle = zone.color + "55";
+        ctx.fillRect(zone.x, zone.y, zone.width, zone.height);
+        ctx.strokeStyle = zone.color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(zone.x, zone.y, zone.width, zone.height);
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "black";
+        ctx.fillText(
+          zone.name,
+          zone.x + zone.width / 2,
+          zone.y + zone.height / 2
+        );
+      });
+    }
+    addToast("Imagem exportada com sucesso!", "success");
+    const dataURL = tempCanvas.toDataURL("image/png");
     const a = document.createElement("a");
     a.href = dataURL;
     a.download = "fll-quickbrick.png";
     a.click();
   };
 
-  const exportPDF = () => {
-    const dataURL = canvasRef.current!.toDataURL("image/png");
+  const exportPDF = async () => {
+    addToast("Exportando PDF...", "info");
+    const canvas = canvasRef.current!;
+    const { escalaX, escalaY } = getScale();
+
+    // Exportar camadas separadas
+    if (exportLayersSeparadas) {
+      const zip = new JSZip();
+
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext("2d")!;
+
+      for (const layer of layers) {
+        if (!layer.visible) continue;
+
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+        // Fundo
+        if (imgRef.current)
+          tempCtx.drawImage(
+            imgRef.current,
+            0,
+            0,
+            tempCanvas.width,
+            tempCanvas.height
+          );
+
+        // Apenas a camada atual
+        layer.lines.forEach((line) =>
+          drawLine(tempCtx, line, escalaX, escalaY, showLabels)
+        );
+        layer.freePaths.forEach((path) =>
+          drawPath(tempCtx, path, escalaX, escalaY)
+        );
+
+        // Zonas, se quiser
+        if (exportZones) {
+          zones.forEach((zone) => {
+            tempCtx.fillStyle = zone.color + "55";
+            tempCtx.fillRect(zone.x, zone.y, zone.width, zone.height);
+            tempCtx.strokeStyle = zone.color;
+            tempCtx.lineWidth = 2;
+            tempCtx.strokeRect(zone.x, zone.y, zone.width, zone.height);
+
+            tempCtx.font = "14px Arial";
+            tempCtx.textAlign = "center";
+            tempCtx.textBaseline = "middle";
+            tempCtx.fillStyle = "black";
+            tempCtx.fillText(
+              zone.name,
+              zone.x + zone.width / 2,
+              zone.y + zone.height / 2
+            );
+          });
+        }
+
+        const dataURL = tempCanvas.toDataURL("image/png");
+        const pdf = new jsPDF("l", "mm", "a4");
+        pdf.addImage(dataURL, "PNG", 0, 0, 297, 210);
+
+        const pdfBlob = pdf.output("blob");
+        zip.file(`${layer.name}.pdf`, pdfBlob);
+      }
+
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, "camadas-pdf.zip");
+      addToast("PDF exportado com sucesso!", "success");
+      return;
+    }
+
+    // Exportação normal (todas camadas visíveis e/ou zonas)
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext("2d")!;
+
+    // Fundo
+    if (imgRef.current)
+      tempCtx.drawImage(
+        imgRef.current,
+        0,
+        0,
+        tempCanvas.width,
+        tempCanvas.height
+      );
+
+    layers.forEach((layer) => {
+      if (!layer.visible) return;
+      layer.lines.forEach((line) =>
+        drawLine(tempCtx, line, escalaX, escalaY, showLabels)
+      );
+      layer.freePaths.forEach((path) =>
+        drawPath(tempCtx, path, escalaX, escalaY)
+      );
+    });
+
+    if (exportZones) {
+      zones.forEach((zone) => {
+        tempCtx.fillStyle = zone.color + "55";
+        tempCtx.fillRect(zone.x, zone.y, zone.width, zone.height);
+        tempCtx.strokeStyle = zone.color;
+        tempCtx.lineWidth = 2;
+        tempCtx.strokeRect(zone.x, zone.y, zone.width, zone.height);
+        tempCtx.font = "14px Arial";
+        tempCtx.textAlign = "center";
+        tempCtx.textBaseline = "middle";
+        tempCtx.fillStyle = "black";
+        tempCtx.fillText(
+          zone.name,
+          zone.x + zone.width / 2,
+          zone.y + zone.height / 2
+        );
+      });
+    }
+    addToast("PDF exportado com sucesso!", "success");
+    const dataURL = tempCanvas.toDataURL("image/png");
     const pdf = new jsPDF("l", "mm", "a4");
     pdf.addImage(dataURL, "PNG", 0, 0, 297, 210);
     pdf.save("fll-quickbrick.pdf");
@@ -452,6 +777,21 @@ export default function FLLPaintPro() {
       {/* Painel lateral */}
       <div className="w-full md:w-64 flex flex-col gap-2 bg-base-200 border border-base-300 shadow-md p-4 rounded-lg justify-between">
         <div className="flex gap-2 items-center justify-center">
+          <div
+            className="tooltip tooltip-bottom animate-fade-in"
+            data-tip="Mão livre (interação)"
+          >
+            <button
+              onClick={() => setTool("hand")}
+              className={`btn btn-soft border border-neutral ${
+                tool === "hand" ? "btn-primary border-primary" : ""
+              } cursor-pointer`}
+              title="Mão livre"
+              style={{ lineHeight: 0 }}
+            >
+              <HandRaisedIcon className="size-6" />
+            </button>
+          </div>
           <div
             className="tooltip tooltip-bottom animate-fade-in"
             data-tip="Linha com régua"
@@ -499,7 +839,7 @@ export default function FLLPaintPro() {
           </div>
         </div>
         <div className="flex flex-row">
-          <label className="font-semibold flex items-center label-text text-sm border-r border-base-300 pr-2">
+          <label className="font-semibold flex items-center label-text text-sm">
             Cor:
             <input
               type="color"
@@ -507,15 +847,6 @@ export default function FLLPaintPro() {
               onChange={(e) => setCurrentColor(e.target.value)}
               className="ml-2 cursor-pointer w-6 h-6"
             />
-          </label>
-          <label className="font-semibold flex items-center label-text text-sm flex items-center gap-2 pl-2">
-            <input
-              type="checkbox"
-              className="toggle toggle-primary bg-base-200 checked:bg-primary/50 toggle-sm"
-              checked={showLabels}
-              onChange={() => setShowLabels(!showLabels)}
-            />
-            <span className="label-text font-bold">Exibir legendas</span>
           </label>
         </div>
 
@@ -537,7 +868,30 @@ export default function FLLPaintPro() {
               onClick={() => setActiveLayerId(layer.id)}
             >
               <div className="flex justify-between items-center w-full">
-                <span>{layer.name}</span>
+                {editingLayerId === layer.id ? (
+                  <input
+                    type="text"
+                    value={layer.name}
+                    autoFocus
+                    onChange={(e) => {
+                      setLayers((prev) =>
+                        prev.map((l) =>
+                          l.id === layer.id ? { ...l, name: e.target.value } : l
+                        )
+                      );
+                    }}
+                    onBlur={() => setEditingLayerId(null)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") setEditingLayerId(null);
+                      else if (e.key === "Escape") setEditingLayerId(null);
+                    }}
+                    className="input input-bordered w-full input-info input-sm"
+                  />
+                ) : (
+                  <span onDoubleClick={() => setEditingLayerId(layer.id)}>
+                    {layer.name}
+                  </span>
+                )}
                 <div className="flex gap-2">
                   <button
                     onClick={(e) => {
@@ -616,6 +970,16 @@ export default function FLLPaintPro() {
         </button>
         <button
           onClick={() => {
+            if (zones.length > 0 && window.confirm("Limpar todas as zonas?")) {
+              setZones([]);
+            }
+          }}
+          className="btn btn-soft btn-error"
+        >
+          <i className="fi fi-bs-square-x"></i> Limpar Zonas
+        </button>
+        <button
+          onClick={() => {
             if (
               window.confirm("Tem certeza que deseja limpar todas as camadas?")
             ) {
@@ -629,57 +993,161 @@ export default function FLLPaintPro() {
         </button>
 
         <hr className="border border-gray-300 my-2 w-1/2 mx-auto" />
-        <div className="dropdown">
-          <label tabIndex={0} className="btn btn-soft btn-accent ml-auto">
-            Exportar <i className="fi fi-bs-download ml-2"></i>
-          </label>
-          <ul
-            tabIndex={0}
-            className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-44"
-          >
-            <li>
-              <button
-                onClick={exportPNG}
-                className="btn btn-ghost justify-start w-full"
-              >
-                <i className="fi fi-bs-picture mr-2"></i> PNG
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={exportPDF}
-                className="btn btn-ghost justify-start w-full"
-              >
-                <i className="fi fi-bs-file-pdf mr-2"></i> PDF
-              </button>
-            </li>
-          </ul>
+        <div className="flex flex-row justify-between items-center">
+          <div className="dropdown">
+            <label tabIndex={0} className="btn btn-soft btn-accent ml-auto">
+              Exportar <i className="fi fi-bs-download ml-2"></i>
+            </label>
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-44"
+            >
+              <li>
+                <button
+                  onClick={exportPNG}
+                  className="btn btn-ghost justify-start w-full"
+                >
+                  <i className="fi fi-bs-picture mr-2"></i> PNG
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={exportPDF}
+                  className="btn btn-ghost justify-start w-full"
+                >
+                  <i className="fi fi-bs-file-pdf mr-2"></i> PDF
+                </button>
+              </li>
+            </ul>
+          </div>
+          <div className="dropdown">
+            <label tabIndex={0} className="btn btn-soft btn-accent ml-2">
+              Opções <i className="fi fi-bs-sliders ml-2"></i>
+            </label>
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56"
+            >
+              <li className="p-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary bg-base-200 checked:bg-primary/50 toggle-sm"
+                    checked={showLabels}
+                    onChange={() => setShowLabels(!showLabels)}
+                  />
+                  <span className="text-sm">Exibir legendas</span>
+                </label>
+              </li>
+              <li className="p-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary bg-base-200 checked:bg-primary/50 toggle-sm"
+                    checked={showZones}
+                    onChange={() => setShowZones(!showZones)}
+                  />
+                  <span className="text-sm">Exibir zonas</span>
+                </label>
+              </li>
+              <div className="divider">Exportação</div>
+              <li className="p-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary bg-base-200 checked:bg-primary/50 toggle-sm"
+                    checked={exportZones}
+                    onChange={() => setExportZones(!exportZones)}
+                  />
+                  <span className="text-sm">Exportar Zonas</span>
+                </label>
+              </li>
+              <li className="p-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary bg-base-200 checked:bg-primary/50 toggle-sm"
+                    checked={exportLayersSeparadas}
+                    onChange={() =>
+                      setExportLayersSeparadas(!exportLayersSeparadas)
+                    }
+                  />
+                  <span className="text-sm">Exportar Camadas Separadas</span>
+                </label>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
+      {/* Canvas principal */}
+      <div className="relative">
+        <canvas
+          ref={canvasRef}
+          width={1000}
+          height={(1000 * 115) / 200}
+          style={{
+            border: "2px solid black",
+            maxWidth: "100%",
+            maxHeight: "100%",
+            height: "auto",
+            width: "auto",
+            cursor: isDrawing ? "crosshair" : "default",
+            borderRadius: "8px",
+            borderColor: "#d6d6d6",
+          }}
+          onMouseDown={(e) => {
+            startDrawing(e);
+            handleZoneMouseDown(e);
+          }}
+          onMouseMove={(e) => {
+            drawMove(e);
+            handleZoneMouseMove(e);
+          }}
+          onMouseUp={(e) => {
+            endDrawing();
+            handleZoneMouseUp();
+          }}
+          onMouseLeave={(e) => {
+            endDrawing();
+            handleZoneMouseUp();
+          }}
+          onTouchStart={startDrawing}
+          onTouchMove={drawMove}
+          onTouchEnd={endDrawing}
+          onClick={handleZoneClick}
+        />
 
-      {/* Área de desenho */}
-      <canvas
-        ref={canvasRef}
-        width={1000}
-        height={(1000 * 115) / 200}
-        style={{
-          border: "2px solid black",
-          maxWidth: "100%",
-          maxHeight: "100%",
-          height: "auto",
-          width: "auto",
-          cursor: isDrawing ? "crosshair" : "default",
-          borderRadius: "8px",
-          borderColor: "#d6d6d6",
-        }}
-        onMouseDown={startDrawing}
-        onMouseMove={drawMove}
-        onMouseUp={endDrawing}
-        onMouseLeave={endDrawing}
-        onTouchStart={startDrawing}
-        onTouchMove={drawMove}
-        onTouchEnd={endDrawing}
-      />
+        {/* Campo de edição flutuante centralizado */}
+        {editingZone && (
+          <div className="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-black/20 z-50">
+            <input
+              type="text"
+              value={editingZone.name}
+              autoFocus
+              onChange={(e) =>
+                setEditingZone({ ...editingZone, name: e.target.value })
+              }
+              onBlur={() => handleZoneRename(editingZone.id, editingZone.name)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter")
+                  handleZoneRename(editingZone.id, editingZone.name);
+                else if (e.key === "Escape") setEditingZone(null);
+              }}
+              style={{
+                background: "rgba(255, 255, 255, 0.8)",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                padding: "10px 14px",
+                fontSize: "16px",
+                width: "220px",
+                textAlign: "center",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                backdropFilter: "blur(8px)",
+              }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

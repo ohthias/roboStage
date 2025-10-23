@@ -200,15 +200,6 @@ export default function AccountSettings() {
             </p>
           </div>
         </div>
-
-        {/* Botão editar */}
-        <button
-          onClick={() => setOpenEditModal(true)}
-          className="btn btn-sm btn-outline btn-primary absolute top-4 right-4 flex items-center gap-1"
-        >
-          <PencilSquareIcon className="w-4 h-4" />
-          Editar Perfil
-        </button>
       </div>
 
       {/* Estatísticas */}

@@ -11,6 +11,7 @@
   "dependencies": {
     "@flaticon/flaticon-uicons": "^3.3.1",
     "@heroicons/react": "^2.2.0",
+    "@react-pdf/renderer": "^4.3.1",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/realtime-js": "^2.15.5",
     "@supabase/ssr": "^0.6.1",
@@ -23,6 +24,7 @@
     "file-saver": "^2.0.5",
     "framer-motion": "^12.23.12",
     "html2canvas-pro": "^1.5.11",
+    "html2pdf.js": "^0.12.1",
     "js-cookie": "^3.0.5",
     "jspdf": "^3.0.1",
     "jszip": "^3.10.1",

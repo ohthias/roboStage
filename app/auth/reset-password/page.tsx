@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/utils/supabase/client";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -11,6 +11,29 @@ export default function ResetPasswordPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const handleRecoverySession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error("Erro ao obter sessão:", error.message);
+      }
+
+      if (!data.session) {
+        const { error: hashError } = await supabase.auth.exchangeCodeForSession(
+          window.location.hash
+        );
+
+        if (hashError) {
+          console.error("Erro ao trocar token:", hashError.message);
+          setStatus("O link de redefinição é inválido ou expirou.");
+        }
+      }
+    };
+
+    handleRecoverySession();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,16 +45,14 @@ export default function ResetPasswordPage() {
     }
 
     setLoading(true);
-
     const { error } = await supabase.auth.updateUser({ password });
-
     setLoading(false);
 
     if (error) {
       setStatus(error.message);
     } else {
-      setStatus("Senha redefinida com sucesso! Faça login novamente.");
-        router.push("/auth/login");
+      setStatus("Senha redefinida com sucesso! Redirecionando...");
+      setTimeout(() => router.push("/auth/login"), 1500);
     }
   };
 
@@ -43,7 +64,7 @@ export default function ResetPasswordPage() {
             src="/images/logos/Icone.png"
             alt="Logo"
             className="h-12 w-auto hover:scale-105 transition-transform bg-base-100/50 rounded-full p-1"
-            style={{ backdropFilter: 'blur(10px)' }}
+            style={{ backdropFilter: "blur(10px)" }}
           />
         </Link>
       </div>
@@ -61,7 +82,9 @@ export default function ResetPasswordPage() {
             {status && (
               <p
                 className={`text-center text-sm mb-2 ${
-                  status.includes("sucesso") ? "text-green-500" : "text-red-500"
+                  status.includes("sucesso")
+                    ? "text-green-500"
+                    : "text-red-500"
                 }`}
               >
                 {status}
@@ -97,10 +120,19 @@ export default function ResetPasswordPage() {
 
               <button
                 type="submit"
-                className="btn btn-primary w-full mt-6"
+                className={`btn btn-primary w-full mt-6 ${
+                  loading ? "opacity-60 cursor-not-allowed" : ""
+                }`}
                 disabled={loading}
               >
-                {loading ? "Atualizando..." : "Redefinir Senha"}
+                {loading ? (
+                  <>
+                    <span className="loading loading-spinner"></span>
+                    Atualizando...
+                  </>
+                ) : (
+                  "Redefinir Senha"
+                )}
               </button>
             </form>
 

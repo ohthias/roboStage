@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 export default function LoginPage() {
   const { login, loading, error, success } = useAuth();
@@ -133,13 +134,15 @@ export default function LoginPage() {
                 </Link>
               </label>
 
-              <button
+              <motion.button
                 type="submit"
                 className="btn btn-primary w-full mt-6"
                 disabled={loading}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 {loading ? "Entrando..." : "Entrar"}
-              </button>
+              </motion.button>
             </form>
 
             <p className="text-center mt-4">

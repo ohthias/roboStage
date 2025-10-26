@@ -63,7 +63,33 @@ export function useAuth() {
     setLoading(false);
 
     if (error) {
-      setError(error.message);
+      const errMsg = ((): string => {
+      const e: any = error;
+      const msg = (e?.message ?? "").toString().toLowerCase();
+
+      if (e?.status === 400 || e?.status === 401) {
+        return "Credenciais inválidas. Verifique seu e-mail e senha.";
+      }
+
+      if (/invalid|credentials|password|not found|user not found/.test(msg)) {
+        return "Credenciais inválidas. Verifique seu e-mail e senha.";
+      }
+
+      if (/confirm|verification|verify/.test(msg)) {
+        return "E-mail não confirmado. Verifique sua caixa de entrada para ativar sua conta.";
+      }
+
+      if (/network|timeout|fetch|failed to fetch/.test(msg)) {
+        return "Erro de rede. Verifique sua conexão e tente novamente.";
+      }
+
+      return e?.message
+        ? `Falha ao realizar login: ${e.message}`
+        : "Falha ao realizar login.";
+      })();
+
+      setError(errMsg);
+      setLoading(false);
       return false;
     }
 

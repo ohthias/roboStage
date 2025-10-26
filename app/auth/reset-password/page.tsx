@@ -22,7 +22,7 @@ export default function ResetPasswordPage() {
 
       if (!data.session) {
         const { error: hashError } = await supabase.auth.exchangeCodeForSession(
-          window.location.hash
+          window.location.hash.substring(1)
         );
 
         if (hashError) {

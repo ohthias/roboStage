@@ -1,4 +1,5 @@
 import { ToastProvider } from "@/app/context/ToastContext";
+import { UserProvider } from "@/app/context/UserContext";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export default function DashboardLayout({
 }>) {
   return (
     <main>
-      <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>{children}</ToastProvider>
     </main>
   );
 }

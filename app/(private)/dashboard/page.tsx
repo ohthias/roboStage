@@ -26,6 +26,11 @@ export default function Dashboard() {
 
   const logout = async () => {
     await supabase.auth.signOut();
+
+    // Limpa cookies do Supabase
+    document.cookie = "sb-access-token=; path=/; max-age=0";
+    document.cookie = "sb-refresh-token=; path=/; max-age=0";
+
     router.push("/auth/login");
   };
 

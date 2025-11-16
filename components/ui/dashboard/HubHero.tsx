@@ -48,7 +48,7 @@ export default function HubHero() {
                             <span className="font-semibold">Gerenciar Tempo:</span> Utilize o Timer para controlar o tempo durante competições e testes.
                         </li>
                         <li>
-                            <span className="font-semibold">Inovar com Diagramas:</span> Use o InnoLab para criar diagramas que ajudem a visualizar e planejar seus projetos.
+                            <span className="font-semibold">Inovar com Diagramas:</span> Use o InnoLab para criar diagramas que ajudem a visualizar e planejar seus projetos. <i className="text-primary">Em correções</i>
                         </li>
                         <li>
                             <span className="font-semibold">Configurar Perfil:</span> Atualize suas informações pessoais e preferências na seção de Configurações.

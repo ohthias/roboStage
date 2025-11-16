@@ -11,6 +11,7 @@ import { useLabTests } from "@/hooks/useLabTests";
 import TestTabs from "../labtest/components/TestTabs";
 import TestList from "../labtest/components/TestList";
 import ResultsList from "../labtest/components/ResultsList";
+import { supabase } from "@/utils/supabase/client";
 
 export default function LabTestPage() {
   const { tests, setTests, testTypes, loading, refetch } = useLabTests();
@@ -69,7 +70,8 @@ export default function LabTestPage() {
   const handleDelete = (testId: string) => {
     modalConfirmRef.current?.open("Tem certeza que deseja excluir este teste?", async () => {
       try {
-        await fetch("/api/delete-test", { method: "POST", body: JSON.stringify({ id: testId }) }); // keep your Supabase delete or call supabase directly
+        const { error } = await supabase.from("tests").delete().eq("id", testId);
+        if (error) throw error;
         setTests((prev: any[]) => prev.filter((t) => t.id !== testId));
         addToast("Teste excluído com sucesso!", "success");
       } catch (err) {
@@ -83,8 +85,9 @@ export default function LabTestPage() {
     modalInputRef.current?.open(oldName, async (newName) => {
       if (newName && newName.trim() && newName !== oldName) {
         try {
-          // update via supabase
-          // await supabase.from("tests").update({ name_test: newName }).eq("id", testId);
+          const { error } = await supabase.from("tests").update({ name_test: newName }).eq("id", testId);
+          if (error) throw error;
+          
           setTests((prev: any[]) => prev.map((t) => (t.id === testId ? { ...t, name_test: newName } : t)));
           addToast("Nome do teste atualizado com sucesso!", "success");
         } catch (err) {

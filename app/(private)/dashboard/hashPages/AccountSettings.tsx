@@ -174,12 +174,7 @@ export default function AccountSettings() {
     <section className="pb-12 space-y-8 max-w-5xl mx-auto">
       {/* Banner do Perfil */}
       <div
-        className="hero rounded-xl shadow-lg relative bg-base-100"
-        style={{
-          backgroundImage: bannerUrl ? `url(${bannerUrl})` : undefined,
-          backgroundPosition: "center",
-          backgroundSize: "cover",
-        }}
+        className="hero rounded-xl shadow-lg relative bg-gradient-to-r from-accent/50 to-base-300 border border-base-300"
       >
         <div className="hero-content w-full flex flex-col md:flex-row items-center gap-6 p-6 md:p-10">
           <div className="relative">

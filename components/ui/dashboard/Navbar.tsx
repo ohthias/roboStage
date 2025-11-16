@@ -207,18 +207,6 @@ export default function Navbar({
               </li>
               <li>
                 <a
-                  href="#innoLab"
-                  onClick={() => setActiveSection("innoLab")}
-                  className={linkClass("innoLab")}
-                  aria-current={
-                    activeSection === "innoLab" ? "page" : undefined
-                  }
-                >
-                  <BookOpenIcon className="size-6" /> InnoLab
-                </a>
-              </li>
-              <li>
-                <a
                   href="#showLive"
                   onClick={() => setActiveSection("showLive")}
                   className={linkClass("showLive")}
@@ -263,19 +251,6 @@ export default function Navbar({
                   className="group relative inline-block transition-all duration-200 hover:font-semibold bg-transparent"
                 >
                   Pontuador UNEARTHED
-                  <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#brainShot"
-                  className="group relative inline-block transition-all duration-200 hover:font-semibold bg-transparent"
-                  onClick={() => setActiveSection("brainShot")}
-                  aria-current={
-                    activeSection === "brainShot" ? "page" : undefined
-                  }
-                >
-                  Jogo rápido (BrainShot)
                   <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </a>
               </li>

@@ -69,7 +69,7 @@ export function Navbar() {
               </li>
 
               <li>
-                <a href="/about" className="hover:text-primary">
+                <a href="/flash-qa" className="hover:text-primary">
                   Flash Q&A
                 </a>
               </li>

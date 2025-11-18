@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import html2canvas from "html2canvas-pro";
@@ -32,23 +33,32 @@ const iconMap = {
 };
 
 export const StrategyBoard: React.FC = () => {
-  // --- State with Local Storage Persistence ---
-  const [swotData, setSwotData] = useState<SwotState>(() => {
-    const saved = localStorage.getItem("fll_swot_data");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        localStorage.removeItem("fll_swot_data");
+  const [swotData, setSwotData] = useState<SwotState>({
+    strengths: [],
+    weaknesses: [],
+    opportunities: [],
+    threats: [],
+  });
+
+  // 🟦 Carregar do localStorage APENAS no navegador
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("fll_swot_data");
+      if (saved) {
+        try {
+          setSwotData(JSON.parse(saved));
+        } catch {
+          localStorage.removeItem("fll_swot_data");
+        }
       }
     }
-    return {
-      strengths: [],
-      weaknesses: [],
-      opportunities: [],
-      threats: [],
-    };
-  });
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("fll_swot_data", JSON.stringify(swotData));
+    }
+  }, [swotData]);
 
   const [isExporting, setIsExporting] = useState(false);
 

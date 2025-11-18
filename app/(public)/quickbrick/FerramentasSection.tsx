@@ -38,7 +38,7 @@ export default function FerramentasSection({
     },
     {
       id: 2,
-      titulo: "Matriz de Missões SWOT",
+      titulo: "Matriz SWOT das Missões",
       descricao:
         "Escolha uma temporada para organizar as missões em Forças, Fraquezas, Oportunidades e Ameaças.",
       categoria: "Documentar",

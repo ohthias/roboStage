@@ -149,7 +149,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         <button role="tab" className="tab tab-active">
           Geral
         </button>
-        <button role="tab" className="tab">
+        {/* Placeholder tab, not yet implemented */}
+        <button role="tab" className="tab" disabled>
           CODE:on
         </button>
       </nav>

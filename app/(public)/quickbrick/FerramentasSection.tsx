@@ -111,7 +111,7 @@ export default function FerramentasSection({
       id: 6,
       titulo: "Tabela de análise de missões",
       descricao:
-        "Organize e visualize as missões do seu projeto de forma clara e eficiente.",
+        "Organize e Analise as missões da temporada UNEARTHED de forma prática.",
       categoria: "Documentar",
       icon: <DocumentTextIcon className="w-5 h-5" />,
       link: "/quickbrick/tabela-de-analise-de-missoes",
@@ -127,7 +127,7 @@ export default function FerramentasSection({
               <div
                 key={s}
                 className="card w-24 aspect-square bg-base-200 hover:bg-base-300 border border-base-300 hover:border-secondary transition-all duration-200 cursor-pointer"
-                onClick={() => router.push(`/quickbrick/matriz-swot/${s}`)}
+                onClick={() => router.push(`/quickbrick/tabela-de-analise-de-missoes/${s}`)}
               >
                 <figure className="p-2">
                   <Image

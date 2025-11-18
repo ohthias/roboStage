@@ -69,6 +69,18 @@ export function Navbar() {
               </li>
 
               <li>
+                <a href="/about" className="hover:text-primary">
+                  Flash Q&A
+                </a>
+              </li>
+
+              <li>
+                <a href="/about" className="hover:text-primary">
+                  Timers
+                </a>
+              </li>
+
+              <li>
                 <a href="/universe" className="btn btn-accent btn-outline">
                   Embarcar em evento
                 </a>

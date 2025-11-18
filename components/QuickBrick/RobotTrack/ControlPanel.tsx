@@ -142,6 +142,17 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 }) => {
   return (
     <aside className="w-full md:w-80 flex-shrink-0 bg-base-300 p-4 rounded-lg flex flex-col gap-4 overflow-y-auto">
+      <nav
+        role="tablist"
+        className="mb-2 tabs tabs-border tabs-sm"
+      >
+        <button role="tab" className="tab tab-active">
+          Geral
+        </button>
+        <button role="tab" className="tab">
+          CODE:on
+        </button>
+      </nav>
       <header className="hidden md:block text-center">
         <h1 className="text-xl font-bold text-secondary">Controles</h1>
       </header>

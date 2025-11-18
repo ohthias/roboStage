@@ -12,9 +12,6 @@ import {
 import { SwotQuadrant } from "./SwotQuadrant";
 import {
   RotateCcw,
-  Bot,
-  Rocket,
-  Award,
   FileDown,
   Loader2,
   Plus,
@@ -22,7 +19,6 @@ import {
   AlertTriangle,
   Lightbulb,
   Swords,
-  ChevronDown,
 } from "lucide-react";
 
 const iconMap = {
@@ -157,7 +153,6 @@ export const StrategyBoard: React.FC = () => {
         ? JSON.parse(teamDataStr)
         : { name: "Time FLL", number: "0000" };
 
-      // Create a dedicated container for export to ensure high quality and control
       const exportContainer = document.createElement("div");
       exportContainer.style.position = "absolute";
       exportContainer.style.top = "-9999px";

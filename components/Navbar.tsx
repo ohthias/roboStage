@@ -75,7 +75,13 @@ export function Navbar() {
               </li>
 
               <li>
-                <a href="/about" className="hover:text-primary">
+                <a href="/fll-docs" className="hover:text-primary">
+                  Guias FLL
+                </a>
+              </li>
+
+              <li>
+                <a href="/timers" className="hover:text-primary">
                   Timers
                 </a>
               </li>
@@ -138,7 +144,7 @@ export function Navbar() {
             </a>
             <ul className="menu menu-vertical gap-2 mt-4 w-full">
               <li>
-                <a href="/about" className="btn btn-ghost w-full justify-start">
+                <a href="/about" className="btn btn-ghost w-full justify-start items-center">
                   Sobre
                 </a>
               </li>
@@ -167,17 +173,41 @@ export function Navbar() {
               <li>
                 <a
                   href="/quickbrick"
-                  className="btn btn-ghost w-full justify-start"
+                  className="btn btn-ghost w-full justify-start items-center"
                 >
                   QuickBrick Studio
                 </a>
               </li>
               <li>
                 <a
-                  href="/fll-docs"
-                  className="btn btn-ghost w-full justify-start"
+                  href="/flash-qa"
+                  className="btn btn-ghost w-full justify-start items-center"
                 >
-                  Documentações UNEARTHED
+                  Flash Q&A
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/timers"
+                  className="btn btn-ghost w-full justify-start items-center"
+                >
+                  Timers
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/fll-docs"
+                  className="btn btn-ghost w-full justify-start items-center"
+                >
+                  Guias FLL
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/help"
+                  className="btn btn-ghost w-full justify-start items-center"
+                >
+                  Ajuda & Dúvidas
                 </a>
               </li>
             </ul>

@@ -94,6 +94,7 @@ export default function FerramentasSection({
       categoria: "Documentar",
       icon: <DocumentTextIcon className="w-5 h-5" />,
       link: "/quickbrick/matriz-de-risco",
+      image: "/images/matriz-de-risco.png",
       customContent: null,
     },
     {
@@ -104,6 +105,7 @@ export default function FerramentasSection({
       categoria: "Documentar",
       icon: <DocumentTextIcon className="w-5 h-5" />,
       link: "/quickbrick/swot-template",
+      image: "/images/quickbrick_matrizSWOT.png",
       customContent: null,
       badge: "Novo",
     },
@@ -114,7 +116,6 @@ export default function FerramentasSection({
         "Organize e Analise as missões da temporada UNEARTHED de forma prática.",
       categoria: "Documentar",
       icon: <DocumentTextIcon className="w-5 h-5" />,
-      link: "/quickbrick/tabela-de-analise-de-missoes",
       customContent: (
         seasons: string[],
         seasonLogos: { [x: string]: any },
@@ -127,7 +128,7 @@ export default function FerramentasSection({
               <div
                 key={s}
                 className="card w-24 aspect-square bg-base-200 hover:bg-base-300 border border-base-300 hover:border-secondary transition-all duration-200 cursor-pointer"
-                onClick={() => router.push(`/quickbrick/tabela-de-analise-de-missoes/${s}`)}
+                onClick={() => router.push(`/quickbrick/tabela-de-missoes/${s}`)}
               >
                 <figure className="p-2">
                   <Image

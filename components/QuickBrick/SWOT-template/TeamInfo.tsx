@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Trash2, Trophy, Hash } from 'lucide-react';
+import { Users, Trophy, Hash } from 'lucide-react';
 
 interface TeamData {
   name: string;
@@ -30,16 +30,6 @@ export const TeamInfo: React.FC = () => {
     localStorage.setItem('fll_team_info', JSON.stringify(teamData));
   }, [teamData]);
 
-  const addMember = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newMember.trim()) {
-      setTeamData(prev => ({
-        ...prev,
-        members: [...prev.members, newMember.trim()]
-      }));
-      setNewMember('');
-    }
-  };
 
   const updateField = (field: keyof TeamData, value: string) => {
     setTeamData(prev => ({ ...prev, [field]: value }));

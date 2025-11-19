@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Question, GameSettings, GameState } from '@/types/FlashQATypes';
+import type { Question, GameSettings } from '@/types/FlashQATypes';
 import { RotateCw, Clock, CheckCircle, XCircle } from 'lucide-react';
 
 // Base64 short audio snippets to avoid external dependencies

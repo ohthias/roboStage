@@ -248,10 +248,6 @@ export const StrategyBoard: React.FC = () => {
       const pdf = new jsPDF("l", "mm", "a4");
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      // Fit image to page maintaining aspect ratio if needed,
-      // but usually filling width is best for this layout
       pdf.addImage(
         imgData,
         "PNG",
@@ -275,11 +271,6 @@ export const StrategyBoard: React.FC = () => {
       setIsExporting(false);
     }
   };
-
-  // Get current category config for colors/icons
-  const currentCategoryConfig =
-    QUADRANT_CONFIGS.find((c) => c.id === selectedCategory) ||
-    QUADRANT_CONFIGS[0];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

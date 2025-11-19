@@ -82,7 +82,7 @@ export const JudgingRoom: React.FC<Props> = ({ setMode }) => {
     setIsRunning(false);
     setCurrentStepIndex(0);
     setTimeLeft(DEFAULT_JUDGING_FLOW[0].duration);
-  }
+  };
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);

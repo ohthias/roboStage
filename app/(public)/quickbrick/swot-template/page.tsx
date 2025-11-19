@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { Bot } from "lucide-react";
 import { StrategyBoard } from "@/components/QuickBrick/SWOT-template/StrategyBoard";
 import { TeamInfo } from "@/components/QuickBrick/SWOT-template/TeamInfo";
 import { Navbar } from "@/components/Navbar";

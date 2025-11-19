@@ -12,17 +12,15 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ totalQuestions, flaggedCoun
   const successRate = Math.round(((totalQuestions - flaggedCount) / totalQuestions) * 100);
 
   let message = "";
-  let colorClass = "";
 
   if (successRate >= 80) {
     message = "Excelente! Vocês estão prontos.";
-    colorClass = "text-green-600";
+
   } else if (successRate >= 50) {
     message = "Bom trabalho, mas revisem os pontos difíceis.";
-    colorClass = "text-yellow-600";
+
   } else {
     message = "Continuem treinando! A prática leva à perfeição.";
-    colorClass = "text-fll-red";
   }
 
   return (

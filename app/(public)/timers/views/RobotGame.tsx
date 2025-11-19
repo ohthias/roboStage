@@ -5,7 +5,7 @@ import { CompletionModal } from "@/components/Timers/CompletionModal";
 import { ConfirmModal } from "@/components/Timers/ConfirmModal";
 import { ControlBar } from "@/components/Timers/ControlBar";
 import { TimerCircle } from "@/components/Timers/TimerCircle";
-import { Trophy, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 interface Props {
   setMode: (mode: AppMode) => void;

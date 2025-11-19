@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Check, Settings, MoreHorizontal, Type, Hash, List, X, FileDown } from 'lucide-react';
+import { Plus, Trash2, Check, Settings, MoreHorizontal, Type, Hash, List, FileDown } from 'lucide-react';
 import { Column, Mission, ColumnType } from '@/types/TableAnalytics';
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -50,7 +50,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
   };
 
   const addMission = () => {
-    const newId = Math.random().toString(36).substr(2, 9);
+    const newId = Math.random().toString(36).substring(2, 11);
     const newMission: Mission = { id: newId, name: 'Nova Missão' };
     columns.forEach(c => {
       // Initialize with empty string to avoid uncontrolled inputs
@@ -68,7 +68,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
     
     // Generate a safe ID from the label
     const cleanLabel = newColData.label.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-    const newId = `${cleanLabel}_${Math.random().toString(36).substr(2, 4)}`;
+    const newId = `${cleanLabel}_${Math.random().toString(36).substring(2, 6)}`;
     
     const newCol: Column = {
       id: newId,
@@ -90,7 +90,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
   };
 
   const removeColumn = (colId: string) => {
-    if (confirm('Tem certeza que deseja remover esta coluna? Todos os dados desta coluna serão perdidos.')) {
+    if (window.confirm('Tem certeza que deseja remover esta coluna? Todos os dados desta coluna serão perdidos.')) {
       setColumns(columns.filter(c => c.id !== colId));
       setMissions(prev => prev ? prev.map(m => {
           const newM = { ...m };

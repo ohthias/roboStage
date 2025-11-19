@@ -1,13 +1,11 @@
 "use client";
 import React, { useState } from "react";
 import {
-  Question,
   GameSettings,
   GameState,
   Category,
 } from "@/types/FlashQATypes";
 import { FLL_QUESTIONS } from "./constants";
-import { LayoutGrid } from "lucide-react";
 import SetupScreen from "@/components/FlashQA/SetupScreen";
 import FlashcardScreen from "@/components/FlashQA/FlashcardScreen";
 import ResultScreen from "@/components/FlashQA/ResultScreen";

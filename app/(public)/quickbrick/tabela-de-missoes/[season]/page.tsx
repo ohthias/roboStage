@@ -91,7 +91,18 @@ function MissionTablePage() {
     <div className="min-h-screen bg-base-100">
       <Navbar />
       <Breadcrumbs />
-
+      <section className="w-full flex flex-col items-center text-center px-4 py-8">
+        <article className="max-w-3xl">
+          <h1 className="text-4xl font-bold text-primary mb-4">
+            Tabela de Missões
+          </h1>
+          <p className="text-base-content/75 text-lg leading-relaxed">
+            Analise as missões da temporada {season.toUpperCase()} usando esta
+            tabela interativa. Avalie pontos, dificuldades e status de cada
+            missão para otimizar o desempenho do seu robô.
+          </p>
+        </article>
+      </section>
       <header className="sticky top-0 z-30 bg-base-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
           <div className="flex items-center gap-3">

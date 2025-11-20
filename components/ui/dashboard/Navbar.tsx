@@ -256,12 +256,32 @@ export default function Navbar({
               </li>
               <li>
                 <a
+                  href="/flash-qa"
+                  className="group relative inline-block transition-all duration-200 hover:font-semibold bg-transparent"
+                  target="_blank"
+                >
+                  Flash Q&A
+                  <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                </a>
+              </li>
+              <li>
+                <a
                   href="#timer"
                   className="group relative inline-block transition-all duration-200 hover:font-semibold bg-transparent"
                   onClick={() => setActiveSection("timer")}
                   aria-current={activeSection === "timer" ? "page" : undefined}
                 >
-                  Timer
+                  Timer Interno
+                  <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/timers"
+                  className="group relative inline-block transition-all duration-200 hover:font-semibold bg-transparent"
+                  target="_blank"
+                >
+                  Timers de Avalição
                   <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </a>
               </li>

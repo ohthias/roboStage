@@ -99,9 +99,9 @@ export default function FerramentasSection({
     },
     {
       id: 5,
-      titulo: "Matriz SWOT Template",
+      titulo: "Matriz SWOT",
       descricao:
-        "Template para análise SWOT (Forças, Fraquezas, Oportunidades e Ameaças).",
+        "Análise seu robô usando a ferramenta SWOT para identificar pontos de força, fraquezas, oportunidades e ameaças.",
       categoria: "Documentar",
       icon: <DocumentTextIcon className="w-5 h-5" />,
       link: "/quickbrick/swot-template",
@@ -158,9 +158,6 @@ export default function FerramentasSection({
     }
     return f.link ? [f.link] : [];
   });
-
-  // Opcional: array de links únicos
-  const uniqueLinks = Array.from(new Set(links));
 
   const filtradas =
     filtro === "Todos"

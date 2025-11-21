@@ -1,25 +1,20 @@
-"use client";
+'use client';
 import { useEffect, useState } from "react";
 
-export function useHashSection(defaultSection?: string) {
-  const [currentSection, setCurrentSection] = useState<string>(
-    defaultSection || ""
-  );
+export function useHashSection(defaultValue: string): [string, (value: string) => void] {
+  const [section, setSection] = useState<string>(() => {
+    // Pega do localStorage se estiver disponível
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("roboStage-last-section") || defaultValue;
+    }
+    return defaultValue;
+  });
 
   useEffect(() => {
-    const hash = window.location.hash.replace("#", "");
-    if (hash) setCurrentSection(hash);
+    if (section) {
+      localStorage.setItem("roboStage-last-section", section);
+    }
+  }, [section]);
 
-    const handleHashChange = () => {
-      const newHash = window.location.hash.replace("#", "");
-      if (newHash) setCurrentSection(newHash);
-    };
-
-    window.addEventListener("hashchange", handleHashChange);
-    return () => {
-      window.removeEventListener("hashchange", handleHashChange);
-    };
-  }, []);
-
-  return currentSection;
+  return [section, setSection];
 }

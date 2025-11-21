@@ -43,11 +43,16 @@ export default function Sidebar({
     return (
       <li>
         <a
-          href={isExternal ? href : `#${section}`}
+          href={isExternal ? href : `#`}
           title={label}
-          onClick={() => !isExternal && setActive(section)}
+          onClick={(e) => {
+            if (!isExternal) {
+              e.preventDefault();
+              setActive(section);
+            }
+          }}
           target={isExternal ? "_blank" : "_self"}
-          className={`flex items-center gap-3 rounded-md px-3 py-2 transition-all w-full
+          className={`flex items-center gap-3 rounded-md px-3 py-2 transition-all duration-300 w-full 
             ${
               isActive
                 ? "bg-primary/75 text-primary-content shadow-sm"
@@ -74,10 +79,10 @@ export default function Sidebar({
   return (
     <aside
       className={`
-        h-screen border-r border-base-300 bg-base-100 flex flex-col
-        transition-all duration-300
-        ${collapsed ? "w-20 items-center" : "w-64"}
-      `}
+    h-screen border-r border-base-300 bg-base-100 flex flex-col
+    transition-all duration-300 ease-in-out
+    ${collapsed ? "w-[80px] items-center" : "w-[256px]"}
+  `}
     >
       {/* Top Section */}
       <div className="flex items-center justify-between px-4 py-4">
@@ -115,14 +120,14 @@ export default function Sidebar({
 
       {/* Divider */}
       <div className="px-3">
-        <div className="divider my-2 text-xs">
+        <div className="divider my-2 text-xs hidden md:block">
           {" "}
           {!collapsed && "Ferramentas"}{" "}
         </div>
       </div>
 
       {/* External Tools */}
-      <ul className="menu px-3 space-y-1 w-full">
+      <ul className="menu px-3 space-y-1 w-full hidden md:block">
         {menuItem(
           <LightBulbIcon className="size-5" />,
           "QuickBrick Studio",

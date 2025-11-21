@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import ShowLiveHub from "./hashPages/showLiveHub";
 import AccountSettings from "./hashPages/AccountSettings";
 import { useUser } from "../../context/UserContext";
@@ -10,34 +11,38 @@ import HubHero from "@/components/ui/dashboard/HubHero";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/ui/dashboard/Navbar";
-import { useState } from "react";
-
-export function useHashSection(defaultValue: string): [string, (value: string) => void] {
-  const [section, setSection] = useState(defaultValue);
-
-  return [section, setSection];
-}
-
+import { useHashSection } from "@/hooks/useHashSection";
 
 export default function Dashboard() {
   const { session, profile } = useUser();
   const router = useRouter();
-
-  // HOOK correto
   const [activeSection, setActiveSection] = useHashSection("hub");
 
-  if (session === undefined) return null;
+  useEffect(() => {
+    const last = localStorage.getItem("roboStage-last-section");
+    if (last) {
+      setActiveSection(last);
+    }
+  }, [setActiveSection]);
 
-  if (session === null) {
-    router.push("/auth/login");
-  }
+  useEffect(() => {
+    if (activeSection) {
+      localStorage.setItem("roboStage-last-section", activeSection);
+    }
+  }, [activeSection]);
+
+  useEffect(() => {
+    if (session === null) {
+      router.replace("/auth/login");
+    }
+  }, [session, router]);
+
+  if (!session) return null;
 
   const logout = async () => {
-    await supabase.auth.signOut();
-
+    confirm("Tem certeza que deseja sair?") && (await supabase.auth.signOut());
     document.cookie = "sb-access-token=; path=/; max-age=0";
     document.cookie = "sb-refresh-token=; path=/; max-age=0";
-
     router.push("/auth/login");
   };
 
@@ -61,18 +66,31 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen">
-      <Sidebar
-        active={activeSection}
-        setActive={setActiveSection}
-        onLogout={logout}
-        profile={profile}
-        session={session}
-      />
+    <div className="drawer lg:drawer-open h-screen">
+      <input id="app-drawer" type="checkbox" className="drawer-toggle" />
+      <div className="drawer-content flex flex-col">
+        <label
+          htmlFor="app-drawer"
+          className="btn btn-ghost lg:hidden m-3 self-start"
+        >
+          <i className="fi fi-br-menu-burger text-xl"></i>
+        </label>
 
-      <main className="flex-1 overflow-y-auto bg-base-200 p-6">
-        {renderSection()}
-      </main>
+        <main className="flex-1 overflow-y-auto bg-base-200 p-6">
+          {renderSection()}
+        </main>
+      </div>
+
+      <div className="drawer-side">
+        <label htmlFor="app-drawer" className="drawer-overlay"></label>
+        <Sidebar
+          active={activeSection}
+          setActive={setActiveSection}
+          onLogout={logout}
+          profile={profile}
+          session={session}
+        />
+      </div>
     </div>
   );
 }

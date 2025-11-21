@@ -13,8 +13,9 @@ const themes = [
   "fantasy",
   "black",
 ];
+
+// Rotas públicas sem "/" genérico
 const publicRoutes = [
-  "/",
   "/auth/",
   "/quickbrick/",
   "/flash-qa",
@@ -25,13 +26,20 @@ const publicRoutes = [
   "/fll-score/",
 ];
 
+const privateRoutes = ["/dashboard"];
+
 export function ThemeController() {
   const pathname = usePathname();
-  const isPublicRoute = publicRoutes.some((route) =>
+  const [theme, setTheme] = useState<string>("Claro");
+  const [mounted, setMounted] = useState(false); // evita flash de SSR
+
+  // Verifica rota pública corretamente
+  const isPublicRoute =
+    pathname === "/" || publicRoutes.some((route) => pathname.startsWith(route));
+
+  const isPrivateRoute = privateRoutes.some((route) =>
     pathname.startsWith(route)
   );
-
-  const [theme, setTheme] = useState<string>("Claro");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -41,12 +49,13 @@ export function ThemeController() {
     if (isPublicRoute) {
       setTheme("Claro");
       document.documentElement.setAttribute("data-theme", "Claro");
-      return;
+    } else {
+      setTheme(saved);
+      document.documentElement.setAttribute("data-theme", saved);
     }
 
-    setTheme(saved);
-    document.documentElement.setAttribute("data-theme", saved);
-  }, [isPublicRoute, pathname]);
+    setMounted(true);
+  }, [pathname, isPublicRoute]);
 
   const applyTheme = (newTheme: string) => {
     setTheme(newTheme);
@@ -54,43 +63,52 @@ export function ThemeController() {
     localStorage.setItem("theme", newTheme);
   };
 
-  if (isPublicRoute) {
-    const toggle = () => applyTheme(theme === "Claro" ? "Escuro" : "Claro");
+  if (!mounted) return null; // evita renderizar antes do efeito
 
+  // Toggle público Claro/Escuro
+  if (isPublicRoute) {
     return (
       <label className="swap swap-rotate cursor-pointer w-10 h-10">
-        <input type="checkbox" checked={theme === "Escuro"} onChange={toggle} />
+        <input
+          type="checkbox"
+          checked={theme === "Escuro"}
+          onChange={() => applyTheme(theme === "Claro" ? "Escuro" : "Claro")}
+        />
         <SunIcon className="swap-off h-7 w-7 text-yellow-500" />
         <MoonIcon className="swap-on h-7 w-7 text-slate-700" />
       </label>
     );
   }
 
-  return (
-    <div className="flex items-center gap-3">
-      <div className="dropdown dropdown-end">
-        <label tabIndex={0} className="btn btn-sm btn-neutral gap-2">
-          <SwatchIcon className="w-5 h-5" />
-          Tema
-        </label>
-        <ul
-          tabIndex={0}
-          className="dropdown-content z-[999] menu p-2 shadow bg-base-200 rounded-box w-40"
-        >
-          {themes.map((t) => (
-            <li key={t}>
-              <button
-                onClick={() => applyTheme(t)}
-                className={`capitalize ${
-                  theme === t ? "font-bold text-primary" : ""
-                }`}
-              >
-                {t}
-              </button>
-            </li>
-          ))}
-        </ul>
+  // Dropdown de temas para rotas privadas
+  if (isPrivateRoute) {
+    return (
+      <div className="flex items-center gap-3">
+        <div className="dropdown dropdown-end">
+          <label tabIndex={0} className="btn btn-sm btn-neutral gap-2">
+            <SwatchIcon className="w-5 h-5" />
+            Tema
+          </label>
+          <ul
+            tabIndex={0}
+            className="dropdown-content z-[999] menu p-2 shadow bg-base-200 rounded-box w-40"
+          >
+            {themes.map((t) => (
+              <li key={t}>
+                <button
+                  onClick={() => applyTheme(t)}
+                  className={`capitalize ${
+                    theme === t ? "font-bold text-primary" : ""
+                  }`}
+                >
+                  {t}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
 }

@@ -79,7 +79,7 @@ const TimersPager: React.FC = () => {
       )}
 
       {mode === AppMode.JUDGING && (
-        <div className="min-h-[100dvh] bg-gradient-to-b from-base-100/80 via-secondary/80 to-white text-base-content">
+        <div className="min-h-[100dvh] bg-secondary/60 text-base-content">
           {renderContent()}
         </div>
       )}

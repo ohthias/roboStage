@@ -22,7 +22,7 @@ export function ThemeController() {
   };
 
   return (
-    <label className="swap swap-rotate cursor-pointer">
+    <label className="swap swap-rotate cursor-pointer w-10 h-10">
       <input
         type="checkbox"
         checked={theme === "darkScheme"}

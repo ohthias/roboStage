@@ -5,18 +5,26 @@ import AccountSettings from "./hashPages/AccountSettings";
 import { useUser } from "../../context/UserContext";
 import { StyleLab } from "@/app/(private)/dashboard/hashPages/StyleLab";
 import LabTestPage from "./hashPages/LabTestPage";
-import { useHashSection } from "@/hooks/useHashSection";
-import Navbar from "@/components/ui/dashboard/Navbar";
-import HubHero from "@/components/ui/dashboard/HubHero";
 import TimerPage from "./hashPages/TimerPage";
-import BrainShotPage from "./hashPages/BrainShot";
+import HubHero from "@/components/ui/dashboard/HubHero";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import Sidebar from "@/components/ui/dashboard/Navbar";
+import { useState } from "react";
+
+export function useHashSection(defaultValue: string): [string, (value: string) => void] {
+  const [section, setSection] = useState(defaultValue);
+
+  return [section, setSection];
+}
+
 
 export default function Dashboard() {
   const { session, profile } = useUser();
-  const currentSection = useHashSection("hub");
   const router = useRouter();
+
+  // HOOK correto
+  const [activeSection, setActiveSection] = useHashSection("hub");
 
   if (session === undefined) return null;
 
@@ -27,15 +35,14 @@ export default function Dashboard() {
   const logout = async () => {
     await supabase.auth.signOut();
 
-    // Limpa cookies do Supabase
     document.cookie = "sb-access-token=; path=/; max-age=0";
     document.cookie = "sb-refresh-token=; path=/; max-age=0";
 
     router.push("/auth/login");
   };
 
-  const currentSectionContent = () => {
-    switch (currentSection) {
+  const renderSection = () => {
+    switch (activeSection) {
       case "hub":
         return <HubHero />;
       case "showLive":
@@ -44,25 +51,28 @@ export default function Dashboard() {
         return <LabTestPage />;
       case "styleLab":
         return <StyleLab />;
-      case "profile":
-        return <AccountSettings />;
       case "timer":
         return <TimerPage />;
-      case "brainShot":
-        return <BrainShotPage />;
+      case "profile":
+        return <AccountSettings />;
       default:
         return <HubHero />;
     }
   };
 
   return (
-    <div>
-      <Navbar
+    <div className="flex h-screen">
+      <Sidebar
+        active={activeSection}
+        setActive={setActiveSection}
+        onLogout={logout}
         profile={profile}
         session={session}
-        handleLogout={logout}
-        children={currentSectionContent()}
       />
+
+      <main className="flex-1 overflow-y-auto bg-base-200 p-6">
+        {renderSection()}
+      </main>
     </div>
   );
 }

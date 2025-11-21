@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { SunIcon, MoonIcon, SwatchIcon } from "@heroicons/react/24/solid";
 
-// Temas DaisyUI disponíveis
 const themes = [
   "Claro",
   "Escuro",
@@ -14,13 +13,23 @@ const themes = [
   "fantasy",
   "black",
 ];
-
-// Rotas públicas que sempre devem usar Claro/Escuro
-const publicRoutes = ["/", "/login", "/register", "/public"];
+const publicRoutes = [
+  "/",
+  "/auth/",
+  "/quickbrick/",
+  "/flash-qa",
+  "/fll-docs",
+  "/help",
+  "/universe",
+  "/timers",
+  "/fll-score/",
+];
 
 export function ThemeController() {
   const pathname = usePathname();
-  const isPublicRoute = publicRoutes.includes(pathname);
+  const isPublicRoute = publicRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
 
   const [theme, setTheme] = useState<string>("Claro");
 
@@ -30,16 +39,14 @@ export function ThemeController() {
     const saved = localStorage.getItem("theme") || "Claro";
 
     if (isPublicRoute) {
-      // Sempre força Claro em rotas públicas
       setTheme("Claro");
       document.documentElement.setAttribute("data-theme", "Claro");
       return;
     }
 
-    // Rotas internas → usar o salvo
     setTheme(saved);
     document.documentElement.setAttribute("data-theme", saved);
-  }, [isPublicRoute]);
+  }, [isPublicRoute, pathname]);
 
   const applyTheme = (newTheme: string) => {
     setTheme(newTheme);
@@ -47,24 +54,18 @@ export function ThemeController() {
     localStorage.setItem("theme", newTheme);
   };
 
-  // 🔆 Toggle simples para rotas públicas
   if (isPublicRoute) {
-    const toggle = () => {
-      const newTheme = theme === "Claro" ? "Escuro" : "Claro";
-      applyTheme(newTheme);
-    };
+    const toggle = () => applyTheme(theme === "Claro" ? "Escuro" : "Claro");
 
     return (
       <label className="swap swap-rotate cursor-pointer w-10 h-10">
         <input type="checkbox" checked={theme === "Escuro"} onChange={toggle} />
-
         <SunIcon className="swap-off h-7 w-7 text-yellow-500" />
         <MoonIcon className="swap-on h-7 w-7 text-slate-700" />
       </label>
     );
   }
 
-  // 🎨 Versão completa quando NÃO está em rota pública
   return (
     <div className="flex items-center gap-3">
       <div className="dropdown dropdown-end">
@@ -72,7 +73,6 @@ export function ThemeController() {
           <SwatchIcon className="w-5 h-5" />
           Tema
         </label>
-
         <ul
           tabIndex={0}
           className="dropdown-content z-[999] menu p-2 shadow bg-base-200 rounded-box w-40"

@@ -69,7 +69,7 @@ export default function HelpDesk() {
             <div className="grid gap-6">
               {filteredTools.map((tool, idx) => (
                 <Card key={idx} title={tool.name} description={tool.description}>
-                  <Accordion items={tool.details} />
+                  <Accordion items={tool.details || []} />
                 </Card>
               ))}
 

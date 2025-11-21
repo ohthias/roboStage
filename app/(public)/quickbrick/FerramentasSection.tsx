@@ -1,6 +1,6 @@
 "use client";
 
-import { Key, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DocumentTextIcon,
@@ -38,7 +38,7 @@ export default function FerramentasSection({
     },
     {
       id: 2,
-      titulo: "Matriz SWOT",
+      titulo: "Matriz SWOT das Missões",
       descricao:
         "Escolha uma temporada para organizar as missões em Forças, Fraquezas, Oportunidades e Ameaças.",
       categoria: "Documentar",
@@ -84,7 +84,6 @@ export default function FerramentasSection({
       icon: <BeakerIcon className="w-5 h-5" />,
       image: "/images/quickbrick_robottrack.png",
       link: "/quickbrick/robot-track",
-      badge: "Novo!",
       feitoPor: "Sharks",
     },
     {
@@ -95,9 +94,61 @@ export default function FerramentasSection({
       categoria: "Documentar",
       icon: <DocumentTextIcon className="w-5 h-5" />,
       link: "/quickbrick/matriz-de-risco",
+      image: "/images/matriz-de-risco.png",
       customContent: null,
-      badge: "Novo!",
     },
+    {
+      id: 5,
+      titulo: "Matriz SWOT",
+      descricao:
+        "Análise seu robô usando a ferramenta SWOT para identificar pontos de força, fraquezas, oportunidades e ameaças.",
+      categoria: "Documentar",
+      icon: <DocumentTextIcon className="w-5 h-5" />,
+      link: "/quickbrick/swot-template",
+      image: "/images/quickbrick_matrizSWOT.png",
+      customContent: null,
+      badge: "Novo",
+    },
+    {
+      id: 6,
+      titulo: "Tabela de análise de missões",
+      descricao:
+        "Organize e Analise as missões da temporada UNEARTHED de forma prática.",
+      categoria: "Documentar",
+      icon: <DocumentTextIcon className="w-5 h-5" />,
+      customContent: (
+        seasons: string[],
+        seasonLogos: { [x: string]: any },
+        router: any
+      ) => (
+        <div className="flex flex-wrap gap-3 justify-center mt-3">
+          {seasons.map((s: string) => {
+            const season = seasonLogos[s];
+            return (
+              <div
+                key={s}
+                className="card w-24 aspect-square bg-base-200 hover:bg-base-300 border border-base-300 hover:border-secondary transition-all duration-200 cursor-pointer"
+                onClick={() => router.push(`/quickbrick/tabela-de-missoes/${s}`)}
+              >
+                <figure className="p-2">
+                  <Image
+                    src={season?.image || "/images/icons/default-season.png"}
+                    alt={season?.name || s}
+                    className="rounded-md object-contain"
+                    width={80}
+                    height={80}
+                  />
+                </figure>
+                <div className="card-body p-1 text-center">
+                  <p className="text-xs font-semibold">{season?.name}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ),
+      badge: "Novo",
+    }
   ];
 
   // Gera array de links (expande links dependentes de seasons, como Matriz SWOT)
@@ -107,9 +158,6 @@ export default function FerramentasSection({
     }
     return f.link ? [f.link] : [];
   });
-
-  // Opcional: array de links únicos
-  const uniqueLinks = Array.from(new Set(links));
 
   const filtradas =
     filtro === "Todos"

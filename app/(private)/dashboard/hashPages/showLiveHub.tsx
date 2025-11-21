@@ -27,9 +27,9 @@ export default function ShowLiveHub() {
   const sessionBackground = (temporada: string) => {
     switch (temporada) {
       case "UNEARTHED":
-        return "/images/showLive/banners/banner_uneartherd.webp";
+        return "/images/background_uneartherd.png";
       case "SUBMERGED":
-        return "/images/showLive/banners/banner_submerged.webp";
+        return "/images/background_submerged.png";
       case "MASTERPIECE":
         return "/images/showLive/banners/banner_masterpiece.webp";
       default:
@@ -151,10 +151,10 @@ export default function ShowLiveHub() {
               {filteredEvents.map((event) => (
                 <div
                   key={event.id_evento}
-                  className="card bg-base-100 shadow-md border border-base-300 rounded-xl flex flex-col md:flex-row overflow-hidden transition-transform hover:scale-[1.02]"
+                  className="card bg-base-100/80 backdrop-blur-md border border-base-200 rounded-xl flex flex-col md:flex-row overflow-hidden shadow-md transition-transform duration-300 hover:scale-103 hover:shadow-lg"
                 >
                   {/* Logo da Temporada */}
-                  <figure className="w-full md:w-1/3 h-40 md:h-auto flex items-center justify-center bg-base-200 ronded-lg">
+                  <figure className="w-full md:w-1/3 h-32 md:h-auto flex items-center justify-center bg-gradient-to-br from-base-200 to-base-300 rounded-lg overflow-hidden">
                     <img
                       src={sessionBackground(event.config?.temporada)}
                       alt="Evento"
@@ -163,15 +163,33 @@ export default function ShowLiveHub() {
                   </figure>
 
                   {/* Conteúdo */}
-                  <div className="flex flex-col flex-1 p-4 gap-3">
+                  <div className="flex flex-col flex-1 p-4 gap-2">
+                    {/* Título e status */}
                     <div className="flex justify-between items-start">
-                      <h2 className="text-lg font-bold text-base-content truncate">
+                      <h2 className="text-lg font-semibold text-base-content truncate">
                         {event.name_event}
                       </h2>
-                      <span className="badge badge-success text-xs">Ativo</span>
+                      <span className="badge badge-success badge-sm flex items-center gap-1">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-3 w-3"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        Ativo
+                      </span>
                     </div>
 
-                    <div className="text-sm text-base-content flex flex-col gap-1">
+                    {/* Informações */}
+                    <div className="text-xs text-base-content flex flex-col gap-1">
                       <p>
                         <span className="font-semibold">Categoria:</span>{" "}
                         {event.config?.base === "FLL"
@@ -186,15 +204,29 @@ export default function ShowLiveHub() {
                       )}
                     </div>
 
-                    {/* Botão no rodapé */}
+                    {/* Botão */}
                     <div className="mt-auto flex justify-end">
                       <button
                         onClick={() =>
                           router.push(`/dashboard/showlive/${event.code_event}`)
                         }
-                        className="btn btn-primary btn-sm flex items-center gap-2 transition-transform hover:scale-105"
+                        className="btn btn-primary btn-sm flex items-center gap-2 transition-transform duration-300 hover:scale-105 hover:bg-primary-focus"
                       >
-                        Acessar Hub
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M14 5l7 7m0 0l-7 7m7-7H3"
+                          />
+                        </svg>
+                        Hub
                       </button>
                     </div>
                   </div>

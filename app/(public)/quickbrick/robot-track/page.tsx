@@ -213,7 +213,7 @@ const RobotTrackPage = () => {
       <header className="p-2 text-center">
         <h1 className="text-4xl font-bold text-primary mb-4">UNEARTHED Sharks Simulator</h1>
         <p className="text-base-content/75 text-lg leading-relaxed mb-2">
-          Crie e visualize trajetórias para o robô QuickBrick.
+          Crie e visualize trajetórias para o robô da FIRST LEGO League Challenge.
         </p>
         <p className="text-sm text-base-content/50">
           Criado por{" "}

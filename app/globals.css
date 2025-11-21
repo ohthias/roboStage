@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 @plugin "daisyui/theme" {
-  name: "lightScheme";
+  name: "Claro";
   default: true;
   prefersdark: false;
   color-scheme: "light";
@@ -37,7 +37,7 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "darkScheme";
+  name: "Escuro";
   default: false;
   prefersdark: false;
   color-scheme: "dark";
@@ -72,7 +72,7 @@
 }
 
 @plugin "daisyui" {
-  themes: "lightScheme" --default, "darkScheme";
+  themes: "Claro" --default, "Escuro", "bumblebee", "lemonade", "lofi", "fantasy", "black";
 }
 
 .tooltip-custom[data-tip]::before {

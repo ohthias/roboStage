@@ -60,6 +60,7 @@ export function Footer() {
           <a className="link link-hover" href="https://github.com/ohthias">@ohthias</a>
           <nav className="mt-4 flex flex-col">
             <h6 className="footer-title">Parceiros</h6>
+            <a className="link link-hover" href="https://github.com/VMRT-SESI">@VMRT</a>
             <a className="link link-hover" href="https://github.com/G-Tomboly/">@G-Tomboly</a>
           </nav>
         </nav>

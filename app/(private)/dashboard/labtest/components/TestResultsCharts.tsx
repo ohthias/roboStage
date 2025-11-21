@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, RefObject } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import missionsData from "@/public/data/missions.json";
@@ -12,15 +12,14 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  Line,
   LineChart,
+  Line,
   CartesianGrid,
   PieChart,
   Cell,
   Pie,
 } from "recharts";
 
-import ExportResultsPDF from "./ExportButton";
 import Loader from "@/components/loader";
 
 type ResultRow = {
@@ -32,9 +31,23 @@ type ResultRow = {
   season: string;
 };
 
+interface MissionStats {
+  missionKey: string;
+  missionName: string;
+  acertos: number;
+  erros: number;
+  total: number;
+}
+
 const COLORS = ["#e7000b", "#162455"];
 
-export default function TestResultsCharts({ testId }: { testId: string }) {
+export default function TestResultsCharts({
+  testId,
+  typeTest,
+}: {
+  testId: string;
+  typeTest: string;
+}) {
   const [results, setResults] = useState<ResultRow[]>([]);
   const [loading, setLoading] = useState(true);
   const chartRef = useRef<HTMLDivElement>(null);
@@ -95,56 +108,123 @@ export default function TestResultsCharts({ testId }: { testId: string }) {
     });
   });
 
-  // --- Dados gerais ---
-  const generalData: { mission: string; acertos: number; erros: number }[] = [];
+  // --- Construindo dados gerais para o gráfico ---
+  const generalData: MissionStats[] = [];
   let totalAcertos = 0;
   let totalTentativas = 0;
-  let missionMenosFeita = "";
 
-  Object.entries(missionsGrouped).forEach(([missionKey, { allValues }]) => {
-    const missionData = getMissionByKey(
-      missionKey,
-      missionsGrouped[missionKey].season
-    );
-    if (!missionData) return;
+  let missionMenosFeitaKey = "";
+  let missionMenosFeitaSub: number | null = null;
+  let minLancamentos = Infinity;
 
-    let acertos = 0;
-    let erros = 0;
+  Object.entries(missionsGrouped).forEach(
+    ([missionKey, { season, allValues }]) => {
+      const missionData = getMissionByKey(missionKey, season);
+      if (!missionData) return;
 
-    if (missionData.type?.[0] === "switch") {
-      acertos = allValues.filter((v) => v.value === 1).length;
-      erros = allValues.filter((v) => v.value === 0).length;
-    } else if (missionData.type?.[0] === "range") {
-      acertos = allValues.filter(
-        (v) => v.value !== null && v.value !== undefined && v.value > 0
-      ).length;
-      erros = allValues.filter(
-        (v) => v.value === null || v.value === undefined || v.value <= 0
-      ).length;
+      let acertos = 0;
+      let erros = 0;
+
+      const type = missionData.type?.[0];
+
+      // Se for tipo GRUPO, acumula os valores das sub-missões
+      if (type === "grupo" && missionData["sub-mission"]?.length) {
+        missionData["sub-mission"].forEach((sub: any, idx: number) => {
+          const subKey = `${missionKey}-sub-${idx}`;
+          const subValues = missionsGrouped[subKey]?.allValues || [];
+          subValues.forEach(({ value }) => {
+            if (sub.type?.[0] === "switch") {
+              if (value === 1) acertos++;
+              else erros++;
+            } else if (sub.type?.[0] === "range") {
+              if (value > 0) acertos++;
+              else erros++;
+            } else {
+              if (value) acertos++;
+              else erros++;
+            }
+          });
+        });
+      } else {
+        // Missão individual ou outro tipo
+        allValues.forEach(({ value }) => {
+          if (type === "switch" || type === "missao_individual") {
+            if (value === 1) acertos++;
+            else if (value === 0) erros++;
+          } else if (type === "range") {
+            if (value > 0) acertos++;
+            else erros++;
+          } else {
+            if (value) acertos++;
+            else erros++;
+          }
+        });
+      }
+
+      const total = acertos + erros;
+
+      generalData.push({
+        missionKey,
+        missionName: missionData.submission || missionData.name || missionKey,
+        acertos,
+        erros,
+        total,
+      });
+
+      totalAcertos += acertos;
+      totalTentativas += total;
+
+      // --- MISSÃO MENOS REALIZADA (considerando sub-missões) ---
+      if (total < minLancamentos) {
+        missionMenosFeitaKey = missionKey;
+        missionMenosFeitaSub = null;
+        minLancamentos = total;
+      }
+
+      if (type === "grupo" && missionData["sub-mission"]?.length) {
+        missionData["sub-mission"].forEach((sub: any, idx: number) => {
+          const subKey = `${missionKey}-sub-${idx}`;
+          const subTotal = missionsGrouped[subKey]?.allValues.length || 0;
+          if (subTotal < minLancamentos) {
+            missionMenosFeitaKey = missionKey;
+            missionMenosFeitaSub = idx;
+            minLancamentos = subTotal;
+          }
+        });
+      }
     }
+  );
 
-    generalData.push({ mission: missionKey, acertos, erros });
-    totalAcertos += acertos;
-    totalTentativas += acertos + erros;
-
-    if (
-      !missionMenosFeita ||
-      allValues.length <
-        (missionsGrouped[missionMenosFeita]?.allValues.length || Infinity)
-    ) {
-      missionMenosFeita = missionKey;
-    }
-  });
-
+  // --- Cálculo de aproveitamento geral ---
   const aproveitamentoGeral =
     totalTentativas > 0 ? (totalAcertos / totalTentativas) * 100 : 0;
 
-  const missaoMenosFeitaData = getMissionByKey(
-    missionMenosFeita,
-    missionsGrouped[missionMenosFeita].season
-  );
-  const submissionMenosFeita =
-    missaoMenosFeitaData?.submission || missionMenosFeita;
+  // --- Nome da missão/sub-missão menos realizada ---
+  let missaoMenosFeitaNome = "";
+  let missaoMenosFeitaTotal = 0;
+
+  if (missionMenosFeitaSub != null) {
+    const subData = getMissionByKey(
+      `${missionMenosFeitaKey}-sub-${missionMenosFeitaSub}`,
+      missionsGrouped[missionMenosFeitaKey]?.season
+    );
+    missaoMenosFeitaNome =
+      subData?.name ||
+      subData?.submission ||
+      `Sub-missão ${missionMenosFeitaSub + 1}`;
+    missaoMenosFeitaTotal =
+      missionsGrouped[`${missionMenosFeitaKey}-sub-${missionMenosFeitaSub}`]
+        ?.allValues.length || 0;
+  } else {
+    const missaoData = getMissionByKey(
+      missionMenosFeitaKey,
+      missionsGrouped[missionMenosFeitaKey]?.season
+    );
+    missaoMenosFeitaNome =
+      missaoData?.name || missaoData?.submission || missionMenosFeitaKey;
+    missaoMenosFeitaTotal =
+      missionsGrouped[missionMenosFeitaKey]?.allValues.length || 0;
+  }
 
   const showLabTestFeatures = pathname?.includes("/labtest/");
 
@@ -152,21 +232,45 @@ export default function TestResultsCharts({ testId }: { testId: string }) {
     <div ref={chartRef} className="flex flex-col gap-10 py-6">
       {/* --- Estatísticas gerais --- */}
       <div className="card bg-info/25 shadow p-4 text-center">
-        <h2 className="text-xl font-bold mb-2 text-info-content">
-          Aproveitamento Geral
-        </h2>
-        <p className="text-base-content mb-1">
-          Aproveitamento:{" "}
-          <span className="font-bold text-info-content">
-            {aproveitamentoGeral.toFixed(1)}%
-          </span>
-        </p>
-        <p className="text-base-content">
-          Missão menos realizada:{" "}
-          <span className="font-bold text-info-content">
-            {submissionMenosFeita}
-          </span>
-        </p>
+        {typeTest === "missao_individual" ? (
+          <>
+            <h2 className="text-xl font-bold mb-2 text-info-content">
+              Estatísticas Gerais do Teste
+            </h2>
+            <p className="text-base-content mb-1">
+              Total de lançamentos:{" "}
+              <span className="font-bold text-info-content">
+                {totalTentativas}
+              </span>
+            </p>
+            <p className="text-base-content">
+              Total de acertos:{" "}
+              <span className="font-bold text-info-content">
+                {totalAcertos}
+              </span>
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 className="text-xl font-bold mb-2 text-info-content">
+              Aproveitamento Geral
+            </h2>
+            <p className="text-base-content mb-1">
+              Aproveitamento:{" "}
+              <span className="font-bold text-info-content">
+                {aproveitamentoGeral.toFixed(1)}%
+              </span>
+            </p>
+            <p className="text-base-content">
+              Missão menos realizada:{" "}
+              <span className="font-bold text-info-content">
+                {missaoMenosFeitaNome} ({missaoMenosFeitaTotal} lançamento
+                {missaoMenosFeitaTotal === 1 ? "" : "s"}
+                {missaoMenosFeitaTotal === 0 ? " - Ainda não realizada" : ""})
+              </span>
+            </p>
+          </>
+        )}
       </div>
 
       {/* --- Gráfico geral --- */}
@@ -174,34 +278,56 @@ export default function TestResultsCharts({ testId }: { testId: string }) {
         <h3 className="font-semibold mb-4 text-center">
           Desempenho Geral das Missões
         </h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={generalData}>
-            <XAxis dataKey="mission" />
-            <YAxis
-              allowDecimals={false}
-              label={{
-                value: "Lançamentos",
-                angle: -90,
-                position: "insideLeft",
-              }}
-            />
-            <Tooltip
-              formatter={(value: any, name: any) => [
-                value,
-                name === "acertos" ? "Acertos" : "Erros",
+        {(typeTest === "missao_individual" && (
+          <PieChart width={400} height={300} className="mx-auto mb-4">
+            <Pie
+              data={[
+                { name: "Acertos", value: totalAcertos },
+                { name: "Erros", value: totalTentativas - totalAcertos },
               ]}
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              label
+              dataKey="value"
+            >
+              <Cell key="acertos" fill={COLORS[0]} />
+              <Cell key="erros" fill={COLORS[1]} />
+            </Pie>
+            <Tooltip
+              formatter={(value: any, name: any) => [`${value}`, name]}
             />
             <Legend />
-            <Bar dataKey="acertos" fill={COLORS[0]} />
-            <Bar dataKey="erros" fill={COLORS[1]} />
-          </BarChart>
-        </ResponsiveContainer>
+          </PieChart>
+        )) || (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={generalData}>
+              <XAxis dataKey="missionName" />
+              <YAxis
+                allowDecimals={false}
+                label={{
+                  value: "Lançamentos",
+                  angle: -90,
+                  position: "insideLeft",
+                }}
+              />
+              <Tooltip
+                formatter={(value: any, name: any) => [
+                  value,
+                  name === "acertos" ? "Acertos" : "Erros",
+                ]}
+              />
+              <Legend />
+              <Bar dataKey="acertos" fill={COLORS[0]} />
+              <Bar dataKey="erros" fill={COLORS[1]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
 
-      {/* --- Listagem e botão export somente em /labtest/[id] --- */}
+      {/* --- Listagem e gráficos individuais em /labtest/[id] --- */}
       {showLabTestFeatures && (
         <>
-          {/* --- Gráficos individuais em masonry layout --- */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Object.entries(missionsGrouped).map(
               ([missionKey, { season, allValues }]) => {
@@ -286,7 +412,9 @@ export default function TestResultsCharts({ testId }: { testId: string }) {
                             <Tooltip
                               formatter={(value) => [value, "Valor"]}
                               labelFormatter={(label) => {
-                                const item = allValues[label.split(" ")[1] - 1];
+                                const idx =
+                                  parseInt(label.split(" ")[1], 10) - 1;
+                                const item = allValues[idx];
                                 if (!item?.created_at) return "";
                                 const date = new Date(item.created_at);
                                 return `Feito em: ${date.toLocaleDateString(
@@ -306,6 +434,55 @@ export default function TestResultsCharts({ testId }: { testId: string }) {
                               name="Itens Feitos"
                             />
                           </LineChart>
+                        ) : type === "grupo" ? (
+                          <PieChart>
+                            {(() => {
+                              let acertos = 0;
+                              let erros = 0;
+                              missionData["sub-mission"]?.forEach(
+                                (sub: any, idx: number) => {
+                                  const subKey = `${missionKey}-sub-${idx}`;
+                                  const subValues =
+                                    missionsGrouped[subKey]?.allValues || [];
+                                  subValues.forEach(({ value }) => {
+                                    if (sub.type?.[0] === "switch") {
+                                      if (value === 1) acertos++;
+                                      else erros++;
+                                    } else if (sub.type?.[0] === "range") {
+                                      if (value > 0) acertos++;
+                                      else erros++;
+                                    } else {
+                                      if (value) acertos++;
+                                      else erros++;
+                                    }
+                                  });
+                                }
+                              );
+                              return (
+                                <Pie
+                                  data={[
+                                    { name: "Acertos", value: acertos },
+                                    { name: "Erros", value: erros },
+                                  ]}
+                                  cx="50%"
+                                  cy="50%"
+                                  outerRadius={80}
+                                  label
+                                  dataKey="value"
+                                >
+                                  <Cell key="acertos" fill={COLORS[0]} />
+                                  <Cell key="erros" fill={COLORS[1]} />
+                                </Pie>
+                              );
+                            })()}
+                            <Tooltip
+                              formatter={(value: any, name: any) => [
+                                `${value}`,
+                                name,
+                              ]}
+                            />
+                            <Legend />
+                          </PieChart>
                         ) : (
                           <p>Tipo de missão desconhecido.</p>
                         )}
@@ -322,7 +499,7 @@ export default function TestResultsCharts({ testId }: { testId: string }) {
             <h3 className="font-semibold mb-2 text-center">
               Comentário de cada lançamento
             </h3>
-            <div className="overflow-y-auto max-h-64">
+            <div className="overflow-y-auto">
               <table className="table table-zebra w-full">
                 <thead>
                   <tr>

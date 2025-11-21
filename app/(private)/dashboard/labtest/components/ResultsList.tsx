@@ -32,7 +32,7 @@ export default function ResultsList({
             <span>{test.name_test}</span>
           </div>
           <div className="collapse-content">
-            <TestResultsCharts testId={test.id} />
+            <TestResultsCharts testId={test.id} typeTest={testTypes[test.type_id] || "Desconhecido"} />
           </div>
           <div className="collapse-footer py-2 px-4 border-t border-base-300 flex justify-between items-center">
             <span className="text-sm font-normal text-base-content">

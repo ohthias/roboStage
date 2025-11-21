@@ -40,7 +40,7 @@ export const features: Feature[] = [
     icon: <LabTestIcon />,
   },
   {
-    title: "InnoLab",
+    title: "InnoLab - Em correções",
     text: "Crie diagramas focados no processo do projeto de inovação da sua equipe!",
     icon: <InnoLabIcon />,
   },

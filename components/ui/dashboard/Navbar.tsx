@@ -11,8 +11,7 @@ import {
   BellAlertIcon,
   NumberedListIcon,
 } from "@heroicons/react/24/outline";
-import { JSX, useState } from "react";
-import { ThemeController } from "../themeController";
+import { JSX } from "react";
 
 interface SidebarProps {
   active: string;
@@ -20,6 +19,8 @@ interface SidebarProps {
   onLogout: () => void;
   profile: any;
   session: any;
+  collapsed: boolean;
+  setCollapsed: (value: boolean) => void;
 }
 
 export default function Sidebar({
@@ -28,9 +29,9 @@ export default function Sidebar({
   onLogout,
   profile,
   session,
+  collapsed,
+  setCollapsed,
 }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
-
   const menuItem = (
     icon: JSX.Element,
     label: string,
@@ -80,7 +81,7 @@ export default function Sidebar({
     <aside
       className={`
     h-screen border-r border-base-300 bg-base-100 flex flex-col
-    transition-all duration-300 ease-in-out
+    transition-all duration-300 ease-in-out fixed
     ${collapsed ? "w-[80px] items-center" : "w-[256px]"}
   `}
     >

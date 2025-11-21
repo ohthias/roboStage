@@ -12,10 +12,9 @@ import {
   DocumentChartBarIcon,
   CalendarDaysIcon,
   PuzzlePieceIcon,
-  ClockIcon,
 } from "@heroicons/react/24/solid";
-import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import EditProfileModal from "@/components/ui/Modal/ModalEditProfile";
+import { ThemeController } from "@/components/ui/themeController";
 
 export default function AccountSettings() {
   const router = useRouter();
@@ -25,10 +24,10 @@ export default function AccountSettings() {
   const [username, setUsername] = useState("");
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [stats, setStats] = useState<{
-    total_testes: number;
+    total_tests: number;
     total_eventos: number;
-    total_temas: number;
-    total_documentos: number;
+    total_themes: number;
+    total_documents: number;
   } | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -102,10 +101,10 @@ export default function AccountSettings() {
 
       if (!error && data) {
         setStats({
-          total_testes: data.total_testes || 0,
+          total_tests: data.total_tests || 0,
           total_eventos: data.total_eventos || 0,
-          total_temas: data.total_temas || 0,
-          total_documentos: data.total_documentos || 0,
+          total_themes: data.total_themes || 0,
+          total_documents: data.total_documents || 0,
         });
       }
     };
@@ -136,6 +135,7 @@ export default function AccountSettings() {
     } else {
       addToast("Nome de usuário atualizado com sucesso!", "success");
       localStorage.setItem("userProfile", JSON.stringify({ username }));
+      router.refresh();
     }
   };
 
@@ -171,11 +171,9 @@ export default function AccountSettings() {
   };
 
   return (
-    <section className="pb-12 space-y-8 max-w-5xl mx-auto">
+    <section className="pb-12 space-y-8 w-full mx-auto">
       {/* Banner do Perfil */}
-      <div
-        className="hero rounded-xl shadow-lg relative bg-gradient-to-r from-accent/50 to-base-300 border border-base-300"
-      >
+      <div className="hero rounded-xl shadow-lg relative bg-gradient-to-r from-accent/50 to-secondary/25 border border-base-300">
         <div className="hero-content w-full flex flex-col md:flex-row items-center gap-6 p-6 md:p-10">
           <div className="relative">
             <img
@@ -204,7 +202,9 @@ export default function AccountSettings() {
             <DocumentChartBarIcon className="w-8 h-8" />
           </div>
           <div className="stat-title">Testes</div>
-          <div className="stat-value text-primary">{stats?.total_testes ?? 0}</div>
+          <div className="stat-value text-primary">
+            {stats?.total_tests ?? 0}
+          </div>
           <div className="stat-desc">criados</div>
         </div>
 
@@ -213,7 +213,9 @@ export default function AccountSettings() {
             <CalendarDaysIcon className="w-8 h-8" />
           </div>
           <div className="stat-title">Eventos</div>
-          <div className="stat-value text-secondary">{stats?.total_eventos ?? 0}</div>
+          <div className="stat-value text-secondary">
+            {stats?.total_eventos ?? 0}
+          </div>
           <div className="stat-desc">registrados</div>
         </div>
 
@@ -222,7 +224,9 @@ export default function AccountSettings() {
             <PuzzlePieceIcon className="w-8 h-8" />
           </div>
           <div className="stat-title">Diagramas</div>
-          <div className="stat-value text-accent">{stats?.total_documentos ?? 0}</div>
+          <div className="stat-value text-accent">
+            {stats?.total_documents ?? 0}
+          </div>
           <div className="stat-desc">documentados</div>
         </div>
 
@@ -231,7 +235,7 @@ export default function AccountSettings() {
             <PuzzlePieceIcon className="w-8 h-8" />
           </div>
           <div className="stat-title">Temas</div>
-          <div className="stat-value text-info">{stats?.total_temas ?? 0}</div>
+          <div className="stat-value text-info">{stats?.total_themes ?? 0}</div>
           <div className="stat-desc">personalizados</div>
         </div>
       </div>
@@ -239,55 +243,71 @@ export default function AccountSettings() {
       <hr className="my-4 border-base-300" />
 
       {/* Configurações */}
-      <div className="collapse collapse-arrow bg-base-300 shadow-md rounded-lg">
+      <div className="collapse collapse-arrow bg-base-100/60 backdrop-blur-md border border-base-300/60 rounded-xl shadow-sm hover:shadow-md transition-all">
         <input type="checkbox" className="peer" />
-        <div className="collapse-title text-lg md:text-xl font-bold flex items-center gap-2">
+
+        {/* Título */}
+        <div className="collapse-title text-lg md:text-xl font-semibold flex items-center gap-3 text-base-content/90">
           <WrenchScrewdriverIcon className="size-6 text-primary" />
           Configurações da Conta
         </div>
-        <div className="collapse-content space-y-6">
+
+        {/* Conteúdo */}
+        <div className="collapse-content space-y-8">
           {/* Nome de usuário */}
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text font-semibold">Nome de usuário</span>
             </label>
+
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Digite seu nome de usuário"
-              className="input input-bordered input-primary w-full"
+              className="input input-bordered input-primary w-full focus:ring-2 ring-primary/30 transition-all"
             />
+
             <label className="label">
               <span className="label-text-alt text-base-content/60">
-                Esse é o nome que aparecerá para outros usuários.
+                Esse nome será exibido publicamente.
               </span>
             </label>
+          </div>
+
+          {/* Switch de Tema (Novo Item) */}
+          <div className="flex items-center justify-between p-4 bg-base-100/60 border border-base-300/40 rounded-lg">
+            <span className="font-semibold text-base-content/90">
+              Tema do Sistema
+            </span>
+            <ThemeController />
           </div>
 
           {/* Botão atualizar */}
           <button
             onClick={handleUpdateUsername}
             disabled={loading}
-            className="btn btn-primary w-full"
+            className="btn btn-primary w-full shadow-sm hover:shadow transition-all"
           >
-            {loading ? "Atualizando..." : "Atualizar Nome"}
+            {loading ? "Atualizando..." : "Salvar Alterações"}
           </button>
 
           {/* Zona de risco */}
-          <div className="p-4 border border-error rounded-lg bg-error/10">
-            <h3 className="text-lg font-semibold text-error flex items-center gap-2">
+          <div className="p-5 border border-error/40 bg-error/10 rounded-xl space-y-3">
+            <h3 className="text-lg font-bold text-error flex items-center gap-2">
               <TrashIcon className="w-5 h-5" />
               Zona de Risco
             </h3>
-            <p className="text-sm text-base-content/70 mt-1">
-              Essa ação não pode ser desfeita. Tenha certeza antes de
-              prosseguir.
+
+            <p className="text-sm text-base-content/70">
+              Deletar sua conta é <strong>irreversível</strong>. Todos os dados
+              serão removidos permanentemente.
             </p>
+
             <button
               onClick={handleDeleteAccount}
               disabled={loading}
-              className="btn btn-error w-full mt-4"
+              className="btn btn-error w-full hover:bg-error-focus shadow-sm hover:shadow transition-all"
             >
               {loading ? "Processando..." : "Deletar Conta"}
             </button>

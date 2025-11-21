@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ShowLiveHub from "./hashPages/showLiveHub";
 import AccountSettings from "./hashPages/AccountSettings";
 import { useUser } from "../../context/UserContext";
 import { StyleLab } from "@/app/(private)/dashboard/hashPages/StyleLab";
 import LabTestPage from "./hashPages/LabTestPage";
-import TimerPage from "./hashPages/TimerPage";
 import HubHero from "@/components/ui/dashboard/HubHero";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
@@ -17,6 +16,7 @@ export default function Dashboard() {
   const { session, profile } = useUser();
   const router = useRouter();
   const [activeSection, setActiveSection] = useHashSection("hub");
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     const last = localStorage.getItem("roboStage-last-section");
@@ -56,8 +56,6 @@ export default function Dashboard() {
         return <LabTestPage />;
       case "styleLab":
         return <StyleLab />;
-      case "timer":
-        return <TimerPage />;
       case "profile":
         return <AccountSettings />;
       default:
@@ -76,19 +74,24 @@ export default function Dashboard() {
           <i className="fi fi-br-menu-burger text-xl"></i>
         </label>
 
-        <main className="flex-1 overflow-y-auto bg-base-200 p-6">
+        <main
+          className={`flex-1 overflow-y-auto bg-base-200 p-6 transition-all duration-300 ease-in-out ${collapsed ? "lg:ml-[80px]" : "lg:ml-[256px]"}`}
+        >
           {renderSection()}
         </main>
       </div>
 
       <div className="drawer-side">
         <label htmlFor="app-drawer" className="drawer-overlay"></label>
+
         <Sidebar
           active={activeSection}
           setActive={setActiveSection}
           onLogout={logout}
           profile={profile}
           session={session}
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
         />
       </div>
     </div>

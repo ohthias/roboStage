@@ -10,6 +10,10 @@ import {
   ClipboardIcon,
   BellAlertIcon,
   NumberedListIcon,
+  ClipboardDocumentCheckIcon,
+  CommandLineIcon,
+  ListBulletIcon,
+  PencilIcon,
 } from "@heroicons/react/24/outline";
 import { JSX } from "react";
 
@@ -112,46 +116,51 @@ export default function Sidebar({
       </div>
 
       {/* Navigation */}
-      <ul className="menu px-3 flex-1 overflow-y-auto space-y-1 w-full">
-        {menuItem(<HomeIcon />, "Hub", "hub")}
-        {menuItem(<PresentationChartBarIcon />, "LabTest", "labTest")}
-        {menuItem(<SignalIcon />, "ShowLive", "showLive")}
-        {menuItem(<SparklesIcon />, "StyleLab", "styleLab")}
+      <ul className="px-3 flex flex-col flex-1 overflow-y-auto space-y-1 w-full">
+        {menuItem(<HomeIcon className="size-5" />, "Hub", "hub")}
+        {menuItem(<SignalIcon className="size-5" />, "ShowLive", "showLive")}
+        {menuItem(
+          <PresentationChartBarIcon className="size-5" />,
+          "LabTest",
+          "labTest"
+        )}
+        {menuItem(<PencilIcon className="size-5" />, "InnoLab", "innoLab")}
+        {/*{menuItem(<ClipboardDocumentCheckIcon className="size-5"/>, "RoboFlow", "roboFlow")}
+        {menuItem(<CommandLineIcon className="size-5"/>, "CalibraBot", "calibraBot")}
+        {menuItem(<ListBulletIcon className="size-5"/>, "TrainLab", "trainLab")}*/}
+        {menuItem(<SparklesIcon className="size-5" />, "StyleLab", "styleLab")}
       </ul>
 
       {/* Divider */}
-      <div className="px-3">
-        <div className="divider my-2 text-xs hidden md:block">
-          {" "}
-          {!collapsed && "Ferramentas"}{" "}
-        </div>
+      <div className="divider divider-base-300 my-2 text-xs hidden md:block">
+        {!collapsed && "Ferramentas"}
       </div>
 
       {/* External Tools */}
       <ul className="menu px-3 space-y-1 w-full hidden md:block">
         {menuItem(
-          <LightBulbIcon className="size-5" />,
+          <LightBulbIcon className="size-4" />,
           "QuickBrick Studio",
           "quickbrick",
           true,
           "/quickbrick"
         )}
         {menuItem(
-          <NumberedListIcon className="size-5" />,
+          <NumberedListIcon className="size-4" />,
           "Pontuador UNEARTHED",
           "unearthed",
           true,
           "/fll-score#unearthed"
         )}
         {menuItem(
-          <ClipboardIcon className="size-5" />,
+          <ClipboardIcon className="size-4" />,
           "Flash Q&A",
           "flashqa",
           true,
           "/flash-qa"
         )}
         {menuItem(
-          <BellAlertIcon className="size-5" />,
+          <BellAlertIcon className="size-4" />,
           "Timers Avaliação",
           "timers",
           true,

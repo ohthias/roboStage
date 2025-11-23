@@ -44,10 +44,10 @@ const FloatingToolbar: React.FC<Props> = ({
   const highlightSizes = [10, 20, 35];
 
   return (
-    <div className="absolute left-6 top-1/2 transform -translate-y-1/2 flex flex-row gap-4 z-30 items-start">
+    <div className="absolute left-6 top-1/2 transform -translate-y-1/2 flex flex-row gap-4 z-30 items-start h-screen mt-4">
       
       {/* Main Tools */}
-      <div className="glass-panel p-2 rounded-2xl flex flex-col gap-2">
+      <div className="bg-white p-2 rounded-2xl flex flex-col gap-2">
         <button 
             onClick={() => setInteractionMode('select')}
             className={`p-3 rounded-xl transition-colors group relative ${interactionMode === 'select' ? 'bg-indigo-50 text-indigo-600 shadow-inner' : 'hover:bg-slate-100 text-slate-600'}`} 
@@ -110,36 +110,6 @@ const FloatingToolbar: React.FC<Props> = ({
         </button>
         <button onClick={onRemoveNode} className="p-3 hover:bg-red-50 text-slate-600 hover:text-red-500 rounded-xl transition-colors" title="Delete">
            <Trash2 size={20} />
-        </button>
-      </div>
-
-       {/* History Tools */}
-       <div className="glass-panel p-2 rounded-2xl flex flex-col gap-2">
-        <button 
-            onClick={onUndo} 
-            disabled={!canUndo}
-            className={`p-3 rounded-xl transition-colors ${canUndo ? 'hover:bg-slate-100 text-slate-600' : 'text-slate-300 cursor-not-allowed'}`} 
-            title="Undo"
-        >
-           <Undo2 size={20} />
-        </button>
-        <button 
-            onClick={onRedo} 
-            disabled={!canRedo}
-            className={`p-3 rounded-xl transition-colors ${canRedo ? 'hover:bg-slate-100 text-slate-600' : 'text-slate-300 cursor-not-allowed'}`} 
-            title="Redo"
-        >
-           <Redo2 size={20} />
-        </button>
-      </div>
-
-       {/* View Controls */}
-       <div className="glass-panel p-2 rounded-2xl flex flex-col gap-2">
-        <button onClick={onZoomIn} className="p-3 hover:bg-slate-100 rounded-xl text-slate-600" title="Zoom In">
-           <ZoomIn size={20} />
-        </button>
-        <button onClick={onZoomOut} className="p-3 hover:bg-slate-100 rounded-xl text-slate-600" title="Zoom Out">
-           <ZoomOut size={20} />
         </button>
       </div>
 

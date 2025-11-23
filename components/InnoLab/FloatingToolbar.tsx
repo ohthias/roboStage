@@ -1,6 +1,17 @@
-
-import React from 'react';
-import { Plus, Trash2, ZoomIn, ZoomOut, Type, Undo2, Redo2, Hand, Smile, Lasso, Layers, BoxSelect, MousePointer2, Cable, Highlighter } from 'lucide-react';
+import React from "react";
+import {
+  Plus,
+  Trash2,
+  Type,
+  Hand,
+  Smile,
+  Lasso,
+  Layers,
+  BoxSelect,
+  MousePointer2,
+  Cable,
+  Highlighter,
+} from "lucide-react";
 
 interface Props {
   onAddNode: () => void;
@@ -8,14 +19,10 @@ interface Props {
   onAddSticker: () => void;
   onAddZone: () => void;
   onRemoveNode: () => void;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onUndo: () => void;
-  onRedo: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
-  interactionMode: 'pan' | 'select' | 'lasso' | 'connect' | 'highlighter';
-  setInteractionMode: (mode: 'pan' | 'select' | 'lasso' | 'connect' | 'highlighter') => void;
+  interactionMode: "pan" | "select" | "lasso" | "connect" | "highlighter";
+  setInteractionMode: (
+    mode: "pan" | "select" | "lasso" | "connect" | "highlighter"
+  ) => void;
   isStickerPickerOpen: boolean;
   onToggleLayers: () => void;
   isLayersOpen: boolean;
@@ -25,129 +32,206 @@ interface Props {
   setHighlighterThickness: (t: number) => void;
 }
 
-const FloatingToolbar: React.FC<Props> = ({ 
-  onAddNode, onAddText, onAddSticker, onAddZone, onRemoveNode, onZoomIn, onZoomOut,
-  onUndo, onRedo, canUndo, canRedo, interactionMode, setInteractionMode, isStickerPickerOpen,
-  onToggleLayers, isLayersOpen,
-  highlighterColor, setHighlighterColor,
-  highlighterThickness, setHighlighterThickness
+const FloatingToolbar: React.FC<Props> = ({
+  onAddNode,
+  onAddText,
+  onAddSticker,
+  onAddZone,
+  onRemoveNode,
+  interactionMode,
+  setInteractionMode,
+  isStickerPickerOpen,
+  onToggleLayers,
+  isLayersOpen,
+  highlighterColor,
+  setHighlighterColor,
+  highlighterThickness,
+  setHighlighterThickness,
 }) => {
-  
   const highlightColors = [
-      '#fde047', // Yellow
-      '#86efac', // Green
-      '#f9a8d4', // Pink
-      '#93c5fd', // Blue
-      '#fdba74', // Orange
+    "#fde047", // Yellow
+    "#86efac", // Green
+    "#f9a8d4", // Pink
+    "#93c5fd", // Blue
+    "#fdba74", // Orange
   ];
 
   const highlightSizes = [10, 20, 35];
 
   return (
-    <div className="absolute left-6 top-1/2 transform -translate-y-1/2 flex flex-row gap-4 z-30 items-start h-screen mt-4">
-      
-      {/* Main Tools */}
-      <div className="bg-white p-2 rounded-2xl flex flex-col gap-2">
-        <button 
-            onClick={() => setInteractionMode('select')}
-            className={`p-3 rounded-xl transition-colors group relative ${interactionMode === 'select' ? 'bg-indigo-50 text-indigo-600 shadow-inner' : 'hover:bg-slate-100 text-slate-600'}`} 
-            title="Select Tool (Rectangle)"
+    <div className="absolute left-0 top-0 h-screen flex items-start z-30">
+      <div className="m-4 rounded-2xl p-3 bg-base-100 border border-base-300 shadow-lg flex flex-col gap-1 h-max">
+        <button
+          onClick={() => setInteractionMode("pan")}
+          className={`btn btn-square btn-sm ${
+            interactionMode === "pan"
+              ? "bg-primary/10 text-primary border-primary"
+              : "btn-ghost"
+          }`}
+          title="Navegar"
         >
-           <MousePointer2 size={20} />
+          <Hand size={18} />
         </button>
-        <button 
-            onClick={() => setInteractionMode('lasso')}
-            className={`p-3 rounded-xl transition-colors group relative ${interactionMode === 'lasso' ? 'bg-indigo-50 text-indigo-600 shadow-inner' : 'hover:bg-slate-100 text-slate-600'}`} 
-            title="Lasso Tool (Freehand)"
+
+        <button
+          onClick={() => setInteractionMode("select")}
+          className={`btn btn-square btn-sm ${
+            interactionMode === "select"
+              ? "bg-primary/10 text-primary border-primary"
+              : "btn-ghost"
+          }`}
+          title="Ferramenta Seleção"
         >
-           <Lasso size={20} />
+          <MousePointer2 size={18} />
         </button>
-        <button 
-            onClick={() => setInteractionMode('connect')}
-            className={`p-3 rounded-xl transition-colors group relative ${interactionMode === 'connect' ? 'bg-indigo-50 text-indigo-600 shadow-inner' : 'hover:bg-slate-100 text-slate-600'}`} 
-            title="Connect Tool"
+
+        <button
+          onClick={() => setInteractionMode("lasso")}
+          className={`btn btn-square btn-sm ${
+            interactionMode === "lasso"
+              ? "bg-primary/10 text-primary border-primary"
+              : "btn-ghost"
+          }`}
+          title="Ferramenta Laço"
         >
-           <Cable size={20} />
+          <Lasso size={18} />
         </button>
-         <button 
-            onClick={() => setInteractionMode('highlighter')}
-            className={`p-3 rounded-xl transition-colors group relative ${interactionMode === 'highlighter' ? 'bg-indigo-50 text-indigo-600 shadow-inner' : 'hover:bg-slate-100 text-slate-600'}`} 
-            title="Highlighter Tool"
+
+        <button
+          onClick={() => setInteractionMode("connect")}
+          className={`btn btn-square btn-sm ${
+            interactionMode === "connect"
+              ? "bg-primary/10 text-primary border-primary"
+              : "btn-ghost"
+          }`}
+          title="Ferramenta Conectar"
         >
-           <Highlighter size={20} />
+          <Cable size={18} />
         </button>
-        <button 
-            onClick={() => setInteractionMode('pan')}
-            className={`p-3 rounded-xl transition-colors group relative ${interactionMode === 'pan' ? 'bg-indigo-50 text-indigo-600 shadow-inner' : 'hover:bg-slate-100 text-slate-600'}`} 
-            title="Pan Tool"
+
+        <button
+          onClick={() => setInteractionMode("highlighter")}
+          className={`btn btn-square btn-sm ${
+            interactionMode === "highlighter"
+              ? "bg-primary/10 text-primary border-primary"
+              : "btn-ghost"
+          }`}
+          title="Marcador"
         >
-           <Hand size={20} />
+          <Highlighter size={18} />
         </button>
-        <div className="h-px bg-slate-200 w-full my-1"></div>
-        <button onClick={onAddNode} className="p-3 hover:bg-brand-50 text-brand-600 hover:text-brand-700 rounded-xl transition-colors" title="Add Node">
-           <Plus size={20} />
-        </button>
-        <button onClick={onAddText} className="p-3 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors" title="Add Text Block">
-           <Type size={20} />
-        </button>
-        <button 
-            onClick={onAddSticker} 
-            className={`p-3 rounded-xl transition-colors ${isStickerPickerOpen ? 'bg-indigo-50 text-indigo-600' : 'hover:bg-slate-100 text-slate-600'}`}
-            title="Add Sticker"
+
+        <div className="divider my-1"></div>
+        {/* ADD NODE */}
+        <button
+          onClick={onAddNode}
+          className="btn btn-square btn-sm btn-ghost hover:bg-primary/10 hover:text-primary"
+          title="Criar Nó"
         >
-           <Smile size={20} />
+          <Plus size={18} />
         </button>
-         <button onClick={onAddZone} className="p-3 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors" title="Add Zone">
-           <BoxSelect size={20} />
-        </button>
-        <div className="h-px bg-slate-200 w-full my-1"></div>
-         <button 
-            onClick={onToggleLayers}
-            className={`p-3 rounded-xl transition-colors ${isLayersOpen ? 'bg-indigo-50 text-indigo-600' : 'hover:bg-slate-100 text-slate-600'}`}
-            title="Layers"
+
+        {/* TEXT */}
+        <button
+          onClick={onAddText}
+          className="btn btn-square btn-sm btn-ghost"
+          title="Adicionar Bloco de Texto"
         >
-           <Layers size={20} />
+          <Type size={18} />
         </button>
-        <button onClick={onRemoveNode} className="p-3 hover:bg-red-50 text-slate-600 hover:text-red-500 rounded-xl transition-colors" title="Delete">
-           <Trash2 size={20} />
+
+        {/* STICKER */}
+        <button
+          onClick={onAddSticker}
+          className={`btn btn-square btn-sm ${
+            isStickerPickerOpen
+              ? "bg-primary/10 text-primary border-primary"
+              : "btn-ghost"
+          }`}
+          title="Adicionar Sticker"
+        >
+          <Smile size={18} />
+        </button>
+
+        {/* ZONE */}
+        <button
+          onClick={onAddZone}
+          className="btn btn-square btn-sm btn-ghost"
+          title="Criar Zona"
+        >
+          <BoxSelect size={18} />
+        </button>
+
+        <div className="divider my-1"></div>
+
+        {/* LAYERS */}
+        <button
+          onClick={onToggleLayers}
+          className={`btn btn-square btn-sm ${
+            isLayersOpen
+              ? "bg-primary/10 text-primary border-primary"
+              : "btn-ghost"
+          }`}
+          title="Camadas"
+        >
+          <Layers size={18} />
+        </button>
+
+        {/* DELETE */}
+        <button
+          onClick={onRemoveNode}
+          className="btn btn-square btn-sm btn-ghost hover:text-error"
+          title="Deletar Elemento"
+        >
+          <Trash2 size={18} />
         </button>
       </div>
 
-      {/* Highlighter Options Sub-menu (Visible when Highlighter is active) */}
-      {interactionMode === 'highlighter' && (
-         <div className="glass-panel p-3 rounded-2xl flex flex-col gap-4 animate-in fade-in slide-in-from-left-4 duration-200">
-            
-            {/* Colors */}
+      {/* HIGHLIGHTER SUBMENU */}
+      {interactionMode === "highlighter" && (
+        <div className="ml-2 mt-4 p-4 bg-base-100 rounded-2xl shadow-xl border border-base-300 flex flex-col gap-4 animate-[slideIn_0.15s_ease-out]">
+          {/* COLORS */}
+          <div className="flex flex-col gap-1 items-center">
+            <span className="text-[10px] uppercase text-base-content/50 font-bold tracking-wider">
+              Cor
+            </span>
             <div className="flex flex-col gap-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Color</span>
-                <div className="flex flex-col gap-2">
-                    {highlightColors.map(c => (
-                        <button 
-                            key={c}
-                            onClick={() => setHighlighterColor(c)}
-                            className={`w-8 h-8 rounded-full border-2 transition-all hover:scale-110 ${highlighterColor === c ? 'border-indigo-500 shadow-md scale-110' : 'border-transparent'}`}
-                            style={{ backgroundColor: c }}
-                        />
-                    ))}
-                </div>
+              {highlightColors.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setHighlighterColor(c)}
+                  className={`w-8 h-8 rounded-full border-2 transition-all hover:scale-110 ${
+                    highlighterColor === c
+                      ? "border-primary scale-110 shadow"
+                      : "border-base-300"
+                  }`}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
             </div>
+          </div>
 
-             {/* Sizes */}
-             <div className="flex flex-col gap-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Size</span>
-                <div className="flex flex-col items-center gap-3">
-                    {highlightSizes.map(s => (
-                        <button 
-                            key={s}
-                            onClick={() => setHighlighterThickness(s)}
-                            className={`rounded-full bg-slate-400 transition-all hover:bg-slate-600 ${highlighterThickness === s ? 'bg-indigo-600 ring-2 ring-indigo-200' : ''}`}
-                            style={{ width: s/2 + 10, height: s/2 + 10 }}
-                        />
-                    ))}
-                </div>
+          {/* SIZES */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase text-base-content/50 font-bold tracking-wider">
+              Tamanho
+            </span>
+            <div className="flex flex-col items-center gap-3">
+              {highlightSizes.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setHighlighterThickness(s)}
+                  className={`rounded-full bg-base-content/40 hover:bg-base-content/70 transition-all ${
+                    highlighterThickness === s
+                      ? "bg-primary ring-2 ring-primary/40"
+                      : ""
+                  }`}
+                  style={{ width: s / 2 + 12, height: s / 2 + 12 }}
+                />
+              ))}
             </div>
-
-         </div>
+          </div>
+        </div>
       )}
     </div>
   );

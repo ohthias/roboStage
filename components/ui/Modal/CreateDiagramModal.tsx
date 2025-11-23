@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import { Brain, Fish, List, CircleDashed, Workflow } from "lucide-react";
 
 interface CreateDiagramModalProps {
   onCreate: (data: { title: string; type: string }) => void;
 }
 
-export default function CreateDiagramModal({ onCreate }: CreateDiagramModalProps) {
+export default function CreateDiagramModal({
+  onCreate,
+}: CreateDiagramModalProps) {
   const [title, setTitle] = useState("");
   const [type, setType] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -19,21 +21,35 @@ export default function CreateDiagramModal({ onCreate }: CreateDiagramModalProps
       name: "5W2H",
       description:
         "Estruture planos com base nas 7 perguntas fundamentais: o que, por quê, onde, quando, quem, como e quanto.",
-      image: "/images/cardInnoTest/5w2h.png",
+      icon: List,
     },
     {
       id: "Ishikawa",
       name: "Diagrama de Ishikawa",
       description:
         "Identifique causas e efeitos de problemas organizacionais em formato de espinha de peixe.",
-      image: "/images/cardInnoTest/ishikawa.png",
+      icon: Fish,
     },
     {
       id: "Mapa Mental",
       name: "Mapa Mental",
       description:
         "Organize ideias e temas de forma visual e hierárquica para facilitar o entendimento.",
-      image: "/images/cardInnoTest/mapaMental.png",
+      icon: Brain,
+    },
+    {
+      id: "SWOT",
+      name: "Análise SWOT",
+      description:
+        "Avalie forças, fraquezas, oportunidades e ameaças para planejamento estratégico.",
+      icon: CircleDashed,
+    },
+    {
+      id: "Flowchart",
+      name: "Fluxograma",
+      description:
+        "Visualize processos e fluxos de trabalho com diagramas claros e estruturados.",
+      icon: Workflow,
     },
   ];
 
@@ -48,28 +64,31 @@ export default function CreateDiagramModal({ onCreate }: CreateDiagramModalProps
 
   return (
     <>
-      {/* Botão para abrir o modal */}
       <button className="btn btn-secondary" onClick={() => setIsOpen(true)}>
         Criar Diagrama
       </button>
 
-      {/* Modal DaisyUI */}
       {isOpen && (
         <dialog open className="modal modal-open">
-          <div className="modal-box max-w-3xl">
-            {/* Cabeçalho */}
+          <div className="modal-box max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg text-secondary">Novo Diagrama</h3>
-              <button onClick={() => setIsOpen(false)} className="btn btn-ghost btn-sm">
+              <h3 className="font-bold text-lg text-secondary">
+                Novo Diagrama
+              </h3>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="btn btn-ghost btn-sm"
+              >
                 <XMarkIcon className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Nome do documento */}
               <div>
                 <label className="label">
-                  <span className="label-text font-semibold">Nome do Documento</span>
+                  <span className="label-text font-semibold">
+                    Nome do Documento
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -81,44 +100,59 @@ export default function CreateDiagramModal({ onCreate }: CreateDiagramModalProps
                 />
               </div>
 
-              {/* Seleção de tipo de diagrama */}
               <div>
-                <span className="label-text font-semibold mb-2 block">Tipo de Diagrama</span>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {diagramOptions.map((opt) => (
-                    <div
-                      key={opt.id}
-                      className={`card border-2 cursor-pointer transition-all duration-200 hover:shadow-lg ${
-                        type === opt.id ? "border-secondary bg-base-200" : "border-base-300"
-                      }`}
-                      onClick={() => setType(opt.id)}
-                    >
-                      {/* imagem ocupa toda a largura */}
-                      <figure className="w-full h-40 overflow-hidden rounded-t-xl">
-                        <Image
-                          src={opt.image}
-                          alt={opt.name}
-                          width={400}
-                          height={400}
-                          className="w-full h-full object-cover"
-                        />
-                      </figure>
+                <span className="label-text font-semibold mb-2 block">
+                  Tipo de Diagrama
+                </span>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {diagramOptions.map((opt) => {
+                    const Icon = opt.icon;
+                    const isSelected = type === opt.id;
 
-                      <div className="card-body p-4">
-                        <h2 className="card-title text-secondary text-base">{opt.name}</h2>
-                        <p className="text-sm text-base-content">{opt.description}</p>
+                    return (
+                      <div
+                        key={opt.id}
+                        className={`flex flex-col items-center justify-center p-4 cursor-pointer rounded-xl
+            border-2 transition-all duration-300 transform
+            ${
+              isSelected
+                ? "border-secondary bg-base-200 shadow-lg scale-105"
+                : "border-base-300 hover:border-secondary hover:shadow-md hover:scale-105 transition-all duration-300"
+            }`}
+                        onClick={() => setType(opt.id)}
+                      >
+                        {/* Ícone com animação */}
+                        <Icon className="w-16 h-16 text-secondary mb-2 transition-transform duration-300" />
+                        <span className="font-medium text-center text-base text-secondary">
+                          {opt.name}
+                        </span>
+
+                        {/* Descrição só aparece se selecionado */}
+                        {isSelected && (
+                          <p className="mt-2 text-xs text-center text-base-content transition-opacity duration-300">
+                            {opt.description}
+                          </p>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Botões */}
               <div className="modal-action">
-                <button type="button" onClick={() => setIsOpen(false)} className="btn">
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="btn"
+                >
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-secondary" disabled={!title || !type}>
+                <button
+                  type="submit"
+                  className="btn btn-secondary"
+                  disabled={!title || !type}
+                >
                   Criar Diagrama
                 </button>
               </div>

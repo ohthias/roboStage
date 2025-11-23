@@ -1252,9 +1252,7 @@ const DiagramCanvas: React.FC<Props> = ({
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-white/80 backdrop-blur p-2 rounded-lg shadow border text-xs text-slate-500 pointer-events-none select-none">
         {Math.round(zoom * 100)}% Zoom
         <span className="mx-2">|</span>
-        Double-click to edit text
-        <span className="mx-2">|</span>
-        Space / Middle Click to Pan
+        Double-click para editar texto
       </div>
     </div>
   );

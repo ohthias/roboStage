@@ -218,7 +218,7 @@ export const useDiagram = (initialType: DiagramType) => {
         text:
           overrides?.type === "label" || overrides?.type === "text"
             ? "Text"
-            : "New Idea",
+            : "Nova Ideia",
         type: "leaf",
         color: "#ffffff",
         textColor: "#1e293b",
@@ -285,7 +285,7 @@ export const useDiagram = (initialType: DiagramType) => {
       id: uuidv4(),
       x: centerX,
       y: centerY,
-      text: "NEW ZONE",
+      text: "Nova Zona",
       type: "zone",
       color: "transparent",
       textColor: "#64748b",

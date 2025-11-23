@@ -2,17 +2,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { DiagramType } from "@/types/InnoLabType";
 import { useDiagram } from "@/hooks/useDiagram";
-import { DIAGRAM_TYPES, AVAILABLE_FONTS } from "../../constants";
+import { AVAILABLE_FONTS } from "../../constants";
 import {
   ArrowLeft,
   Save,
-  Share2,
   Download,
   Trash2,
   Copy,
-  Palette,
-  ChevronDown,
-  Check,
   Layout,
   Fish,
   Table,
@@ -22,7 +18,6 @@ import {
   Grid,
   Briefcase,
   Minus,
-  MoreHorizontal,
   Square,
   Circle,
   Diamond,
@@ -39,7 +34,6 @@ import {
   Unlock,
   Eye,
   EyeOff,
-  ChevronUp,
   ChevronDown as ChevronDownIcon,
   ArrowUpToLine,
   ArrowDownToLine,
@@ -48,18 +42,12 @@ import {
   Plus,
   BoxSelect,
   Cloud,
-  Home,
   Triangle,
   Hexagon,
   Star,
   Database,
   FileText,
-  Spline,
   Activity,
-  ArrowRight,
-  MoveHorizontal,
-  CornerDownRight,
-  Frame,
   Redo2,
   Undo2,
   ZoomIn,
@@ -68,32 +56,9 @@ import {
 import DiagramCanvas from "@/components/InnoLab/DiagramCanvas";
 import StickerPicker from "@/components/InnoLab/StickerPicker";
 import FloatingToolbar from "@/components/InnoLab/FloatingToolbar";
-
-// Simulating the Next.js hooks for standalone preview
-const useRouter = () => ({
-  push: (path: string) => console.log("Navigate to", path),
-});
-const useParams = () => ({ id: "demo-1", diagram_type: "Mind Map" });
-const useToast = () => {
-  return {
-    addToast: (msg: string, type: "success" | "error" | "info") => {
-      console.log(`[${type.toUpperCase()}] ${msg}`);
-      if (typeof document !== "undefined") {
-        const div = document.createElement("div");
-        div.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg text-white text-sm font-medium shadow-lg z-50 animate-in slide-in-from-bottom-5 fade-in ${
-          type === "error"
-            ? "bg-red-500"
-            : type === "success"
-            ? "bg-green-500"
-            : "bg-slate-700"
-        }`;
-        div.innerText = msg;
-        document.body.appendChild(div);
-        setTimeout(() => div.remove(), 3000);
-      }
-    },
-  };
-};
+import { useParams, useRouter } from "next/navigation";
+import { supabase } from "@/utils/supabase/client";
+import { useToast } from "@/app/context/ToastContext";
 
 // Expanded Color Palettes
 const NODE_COLORS = [
@@ -182,7 +147,44 @@ const getTypeIcon = (type: DiagramType) => {
 
 export default function InnoLab() {
   const router = useRouter();
+  const params = useParams();
+
+  const documentId = params.id as string;
+  const [idUser, setIduser] = useState("");
+
   const { addToast } = useToast();
+
+  useEffect(() => {
+    async function loadDocument() {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("*")
+        .eq("id", documentId)
+        .single();
+
+      if (error) {
+        addToast("Erro ao carregar diagrama", "error");
+        return;
+      }
+
+      if (!data) return;
+
+      setDiagramName(data.title);
+      setDiagramType(data.diagram_type as DiagramType);
+      setIduser(data.user_id);
+
+      const json = data.content || {};
+      setInitialDiagram(
+        json.nodes ?? [],
+        json.connections ?? [],
+        json.paths ?? []
+      );
+
+      addToast("Diagrama carregado do servidor", "success");
+    }
+
+    if (documentId) loadDocument();
+  }, [documentId]);
 
   // States
   const [diagramType, setDiagramType] = useState<DiagramType>("Mapa Mental");
@@ -272,7 +274,6 @@ export default function InnoLab() {
     }
   }, []);
 
-  // Open sidebar if something is selected, defaulting to properties
   useEffect(() => {
     if (selectedNode || selectedConnectionId) {
       setIsSidebarOpen(true);
@@ -283,18 +284,28 @@ export default function InnoLab() {
     }
   }, [selectedNode, selectedConnectionId]);
 
-  const handleSave = () => {
-    const data = {
+  const handleSave = async () => {
+    const content = {
       nodes,
       connections,
       paths,
-      type: diagramType,
-      name: diagramName,
-      timestamp: new Date().getTime(),
     };
-    localStorage.setItem("innolab_saved_diagram", JSON.stringify(data));
-    setHasSavedData(true);
-    addToast("Diagram saved successfully", "success");
+
+    const { error } = await supabase.from("documents").upsert({
+      id: documentId,
+      title: diagramName,
+      diagram_type: diagramType,
+      content,
+      user_id: idUser,
+      updated_at: new Date().toISOString(),
+    });
+
+    if (error) {
+      addToast("Erro ao salvar no servidor", "error");
+      console.error("Supabase Save Error:", error);
+    } else {
+      addToast("Salvo no Supabase com sucesso!", "success");
+    }
   };
 
   const handleLoad = () => {
@@ -314,15 +325,12 @@ export default function InnoLab() {
 
     addToast("Generating PNG...", "info");
 
-    // Clone to modify for export without affecting DOM
     const clone = svg.cloneNode(true) as SVGElement;
 
-    // Fix foreignObjects for proper rendering in Image
     const fos = clone.querySelectorAll("foreignObject");
     fos.forEach((fo) => {
       const div = fo.querySelector("div");
       if (div) {
-        // Browsers need the XHTML namespace on the root element inside foreignObject
         div.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
       }
     });
@@ -407,13 +415,6 @@ export default function InnoLab() {
     img.src = svgUrl;
   };
 
-  const handleTypeChange = (type: DiagramType) => {
-    setDiagramType(type);
-    setIsTypeDropdownOpen(false);
-    loadTemplateNodes(type);
-    addToast(`Switched to ${type}`, "info");
-  };
-
   const handleAddTextNode = () => {
     addNode({
       color: "transparent",
@@ -472,180 +473,136 @@ export default function InnoLab() {
       <div
         className="absolute inset-0 pointer-events-none z-0"
         style={{
-          backgroundImage: `radial-gradient(#94a3b8 1px, transparent 1px)`,
+          backgroundImage: `
+      radial-gradient(circle, #94a3b8 1px, transparent 1px)
+    `,
           backgroundSize: `20px 20px`,
-          opacity: 0.3,
           backgroundPosition: `${pan.x}px ${pan.y}px`,
+          opacity: 0.3,
         }}
       />
 
       {/* --- Header --- */}
-      <header className="absolute top-4 left-0 right-0 h-16 z-20 flex justify-between items-start px-6 pointer-events-none">
-        {/* Left: Back & Brand */}
-        <div className="pointer-events-auto flex items-center gap-3 ml-16">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="glass-panel p-2.5 rounded-xl text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all shadow-sm group"
-            title="Back to Dashboard"
-          >
-            <ArrowLeft
-              size={20}
-              className="group-hover:-translate-x-0.5 transition-transform"
-            />
-          </button>
-        </div>
-
-        {/* Center: Centralized Navbar */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-0 pointer-events-auto flex flex-col items-center z-30">
-          <div className="glass-panel px-1.5 py-1.5 rounded-full flex items-center shadow-xl shadow-indigo-500/5 border border-white/80 gap-1 backdrop-blur-xl">
-            {/* Type Badge / Dropdown Trigger */}
+      <header className="absolute top-4 left-0 right-0 z-20 px-6 h-16 flex items-center justify-between pointer-events-none max-w-4xl ml-auto">
+        {/* CENTER SECTION */}
+        <div className="pointer-events-auto flex flex-col items-center">
+          <div className="backdrop-blur bg-base-100/80 border border-base-300 shadow-xl shadow-primary/5 px-2 py-1.5 rounded-full flex items-center gap-1">
+            <button
+              onClick={() => router.push("/dashboard")}
+              title="Voltar para a Dashboard"
+              className="btn btn-sm btn-ghost"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            {/* TYPE DROPDOWN LABEL */}
             <div className="relative">
-              <button
-                onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-full text-xs font-bold transition-all border border-transparent hover:border-indigo-100 group"
-              >
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold">
                 {getTypeIcon(diagramType)}
                 <span className="hidden sm:block">{diagramType}</span>
-                <ChevronDown
-                  size={12}
-                  className="opacity-50 group-hover:opacity-100 transition-opacity"
-                />
-              </button>
-
-              {/* Dropdown */}
-              {isTypeDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-56 glass-panel rounded-2xl p-1.5 shadow-xl animate-in fade-in zoom-in duration-100 flex flex-col gap-1 z-50 border border-white/60">
-                  {DIAGRAM_TYPES.map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => handleTypeChange(t)}
-                      className={`flex items-center gap-3 p-2 rounded-xl text-xs font-medium text-left transition-all ${
-                        diagramType === t
-                          ? "bg-indigo-50 text-indigo-600"
-                          : "hover:bg-slate-50 text-slate-600"
-                      }`}
-                    >
-                      <div
-                        className={`p-1.5 rounded-lg ${
-                          diagramType === t
-                            ? "bg-indigo-100 text-indigo-600"
-                            : "bg-slate-100 text-slate-400"
-                        }`}
-                      >
-                        {getTypeIcon(t)}
-                      </div>
-                      {t}
-                      {diagramType === t && (
-                        <Check size={12} className="ml-auto text-indigo-500" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
+              </div>
             </div>
 
-            <div className="w-px h-4 bg-slate-200 mx-1"></div>
+            {/* Divider */}
+            <div className="w-px h-4 bg-base-300 mx-1"></div>
 
-            {/* Title Input */}
+            {/* TITLE INPUT */}
             <input
               value={diagramName}
               onChange={(e) => setDiagramName(e.target.value)}
-              className="bg-transparent font-bold text-slate-700 text-sm px-3 w-32 sm:w-56 text-center outline-none focus:bg-white focus:ring-2 focus:ring-indigo-100 rounded-lg transition-all placeholder:text-slate-300 py-1"
-              placeholder="Untitled Diagram"
+              className="bg-transparent font-bold text-base-content text-sm px-3 w-32 sm:w-56 text-center outline-none focus:bg-base-100 focus:ring-2 focus:ring-primary/20 rounded-lg transition-all placeholder:text-base-content/40 py-1"
+              placeholder="Diagrama sem título"
             />
 
-            <div className="w-px h-4 bg-slate-200 mx-1"></div>
+            {/* Divider */}
+            <div className="w-px h-4 bg-base-300 mx-1"></div>
 
-            {/* Status Icon */}
+            {/* STATUS ICON */}
             <div
-              className="px-2 text-slate-400 flex items-center justify-center w-8 h-8"
-              title={hasSavedData ? "Saved locally" : "Unsaved changes"}
+              className="px-2 flex items-center justify-center w-8 h-8"
+              title={hasSavedData ? "Salvo" : "Mudanças não salvas"}
             >
               {hasSavedData ? (
                 <Cloud
                   size={16}
-                  className="text-emerald-500 animate-in zoom-in duration-300"
+                  className="text-success animate-in zoom-in duration-300"
                 />
               ) : (
-                <div className="w-2 h-2 bg-slate-300 rounded-full" />
+                <div className="w-2 h-2 bg-base-content/40 rounded-full" />
               )}
             </div>
           </div>
         </div>
 
-        {/* Right: Actions */}
-        <div className="pointer-events-auto glass-panel p-1.5 rounded-2xl flex items-center gap-1 shadow-lg shadow-slate-200/50 border border-white/50">
-          {/* History Tools */}
-          <div className="glass-panel p-2 rounded-2xl flex flex-row gap-2">
+        {/* RIGHT SECTION */}
+        <div className="pointer-events-auto flex items-center gap-2 rounded-2xl p-2 bg-base-100/80 backdrop-blur border border-base-300 shadow">
+          {/* UNDO / REDO */}
+          <div className="flex gap-2">
             <button
               onClick={undo}
               disabled={!canUndo}
-              className={`p-3 rounded-xl transition-colors ${
-                canUndo
-                  ? "hover:bg-slate-100 text-slate-600"
-                  : "text-slate-300 cursor-not-allowed"
-              }`}
-              title="Undo"
+              className="btn btn-square btn-ghost btn-sm text-base-content disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Desfazer"
             >
-              <Undo2 size={20} />
+              <Undo2 size={18} />
             </button>
             <button
               onClick={redo}
               disabled={!canRedo}
-              className={`p-3 rounded-xl transition-colors ${
-                canRedo
-                  ? "hover:bg-slate-100 text-slate-600"
-                  : "text-slate-300 cursor-not-allowed"
-              }`}
-              title="Redo"
+              className="btn btn-square btn-ghost btn-sm text-base-content disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Refazer"
             >
-              <Redo2 size={20} />
+              <Redo2 size={18} />
             </button>
           </div>
 
-          {/* View Controls */}
-          <div className="glass-panel p-2 rounded-2xl flex flex-row gap-2">
+          {/* ZOOM */}
+          <div className="flex gap-2 ml-2">
             <button
               onClick={() => setZoom((z) => Math.min(z + 0.1, 3))}
-              className="p-3 hover:bg-slate-100 rounded-xl text-slate-600"
+              className="btn btn-square btn-ghost btn-sm"
               title="Zoom In"
             >
-              <ZoomIn size={20} />
+              <ZoomIn size={18} />
             </button>
             <button
               onClick={() => setZoom((z) => Math.max(z - 0.1, 0.1))}
-              className="p-3 hover:bg-slate-100 rounded-xl text-slate-600"
+              className="btn btn-square btn-ghost btn-sm"
               title="Zoom Out"
             >
-              <ZoomOut size={20} />
+              <ZoomOut size={18} />
             </button>
           </div>
 
+          {/* RELOAD LAST SAVE */}
           {hasSavedData && (
             <button
               onClick={handleLoad}
-              className="p-2 hover:bg-slate-100 rounded-xl text-slate-500 transition-colors"
-              title="Reload last save"
+              className="btn btn-square btn-ghost btn-sm text-base-content/70"
+              title="Recarregar último salvamento"
             >
-              <RefreshCw size={20} />
+              <RefreshCw size={18} />
             </button>
           )}
+
+          {/* SAVE */}
           <button
             onClick={handleSave}
-            className="p-2 hover:bg-slate-100 rounded-xl text-slate-500 transition-colors group relative"
-            title="Save"
+            className="btn btn-square btn-ghost btn-sm relative"
+            title="Salvar diagrama"
           >
-            <Save size={20} />
+            <Save size={18} />
             {!hasSavedData && (
-              <span className="absolute top-2 right-2 w-2 h-2 bg-amber-500 rounded-full border border-white"></span>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-warning rounded-full"></span>
             )}
           </button>
+
+          {/* EXPORT */}
           <button
             onClick={handleExport}
-            className="p-2 hover:bg-slate-100 rounded-xl text-slate-500 transition-colors"
-            title="Export Image (PNG)"
+            className="btn btn-square btn-ghost btn-sm"
+            title="Exportar como PNG"
           >
-            <Download size={20} />
+            <Download size={18} />
           </button>
         </div>
       </header>
@@ -657,12 +614,6 @@ export default function InnoLab() {
         onAddSticker={() => setIsStickerPickerOpen(!isStickerPickerOpen)}
         onAddZone={addZone}
         onRemoveNode={removeNode}
-        onZoomIn={() => setZoom((z) => Math.min(z + 0.1, 3))}
-        onZoomOut={() => setZoom((z) => Math.max(z - 0.1, 0.1))}
-        onUndo={undo}
-        onRedo={redo}
-        canUndo={canUndo}
-        canRedo={canRedo}
         interactionMode={interactionMode}
         setInteractionMode={setInteractionMode}
         isStickerPickerOpen={isStickerPickerOpen}
@@ -682,63 +633,77 @@ export default function InnoLab() {
 
       {/* Right Sidebar (Properties & Layers) */}
       <aside
-        className={`absolute right-4 top-24 bottom-6 w-80 rounded-3xl shadow-2xl shadow-slate-300/50 z-30 transform transition-transform duration-300 flex flex-col overflow-hidden border border-white/50 bg-white ${
+        className={`absolute right-4 top-24 bottom-6 w-80 rounded-3xl shadow-xl bg-base-100 border border-base-300 z-30 transition-all duration-300 overflow-hidden flex flex-col ${
           isSidebarOpen ? "translate-x-0" : "translate-x-[120%]"
         }`}
       >
-        {/* Sidebar Header & Tabs */}
-        <div className="px-4 pt-4 pb-2 bg-white backdrop-blur-md z-10 border-b border-white/20">
-          <div className="flex items-center p-1 bg-slate-100/80 rounded-xl border border-slate-200/50 shadow-inner">
+        {/* HEADER COM TABS DAISYUI */}
+        <div className="p-4 border-b border-base-300 bg-base-100">
+          <div role="tablist" className="tabs tabs-box w-full">
             <button
-              onClick={() => setActiveSidebarTab("properties")}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 ${
-                activeSidebarTab === "properties"
-                  ? "bg-white text-indigo-600 shadow-sm ring-1 ring-black/5"
-                  : "text-slate-500 hover:text-slate-700 hover:bg-black/5"
+              role="tab"
+              className={`tab flex-1 ${
+                activeSidebarTab === "properties" ? "tab-active" : ""
               }`}
+              onClick={() => setActiveSidebarTab("properties")}
             >
-              Properties
+              Propriedades
             </button>
             <button
-              onClick={() => setActiveSidebarTab("layers")}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 ${
-                activeSidebarTab === "layers"
-                  ? "bg-white text-indigo-600 shadow-sm ring-1 ring-black/5"
-                  : "text-slate-500 hover:text-slate-700 hover:bg-black/5"
+              role="tab"
+              className={`tab flex-1 ${
+                activeSidebarTab === "layers" ? "tab-active" : ""
               }`}
+              onClick={() => setActiveSidebarTab("layers")}
             >
-              Layers
+              Camadas
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
+        {/* CONTEÚDO */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-6">
+          {/* ================= PROPRIEDADES ================= */}
           {activeSidebarTab === "properties" && (
             <>
-              {/* Case: Connection Selected */}
-              {selectedConnectionId && currentConnection && (
-                <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-200">
-                  <div className="flex items-center gap-2 text-slate-700 font-bold pb-2 border-b border-slate-200/50">
-                    <GitFork size={16} className="text-indigo-500" />
-                    <span>Line Settings</span>
+              {/* Nenhum item selecionado */}
+              {!selectedNodeIds.size && !selectedConnectionId && (
+                <div className="flex flex-col items-center justify-center h-60 text-base-content/40">
+                  <div className="w-16 h-16 bg-base-200 rounded-full flex items-center justify-center shadow-inner mb-4">
+                    <MousePointer2 size={24} />
                   </div>
+                  <p className="text-sm font-medium">Nenhum Item Selecionado</p>
+                  <p className="text-xs opacity-60 mt-1 text-center">
+                    Clique em um item para editar suas propriedades.
+                  </p>
+                </div>
+              )}
 
-                  {/* Color */}
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 block">
-                      Stroke Color
-                    </label>
-                    <div className="flex flex-wrap gap-3">
+              {/* PROPRIEDADES DE CONEXÃO */}
+              {selectedConnectionId && currentConnection && (
+                <div className="space-y-6">
+                  <h3 className="font-bold text-sm flex items-center gap-2">
+                    <GitFork size={15} className="text-primary" />
+                    Configurações da Conexão
+                  </h3>
+
+                  {/* CORES DA LINHA */}
+                  <div className="card bg-base-200 p-4 space-y-3 border border-base-300">
+                    <span className="text-[11px] tracking-widest font-bold text-base-content/60">
+                      Cor
+                    </span>
+
+                    <div className="flex flex-wrap gap-2">
                       {CONNECTION_COLORS.map((c) => (
                         <button
                           key={c}
                           onClick={() =>
                             updateConnection(currentConnection.id, { color: c })
                           }
-                          className={`w-8 h-8 rounded-full border-2 transition-all duration-200 hover:scale-110 focus:ring-2 focus:ring-indigo-500/20 ${
+                          className={`w-8 h-8 rounded-full ring-offset-2 transition-all ${
                             currentConnection.color === c
-                              ? "border-indigo-500 scale-110 shadow-md"
-                              : "border-transparent shadow-sm"
+                              ? "ring-2 ring-primary scale-110 shadow"
+                              : "ring-0 hover:ring-1 hover:ring-primary/40"
                           }`}
                           style={{ backgroundColor: c }}
                         />
@@ -746,888 +711,525 @@ export default function InnoLab() {
                     </div>
                   </div>
 
-                  {/* Thickness */}
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                        Thickness
-                      </label>
-                      <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 rounded-full">
-                        {currentConnection.thickness || 2}px
-                      </span>
-                    </div>
+                  {/* ESPESSURA */}
+                  <div className="card bg-base-200 p-4 border border-base-300">
+                    <span className="text-[11px] tracking-widest font-bold text-base-content/60">
+                      Espessura ({currentConnection.thickness}px)
+                    </span>
                     <input
                       type="range"
-                      min="1"
-                      max="10"
-                      value={currentConnection.thickness || 2}
+                      min={1}
+                      max={10}
+                      value={currentConnection.thickness}
                       onChange={(e) =>
                         updateConnection(currentConnection.id, {
                           thickness: parseInt(e.target.value),
                         })
                       }
-                      className="w-full accent-indigo-600 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer hover:bg-slate-300 transition-colors"
+                      className="range range-primary mt-2"
                     />
                   </div>
 
-                  {/* Line Style */}
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 block">
-                      Stroke Style
-                    </label>
+                  {/* ESTILO */}
+                  <div className="card bg-base-200 p-4 border border-base-300 space-y-2">
+                    <span className="text-[11px] tracking-widest font-bold text-base-content/60">
+                      Estilo do Traço
+                    </span>
+
                     <div className="grid grid-cols-3 gap-2">
-                      {["solid", "dashed", "dotted"].map((s) => (
+                      {(["solid", "dashed", "dotted"] as const).map((s) => (
                         <button
-                          key={s}
-                          onClick={() =>
-                            updateConnection(currentConnection.id, {
-                              style: s as any,
-                            })
-                          }
-                          className={`h-10 flex items-center justify-center border rounded-xl transition-all duration-200 ${
-                            currentConnection.style === s ||
-                            (!currentConnection.style && s === "solid")
-                              ? "bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm"
-                              : "bg-white border-slate-200 text-slate-400 hover:border-indigo-200"
-                          }`}
-                          title={s}
-                        >
-                          <svg width="24" height="4" className="w-2/3">
-                            <line
-                              x1="0"
-                              y1="2"
-                              x2="100%"
-                              y2="2"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeDasharray={
-                                s === "dashed"
-                                  ? "4 2"
-                                  : s === "dotted"
-                                  ? "1 2"
-                                  : "0"
-                              }
-                            />
-                          </svg>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Line Shape */}
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 block">
-                      Line Shape
-                    </label>
-                    <div className="flex bg-slate-100/50 border border-slate-200 rounded-xl p-1">
-                      {[
-                        {
-                          val: "straight",
-                          icon: MoveHorizontal,
-                          label: "Straight",
-                        },
-                        { val: "curved", icon: Spline, label: "Curved" },
-                        { val: "step", icon: CornerDownRight, label: "Step" },
-                      ].map(({ val, icon: Icon, label }) => (
-                        <button
-                          key={val}
-                          onClick={() =>
-                            updateConnection(currentConnection.id, {
-                              shape: val as any,
-                            })
-                          }
-                          className={`flex-1 flex flex-col items-center gap-1 py-1.5 rounded-lg transition-all ${
-                            currentConnection.shape === val ||
-                            (!currentConnection.shape && val === "straight")
-                              ? "bg-white shadow text-indigo-600"
-                              : "text-slate-400 hover:text-slate-600"
-                          }`}
-                          title={label}
-                        >
-                          <Icon size={16} />
-                          <span className="text-[9px] font-medium">
-                            {label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Markers & Animation */}
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 block">
-                      Endpoints & Effect
-                    </label>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-2">
-                        <span className="text-xs text-slate-600 font-medium">
-                          Start Point
-                        </span>
-                        <div className="flex gap-1">
-                          {["none", "circle", "arrow"].map((m) => (
-                            <button
-                              key={m}
-                              onClick={() =>
-                                updateConnection(currentConnection.id, {
-                                  startMarker: m as any,
-                                })
-                              }
-                              className={`p-1.5 rounded-lg ${
-                                currentConnection.startMarker === m ||
-                                (!currentConnection.startMarker && m === "none")
-                                  ? "bg-indigo-100 text-indigo-600"
-                                  : "text-slate-400 hover:bg-slate-100"
-                              }`}
-                            >
-                              {m === "none" ? (
-                                <Minus size={12} />
-                              ) : m === "arrow" ? (
-                                <ArrowRight
-                                  size={12}
-                                  className="transform rotate-180"
-                                />
-                              ) : (
-                                <Circle size={8} fill="currentColor" />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-2">
-                        <span className="text-xs text-slate-600 font-medium">
-                          End Point
-                        </span>
-                        <div className="flex gap-1">
-                          {["none", "circle", "arrow"].map((m) => {
-                            const isActive =
-                              currentConnection.endMarker === m ||
-                              (!currentConnection.endMarker &&
-                                m === "none" &&
-                                diagramType !== "Flowchart") ||
-                              (!currentConnection.endMarker &&
-                                m === "arrow" &&
-                                diagramType === "Flowchart");
-                            return (
-                              <button
-                                key={m}
-                                onClick={() =>
-                                  updateConnection(currentConnection.id, {
-                                    endMarker: m as any,
-                                  })
-                                }
-                                className={`p-1.5 rounded-lg ${
-                                  isActive
-                                    ? "bg-indigo-100 text-indigo-600"
-                                    : "text-slate-400 hover:bg-slate-100"
-                                }`}
-                              >
-                                {m === "none" ? (
-                                  <Minus size={12} />
-                                ) : m === "arrow" ? (
-                                  <ArrowRight size={12} />
-                                ) : (
-                                  <Circle size={8} fill="currentColor" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() =>
-                          updateConnection(currentConnection.id, {
-                            animated: !currentConnection.animated,
-                          })
-                        }
-                        className={`w-full flex items-center justify-between p-2 rounded-xl border transition-all ${
-                          currentConnection.animated
-                            ? "bg-indigo-50 border-indigo-200 text-indigo-700"
-                            : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Activity size={14} />
-                          <span className="text-xs font-medium">
-                            Flow Animation
-                          </span>
-                        </div>
-                        <div
-                          className={`w-8 h-4 rounded-full relative transition-colors ${
-                            currentConnection.animated
-                              ? "bg-indigo-500"
-                              : "bg-slate-300"
-                          }`}
-                        >
-                          <div
-                            className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${
-                              currentConnection.animated
-                                ? "translate-x-4"
-                                : "translate-x-0"
+                            key={s}
+                            onClick={() =>
+                              updateConnection(currentConnection.id, { style: s })
+                            }
+                            className={`btn btn-sm ${
+                              currentConnection.style === s
+                                ? "btn-primary"
+                                : "btn-ghost border-base-300"
                             }`}
-                          />
-                        </div>
-                      </button>
+                          >
+                              <div
+                                className="w-5 h-1 border-base-content"
+                                style={{
+                                  borderTop:
+                                    s === "solid"
+                                      ? "2px solid"
+                                      : s === "dashed"
+                                      ? "2px dashed"
+                                      : "2px dotted",
+                                }}
+                              />
+                          </button>
+                      ))}
                     </div>
                   </div>
+
+                  {/* ANIMAÇÃO */}
+                  <button
+                    onClick={() =>
+                      updateConnection(currentConnection.id, {
+                        animated: !currentConnection.animated,
+                      })
+                    }
+                    className={`btn w-full ${
+                      currentConnection.animated ? "btn-primary" : "btn-outline"
+                    }`}
+                  >
+                    <Activity size={16} />
+                    <span>Animação</span>
+                  </button>
 
                   <button
                     onClick={removeNode}
-                    className="w-full py-3 mt-4 text-red-500 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all"
+                    className="btn btn-error btn-outline w-full"
                   >
-                    <Trash2 size={16} /> Delete Connection
+                    <Trash2 size={16} /> Remover Conexão
                   </button>
                 </div>
               )}
 
-              {/* Case: Node(s) Selected */}
-              {selectedNodeIds.size > 0 && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-200">
-                  {/* Selection Info Header */}
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-200/50">
-                    <div className="flex items-center gap-2 text-slate-700 font-bold">
-                      {selectedNodeData?.type === "zone" ? (
-                        <>
-                          <div className="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
-                            <BoxSelect size={14} />
-                          </div>
-                          <span>Zone</span>
-                        </>
-                      ) : selectedNodeData?.type === "text" ? (
-                        <>
-                          <div className="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
-                            <Type size={14} />
-                          </div>
-                          <span>Text Block</span>
-                        </>
-                      ) : (
-                        <>
-                          <div className="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
-                            <Square size={14} />
-                          </div>
-                          <span>
-                            {selectedNodeIds.size > 1
-                              ? `${selectedNodeIds.size} Selected`
-                              : "Properties"}
-                          </span>
-                        </>
-                      )}
+              {/* PROPRIEDADES DE NÓ */}
+              {selectedNodeIds.size > 0 && selectedNodeData && (
+                <div className="space-y-6">
+                  {/* HEADER */}
+                  <h3 className="font-bold text-sm flex items-center gap-2">
+                    <Square size={15} className="text-primary" />
+                    Propriedades do Elemento
+                  </h3>
+
+                  {/* CORES */}
+                  <div className="card bg-base-200 p-4 border border-base-300">
+                    <span className="text-[11px] tracking-widest font-bold opacity-60">
+                      Cor de Fundo
+                    </span>
+
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {NODE_COLORS.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => updateSelectedNodeColor(c)}
+                          className={`w-7 h-7 rounded-full border transition-all ${
+                            selectedNodeData.color === c
+                              ? "ring-2 ring-primary scale-110 shadow"
+                              : "hover:ring-1 hover:ring-primary/30"
+                          }`}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </div>
+
+                    <span className="text-[11px] tracking-widest font-bold opacity-60 mt-4 block">
+                      Cor do Texto
+                    </span>
+
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {TEXT_COLORS.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => updateSelectedNodeTextColor(c)}
+                          className={`w-7 h-7 rounded-full border transition-all ${
+                            selectedNodeData.textColor === c
+                              ? "ring-2 ring-primary scale-110 shadow"
+                              : "hover:ring-1 hover:ring-primary/30"
+                          }`}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
                     </div>
                   </div>
 
-                  {/* Style Section (Colors & Shape) */}
-                  <div className="space-y-4">
-                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                      <Palette size={12} /> Appearance
-                    </h3>
+                  {/* TEXTO */}
+                  <div className="card bg-base-200 p-4 border border-base-300 space-y-3">
+                    <span className="text-[11px] tracking-widest font-bold opacity-60">
+                      Texto
+                    </span>
 
-                    <div className="grid grid-cols-1 gap-4 bg-white p-3 rounded-xl border border-white/50 shadow-sm">
-                      <div>
-                        <span className="text-[10px] font-semibold text-slate-500 mb-2 block">
-                          {selectedNodeData?.type === "text"
-                            ? "Background Color"
-                            : "Fill Color"}
+                    {/* FONTE */}
+                    <div className="w-full flex items-center gap-2">
+                      <select
+                        value={selectedNodeData.fontFamily || "Inter"}
+                        onChange={(e) =>
+                          updateSelectedNodeStyle({
+                            fontFamily: e.target.value,
+                          })
+                        }
+                        className="select select-sm w-full bg-base-100 border border-base-300"
+                      >
+                        {AVAILABLE_FONTS.map((f) => (
+                          <option key={f} value={f}>
+                            {f}
+                          </option>
+                        ))}
+                      </select>
+                      {/* TAMANHO DA FONTE */}
+                      <div className="flex items-center gap-2 justify-center">
+                        <button
+                          onClick={() =>
+                            updateSelectedNodeStyle({
+                              fontSize: Math.max(
+                                8,
+                                (selectedNodeData.fontSize || 14) - 2
+                              ),
+                            })
+                          }
+                          className="btn btn-sm"
+                        >
+                          <Minus size={12} />
+                        </button>
+
+                        <span className="font-bold text-sm text-center text-base-content">
+                          {selectedNodeData.fontSize || 14}
                         </span>
-                        <div className="flex flex-wrap gap-2">
-                          {NODE_COLORS.map((c) => (
-                            <button
-                              key={c}
-                              onClick={() => updateSelectedNodeColor(c)}
-                              className={`w-7 h-7 rounded-full border-2 transition-all duration-200 hover:scale-110 hover:shadow-md ${
-                                c === "transparent" ? "bg-slate-100" : ""
-                              }`}
-                              style={{
-                                backgroundColor: c,
-                                borderColor:
-                                  selectedNodeData?.color === c
-                                    ? "#6366f1"
-                                    : "#e2e8f0",
-                              }}
-                              title={c}
-                            >
-                              {c === "transparent" && (
-                                <div className="w-full h-0.5 bg-red-400 transform -rotate-45 translate-y-2.5"></div>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
 
-                      {/* Show Text Color only if not image/sticker */}
-                      {selectedNodeData?.type !== "sticker" && (
-                        <div>
-                          <span className="text-[10px] font-semibold text-slate-500 mb-2 block">
-                            Text Color
-                          </span>
-                          <div className="flex flex-wrap gap-2">
-                            {TEXT_COLORS.map((c) => (
-                              <button
-                                key={c}
-                                onClick={() => updateSelectedNodeTextColor(c)}
-                                className={`w-7 h-7 rounded-full border-2 transition-all duration-200 hover:scale-110 hover:shadow-md`}
-                                style={{
-                                  backgroundColor: c,
-                                  borderColor:
-                                    selectedNodeData?.textColor === c
-                                      ? "#6366f1"
-                                      : "transparent",
-                                }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                        <button
+                          onClick={() =>
+                            updateSelectedNodeStyle({
+                              fontSize: Math.min(
+                                72,
+                                (selectedNodeData.fontSize || 14) + 2
+                              ),
+                            })
+                          }
+                          className="btn btn-sm"
+                        >
+                          <Plus size={12} />
+                        </button>
+                      </div>
                     </div>
 
-                    {/* Shape Selector - Hide for Labels/Stickers/Zones/Text */}
-                    {selectedNodeData?.type !== "label" &&
-                      selectedNodeData?.type !== "text" &&
-                      selectedNodeData?.type !== "sticker" &&
-                      selectedNodeData?.type !== "zone" && (
-                        <div className="bg-white/50 p-3 rounded-xl border border-white/50 shadow-sm">
-                          <span className="text-[10px] font-semibold text-slate-500 mb-2 block">
-                            Shape
-                          </span>
-                          <div className="grid grid-cols-5 gap-1.5">
-                            {[
-                              { id: "rect", icon: Square },
-                              { id: "circle", icon: Circle },
-                              { id: "diamond", icon: Diamond },
-                              {
-                                id: "pill",
-                                icon: Minus,
-                                className: "w-5 h-3 rounded-full bg-current",
-                              },
-                              { id: "triangle", icon: Triangle },
-                              { id: "hexagon", icon: Hexagon },
-                              { id: "star", icon: Star },
-                              { id: "cloud", icon: Cloud },
-                              { id: "cylinder", icon: Database },
-                              { id: "document", icon: FileText },
-                            ].map((item) => {
-                              const Icon = item.icon;
-                              return (
-                                <button
-                                  key={item.id}
-                                  onClick={() =>
-                                    updateSelectedNodeShape(item.id as any)
-                                  }
-                                  className={`p-2 border rounded-lg flex justify-center items-center transition-all aspect-square ${
-                                    selectedNodeData?.shape === item.id
-                                      ? "bg-indigo-50 border-indigo-200 text-indigo-600"
-                                      : "bg-white border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600"
-                                  }`}
-                                  title={item.id}
-                                >
-                                  {item.className ? (
-                                    <div className={item.className} />
-                                  ) : (
-                                    <Icon size={16} />
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
+                    {/* ALINHAMENTO */}
+                    <div className="flex gap-2">
+                      {[
+                        { val: "left", icon: AlignLeft },
+                        { val: "center", icon: AlignCenter },
+                        { val: "right", icon: AlignRight },
+                      ].map(({ val, icon: Icon }) => (
+                        <button
+                          key={val}
+                          onClick={() =>
+                            updateSelectedNodeStyle({
+                              textAlign: val as any,
+                            })
+                          }
+                          className={`btn btn-sm flex-1 ${
+                            selectedNodeData.textAlign === val
+                              ? "btn-primary"
+                              : "btn-ghost"
+                          }`}
+                        >
+                          <Icon size={14} />
+                        </button>
+                      ))}
+                    </div>
 
-                    {/* Border Settings */}
-                    {selectedNodeData?.type !== "sticker" && (
-                      <div className="bg-white/50 p-3 rounded-xl border border-white/50 shadow-sm space-y-3">
-                        <div className="flex items-center gap-2 text-slate-500">
-                          <Frame size={12} />
-                          <span className="text-[10px] font-semibold">
-                            Border Styling
-                          </span>
-                        </div>
-
-                        {/* Border Color */}
-                        <div>
-                          <div className="flex flex-wrap gap-2">
-                            {CONNECTION_COLORS.map((c) => (
-                              <button
-                                key={c}
-                                onClick={() =>
-                                  updateSelectedNodeStyle({ borderColor: c })
-                                }
-                                className={`w-5 h-5 rounded-full border transition-all hover:scale-110 ${
-                                  selectedNodeData?.borderColor === c
-                                    ? "ring-2 ring-indigo-200 scale-110"
-                                    : "border-slate-200"
-                                }`}
-                                style={{ backgroundColor: c }}
-                                title={c}
-                              />
-                            ))}
-                            <button
-                              onClick={() =>
-                                updateSelectedNodeStyle({
-                                  borderColor: undefined,
-                                })
-                              }
-                              className="w-5 h-5 rounded-full border border-slate-200 bg-white flex items-center justify-center text-[8px] text-slate-400"
-                              title="Default"
-                            >
-                              x
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-3">
-                          {/* Border Width */}
-                          <div className="flex-1">
-                            <label className="text-[9px] font-medium text-slate-400 block mb-1">
-                              Width
-                            </label>
-                            <input
-                              type="range"
-                              min="0"
-                              max="8"
-                              value={
-                                selectedNodeData?.borderWidth !== undefined
-                                  ? selectedNodeData.borderWidth
-                                  : 1
-                              }
-                              onChange={(e) =>
-                                updateSelectedNodeStyle({
-                                  borderWidth: parseInt(e.target.value),
-                                })
-                              }
-                              className="w-full accent-indigo-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                            />
-                          </div>
-
-                          {/* Border Style */}
-                          <div className="flex-1">
-                            <label className="text-[9px] font-medium text-slate-400 block mb-1">
-                              Style
-                            </label>
-                            <div className="flex bg-white border border-slate-200 rounded-lg p-0.5">
-                              {["solid", "dashed", "dotted", "none"].map(
-                                (s) => (
-                                  <button
-                                    key={s}
-                                    onClick={() =>
-                                      updateSelectedNodeStyle({
-                                        borderStyle: s as any,
-                                      })
-                                    }
-                                    className={`flex-1 h-6 flex items-center justify-center rounded transition-all ${
-                                      selectedNodeData?.borderStyle === s ||
-                                      (!selectedNodeData?.borderStyle &&
-                                        s === "solid")
-                                        ? "bg-indigo-50 text-indigo-600"
-                                        : "text-slate-400 hover:text-slate-600"
-                                    }`}
-                                    title={s}
-                                  >
-                                    {s === "none" ? (
-                                      <Minus size={10} />
-                                    ) : (
-                                      <div
-                                        className="w-3 h-0.5 bg-current"
-                                        style={{
-                                          borderTop:
-                                            s === "solid"
-                                              ? "2px solid"
-                                              : s === "dashed"
-                                              ? "2px dashed"
-                                              : "2px dotted",
-                                        }}
-                                      />
-                                    )}
-                                  </button>
-                                )
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Typography Section */}
-                  {selectedNodeData?.type !== "sticker" && (
-                    <div className="space-y-3">
-                      <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                        <Type size={12} /> Typography
-                      </h3>
-
-                      <div className="bg-white/50 p-3 rounded-xl border border-white/50 shadow-sm space-y-3">
-                        {/* Font Family */}
-                        <div className="relative">
-                          <select
-                            value={selectedNodeData?.fontFamily || font}
-                            onChange={(e) =>
+                    {/* ESTILO */}
+                    <div className="flex gap-2">
+                      {[
+                        {
+                          key: "bold",
+                          icon: Bold,
+                          prop: "fontWeight",
+                          val: "bold",
+                        },
+                        {
+                          key: "italic",
+                          icon: Italic,
+                          prop: "fontStyle",
+                          val: "italic",
+                        },
+                        {
+                          key: "underline",
+                          icon: Underline,
+                          prop: "textDecoration",
+                          val: "underline",
+                        },
+                      ].map(({ key, icon: Icon, prop, val }) => {
+                        const active =
+                          selectedNodeData[
+                            prop as keyof typeof selectedNodeData
+                          ] === val;
+                        return (
+                          <button
+                            key={key}
+                            onClick={() =>
                               updateSelectedNodeStyle({
-                                fontFamily: e.target.value,
+                                [prop]: active ? "normal" : val,
                               })
                             }
-                            className="w-full appearance-none bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all"
+                            className={`btn btn-sm flex-1 ${
+                              active ? "btn-primary" : "btn-ghost"
+                            }`}
                           >
-                            {AVAILABLE_FONTS.map((f) => (
-                              <option key={f} value={f}>
-                                {f}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                            size={14}
-                          />
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          {/* Size Controls */}
-                          <div className="flex items-center border border-slate-200 bg-white rounded-xl overflow-hidden flex-1">
-                            <button
-                              onClick={() =>
-                                updateSelectedNodeStyle({
-                                  fontSize: Math.max(
-                                    8,
-                                    (selectedNodeData?.fontSize || fontSize) - 2
-                                  ),
-                                })
-                              }
-                              className="px-3 py-2 hover:bg-slate-100 text-slate-500 transition-colors"
-                            >
-                              <Minus size={12} />
-                            </button>
-                            <span className="flex-1 text-center text-xs font-bold text-slate-700 select-none">
-                              {selectedNodeData?.fontSize || fontSize}
-                            </span>
-                            <button
-                              onClick={() =>
-                                updateSelectedNodeStyle({
-                                  fontSize: Math.min(
-                                    72,
-                                    (selectedNodeData?.fontSize || fontSize) + 2
-                                  ),
-                                })
-                              }
-                              className="px-3 py-2 hover:bg-slate-100 text-slate-500 transition-colors"
-                            >
-                              <Plus size={12} />
-                            </button>
-                          </div>
-
-                          {/* Alignment */}
-                          <div className="flex bg-slate-100/50 border border-slate-200 rounded-xl p-1">
-                            {[
-                              { val: "left", icon: AlignLeft },
-                              { val: "center", icon: AlignCenter },
-                              { val: "right", icon: AlignRight },
-                            ].map(({ val, icon: Icon }) => (
-                              <button
-                                key={val}
-                                onClick={() =>
-                                  updateSelectedNodeStyle({
-                                    textAlign: val as any,
-                                  })
-                                }
-                                className={`p-1.5 rounded-lg transition-all ${
-                                  selectedNodeData?.textAlign === val ||
-                                  (!selectedNodeData?.textAlign &&
-                                    val === "center")
-                                    ? "bg-white shadow text-indigo-600"
-                                    : "text-slate-400 hover:text-slate-600"
-                                }`}
-                              >
-                                <Icon size={14} />
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Style Toggles */}
-                        <div className="flex gap-2">
-                          {[
-                            {
-                              key: "fontWeight",
-                              val: "bold",
-                              icon: Bold,
-                              default: "normal",
-                            },
-                            {
-                              key: "fontStyle",
-                              val: "italic",
-                              icon: Italic,
-                              default: "normal",
-                            },
-                            {
-                              key: "textDecoration",
-                              val: "underline",
-                              icon: Underline,
-                              default: "none",
-                            },
-                          ].map(({ key, val, icon: Icon, default: def }) => {
-                            const isActive =
-                              (selectedNodeData as any)?.[key] === val;
-                            return (
-                              <button
-                                key={key}
-                                onClick={() =>
-                                  updateSelectedNodeStyle({
-                                    [key]: isActive ? def : val,
-                                  })
-                                }
-                                className={`flex-1 py-1.5 rounded-xl border text-xs flex justify-center items-center transition-all ${
-                                  isActive
-                                    ? "bg-indigo-50 border-indigo-200 text-indigo-600"
-                                    : "bg-white border-slate-200 text-slate-400 hover:border-indigo-200 hover:text-indigo-500"
-                                }`}
-                              >
-                                <Icon size={14} />
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
+                            <Icon size={14} />
+                          </button>
+                        );
+                      })}
                     </div>
-                  )}
+                  </div>
 
-                  {/* Actions & Arrangement */}
-                  <div className="space-y-3 pt-2">
-                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                      <Layout size={12} /> Arrange & Actions
-                    </h3>
+                  {/* SHAPE */}
+                  <div className="card bg-base-200 p-4 border border-base-300 space-y-3">
+                    <span className="text-[11px] tracking-widest font-bold opacity-60">
+                      Forma
+                    </span>
 
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() =>
-                          selectedNode && bringToFront(selectedNode)
-                        }
-                        className="px-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 text-slate-600 flex items-center gap-2 justify-center transition-all"
-                      >
-                        <ArrowUpToLine size={14} /> Bring Front
-                      </button>
-                      <button
-                        onClick={() => selectedNode && sendToBack(selectedNode)}
-                        className="px-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 text-slate-600 flex items-center gap-2 justify-center transition-all"
-                      >
-                        <ArrowDownToLine size={14} /> Send Back
-                      </button>
-
-                      <button
-                        onClick={duplicateNode}
-                        className="px-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-200 text-slate-600 flex items-center gap-2 justify-center transition-all"
-                      >
-                        <Copy size={14} /> Duplicate
-                      </button>
-
-                      {selectedNodeIds.size > 1 ? (
+                    <div className="grid grid-cols-5 gap-2">
+                      {[
+                        { id: "rect", icon: Square },
+                        { id: "circle", icon: Circle },
+                        { id: "diamond", icon: Diamond },
+                        {
+                          id: "pill",
+                          icon: Minus,
+                          className: "w-5 h-3 rounded-full bg-current",
+                        },
+                        { id: "triangle", icon: Triangle },
+                        { id: "hexagon", icon: Hexagon },
+                        { id: "star", icon: Star },
+                        { id: "cloud", icon: Cloud },
+                        { id: "cylinder", icon: Database },
+                        { id: "document", icon: FileText },
+                      ].map((s) => (
                         <button
-                          onClick={groupNodes}
-                          className="px-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-200 text-slate-600 flex items-center gap-2 justify-center transition-all"
+                          key={s.id}
+                          onClick={() => updateSelectedNodeShape(s.id as any)}
+                          className={`btn btn-sm ${
+                            selectedNodeData.shape === s.id
+                              ? "btn-primary"
+                              : "btn-ghost border-base-300"
+                          } flex flex-col items-center justify-center gap-1`}
                         >
-                          <Group size={14} /> Group
+                          <s.icon size={14} className={s.className} />
                         </button>
-                      ) : (
-                        selectedNodeData?.groupId && (
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* BORDA */}
+                  <div className="card bg-base-200 p-4 border border-base-300 space-y-2">
+                    <span className="text-[11px] tracking-widest font-bold opacity-60">
+                      Borda
+                    </span>
+
+                    <span className="text-[11px] tracking-widest font-bold opacity-60">
+                      Cor da borda
+                    </span>
+
+                    <div className="flex flex-wrap gap-2">
+                      {NODE_COLORS.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() =>
+                            updateSelectedNodeStyle({ borderColor: c })
+                          }
+                          className={`w-7 h-7 rounded-full border border-base-100 transition-all ${
+                            selectedNodeData.borderColor === c
+                              ? "ring-2 ring-primary scale-110 shadow"
+                              : "hover:ring-1 hover:ring-primary/30"
+                          }`}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </div>
+
+                    <span className="text-[11px] tracking-widest font-bold opacity-60 mt-4 block">
+                      Espessura da borda ({selectedNodeData.borderWidth || 1}px)
+                    </span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={10}
+                      value={selectedNodeData.borderWidth || 1}
+                      onChange={(e) =>
+                        updateSelectedNodeStyle({
+                          borderWidth: parseInt(e.target.value),
+                        })
+                      }
+                      className="range range-primary mt-2 range-sm"
+                    />
+
+                    <span className="text-[11px] tracking-widest font-bold opacity-60 mt-4 block">
+                      Estilo da borda
+                    </span>
+
+                    <div className="grid grid-cols-4 gap-2">
+                      {(["none", "solid", "dashed", "dotted"] as const).map(
+                        (s) => (
                           <button
-                            onClick={ungroupNodes}
-                            className="px-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-200 text-slate-600 flex items-center gap-2 justify-center transition-all"
+                            key={s}
+                            onClick={() =>
+                              updateSelectedNodeStyle({ borderStyle: s })
+                            }
+                            className={`btn btn-sm ${
+                              selectedNodeData.borderStyle === s
+                                ? "btn-primary"
+                                : "btn-ghost border-base-300"
+                            }`}
                           >
-                            <Ungroup size={14} /> Ungroup
+                            {s === "none" ? (
+                              <Minus size={10} />
+                            ) : (
+                              <div
+                                className="w-5 h-1 border-base-content"
+                                style={{
+                                  borderTop:
+                                    s === "solid"
+                                      ? "2px solid"
+                                      : s === "dashed"
+                                      ? "2px dashed"
+                                      : "2px dotted",
+                                }}
+                              />
+                            )}
                           </button>
                         )
                       )}
                     </div>
+                  </div>
+
+                  {/* AÇÕES */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => selectedNode && bringToFront(selectedNode)}
+                      className="btn btn-outline btn-sm"
+                    >
+                      <ArrowUpToLine size={12} /> Frente
+                    </button>
 
                     <button
-                      onClick={removeNode}
-                      className="w-full py-3 mt-2 text-red-500 bg-red-50 hover:bg-red-100 border border-red-100 hover:border-red-200 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all"
+                      onClick={() => selectedNode && sendToBack(selectedNode)}
+                      className="btn btn-outline btn-sm"
                     >
-                      <Trash2 size={16} /> Delete Selected
+                      <ArrowDownToLine size={12} /> Trás
                     </button>
-                  </div>
-                </div>
-              )}
 
-              {/* Empty State */}
-              {!selectedNodeIds.size && !selectedConnectionId && (
-                <div className="flex flex-col items-center justify-center h-64 text-slate-400 text-center animate-in fade-in zoom-in duration-300">
-                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 shadow-inner">
-                    <MousePointer2
-                      size={24}
-                      className="opacity-40 text-slate-500"
-                    />
+                    <button
+                      onClick={duplicateNode}
+                      className="btn btn-outline btn-sm"
+                    >
+                      <Copy size={12} /> Duplicar
+                    </button>
+
+                    {selectedNodeData.groupId ? (
+                      <button
+                        onClick={ungroupNodes}
+                        className="btn btn-outline btn-sm"
+                      >
+                        <Ungroup size={12} /> Desagrupar
+                      </button>
+                    ) : (
+                      <button
+                        onClick={groupNodes}
+                        className="btn btn-outline btn-sm"
+                      >
+                        <Group size={12} /> Agrupar
+                      </button>
+                    )}
                   </div>
-                  <p className="text-sm font-medium text-slate-600">
-                    No Item Selected
-                  </p>
-                  <p className="text-xs text-slate-400 mt-1 max-w-[200px]">
-                    Click on a node, sticker, or connection to edit its
-                    properties.
-                  </p>
+
+                  <button
+                    onClick={removeNode}
+                    className="btn btn-error btn-outline w-full"
+                  >
+                    <Trash2 size={16} /> Excluir
+                  </button>
                 </div>
               )}
             </>
           )}
 
-          {/* Layers Panel */}
+          {/* ================= CAMADAS ================= */}
           {activeSidebarTab === "layers" && (
-            <div className="space-y-2 animate-in fade-in slide-in-from-right-4 duration-200 pb-4">
-              <div className="flex items-center justify-between px-1 mb-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  {nodes.length} Item{nodes.length !== 1 ? "s" : ""}
-                </span>
+            <div className="space-y-2">
+              <div className="text-[11px] font-bold opacity-40 tracking-widest px-1">
+                {nodes.length} ITEM{nodes.length !== 1 ? "S" : ""}
               </div>
-              {[...nodes].reverse().map((node, index) => {
-                const isSelected = selectedNodeIds.has(node.id);
-                return (
-                  <div
-                    key={node.id}
-                    className={`group flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                      isSelected
-                        ? "bg-indigo-50/50 border-indigo-200 shadow-sm"
-                        : "bg-white/60 border-transparent hover:bg-white hover:shadow-sm"
-                    }`}
-                    onClick={() => {
-                      setSelectedNode(node.id);
-                      setSelectedNodeIds(new Set([node.id]));
-                    }}
-                  >
-                    {/* Icon based on type */}
+
+              {nodes
+                .slice()
+                .reverse()
+                .map((node) => {
+                  const isSelected = selectedNodeIds.has(node.id);
+                  return (
                     <div
-                      className={`p-2 rounded-lg ${
+                      key={node.id}
+                      onClick={() => setSelectedNode(node.id)}
+                      className={`card p-3 bg-base-100 border transition cursor-pointer ${
                         isSelected
-                          ? "bg-indigo-100 text-indigo-600"
-                          : "bg-slate-100 text-slate-400 group-hover:text-slate-500"
+                          ? "border-primary shadow-md"
+                          : "border-transparent hover:border-base-300"
                       }`}
                     >
-                      {node.type === "label" || node.type === "text" ? (
-                        <Type size={14} />
-                      ) : node.type === "sticker" ? (
-                        <Smile size={14} />
-                      ) : node.type === "zone" ? (
-                        <BoxSelect size={14} />
-                      ) : (
-                        <Square size={14} />
-                      )}
-                    </div>
-
-                    {/* Label */}
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`truncate text-xs font-semibold ${
-                          isSelected ? "text-indigo-900" : "text-slate-700"
-                        }`}
-                      >
-                        {node.text ||
-                          (node.type === "sticker"
-                            ? "Sticker"
-                            : node.type === "zone"
-                            ? "Zone"
-                            : "Untitled")}
-                      </p>
-                      <p className="text-[10px] text-slate-400 capitalize">
-                        {node.type || "Node"}
-                      </p>
-                    </div>
-
-                    {/* Actions */}
-                    <div
-                      className={`flex items-center gap-1 transition-opacity ${
-                        isSelected
-                          ? "opacity-100"
-                          : "opacity-0 group-hover:opacity-100"
-                      }`}
-                    >
-                      {/* Lock/Hide */}
-                      <div className="flex flex-col gap-1 mr-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleLock(node.id);
-                          }}
-                          className={`p-1 rounded hover:bg-slate-200 transition-colors ${
-                            node.locked
-                              ? "text-amber-500 bg-amber-50"
-                              : "text-slate-300"
+                      <div className="flex items-center gap-3">
+                        {/* Ícone */}
+                        <div
+                          className={`p-2 rounded-lg ${
+                            isSelected
+                              ? "bg-primary/20 text-primary"
+                              : "bg-base-200 text-base-content/40"
                           }`}
-                          title={node.locked ? "Unlock" : "Lock"}
                         >
-                          {node.locked ? (
-                            <Lock size={10} />
+                          {node.type === "text" ? (
+                            <Type size={14} />
+                          ) : node.type === "sticker" ? (
+                            <Smile size={14} />
+                          ) : node.type === "zone" ? (
+                            <BoxSelect size={14} />
                           ) : (
-                            <Unlock size={10} />
+                            <Square size={14} />
                           )}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleVisibility(node.id);
-                          }}
-                          className={`p-1 rounded hover:bg-slate-200 transition-colors ${
-                            node.hidden ? "text-slate-300" : "text-slate-300"
-                          }`}
-                          title={node.hidden ? "Show" : "Hide"}
-                        >
-                          {node.hidden ? (
-                            <EyeOff size={10} />
-                          ) : (
-                            <Eye size={10} />
-                          )}
-                        </button>
-                      </div>
-
-                      {/* Ordering */}
-                      <div className="flex flex-col gap-1 pl-1 border-l border-slate-100">
-                        <div className="flex gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              moveLayerUp(node.id);
-                            }}
-                            title="Move Up"
-                            className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded"
-                          >
-                            <ChevronUp size={10} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              bringToFront(node.id);
-                            }}
-                            title="Bring to Front"
-                            className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded"
-                          >
-                            <ArrowUpToLine size={10} />
-                          </button>
                         </div>
-                        <div className="flex gap-1">
+
+                        {/* NOME */}
+                        <div className="flex-1">
+                          <p className="font-medium text-xs truncate">
+                            {node.text || node.type || "Node"}
+                          </p>
+                          <span className="text-[10px] opacity-50 capitalize">
+                            {node.type}
+                          </span>
+                        </div>
+
+                        {/* AÇÕES */}
+                        <div className="flex gap-1 opacity-60 hover:opacity-100">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              moveLayerDown(node.id);
+                              toggleLock(node.id);
                             }}
-                            title="Move Down"
-                            className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded"
+                            className="btn btn-xs btn-ghost"
                           >
-                            <ChevronDownIcon size={10} />
+                            {node.locked ? (
+                              <Lock size={10} />
+                            ) : (
+                              <Unlock size={10} />
+                            )}
                           </button>
+
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              sendToBack(node.id);
+                              toggleVisibility(node.id);
                             }}
-                            title="Send to Back"
-                            className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded"
+                            className="btn btn-xs btn-ghost"
                           >
-                            <ArrowDownToLine size={10} />
+                            {node.hidden ? (
+                              <EyeOff size={10} />
+                            ) : (
+                              <Eye size={10} />
+                            )}
                           </button>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+
               {nodes.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-48 text-slate-400 text-center">
-                  <Layers size={32} className="mb-2 opacity-30" />
-                  <p className="text-xs">Canvas is empty</p>
+                <div className="flex flex-col items-center justify-center h-40 opacity-40">
+                  <Layers size={30} />
+                  <p className="text-xs mt-2">Seu diagrama está vazio</p>
                 </div>
               )}
             </div>

@@ -98,7 +98,7 @@ export default function InnoLab() {
       {/* Cabeçalho */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-base-100 p-6 rounded-xl shadow-md border border-base-300">
         <div className="flex items-center gap-4">
-          <BookOpenIcon className="w-12 h-12 text-secondary/70" />
+          <BookOpenIcon className="w-12 h-12 text-secondary/70 hidden md:block" />
           <div>
             <h2 className="text-3xl font-bold text-base-content">
               Inno<span className="text-secondary">Lab</span>
@@ -176,6 +176,7 @@ export default function InnoLab() {
               <div
                 key={doc.id}
                 className="bg-base-100 border border-base-300 rounded-xl p-4 cursor-pointer hover:shadow-lg transition-transform transform hover:scale-105 flex flex-col justify-between"
+                onClick={() => {router.push(`/dashboard/innolab/${doc.id}/${doc.diagram_type}`)}}
               >
                 {/* Título */}
                 <h3 className="text-lg font-semibold text-base-content mb-2">

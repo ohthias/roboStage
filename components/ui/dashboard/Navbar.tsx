@@ -1,20 +1,6 @@
 "use client";
 
-import {
-  HomeIcon,
-  PresentationChartBarIcon,
-  SignalIcon,
-  SparklesIcon,
-  ArrowLeftStartOnRectangleIcon,
-  LightBulbIcon,
-  ClipboardIcon,
-  BellAlertIcon,
-  NumberedListIcon,
-  ClipboardDocumentCheckIcon,
-  CommandLineIcon,
-  ListBulletIcon,
-  PencilIcon,
-} from "@heroicons/react/24/outline";
+import { ChartPie, Palette, RadioIcon, House, Book, LogOut } from "lucide-react";
 import { JSX } from "react";
 
 interface SidebarProps {
@@ -57,16 +43,16 @@ export default function Sidebar({
             }
           }}
           target={isExternal ? "_blank" : "_self"}
-          className={`flex items-center gap-3 rounded-md px-3 py-2 transition-all duration-300 w-full 
+          className={`flex items-center gap-3 rounded-full px-3 py-2 transition-all duration-300 w-full 
             ${
               isActive
-                ? "bg-primary/75 text-primary-content shadow-sm"
+                ? "bg-primary/80 text-primary-content shadow-sm"
                 : "hover:bg-base-300"
             }
             ${collapsed ? "justify-center" : ""}
           `}
         >
-          <span className="size-6">{icon}</span>
+          <span>{icon}</span>
           {!collapsed && (
             <span
               className={`${
@@ -85,7 +71,7 @@ export default function Sidebar({
     <aside
       className={`
     h-screen border-r border-base-300 bg-base-100 flex flex-col
-    transition-all duration-300 ease-in-out fixed
+    transition-all duration-300 ease-in-out fixed z-99
     ${collapsed ? "w-[80px] items-center" : "w-[256px]"}
   `}
     >
@@ -117,55 +103,14 @@ export default function Sidebar({
 
       {/* Navigation */}
       <ul className="px-3 flex flex-col flex-1 overflow-y-auto space-y-1 w-full">
-        {menuItem(<HomeIcon className="size-5" />, "Hub", "hub")}
-        {menuItem(<SignalIcon className="size-5" />, "ShowLive", "showLive")}
-        {menuItem(
-          <PresentationChartBarIcon className="size-5" />,
-          "LabTest",
-          "labTest"
-        )}
-        {menuItem(<PencilIcon className="size-5" />, "InnoLab", "innoLab")}
+        {menuItem(<House className="size-6" />, "Hub", "hub")}
+        {menuItem(<RadioIcon className="size-6" />, "ShowLive", "showLive")}
+        {menuItem(<ChartPie className="size-6" />, "LabTest", "labTest")}
+        {menuItem(<Book className="size-6" />, "InnoLab", "innoLab")}
         {/*{menuItem(<ClipboardDocumentCheckIcon className="size-5"/>, "RoboFlow", "roboFlow")}
         {menuItem(<CommandLineIcon className="size-5"/>, "CalibraBot", "calibraBot")}
         {menuItem(<ListBulletIcon className="size-5"/>, "TrainLab", "trainLab")}*/}
-        {menuItem(<SparklesIcon className="size-5" />, "StyleLab", "styleLab")}
-      </ul>
-
-      {/* Divider */}
-      <div className="divider divider-base-300 my-2 text-xs hidden md:block">
-        {!collapsed && "Ferramentas"}
-      </div>
-
-      {/* External Tools */}
-      <ul className="menu px-3 space-y-1 w-full hidden md:block">
-        {menuItem(
-          <LightBulbIcon className="size-4" />,
-          "QuickBrick Studio",
-          "quickbrick",
-          true,
-          "/quickbrick"
-        )}
-        {menuItem(
-          <NumberedListIcon className="size-4" />,
-          "Pontuador UNEARTHED",
-          "unearthed",
-          true,
-          "/fll-score#unearthed"
-        )}
-        {menuItem(
-          <ClipboardIcon className="size-4" />,
-          "Flash Q&A",
-          "flashqa",
-          true,
-          "/flash-qa"
-        )}
-        {menuItem(
-          <BellAlertIcon className="size-4" />,
-          "Timers Avaliação",
-          "timers",
-          true,
-          "/timers"
-        )}
+        {menuItem(<Palette className="size-6" />, "StyleLab", "styleLab")}
       </ul>
 
       {/* Footer / Profile */}
@@ -206,7 +151,7 @@ export default function Sidebar({
               className="btn btn-ghost w-full justify-start gap-2"
               onClick={onLogout}
             >
-              <ArrowLeftStartOnRectangleIcon className="size-5" />
+              <LogOut className="size-5" />
               Sair
             </button>
           </div>

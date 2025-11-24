@@ -121,7 +121,7 @@ export function StyleLab() {
           {/* Card de aviso */}
           {filteredThemes.length === 0 && (
             <div className="col-span-full flex flex-col justify-center items-center bg-base-100 border border-base-300 rounded-lg shadow-md p-6 text-center">
-              <PaintBrushIcon className="w-12 h-12 text-gray-400 mb-2" />
+              <PaintBrushIcon className="w-12 h-12 text-gray-400 mb-2 hidden md:block" />
               <span className="text-gray-400 text-lg font-semibold">
                 Nenhum tema encontrado
               </span>
@@ -157,7 +157,7 @@ export function StyleLab() {
               }}
             >
               <div className="absolute inset-0 bg-black/40" />
-              <div className="card-body relative z-10 p-4 justify-end">
+              <div className="card-body relative z-2 p-4 justify-end">
                 <h3 className="card-title text-base sm:text-lg text-white drop-shadow line-clamp-2">
                   {theme.name || `Tema #${theme.id_theme}`}
                 </h3>

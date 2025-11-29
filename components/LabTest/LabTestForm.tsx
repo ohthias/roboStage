@@ -1,16 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import CardTest from "@/components/ui/Cards/CardTest";
-import CardSeason from "../ui/Cards/CardSeason";
 import { supabase } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/app/context/ToastContext";
-import CardIndividaualBackground from "@/public/images/CardsTest/Teste_individual.webp";
-import CardGroupBackground from "@/public/images/CardsTest/Teste_grupo.webp";
+import { Square, SquareStack, Bot } from "lucide-react";
+import CardSeason from "../ui/Cards/CardSeason";
 import UnearthedLogo from "@/public/images/logos/Unearthed.webp";
 import SubmergedLogo from "@/public/images/logos/Submerged.webp";
-import { AnimatePresence, motion } from "framer-motion";
 
 interface LabTestFormProps {
   onSuccess?: () => void;
@@ -18,27 +15,31 @@ interface LabTestFormProps {
 }
 
 export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
-  const [type, setType] = useState("missao_individual");
-  const [season, setSeason] = useState("");
+  const [type, setType] = useState<"missao_individual" | "grupo">(
+    "missao_individual"
+  );
+  const [season, setSeason] = useState<"submerged" | "unearthed" | "">("");
   const [missions, setMissions] = useState<any[]>([]);
   const [selectedMissions, setSelectedMissions] = useState<string[]>([]);
   const [name, setName] = useState("");
-  const [parameters, setParameters] = useState<
-    { name: string; value: string }[]
-  >([]);
+  const [loadingMissions, setLoadingMissions] = useState(false);
   const { user } = useAuth();
   const { addToast } = useToast();
 
   useEffect(() => {
+    if (!season) return;
+    setLoadingMissions(true);
     fetch("/api/data/missions")
       .then((res) => res.json())
       .then((data) => {
         const seasonMissions = data[season] || [];
         const filteredMissions = seasonMissions.filter(
-          (m: any) => m.id != "EL" && m.id != "PT"
+          (m: any) => m.id !== "EL" && m.id !== "PT" && m.id !== "GP"
         );
         setMissions(filteredMissions);
-      });
+        setSelectedMissions([]);
+      })
+      .finally(() => setLoadingMissions(false));
   }, [season]);
 
   const resetForm = () => {
@@ -47,17 +48,12 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
     setMissions([]);
     setSelectedMissions([]);
     setName("");
-    setParameters([]);
-  };
-
-  const addParameter = () => {
-    setParameters([...parameters, { name: "", value: "" }]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      alert("Você precisa estar logado!");
+      addToast("Você precisa estar logado!", "warning");
       return;
     }
 
@@ -67,7 +63,6 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
         .select("id")
         .eq("name", type)
         .single();
-
       if (typeError) throw typeError;
       const typeId = typeData.id;
 
@@ -80,7 +75,6 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
         })
         .select("id")
         .single();
-
       if (testError) throw testError;
       const testId = testData.id;
 
@@ -110,15 +104,6 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
         await supabase.from("test_missions").insert(missionsInsert);
       }
 
-      if (type === "personalizado" && parameters.length > 0) {
-        const paramsInsert = parameters.map((p) => ({
-          test_id: testId,
-          name: p.name,
-          value: p.value,
-        }));
-        await supabase.from("test_parameters").insert(paramsInsert);
-      }
-
       addToast("Teste criado com sucesso!", "success");
       resetForm();
       onSuccess?.();
@@ -129,17 +114,34 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
     }
   };
 
+  const typeOptions = [
+    {
+      id: "missao_individual",
+      name: "Individual",
+      icon: Square,
+      description: "Teste realizado por um único participante",
+    },
+    {
+      id: "grupo",
+      name: "Grupo",
+      icon: SquareStack,
+      description: "Teste realizado por uma equipe de participantes",
+    },
+  ];
+
+  const seasonOptions = [
+    { id: "submerged", name: "Submerged", image: SubmergedLogo.src },
+    { id: "unearthed", name: "Unearthed", image: UnearthedLogo.src },
+  ];
+
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="p-2 space-y-6 w-full max-w-2xl mx-auto"
-    >
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">
       {/* Nome */}
       <div>
         <label className="label font-medium">Nome do Teste</label>
         <input
           type="text"
-          className="input input-bordered w-full"
+          className="input input-bordered w-full mt-2 border-primary focus:ring-primary focus:border-primary"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Ex: Teste de Missão 01"
@@ -147,155 +149,132 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
         />
       </div>
 
-      {/* Tipo */}
+      {/* Tipo de Teste */}
       <div>
         <label className="label font-medium">Tipo de Teste</label>
-        <div className="flex flex-row gap-8 justify-start mt-4">
-          <CardTest
-            imageBackground={CardIndividaualBackground.src}
-            nameTest="Individual"
-            selected={type === "missao_individual"}
-            onSelect={() => setType("missao_individual")}
-          />
-          <CardTest
-            imageBackground={CardGroupBackground.src}
-            nameTest="Grupo"
-            selected={type === "grupo"}
-            onSelect={() => setType("grupo")}
-          />
+        <div className="grid grid-cols-3 gap-4 mt-4">
+          {typeOptions.map((opt) => {
+            const Icon = opt.icon;
+            const selected = type === opt.id;
+            return (
+              <div
+                key={opt.id}
+                onClick={() => setType(opt.id as any)}
+                className={`border rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all hover:shadow-lg ${
+                  selected ? "border-primary bg-primary/10" : "border-base-300"
+                }`}
+              >
+                <Icon className="w-8 h-8 text-primary mb-2" />
+                <span className="text-sm font-semibold">{opt.name}</span>
+                <span className="text-xs text-base-content/70 mt-1 text-center">
+                  {opt.description}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
       {/* Temporada */}
-      {type !== "personalizado" && (
-        <div>
-          <label className="label font-medium">Temporada</label>
-          <div className="flex flex-wrap gap-4 justify-start mt-4">
-            <CardSeason
-              image={SubmergedLogo.src}
-              name="Submerged"
-              selected={season === "submerged"}
-              onSelect={() => setSeason("submerged")}
-            />
-            <CardSeason
-              image={UnearthedLogo.src}
-              name="Unearthed"
-              selected={season === "unearthed"}
-              onSelect={() => setSeason("unearthed")}
-            />
-          </div>
-        </div>
-      )}
-      <div className="divider text-base-content/75">Missões</div>
-      {/* Missões */}
-      <AnimatePresence>
-        {missions.map((m) => {
-          const isSelected = selectedMissions.includes(m.id);
-
-          return (
-            <motion.div
-              key={m.id}
-              layout
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
-              className="flex flex-col gap-2 p-2 rounded-lg hover:bg-base-200 transition"
+      <div>
+        <label className="label font-medium">Temporada</label>
+        <div className="flex flex-row gap-4 mt-4 overflow-x-auto">
+          {seasonOptions.map((opt) => (
+            <div
+              key={opt.id}
+              onClick={() => setSeason(opt.id as any)}
+              className={`border rounded-xl overflow-hidden cursor-pointer shadow hover:shadow-lg transition-all ${
+                season === opt.id
+                  ? "border-primary scale-94"
+                  : "hover:scale-100 active:scale-95"
+              }`}
             >
-              <label
-                className="flex items-center gap-2 cursor-pointer"
-                onClick={() => {
-                  if (type === "missao_individual") {
-                    setSelectedMissions([m.id]);
-                  }
-                }}
-              >
-                {type === "grupo" && (
-                  <input
-                    type="checkbox"
-                    className="checkbox checkbox-primary"
-                    value={m.id}
-                    checked={isSelected}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      setSelectedMissions((prev) =>
-                        checked ? [...prev, m.id] : prev.filter((id) => id !== m.id)
-                      );
-                    }}
-                  />
-                )}
-                <span className={isSelected ? "font-bold" : ""}>
-                  {m.id} - {m.name}
-                </span>
-              </label>
+              <CardSeason
+                image={opt.image}
+                name={opt.name}
+                selected={season === opt.id}
+                onSelect={() => setSeason(opt.id as any)}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
 
-              {m.type[0] === "range" && isSelected && (
-                <motion.input
-                  type="number"
-                  min={m.type[1]}
-                  max={m.type[2]}
-                  placeholder={`Quanto será feito? (mín: 1, máx: ${m.type[2]})`}
-                  className="input input-bordered w-full"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  value={m.maxValue || ""}
-                  onChange={(e) => {
-                    const updated = missions.map((mission) =>
-                      mission.id === m.id
-                        ? { ...mission, maxValue: Number(e.target.value) }
-                        : mission
-                    );
-                    setMissions(updated);
+      {/* Missões */}
+      <div className="divider text-base-content/75">Missões</div>
+      {loadingMissions ? (
+        <div className="flex justify-center items-center py-6">
+          <span className="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-max grid-flow-row">
+          {missions
+            .sort((a, b) => a.id.localeCompare(b.id)) // ordena alfabeticamente ou numericamente pelo id
+            .map((m) => {
+              const isSelected = selectedMissions.includes(m.id);
+              return (
+                <div
+                  key={m.id}
+                  onClick={() => {
+                    if (type === "missao_individual") {
+                      setSelectedMissions([m.id]);
+                    }
                   }}
-                />
-              )}
-            </motion.div>
-          );
-        })}
-      </AnimatePresence>
+                  className={`flex flex-col p-4 rounded-xl shadow hover:shadow-lg transition-all border cursor-pointer ${
+                    isSelected
+                      ? "border-primary bg-primary/10"
+                      : "border-base-200"
+                  }`}
+                >
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    {type === "grupo" && (
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-primary"
+                        value={m.id}
+                        checked={isSelected}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setSelectedMissions((prev) =>
+                            checked
+                              ? [...prev, m.id]
+                              : prev.filter((id) => id !== m.id)
+                          );
+                        }}
+                        onClick={(e) => e.stopPropagation()} // evita disparar o onClick do card
+                      />
+                    )}
+                    <Bot className="w-5 h-5 text-primary" />
+                    <span
+                      className={`font-semibold ${
+                        isSelected ? "text-primary" : "text-base-content"
+                      }`}
+                    >
+                      {m.id} - {m.name}
+                    </span>
+                  </label>
 
-
-      {/* Personalizado */}
-      {type === "personalizado" && (
-        <div>
-          <label className="label font-medium">Parâmetros</label>
-          <div className="space-y-3">
-            {parameters.map((p, idx) => (
-              <div key={idx} className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Nome"
-                  className="input input-bordered flex-1"
-                  value={p.name}
-                  onChange={(e) => {
-                    const updated = [...parameters];
-                    updated[idx].name = e.target.value;
-                    setParameters(updated);
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="Valor"
-                  className="input input-bordered flex-1"
-                  value={p.value}
-                  onChange={(e) => {
-                    const updated = [...parameters];
-                    updated[idx].value = e.target.value;
-                    setParameters(updated);
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={addParameter}
-            className="btn btn-outline btn-sm mt-2"
-          >
-            + Adicionar Parâmetro
-          </button>
+                  {m.type[0] === "range" && isSelected && (
+                    <input
+                      type="number"
+                      min={m.type[1]}
+                      max={m.type[2]}
+                      placeholder={`Quantidade (mín: ${m.type[1]}, máx: ${m.type[2]})`}
+                      className="input input-bordered w-full mt-2 border-primary focus:border-primary focus:ring-primary"
+                      value={m.maxValue || ""}
+                      onChange={(e) => {
+                        const updated = missions.map((mission) =>
+                          mission.id === m.id
+                            ? { ...mission, maxValue: Number(e.target.value) }
+                            : mission
+                        );
+                        setMissions(updated);
+                      }}
+                    />
+                  )}
+                </div>
+              );
+            })}
         </div>
       )}
 

@@ -6,12 +6,23 @@ import { supabase } from "@/utils/supabase/client";
 import CreateDiagramModal from "@/components/ui/Modal/CreateDiagramModal";
 import { BookOpenIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@/app/context/ToastContext";
+import {
+  List,
+  Fish,
+  Brain,
+  Workflow,
+  CircleDashed,
+  Trash2,
+  FileStack,
+} from "lucide-react";
+import Loader from "@/components/loader";
 
 interface Document {
   id: string;
   title: string;
   diagram_type: string;
   created_at: string;
+  updated_at?: string;
 }
 
 export default function InnoLab() {
@@ -22,12 +33,11 @@ export default function InnoLab() {
   const [filter, setFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Carrega documentos do Supabase
   const fetchDocuments = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("documents")
-      .select("id, title, diagram_type, created_at")
+      .select("id, title, diagram_type, created_at, updated_at")
       .order("created_at", { ascending: false });
 
     if (!error && data) setDocuments(data as Document[]);
@@ -38,33 +48,26 @@ export default function InnoLab() {
     fetchDocuments();
   }, []);
 
-  // Cria novo diagrama
   const handleCreateDiagram = async (data: { title: string; type: string }) => {
     if (!data.title || !data.type) return;
     try {
       const user = (await supabase.auth.getUser()).data.user;
-      const { data: inserted, error } = await supabase
-        .from("documents")
-        .insert([
-          {
-            title: data.title,
-            diagram_type: data.type,
-            content: {},
-            user_id: user?.id || null,
-          },
-        ])
-        .select();
+      const { error } = await supabase.from("documents").insert([
+        {
+          title: data.title,
+          diagram_type: data.type,
+          content: {},
+          user_id: user?.id || null,
+        },
+      ]);
 
       if (error) throw error;
-
-      await fetchDocuments(); // Atualiza lista
-      console.log("Novo diagrama criado:", inserted);
+      await fetchDocuments();
     } catch (error) {
       console.error("Erro ao criar diagrama:", error);
     }
   };
 
-  // Filtros e busca
   const filteredDocs = documents.filter((doc) => {
     const matchesSearch = doc.title
       .toLowerCase()
@@ -73,24 +76,34 @@ export default function InnoLab() {
     return matchesSearch && matchesFilter;
   });
 
-  // Cores/ícones por tipo de diagrama
+  // Ícones por tipo de diagrama
+  const typeIcons: Record<string, React.ElementType> = {
+    "5W2H": List,
+    Ishikawa: Fish,
+    "Mapa Mental": Brain,
+    Flowchart: Workflow,
+    SWOT: CircleDashed,
+  };
+
   const typeStyles: Record<string, string> = {
     "5W2H": "bg-primary/10 text-primary",
     Ishikawa: "bg-secondary/10 text-secondary",
     "Mapa Mental": "bg-accent/10 text-accent",
+    Flowchart: "bg-success/10 text-success",
+    SWOT: "bg-warning/10 text-warning",
   };
 
   return (
-    <>
-      {/* 🔹 Cabeçalho */}
-      <section className="bg-base-100 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300 mb-6">
+    <div className="space-y-6">
+      {/* Cabeçalho */}
+      <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-base-100 p-6 rounded-xl shadow-md border border-base-300">
         <div className="flex items-center gap-4">
-          <BookOpenIcon className="hidden sm:block size-16 text-secondary/75" />
+          <BookOpenIcon className="w-12 h-12 text-secondary/70 hidden md:block" />
           <div>
-            <h2 className="text-base-content font-bold mb-2 text-3xl">
+            <h2 className="text-3xl font-bold text-base-content">
               Inno<span className="text-secondary">Lab</span>
             </h2>
-            <p className="text-sm text-base-content">
+            <p className="text-sm text-base-content/80 mt-1">
               Dê vida às suas ideias: crie diagramas diversos para impulsionar
               seu projeto!
             </p>
@@ -99,24 +112,21 @@ export default function InnoLab() {
         <CreateDiagramModal onCreate={handleCreateDiagram} />
       </section>
 
-      {/* 🔹 Barra de busca e filtros */}
-      <section className="flex flex-col md:flex-row justify-between gap-4 mb-6 align-center">
-        <div className="flex items-center w-full gap-2">
-          <input
-            type="text"
-            placeholder="Buscar diagramas..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="input input-bordered w-full flex-1 p-2"
-          />
-        </div>
-
-        <div className="flex flex-wrap gap-2 flex-shrink-0 items-center">
-          {["5W2H", "Ishikawa", "Mapa Mental"].map((t) => (
+      {/* Busca e filtros */}
+      <section className="flex flex-col md:flex-row justify-between gap-4 items-center">
+        <input
+          type="text"
+          placeholder="Buscar diagramas..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="input input-bordered flex-1 px-4 py-2 w-full md:w-auto"
+        />
+        <div className="flex flex-wrap gap-2 w-full md:w-auto">
+          {["5W2H", "Ishikawa", "Mapa Mental", "Flowchart", "SWOT"].map((t) => (
             <button
               key={t}
-              className={`btn btn-sm ${
-                filter === t ? "btn-secondary" : "btn-outline"
+              className={`btn btn-sm transition-all ${
+                filter === t ? "btn-secondary" : "btn-outline btn-default"
               }`}
               onClick={() => setFilter(filter === t ? null : t)}
             >
@@ -126,46 +136,92 @@ export default function InnoLab() {
         </div>
       </section>
 
-      {/* 🔹 Cards de diagramas */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Grid de diagramas */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
-          <div className="col-span-full text-center py-10">
-            <span className="loading loading-spinner text-primary"></span>
+          <div className="col-span-full flex justify-center items-center py-10">
+            <Loader />
           </div>
         ) : filteredDocs.length === 0 ? (
-          <div className="col-span-full text-center py-10 text-base-content/70">
+          <div className="col-span-full text-center py-10 text-base-content/60">
+            <FileStack className="w-10 h-10 mx-auto mb-4" />
             Nenhum diagrama encontrado.
           </div>
         ) : (
-          filteredDocs.map((doc) => (
-            <div
-              key={doc.id}
-              onClick={() => {
-                if (typeof window === "undefined") return;
-                const isMobile = window.innerWidth < 640;
-                if (!isMobile)
-                  router.push(
-                    `/dashboard/innolab/${doc.id}/${doc.diagram_type}`
-                  );
-                else
-                  addToast("Diagrama só pode ser aberto em desktop!", "warning");
-              }}
-              className="card bg-base-100 border border-base-300 hover:shadow-lg transition-all cursor-pointer"
-            >
-              <div className="card-body">
-                <h3 className="card-title">{doc.title}</h3>
-                <div className={`badge ${typeStyles[doc.diagram_type]}`}>
-                  {doc.diagram_type}
+          filteredDocs.map((doc) => {
+            const Icon = typeIcons[doc.diagram_type];
+
+            const handleDelete = async () => {
+              if (
+                !confirm(`Deseja realmente deletar o diagrama "${doc.title}"?`)
+              )
+                return;
+
+              try {
+                const { error } = await supabase
+                  .from("documents")
+                  .delete()
+                  .eq("id", doc.id);
+
+                if (error) throw error;
+                addToast("Diagrama deletado com sucesso!", "success");
+                await fetchDocuments();
+              } catch (error) {
+                console.error("Erro ao deletar diagrama:", error);
+                addToast("Erro ao deletar diagrama", "error");
+              }
+            };
+
+            return (
+              <div
+                key={doc.id}
+                className="bg-base-100 border border-base-300 rounded-xl p-4 cursor-pointer hover:shadow-lg transition-transform transform hover:scale-105 flex flex-col justify-between"
+                onClick={() => {
+                  if(window.innerWidth < 640) {
+                    alert("Diagrama aberto em dispositivos móveis está em desenvolvimento!");
+                    return;
+                  }
+                  router.push(`/dashboard/innolab/${doc.id}/${doc.diagram_type}`)
+                }}
+              >
+                {/* Título */}
+                <h3 className="text-lg font-semibold text-base-content mb-2">
+                  {doc.title}
+                </h3>
+
+                {/* Badge com ícone à esquerda */}
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`badge ${typeStyles[doc.diagram_type]}`}>
+                    {Icon && <Icon className={`w-5 h-5`} />}
+                    {doc.diagram_type}
+                  </div>
                 </div>
-                <p className="text-xs text-base-content/60 mt-2">
-                  Criado em{" "}
-                  {new Date(doc.created_at).toLocaleDateString("pt-BR")}
+
+                {/* Datas */}
+                <p className="text-xs text-base-content/50 mt-1">
+                  Última atualização:{" "}
+                  {doc.updated_at
+                    ? new Date(doc.updated_at).toLocaleDateString("pt-BR")
+                    : new Date(doc.created_at).toLocaleDateString("pt-BR")}
                 </p>
+
+                {/* Footer com botão de deletar */}
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete();
+                    }}
+                    className="btn btn-error btn-square btn-xs"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </section>
-    </>
+    </div>
   );
 }

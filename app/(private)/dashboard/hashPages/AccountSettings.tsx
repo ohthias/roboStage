@@ -90,28 +90,8 @@ export default function AccountSettings() {
       }
     };
 
-    const fetchUserStats = async () => {
-      if (!session?.user?.id) return;
-
-      const { data, error } = await supabase
-        .from("user_activity_summary")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .single();
-
-      if (!error && data) {
-        setStats({
-          total_tests: data.total_tests || 0,
-          total_eventos: data.total_eventos || 0,
-          total_themes: data.total_themes || 0,
-          total_documents: data.total_documents || 0,
-        });
-      }
-    };
-
     fetchProfileImages();
     fetchUserCreatedAt();
-    fetchUserStats();
 
     if (profile?.username) setUsername(profile.username);
   }, [profile, session]);
@@ -192,51 +172,6 @@ export default function AccountSettings() {
               {createdAt ? `Na plataforma desde ${createdAt}` : "Carregando..."}
             </p>
           </div>
-        </div>
-      </div>
-
-      {/* Estatísticas */}
-      <div className="stats stats-vertical md:stats-horizontal shadow w-full bg-base-100">
-        <div className="stat place-items-center">
-          <div className="stat-figure text-primary">
-            <DocumentChartBarIcon className="w-8 h-8" />
-          </div>
-          <div className="stat-title">Testes</div>
-          <div className="stat-value text-primary">
-            {stats?.total_tests ?? 0}
-          </div>
-          <div className="stat-desc">criados</div>
-        </div>
-
-        <div className="stat place-items-center">
-          <div className="stat-figure text-secondary">
-            <CalendarDaysIcon className="w-8 h-8" />
-          </div>
-          <div className="stat-title">Eventos</div>
-          <div className="stat-value text-secondary">
-            {stats?.total_eventos ?? 0}
-          </div>
-          <div className="stat-desc">registrados</div>
-        </div>
-
-        <div className="stat place-items-center">
-          <div className="stat-figure text-accent">
-            <PuzzlePieceIcon className="w-8 h-8" />
-          </div>
-          <div className="stat-title">Diagramas</div>
-          <div className="stat-value text-accent">
-            {stats?.total_documents ?? 0}
-          </div>
-          <div className="stat-desc">documentados</div>
-        </div>
-
-        <div className="stat place-items-center">
-          <div className="stat-figure text-info">
-            <PuzzlePieceIcon className="w-8 h-8" />
-          </div>
-          <div className="stat-title">Temas</div>
-          <div className="stat-value text-info">{stats?.total_themes ?? 0}</div>
-          <div className="stat-desc">personalizados</div>
         </div>
       </div>
 

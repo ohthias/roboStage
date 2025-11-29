@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  HomeIcon,
-  PresentationChartBarIcon,
-  SignalIcon,
-  SparklesIcon,
-  ArrowLeftStartOnRectangleIcon,
-  LightBulbIcon,
-  ClipboardIcon,
-  BellAlertIcon,
-  NumberedListIcon,
-} from "@heroicons/react/24/outline";
+import { ChartPie, Palette, RadioIcon, House, Book, LogOut, Bot, Dumbbell, Cuboid, StretchHorizontal } from "lucide-react";
 import { JSX } from "react";
 
 interface SidebarProps {
@@ -53,16 +43,16 @@ export default function Sidebar({
             }
           }}
           target={isExternal ? "_blank" : "_self"}
-          className={`flex items-center gap-3 rounded-md px-3 py-2 transition-all duration-300 w-full 
+          className={`flex items-center gap-3 rounded-full px-3 py-2 transition-all duration-300 w-full 
             ${
               isActive
-                ? "bg-primary/75 text-primary-content shadow-sm"
+                ? "bg-primary/80 text-primary-content shadow-sm"
                 : "hover:bg-base-300"
             }
             ${collapsed ? "justify-center" : ""}
           `}
         >
-          <span className="size-6">{icon}</span>
+          <span>{icon}</span>
           {!collapsed && (
             <span
               className={`${
@@ -81,7 +71,7 @@ export default function Sidebar({
     <aside
       className={`
     h-screen border-r border-base-300 bg-base-100 flex flex-col
-    transition-all duration-300 ease-in-out fixed
+    transition-all duration-300 ease-in-out fixed z-99
     ${collapsed ? "w-[80px] items-center" : "w-[256px]"}
   `}
     >
@@ -112,51 +102,16 @@ export default function Sidebar({
       </div>
 
       {/* Navigation */}
-      <ul className="menu px-3 flex-1 overflow-y-auto space-y-1 w-full">
-        {menuItem(<HomeIcon />, "Hub", "hub")}
-        {menuItem(<PresentationChartBarIcon />, "LabTest", "labTest")}
-        {menuItem(<SignalIcon />, "ShowLive", "showLive")}
-        {menuItem(<SparklesIcon />, "StyleLab", "styleLab")}
-      </ul>
-
-      {/* Divider */}
-      <div className="px-3">
-        <div className="divider my-2 text-xs hidden md:block">
-          {" "}
-          {!collapsed && "Ferramentas"}{" "}
-        </div>
-      </div>
-
-      {/* External Tools */}
-      <ul className="menu px-3 space-y-1 w-full hidden md:block">
-        {menuItem(
-          <LightBulbIcon className="size-5" />,
-          "QuickBrick Studio",
-          "quickbrick",
-          true,
-          "/quickbrick"
-        )}
-        {menuItem(
-          <NumberedListIcon className="size-5" />,
-          "Pontuador UNEARTHED",
-          "unearthed",
-          true,
-          "/fll-score#unearthed"
-        )}
-        {menuItem(
-          <ClipboardIcon className="size-5" />,
-          "Flash Q&A",
-          "flashqa",
-          true,
-          "/flash-qa"
-        )}
-        {menuItem(
-          <BellAlertIcon className="size-5" />,
-          "Timers Avaliação",
-          "timers",
-          true,
-          "/timers"
-        )}
+      <ul className="px-3 flex flex-col flex-1 overflow-y-auto space-y-1 w-full">
+        {menuItem(<House className="size-6" />, "Hub", "hub")}
+        {menuItem(<RadioIcon className="size-6" />, "ShowLive", "showLive")}
+        {menuItem(<ChartPie className="size-6" />, "LabTest", "labTest")}
+        {menuItem(<Book className="size-6" />, "InnoLab", "innoLab")}
+        {/* {menuItem(<StretchHorizontal className="size-6"/>, "Mission Flow", "missionFlow")}
+        {menuItem(<Bot className="size-6"/>, "CalibraBot", "calibraBot")}
+        {menuItem(<Dumbbell className="size-6"/>, "TrainLab", "trainLab")}
+        {menuItem(<Cuboid className="size-6" />, "BrickMap", "brickMap")} */}
+        {menuItem(<Palette className="size-6" />, "StyleLab", "styleLab")}
       </ul>
 
       {/* Footer / Profile */}
@@ -197,7 +152,7 @@ export default function Sidebar({
               className="btn btn-ghost w-full justify-start gap-2"
               onClick={onLogout}
             >
-              <ArrowLeftStartOnRectangleIcon className="size-5" />
+              <LogOut className="size-5" />
               Sair
             </button>
           </div>

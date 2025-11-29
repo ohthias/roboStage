@@ -15,7 +15,7 @@ export default function ModalLabTest() {
       </button>
 
       <dialog ref={modalRef} className="modal">
-        <div className="modal-box w-11/12 max-w-3xl max-h-[80vh] overflow-y-auto">
+        <div className="modal-box w-11/12 max-w-3xl max-h-[90vh] overflow-y-auto">
           <h3 className="font-bold text-xl mb-4 text-primary">
             Criar Novo Teste
           </h3>

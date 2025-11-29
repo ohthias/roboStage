@@ -11,6 +11,8 @@ import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/ui/dashboard/Navbar";
 import { useHashSection } from "@/hooks/useHashSection";
+import InnoLab from "./hashPages/InnoLab";
+import ComingSoon from "@/components/ComingSoon";
 
 export default function Dashboard() {
   const { session, profile } = useUser();
@@ -40,26 +42,38 @@ export default function Dashboard() {
   if (!session) return null;
 
   const logout = async () => {
-    confirm("Tem certeza que deseja sair?") && (await supabase.auth.signOut());
+    if (!confirm("Tem certeza que deseja sair?")) return;
+
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+
     document.cookie = "sb-access-token=; path=/; max-age=0";
     document.cookie = "sb-refresh-token=; path=/; max-age=0";
+    localStorage.removeItem("roboStage-last-section");
+    localStorage.removeItem("theme");
+
     router.push("/auth/login");
   };
 
   const renderSection = () => {
     switch (activeSection) {
       case "hub":
-        return <HubHero />;
+        return <HubHero session={session} username={profile?.username || session?.user?.email?.split("@")[0] || "Usuário"} />;
       case "showLive":
         return <ShowLiveHub />;
       case "labTest":
         return <LabTestPage />;
       case "styleLab":
         return <StyleLab />;
+      case "innoLab":
+        return <InnoLab />;
       case "profile":
         return <AccountSettings />;
       default:
-        return <HubHero />;
+        return <ComingSoon />;
     }
   };
 
@@ -75,7 +89,9 @@ export default function Dashboard() {
         </label>
 
         <main
-          className={`flex-1 overflow-y-auto bg-base-200 p-6 transition-all duration-300 ease-in-out ${collapsed ? "lg:ml-[80px]" : "lg:ml-[256px]"}`}
+          className={`flex-1 overflow-y-auto bg-base-200 p-6 transition-all duration-300 ease-in-out ${
+            collapsed ? "lg:ml-[80px]" : "lg:ml-[256px]"
+          }`}
         >
           {renderSection()}
         </main>

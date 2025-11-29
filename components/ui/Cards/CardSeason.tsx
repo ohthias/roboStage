@@ -1,9 +1,9 @@
 "use client";
 
 interface CardSeasonProps {
-  image: string; // logo da temporada
-  name: string;  // nome da temporada
-  selected?: boolean;
+  image: string;       // Logo da temporada
+  name: string;        // Nome da temporada
+  selected?: boolean;  // Temporada selecionada
   onSelect?: () => void;
 }
 
@@ -17,30 +17,36 @@ export default function CardSeason({
     <div
       onClick={onSelect}
       className={`
-        relative h-28 w-28 cursor-pointer rounded-xl overflow-hidden
-        flex items-center justify-center bg-white shadow-md transition-all duration-300 group
-        ${selected ? "ring-4 ring-base-300 scale-105" : "hover:scale-105 hover:shadow-xl active:scale-95"}
+        relative h-32 w-32 cursor-pointer rounded-2xl overflow-hidden
+        flex flex-col items-center justify-center bg-white shadow-md transition-all duration-300
+        ${selected 
+          ? "ring-4 ring-primary scale-105 shadow-xl" 
+          : "hover:scale-105 hover:shadow-lg active:scale-95"}
       `}
     >
-      {/* Imagem da temporada */}
+      {/* Logo da temporada */}
       <img
         src={image}
         alt={name}
         className="h-20 w-20 object-contain transition-transform duration-300 group-hover:scale-110"
       />
 
-      {/* Nome aparece só quando selecionado ou hover */}
+      {/* Overlay com o nome */}
       <div
         className={`
-          absolute bottom-0 w-full py-1 text-center text-sm font-semibold text-base-content
-          transition-all duration-500
-          ${selected
-            ? "opacity-100 bg-gradient-to-t from-base-300/90 to-transparent"
-            : "opacity-0 group-hover:opacity-100 group-hover:bg-gradient-to-t group-hover:from-base-300/90 group-hover:to-transparent"}
+          absolute bottom-0 left-0 w-full py-2 text-center text-sm font-semibold text-white
+          bg-gradient-to-t from-black/70 to-transparent
+          transition-opacity duration-300
+          ${selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}
         `}
       >
         {name}
       </div>
+
+      {/* Destaque animado no contorno */}
+      {selected && (
+        <div className="absolute inset-0 rounded-2xl border-2 border-primary pointer-events-none animate-pulse"></div>
+      )}
     </div>
   );
 }

@@ -137,9 +137,15 @@ const DiagramCanvas: React.FC<Props> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    e.stopPropagation();
+
+    if (e.key === "Enter" && !e.ctrlKey) return;
+
+    if (e.key === "Enter" && e.ctrlKey) {
       e.preventDefault();
       onFinishEditing();
+    } else {
+      handleKeyDown(e);
     }
   };
 
@@ -310,13 +316,12 @@ const DiagramCanvas: React.FC<Props> = ({
     const isSticker = node.type === "sticker";
     const isZone = node.type === "zone";
 
-    // Border Styling Logic
+    // --- Border & Fill Styling ---
     const defaultBorderColor = node.groupId ? "#94a3b8" : "#cbd5e1";
     const customBorderColor = node.borderColor || defaultBorderColor;
     const customBorderWidth = node.borderWidth || (isZone ? 2 : 1);
     const customBorderStyle = node.borderStyle || "solid";
 
-    // Selection Overrides
     const strokeColor = isSelected
       ? DIAGRAM_COLORS.selected
       : customBorderColor;
@@ -325,101 +330,73 @@ const DiagramCanvas: React.FC<Props> = ({
       : customBorderWidth;
 
     let strokeDasharray = "0";
-    if (isZone) {
-      strokeDasharray = "8 4";
-    } else if (customBorderStyle === "dashed") {
-      strokeDasharray = "8 4";
-    } else if (customBorderStyle === "dotted") {
-      strokeDasharray = "2 2";
-    } else if (customBorderStyle === "none") {
-      // If none, we still show stroke if selected, otherwise opacity 0
-      strokeDasharray = "0";
-    }
+    if (isZone || customBorderStyle === "dashed") strokeDasharray = "8 4";
+    else if (customBorderStyle === "dotted") strokeDasharray = "2 2";
 
     const strokeOpacity = !isSelected && customBorderStyle === "none" ? 0 : 1;
-
     const fill = node.color || "white";
 
+    // --- Node Dimensions ---
     const { w, h } = getNodeDimensions(node);
-
-    // Force specific styles based on diagram type if shape isn't explicitly set
-    let shape = node.shape || "rect";
-    if (diagramType === "Mapa Mental" && node.type === "root") shape = "pill";
-    if (
-      diagramType === "Ishikawa" &&
-      node.type !== "label" &&
-      node.type !== "text" &&
-      !isSticker &&
-      !isZone
-    )
-      shape = "rect";
-    if (
-      diagramType === "5W2H" &&
-      node.type !== "label" &&
-      node.type !== "text" &&
-      !isSticker &&
-      !isZone
-    )
-      shape = "rect";
-
     const halfW = w / 2;
     const halfH = h / 2;
 
-    // Render resize handles if selected
+    // --- Determine shape ---
+    let shape = node.shape || "rect";
+
+    // Apply diagram type defaults only if shape wasn't set manually
+    if (!node.shape) {
+      if (diagramType === "Mapa Mental" && node.type === "root") shape = "pill";
+      if (
+        diagramType === "Ishikawa" &&
+        !isLabel &&
+        !isText &&
+        !isSticker &&
+        !isZone
+      )
+        shape = "rect";
+      if (
+        diagramType === "5W2H" &&
+        !isLabel &&
+        !isText &&
+        !isSticker &&
+        !isZone
+      )
+        shape = "rect";
+    }
+
+    // --- Render Resize Handles ---
     const renderHandles = () => {
       if (!isSelected || node.locked) return null;
       const handleSize = 8;
       const offset = handleSize / 2;
       return (
         <g className="resize-handles">
-          <rect
-            x={-halfW - offset}
-            y={-halfH - offset}
-            width={handleSize}
-            height={handleSize}
-            fill="white"
-            stroke="#3b82f6"
-            strokeWidth={1}
-            className="cursor-nw-resize hover:fill-blue-100"
-            onMouseDown={(e) => onResizeStart(e, node.id, "nw")}
-          />
-          <rect
-            x={halfW - offset}
-            y={-halfH - offset}
-            width={handleSize}
-            height={handleSize}
-            fill="white"
-            stroke="#3b82f6"
-            strokeWidth={1}
-            className="cursor-ne-resize hover:fill-blue-100"
-            onMouseDown={(e) => onResizeStart(e, node.id, "ne")}
-          />
-          <rect
-            x={halfW - offset}
-            y={halfH - offset}
-            width={handleSize}
-            height={handleSize}
-            fill="white"
-            stroke="#3b82f6"
-            strokeWidth={1}
-            className="cursor-se-resize hover:fill-blue-100"
-            onMouseDown={(e) => onResizeStart(e, node.id, "se")}
-          />
-          <rect
-            x={-halfW - offset}
-            y={halfH - offset}
-            width={handleSize}
-            height={handleSize}
-            fill="white"
-            stroke="#3b82f6"
-            strokeWidth={1}
-            className="cursor-sw-resize hover:fill-blue-100"
-            onMouseDown={(e) => onResizeStart(e, node.id, "sw")}
-          />
+          {["nw", "ne", "se", "sw"].map((pos) => {
+            const x = pos.includes("e") ? halfW - offset : -halfW - offset;
+            const y = pos.includes("s") ? halfH - offset : -halfH - offset;
+            return (
+              <rect
+                key={pos}
+                x={x}
+                y={y}
+                width={handleSize}
+                height={handleSize}
+                fill="white"
+                stroke="#3b82f6"
+                strokeWidth={1}
+                className={`cursor-${pos}-resize hover:fill-blue-100`}
+                onMouseDown={(e) =>
+                  onResizeStart(e, node.id, pos as ResizeHandle)
+                }
+              />
+            );
+          })}
         </g>
       );
     };
 
+    // --- Special Node Types ---
     if (isZone) {
       return (
         <g>
@@ -443,9 +420,9 @@ const DiagramCanvas: React.FC<Props> = ({
     }
 
     if (isSticker) {
-      if (node.backgroundImage) {
-        return (
-          <g>
+      return (
+        <g>
+          {node.backgroundImage && (
             <image
               href={node.backgroundImage}
               x={-halfW}
@@ -455,24 +432,7 @@ const DiagramCanvas: React.FC<Props> = ({
               preserveAspectRatio="none"
               className="cursor-move"
             />
-            {/* Border for selection feedback */}
-            <rect
-              x={-halfW}
-              y={-halfH}
-              width={w}
-              height={h}
-              fill="transparent"
-              stroke={isSelected ? DIAGRAM_COLORS.selected : "none"}
-              strokeWidth={2}
-              pointerEvents="none"
-            />
-            {renderHandles()}
-          </g>
-        );
-      }
-
-      return (
-        <g>
+          )}
           <rect
             x={-halfW}
             y={-halfH}
@@ -481,7 +441,7 @@ const DiagramCanvas: React.FC<Props> = ({
             fill="transparent"
             stroke={isSelected ? DIAGRAM_COLORS.selected : "none"}
             strokeWidth={2}
-            className="cursor-move"
+            pointerEvents="none"
           />
           {renderHandles()}
         </g>
@@ -489,32 +449,14 @@ const DiagramCanvas: React.FC<Props> = ({
     }
 
     if (isLabel || isText) {
-      // Determine visual fill and stroke for text nodes
       const hasFill = node.color && node.color !== "transparent";
       const visualFill = hasFill
         ? node.color
         : isSelected
         ? "rgba(255,255,255,0.5)"
         : "transparent";
-
-      // For Text nodes, we respect custom border settings if set, otherwise transparent unless selected
-      let textStrokeColor = strokeColor;
-      let textStrokeWidth = strokeWidth;
-
-      if (!isSelected) {
-        if (
-          customBorderStyle !== "none" &&
-          (node.borderColor || node.borderWidth)
-        ) {
-          // User specifically set border props
-        } else if (!hasFill) {
-          // Default text node: no border
-          textStrokeColor = "transparent";
-        } else {
-          textStrokeColor = "#e2e8f0";
-        }
-      }
-
+      const textStrokeColor =
+        hasFill || isSelected ? strokeColor : "transparent";
       return (
         <g>
           <rect
@@ -524,7 +466,7 @@ const DiagramCanvas: React.FC<Props> = ({
             height={h}
             fill={visualFill}
             stroke={textStrokeColor}
-            strokeWidth={textStrokeWidth}
+            strokeWidth={strokeWidth}
             strokeDasharray={strokeDasharray}
             strokeOpacity={strokeOpacity}
             rx={4}
@@ -535,9 +477,9 @@ const DiagramCanvas: React.FC<Props> = ({
       );
     }
 
-    let shapeEl;
+    // --- Standard Shapes ---
     const commonProps = {
-      fill: fill,
+      fill: fill === "transparent" ? "white" : fill,
       stroke: strokeColor,
       strokeWidth: strokeWidth,
       strokeDasharray: strokeDasharray,
@@ -545,6 +487,7 @@ const DiagramCanvas: React.FC<Props> = ({
       className: "shadow-sm hover:shadow-md transition-shadow cursor-pointer",
     };
 
+    let shapeEl;
     switch (shape) {
       case "diamond":
         shapeEl = (
@@ -610,28 +553,24 @@ const DiagramCanvas: React.FC<Props> = ({
         } L 0 ${sY * 0.38} L ${-sX * 0.59} ${sY * 0.81} L ${-sX * 0.36} ${
           sY * 0.12
         } L ${-sX * 0.95} ${-sY * 0.31} L ${-sX * 0.22} ${-sY * 0.31} Z`;
-
         shapeEl = <path d={starPath} {...commonProps} />;
         break;
       case "cylinder":
         shapeEl = (
-          <g className="shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+          <g {...commonProps}>
             <path
-              d={`M ${-halfW},${-halfH + 10} L ${-halfW},${halfH - 10} Q ${0},${
+              d={`M ${-halfW},${-halfH + 10} L ${-halfW},${halfH - 10} Q 0,${
                 halfH + 10
-              } ${halfW},${halfH - 10} L ${halfW},${-halfH + 10} Q ${0},${
+              } ${halfW},${halfH - 10} L ${halfW},${-halfH + 10} Q 0,${
                 -halfH + 30
               } ${-halfW},${-halfH + 10}`}
-              {...commonProps}
             />
             <ellipse
               cx={0}
               cy={-halfH + 10}
               rx={halfW}
               ry={10}
-              {...commonProps}
-              fillOpacity={commonProps.fill === "transparent" ? 0 : 0.5} // slightly darken top
-              strokeWidth={Math.min(strokeWidth, 1)}
+              fillOpacity={0.5}
             />
           </g>
         );
@@ -640,14 +579,13 @@ const DiagramCanvas: React.FC<Props> = ({
         const cW = halfW;
         const cH = halfH;
         const cloudPath = `
-            M ${-cW * 0.5} ${cH * 0.6} 
-            Q ${-cW} ${cH * 0.6} ${-cW} ${0} 
-            Q ${-cW} ${-cH} ${-cW * 0.2} ${-cH * 0.8} 
-            Q ${0} ${-cH * 1.4} ${cW * 0.4} ${-cH * 0.8} 
-            Q ${cW} ${-cH} ${cW} ${0} 
-            Q ${cW} ${cH * 0.6} ${cW * 0.5} ${cH * 0.6} 
-            Z
-         `;
+        M ${-cW * 0.5} ${cH * 0.6} 
+        Q ${-cW} ${cH * 0.6} ${-cW} 0 
+        Q ${-cW} ${-cH} ${-cW * 0.2} ${-cH * 0.8} 
+        Q 0 ${-cH * 1.4} ${cW * 0.4} ${-cH * 0.8} 
+        Q ${cW} ${-cH} ${cW} 0 
+        Q ${cW} ${cH * 0.6} ${cW * 0.5} ${cH * 0.6} 
+        Z`;
         shapeEl = <path d={cloudPath} {...commonProps} />;
         break;
       case "document":
@@ -656,7 +594,7 @@ const DiagramCanvas: React.FC<Props> = ({
           <path
             d={`M ${-halfW},${-halfH} L ${halfW},${-halfH} L ${halfW},${
               halfH - waveHeight
-            } Q ${halfW * 0.5},${halfH + waveHeight} ${0},${
+            } Q ${halfW * 0.5},${halfH + waveHeight} 0,${
               halfH - waveHeight
             } Q ${-halfW * 0.5},${halfH - waveHeight * 3} ${-halfW},${
               halfH - waveHeight
@@ -673,7 +611,7 @@ const DiagramCanvas: React.FC<Props> = ({
             y={-halfH}
             width={w}
             height={h}
-            rx={diagramType === "Ishikawa" ? 0 : 6}
+            rx={6}
             {...commonProps}
           />
         );

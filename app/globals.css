@@ -72,7 +72,7 @@
 }
 
 @plugin "daisyui" {
-  themes: "lightScheme" --default, "darkScheme", "bumblebee", "lemonade", "lofi", "fantasy", "black";
+  themes: "lightScheme" --default, "darkScheme";
 }
 
 .tooltip-custom[data-tip]::before {

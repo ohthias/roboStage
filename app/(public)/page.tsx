@@ -5,9 +5,8 @@ import { Hero } from "@/components/Hero";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/ui/Footer";
 import background from "@/public/images/background_uneartherd.png";
-import listra from "@/public/images/Listra.svg";
 import FLLLogo from "@/public/images/fll_unearthed_logo_fullcolor.png";
-import Image from "next/image";
+import ListraImage from "@/components/ListraImage";
 
 export default function Home() {
   return (
@@ -16,24 +15,14 @@ export default function Home() {
       <Hero />
       <div className="w-full">
         {/* Seção Sobre */}
-        <section className="max-w-5xl p-6 mx-auto my-12 relative">
-          <div
-            className="
-    relative p-10 rounded-3xl 
-    bg-base-100/20 backdrop-blur-3xl 
-    border border-base-300/40
-    shadow-[0_10px_40px_rgba(0,0,0,0.25)]
-    hover:shadow-[0_12px_50px_rgba(0,0,0,0.35)]
-    transition-all duration-500
-  "
-          >
+        <section className="max-w-5xl p-6 sm:p-8 mx-auto my-12">
+          <div className="p-6 sm:p-10 rounded-2xl bg-base-200 border border-base-300/20 shadow-sm hover:shadow-md transition-shadow duration-300">
             <div className="text-base-content text-center space-y-6">
-              <h2 className="text-3xl sm:text-4xl font-extrabold">
-                Sobre o{" "}
-                <span className="text-primary">RoboStage</span>
+              <h2 className="text-2xl sm:text-3xl font-bold">
+                Sobre o <span className="text-primary">RoboStage</span>
               </h2>
 
-              <p className="text-md sm:text-lg leading-relaxed text-base-content/80">
+              <p className="text-md sm:text-base leading-relaxed text-base-content/80">
                 O RoboStage é uma plataforma criada para ajudar equipes de
                 robótica a planejarem, testarem e apresentarem suas ideias com
                 mais eficiência. Inspirado pela dinâmica da FIRST LEGO League, o
@@ -42,7 +31,7 @@ export default function Home() {
                 criação de torneios completos.
               </p>
 
-              <p className="text-md sm:text-lg leading-relaxed text-base-content/80">
+              <p className="text-md sm:text-base leading-relaxed text-base-content/80">
                 Aqui, você pode montar estratégias, testar execuções, registrar
                 resultados e simular competições, tudo em um único ambiente.
                 Nosso objetivo é facilitar a jornada de equipes, treinadores e
@@ -80,22 +69,9 @@ export default function Home() {
           </div>
         </section>
       </div>
-
-      <Image
-        src={listra.src}
-        alt="Listra"
-        width={500}
-        height={50}
-        className="w-full"
-      />
+      <ListraImage />
       <FeaturesSection />
-      <Image
-        src={listra.src}
-        alt="Listra"
-        width={500}
-        height={50}
-        className="w-full"
-      />
+      <ListraImage />
       <div className="p-4 md:p-0">
         <section
           className="max-w-5xl p-4 sm:p-6 mx-auto my-12 flex flex-col sm:flex-row rounded-lg bg-yellow-100 gap-6 relative unearthed-section"

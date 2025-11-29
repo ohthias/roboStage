@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { DiagramType } from "@/types/InnoLabType";
 import { useDiagram } from "@/hooks/useDiagram";
 import { AVAILABLE_FONTS } from "../../constants";
@@ -55,6 +55,8 @@ import {
   Spline,
   MoveLeft,
   MoveRight,
+  Strikethrough,
+  Slash,
 } from "lucide-react";
 import DiagramCanvas from "@/components/InnoLab/DiagramCanvas";
 import StickerPicker from "@/components/InnoLab/StickerPicker";
@@ -183,7 +185,7 @@ export default function InnoLab() {
         json.paths ?? []
       );
 
-      addToast("Diagrama carregado do servidor", "success");
+      addToast("Diagrama carregado", "success");
     }
 
     if (documentId) loadDocument();
@@ -192,11 +194,8 @@ export default function InnoLab() {
   // States
   const [diagramType, setDiagramType] = useState<DiagramType>("Mapa Mental");
   const [diagramName, setDiagramName] = useState<string>("Untitled Project");
-  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [isStickerPickerOpen, setIsStickerPickerOpen] = useState(false);
   const [hasSavedData, setHasSavedData] = useState(false);
-
-  // Sidebar State: 'properties' (default) or 'layers'
   const [activeSidebarTab, setActiveSidebarTab] = useState<
     "properties" | "layers"
   >("properties");
@@ -211,7 +210,6 @@ export default function InnoLab() {
     selectedNode,
     setSelectedNode,
     selectedNodeIds,
-    setSelectedNodeIds,
     selectedConnectionId,
     zoom,
     setZoom,
@@ -255,16 +253,12 @@ export default function InnoLab() {
     updateSelectedNodeShape,
     updateSelectedNodeStyle,
     updateConnection,
-    loadTemplateNodes,
     undo,
     redo,
     canUndo,
     canRedo,
-    // Layer helpers
     bringToFront,
     sendToBack,
-    moveLayerUp,
-    moveLayerDown,
     toggleLock,
     toggleVisibility,
   } = useDiagram(diagramType);
@@ -282,7 +276,6 @@ export default function InnoLab() {
       setIsSidebarOpen(true);
       setActiveSidebarTab("properties");
     } else if (activeSidebarTab !== "layers") {
-      // Close if nothing selected and not specifically in layers mode
       setIsSidebarOpen(false);
     }
   }, [selectedNode, selectedConnectionId]);
@@ -307,7 +300,7 @@ export default function InnoLab() {
       addToast("Erro ao salvar no servidor", "error");
       console.error("Supabase Save Error:", error);
     } else {
-      addToast("Salvo no Supabase com sucesso!", "success");
+      addToast("Salvo com sucesso!", "success");
     }
   };
 
@@ -318,7 +311,7 @@ export default function InnoLab() {
       setDiagramName(data.name);
       setDiagramType(data.type);
       setInitialDiagram(data.nodes, data.connections, data.paths || []);
-      addToast("Diagram loaded", "success");
+      addToast("Diagrama carregado", "success");
     }
   };
 
@@ -326,7 +319,7 @@ export default function InnoLab() {
     const svg = document.getElementById("diagram-svg");
     if (!svg) return;
 
-    addToast("Generating PNG...", "info");
+    addToast("Gerando PNG...", "info");
 
     const clone = svg.cloneNode(true) as SVGElement;
 
@@ -423,7 +416,7 @@ export default function InnoLab() {
   const handleAddTextNode = () => {
     addNode({
       color: "transparent",
-      text: "Type something",
+      text: "Digite seu texto aqui",
       type: "text",
       textColor: "#334155",
       locked: false,
@@ -1015,31 +1008,39 @@ export default function InnoLab() {
                           icon: Bold,
                           prop: "fontWeight",
                           val: "bold",
+                          reset: undefined,
                         },
                         {
                           key: "italic",
                           icon: Italic,
                           prop: "fontStyle",
                           val: "italic",
+                          reset: "normal",
                         },
                         {
                           key: "underline",
                           icon: Underline,
                           prop: "textDecoration",
                           val: "underline",
+                          reset: "none",
                         },
-                      ].map(({ key, icon: Icon, prop, val }) => {
-                        const active =
-                          selectedNodeData[
-                            prop as keyof typeof selectedNodeData
-                          ] === val;
+                        {
+                          key: "line-through",
+                          icon: Strikethrough,
+                          prop: "textDecoration",
+                          val: "line-through",
+                          reset: "none",
+                        },
+                      ].map(({ key, icon: Icon, prop, val, reset }) => {
+                        const keyProp = prop as keyof typeof selectedNodeData;
+                        const active = selectedNodeData[keyProp] === val;
                         return (
                           <button
                             key={key}
                             onClick={() =>
                               updateSelectedNodeStyle({
-                                [prop]: active ? "normal" : val,
-                              })
+                                [prop]: active ? reset : val,
+                              } as any)
                             }
                             className={`btn btn-sm flex-1 ${
                               active ? "btn-primary" : "btn-ghost"
@@ -1059,34 +1060,63 @@ export default function InnoLab() {
                     </span>
 
                     <div className="grid grid-cols-5 gap-2">
-                      {[
-                        { id: "rect", icon: Square },
-                        { id: "circle", icon: Circle },
-                        { id: "diamond", icon: Diamond },
-                        {
-                          id: "pill",
-                          icon: Minus,
-                          className: "w-5 h-3 rounded-full bg-current",
-                        },
-                        { id: "triangle", icon: Triangle },
-                        { id: "hexagon", icon: Hexagon },
-                        { id: "star", icon: Star },
-                        { id: "cloud", icon: Cloud },
-                        { id: "cylinder", icon: Database },
-                        { id: "document", icon: FileText },
-                      ].map((s) => (
-                        <button
-                          key={s.id}
-                          onClick={() => updateSelectedNodeShape(s.id as any)}
-                          className={`btn btn-sm ${
-                            selectedNodeData.shape === s.id
-                              ? "btn-primary"
-                              : "btn-ghost border-base-300"
-                          } flex flex-col items-center justify-center gap-1`}
-                        >
-                          <s.icon size={14} className={s.className} />
-                        </button>
-                      ))}
+                      {(() => {
+                        const Parallelogram = ({
+                          size = 14,
+                          className = "",
+                        }: {
+                          size?: number;
+                          className?: string;
+                        }) => (
+                          <svg
+                            width={size}
+                            height={size}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={className}
+                          >
+                            <path
+                              d="M5 19H19L15 5H1L5 19Z"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        );
+
+                        return (
+                          [
+                            { id: "rect", icon: Square },
+                            { id: "circle", icon: Circle },
+                            { id: "diamond", icon: Diamond },
+                            { id: "pill", icon: Minus, className: "rounded-full w-5 h-3 bg-current" },
+                            { id: "triangle", icon: Triangle },
+                            { id: "parallelogram", icon: Parallelogram },
+                            { id: "hexagon", icon: Hexagon },
+                            { id: "star", icon: Star },
+                            { id: "cloud", icon: Cloud },
+                            { id: "cylinder", icon: Database },
+                            { id: "document", icon: FileText },
+                          ] as const
+                        ).map((s) => (
+                          <button
+                            key={s.id}
+                            onClick={() => updateSelectedNodeShape(s.id)}
+                            className={`btn btn-sm ${
+                              selectedNodeData.shape === s.id
+                                ? "btn-primary"
+                                : "btn-ghost border-base-300"
+                            } flex flex-col items-center justify-center gap-1`}
+                          >
+                            <s.icon
+                              size={14}
+                              className={(s as any).className}
+                            />
+                          </button>
+                        ));
+                      })()}
                     </div>
                   </div>
 

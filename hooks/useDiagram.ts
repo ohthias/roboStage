@@ -217,12 +217,20 @@ export const useDiagram = (initialType: DiagramType) => {
         y: centerY + (Math.random() * 50 - 25),
         text:
           overrides?.type === "label" || overrides?.type === "text"
-            ? "Text"
+            ? "Digite seu texto aqui"
             : "Nova Ideia",
-        type: "leaf",
+        type: overrides?.type || "leaf",
+        shape: overrides?.shape || "rect",
+        textAlign: overrides?.textAlign || "center",
+        fontSize: overrides?.fontSize || 14,
+        fontWeight: overrides?.fontWeight || "normal",
+        textDecoration: overrides?.textDecoration || "none",
         color: "#ffffff",
         textColor: "#1e293b",
-        width: overrides?.width, // Pass through or undefined (handled by renderer default)
+        borderColor: "#94a3b8",
+        borderStyle: overrides?.borderStyle || "solid",
+        borderWidth: overrides?.borderWidth || 2,
+        width: overrides?.width,
         height: overrides?.height,
         ...overrides,
       };
@@ -497,8 +505,6 @@ export const useDiagram = (initialType: DiagramType) => {
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) return;
 
-    // Determine current dimensions (fallback to defaults matches DiagramCanvas logic)
-    // INCREASED DEFAULTS FOR BETTER SPACING
     let currentW = node.width;
     let currentH = node.height;
 
@@ -521,10 +527,28 @@ export const useDiagram = (initialType: DiagramType) => {
       } else if (node.shape === "cloud") {
         currentW = 180;
         currentH = 100;
+      } else if (node.shape === "star") {
+        currentW = 120;
+        currentH = 120;
+      } else if (node.shape === "triangle") {
+        currentW = 120;
+        currentH = 120;
+      } else if (node.shape === "hexagon") {
+        currentW = 140;
+        currentH = 100;
+      } else if (node.shape === "parallelogram") {
+        currentW = 140;
+        currentH = 100;
+      } else if (node.shape === "document") {
+        currentW = 140;
+        currentH = 100;
+      } else if (node.shape === "cylinder") {
+        currentW = 100;
+        currentH = 140;
       } else {
-        currentW = 180;
-        currentH = 90;
-      } // Rect default (increased from 150x70)
+        currentW = 140;
+        currentH = 60;
+      }
     }
 
     isResizing.current = true;
@@ -987,15 +1011,65 @@ export const useDiagram = (initialType: DiagramType) => {
     saveState(newNodes, connections, paths);
   };
 
-  const updateSelectedNodeShape = (
-    shape: "rect" | "circle" | "diamond" | "pill"
-  ) => {
-    if (selectedNodeIds.size === 0) return;
-    const newNodes = nodes.map((n) =>
-      selectedNodeIds.has(n.id) ? { ...n, shape } : n
+  const updateSelectedNodeShape = (newShape: Node["shape"]) => {
+    if (!selectedNode) return;
+
+    setNodes((prev) =>
+      prev.map((n) => {
+        if (n.id !== selectedNode) return n;
+        let updatedNode = { ...n, shape: newShape };
+
+        // Adjust width/height for certain shapes if not explicitly set
+        if (!n.width || !n.height) {
+          switch (newShape) {
+            case "circle":
+              updatedNode.width = 100;
+              updatedNode.height = 100;
+              break;
+            case "diamond":
+              updatedNode.width = 140;
+              updatedNode.height = 100;
+              break;
+            case "pill":
+              updatedNode.width = 160;
+              updatedNode.height = 70;
+              break;
+            case "cloud":
+              updatedNode.width = 180;
+              updatedNode.height = 100;
+              break;
+            case "star":
+              updatedNode.width = 120;
+              updatedNode.height = 120;
+              break;
+            case "triangle":
+              updatedNode.width = 120;
+              updatedNode.height = 120;
+              break;
+            case "hexagon":
+              updatedNode.width = 140;
+              updatedNode.height = 100;
+              break;
+            case "parallelogram":
+              updatedNode.width = 140;
+              updatedNode.height = 100;
+              break;
+            case "document":
+              updatedNode.width = 140;
+              updatedNode.height = 100;
+              break;
+            case "cylinder":
+              updatedNode.width = 100;
+              updatedNode.height = 140;
+              break;
+            default:
+              break;
+          }
+        }
+
+        return updatedNode;
+      })
     );
-    setNodes(newNodes);
-    saveState(newNodes, connections, paths);
   };
 
   const updateSelectedNodeStyle = (updates: Partial<Node>) => {

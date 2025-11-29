@@ -52,6 +52,9 @@ import {
   Undo2,
   ZoomIn,
   ZoomOut,
+  Spline,
+  MoveLeft,
+  MoveRight,
 } from "lucide-react";
 import DiagramCanvas from "@/components/InnoLab/DiagramCanvas";
 import StickerPicker from "@/components/InnoLab/StickerPicker";
@@ -390,26 +393,28 @@ export default function InnoLab() {
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          addToast("PNG Exported successfully!", "success");
+          addToast("PNG exportado com sucesso!", "success");
         } catch (e) {
           console.warn(
-            "Tainted canvas detected or render error. Falling back to SVG download.",
+            "Canvas contaminado detectado ou erro de renderização. Revertendo para download SVG.",
             e
           );
-          // Fallback to SVG download if canvas fails
           const a = document.createElement("a");
           a.href = svgUrl;
           a.download = `${diagramName || "diagram"}.svg`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          addToast("Exported as SVG due to browser security", "info");
+          addToast(
+            "Exportando como SVG devido à segurança do navegador",
+            "info"
+          );
         }
       }
     };
 
     img.onerror = () => {
-      addToast("Error generating export image.", "error");
+      addToast("Erro ao gerar a imagem de exportação.", "error");
     };
 
     img.src = svgUrl;
@@ -488,7 +493,10 @@ export default function InnoLab() {
         <div className="pointer-events-auto flex flex-col items-center">
           <div className="backdrop-blur bg-base-100/80 border border-base-300 shadow-xl shadow-primary/5 px-2 py-1.5 rounded-full flex items-center gap-1">
             <button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => {
+                handleSave();
+                router.push("/dashboard");
+              }}
               title="Voltar para a Dashboard"
               className="btn btn-sm btn-ghost"
             >
@@ -733,34 +741,110 @@ export default function InnoLab() {
                   {/* ESTILO */}
                   <div className="card bg-base-200 p-4 border border-base-300 space-y-2">
                     <span className="text-[11px] tracking-widest font-bold text-base-content/60">
-                      Estilo do Traço
+                      Estilo da Conexão
                     </span>
 
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2 mb-4">
                       {(["solid", "dashed", "dotted"] as const).map((s) => (
                         <button
-                            key={s}
-                            onClick={() =>
-                              updateConnection(currentConnection.id, { style: s })
-                            }
-                            className={`btn btn-sm ${
-                              currentConnection.style === s
-                                ? "btn-primary"
-                                : "btn-ghost border-base-300"
-                            }`}
-                          >
-                              <div
-                                className="w-5 h-1 border-base-content"
-                                style={{
-                                  borderTop:
-                                    s === "solid"
-                                      ? "2px solid"
-                                      : s === "dashed"
-                                      ? "2px dashed"
-                                      : "2px dotted",
-                                }}
-                              />
-                          </button>
+                          key={s}
+                          onClick={() =>
+                            updateConnection(currentConnection.id, { style: s })
+                          }
+                          className={`btn btn-sm ${
+                            currentConnection.style === s
+                              ? "btn-primary"
+                              : "btn-ghost border-base-300"
+                          }`}
+                        >
+                          <div
+                            className="w-5 h-1 border-base-content"
+                            style={{
+                              borderTop:
+                                s === "solid"
+                                  ? "2px solid"
+                                  : s === "dashed"
+                                  ? "2px dashed"
+                                  : "2px dotted",
+                            }}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <span className="text-[11px] tracking-widest font-bold text-base-content/60">
+                      Tipo de Curva
+                    </span>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(["straight", "curved", "step"] as const).map((c) => (
+                        <button
+                          key={c}
+                          onClick={() =>
+                            updateConnection(currentConnection.id, {
+                              shape: c,
+                            })
+                          }
+                          className={`btn btn-sm ${
+                            currentConnection.shape === c
+                              ? "btn-primary"
+                              : "btn-ghost border-base-300"
+                          }`}
+                        >
+                          {c === "straight" && <Minus size={16} />}
+                          {c === "curved" && <Spline size={16} />}
+                          {c === "step" && <BoxSelect size={16} />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="card bg-base-200 p-4 border border-base-300 space-y-2">
+                    <span className="text-[11px] tracking-widest font-bold text-base-content/60">
+                      Tipo de Ponta - Esquerda
+                    </span>
+                    <div className="grid grid-cols-3 gap-2 mb-4">
+                      {(["none", "arrow", "circle"] as const).map((e) => (
+                        <button
+                          key={e}
+                          onClick={() =>
+                            updateConnection(currentConnection.id, {
+                              endMarker: e,
+                            })
+                          }
+                          className={`btn btn-sm ${
+                            currentConnection.endMarker === e
+                              ? "btn-primary"
+                              : "btn-ghost border-base-300"
+                          }`}
+                        >
+                          {e === "none" && <Minus size={16} />}
+                          {e === "arrow" && <MoveLeft size={16} />}
+                          {e === "circle" && <Circle size={8} />}
+                        </button>
+                      ))}
+                    </div>
+
+                    <span className="text-[11px] tracking-widest font-bold text-base-content/60">
+                      Tipo de Ponta - Direita
+                    </span>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(["none", "arrow", "circle"] as const).map((e) => (
+                        <button
+                          key={e}
+                          onClick={() =>
+                            updateConnection(currentConnection.id, {
+                              startMarker: e,
+                            })
+                          }
+                          className={`btn btn-sm ${
+                            currentConnection.startMarker === e
+                              ? "btn-primary"
+                              : "btn-ghost border-base-300"
+                          }`}
+                        >
+                          {e === "none" && <Minus size={16} />}
+                          {e === "arrow" && <MoveRight size={16} />}
+                          {e === "circle" && <Circle size={8} />}
+                        </button>
                       ))}
                     </div>
                   </div>

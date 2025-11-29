@@ -176,7 +176,13 @@ export default function InnoLab() {
               <div
                 key={doc.id}
                 className="bg-base-100 border border-base-300 rounded-xl p-4 cursor-pointer hover:shadow-lg transition-transform transform hover:scale-105 flex flex-col justify-between"
-                onClick={() => {router.push(`/dashboard/innolab/${doc.id}/${doc.diagram_type}`)}}
+                onClick={() => {
+                  if(window.innerWidth < 640) {
+                    alert("Diagrama aberto em dispositivos móveis está em desenvolvimento!");
+                    return;
+                  }
+                  router.push(`/dashboard/innolab/${doc.id}/${doc.diagram_type}`)
+                }}
               >
                 {/* Título */}
                 <h3 className="text-lg font-semibold text-base-content mb-2">

@@ -137,9 +137,15 @@ const DiagramCanvas: React.FC<Props> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    e.stopPropagation();
+
+    if (e.key === "Enter" && !e.ctrlKey) return;
+
+    if (e.key === "Enter" && e.ctrlKey) {
       e.preventDefault();
       onFinishEditing();
+    } else {
+      handleKeyDown(e);
     }
   };
 

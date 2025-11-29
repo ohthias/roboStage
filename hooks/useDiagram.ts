@@ -217,12 +217,20 @@ export const useDiagram = (initialType: DiagramType) => {
         y: centerY + (Math.random() * 50 - 25),
         text:
           overrides?.type === "label" || overrides?.type === "text"
-            ? "Text"
+            ? "Digite seu texto aqui"
             : "Nova Ideia",
-        type: "leaf",
+        type: overrides?.type || "leaf",
+        shape: overrides?.shape || "rect",
+        textAlign: overrides?.textAlign || "center",
+        fontSize: overrides?.fontSize || 14,
+        fontWeight: overrides?.fontWeight || "normal",
+        textDecoration: overrides?.textDecoration || "none",
         color: "#ffffff",
         textColor: "#1e293b",
-        width: overrides?.width, // Pass through or undefined (handled by renderer default)
+        borderColor: "#94a3b8",
+        borderStyle: overrides?.borderStyle || "solid",
+        borderWidth: overrides?.borderWidth || 2,
+        width: overrides?.width,
         height: overrides?.height,
         ...overrides,
       };
@@ -497,8 +505,6 @@ export const useDiagram = (initialType: DiagramType) => {
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) return;
 
-    // Determine current dimensions (fallback to defaults matches DiagramCanvas logic)
-    // INCREASED DEFAULTS FOR BETTER SPACING
     let currentW = node.width;
     let currentH = node.height;
 
@@ -521,10 +527,28 @@ export const useDiagram = (initialType: DiagramType) => {
       } else if (node.shape === "cloud") {
         currentW = 180;
         currentH = 100;
+      } else if (node.shape === "star") {
+        currentW = 120;
+        currentH = 120;
+      } else if (node.shape === "triangle") {
+        currentW = 120;
+        currentH = 120;
+      } else if (node.shape === "hexagon") {
+        currentW = 140;
+        currentH = 100;
+      } else if (node.shape === "parallelogram") {
+        currentW = 140;
+        currentH = 100;
+      } else if (node.shape === "document") {
+        currentW = 140;
+        currentH = 100;
+      } else if (node.shape === "cylinder") {
+        currentW = 100;
+        currentH = 140;
       } else {
-        currentW = 180;
-        currentH = 90;
-      } // Rect default (increased from 150x70)
+        currentW = 140;
+        currentH = 60;
+      }
     }
 
     isResizing.current = true;
@@ -988,7 +1012,18 @@ export const useDiagram = (initialType: DiagramType) => {
   };
 
   const updateSelectedNodeShape = (
-    shape: "rect" | "circle" | "diamond" | "pill"
+    shape:
+      | "rect"
+      | "circle"
+      | "diamond"
+      | "pill"
+      | "triangle"
+      | "hexagon"
+      | "parallelogram"
+      | "cylinder"
+      | "cloud"
+      | "star"
+      | "document"
   ) => {
     if (selectedNodeIds.size === 0) return;
     const newNodes = nodes.map((n) =>

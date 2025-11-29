@@ -1011,26 +1011,65 @@ export const useDiagram = (initialType: DiagramType) => {
     saveState(newNodes, connections, paths);
   };
 
-  const updateSelectedNodeShape = (
-    shape:
-      | "rect"
-      | "circle"
-      | "diamond"
-      | "pill"
-      | "triangle"
-      | "hexagon"
-      | "parallelogram"
-      | "cylinder"
-      | "cloud"
-      | "star"
-      | "document"
-  ) => {
-    if (selectedNodeIds.size === 0) return;
-    const newNodes = nodes.map((n) =>
-      selectedNodeIds.has(n.id) ? { ...n, shape } : n
+  const updateSelectedNodeShape = (newShape: Node["shape"]) => {
+    if (!selectedNode) return;
+
+    setNodes((prev) =>
+      prev.map((n) => {
+        if (n.id !== selectedNode) return n;
+        let updatedNode = { ...n, shape: newShape };
+
+        // Adjust width/height for certain shapes if not explicitly set
+        if (!n.width || !n.height) {
+          switch (newShape) {
+            case "circle":
+              updatedNode.width = 100;
+              updatedNode.height = 100;
+              break;
+            case "diamond":
+              updatedNode.width = 140;
+              updatedNode.height = 100;
+              break;
+            case "pill":
+              updatedNode.width = 160;
+              updatedNode.height = 70;
+              break;
+            case "cloud":
+              updatedNode.width = 180;
+              updatedNode.height = 100;
+              break;
+            case "star":
+              updatedNode.width = 120;
+              updatedNode.height = 120;
+              break;
+            case "triangle":
+              updatedNode.width = 120;
+              updatedNode.height = 120;
+              break;
+            case "hexagon":
+              updatedNode.width = 140;
+              updatedNode.height = 100;
+              break;
+            case "parallelogram":
+              updatedNode.width = 140;
+              updatedNode.height = 100;
+              break;
+            case "document":
+              updatedNode.width = 140;
+              updatedNode.height = 100;
+              break;
+            case "cylinder":
+              updatedNode.width = 100;
+              updatedNode.height = 140;
+              break;
+            default:
+              break;
+          }
+        }
+
+        return updatedNode;
+      })
     );
-    setNodes(newNodes);
-    saveState(newNodes, connections, paths);
   };
 
   const updateSelectedNodeStyle = (updates: Partial<Node>) => {

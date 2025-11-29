@@ -1060,35 +1060,63 @@ export default function InnoLab() {
                     </span>
 
                     <div className="grid grid-cols-5 gap-2">
-                      {([
-                        { id: "rect", icon: Square },
-                        { id: "circle", icon: Circle },
-                        { id: "diamond", icon: Diamond },
-                        {
-                          id: "pill",
-                          icon: Minus,
-                          className: "w-5 h-3 rounded-full bg-current",
-                        },
-                        { id: "triangle", icon: Triangle },
-                        { id: "parallelogram", icon: Slash  },
-                        { id: "hexagon", icon: Hexagon },
-                        { id: "star", icon: Star },
-                        { id: "cloud", icon: Cloud },
-                        { id: "cylinder", icon: Database },
-                        { id: "document", icon: FileText },
-                      ] as const).map((s) => (
-                        <button
-                          key={s.id}
-                          onClick={() => updateSelectedNodeShape(s.id)}
-                          className={`btn btn-sm ${
-                            selectedNodeData.shape === s.id
-                              ? "btn-primary"
-                              : "btn-ghost border-base-300"
-                          } flex flex-col items-center justify-center gap-1`}
-                        >
-                          <s.icon size={14} className={(s as any).className} />
-                        </button>
-                      ))}
+                      {(() => {
+                        const Parallelogram = ({
+                          size = 14,
+                          className = "",
+                        }: {
+                          size?: number;
+                          className?: string;
+                        }) => (
+                          <svg
+                            width={size}
+                            height={size}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={className}
+                          >
+                            <path
+                              d="M5 19H19L15 5H1L5 19Z"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        );
+
+                        return (
+                          [
+                            { id: "rect", icon: Square },
+                            { id: "circle", icon: Circle },
+                            { id: "diamond", icon: Diamond },
+                            { id: "pill", icon: Minus, className: "rounded-full w-5 h-3 bg-current" },
+                            { id: "triangle", icon: Triangle },
+                            { id: "parallelogram", icon: Parallelogram },
+                            { id: "hexagon", icon: Hexagon },
+                            { id: "star", icon: Star },
+                            { id: "cloud", icon: Cloud },
+                            { id: "cylinder", icon: Database },
+                            { id: "document", icon: FileText },
+                          ] as const
+                        ).map((s) => (
+                          <button
+                            key={s.id}
+                            onClick={() => updateSelectedNodeShape(s.id)}
+                            className={`btn btn-sm ${
+                              selectedNodeData.shape === s.id
+                                ? "btn-primary"
+                                : "btn-ghost border-base-300"
+                            } flex flex-col items-center justify-center gap-1`}
+                          >
+                            <s.icon
+                              size={14}
+                              className={(s as any).className}
+                            />
+                          </button>
+                        ));
+                      })()}
                     </div>
                   </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartPie, Palette, RadioIcon, House, Book, LogOut } from "lucide-react";
+import { ChartPie, Palette, RadioIcon, House, Book, LogOut, Bot, Dumbbell, Cuboid, StretchHorizontal } from "lucide-react";
 import { JSX } from "react";
 
 interface SidebarProps {
@@ -107,9 +107,10 @@ export default function Sidebar({
         {menuItem(<RadioIcon className="size-6" />, "ShowLive", "showLive")}
         {menuItem(<ChartPie className="size-6" />, "LabTest", "labTest")}
         {menuItem(<Book className="size-6" />, "InnoLab", "innoLab")}
-        {/*{menuItem(<ClipboardDocumentCheckIcon className="size-5"/>, "RoboFlow", "roboFlow")}
-        {menuItem(<CommandLineIcon className="size-5"/>, "CalibraBot", "calibraBot")}
-        {menuItem(<ListBulletIcon className="size-5"/>, "TrainLab", "trainLab")}*/}
+        {/* {menuItem(<StretchHorizontal className="size-6"/>, "Mission Flow", "missionFlow")}
+        {menuItem(<Bot className="size-6"/>, "CalibraBot", "calibraBot")}
+        {menuItem(<Dumbbell className="size-6"/>, "TrainLab", "trainLab")}
+        {menuItem(<Cuboid className="size-6" />, "BrickMap", "brickMap")} */}
         {menuItem(<Palette className="size-6" />, "StyleLab", "styleLab")}
       </ul>
 

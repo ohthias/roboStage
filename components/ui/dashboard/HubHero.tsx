@@ -5,7 +5,7 @@ import { ChartPie, Palette, RadioIcon, Book, Rocket } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/utils/supabase/client";
 
-export default function HubHero({ session }: { session: any }) {
+export default function HubHero({ session, username }: { session: any; username: string }) {
   const [userStats, setUserStats] = React.useState({
     total_tests: 0,
     total_eventos: 0,
@@ -83,7 +83,7 @@ export default function HubHero({ session }: { session: any }) {
       <div className="hero bg-gradient-to-r from-red-600 to-red-900 text-primary-content rounded-3xl shadow-xl border border-primary/40 h-48">
         <div className="hero-content flex-col md:flex-row w-full justify-between p-8">
           <div>
-            <h1 className="text-4xl font-bold">Olá, Matheus 👋</h1>
+            <h1 className="text-4xl font-bold">Olá, {username} 👋</h1>
             <p className="text-sm md:text-md max-w-2xl leading-relaxed opacity-90 mt-2">
               Seu hub para <span className="font-semibold">gerenciar</span>,{" "}
               <span className="font-semibold">testar</span> e{" "}

@@ -16,14 +16,24 @@ export default function Home() {
       <Hero />
       <div className="w-full">
         {/* Seção Sobre */}
-        <section className="max-w-5xl p-6 mx-auto my-8">
-          <div className="card bg-base-200 shadow-xl p-8">
-            <div className="text-base-content text-center space-y-4">
-              <h2 className="text-3xl font-bold mb-4">
-                Sobre o <span className="text-primary">RoboStage</span>
+        <section className="max-w-5xl p-6 mx-auto my-12 relative">
+          <div
+            className="
+    relative p-10 rounded-3xl 
+    bg-base-100/20 backdrop-blur-3xl 
+    border border-base-300/40
+    shadow-[0_10px_40px_rgba(0,0,0,0.25)]
+    hover:shadow-[0_12px_50px_rgba(0,0,0,0.35)]
+    transition-all duration-500
+  "
+          >
+            <div className="text-base-content text-center space-y-6">
+              <h2 className="text-3xl sm:text-4xl font-extrabold">
+                Sobre o{" "}
+                <span className="text-primary">RoboStage</span>
               </h2>
 
-              <p className="text-md leading-relaxed">
+              <p className="text-md sm:text-lg leading-relaxed text-base-content/80">
                 O RoboStage é uma plataforma criada para ajudar equipes de
                 robótica a planejarem, testarem e apresentarem suas ideias com
                 mais eficiência. Inspirado pela dinâmica da FIRST LEGO League, o
@@ -32,7 +42,7 @@ export default function Home() {
                 criação de torneios completos.
               </p>
 
-              <p className="text-md leading-relaxed">
+              <p className="text-md sm:text-lg leading-relaxed text-base-content/80">
                 Aqui, você pode montar estratégias, testar execuções, registrar
                 resultados e simular competições, tudo em um único ambiente.
                 Nosso objetivo é facilitar a jornada de equipes, treinadores e

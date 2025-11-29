@@ -61,7 +61,7 @@ export default function Dashboard() {
   const renderSection = () => {
     switch (activeSection) {
       case "hub":
-        return <HubHero session={session} />;
+        return <HubHero session={session} username={profile?.username || session?.user?.email?.split("@")[0] || "Usuário"} />;
       case "showLive":
         return <ShowLiveHub />;
       case "labTest":

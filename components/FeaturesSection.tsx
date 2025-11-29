@@ -1,75 +1,111 @@
-import React from 'react';
+import React from "react";
 import { motion } from "framer-motion";
-import { features } from '@/constants/features';
+import { features } from "@/constants/features";
 
 const FeaturesSection: React.FC = () => {
   return (
-    <section id="features" className="py-20 sm:py-32">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Title */}
+    <section id="features" className="py-28 relative">
+      {/* Leve gradiente do tema */}
+      <div className="absolute inset-0 bg-gradient-to-b from-base-200 via-base-100 to-base-200 pointer-events-none" />
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+
+        {/* TÍTULO */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.7 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-24"
         >
-          <h2 className="text-4xl lg:text-5xl font-bold text-base-content mb-4">
-            Funcionalidades do <span className="text-primary">RoboStage</span>
+          <h2 className="text-4xl lg:text-5xl font-extrabold text-base-content">
+            Funcionalidades do{" "}
+            <span className="text-primary">RoboStage</span>
           </h2>
-          <p className="text-lg text-base-content/80 max-w-3xl mx-auto">
-            Explore as principais ferramentas que vão turbinar suas experiências
-            na FLL Challenge – do planejamento ao campeonato!
+          <p className="text-lg text-base-content/70 mt-4 max-w-2xl mx-auto">
+            Explore ferramentas criadas para elevar sua performance na FLL Challenge.
           </p>
         </motion.div>
 
-        {/* Features List */}
-        <div className="grid gap-6 lg:gap-8">
+        {/* GRID */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {features.map((item, index) => (
             <motion.div
               key={item.title}
-              initial={{ opacity: 0, x: index % 2 === 0 ? -80 : 80 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.6}}
               viewport={{ once: true }}
-              whileHover={{ scale: 1.02, y: -8 }}
-              className={`group flex flex-col md:flex-row items-center gap-8 lg:gap-12 p-8 rounded-2xl transition-colors duration-300
-                ${index % 2 === 1 ? "md:flex-row-reverse" : ""}`}
+              whileHover={{ scale: 1.04, y: -6 }}
+              className="
+                relative p-8 rounded-3xl 
+                bg-base-100/30 backdrop-blur-2xl 
+                border border-base-300/40 
+                shadow-[0_8px_35px_var(--fallback-bc,rgba(0,0,0,0.2))]
+                hover:shadow-[0_12px_45px_var(--fallback-bc,rgba(0,0,0,0.28))]
+                transition-all duration-500
+                group
+              "
             >
-              <div className="flex-shrink-0">
-                <div className="w-40 h-40 rounded-full bg-base-200 flex items-center justify-center border-2 border-base-300 group-hover:shadow-md transition-shadow duration-300">
-                  {item.icon}
-                </div>
+              {/* HALO — usa DAISYUI primary automaticamente */}
+              <div
+                className="
+                  absolute -top-16 -right-16 
+                  w-40 h-40 rounded-full 
+                  bg-primary/20 blur-3xl 
+                  group-hover:bg-primary/30 
+                  transition-all duration-500
+                "
+              />
+
+              {/* ÍCONE COM GLASS */}
+              <div
+                className="
+                  w-20 h-20 rounded-2xl mx-auto flex items-center justify-center
+                  bg-base-100/40 border border-base-300/40 backdrop-blur-xl
+                  shadow-[inset_0_0_15px_var(--fallback-bc,rgba(255,255,255,0.25))]
+                  group-hover:shadow-[inset_0_0_20px_var(--fallback-bc,rgba(255,255,255,0.45))]
+                  transition-all duration-500
+                  text-primary
+                "
+              >
+                {item.icon}
               </div>
-              <div className={`text-center md:text-left ${index % 2 === 1 ? "md:text-right" : ""}`}>
-                <h3 className="text-2xl lg:text-3xl font-semibold text-primary mb-3">
-                  {item.title}
-                </h3>
-                <p className="text-base-content/80 max-w-lg leading-relaxed">{item.text}</p>
-              </div>
+
+              {/* TÍTULO */}
+              <h3 className="text-2xl font-bold text-center text-primary mt-6 mb-3">
+                {item.title}
+              </h3>
+
+              {/* DESCRIÇÃO */}
+              <p className="text-base-content/70 text-center leading-relaxed">
+                {item.text}
+              </p>
             </motion.div>
           ))}
         </div>
 
-        {/* CTA Footer */}
+        {/* CTA */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 35 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+          transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mt-20"
+          className="text-center mt-24"
         >
-          <h3 className="text-2xl font-medium mb-6 text-base-content">
-            Pronto para começar sua jornada com o <span className="text-primary">RoboStage</span>?
-          </h3>
-          <motion.button 
-            whileHover={{ scale: 1.05, y: -2, boxShadow: "0 8px 30px rgba(79, 70, 229, 0.5)" }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-            className="bg-primary text-white text-lg font-semibold px-10 py-4 rounded-xl shadow-[0_5px_20px_rgba(79,70,229,0.4)] hover:bg-primary transition-colors duration-300"
-            onClick={() => console.log('Navigate to signup')}
+          <motion.button
+            whileHover={{
+              scale: 1.05,
+              y: -2,
+              boxShadow: "0 12px 50px hsl(var(--p)/0.45)",
+            }}
+            whileTap={{ scale: 0.96 }}
+            className="
+              btn btn-primary px-12 py-3 text-lg rounded-xl 
+              shadow-[0_6px_25px_hsl(var(--p)/0.35)]
+            "
           >
-            Experimente Agora
+            Começar Agora
           </motion.button>
         </motion.div>
       </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
-import QuickBrickCanvas from "@/components/QuickBrick/QuickBrickCanva";
+import QuickBrickCanvas from "@/components/QuickBrick/Estrategia/QuickBrickCanva";
 import { Footer } from "@/components/ui/Footer";
 import Breadcrumbs from "@/components/Breadcrumbs";
 

@@ -14,7 +14,7 @@ import {
   Code2,
   MousePointerClick,
   Undo2,
-  Redo2
+  Redo2,
 } from "lucide-react";
 import Mat from "@/components/QuickBrick/RobotTrack/Mat";
 import CodeEditor from "@/components/QuickBrick/RobotTrack//CodeEditor";
@@ -37,7 +37,33 @@ import { Navbar } from "@/components/Navbar";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { Footer } from "@/components/ui/Footer";
 
-const App: React.FC = () => {
+const RobotTrack: React.FC = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkSize = () => setIsMobile(window.innerWidth <= 720);
+    checkSize();
+    window.addEventListener("resize", checkSize);
+    return () => window.removeEventListener("resize", checkSize);
+  }, []);
+
+  if (isMobile) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center">
+        <Navbar />
+        <h1 className="text-2xl font-bold my-4 text-primary">
+          Ops! Ferramenta não está disponível no celular
+        </h1>
+        <p className="text-sm mb-2 text-base-content px-5">
+          O QuickBrick Studio é um conjunto de ferramentas que ajuda sua equipe
+          a criar estratégias eficientes para o robô durante sua jornada no
+          FIRST LEGO League Challenge. Basta selecionar uma das ferramentas
+          disponíveis e aproveitá-las.
+        </p>
+      </div>
+    );
+  }
+
   // --- State ---
   const [history, setHistory] = useState<string[]>([DEFAULT_CODE]);
   const [historyIndex, setHistoryIndex] = useState(0);
@@ -324,9 +350,9 @@ const App: React.FC = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       className="lucide lucide-shark-icon lucide-shark text-primary-content"
                     >
                       <path d="M3.6 15a9.07 9.07 0 0 0 11.7 5.3S19 22 22 22c0 0-1-3-3-4.5 1.1-1.5 1.9-3.3 2-5.3l-8 4.6a1.94 1.94 0 1 1-2-3.4l6-3.5s5-2.8 5-6.8c0-.6-.4-1-1-1h-9c-1.8 0-3.4.5-4.8 1.5C5.7 2.5 3.9 2 2 2c0 0 1.4 2.1 2.3 4.5A10.63 10.63 0 0 0 3.1 13" />
@@ -545,7 +571,9 @@ const App: React.FC = () => {
 
                   <div className="form-control w-full">
                     <div className="label pt-0 pb-1">
-                      <span className="label-text-alt font-bold">Cor do Caminho</span>
+                      <span className="label-text-alt font-bold">
+                        Cor do Caminho
+                      </span>
                     </div>
                     <div className="flex gap-2">
                       <input
@@ -673,4 +701,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default RobotTrack;

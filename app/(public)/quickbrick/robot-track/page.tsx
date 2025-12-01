@@ -94,7 +94,6 @@ const RobotTrack: React.FC = () => {
     customPath: "M 50 0 L 100 100 L 50 80 L 0 100 Z",
   });
 
-  const [isTourOpen, setIsTourOpen] = useState(false);
   const [robotState, setRobotState] = useState<RobotState>({
     x: START_X,
     y: START_Y,
@@ -120,16 +119,6 @@ const RobotTrack: React.FC = () => {
   const undo = () => historyIndex > 0 && setHistoryIndex(historyIndex - 1);
   const redo = () =>
     historyIndex < history.length - 1 && setHistoryIndex(historyIndex + 1);
-
-  useEffect(() => {
-    if (!localStorage.getItem("fll-sim-tour-completed"))
-      setTimeout(() => setIsTourOpen(true), 1000);
-  }, []);
-
-  const handleTourComplete = () => {
-    setIsTourOpen(false);
-    localStorage.setItem("fll-sim-tour-completed", "true");
-  };
 
   // 1. Calculate Trajectory on Input Change
   useEffect(() => {
@@ -328,7 +317,9 @@ const RobotTrack: React.FC = () => {
   return (
     <>
       <Navbar />
-      <Breadcrumbs />
+      <div className="px-4 md:px-8">
+        <Breadcrumbs />
+      </div>
 
       <div className="flex flex-col h-screen w-7xl overflow-hidden mx-auto my-4 p-4">
         <main className="flex-1 flex flex-col lg:flex-row overflow-hidden h-full">

@@ -164,7 +164,9 @@ export default function MatrizDeRiscoPage() {
   return (
     <div className="flex flex-col items-start justify-center w-full">
       <Navbar />
-      <Breadcrumbs />
+      <div className="px-4 md:px-8">
+        <Breadcrumbs />
+      </div>
       <div className="flex flex-col items-center w-full min-h-screen py-8">
         <main className="flex flex-col w-full px-4 md:px-8">
           <section className="w-full flex flex-col items-center text-center px-4 py-8">

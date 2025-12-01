@@ -36,7 +36,9 @@ export default function StrategyPage() {
   return (
     <div className="flex flex-col items-start justify-center w-full">
       <Navbar />
-      <Breadcrumbs />
+      <div className="px-4 md:px-8">
+        <Breadcrumbs />
+      </div>
       <div className="flex flex-col items-center w-full">
         <h1 className="text-2xl font-bold my-4 text-primary">
           QuickBrick Studio - Estratégias

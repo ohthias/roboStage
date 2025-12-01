@@ -19,7 +19,7 @@ const seasonLogos: Record<string, { name: string; image: string }> = {
 };
 
 interface SwotPageClientProps {
-    season: string;
+  season: string;
 }
 
 export default function SwotPageClient({ season }: SwotPageClientProps) {
@@ -62,7 +62,9 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
     fetch("/api/data/missions")
       .then((res) => res.json())
       .then((data) => {
-        const seasonKey = Array.isArray(selectedSeason) ? selectedSeason[0] : selectedSeason;
+        const seasonKey = Array.isArray(selectedSeason)
+          ? selectedSeason[0]
+          : selectedSeason;
         const seasonMissions = data[seasonKey] || [];
         setMissions(seasonMissions.filter((m: any) => m.image));
       });
@@ -76,10 +78,10 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
           Ops! Ferramenta não está disponível no celular
         </h1>
         <p className="text-sm mb-2 text-base-content px-5">
-          A Matriz SWOT é uma ferramenta que ajuda sua equipe a organizar as missões
-          da FIRST LEGO League Challenge em quatro quadrantes: Forças, Fraquezas,
-          Oportunidades e Ameaças. No momento, ela está disponível apenas em telas maiores,
-          como notebooks e desktops.
+          A Matriz SWOT é uma ferramenta que ajuda sua equipe a organizar as
+          missões da FIRST LEGO League Challenge em quatro quadrantes: Forças,
+          Fraquezas, Oportunidades e Ameaças. No momento, ela está disponível
+          apenas em telas maiores, como notebooks e desktops.
         </p>
       </div>
     );
@@ -88,7 +90,9 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
   return (
     <div className="flex flex-col items-start justify-center w-full">
       <Navbar />
-      <Breadcrumbs />
+      <div className="px-4 md:px-8">
+        <Breadcrumbs />
+      </div>
       <div className="flex flex-col items-start w-full px-4 mb-8">
         <h1 className="text-2xl font-bold my-4 text-primary">
           Matriz SWOT das{" "}
@@ -97,8 +101,8 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
             : "Missões"}
         </h1>
         <p className="text-sm mb-2 text-base-content max-w-3xl">
-          Arraste as missões para os quadrantes da matriz SWOT
-          para organizar a estratégia da sua equipe. Ao final, exporte e use como desejar!
+          Arraste as missões para os quadrantes da matriz SWOT para organizar a
+          estratégia da sua equipe. Ao final, exporte e use como desejar!
         </p>
         <SWOTCanvas
           missions={missions}

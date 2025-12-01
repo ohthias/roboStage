@@ -90,7 +90,9 @@ function MissionTablePage() {
   return (
     <div className="min-h-screen bg-base-100">
       <Navbar />
-      <Breadcrumbs />
+      <div className="px-4 md:px-8">
+        <Breadcrumbs />
+      </div>
       <section className="w-full flex flex-col items-center text-center px-4 py-8">
         <article className="max-w-3xl">
           <h1 className="text-4xl font-bold text-primary mb-4">

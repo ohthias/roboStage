@@ -32,9 +32,10 @@ export default function FerramentasSection({
         "Desenhe diretamente sobre a imagem do tapete e planeje cada movimento do seu robô.",
       categoria: "Criar",
       icon: <PuzzlePieceIcon className="w-5 h-5" />,
-      image: "/images/quickbrick_unearthed.png",
+      image: "/images/QuickBrick/Estrategia.png",
       link: "/quickbrick/estrategia",
       customContent: null,
+      badge: "Atualizado",
     },
     {
       id: 2,
@@ -82,7 +83,7 @@ export default function FerramentasSection({
         "Planeje e visualize o percurso do seu robô no tapete, ajustando ângulos e distâncias.",
       categoria: "Simular",
       icon: <BeakerIcon className="w-5 h-5" />,
-      image: "/images/quickbrick_robottrack.png",
+      image: "/images/QuickBrick/SharksSimulator.png",
       link: "/quickbrick/robot-track",
       feitoPor: "Sharks",
     },
@@ -107,7 +108,6 @@ export default function FerramentasSection({
       link: "/quickbrick/swot-template",
       image: "/images/quickbrick_matrizSWOT.png",
       customContent: null,
-      badge: "Novo",
     },
     {
       id: 6,
@@ -146,18 +146,9 @@ export default function FerramentasSection({
             );
           })}
         </div>
-      ),
-      badge: "Novo",
+      )
     }
   ];
-
-  // Gera array de links (expande links dependentes de seasons, como Matriz SWOT)
-  const links = ferramentas.flatMap((f) => {
-    if (f.titulo === "Matriz SWOT") {
-      return seasons.map((s) => `/quickbrick/matriz-swot/${s}`);
-    }
-    return f.link ? [f.link] : [];
-  });
 
   const filtradas =
     filtro === "Todos"

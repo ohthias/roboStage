@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
-import QuickBrickCanvas from "@/components/QuickBrick/QuickBrickCanva";
+import QuickBrickCanvas from "@/components/QuickBrick/Estrategia/QuickBrickCanva";
 import { Footer } from "@/components/ui/Footer";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
@@ -36,7 +36,9 @@ export default function StrategyPage() {
   return (
     <div className="flex flex-col items-start justify-center w-full">
       <Navbar />
-      <Breadcrumbs />
+      <div className="px-4 md:px-8">
+        <Breadcrumbs />
+      </div>
       <div className="flex flex-col items-center w-full">
         <h1 className="text-2xl font-bold my-4 text-primary">
           QuickBrick Studio - Estratégias

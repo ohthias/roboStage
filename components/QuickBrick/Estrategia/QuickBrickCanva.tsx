@@ -10,7 +10,7 @@ export default function QuickBrickCanvas() {
   const [layers, setLayers] = useState<Layer[]>([
     {
       id: uuidv4(),
-      name: "Mission Path 1",
+      name: "Camada 1",
       visible: true,
       zonesVisible: true,
       lines: [],
@@ -62,7 +62,7 @@ export default function QuickBrickCanvas() {
   // --- Actions ---
 
   const clearLayer = () => {
-    if (window.confirm("Clear all drawings and zones on this layer?")) {
+    if (window.confirm("Tem certeza que deseja limpar todos os desenhos e zonas nesta camada?")) {
       setLayers((prev) => {
         const newState = prev.map((l) =>
           l.id === activeLayerId

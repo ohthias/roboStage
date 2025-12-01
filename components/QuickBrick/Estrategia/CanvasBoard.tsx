@@ -91,10 +91,16 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
         
         layers.forEach(layer => {
             if (layer.visible) drawLayerContent(ctx, layer, CM_PER_PIXEL, false);
+            if (showZones && layer.zonesVisible) {
+                layer.zones.forEach(zone => drawZone(ctx, zone, false));
+            }
+            if(showLabels) {
+                layer.lines.forEach(line => drawLine(ctx, line, CM_PER_PIXEL, true));
+            }
         });
         
         tempCanvas.toBlob((blob) => {
-            if(blob) saveAs(blob, `fll-strategy-full.png`);
+            if(blob) saveAs(blob, `quickbrick-estrategia-completa.png`);
         });
       }
       setActiveSelection(prevSelection);
@@ -145,7 +151,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
         });
 
         const content = await zip.generateAsync({ type: 'blob' });
-        saveAs(content, 'fll-layers.zip');
+        saveAs(content, 'estrategia-camadas.zip');
     }
   }));
 
@@ -589,7 +595,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
     } else if (tool === 'free') {
       setCurrentPath([{ x, y }]);
     } else if (tool === 'zone') {
-      setCurrentZone({ id: uuidv4(), x, y, width: 0, height: 0, color, name: `New Zone` });
+      setCurrentZone({ id: uuidv4(), x, y, width: 0, height: 0, color, name: `Nova Zona` });
     }
   };
 
@@ -862,7 +868,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
                 <div className="flex justify-between items-center mb-2">
                 <h4 className="text-sm font-bold flex items-center gap-2">
                     {activeSelection?.type === 'robot' ? <i className="fas fa-robot text-primary"></i> : <i className="fas fa-vector-square text-primary"></i>}
-                    {activeSelection?.type === 'robot' ? 'Robot' : 'Zone'} Properties
+                    {activeSelection?.type === 'robot' ? 'Robô -' : 'Zona -'} Propriedades
                 </h4>
                 <button 
                     onClick={() => setActiveSelection(null)} 
@@ -903,7 +909,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
                        </div>
 
                        <div className="form-control">
-                            <label className="label py-1"><span className="label-text text-xs font-bold uppercase">Rotation ({Math.round((selectedItem as Robot).rotation)}°)</span></label>
+                            <label className="label py-1"><span className="label-text text-xs font-bold uppercase">Rotação ({Math.round((selectedItem as Robot).rotation)}°)</span></label>
                             <input 
                                 type="range" 
                                 min="0" max="360" 
@@ -916,7 +922,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
                        </div>
 
                        <div className="form-control">
-                           <label className="label py-1"><span className="label-text text-xs font-bold uppercase">Type</span></label>
+                           <label className="label py-1"><span className="label-text text-xs font-bold uppercase">Tipo</span></label>
                            <select 
                                 className="select select-bordered select-sm w-full"
                                 value={(selectedItem as Robot).type}
@@ -925,14 +931,14 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
                                     setTimeout(registerAction, 0);
                                 }}
                            >
-                               <option value="base">Standard Base</option>
-                               <option value="forklift">Forklift</option>
-                               <option value="dozer">Dozer</option>
+                               <option value="base">Robô Base</option>
+                               <option value="forklift">Empilhadeira</option>
+                               <option value="dozer">Trator</option>
                            </select>
                        </div>
 
                        <div className="form-control">
-                           <label className="label py-1"><span className="label-text text-xs font-bold uppercase">Color</span></label>
+                           <label className="label py-1"><span className="label-text text-xs font-bold uppercase">Cor</span></label>
                            <div className="flex items-center gap-3 bg-base-200 rounded-lg p-2 border border-base-300">
                                 <input 
                                     type="color"
@@ -941,7 +947,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
                                     onChange={(e) => handleUpdateItem({ color: e.target.value })}
                                     onBlur={registerAction}
                                 />
-                                <span className="text-xs opacity-70">Robot Chassis</span>
+                                <span className="text-xs opacity-70">Chassi do Robô</span>
                            </div>
                        </div>
                    </div>
@@ -949,7 +955,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
                    // --- ZONE PROPERTIES ---
                    <div className="space-y-3">
                     <div className="form-control">
-                        <label className="label py-1"><span className="label-text text-xs font-bold uppercase">Name</span></label>
+                        <label className="label py-1"><span className="label-text text-xs font-bold uppercase">Nome</span></label>
                         <input 
                         type="text"
                         className="input input-bordered input-sm w-full"
@@ -988,7 +994,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
                     </div>
 
                     <div className="form-control">
-                        <label className="label py-1"><span className="label-text text-xs font-bold uppercase">Color</span></label>
+                        <label className="label py-1"><span className="label-text text-xs font-bold uppercase">Cor</span></label>
                         <div className="flex items-center gap-3 bg-base-200 rounded-lg p-2 border border-base-300">
                         <input 
                             type="color"
@@ -1019,7 +1025,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
                         setTimeout(registerAction, 0);
                     }}
                     >
-                    <i className="fas fa-trash-alt"></i> Delete {activeSelection?.type === 'robot' ? 'Robot' : 'Zone'}
+                    <i className="fas fa-trash-alt"></i> Excluir {activeSelection?.type === 'robot' ? 'Robô' : 'Zona'}
                     </button>
                 </div>
                 </div>

@@ -1,86 +1,151 @@
-<h1 align="center">
-  robo<span style="color:red;">Stage</span>
-</h1>
+# <div align="center">🤖 Robo<span style="color:#e63946">Stage</span></div>
 
-<p align="center">
-  Uma plataforma web para equipes e entusiastas da <strong>FLLC (First Lego League Challenge)</strong>.<br>
-  Crie torneios de robótica, planeje estratégias de mesa para a nova temporada e acompanhe pontuações em tempo real.
-</p>
+<div align="center">
 
-<p align="center">
-  <a href="https://robo-stage.vercel.app/"><strong>🌐 Acesse Online »</strong></a>
-  <br>
-  <a href="https://github.com/ohthias/roboStage/releases">📦 Últimas Releases</a>
-  <br>
-  <a href="https://github.com/ohthias/roboStage/issues">🐞 Reportar Problemas</a>
-</p>
+Plataforma completa para equipes, técnicos, juízes e organizadores da <strong>FIRST LEGO League Challenge (FLLC)</strong>.
+Gerencie torneios, documente robôs, planeje estratégias e acompanhe tudo em tempo real.
 
----
+<a href="https://robo-stage.vercel.app/"><strong>🌐 Acessar Plataforma</strong></a> • <a href="https://github.com/ohthias/roboStage/releases">📦 Releases</a> • <a href="https://github.com/ohthias/roboStage/issues">🐞 Issues</a>
 
-## 🚀 Principais Recursos
+![Status](https://img.shields.io/badge/status-active-brightgreen.svg)
+![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js\&logoColor=white)
+![Tailwind](https://img.shields.io/badge/TailwindCSS-38B2AC?logo=tailwind-css\&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase\&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-- **Personalização de Tema**  
-  Adapte a aparência da plataforma para refletir seu evento ou estilo da equipe.
+</div>
 
-- **Rankings em Tempo Real**  
-  Acompanhe o desempenho das equipes com atualizações instantâneas.
+# ✨ Visão Geral
 
-- **Configurações Avançadas**  
-  Ajuste preferências do evento, incluindo rounds, pontuação e regras customizadas.
+O **roboStage** foi criado para conectar todos os elementos da FLL — do planejamento do robô às apresentações, dos testes ao torneio final.
+Um ecossistema completo que une tecnologia, estratégia e inovação em uma única plataforma.
 
-- **Gestão de Torneios**  
-  Crie e gerencie torneios completos de forma intuitiva.
+Ele é projetado para:
 
-- **Monitoramento de Pontuação**  
-  Visualize resultados e estatísticas em tempo real.
+- Técnicos que buscam ferramentas sólidas
+- Equipes que precisam de organização
+- Juízes que necessitam de precisão
+- Organizadores que querem automação e fluxos mais rápidos
 
----
+# 🧰 Ferramentas Oficiais do roboStage
 
-## 📸 Screenshots
+Cada ferramenta foi criada para uma etapa fundamental da temporada — do técnico ao projeto de inovação.
 
-![Dashboard](./assets/screenshot_dashboard.png)  
-*Exemplo do dashboard da plataforma.*
+## ⚙️ QuickBrick Studio
 
-![Ranking](./assets/screenshot_quickbrick.png)  
-*Visualização do ranking das equipes.*
+**Simule, documente e planeje seu robô.**
 
----
+O **QuickBrick Studio** é o núcleo técnico da plataforma.
+Ele permite que sua equipe **visualize, documente e planeje** a engenharia do robô com eficiência.
 
-## 🛠 Tecnologias Usadas
+### Recursos:
 
-- [Next.js](https://nextjs.org/) – Framework React moderno
-- [TailwindCSS + DaisyUI](https://daisyui.com/) – Estilização responsiva e componentes prontos
-- [Supabase](https://supabase.com/) – Backend em tempo real e autenticação
-- [Vercel](https://vercel.com/) – Deploy contínuo e hospedagem
+* Criação de diagramas estruturados
+* Registro de mecanismos, motores e sensores
+* Simulação de estratégias e movimentos
+* Histórico de versões e evolução do robô
+
+> Ideal para documentar o robô na temporada **FLL CHALLENGE – UNEARTHED!**
 
 ---
 
-## 📝 Atividades Recentes
+## 🧪 LabTest
 
-- Última versão lançada: **v3.1**  
-- Novos recursos e correções de bugs implementados continuamente.  
+**Teste e valide suas execuções com precisão.**
 
-*Destaques*
-- InnoLab: Crie diagramas focados no projeto
-- Robot Track
-- Confira todos os lançamentos: [Releases](https://github.com/ohthias/roboStage/releases)
+O **LabTest** transforma treino em dados.
+A ferramenta registra execuções e gera **estatísticas completas** para decisões mais inteligentes.
 
----
+### Recursos:
 
-## 📄 Licença
+* Registro individual de tentativas
+* Estatísticas automáticas de desempenho
+* Comparação entre estratégias
+* Identificação de padrões, erros e estabilidade
 
-Este projeto está licenciado sob a **Licença MIT** – consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
-
----
-
-## 🙏 Créditos de Recursos
-
-- Ícones animados de robôs por [Flaticon](https://www.flaticon.com/br/icones-animados-gratis/robo) – criados por **Freepik**  
-- UI components por [DaisyUI](https://daisyui.com/)  
+> Uma ferramenta indispensável para equipes que levam melhoria contínua a sério.
 
 ---
 
-## 📬 Suporte e Contato
+## 💡 InnoLab
 
-- Projeto no GitHub: [https://github.com/ohthias/roboStage](https://github.com/ohthias/roboStage)  
-- Relatar problemas ou sugestões: [Issues](https://github.com/ohthias/roboStage/issues)  
+**Organize e visualize todo o Projeto de Inovação.**
+
+O **InnoLab** ajuda sua equipe a estruturar o caminho do Projeto de Inovação de forma clara e criativa.
+
+### Recursos:
+
+* Criação de diagramas temáticos
+* Mapeamento visual de problema, solução e impacto
+* Exportação para PDF e apresentações
+* Trabalho colaborativo entre membros da equipe
+
+> Perfeito para equipes que desejam clareza e uma apresentação impecável.
+
+---
+
+# 📸 Demonstrações
+
+![Dashboard](./assets/screenshot_dashboard.png)
+*Dashboard com visão geral dos torneios criados.*
+
+![QuickBrick Studio](./assets/screenshot_quickbrick.png)
+*Ferramenta de criação de estratégia de mesa*
+
+---
+
+# 🛠 Tecnologias Utilizadas
+
+* **Next.js** — Fullstack completo
+* **React** — Interface reativa e modular
+* **TailwindCSS + DaisyUI** — Estilização rápida e elegante
+* **Supabase** — Banco, autenticação e real time
+* **Vercel** — Hospedagem e deploy contínuo
+* **Lucide Icons** — Ícones modernos e leves
+
+---
+
+# 🧪 Como Rodar Localmente
+
+```bash
+# Clone o repositório
+git clone https://github.com/ohthias/roboStage.git
+
+# Acesse a pasta
+cd roboStage
+
+# Instale dependências
+npm install
+
+# Configure as variáveis do Supabase
+cp .env.local
+
+# Execute o servidor
+npm run dev
+```
+
+Abra:
+👉 [http://localhost:3000](http://localhost:3000)
+
+---
+
+# 📄 Licença
+
+Distribuído sob a **MIT License**.
+Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+
+# 🙏 Créditos
+
+* Ícones: Flaticon / Freepik
+* UI: DaisyUI
+* Desenvolvimento: **Matheus (ohthias)**
+* Comunidade FLL que contribui diariamente com feedbacks
+
+---
+
+# 📬 Suporte
+
+* GitHub: [https://github.com/ohthias/roboStage](https://github.com/ohthias/roboStage)
+* Reportar problemas: [https://github.com/ohthias/roboStage/issues](https://github.com/ohthias/roboStage/issues)

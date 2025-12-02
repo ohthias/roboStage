@@ -6,7 +6,9 @@ export default function AboutPage() {
   return (
     <>
       <Navbar />
-      <ComingSoon />
+      <main className="flex min-h-screen flex-col items-center justify-center px-4 py-16">
+        <ComingSoon />
+      </main>
       <Footer />
     </>
   );

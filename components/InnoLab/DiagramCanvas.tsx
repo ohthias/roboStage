@@ -421,7 +421,12 @@ const DiagramCanvas: React.FC<Props> = ({
 
     if (isSticker) {
       return (
-        <g>
+        <g
+          className="cursor-move"
+          style={{ pointerEvents: "bounding-box" as any }}
+          onMouseDown={(e) => onMouseDown(e, node.id)}
+          onMouseUp={(e) => handleNodeMouseUp(e, node.id)}
+        >
           {node.backgroundImage && (
             <image
               href={node.backgroundImage}
@@ -430,9 +435,14 @@ const DiagramCanvas: React.FC<Props> = ({
               width={w}
               height={h}
               preserveAspectRatio="none"
+              pointerEvents="all"
               className="cursor-move"
+              onMouseDown={(e) => onMouseDown(e, node.id)}
+              onMouseUp={(e) => handleNodeMouseUp(e, node.id)}
             />
           )}
+
+          {/* Borda de seleção */}
           <rect
             x={-halfW}
             y={-halfH}
@@ -443,6 +453,7 @@ const DiagramCanvas: React.FC<Props> = ({
             strokeWidth={2}
             pointerEvents="none"
           />
+
           {renderHandles()}
         </g>
       );
@@ -603,7 +614,6 @@ const DiagramCanvas: React.FC<Props> = ({
           />
         );
         break;
-      case "rect":
       default:
         shapeEl = (
           <rect

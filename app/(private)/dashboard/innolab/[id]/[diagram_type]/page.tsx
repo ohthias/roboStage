@@ -299,8 +299,10 @@ export default function InnoLab() {
     if (error) {
       addToast("Erro ao salvar no servidor", "error");
       console.error("Supabase Save Error:", error);
+      setHasSavedData(false);
     } else {
       addToast("Salvo com sucesso!", "success");
+      setHasSavedData(true);
     }
   };
 

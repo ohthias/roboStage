@@ -178,17 +178,16 @@ export default function AccountSettings() {
       <hr className="my-4 border-base-300" />
 
       {/* Configurações */}
-      <div className="collapse collapse-arrow bg-base-100/60 backdrop-blur-md border border-base-300/60 rounded-xl shadow-sm hover:shadow-md transition-all">
-        <input type="checkbox" className="peer" />
+      <div className="bg-base-100/60 backdrop-blur-md border border-base-300/60 rounded-xl shadow-sm hover:shadow-md p-6">
 
         {/* Título */}
-        <div className="collapse-title text-lg md:text-xl font-semibold flex items-center gap-3 text-base-content/90">
+        <div className="text-lg md:text-xl font-semibold flex items-center gap-3 text-base-content/90">
           <WrenchScrewdriverIcon className="size-6 text-primary" />
           Configurações da Conta
         </div>
 
         {/* Conteúdo */}
-        <div className="collapse-content space-y-8">
+        <div className="space-y-8">
           {/* Nome de usuário */}
           <div className="form-control w-full">
             <label className="label">

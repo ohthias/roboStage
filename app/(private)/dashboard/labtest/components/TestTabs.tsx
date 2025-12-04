@@ -9,7 +9,7 @@ export default function TestTabs({
   onChange: (v: "tests" | "results") => void;
 }) {
   return (
-    <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center justify-between">
       <div role="tablist" className="tabs tabs-border">
         <button
           role="tab"

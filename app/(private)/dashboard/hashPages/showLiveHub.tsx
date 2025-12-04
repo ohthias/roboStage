@@ -62,8 +62,8 @@ export default function ShowLiveHub() {
   }, [events]);
 
   return (
-    <div>
-      <section className="bg-base-100 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300 mb-4">
+    <>
+      <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-base-100 p-6 rounded-xl shadow-md border border-base-300">
         <div className="flex items-center gap-4">
           <SignalIcon className="hidden sm:block size-16 text-primary/75" />
           <div>
@@ -240,6 +240,6 @@ export default function ShowLiveHub() {
       {showModal && (
         <EventModal session={session} onClose={() => setShowModal(false)} />
       )}
-    </div>
+    </>
   );
 }

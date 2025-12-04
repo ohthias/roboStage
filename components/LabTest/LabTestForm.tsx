@@ -119,13 +119,13 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
       id: "missao_individual",
       name: "Individual",
       icon: Square,
-      description: "Teste realizado por um único participante",
+      description: "Testagem de uma unica missão",
     },
     {
       id: "grupo",
       name: "Grupo",
       icon: SquareStack,
-      description: "Teste realizado por uma equipe de participantes",
+      description: "Testagem de múltiplas missões",
     },
   ];
 

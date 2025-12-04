@@ -75,7 +75,7 @@ export function StyleLab() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <section className="bg-base-100 p-4 rounded-lg flex justify-between items-start shadow-md border border-base-300 mb-4">
+      <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-base-100 p-6 rounded-xl shadow-md border border-base-300">
         <div className="flex items-center gap-4">
           <SparklesIcon className="hidden sm:block w-8 h-8 text-secondary/75" />
           <div>

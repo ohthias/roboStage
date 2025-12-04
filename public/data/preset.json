@@ -7,14 +7,50 @@
   },
   {
     "id_theme": 1002,
-    "name": "Nature",
+    "name": "Natureza",
     "background_url": "/images/presets/nature.webp",
     "colors": ["#2ecc71", "#27ae60", "#145a32"]
   },
   {
     "id_theme": 1003,
-    "name": "Sunset",
+    "name": "Pôr do Sol",
     "background_url": "/images/presets/sunset.webp",
     "colors": ["#ff9a76", "#ff6b6b", "#c44536"]
+  },
+  {
+    "id_theme": 1004,
+    "name": "Brisa do Oceano",
+    "background_url": "/images/presets/ocean_breeze.webp",
+    "colors": ["#00a8cc", "#007ea7", "#003459"]
+  },
+  {
+    "id_theme": 1005,
+    "name": "Sonhos Pastel",
+    "background_url": "/images/presets/pastel_dreams.webp",
+    "colors": ["#ffb3ba", "#ffdfba", "#ffffba"]
+  },
+  {
+    "id_theme": 1006,
+    "name": "Monocromático",
+    "background_url": "/images/presets/monochrome.webp",
+    "colors": ["#000000", "#555555", "#aaaaaa"]
+  },
+  {
+    "id_theme": 1008,
+    "name": "Cyberpunk",
+    "background_url": "/images/presets/cyberpunk.webp",
+    "colors": ["#ff00ff", "#00ffff", "#ffff00"]
+  },
+  {
+    "id_theme": 1009,
+    "name": "Minimalista",
+    "background_url": "/images/presets/minimalist.webp",
+    "colors": ["#f0f0f0", "#d0d0d0", "#a0a0a0"]
+  },
+  {
+    "id_theme": 1011,
+    "name": "Galáxia",
+    "background_url": "/images/presets/galaxy.webp",
+    "colors": ["#2c3e50", "#8e44ad", "#3498db"]
   }
 ]

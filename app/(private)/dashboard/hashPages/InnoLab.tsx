@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import CreateDiagramModal from "@/components/ui/Modal/CreateDiagramModal";
@@ -19,10 +19,10 @@ import {
   SortDesc,
   ChevronUp,
   ChevronDown,
-  FolderKanban,
 } from "lucide-react";
 
 import Loader from "@/components/loader";
+import ModalConfirm, { ModalConfirmRef } from "@/components/ui/Modal/ModalConfirm";
 
 interface Document {
   id: string;
@@ -45,6 +45,10 @@ export default function InnoLab() {
   const ITEMS_PER_PAGE = 6;
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Modal de delete
+  const modalDeleteRef = useRef<ModalConfirmRef>(null);
+  const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
+
   const fetchDocuments = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -60,10 +64,13 @@ export default function InnoLab() {
     fetchDocuments();
   }, []);
 
+  // Criar
   const handleCreateDiagram = async (data: { title: string; type: string }) => {
     if (!data.title || !data.type) return;
+
     try {
       const user = (await supabase.auth.getUser()).data.user;
+
       const { error } = await supabase.from("documents").insert([
         {
           title: data.title,
@@ -74,20 +81,18 @@ export default function InnoLab() {
       ]);
 
       if (error) throw error;
+
       await fetchDocuments();
     } catch (error) {
       console.error("Erro ao criar diagrama:", error);
     }
   };
 
-  // Normaliza strings para buscas sem acento
+  // Normalizar acentos
   const normalize = (str: string) =>
-    str
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  // FILTRO + BUSCA + ORDENAR
+  // Filtros + Ordenação
   const filteredDocs = documents
     .filter((doc) => {
       const searchTerm = normalize(search);
@@ -117,16 +122,15 @@ export default function InnoLab() {
         case "type":
           return a.diagram_type.localeCompare(b.diagram_type);
         default:
-          return dateB - dateA; // recent (updated first)
+          return dateB - dateA; // recent
       }
     });
 
-  // PAGINAÇÃO REAL
+  // PAGINAÇÃO
   const paginatedDocs = filteredDocs.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-
   const totalPages = Math.ceil(filteredDocs.length / ITEMS_PER_PAGE);
 
   useEffect(() => {
@@ -150,6 +154,35 @@ export default function InnoLab() {
     SWOT: "bg-warning/10 text-warning",
   };
 
+  // Confirmação de delete
+  const openDeleteModal = (doc: Document) => {
+    setSelectedDoc(doc);
+    modalDeleteRef.current?.open(
+      `Deseja deletar o diagrama "${doc.title}"?`,
+      handleDelete
+    );
+  };
+
+  const handleDelete = async () => {
+    if (!selectedDoc) return;
+
+    try {
+      const { error } = await supabase
+        .from("documents")
+        .delete()
+        .eq("id", selectedDoc.id);
+
+      if (error) throw error;
+
+      addToast("Diagrama deletado com sucesso!", "success");
+      await fetchDocuments();
+    } catch (error) {
+      addToast("Erro ao deletar diagrama", "error");
+    } finally {
+      setSelectedDoc(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Cabeçalho */}
@@ -161,15 +194,16 @@ export default function InnoLab() {
               Inno<span className="text-secondary">Lab</span>
             </h2>
             <p className="text-sm text-base-content/80 mt-1">
-              Dê vida às suas ideias: crie diagramas diversos para impulsionar
-              seu projeto!
+              Dê vida às suas ideias: crie diagramas para impulsionar seu
+              projeto!
             </p>
           </div>
         </div>
+
         <CreateDiagramModal onCreate={handleCreateDiagram} />
       </section>
 
-      {/* Busca + Filtros + Ordenação */}
+      {/* Busca e Filtros */}
       <section className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
         {/* Campo de busca */}
         <div className="flex items-center gap-2 w-full md:w-auto flex-1">
@@ -190,7 +224,7 @@ export default function InnoLab() {
           )}
         </div>
 
-        {/* Ordenação */}
+        {/* Botões de ordenação */}
         <div className="flex flex-wrap gap-2">
           <button
             className={`btn btn-sm ${
@@ -227,7 +261,8 @@ export default function InnoLab() {
           >
             <ChevronDown className="w-4 h-4" /> Z–A
           </button>
-          {/* Dropdown de tipos */}
+
+          {/* Dropdown tipos */}
           <div className="dropdown dropdown-end">
             <label tabIndex={0} className="btn btn-outline btn-sm">
               Tipos
@@ -264,7 +299,7 @@ export default function InnoLab() {
         )}
       </section>
 
-      {/* GRID PAGINADO */}
+      {/* GRID */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
           <div className="col-span-full flex justify-center items-center py-10">
@@ -279,36 +314,13 @@ export default function InnoLab() {
           paginatedDocs.map((doc) => {
             const Icon = typeIcons[doc.diagram_type];
 
-            const handleDelete = async () => {
-              if (
-                !confirm(`Deseja realmente deletar o diagrama "${doc.title}"?`)
-              )
-                return;
-
-              try {
-                const { error } = await supabase
-                  .from("documents")
-                  .delete()
-                  .eq("id", doc.id);
-
-                if (error) throw error;
-                addToast("Diagrama deletado com sucesso!", "success");
-                await fetchDocuments();
-              } catch (error) {
-                console.error("Erro ao deletar diagrama:", error);
-                addToast("Erro ao deletar diagrama", "error");
-              }
-            };
-
             return (
               <div
                 key={doc.id}
                 className="bg-base-100 border border-base-300 rounded-xl p-4 cursor-pointer hover:shadow-lg transition-transform transform hover:scale-105 flex flex-col justify-between"
                 onClick={() => {
                   if (window.innerWidth < 640) {
-                    alert(
-                      "Diagrama em dispositivos móveis está em desenvolvimento!"
-                    );
+                    alert("Edição em mobile em desenvolvimento!");
                     return;
                   }
                   router.push(
@@ -316,9 +328,7 @@ export default function InnoLab() {
                   );
                 }}
               >
-                <h3 className="text-lg font-semibold text-base-content mb-2">
-                  {doc.title}
-                </h3>
+                <h3 className="text-lg font-semibold mb-2">{doc.title}</h3>
 
                 <div className="flex items-center gap-2 mb-2">
                   <div className={`badge ${typeStyles[doc.diagram_type]}`}>
@@ -327,7 +337,7 @@ export default function InnoLab() {
                   </div>
                 </div>
 
-                <p className="text-xs text-base-content/50 mt-1">
+                <p className="text-xs text-base-content/60">
                   Última atualização:{" "}
                   {new Date(
                     doc.updated_at || doc.created_at
@@ -338,7 +348,7 @@ export default function InnoLab() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDelete();
+                      openDeleteModal(doc);
                     }}
                     className="btn btn-error btn-square btn-xs"
                   >
@@ -351,7 +361,7 @@ export default function InnoLab() {
         )}
       </section>
 
-      {/* PAGINAÇÃO DAISYUI */}
+      {/* PAGINAÇÃO */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-6">
           <div className="join">
@@ -379,6 +389,13 @@ export default function InnoLab() {
           </div>
         </div>
       )}
+
+      <ModalConfirm
+        ref={modalDeleteRef}
+        title="Confirmar delete"
+        confirmLabel="Deletar"
+        cancelLabel="Cancelar"
+      />
     </div>
   );
 }

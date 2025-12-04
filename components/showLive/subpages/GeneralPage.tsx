@@ -42,15 +42,23 @@ export default function GeneralPage({
           size="lg"
           description={""}
         />
-        <CardDefault
-          title="Rodadas"
-          description={
-            event_config?.rodadas.length
-              ? event_config.rodadas.join(", ")
-              : ""
-          }
-          buttons={[]}
-        />
+        {event_config?.rodadas && event_config.rodadas.length > 0 && (
+          <div className="card bg-base-100 shadow-md border border-base-300">
+            <div className="card-body">
+              <h3 className="card-title text-lg font-semibold">Rodadas</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+                {event_config.rodadas.map((rodada, index) => (
+                  <div
+                    key={index}
+                    className="p-3 rounded-lg bg-base-200 border border-base-300 hover:bg-base-300 transition-colors w-full"
+                  >
+                    <span className="text-sm font-medium">{rodada}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

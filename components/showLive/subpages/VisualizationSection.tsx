@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/app/context/ToastContext";
+import { Info } from "lucide-react";
 
 interface PropsVisualizationSection {
   idEvent: number | null;
@@ -164,7 +165,7 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
   };
 
   return (
-    <div className="space-y-6 px-2 md:px-8">
+    <div className="space-y-4 px-2 md:px-8">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-primary">Visualização do Ranking</h2>
         <div
@@ -172,7 +173,7 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
           data-tip="Clique nas rodadas para mostrar/ocultar colunas para os visitantes."
         >
           <button className="btn btn-sm btn-circle btn-primary">
-            <span className="text-primary-content font-bold">i</span>
+            <Info className="text-primary-content" size={24} />
           </button>
         </div>
       </div>
@@ -193,8 +194,8 @@ export default function VisualizationSection({ idEvent }: PropsVisualizationSect
 
       {/* 🔹 Tabela sem semifinal/final */}
       <div className="overflow-x-auto bg-base-100 rounded-lg shadow-lg border border-base-300">
-        <table className="table table-zebra w-full min-w-max">
-          <thead className="bg-primary text-primary-content">
+        <table className="table table-zebra w-full">
+          <thead className="bg-primary/50 text-primary-content">
             <tr>
               <th className="text-center">Posição</th>
               <th>Equipe</th>

@@ -33,7 +33,15 @@ const ModalConfirm = forwardRef<ModalConfirmRef, ModalConfirmProps>(
     };
 
     return (
-      <dialog ref={modalRef} className="modal modal-bottom sm:modal-middle">
+      <dialog
+        ref={modalRef}
+        className="modal modal-bottom sm:modal-middle"
+        style={{
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
+          backgroundColor: "rgba(0,0,0,0.25)",
+        }}
+      >
         <div className="modal-box">
           <h3 className="font-bold text-lg">{title}</h3>
           <p ref={messageRef} className="py-4" />

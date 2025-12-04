@@ -87,7 +87,7 @@ export default function TabelaGracious({ eventId }: { eventId: number }) {
     <section className="space-y-6 px-2 md:px-6 lg:px-8">
       {/* 🔹 Cabeçalho */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <h2 className="text-xl md:text-2xl font-bold text-primary text-center md:text-left">
+        <h2 className="text-xl md:text-2xl font-bold text-primary text-left">
           Gracious Professionalism® Visualização
         </h2>
 
@@ -102,7 +102,7 @@ export default function TabelaGracious({ eventId }: { eventId: number }) {
 
       {/* 🔹 Tabela responsiva */}
       <div className="overflow-x-auto rounded-lg shadow-lg border border-base-300">
-        <table className="table table-sm md:table-md table-zebra w-full min-w-[500px] text-sm md:text-base">
+        <table className="table table-sm md:table-md table-zebra w-full text-sm">
           <thead className="bg-primary text-primary-content sticky top-0 z-10">
             <tr>
               <th className="whitespace-nowrap">Equipe</th>

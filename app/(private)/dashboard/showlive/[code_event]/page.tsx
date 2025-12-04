@@ -81,7 +81,7 @@ export default function EventAdminPage() {
   };
 
    return (
-    <div className="flex w-full">
+    <div className="flex w-full flex-col lg:flex-row items-stretch justufy-start">
       {/* Sidebar */}
       <Sidebar
         code_volunteer={eventData?.code_volunteer ?? ""}
@@ -94,7 +94,7 @@ export default function EventAdminPage() {
       <div
         className={`
           flex-1 p-4 sm:p-2 transition-all duration-300
-          ${sidebarOpen ? "lg:ml-72" : "lg:ml-72"}
+          ${sidebarOpen ? "lg:ml-24" : "lg:ml-24"}
         `}
       >
         {loading ? (
@@ -102,7 +102,7 @@ export default function EventAdminPage() {
             <Loader />
           </div>
         ) : (
-          <main className="flex-1 overflow-y-auto pt-4 mt-8 sm:mt-0">
+          <main className="flex-1 overflow-y-auto pt-4 mt-8 sm:mt-0 w-full">
             {renderSection()}
           </main>
         )}

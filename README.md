@@ -22,8 +22,7 @@ Um ecossistema completo que une tecnologia, estratégia e inovação em uma úni
 
 Ele é projetado para:
 
-- Técnicos que buscam ferramentas sólidas
-- Equipes que precisam de organização
+- Equipes que precisam de organização e buscam ferramentas sólidas
 - Juízes que necessitam de precisão
 - Organizadores que querem automação e fluxos mais rápidos
 

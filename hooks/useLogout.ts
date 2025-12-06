@@ -7,8 +7,6 @@ export function useLogout() {
   const router = useRouter();
 
   const logout = async () => {
-    if (!confirm("Tem certeza que deseja sair?")) return;
-
     try {
       await supabase.auth.signOut();
     } catch (err) {

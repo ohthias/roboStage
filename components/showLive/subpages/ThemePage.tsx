@@ -161,7 +161,7 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
         <div className="flex gap-2 mt-3">
           {theme.colors.map((c, i) => (
             <div
-              key={i}
+              key={`${theme.id_theme}-${c}-${i}`}
               className="w-6 h-6 rounded border border-white/40 shadow"
               style={{ backgroundColor: c }}
             />

@@ -81,7 +81,7 @@ export default function EventAdminPage() {
   };
 
    return (
-    <div className="flex w-full flex-col lg:flex-row items-stretch justufy-start">
+    <div className="flex w-full flex-col lg:flex-row items-stretch justify-start">
       {/* Sidebar */}
       <Sidebar
         code_volunteer={eventData?.code_volunteer ?? ""}

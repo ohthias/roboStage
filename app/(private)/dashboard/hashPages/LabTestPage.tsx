@@ -76,10 +76,10 @@ export default function LabTestPage() {
       NORMALIZADOR DE TEXTO
   --------------------------- */
   const normalize = (s: string) =>
-    s
-      ?.toLowerCase()
+    (s ?? "")
+      .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") ?? "";
+      .replace(/[\u0300-\u036f]/g, "");
 
   const normalizedTests = useMemo(() => {
     return tests.map((t: any) => ({

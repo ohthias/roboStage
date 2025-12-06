@@ -63,13 +63,32 @@ export default function Sidebar({
 
   return (
     <>
-      <button
-        className="btn btn-primary fixed top-4 left-4 z-50 lg:none"
-        onClick={() => setOpen(true)}
-        style={{ lineHeight: 0 }}
-      >
-        <i className="fi fi-br-menu-burger"></i>
-      </button>
+      <div className="py-3 px-2 flex justify-start items-center bg-base-200 border-b border-base-300 rounded-lg">
+        <button
+          aria-label="Abrir menu"
+          aria-expanded={open}
+          aria-controls="rs-offcanvas"
+          className="btn btn-square btn-ghost"
+          onClick={() => setOpen(true)}
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+        <div className="text-2xl font-bold text-base-content ml-4">
+          Show<span className="text-primary">Live</span>
+        </div>
+      </div>
 
       {open && (
         <div
@@ -142,7 +161,16 @@ export default function Sidebar({
             </li>
 
             <hr className="my-2 border border-base-300" />
-            <li> <a href="#gracious-professionalism" className="btn btn-ghost justify-start"> Gracious Professionalism </a> </li>
+            <li>
+              {" "}
+              <a
+                href="#gracious-professionalism"
+                className="btn btn-ghost justify-start"
+              >
+                {" "}
+                Gracious Professionalism{" "}
+              </a>{" "}
+            </li>
             {/* Itens dinâmicos */}
             {settings.enable_playoffs && (
               <li>
@@ -153,14 +181,20 @@ export default function Sidebar({
             )}
             {settings.pre_round_inspection && (
               <li>
-                <a href="#pre-round-inspection" className="btn btn-ghost justify-start">
+                <a
+                  href="#pre-round-inspection"
+                  className="btn btn-ghost justify-start"
+                >
                   Inspeção Pré-Rodada
                 </a>
               </li>
             )}
             {settings.advanced_view && (
               <li>
-                <a href="#advanced-view" className="btn btn-ghost justify-start">
+                <a
+                  href="#advanced-view"
+                  className="btn btn-ghost justify-start"
+                >
                   Visualização Avançada
                 </a>
               </li>

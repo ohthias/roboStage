@@ -1,20 +1,74 @@
 [
   {
-    "id_theme": 1001,
+    "id_theme": 1,
+    "name": "Masterpiece Tema",
+    "background_url": "/images/showLive/backgrounds/background_masterpiece.png",
+    "colors": ["#ff5733", "#33ff57", "#ffffff"]
+  },
+  {
+    "id_theme": 2,
+    "name": "Submerged Tema",
+    "background_url": "/images/showLive/backgrounds/background_submerged.png",
+    "colors": ["#1abc9c", "#16a085", "#2ecc71"]
+  },
+  {
+    "id_theme": 3,
+    "name": "Unearthed Tema",
+    "background_url": "/images/showLive/backgrounds/background_unearthed.png",
+    "colors": ["#e74c3c", "#c0392b", "#ffffff"]
+  },
+  {
+    "id_theme": 4,
     "name": "Dark Neon",
-    "background_url": "/images/presets/dark_neon.webp",
+    "background_url": "/images/presets/dark_neon.jpg",
     "colors": ["#ff007c", "#00e5ff", "#ffffff"]
   },
   {
-    "id_theme": 1002,
-    "name": "Nature",
+    "id_theme": 5,
+    "name": "Natureza",
     "background_url": "/images/presets/nature.webp",
     "colors": ["#2ecc71", "#27ae60", "#145a32"]
   },
   {
-    "id_theme": 1003,
-    "name": "Sunset",
+    "id_theme": 6,
+    "name": "Pôr do Sol",
     "background_url": "/images/presets/sunset.webp",
     "colors": ["#ff9a76", "#ff6b6b", "#c44536"]
+  },
+  {
+    "id_theme": 7,
+    "name": "Brisa do Oceano",
+    "background_url": "/images/presets/ocean_breeze.jpg",
+    "colors": ["#00a8cc", "#007ea7", "#003459"]
+  },
+  {
+    "id_theme": 8,
+    "name": "Sonhos Pastel",
+    "background_url": "/images/presets/pastel_dreams.jpg",
+    "colors": ["#ffb3ba", "#ffdfba", "#ffffba"]
+  },
+  {
+    "id_theme": 9,
+    "name": "Monocromático",
+    "background_url": "/images/presets/monochrome.jpg",
+    "colors": ["#000000", "#555555", "#aaaaaa"]
+  },
+  {
+    "id_theme": 10,
+    "name": "Cyberpunk",
+    "background_url": "/images/presets/cyberpunk.jpg",
+    "colors": ["#ff00ff", "#ff6b6b", "#ffffff"]
+  },
+  {
+    "id_theme": 11,
+    "name": "Minimalista",
+    "background_url": "/images/presets/minimalist.jpg",
+    "colors": ["#f0f0f0", "#d0d0d0", "#a0a0a0"]
+  },
+  {
+    "id_theme": 12,
+    "name": "Galáxia",
+    "background_url": "/images/presets/galaxy.jpg",
+    "colors": ["#3498db", "#8e44ad", "#ffffff"]
   }
 ]

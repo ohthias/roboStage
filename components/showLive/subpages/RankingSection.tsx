@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
+import { Info } from "lucide-react";
 
 interface PropsRankingSection {
   idEvent: number | null;
@@ -106,28 +107,14 @@ export default function RankingSection({ idEvent }: PropsRankingSection) {
           data-tip="As pontuações estão -1 porque nenhuma foi lançada por voluntários."
         >
           <button className="btn btn-circle btn-sm btn-primary">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 
-               8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
-              />
-            </svg>
+            <Info className="text-primary-content" size={24} />
           </button>
         </div>
       </div>
 
       <div className="overflow-x-auto bg-base-100 rounded-lg shadow-md border border-base-200">
         <table className="table table-zebra w-full overflow-x-auto">
-          <thead className="bg-primary border border-primary/50">
+          <thead className="bg-primary/50 border border-primary/50">
             <tr>
               <th className="text-center text-primary-content">Posição</th>
               <th className="text-primary-content">Equipe</th>

@@ -29,7 +29,9 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
   const [activeTab, setActiveTab] = useState<"themes" | "preview">("themes");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch presets locais
+  /* =========================================================
+      FETCHES
+  ========================================================= */
   useEffect(() => {
     const fetchPresets = async () => {
       try {
@@ -43,7 +45,6 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
     fetchPresets();
   }, []);
 
-  // Fetch temas do usuário
   useEffect(() => {
     if (session?.user) fetchThemes(session.user.id);
   }, [session]);
@@ -55,18 +56,13 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
       .eq("id_user", userId)
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Erro ao buscar temas:", error.message);
-      return;
-    }
+    if (error) return console.error(error);
 
     setThemes(themesData);
   };
 
-  // Fetch tema selecionado do evento
   useEffect(() => {
     if (!themes.length) return;
-
     const fetchSelectedTheme = async () => {
       const { data, error } = await supabase
         .from("typeEvent")
@@ -74,10 +70,7 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
         .eq("id_event", parseInt(eventId))
         .single();
 
-      if (error) {
-        console.error("Erro ao buscar tema salvo:", error.message);
-        return;
-      }
+      if (error) return;
 
       setTypeEventId(data.id);
 
@@ -89,10 +82,12 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
         if (themeFound) setSelectedTheme(themeFound);
       }
     };
-
     fetchSelectedTheme();
   }, [eventId, themes, presets]);
 
+  /* =========================================================
+      UPDATE THEME
+  ========================================================= */
   const handleSelectTheme = async (theme: StyleLabTheme) => {
     if (!typeEventId) return;
 
@@ -108,11 +103,10 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
 
       if (fetchError || !eventData) throw fetchError;
 
-      const currentConfigs = eventData.config ?? {};
       const updatedConfigs = {
-        ...currentConfigs,
+        ...eventData.config,
         preset: {
-          ...currentConfigs.preset,
+          ...eventData.config?.preset,
           url_background: theme.background_url,
           colors: theme.colors,
         },
@@ -126,7 +120,7 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
       if (updateError) throw updateError;
 
       setSelectedTheme(theme);
-      addToast("Tema atualizado com sucesso!", "success");
+      addToast("Tema atualizado!", "success");
     } catch (err) {
       console.error(err);
       addToast("Erro ao atualizar tema.", "error");
@@ -135,13 +129,22 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
     }
   };
 
+  /* =========================================================
+      THEME CARD
+  ========================================================= */
   const renderThemeCard = (theme: StyleLabTheme) => (
     <div
       key={theme.id_theme}
       onClick={() => handleSelectTheme(theme)}
-      className={`card relative bg-base-100 shadow-xl cursor-pointer transform transition hover:scale-105 rounded-xl overflow-hidden ${
-        selectedTheme?.id_theme === theme.id_theme ? "ring-2 ring-primary" : ""
-      }`}
+      className={`card cursor-pointer transition-all duration-200
+      bg-base-100 shadow-xl hover:shadow-2xl hover:scale-[1.02] 
+      overflow-hidden rounded-xl border border-base-300/40
+      ${
+        selectedTheme?.id_theme === theme.id_theme
+          ? "ring ring-primary ring-offset-2"
+          : ""
+      }
+    `}
       style={{
         backgroundImage: `url(${
           theme.background_url || "/images/showLive/banners/banner_default.webp"
@@ -150,16 +153,16 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
         backgroundPosition: "center",
       }}
     >
-      <div className="absolute inset-0 bg-black/40" />
-      <div className="card-body relative z-10 justify-end">
-        <h3 className="card-title text-white drop-shadow">
+      <div className="bg-black/40 p-4 h-full flex flex-col justify-end">
+        <h3 className="text-lg font-bold text-white drop-shadow">
           {theme.name || `Tema #${theme.id_theme}`}
         </h3>
-        <div className="flex gap-2 mt-2">
+
+        <div className="flex gap-2 mt-3">
           {theme.colors.map((c, i) => (
             <div
-              key={`${theme.id_theme}-${i}`}
-              className="w-6 h-6 rounded border border-base-300"
+              key={`${theme.id_theme}-${c}-${i}`}
+              className="w-6 h-6 rounded border border-white/40 shadow"
               style={{ backgroundColor: c }}
             />
           ))}
@@ -168,91 +171,107 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
     </div>
   );
 
-  if (loading) {
+  /* =========================================================
+      LOADING
+  ========================================================= */
+  if (loading)
     return (
-      <div className="flex justify-center items-center h-64">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
+      <div className="h-64 flex items-center justify-center">
+        <span className="loading loading-ring loading-lg text-primary" />
       </div>
     );
-  }
 
+  /* =========================================================
+      PAGE LAYOUT
+  ========================================================= */
   return (
-    <div className="min-h-screen px-4 md:px-8">
+    <div className="min-h-screen px-4 md:px-8 py-4">
+      <h1 className="text-4xl font-extrabold mb-6 text-primary">Personalização</h1>
       {/* Tabs */}
-      <div className="tabs tabs-lift mb-6">
-        <label
-          className={`tab flex items-center gap-2 ${
+      <div className="tabs tabs-box mb-8 w-fit bg-base-200 rounded-xl shadow">
+        <button
+          className={`tab gap-2 px-6 ${
             activeTab === "themes" ? "tab-active" : ""
           }`}
           onClick={() => setActiveTab("themes")}
         >
-          <PaintBrushIcon className="w-5 h-5" />
-          Temas
-        </label>
-        <label
-          className={`tab flex items-center gap-2 ${
+          <PaintBrushIcon className="w-5 h-5" /> Temas
+        </button>
+
+        <button
+          className={`tab gap-2 px-6 ${
             activeTab === "preview" ? "tab-active" : ""
           }`}
           onClick={() => setActiveTab("preview")}
         >
-          <EyeIcon className="w-5 h-5" />
-          Pré-visualização
-        </label>
+          <EyeIcon className="w-5 h-5" /> Pré-visualização
+        </button>
       </div>
 
-      {/* Temas */}
+      {/* TEMA SECTION */}
       {activeTab === "themes" && (
         <>
-          <h4 className="text-primary font-bold text-3xl mb-2">Temas</h4>
-          <p className="text-base-content/80">
-            Selecione um tema para o seu evento. Seja ele criado no{" "}
-            <i>StyleLab</i> ou um dos presets disponíveis!
+          <h2 className="text-2xl font-extrabold text-primary mb-2">
+            Temas
+          </h2>
+          <p className="text-base-content/70 mb-8">
+            Escolha um tema criado no <b>StyleLab</b> ou use um dos presets!
           </p>
 
           {/* Presets */}
-          <h4 className="text-xl font-bold mt-6 mb-6 border-b border-base-content max-w-max text-base-content">Presets</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <h3 className="text-xl font-bold mb-4 text-base-content border-l-4 border-primary pl-3">
+            Presets
+          </h3>
+
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {presets.map(renderThemeCard)}
           </div>
 
           {/* Seus temas */}
-            <h4 className="text-xl font-bold mt-6 mb-6 border-b border-base-content max-w-max text-base-content">Seus temas</h4>
-            <div className="relative mb-4">
-              <input
+          <h3 className="text-xl font-bold mt-10 mb-4 text-base-content border-l-4 border-primary pl-3">
+            Seus temas
+          </h3>
+
+          <div className="relative mb-6">
+            <input
               type="text"
               placeholder="Buscar tema..."
-              className="input input-bordered w-full pr-10 flex-1"
+              className="input input-bordered w-full pr-12"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 pointer-events-none">
-              <MagnifyingGlassCircleIcon className="size-6" />
-              </span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            />
+            <MagnifyingGlassCircleIcon className="w-7 h-7 absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60" />
+          </div>
+
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {themes
-              .filter((theme) =>
-              theme.name
-                ? theme.name.toLowerCase().includes(searchTerm.toLowerCase())
-                : `Tema #${theme.id_theme}`.toLowerCase().includes(searchTerm.toLowerCase())
+              .filter((t) =>
+                (t.name || `tema #${t.id_theme}`)
+                  .toLowerCase()
+                  .includes(searchTerm.toLowerCase())
               )
               .map(renderThemeCard)}
-            </div>
+          </div>
         </>
       )}
 
-      {/* Pré-visualização */}
+      {/* PREVIEW SECTION */}
       {activeTab === "preview" && (
-        <div className="mt-8 max-w-screen">
-          <h4 className="text-primary font-bold text-3xl">Pré-visualização</h4>
-          <p className="text-base-content/80 mb-4 text-sm sm:text-md">
-            Veja como seu evento ficará com o tema selecionado.
+        <div>
+          <h2 className="text-3xl font-extrabold text-primary mb-4">
+            Pré-visualização
+          </h2>
+          <p className="text-base-content/70 mb-6">
+            Veja como o seu evento ficará com o tema escolhido.
           </p>
-          <PreviewEvent
-            eventId={eventId}
-            backgroundUrl={selectedTheme?.background_url}
-            colors={selectedTheme?.colors || []}
-          />
+
+          <div className="rounded-xl border border-base-300 p-4 bg-base-100 shadow">
+            <PreviewEvent
+              eventId={eventId}
+              backgroundUrl={selectedTheme?.background_url}
+              colors={selectedTheme?.colors || []}
+            />
+          </div>
         </div>
       )}
     </div>

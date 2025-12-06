@@ -1,24 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useLogout } from "@/hooks/useLogout";
+import { useEffect, useState, useRef } from "react";
 import ShowLiveHub from "./hashPages/showLiveHub";
 import AccountSettings from "./hashPages/AccountSettings";
 import { useUser } from "../../context/UserContext";
 import { StyleLab } from "@/app/(private)/dashboard/hashPages/StyleLab";
 import LabTestPage from "./hashPages/LabTestPage";
 import HubHero from "@/components/ui/dashboard/HubHero";
-import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/ui/dashboard/Navbar";
 import { useHashSection } from "@/hooks/useHashSection";
+import ModalConfirm, { ModalConfirmRef } from "@/components/ui/Modal/ModalConfirm";
 import InnoLab from "./hashPages/InnoLab";
 import ComingSoon from "@/components/ComingSoon";
 
 export default function Dashboard() {
   const { session, profile } = useUser();
   const router = useRouter();
+  const logout = useLogout();
   const [activeSection, setActiveSection] = useHashSection("hub");
   const [collapsed, setCollapsed] = useState(false);
+  const modalLogoutRef = useRef<ModalConfirmRef>(null);
+
+  const confirmLogout = () => {
+    modalLogoutRef.current?.open("Tem certeza que deseja sair?", logout);
+  };
 
   useEffect(() => {
     const last = localStorage.getItem("roboStage-last-section");
@@ -41,27 +48,19 @@ export default function Dashboard() {
 
   if (!session) return null;
 
-  const logout = async () => {
-    if (!confirm("Tem certeza que deseja sair?")) return;
-
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-
-    document.cookie = "sb-access-token=; path=/; max-age=0";
-    document.cookie = "sb-refresh-token=; path=/; max-age=0";
-    localStorage.removeItem("roboStage-last-section");
-    localStorage.removeItem("theme");
-
-    router.push("/auth/login");
-  };
-
   const renderSection = () => {
     switch (activeSection) {
       case "hub":
-        return <HubHero session={session} username={profile?.username || session?.user?.email?.split("@")[0] || "Usuário"} />;
+        return (
+          <HubHero
+            session={session}
+            username={
+              profile?.username ||
+              session?.user?.email?.split("@")[0] ||
+              "Usuário"
+            }
+          />
+        );
       case "showLive":
         return <ShowLiveHub />;
       case "labTest":
@@ -103,13 +102,19 @@ export default function Dashboard() {
         <Sidebar
           active={activeSection}
           setActive={setActiveSection}
-          onLogout={logout}
+          onLogout={confirmLogout}
           profile={profile}
           session={session}
           collapsed={collapsed}
           setCollapsed={setCollapsed}
         />
       </div>
+      <ModalConfirm
+        ref={modalLogoutRef}
+        title="Confirmar Logout"
+        confirmLabel="Sair"
+        cancelLabel="Cancelar"
+      />
     </div>
   );
 }

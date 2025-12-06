@@ -18,17 +18,21 @@ export default function StrategyPage() {
 
   if (isMobile) {
     return (
-      <div className="flex flex-col items-center justify-center text-center">
+      <div className="flex flex-col">
         <Navbar />
-        <h1 className="text-2xl font-bold my-4 text-primary">
-          Ops! Ferramenta não está disponível no celular
-        </h1>
-        <p className="text-sm mb-2 text-base-content px-5">
-          O QuickBrick Studio é um conjunto de ferramentas que ajuda sua equipe
-          a criar estratégias eficientes para o robô durante sua jornada no
-          FIRST LEGO League Challenge. Basta selecionar uma das ferramentas
-          disponíveis e aproveitá-las.
-        </p>
+        <div className="px-4 md:px-8 flex flex-col items-center w-full text-center h-screen justify-center">
+          <img src="/progress.svg" alt="Icone do robô" />
+          <h1 className="text-2xl font-bold my-4 text-primary">
+            Ops! Ferramenta não está disponível no celular
+          </h1>
+          <p className="text-sm mb-2 text-base-content px-5">
+            O QuickBrick Studio é um conjunto de ferramentas que ajuda sua
+            equipe a criar estratégias eficientes para o robô durante sua
+            jornada no FIRST LEGO League Challenge. Basta selecionar uma das
+            ferramentas disponíveis e aproveitá-las.
+          </p>
+        </div>
+        <Footer />
       </div>
     );
   }

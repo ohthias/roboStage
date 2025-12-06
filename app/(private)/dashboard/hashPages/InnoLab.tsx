@@ -90,7 +90,7 @@ export default function InnoLab() {
 
   // Normalizar acentos
   const normalize = (str: string) =>
-    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    (str ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
   // Filtros + Ordenação
   const filteredDocs = documents

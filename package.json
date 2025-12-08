@@ -1,6 +1,6 @@
 {
   "name": "robostage",
-  "version": "3.3.4",
+  "version": "3.3.5",
   "private": true,
   "start": "react-scripts",
   "scripts": {
@@ -16,7 +16,6 @@
     "@supabase/realtime-js": "^2.15.5",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.57.4",
-    "@types/classnames": "^2.3.4",
     "@types/jspdf": "^2.0.0",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
@@ -41,6 +40,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/classnames": "^2.3.4",
     "@types/file-saver": "^2.0.7",
     "@types/js-cookie": "^3.0.6",
     "@types/jszip": "^3.4.1",

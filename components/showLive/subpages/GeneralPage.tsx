@@ -46,58 +46,62 @@ export default function GeneralPage({
   };
 
   return (
-    <div className="px-4 md:px-6">
-      <h1 className="text-primary font-bold text-3xl mb-4">Geral</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div
-          className={`relative card shadow-lg flex flex-col justify-between overflow-hidden 
-        w-full h-52 transition-all duration-300`}
-        >
-          <div className="absolute inset-0">
-            <img
-              src={urlBackground()}
-              alt={name_event}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/30"></div>
-          </div>
+    <div className="px-4 md:px-6 animate-fadeIn">
+      <h1 className="text-primary font-bold text-3xl mb-6">Geral</h1>
 
-          <div className="card-body relative flex flex-col justify-between h-full p-3 sm:p-4">
-            <h2 className="card-title flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-              <span className="text-white text-base sm:text-lg">
-                {name_event}
-              </span>
-              <div className="badge badge-secondary">
-                {event_config?.temporada}
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Card: Banner */}
+        <div className="relative card bg-base-100/50 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300 rounded-2xl overflow-hidden h-52 group animate-slideUp">
+          <img
+            src={urlBackground()}
+            alt={name_event}
+            className="absolute inset-0 w-full h-full object-cover opacity-95 transition-transform duration-700 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-black/40" />
+
+          <div className="relative h-full p-5 flex flex-col justify-end">
+            <h2 className="text-white font-semibold text-lg flex items-center justify-between gap-2">
+              <span className="drop-shadow">{name_event}</span>
+
+              {event_config?.temporada && (
+                <div className="badge badge-secondary badge-sm px-2 py-1 shadow-md animate-fadeIn">
+                  {event_config.temporada}
+                </div>
+              )}
             </h2>
           </div>
         </div>
+
+        {/* Card: Temporada */}
         {event_config?.temporada && (
-          <div className="card bg-base-100 shadow-md border border-base-300 overflow-y-auto">
-            <div className="card-body">
-              <h3 className="card-title text-lg font-semibold text-secondary">
+          <div className="card bg-base-100/60 backdrop-blur-sm shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-base-200 animate-slideUp delay-100">
+            <div className="card-body items-center text-center">
+              <h3 className="card-title text-secondary text-lg font-semibold">
                 Temporada
               </h3>
+
               <img
                 src={seasonLogo()}
                 alt={event_config.temporada}
-                className="w-32 h-auto mx-auto"
+                className="w-28 h-auto mt-3 opacity-90 hover:opacity-100 transition-all duration-300"
               />
             </div>
           </div>
         )}
-        {event_config?.rodadas && event_config.rodadas.length > 0 && (
-          <div className="card bg-base-100 shadow-md border border-base-300 h-52 overflow-y-auto">
+
+        {/* Card: Rodadas */}
+        {(event_config?.rodadas?.length ?? 0) > 0 && (
+          <div className="card bg-base-100/60 backdrop-blur-sm shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-base-200 h-52 overflow-auto animate-slideUp delay-200">
             <div className="card-body">
               <h3 className="card-title text-lg font-semibold">Rodadas</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
-                {event_config.rodadas.map((rodada, index) => (
+
+              <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 mt-3">
+                {event_config?.rodadas?.map((rodada, index) => (
                   <div
                     key={index}
-                    className="p-3 rounded-lg bg-base-200 border border-base-300 hover:bg-base-300 transition-colors w-full"
+                    className="p-2 rounded-lg bg-base-200 border border-base-300 hover:bg-base-300 hover:shadow-md transition-all duration-200 cursor-default text-center text-sm font-medium hover:scale-[1.03]"
                   >
-                    <span className="text-sm font-medium">{rodada}</span>
+                    {rodada}
                   </div>
                 ))}
               </div>
@@ -105,15 +109,15 @@ export default function GeneralPage({
           </div>
         )}
 
+        {/* Card: Preset */}
         {event_config?.preset && (
-          <div className="card bg-base-100/80 shadow-sm rounded-xl border border-base-200 overflow-hidden">
-            {/* Imagem de fundo como header moderno */}
+          <div className="card bg-base-100/60 backdrop-blur-sm shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-base-200 overflow-hidden animate-slideUp delay-300">
             {event_config.preset.url_background && (
-              <figure className="max-h-44 overflow-hidden">
+              <figure className="h-40 overflow-hidden">
                 <img
                   src={event_config.preset.url_background}
                   alt="Imagem de Fundo"
-                  className="w-full h-44 object-cover"
+                  className="w-full h-full object-cover opacity-90 transition-all duration-500 hover:scale-110"
                 />
               </figure>
             )}
@@ -122,12 +126,13 @@ export default function GeneralPage({
               <h3 className="card-title text-md font-semibold">
                 Paleta de Cores
               </h3>
-              <div className="flex gap-2">
+
+              <div className="flex gap-2 mt-2">
                 {event_config.preset.colors.map((color, index) => (
                   <div
                     key={index}
-                    className="w-8 h-8 rounded-lg border border-base-300 shadow-sm"
                     style={{ backgroundColor: color }}
+                    className="w-9 h-9 rounded-md shadow-sm border border-base-300 hover:scale-110 transition-all duration-300"
                   />
                 ))}
               </div>

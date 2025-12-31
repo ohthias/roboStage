@@ -6,6 +6,8 @@ module.exports = {
   theme: {
     extend: {},
   },
-  plugins: [require("daisyui")],
+  plugins: {
+    '@tailwindcss/postcss': {},
+  },
   daisyui: {},
 };

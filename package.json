@@ -1,6 +1,6 @@
 {
   "name": "robostage",
-  "version": "3.3.4",
+  "version": "3.3.5",
   "private": true,
   "start": "react-scripts",
   "scripts": {
@@ -50,7 +50,7 @@
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
-    "daisyui": "^5.0.50",
+    "daisyui": "^5.5.14",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "tailwindcss": "^4",

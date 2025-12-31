@@ -7,9 +7,14 @@ export function Footer() {
         <aside>
           <img src="/images/logos/Icone.png" alt="logo" className="w-12 h-12" />
           <p className="border-b border-base-200 pb-2">
-            RoboStage
+            <span
+              className="text-lg font-black uppercase italic tracking-tight"
+              aria-label="Página inicial RoboStage"
+            >
+              Robo<span className="text-primary">Stage</span>
+            </span>
             <br />
-            Facilitando a jornada na robótica
+            Planeje. Teste. Organize. Evolua.
           </p>
           <a
             href="https://github.com/ohthias/roboStage"

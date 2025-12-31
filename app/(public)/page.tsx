@@ -7,12 +7,16 @@ import { Footer } from "@/components/ui/Footer";
 import background from "@/public/images/background_uneartherd.png";
 import FLLLogo from "@/public/images/fll_unearthed_logo_fullcolor.png";
 import ListraImage from "@/components/ListraImage";
+import CountDown from "@/components/Countdown";
 
 export default function Home() {
+  const counter = "Contador de tempo para o evento";
+
   return (
     <div>
       <Navbar />
       <Hero />
+      <CountDown />
       <div className="w-full">
         {/* Seção Sobre */}
         <section className="max-w-5xl p-6 sm:p-8 mx-auto my-12">

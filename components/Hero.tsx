@@ -4,41 +4,7 @@ import FundoPadrao from "@/public/images/fundoPadrao.gif";
 
 export function Hero() {
   const [showVideo, setShowVideo] = useState(false);
-  const [typedText, setTypedText] = useState("");
-  const [index, setIndex] = useState(0);
-  const [subIndex, setSubIndex] = useState(0);
-  const [deleting, setDeleting] = useState(false);
   const playerRef = useRef<any>(null);
-
-  const words = ["sua jornada na robótica", "seus projetos", "suas estratégias", "seus eventos", "seus testes", "seus diagramas", "sua documentação"];
-
-  // --- EFEITO DE DIGITAÇÃO ---
-  useEffect(() => {
-    if (index >= words.length) setIndex(0);
-
-    const timeout = setTimeout(() => {
-      const word = words[index];
-      if (!deleting) {
-        // Digitando
-        setTypedText(word.substring(0, subIndex + 1));
-        setSubIndex(subIndex + 1);
-        if (subIndex === word.length) {
-          setDeleting(true);
-          setTimeout(() => {}, 10000);
-        }
-      } else {
-        // Apagando
-        setTypedText(word.substring(0, subIndex - 1));
-        setSubIndex(subIndex - 1);
-        if (subIndex === 0) {
-          setDeleting(false);
-          setIndex((prev) => (prev + 1) % words.length);
-        }
-      }
-    }, deleting ? 70 : 120);
-
-    return () => clearTimeout(timeout);
-  }, [subIndex, deleting, index]);
 
   // --- YOUTUBE PLAYER ---
   useEffect(() => {
@@ -92,9 +58,8 @@ export function Hero() {
     <div className="hero h-64 sm:h-80 lg:h-[calc(100vh-64px)] relative overflow-hidden">
       {/* Fundo GIF */}
       <div
-        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-          showVideo ? "opacity-0" : "opacity-100"
-        }`}
+        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${showVideo ? "opacity-0" : "opacity-100"
+          }`}
       >
         <img
           src={FundoPadrao.src}
@@ -105,9 +70,8 @@ export function Hero() {
 
       {/* Fundo vídeo */}
       <div
-        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-          showVideo ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${showVideo ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
       >
         <div className="absolute top-1/2 left-1/2 w-[120vw] h-[120vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden">
           <div id="hero-video" className="w-full h-full scale-150"></div>
@@ -118,18 +82,22 @@ export function Hero() {
 
       {/* Conteúdo */}
       <div className="hero-content text-neutral-content relative z-20 flex flex-col lg:flex-row lg:items-center lg:space-x-6 space-y-6 lg:space-y-0">
-        <div className="max-w-md text-center lg:text-left">
-          <h1 className="mb-5 text-4xl lg:text-5xl font-bold text-white">
+        <div className="max-w-md text-center lg:text-left space-y-4">
+          <h1 className="text-5xl font-black uppercase italic tracking-tight">
             Robo<strong className="text-primary">Stage</strong>
           </h1>
 
-          <p className="mb-5 text-lg text-white">
-            Facilitando{" "}
-            <span className="font-semibold">
-              {typedText}
-              <span className="animate-pulse">|</span>
+          <span className="text-sm md:text-md text-white">
+            O palco é seu. A estratégia também!{" "}
+            <span className="text-rotate">
+              <span>
+                <span className="bg-teal-400 text-teal-800 px-2 rounded-sm">Planeje!</span>
+                <span className="bg-red-400 text-red-800 px-2 rounded-sm">Teste!</span>
+                <span className="bg-blue-400 text-blue-800 px-2 rounded-sm">Organize!</span>
+                <span className="bg-yellow-400 text-yellow-800 px-2 rounded-sm">Evolua!</span>
+              </span>
             </span>
-          </p>
+          </span>
         </div>
 
         <div className="hidden lg:block w-px h-40 bg-white/50"></div>

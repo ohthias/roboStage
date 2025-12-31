@@ -1,3 +1,4 @@
+/*/global.css*/
 @import "@flaticon/flaticon-uicons/css/all/all.css";
 @import "tailwindcss";
 
@@ -28,7 +29,7 @@
   --color-error-content: #ffffff;
   --radius-selector: 1rem;
   --radius-field: 0.5rem;
-  --radius-box: 1rem;
+  --radius-box: 0.5rem;
   --size-selector: 0.25rem;
   --size-field: 0.25rem;
   --border: 1px;
@@ -63,7 +64,7 @@
   --color-error-content: #4d0218;
   --radius-selector: 1rem;
   --radius-field: 0.5rem;
-  --radius-box: 1rem;
+  --radius-box: 0.5rem;
   --size-selector: 0.25rem;
   --size-field: 0.25rem;
   --border: 1px;
@@ -78,4 +79,8 @@
 .tooltip-custom[data-tip]::before {
   @apply text-xs whitespace-normal;
   max-width: 9rem !important;
+}
+
+.btn {
+  border-radius: var(--radius-box);
 }

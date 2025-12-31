@@ -24,7 +24,8 @@ export function Navbar() {
           <div className="flex-1">
             <a
               href="/"
-              className="text-xl font-bold tracking-tight hover:text-primary transition-colors"
+              className="text-lg font-black uppercase italic tracking-tight opacity-80 hover:opacity-100 transition-opacity duration-300"
+              aria-label="Página inicial RoboStage"
             >
               Robo<span className="text-primary">Stage</span>
             </a>
@@ -35,7 +36,7 @@ export function Navbar() {
             <ul className="menu menu-horizontal gap-4 items-center">
               {/* Dropdown Temporadas */}
               <li>
-                <details className="dropdown">
+                <details>
                   <summary className="cursor-pointer hover:text-primary">
                     FLL Score
                   </summary>
@@ -87,13 +88,13 @@ export function Navbar() {
               </li>
 
               <li>
-                <a href="/universe" className="btn btn-accent btn-outline">
+                <a role="button" href="/universe" className="btn btn-accent btn-outline">
                   Embarcar em evento
                 </a>
               </li>
 
               <li>
-                <a href="/auth/login" className="btn btn-primary">
+                <a role="button" href="/auth/login" className="btn btn-primary">
                   Entrar
                 </a>
               </li>
@@ -138,7 +139,8 @@ export function Navbar() {
           <div className="space-y-2">
             <a
               href="/"
-              className="text-xl font-bold tracking-tight hover:text-primary transition-colors"
+              className="text-lg font-black uppercase italic tracking-tight"
+              aria-label="Página inicial RoboStage"
             >
               Robo<span className="text-primary">Stage</span>
             </a>

@@ -11,14 +11,31 @@ import HubHero from "@/components/ui/dashboard/HubHero";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/ui/dashboard/Navbar";
 import { useHashSection } from "@/hooks/useHashSection";
-import ModalConfirm, { ModalConfirmRef } from "@/components/ui/Modal/ModalConfirm";
+import { useAchievements } from "@/hooks/useAchievements";
+import ModalConfirm, {
+  ModalConfirmRef,
+} from "@/components/ui/Modal/ModalConfirm";
 import InnoLab from "./hashPages/InnoLab";
 import ComingSoon from "@/components/ComingSoon";
+import Logo from "@/components/ui/Logo";
+import { ThemeController } from "@/components/ui/themeController";
+import {
+  Bell,
+  Calendar1,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  Menu,
+  Plus,
+} from "lucide-react";
 
 export default function Dashboard() {
   const { session, profile } = useUser();
   const router = useRouter();
   const logout = useLogout();
+  const userId = profile?.id || session?.user?.id;
+  const { achievements, loading: achievementsLoading } =
+    useAchievements(userId);
   const [activeSection, setActiveSection] = useHashSection("hub");
   const [collapsed, setCollapsed] = useState(false);
   const modalLogoutRef = useRef<ModalConfirmRef>(null);
@@ -59,6 +76,7 @@ export default function Dashboard() {
               session?.user?.email?.split("@")[0] ||
               "Usuário"
             }
+            achievements={achievements}
           />
         );
       case "showLive":
@@ -77,38 +95,80 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="drawer lg:drawer-open h-screen">
-      <input id="app-drawer" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content flex flex-col">
-        <label
-          htmlFor="app-drawer"
-          className="btn btn-ghost lg:hidden m-3 self-start"
-        >
-          <i className="fi fi-br-menu-burger text-xl"></i>
-        </label>
+    <div className="h-screen grid grid-rows-[64px_1fr] grid-cols-[auto_1fr] bg-base-200">
+      {/* Navbar topo */}
+      <header className="col-span-2 h-16 bg-base-100 border-b border-base-300 flex items-center px-6 justify-between">
+        <div className="flex items-center gap-2">
+          {/* Toggle mobile */}
+          <button
+            className="lg:hidden btn btn-ghost btn-circle"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            <Menu size={20} />
+          </button>
 
-        <main
-          className={`flex-1 overflow-y-auto bg-base-200 p-6 transition-all duration-300 ease-in-out ${
-            collapsed ? "lg:ml-[80px]" : "lg:ml-[256px]"
-          }`}
-        >
-          {renderSection()}
-        </main>
-      </div>
+          {/* Collapse desktop */}
+          <button
+            className="hidden lg:flex btn btn-ghost btn-circle"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+          >
+            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </button>
 
-      <div className="drawer-side">
-        <label htmlFor="app-drawer" className="drawer-overlay"></label>
+          <Logo logoSize="md" />
+        </div>
 
-        <Sidebar
-          active={activeSection}
-          setActive={setActiveSection}
-          onLogout={confirmLogout}
-          profile={profile}
-          session={session}
-          collapsed={collapsed}
-          setCollapsed={setCollapsed}
-        />
-      </div>
+        <div className="flex items-center justify-end gap-2">
+          <button className="btn btn-soft btn-sm hidden md:flex items-center gap-2">
+            Meus Projetos
+          </button>
+          <button className="btn btn-soft btn-sm hidden md:flex items-center gap-2">
+            <Plus size={16} /> Criar
+          </button>
+          <button className="btn btn-ghost btn-circle btn-icon btn-sm tooltip tooltip-bottom" data-tip="Recompensas Diárias">
+            <Calendar1 size={20} />
+          </button>
+          <button className="btn btn-ghost btn-circle btn-icon btn-sm tooltip tooltip-bottom" data-tip="Notificações">
+            <Bell size={20} />
+          </button>
+
+          <ThemeController />
+
+          <div className="divider divider-horizontal mx-1" />
+
+          <button
+            onClick={confirmLogout}
+            className="btn btn-error btn-soft btn-circle btn-icon btn-sm"
+          >
+            <LogOut size={20} />
+          </button>
+        </div>
+      </header>
+
+      {/* Sidebar */}
+      <aside
+        className={`
+      bg-base-100 border-r border-base-300
+      transition-all duration-300
+      ${collapsed ? "w-20" : "w-64"}
+      hidden lg:block
+    `}
+      >
+        {profile && (
+          <Sidebar
+            active={activeSection}
+            setActive={setActiveSection}
+            session={session}
+            collapsed={collapsed}
+            profile={profile}
+          />
+        )}
+      </aside>
+
+      {/* Conteúdo principal */}
+      <main className="overflow-y-auto p-6">{renderSection()}</main>
+
       <ModalConfirm
         ref={modalLogoutRef}
         title="Confirmar Logout"

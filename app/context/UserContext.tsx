@@ -5,6 +5,7 @@ import { supabase } from "@/utils/supabase/client";
 
 interface Profile {
   username: string;
+  id: string;
 }
 
 interface UserContextType {
@@ -27,7 +28,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("username")
+      .select("id, username")
       .eq("id", userId)
       .single();
 

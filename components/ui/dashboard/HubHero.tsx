@@ -1,11 +1,42 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { ChartPie, Palette, RadioIcon, Book, Rocket } from "lucide-react";
+import {
+  ChartPie,
+  Palette,
+  RadioIcon,
+  Book,
+  Rocket,
+  TestTube,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Star,
+  Trophy,
+  Users,
+  Zap,
+  FlaskConical,
+  Settings,
+  Wrench,
+  CalendarDays,
+  Activity,
+  Target,
+  Bot,
+  Lightbulb,
+} from "lucide-react";
 import { motion } from "framer-motion";
+import AchievementSummary from "./AchievementSummary";
 import { supabase } from "@/utils/supabase/client";
 
-export default function HubHero({ session, username }: { session: any; username: string }) {
+export default function HubHero({
+  session,
+  username,
+  achievements,
+}: {
+  session: any;
+  username: string;
+  achievements: any[];
+}) {
   const [userStats, setUserStats] = React.useState({
     total_tests: 0,
     total_eventos: 0,
@@ -13,24 +44,143 @@ export default function HubHero({ session, username }: { session: any; username:
     total_documents: 0,
   });
 
-  const tips = [
-    "QuickBrick Studio: Planeje suas estratégias como um verdadeiro engenheiro da FLL. Documente, simule e ajuste seu robô antes das partidas.",
-    "LabTest: Teste e valide suas missões. Acompanhe estatísticas detalhadas de cada lançamento e descubra onde ganhar segundos preciosos.",
-    "InnoLab: Transforme ideias em diagramas. Organize o processo do projeto de inovação da equipe e surpreenda os jurados.",
-    "ShowLive: Crie campeonatos e torneios. Defina rodadas, equipes e acompanhe a evolução da competição em tempo real.",
-    "StyleLab: Personalize cores e temas para tornar cada evento memorável.",
-    "Combine QuickBrick e LabTest para experimentar estratégias ousadas antes do torneio real.",
-    "Compartilhe insights do InnoLab com a equipe para soluções mais criativas e eficientes.",
-    "Revise resultados no ShowLive para ajustar estratégias e melhorar o desempenho em rodadas futuras.",
-    "Lembre-se: pequenas correções no robô podem fazer a diferença na competição.",
-    "Verifique sempre se o giroscópio do robô está calibrado para evitar desvios nas missões.",
+  const MOCK_TASKS = [
+    {
+      id: 1,
+      title: "Revisar missão da rodada",
+      category: "FLL",
+      priority: "Alta",
+      completed: false,
+    },
+    {
+      id: 2,
+      title: "Enviar relatório do robô",
+      category: "Equipe",
+      priority: "Média",
+      completed: false,
+    },
+    {
+      id: 3,
+      title: "Atualizar portfólio",
+      category: "Perfil",
+      priority: "Baixa",
+      completed: false,
+    },
   ];
 
-  const stats = [
-    { title: "Eventos Criados", percent: userStats.total_eventos },
-    { title: "Testes Feitos", percent: userStats.total_tests },
-    { title: "Documentos Criados", percent: userStats.total_documents },
-    { title: "Temas Criados", percent: userStats.total_themes },
+  const MOCK_USER = {
+    level: "Nível 7",
+    title: "Construtor Estratégico",
+    xp: 780,
+    nextLevelXp: 1000,
+    streak: 5,
+    completed: 18,
+    total: 24,
+    nextReward: "Badge Mentor Bronze",
+  };
+
+  const MOCK_RECENT_ACHIEVEMENTS = [
+    {
+      id: 1,
+      title: "Primeira Missão Concluída",
+      icon: Trophy,
+      color: "text-yellow-500",
+    },
+    {
+      id: 2,
+      title: "Código Otimizado",
+      icon: Zap,
+      color: "text-purple-500",
+    },
+    {
+      id: 3,
+      title: "Precisão Máxima",
+      icon: Target,
+      color: "text-red-500",
+    },
+    {
+      id: 4,
+      title: "Trabalho em Equipe",
+      icon: Users,
+      color: "text-blue-500",
+    },
+    {
+      id: 5,
+      title: "Inovador do Mês",
+      icon: Lightbulb,
+      color: "text-green-500",
+    },
+    {
+      id: 6,
+      title: "Especialista em Robótica",
+      icon: Bot,
+      color: "text-indigo-500",
+    },
+    {
+      id: 7,
+      title: "Mestre das Missões",
+      icon: Star,
+      color: "text-yellow-400",
+    },
+    {
+      id: 8,
+      title: "Campeão de Testes",
+      icon: CheckCircle2,
+      color: "text-green-400",
+    },
+  ];
+
+  const MOCK_EVENTS = [
+    {
+      id: 1,
+      name: "Treino semanal",
+      date: "2026-01-10",
+      location: "Espaço maker",
+    },
+    { id: 2, name: "Simulado FLL", date: "2026-01-15", location: "Arena" },
+    { id: 3, name: "Revisão técnica", date: "2026-01-20", location: "Online" },
+  ];
+
+  const MOCK_WEEK = [
+    { day: "Seg", date: 6, hasEvent: true },
+    { day: "Ter", date: 7, hasEvent: false },
+    { day: "Qua", date: 8, hasEvent: true },
+    { day: "Qui", date: 9, hasEvent: false },
+    { day: "Sex", date: 10, hasEvent: true },
+    { day: "Sáb", date: 11, hasEvent: false },
+    { day: "Dom", date: 12, hasEvent: false },
+  ];
+
+  const MOCK_TEAM_ACTIVITY = [
+    {
+      id: 1,
+      team: "Equipe Alpha",
+      action: "atualizou a estratégia da missão",
+      time: "há 10 min",
+      user: {
+        name: "Ana Souza",
+        avatar: "https://i.pravatar.cc/100?img=12",
+      },
+    },
+    {
+      id: 2,
+      team: "Equipe Beta",
+      action: "adicionou um novo teste",
+      time: "há 1h",
+      user: {
+        name: "Lucas Pereira",
+        avatar: "https://i.pravatar.cc/100?img=32",
+      },
+    },
+  ];
+
+  const QUICK_TOOLS = [
+    { name: "Calibribot", icon: Wrench },
+    { name: "Espaço de Equipes", icon: Users },
+    { name: "Agenda", icon: Calendar },
+    { name: "Conquistas", icon: Trophy },
+    { name: "Laboratório", icon: FlaskConical },
+    { name: "Configurações", icon: Settings },
   ];
 
   useEffect(() => {
@@ -78,113 +228,327 @@ export default function HubHero({ session, username }: { session: any; username:
   }, []);
 
   return (
-    <div className="w-full min-h-screen bg-base-200 space-y-6">
-      {/* HERO - Banner do usuário */}
-      <div className="hero bg-gradient-to-r from-red-600 to-red-900 text-primary-content rounded-3xl shadow-xl border border-primary/40 h-48">
-        <div className="hero-content flex-col md:flex-row w-full justify-between p-8">
-          <div>
-            <h1 className="text-4xl font-bold">Olá, {username} 👋</h1>
-            <p className="text-sm md:text-md max-w-2xl leading-relaxed opacity-90 mt-2">
-              Seu hub para <span className="font-semibold">gerenciar</span>,{" "}
-              <span className="font-semibold">testar</span> e{" "}
-              <span className="font-semibold">criar</span> seus robôs, projetos
-              e eventos. Tudo para facilitar sua jornada na robótica 🚀
-            </p>
-          </div>
+    <div className="w-full min-h-screen bg-base-200">
+      <header className="px-6 pt-4 space-y-8">
+        {/* Welcome */}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Bem-vindo de volta,{" "}
+            <span className="text-primary">{username} ✨</span>
+          </h1>
+          <p className="text-sm text-base-content/60 max-w-xl">
+            Retome suas atividades e acompanhe seus recursos recentes.
+          </p>
         </div>
-      </div>
 
-      {/* CARROSSEL DE DICAS */}
-      <div className="w-full rounded-2xl" aria-label="Carrossel de dicas">
-        {/* container com scroll horizontal e snap para melhor experiência mobile */}
-        <div
-          ref={carouselRef}
-          role="list"
-          className="flex gap-4 overflow-x-auto snap-x snap-mandatory touch-pan-x px-4 py-4 md:px-6 md:py-6"
-          style={{
-            WebkitOverflowScrolling: "touch",
-            msOverflowStyle: "none",
-            scrollbarWidth: "none",
-          }}
-        >
-          {tips.map((tip, index) => (
-            <div
-              id={`tip-${index}`}
-              key={index}
-              role="listitem"
-              className="snap-center flex-shrink-0 w-[85%] sm:w-3/4 md:w-full max-w-2xl bg-warning/40 border border-warning rounded-xl p-4 md:p-8 text-center"
-            >
-              <p className="text-sm md:text-lg font-medium text-warning-content leading-relaxed">
-                {tip}
+        {/* Recent Access */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-base-content/50">
+              Acessos recentes
+            </h2>
+          </div>
+
+          <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
+            {/* Item */}
+            <button className="group min-w-[220px] rounded-xl bg-base-100/50 hover:bg-base-100 transition p-3 flex items-center gap-3 cursor-pointer">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <TestTube size={20} className="text-primary" />
+              </div>
+
+              <div className="flex flex-col text-left leading-tight">
+                <span className="text-xs text-base-content/50">LabTest</span>
+                <span className="text-sm font-medium line-clamp-1">
+                  Teste 1
+                </span>
+              </div>
+            </button>
+
+            {/* Item */}
+            <button className="group min-w-[220px] rounded-xl bg-base-100/50 hover:bg-base-100 transition p-3 flex items-center gap-3 cursor-pointer">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Rocket size={20} className="text-primary" />
+              </div>
+
+              <div className="flex flex-col text-left leading-tight">
+                <span className="text-xs text-base-content/50">ShowLive</span>
+                <span className="text-sm font-medium line-clamp-1">
+                  Campeonato FLL 2024
+                </span>
+              </div>
+            </button>
+          </div>
+        </section>
+      </header>
+      <main className="grid grid-cols-1 lg:grid-cols-6 gap-4 px-6 pt-6">
+        {/* Tarefas Pendentes — Card principal */}
+        <section className="lg:col-span-4 bg-base-100 rounded-2xl p-5 border border-base-300 hover:shadow-sm transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-primary" />
+              Tarefas pendentes
+            </h2>
+            <span className="text-xs text-base-content/50">Hoje</span>
+          </div>
+
+          <ul className="space-y-3">
+            {MOCK_TASKS.filter((t) => !t.completed)
+              .slice(0, 4)
+              .map((task) => (
+                <li
+                  key={task.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-base-200/60 hover:bg-base-200 transition"
+                >
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium truncate">
+                      {task.title}
+                    </span>
+                    <span className="text-xs text-base-content/50">
+                      {task.category} • {task.priority}
+                    </span>
+                  </div>
+                  <Clock className="w-4 h-4 text-base-content/40" />
+                </li>
+              ))}
+          </ul>
+        </section>
+
+        {/* Evolução do usuário */}
+        <section className="lg:col-span-2 row-span-2 bg-base-100 rounded-3xl p-6 border border-base-300 flex flex-col gap-6 hover:shadow-md transition-shadow">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-base-content/50">
+                Evolução
+              </p>
+              <h2 className="text-lg font-semibold">{MOCK_USER.level}</h2>
+              <p className="text-xs text-base-content/60">{MOCK_USER.title}</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="badge badge-primary badge-sm">
+                🔥 {MOCK_USER.streak} dias
+              </span>
+            </div>
+          </div>
+
+          {/* XP Ring + Stats */}
+          <div className="grid grid-cols-3 gap-4 items-center">
+            {/* Ring */}
+            <div className="relative w-24 h-24 mx-auto">
+              <svg className="w-full h-full -rotate-90">
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="42"
+                  stroke="currentColor"
+                  strokeWidth="6"
+                  className="text-base-200"
+                  fill="none"
+                />
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="42"
+                  stroke="currentColor"
+                  strokeWidth="6"
+                  className="text-primary transition-all"
+                  fill="none"
+                  strokeDasharray={2 * Math.PI * 42}
+                  strokeDashoffset={
+                    2 *
+                    Math.PI *
+                    42 *
+                    (1 - MOCK_USER.xp / MOCK_USER.nextLevelXp)
+                  }
+                />
+              </svg>
+
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-lg font-bold">
+                  {Math.round((MOCK_USER.xp / MOCK_USER.nextLevelXp) * 100)}%
+                </span>
+                <span className="text-[10px] text-base-content/50">XP</span>
+              </div>
+            </div>
+
+            {/* KPIs */}
+            <div className="col-span-2 grid grid-cols-2 gap-4">
+              <div className="rounded-2xl bg-base-200/60 p-3">
+                <p className="text-xs text-base-content/50">XP atual</p>
+                <p className="text-sm font-semibold">
+                  {MOCK_USER.xp}/{MOCK_USER.nextLevelXp}
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-base-200/60 p-3">
+                <p className="text-xs text-base-content/50">Atividades</p>
+                <p className="text-sm font-semibold">
+                  {MOCK_USER.completed}/{MOCK_USER.total}
+                </p>
+              </div>
+
+              <div className="col-span-2">
+                <progress
+                  className="progress progress-primary h-1"
+                  value={MOCK_USER.completed}
+                  max={MOCK_USER.total}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Próxima recompensa */}
+          <div className="flex items-center gap-3 p-4 rounded-2xl bg-primary/5 border border-primary/10">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Star className="w-5 h-5 text-primary" />
+            </div>
+            <div className="text-sm">
+              <p className="font-medium">Próxima recompensa</p>
+              <p className="text-xs text-base-content/60">
+                {MOCK_USER.nextReward}
               </p>
             </div>
-          ))}
-        </div>
-
-        {/* indicadores simples (visuais) — ocupam pouco espaço no mobile */}
-        <div className="flex justify-center gap-2 mt-3">
-          {tips.map((_, i) => (
-            <div
-              key={i}
-              className="h-1.5 w-6 rounded-full bg-warning/40"
-              aria-hidden
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* STATS MODERNOS */}
-      <div className="stats stats-vertical md:stats-horizontal shadow-xl w-full bg-base-100 border border-base-300 rounded-3xl">
-        {stats.map((s, i) => (
-          <div key={i} className="stat place-items-center p-6">
-            <div className="stat-title">{s.title}</div>
-            <div className="stat-value text-primary">{s.percent}</div>
           </div>
-        ))}
-      </div>
 
-      {/* BLOCO DE FUNÇÕES */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {[
-          { label: "ShowLive", icon: <RadioIcon size={26} /> },
-          { label: "LabTest", icon: <ChartPie size={26} /> },
-          { label: "InnoLab", icon: <Book size={26} /> },
-          { label: "StyleLab", icon: <Palette size={26} /> },
-        ].map((item, index) => (
-          <motion.button
-            key={index}
-            whileHover={{ scale: 1.06 }}
-            className="btn btn-outline flex flex-col gap-2 h-28 rounded-2xl shadow bg-base-100 border-base-300 hover:bg-base-200"
-          >
-            {item.icon}
-            <span className="text-sm">{item.label}</span>
-          </motion.button>
-        ))}
-      </div>
+          {/* Conquistas recentes */}
+          <div>
+            <p className="text-xs uppercase tracking-widest text-base-content/50 mb-3">
+              Conquistas recentes
+            </p>
 
-      {/* ACESSO RÁPIDO */}
-      <div className="card bg-base-100 shadow-xl border border-base-300 p-6 rounded-3xl">
-        <h2 className="text-xl font-semibold mb-4">Acesso Rápido ⚡</h2>
-        <div className="flex gap-4 overflow-x-auto pb-1">
-          {[
-            { name: "QuickBrick Studio", url: "/quickbrick" },
-            { name: "FLL Score", url: "/fll-score#unearthed" },
-            { name: "FLL Docs", url: "/fll-docs" },
-            { name: "Flash QA", url: "/flash-qa" },
-            { name: "Timers", url: "/timers" },
-          ].map((tool, i) => (
-            <a
-              key={i}
-              href={tool.url}
-              target="_blank"
-              className="btn btn-primary btn-sm rounded-xl"
-            >
-              <Rocket size={16} />
-              {tool.name}
-            </a>
-          ))}
-        </div>
-      </div>
+            <div className="grid grid-cols-4 gap-3">
+              {MOCK_RECENT_ACHIEVEMENTS.map((ach) => (
+                <div
+                  key={ach.id}
+                  className="group aspect-square rounded-2xl bg-base-200/60 flex items-center justify-center border border-base-300 hover:bg-primary/10 hover:border-primary/30 transition"
+                  title={ach.title}
+                >
+                  <ach.icon className={`w-5 h-5 ${ach.color}`} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Agenda */}
+        <section className="lg:col-span-2 row-span-2 bg-base-100 rounded-2xl p-5 border border-base-300 hover:shadow-sm transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-semibold">Agenda</h2>
+            </div>
+            <button className="btn btn-sm btn-soft">Adicionar Evento</button>
+          </div>
+
+          <ul className="space-y-3">
+            {MOCK_EVENTS.slice(0, 3).map((event) => (
+              <li
+                key={event.id}
+                className="flex items-start gap-3 p-3 rounded-xl bg-base-200/60"
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+                  {new Date(event.date).getDate()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{event.name}</p>
+                  <p className="text-xs text-base-content/50 truncate">
+                    {event.location}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Calendário semanal */}
+        <section className="lg:col-span-2 bg-base-100 rounded-2xl p-5 border border-base-300 hover:shadow-sm transition-shadow">
+          <div className="flex items-center gap-2 mb-4">
+            <CalendarDays className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold">Semana</h2>
+          </div>
+
+          <div className="grid grid-cols-7 gap-2 text-center">
+            {MOCK_WEEK.map((day) => (
+              <div
+                key={day.day}
+                className={`rounded-xl p-2 text-xs flex flex-col items-center gap-1
+            ${
+              day.hasEvent
+                ? "bg-primary/10 text-primary font-medium"
+                : "bg-base-200/60 text-base-content/50"
+            }`}
+              >
+                <span>{day.day}</span>
+                <span className="text-sm font-semibold">{day.date}</span>
+                {day.hasEvent && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Atividades recentes das equipes */}
+        <section className="lg:col-span-4 bg-base-100 rounded-2xl p-5 border border-base-300 hover:shadow-sm transition-shadow">
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold">Atividades recentes</h2>
+          </div>
+
+          <ul className="space-y-3">
+            {MOCK_TEAM_ACTIVITY.slice(0, 4).map((item) => (
+              <li
+                key={item.id}
+                className="flex gap-3 p-3 rounded-xl bg-base-200/60"
+              >
+                {/* Avatar */}
+                <img
+                  src={item.user.avatar}
+                  alt={item.user.name}
+                  className="w-8 h-8 rounded-lg object-cover"
+                />
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm truncate">
+                    <span className="font-medium">{item.user.name}</span>{" "}
+                    <span className="text-base-content/70">{item.action}</span>{" "}
+                    <span className="font-medium">{item.team}</span>
+                  </p>
+                  <span className="text-xs text-base-content/50">
+                    {item.time}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Acesso Rápido — faixa final */}
+        <section className="lg:col-span-6 bg-base-100 rounded-2xl p-5 border border-base-300 hover:shadow-sm transition-shadow">
+          <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-primary" />
+            Acesso rápido
+          </h2>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {QUICK_TOOLS.map((tool) => (
+              <button
+                key={tool.name}
+                className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-base-200/60 hover:bg-base-200 transition"
+              >
+                <tool.icon className="w-5 h-5 text-primary" />
+                <span className="text-xs font-medium">{tool.name}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      </main>
+      <footer className="h-10 flex items-center justify-center border-t border-base-300 mt-6">
+        <p className="text-base-content/50 text-sm">
+          RoboStage&copy; - {new Date().getFullYear()} - v4.0.0
+        </p>
+      </footer>
     </div>
   );
 }

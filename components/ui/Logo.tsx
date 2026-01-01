@@ -1,5 +1,5 @@
 'use client';
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation";
 
 type LogoSize = "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl";
 

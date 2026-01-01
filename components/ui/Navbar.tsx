@@ -1,7 +1,7 @@
 "use client";
 import { BookOpen, Clock, Menu, MessageSquare, Table2, Trophy } from "lucide-react";
-import Logo from "./ui/Logo";
-import { ThemeController } from "./ui/themeController";
+import Logo from "./Logo";
+import { ThemeController } from "./themeController";
 
 interface Season {
   key: string;
@@ -38,7 +38,7 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
                     <Trophy size={16} />
                     Pontuador
                   </summary>
-                  <ul className="menu dropdown-content bg-base-200/80 rounded-box shadow-lg py-3 px-2 mt-6 z-50 w-48 space-y-2 transition-all duration-300">
+                  <ul className="menu dropdown-content bg-base-200 rounded-box shadow-lg py-3 px-2 mt-6 z-50 w-48 space-y-2 transition-all duration-300">
                     <li className="font-semibold text-base-content text-xs uppercase text-center">
                       Temporadas
                     </li>

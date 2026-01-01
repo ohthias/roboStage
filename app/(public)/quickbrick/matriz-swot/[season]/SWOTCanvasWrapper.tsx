@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Navbar } from "@/components/Navbar";
+import { Navbar } from "@/components/ui/Navbar";
 import { SWOTCanvas } from "@/components/QuickBrick/SwotCanva";
 import { Footer } from "@/components/ui/Footer";
 import Breadcrumbs from "@/components/Breadcrumbs";

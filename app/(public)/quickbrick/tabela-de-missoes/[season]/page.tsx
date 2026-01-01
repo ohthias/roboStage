@@ -6,7 +6,7 @@ import { ImageDown, Table as TableIcon, RotateCcw } from "lucide-react";
 import { MissionTable } from "@/components/QuickBrick/Tabela-de-analise-de-missoes/MissionTable";
 import { Analytics } from "@/components/QuickBrick/Tabela-de-analise-de-missoes/Analytics";
 import { useParams } from "next/navigation";
-import { Navbar } from "@/components/Navbar";
+import { Navbar } from "@/components/ui/Navbar";
 import { Footer } from "@/components/ui/Footer";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import html2canvas from "html2canvas-pro";

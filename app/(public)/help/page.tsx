@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Card from "@/components/Card";
 import Accordion from "@/components/Accordion";
-import { Navbar } from "@/components/Navbar";
+import { Navbar } from "@/components/ui/Navbar";
 import { Footer } from "@/components/ui/Footer";
 import Loader from "@/components/loader";
 

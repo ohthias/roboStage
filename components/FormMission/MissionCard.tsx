@@ -94,7 +94,7 @@ export function MissionCard({
     <div className="card border border-base-200 mb-6">
       <div className="card-body p-4 sm:p-6">
         <div className="flex flex-wrap items-center gap-3 mb-4">
-          <div className="badge badge-secondary text-md p-4 rounded-md w-12 h-12 font-bold flex items-center justify-center">
+          <div className="badge bg-base-300/50 text-base-content text-md p-4 rounded-md w-12 h-12 font-bold flex items-center justify-center">
             {mission.id}
           </div>
           <h3 className="card-title text-lg sm:text-xl font-bold flex-1">

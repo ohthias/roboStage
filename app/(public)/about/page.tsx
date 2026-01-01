@@ -1,5 +1,5 @@
 import ComingSoon from "@/components/ComingSoon";
-import { Navbar } from "@/components/Navbar";
+import { Navbar } from "@/components/ui/Navbar";
 import { Footer } from "@/components/ui/Footer";
 
 export default function AboutPage() {

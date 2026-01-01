@@ -7,7 +7,7 @@ import { JudgingRoom } from "./views/JudgingRoom";
 import { CustomTimer } from "./views/CustomTimer";
 import { Trophy, BookOpen, Mic } from "lucide-react";
 import { Footer } from "@/components/ui/Footer";
-import { Navbar } from "@/components/Navbar";
+import { Navbar } from "@/components/ui/Navbar";
 
 const TimersPager: React.FC = () => {
   const [mode, setMode] = useState<AppMode>(AppMode.MENU);

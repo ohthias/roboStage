@@ -53,7 +53,7 @@ export default function UniversePage() {
   return (
     <div className="relative min-h-screen flex flex-col selection:bg-primary/30">
       <BackgroundStars />
-      <div className="absolute top-4 left-4 md:top-8 md:left-8 z-100 hidden md:flex">
+      <div className="absolute top-4 left-4 md:top-8 md:left-8 z-50 hidden md:flex">
         <Logo logoSize="md" redirectIndex={true} />
       </div>
 

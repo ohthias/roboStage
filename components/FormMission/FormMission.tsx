@@ -8,7 +8,7 @@ export default function FormMission({
   className = "",
 }: FormMissionProps) {
   return (
-    <div className={`bg-base-100 p-4 rounded-lg max-w-4xl sm:mx-auto w-full ${className}`}>
+    <div className={`bg-base-100 p-4 rounded-2xl max-w-4xl sm:mx-auto w-full ${className}`}>
       {missions.map((mission) => (
         <MissionCard
           key={mission.id}

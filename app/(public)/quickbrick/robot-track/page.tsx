@@ -3,7 +3,7 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { Navbar } from "@/components/Navbar";
+import { Navbar } from "@/components/ui/Navbar";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { Footer } from "@/components/ui/Footer";
 import RobotTrackCanvas from "@/components/QuickBrick/RobotTrack/RobotTrack";

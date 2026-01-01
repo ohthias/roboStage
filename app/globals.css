@@ -84,3 +84,8 @@
 .btn {
   border-radius: var(--radius-box);
 }
+
+body {
+  @apply bg-base-100 text-base-content;
+  scroll-behavior: smooth;
+}

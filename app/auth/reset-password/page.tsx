@@ -1,149 +1,185 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 
 export default function ResetPasswordPage() {
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [status, setStatus] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const handleRecoverySession = async () => {
-      const { data, error } = await supabase.auth.getSession();
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
 
-      if (error) {
-        console.error("Erro ao obter sessão:", error.message);
-      }
+  const [status, setStatus] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [canReset, setCanReset] = useState(false);
+
+  /* =========================
+     Validação da sessão
+  ========================= */
+  useEffect(() => {
+    const validateSession = async () => {
+      const { data } = await supabase.auth.getSession();
 
       if (!data.session) {
-        const { error: hashError } = await supabase.auth.exchangeCodeForSession(
-          window.location.hash.substring(1)
-        );
-
-        if (hashError) {
-          console.error("Erro ao trocar token:", hashError.message);
-          setStatus("O link de redefinição é inválido ou expirou.");
-        }
+        setIsError(true);
+        setStatus("Este link de redefinição é inválido ou já expirou.");
+        setCanReset(false);
+      } else {
+        setCanReset(true);
       }
+
+      setCheckingSession(false);
     };
 
-    handleRecoverySession();
+    validateSession();
   }, []);
 
+  /* =========================
+     Submit
+  ========================= */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus(null);
+
+    if (!canReset) return;
 
     if (password !== confirm) {
-      setStatus("As senhas não coincidem!");
+      setIsError(true);
+      setStatus("As senhas não coincidem.");
       return;
     }
 
     setLoading(true);
+    setStatus(null);
+    setIsError(false);
+
     const { error } = await supabase.auth.updateUser({ password });
+
     setLoading(false);
 
     if (error) {
+      setIsError(true);
       setStatus(error.message);
-    } else {
-      setStatus("Senha redefinida com sucesso! Redirecionando...");
-      setTimeout(() => router.push("/auth/login"), 1500);
+      return;
     }
+
+    setStatus("Senha redefinida com sucesso. Redirecionando...");
+    setTimeout(() => router.push("/auth/login"), 1500);
   };
 
+  /* =========================
+     Loading inicial
+  ========================= */
+  if (checkingSession) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+
+  /* =========================
+     UI
+  ========================= */
   return (
-    <div className="flex h-screen">
-      <div className="w-2/3 hidden md:flex flex-col justify-between bg-gradient-to-br from-base-100 via-primary/25 to-secondary p-8 ">
+    <div className="flex h-screen relative">
+      {/* Lado visual */}
+      <aside className="w-2/3 hidden md:flex flex-col justify-between bg-base-300 p-8">
         <Link href="/" className="inline-block">
           <img
             src="/images/logos/Icone.png"
-            alt="Logo"
-            className="h-12 w-auto hover:scale-105 transition-transform bg-base-100/50 rounded-full p-1"
+            alt="Logo RoboStage"
+            className="h-12 w-auto hover:scale-105 transition-transform bg-base-100/60 rounded-full p-1"
             style={{ backdropFilter: "blur(10px)" }}
           />
         </Link>
-      </div>
+      </aside>
 
-      <div className="w-full md:w-1/3 flex items-center justify-center bg-base-100 p-6">
-        <div className="card w-full max-w-md shadow-2xl">
-          <div className="card-body">
-            <h2 className="text-3xl font-bold text-center mb-4">
-              Redefinir Senha
-            </h2>
-            <p className="text-center mb-4 text-sm text-gray-500">
-              Digite sua nova senha abaixo.
-            </p>
+      {/* Formulário */}
+      <main className="w-full md:w-1/3 flex items-center justify-center bg-base-100 p-6">
+        <div className="card w-full max-w-md shadow-xl">
+          <div className="card-body gap-6">
+            <header className="text-center">
+              <h1 className="text-3xl font-bold">Redefinir senha</h1>
+              <p className="text-sm text-base-content/70 mt-1">
+                Crie uma nova senha para sua conta
+              </p>
+            </header>
 
             {status && (
-              <p
-                className={`text-center text-sm mb-2 ${
-                  status.includes("sucesso")
-                    ? "text-green-500"
-                    : "text-red-500"
-                }`}
+              <div
+                className={`alert ${
+                  isError ? "alert-error" : "alert-success"
+                } text-sm`}
               >
                 {status}
-              </p>
+              </div>
             )}
 
-            <form className="form-control" onSubmit={handleSubmit}>
-              <label className="label" htmlFor="password">
-                <span className="label-text">Nova Senha</span>
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="input input-bordered w-full"
-                required
-              />
+            {canReset ? (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Nova senha</span>
+                  </label>
+                  <input
+                    type="password"
+                    className="input input-bordered"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
 
-              <label className="label mt-4" htmlFor="confirm">
-                <span className="label-text">Confirmar Senha</span>
-              </label>
-              <input
-                id="confirm"
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                placeholder="••••••••"
-                className="input input-bordered w-full"
-                required
-              />
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Confirmar senha</span>
+                  </label>
+                  <input
+                    type="password"
+                    className="input input-bordered"
+                    required
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                  />
+                </div>
 
-              <button
-                type="submit"
-                className={`btn btn-primary w-full mt-6 ${
-                  loading ? "opacity-60 cursor-not-allowed" : ""
-                }`}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <span className="loading loading-spinner"></span>
-                    Atualizando...
-                  </>
-                ) : (
-                  "Redefinir Senha"
-                )}
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  className="btn btn-primary w-full"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <span className="loading loading-spinner"></span>
+                      Salvando...
+                    </>
+                  ) : (
+                    "Salvar nova senha"
+                  )}
+                </button>
+              </form>
+            ) : (
+              <div className="text-center text-sm space-y-4">
+                <p>Solicite um novo link para redefinir sua senha.</p>
+                <Link href="/auth/forgot-password" className="btn btn-outline">
+                  Reenviar link
+                </Link>
+              </div>
+            )}
 
-            <p className="text-center mt-4">
+            <footer className="text-center text-sm">
               <Link href="/auth/login" className="link link-primary">
-                Voltar ao Login
+                Voltar ao login
               </Link>
-            </p>
+            </footer>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

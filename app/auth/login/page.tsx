@@ -2,158 +2,141 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { Eye, EyeClosed } from "lucide-react";
+
+import Logo from "@/components/ui/Logo";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
   const { login, loading, error, success } = useAuth();
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const ok = await login(email, password);
-    if (ok) {
-      router.push("/dashboard");
-    }
+    if (ok) router.push("/dashboard");
   };
 
   return (
     <div className="flex h-screen relative">
-      {/* Logo no mobile */}
+      {/* Mobile back */}
       <Link
         href="/"
-        className="absolute top-4 left-4 z-10 md:hidden"
+        className="absolute top-4 left-4 z-10 md:hidden link link-hover"
       >
         Voltar para Home
       </Link>
 
-      {/* Lado esquerdo (somente desktop/tablet) */}
-      <div
-        className="w-2/3 hidden md:flex flex-col justify-between bg-secondary p-8 relative overflow-hidden"
-      >
-        <Link href="/" className="inline-block">
-          <h1 className="text-2xl font-bold text-white">Robo<strong className="text-primary">stage</strong></h1>
-        </Link>
-      </div>
+      {/* Lado institucional */}
+      <aside className="w-2/3 hidden md:flex flex-col justify-between bg-base-300 p-8">
+        <Logo logoSize="lg" redirectIndex />
+      </aside>
 
       {/* Formulário */}
-      <div className="w-full md:w-1/3 flex items-center justify-center bg-base-100 p-6">
-        <div className="card w-full max-w-md">
-          <div className="card-body">
-            <h2 className="text-3xl font-bold text-center mb-4">
-              Bem-vindo de volta!
-            </h2>
+      <main className="w-full md:w-1/3 flex items-center justify-center bg-base-100 p-6">
+        <div className="card w-full max-w-md shadow-xl">
+          <div className="card-body gap-6">
+            <header className="text-center">
+              <h1 className="text-3xl font-bold">Bem-vindo de volta</h1>
+              <p className="text-base-content/70 text-sm mt-1">
+                Entre com sua conta para acessar o RoboStage
+              </p>
+            </header>
 
+            {/* Feedback */}
             {error && (
-              <p className="text-red-500 text-sm mb-2 text-center">{error}</p>
+              <div className="alert alert-error text-sm py-2">
+                {error}
+              </div>
             )}
             {success && (
-              <p className="text-green-500 text-sm mb-2 text-center">{success}</p>
+              <div className="alert alert-success text-sm py-2">
+                {success}
+              </div>
             )}
 
-            <form className="form-control" onSubmit={handleSubmit}>
-              <label className="label" htmlFor="email">
-                <span className="label-text">Email</span>
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="robostage@email.com"
-                className="input input-bordered w-full"
-                required
-              />
-
-              <label className="label mt-4" htmlFor="password">
-                <span className="label-text">Senha</span>
-              </label>
-              <div className="relative">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              {/* Email */}
+              <div className="form-control">
+                <label className="label" htmlFor="email">
+                  <span className="label-text">Email</span>
+                </label>
                 <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="input input-bordered w-full pr-10"
+                  id="email"
+                  type="email"
+                  className="input input-bordered"
+                  placeholder="robostage@email.com"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 flex items-center px-3"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  tabIndex={-1}
-                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                >
-                  {showPassword ? (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-gray-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      {/* Eye Slash */}
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-5 0-9.27-3.11-10.5-7.5a10.05 10.05 0 012.17-3.36m3.11-2.53A9.97 9.97 0 0112 5c5 0 9.27 3.11 10.5 7.5a10.05 10.05 0 01-4.17 5.36M3 3l18 18"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-gray-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      {/* Eye */}
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c0 5-4.03 9-9 9S3 17 3 12s4.03-9 9-9 9 4.03 9 9z"
-                      />
-                    </svg>
-                  )}
-                </button>
               </div>
 
-              <label className="label w-full mt-2">
-                <Link
-                  href="/auth/forgot-password"
-                  className="label-text-alt link link-hover ml-auto"
-                >
-                  Esqueceu a senha?
-                </Link>
-              </label>
+              {/* Senha */}
+              <div className="form-control">
+                <div className="flex justify-between items-center">
+                  <label className="label" htmlFor="password">
+                    <span className="label-text">Senha</span>
+                  </label>
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-sm link link-hover"
+                  >
+                    Esqueceu a senha?
+                  </Link>
+                </div>
 
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    className="input input-bordered w-full pr-12"
+                    placeholder="••••••••"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 px-4 flex items-center"
+                    aria-label={
+                      showPassword ? "Ocultar senha" : "Mostrar senha"
+                    }
+                    onClick={() => setShowPassword((v) => !v)}
+                  >
+                    {showPassword ? <Eye /> : <EyeClosed />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Botão */}
               <motion.button
                 type="submit"
-                className="btn btn-primary w-full mt-6"
+                className="btn btn-primary w-full mt-4"
                 disabled={loading}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
                 {loading ? "Entrando..." : "Entrar"}
               </motion.button>
             </form>
 
-            <p className="text-center mt-4">
+            {/* Cadastro */}
+            <footer className="text-center text-sm">
               Não tem uma conta?{" "}
               <Link href="/auth/signup" className="link link-primary">
                 Cadastre-se
               </Link>
-            </p>
+            </footer>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

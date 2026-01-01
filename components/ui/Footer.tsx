@@ -1,4 +1,5 @@
 import pkg from "@/package.json";
+import Logo from "./Logo";
 
 export function Footer() {
   return (
@@ -6,14 +7,8 @@ export function Footer() {
       <footer className="footer sm:footer-horizontal bg-base-200 text-base-content p-10">
         <aside>
           <img src="/images/logos/Icone.png" alt="logo" className="w-12 h-12" />
+          <Logo logoSize="sm" />
           <p className="border-b border-base-200 pb-2">
-            <span
-              className="text-lg font-black uppercase italic tracking-tight"
-              aria-label="Página inicial RoboStage"
-            >
-              Robo<span className="text-primary">Stage</span>
-            </span>
-            <br />
             Planeje. Teste. Organize. Evolua.
           </p>
           <a

@@ -29,16 +29,21 @@ import {
   Plus,
 } from "lucide-react";
 import ProjectSection from "./hashPages/ProjectSection";
+import TeamSpacePage from "./hashPages/TeamSpace";
+import WorkspacePage from "./hashPages/WorkspacePage";
 
 export default function Dashboard() {
   const { session, profile } = useUser();
   const router = useRouter();
   const logout = useLogout();
+
   const userId = profile?.id || session?.user?.id;
-  const { achievements, loading: achievementsLoading } =
-    useAchievements(userId);
+  const { achievements } = useAchievements(userId);
+
   const [activeSection, setActiveSection] = useHashSection("hub");
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   const modalLogoutRef = useRef<ModalConfirmRef>(null);
 
   const confirmLogout = () => {
@@ -47,9 +52,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const last = localStorage.getItem("roboStage-last-section");
-    if (last) {
-      setActiveSection(last);
-    }
+    if (last) setActiveSection(last);
   }, [setActiveSection]);
 
   useEffect(() => {
@@ -92,6 +95,12 @@ export default function Dashboard() {
         return <AccountSettings />;
       case "projects":
         return <ProjectSection />;
+      case "workspace":
+        return <WorkspacePage />;
+      case "calibraBot":
+        return <ComingSoon />;
+      case "teamSpace":
+        return <TeamSpacePage />;
       default:
         return <ComingSoon />;
     }
@@ -99,42 +108,47 @@ export default function Dashboard() {
 
   return (
     <div className="h-screen grid grid-rows-[64px_1fr] grid-cols-[auto_1fr] bg-base-200">
-      {/* Navbar topo */}
+      {/* ================= Header ================= */}
       <header className="col-span-2 h-16 bg-base-100 border-b border-base-300 flex items-center px-6 justify-between">
         <div className="flex items-center gap-2">
-          {/* Toggle mobile */}
+          {/* Mobile menu */}
           <button
             className="lg:hidden btn btn-ghost btn-circle"
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={() => setMobileOpen(true)}
           >
             <Menu size={20} />
           </button>
 
-          {/* Collapse desktop */}
+          {/* Desktop collapse */}
           <button
             className="hidden lg:flex btn btn-ghost btn-circle"
             onClick={() => setCollapsed(!collapsed)}
-            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
           >
             {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
 
           <button onClick={() => setActiveSection("hub")}>
-          <Logo logoSize="md" />
+            <Logo logoSize="md" />
           </button>
         </div>
 
-        <div className="flex items-center justify-end gap-2">
-          <button className="btn btn-soft btn-sm hidden md:flex items-center gap-2" onClick={() => setActiveSection("projects")}>
+        <div className="flex items-center gap-2">
+          <button
+            className="btn btn-soft btn-sm hidden md:flex"
+            onClick={() => setActiveSection("projects")}
+          >
             Meus Projetos
           </button>
-          <button className="btn btn-soft btn-sm hidden md:flex items-center gap-2">
+
+          <button className="btn btn-soft btn-sm hidden md:flex gap-2">
             <Plus size={16} /> Criar
           </button>
-          <button className="btn btn-ghost btn-circle btn-icon btn-sm tooltip tooltip-bottom" data-tip="Recompensas Diárias">
+
+          <button className="btn btn-ghost btn-circle btn-sm">
             <Calendar1 size={20} />
           </button>
-          <button className="btn btn-ghost btn-circle btn-icon btn-sm tooltip tooltip-bottom" data-tip="Notificações">
+
+          <button className="btn btn-ghost btn-circle btn-sm">
             <Bell size={20} />
           </button>
 
@@ -144,34 +158,54 @@ export default function Dashboard() {
 
           <button
             onClick={confirmLogout}
-            className="btn btn-error btn-soft btn-circle btn-icon btn-sm"
+            className="btn btn-error btn-soft btn-circle btn-sm"
           >
             <LogOut size={20} />
           </button>
         </div>
       </header>
 
-      {/* Sidebar */}
+      {/* ================= Sidebar Desktop ================= */}
       <aside
         className={`
-      bg-base-100 border-r border-base-300
-      transition-all duration-300
-      ${collapsed ? "w-20" : "w-64"}
-      hidden lg:block
-    `}
+          hidden lg:block bg-base-100 border-r border-base-300
+          transition-all duration-300
+          ${collapsed ? "w-20" : "w-64"}
+        `}
       >
-        {profile && (
-          <Sidebar
-            active={activeSection}
-            setActive={setActiveSection}
-            session={session}
-            collapsed={collapsed}
-            profile={profile}
-          />
-        )}
+        <Sidebar
+          active={activeSection}
+          setActive={setActiveSection}
+          session={session}
+          profile={profile || { avatar_url: undefined, username: undefined }}
+          collapsed={collapsed}
+        />
       </aside>
 
-      {/* Conteúdo principal */}
+      {/* ================= Sidebar Mobile ================= */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setMobileOpen(false)}
+          />
+
+          <aside className="absolute left-0 top-0 h-full w-72 bg-base-100 shadow-xl animate-slide-in">
+            <Sidebar
+              active={activeSection}
+              setActive={(section) => {
+                setActiveSection(section);
+                setMobileOpen(false);
+              }}
+              session={session}
+              profile={profile || { avatar_url: undefined, username: undefined }}
+              collapsed={false}
+            />
+          </aside>
+        </div>
+      )}
+
+      {/* ================= Main ================= */}
       <main className="overflow-y-auto p-6">{renderSection()}</main>
 
       <ModalConfirm

@@ -254,12 +254,12 @@ function ToolItemCard({
   return (
     <div
       onClick={onOpen}
-      className="card bg-base-200 hover:bg-base-300 transition shadow-sm cursor-pointer"
+      className="card bg-base-100 hover:bg-base-200/80 transition shadow-sm cursor-pointer"
     >
       <div className="card-body p-4 gap-3">
         <div className="flex justify-between items-start">
           <div className="flex gap-3">
-            <div className="p-2 rounded-lg bg-base-100 w-8 h-8 flex items-center justify-center">{icon}</div>
+            <div className="p-2 rounded-lg bg-base-300 w-8 h-8 flex items-center justify-center">{icon}</div>
             <div>
               <p className="font-semibold leading-tight">{title}</p>
               <div

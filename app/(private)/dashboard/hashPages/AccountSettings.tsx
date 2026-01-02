@@ -1,20 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { useUser } from "@/app/context/UserContext";
 import { useToast } from "@/app/context/ToastContext";
 import {
-  WrenchScrewdriverIcon,
-  TrashIcon,
-  UserIcon,
-  DocumentChartBarIcon,
-  CalendarDaysIcon,
-  PuzzlePieceIcon,
-} from "@heroicons/react/24/solid";
+  Settings,
+  Trash2,
+  User,
+} from "lucide-react";
 import EditProfileModal from "@/components/ui/Modal/ModalEditProfile";
-import { ThemeController } from "@/components/ui/themeController";
 
 export default function AccountSettings() {
   const router = useRouter();
@@ -23,110 +19,89 @@ export default function AccountSettings() {
 
   const [username, setUsername] = useState("");
   const [createdAt, setCreatedAt] = useState<string | null>(null);
-  const [stats, setStats] = useState<{
-    total_tests: number;
-    total_eventos: number;
-    total_themes: number;
-    total_documents: number;
-  } | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const [avatarUrl, setAvatarUrl] = useState(
     "https://static.vecteezy.com/system/resources/previews/055/591/320/non_2x/chatbot-avatar-sending-and-receiving-messages-using-artificial-intelligence-vector.jpg"
   );
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
+
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
 
   useEffect(() => {
-    const fetchUserCreatedAt = async () => {
-      if (!session?.user?.id) return;
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("created_at")
-        .eq("id", session.user.id)
-        .single();
-
-      if (!error && data?.created_at) {
-        const date = new Date(data.created_at);
-        const formatted = date.toLocaleDateString("pt-BR", {
-          month: "long",
-          year: "numeric",
-        });
-        setCreatedAt(formatted);
-      }
-    };
-
-    const fetchProfileImages = async () => {
-      if (!session?.user?.id) return;
-
-      // Pega os paths do banco
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("avatar_url, banner_url")
-        .eq("id", session.user.id)
-        .single();
-
-      if (!error && data) {
-        // Avatar
-        if (data.avatar_url) {
-          const { data: avatarSigned, error: avatarError } =
-            await supabase.storage
-              .from("photos")
-              .createSignedUrl(data.avatar_url, 60); // expira em 60s
-          if (!avatarError && avatarSigned?.signedUrl)
-            setAvatarUrl(avatarSigned.signedUrl);
-        }
-
-        // Banner
-        if (data.banner_url) {
-          const { data: bannerSigned, error: bannerError } =
-            await supabase.storage
-              .from("photos")
-              .createSignedUrl(data.banner_url, 60);
-          if (!bannerError && bannerSigned?.signedUrl)
-            setBannerUrl(bannerSigned.signedUrl);
-        }
-      }
-    };
-
-    fetchProfileImages();
-    fetchUserCreatedAt();
-
-    if (profile?.username) setUsername(profile.username);
-  }, [profile, session]);
-
-  if (loadingUser) return <p>Carregando perfil...</p>;
-
-  const handleUpdateUsername = async () => {
     if (!session?.user?.id) return;
 
-    setLoading(true);
+    const loadProfileExtras = async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("created_at, avatar_url, banner_url")
+        .eq("id", session.user.id)
+        .single();
 
-    const { error: updateError } = await supabase
+      if (error || !data) return;
+
+      if (data.created_at) {
+        setCreatedAt(
+          new Date(data.created_at).toLocaleDateString("pt-BR", {
+            month: "long",
+            year: "numeric",
+          })
+        );
+      }
+
+      if (data.avatar_url) {
+        const { data: signed } = await supabase.storage
+          .from("photos")
+          .createSignedUrl(data.avatar_url, 120);
+        if (signed?.signedUrl) setAvatarUrl(signed.signedUrl);
+      }
+
+      if (data.banner_url) {
+        const { data: signed } = await supabase.storage
+          .from("photos")
+          .createSignedUrl(data.banner_url, 120);
+        if (signed?.signedUrl) setBannerUrl(signed.signedUrl);
+      }
+    };
+
+    loadProfileExtras();
+  }, [session]);
+
+  useEffect(() => {
+    if (profile?.username) setUsername(profile.username);
+  }, [profile]);
+
+  const handleUpdateUsername = useCallback(async () => {
+    if (!session?.user?.id) return;
+
+    setSaving(true);
+
+    const { error } = await supabase
       .from("profiles")
       .update({ username })
       .eq("id", session.user.id);
 
-    setLoading(false);
+    setSaving(false);
 
-    if (updateError) {
+    if (error) {
       addToast("Erro ao atualizar o nome de usuário", "error");
-    } else {
-      addToast("Nome de usuário atualizado com sucesso!", "success");
-      localStorage.setItem("userProfile", JSON.stringify({ username }));
-      router.refresh();
+      return;
     }
-  };
 
-  const handleDeleteAccount = async () => {
+    addToast("Perfil atualizado com sucesso", "success");
+    router.refresh();
+  }, [username, session, router, addToast]);
+
+  const handleDeleteAccount = useCallback(async () => {
     if (!session?.user?.id) return;
-    const confirm = window.confirm(
-      "Tem certeza que deseja deletar sua conta? Isso é irreversível!"
-    );
-    if (!confirm) return;
 
-    setLoading(true);
+    const confirmed = window.confirm(
+      "Tem certeza que deseja excluir sua conta? Essa ação é irreversível."
+    );
+    if (!confirmed) return;
+
+    setDeleting(true);
 
     try {
       const res = await fetch("/api/delete-user", {
@@ -138,118 +113,108 @@ export default function AccountSettings() {
       const data = await res.json();
 
       if (!res.ok) {
-        addToast(data.error || "Erro ao deletar a conta", "error");
-      } else {
-        alert(data.message);
-        router.push("/");
+        addToast(data.error || "Erro ao deletar conta", "error");
+        return;
       }
+
+      router.push("/");
     } catch {
-      addToast("Erro ao deletar a conta", "error");
+      addToast("Erro inesperado ao deletar conta", "error");
     } finally {
-      setLoading(false);
+      setDeleting(false);
     }
-  };
+  }, [session, router, addToast]);
+
+  if (loadingUser) {
+    return (
+      <div className="animate-pulse space-y-4">
+        <div className="h-32 rounded-xl bg-base-300/40" />
+        <div className="h-6 w-1/3 bg-base-300/40 rounded" />
+      </div>
+    );
+  }
 
   return (
-    <section className="pb-12 space-y-8 w-full mx-auto">
-      {/* Banner do Perfil */}
-      <div className="hero rounded-xl shadow-lg relative bg-gradient-to-r from-accent/50 to-secondary/25 border border-base-300">
-        <div className="hero-content w-full flex flex-col md:flex-row items-center gap-6 p-6 md:p-10">
-          <div className="relative">
-            <img
-              src={avatarUrl}
-              alt="Foto de perfil"
-              className="w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-primary shadow-md object-cover"
-            />
-            <span className="absolute bottom-2 right-2 bg-success rounded-full w-5 h-5 border-2 border-white"></span>
-          </div>
-          <div className="flex flex-col items-center md:items-start">
-            <h2 className="text-2xl md:text-4xl font-bold text-base-content flex items-center gap-2">
-              <UserIcon className="w-7 h-7 text-primary" />
+    <section className="space-y-10 w-full mx-auto pb-12">
+      {/* Banner */}
+      <div
+        className="relative rounded-xl overflow-hidden border border-base-300"
+        style={{
+          backgroundImage: bannerUrl
+            ? `url(${bannerUrl})`
+            : "linear-gradient(to right, hsl(var(--p)/0.3), hsl(var(--s)/0.2))",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="backdrop-blur-sm bg-base-100/70 p-6 flex flex-col md:flex-row items-center gap-6">
+          <img
+            src={avatarUrl}
+            alt="Avatar"
+            className="w-28 h-28 rounded-full border-4 border-primary object-cover shadow"
+          />
+
+          <div className="text-center md:text-left">
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <User size={28} className="text-primary" />
               {username || "Usuário"}
-            </h2>
-            <p className="text-sm md:text-base text-base-content/70 mt-2">
-              {createdAt ? `Na plataforma desde ${createdAt}` : "Carregando..."}
+            </h1>
+            <p className="text-sm text-base-content/70 mt-1">
+              {createdAt
+                ? `Na plataforma desde ${createdAt}`
+                : "Carregando informações..."}
             </p>
           </div>
         </div>
       </div>
-
-      <hr className="my-4 border-base-300" />
 
       {/* Configurações */}
-      <div className="bg-base-100/60 backdrop-blur-md border border-base-300/60 rounded-xl shadow-sm hover:shadow-md p-6">
-
-        {/* Título */}
-        <div className="text-lg md:text-xl font-semibold flex items-center gap-3 text-base-content/90">
-          <WrenchScrewdriverIcon className="size-6 text-primary" />
+      <div className="bg-base-100 border border-base-300 rounded-xl p-6 space-y-8">
+        <header className="flex items-center gap-3 text-xl font-semibold">
+          <Settings size={24} className="text-primary" />
           Configurações da Conta
+        </header>
+
+        {/* Username */}
+        <div className="space-y-2">
+          <label className="font-medium">Nome de usuário</label>
+          <input
+            className="input input-bordered w-full"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <p className="text-xs text-base-content/60">
+            Esse nome será exibido publicamente.
+          </p>
         </div>
 
-        {/* Conteúdo */}
-        <div className="space-y-8">
-          {/* Nome de usuário */}
-          <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text font-semibold">Nome de usuário</span>
-            </label>
+        <button
+          onClick={handleUpdateUsername}
+          disabled={saving}
+          className="btn btn-primary w-full"
+        >
+          {saving ? "Salvando..." : "Salvar alterações"}
+        </button>
 
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Digite seu nome de usuário"
-              className="input input-bordered input-primary w-full focus:ring-2 ring-primary/30 transition-all"
-            />
-
-            <label className="label">
-              <span className="label-text-alt text-base-content/60">
-                Esse nome será exibido publicamente.
-              </span>
-            </label>
-          </div>
-
-          {/* Switch de Tema (Novo Item) */}
-          <div className="flex items-center justify-between p-4 bg-base-100/60 border border-base-300/40 rounded-lg">
-            <span className="font-semibold text-base-content/90">
-              Tema do Sistema
-            </span>
-            <ThemeController />
-          </div>
-
-          {/* Botão atualizar */}
+        {/* Zona de risco */}
+        <div className="border border-error/40 bg-error/10 rounded-xl p-5 space-y-3">
+          <h3 className="font-bold text-error flex items-center gap-2">
+            <Trash2 size={20} />
+            Zona de risco
+          </h3>
+          <p className="text-sm text-base-content/70">
+            A exclusão da conta é permanente e remove todos os dados associados.
+          </p>
           <button
-            onClick={handleUpdateUsername}
-            disabled={loading}
-            className="btn btn-primary w-full shadow-sm hover:shadow transition-all"
+            onClick={handleDeleteAccount}
+            disabled={deleting}
+            className="btn btn-error w-full"
           >
-            {loading ? "Atualizando..." : "Salvar Alterações"}
+            {deleting ? "Excluindo..." : "Deletar conta"}
           </button>
-
-          {/* Zona de risco */}
-          <div className="p-5 border border-error/40 bg-error/10 rounded-xl space-y-3">
-            <h3 className="text-lg font-bold text-error flex items-center gap-2">
-              <TrashIcon className="w-5 h-5" />
-              Zona de Risco
-            </h3>
-
-            <p className="text-sm text-base-content/70">
-              Deletar sua conta é <strong>irreversível</strong>. Todos os dados
-              serão removidos permanentemente.
-            </p>
-
-            <button
-              onClick={handleDeleteAccount}
-              disabled={loading}
-              className="btn btn-error w-full hover:bg-error-focus shadow-sm hover:shadow transition-all"
-            >
-              {loading ? "Processando..." : "Deletar Conta"}
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Modal de edição */}
       {openEditModal && (
         <EditProfileModal
           open={openEditModal}

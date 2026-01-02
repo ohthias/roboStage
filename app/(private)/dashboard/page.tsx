@@ -28,6 +28,7 @@ import {
   Menu,
   Plus,
 } from "lucide-react";
+import ProjectSection from "./hashPages/ProjectSection";
 
 export default function Dashboard() {
   const { session, profile } = useUser();
@@ -89,6 +90,8 @@ export default function Dashboard() {
         return <InnoLab />;
       case "profile":
         return <AccountSettings />;
+      case "projects":
+        return <ProjectSection />;
       default:
         return <ComingSoon />;
     }
@@ -116,11 +119,13 @@ export default function Dashboard() {
             {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
 
+          <button onClick={() => setActiveSection("hub")}>
           <Logo logoSize="md" />
+          </button>
         </div>
 
         <div className="flex items-center justify-end gap-2">
-          <button className="btn btn-soft btn-sm hidden md:flex items-center gap-2">
+          <button className="btn btn-soft btn-sm hidden md:flex items-center gap-2" onClick={() => setActiveSection("projects")}>
             Meus Projetos
           </button>
           <button className="btn btn-soft btn-sm hidden md:flex items-center gap-2">

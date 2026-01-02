@@ -35,7 +35,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      <div className="toast toast-top toast-end z-50">
+      <div className="toast toast-top toast-start space-y-2 fixed top-4 right-4 z-50">
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
@@ -44,7 +44,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.3 }}
-              className={`alert alert-soft alert-${toast.type} shadow-lg`}
+              className={`alert alert-${toast.type} shadow-lg`}
             >
               <span>{toast.message}</span>
             </motion.div>

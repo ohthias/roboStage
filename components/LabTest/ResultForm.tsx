@@ -18,7 +18,7 @@ export interface ModalResultFormRef {
 }
 
 interface ModalResultFormProps {
-  onResultSaved?: () => void; // callback para atualizar resultados
+  onResultSaved?: () => void;
 }
 
 const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
@@ -280,7 +280,7 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
 
     return (
       <>
-        <button className="btn btn-neutral btn-outline btn-sm" onClick={openModal}>
+        <button className="btn btn-neutral btn-soft btn-sm" onClick={openModal}>
           Adicionar Resultado
         </button>
 

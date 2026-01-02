@@ -8,7 +8,6 @@ import ModalInput, { ModalInputRef } from "@/components/ui/Modal/ModalInput";
 import ModalResultForm, {
   ModalResultFormRef,
 } from "@/components/LabTest/ResultForm";
-import Loader from "@/components/loader";
 import { useToast } from "@/app/context/ToastContext";
 import { PresentationChartBarIcon } from "@heroicons/react/24/outline";
 import { useLabTests } from "@/hooks/useLabTests";
@@ -16,6 +15,7 @@ import TestTabs from "../labtest/components/TestTabs";
 import TestList from "../labtest/components/TestList";
 import ResultsList from "../labtest/components/ResultsList";
 import { supabase } from "@/utils/supabase/client";
+import TestCardSkeleton from "../labtest/components/TestCardSkeleton";
 
 /* --------------------------
   HOOK DE FILTRAGEM OTIMIZADO
@@ -175,23 +175,28 @@ export default function LabTestPage() {
              UI
   --------------------------- */
   return (
-    <div className="pb-8 flex flex-col">
+    <div className="px-6 pt-4 space-y-4 flex flex-col h-full">
       {/* Header */}
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-base-100 p-6 rounded-xl shadow-md border border-base-300">
-        <div className="flex items-center gap-4">
-          <PresentationChartBarIcon className="hidden sm:block w-10 h-10 text-primary/75" />
+      <div className="rounded-2xl border border-base-300 bg-gradient-to-br from-primary/10 via-base-100 to-base-300/10 p-6 flex flex-col sm:flex-row  items-start sm:items-center justify-between gap-4">
+        {/* Info */}
+        <div className="flex items-start gap-4">
+          <div className="p-3 rounded-xl bg-primary/10 text-primary">
+            <PresentationChartBarIcon className="w-6 h-6" />
+          </div>
           <div>
-            <h2 className="text-base-content font-bold mb-2 text-3xl">
-              Lab<span className="text-primary">Test</span>
-            </h2>
-            <p className="text-sm text-base-content">
-              Crie, filtre e gerencie seus testes personalizados com mais
-              agilidade.
+            <h1 className="text-xl font-semibold leading-tight">LabTest</h1>
+            <p className="text-sm text-base-content/70 max-w-lg">
+              Gerencie seus testes de missões e visualize os resultados de forma
+              eficiente.
             </p>
           </div>
         </div>
-        <ModalLabTest />
-      </section>
+
+        {/* Action */}
+        <div className="shrink-0">
+          <ModalLabTest />
+        </div>
+      </div>
 
       <section className="my-4 flex flex-row justify-between items-center">
         <TestTabs active={activeTab} onChange={setActiveTab} />
@@ -214,7 +219,11 @@ export default function LabTestPage() {
           />
 
           {loading ? (
-            <Loader />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <TestCardSkeleton key={i} />
+              ))}
+            </div>
           ) : (
             <TestList
               tests={filteredTests}
@@ -261,6 +270,17 @@ export default function LabTestPage() {
 /* --------------------------
     COMPONENTE DE FILTROS
 --------------------------- */
+interface FiltersSectionProps {
+  search: string;
+  setSearch: (value: string) => void;
+  type: string;
+  setType: (value: string) => void;
+  order: "asc" | "desc";
+  setOrder: (value: "asc" | "desc") => void;
+  testTypes: Record<string, string>;
+  placeholder?: string;
+}
+
 function FiltersSection({
   search,
   setSearch,
@@ -269,41 +289,43 @@ function FiltersSection({
   order,
   setOrder,
   testTypes,
-  placeholder,
-}: any) {
+  placeholder = "Buscar...",
+}: FiltersSectionProps) {
   return (
     <section className="w-full mb-4">
-      <div className="flex flex-col sm:flex-row items-center gap-3">
-
+      <div className="flex flex-col sm:flex-row justify-between gap-3 bg-base-100/60 border border-base-300 rounded-xl p-3">
+        {/* Search */}
         <input
           type="text"
-          className="input input-bordered w-full sm:flex-1 py-2"
           placeholder={placeholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="input input-sm input-bordered w-full flex-1"
         />
-        <div className="flex gap-3 w-full sm:w-auto">
-          <select
-            className="select select-bordered w-40"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-          >
-            <option value="all">Tipos</option>
-            {Object.entries(testTypes).map(([id, name]) => (
-              <option key={id} value={id}>
-                {name as string}
-              </option>
-            ))}
-          </select>
-          <select
-            className="select select-bordered w-40"
-            value={order}
-            onChange={(e) => setOrder(e.target.value)}
-          >
-            <option value="desc">Mais recentes</option>
-            <option value="asc">Mais antigos</option>
-          </select>
-        </div>
+
+        {/* Type */}
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="select select-sm select-bordered w-full sm:max-w-xs rounded-box px-2 flex-1"
+        >
+          <option value="all">Todos os tipos</option>
+          {Object.entries(testTypes).map(([id, name]) => (
+            <option key={id} value={id}>
+              {name.toLocaleUpperCase()}
+            </option>
+          ))}
+        </select>
+
+        {/* Order */}
+        <select
+          value={order}
+          onChange={(e) => setOrder(e.target.value as "asc" | "desc")}
+          className="select select-sm select-bordered w-full sm:max-w-xs rounded-box px-2 flex-1"
+        >
+          <option value="desc">Mais recentes</option>
+          <option value="asc">Mais antigos</option>
+        </select>
       </div>
     </section>
   );

@@ -1,11 +1,16 @@
-import { useState, useEffect, useMemo } from "react";
+'use client";';
+import { useState, useEffect, useMemo, useRef } from "react";
 import { supabase } from "@/utils/supabase/client";
 import StyleLabModal from "@/components/StyleLabModal";
 import { useUser } from "@/app/context/UserContext";
-import Loader from "@/components/loader";
-import { PaintBrushIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { ThemeCardSkeleton } from "@/components/ui/Cards/ThemeCardSkeleton";
+import { ThemePreviewModal } from "@/components/ui/Modal/ThemePreviewModal";
+import ModalConfirm, {
+  ModalConfirmRef,
+} from "@/components/ui/Modal/ModalConfirm";
+import { Palette } from "lucide-react";
 
-interface StyleLabTheme {
+export interface StyleLabTheme {
   id_theme: number;
   id_user: string;
   created_at: string;
@@ -20,41 +25,59 @@ export function StyleLab() {
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
   const [order, setOrder] = useState<"desc" | "asc">("desc");
+  const [previewTheme, setPreviewTheme] = useState<StyleLabTheme | null>(null);
   const { session } = useUser();
+  const modalDeleteRef = useRef<ModalConfirmRef>(null);
+  let themesCache: StyleLabTheme[] | null = null;
 
   const fetchThemes = async () => {
     if (!session?.user) return;
+
+    if (themesCache) {
+      setThemes(themesCache);
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data: themesData, error } = await supabase
+      const { data, error } = await supabase
         .from("styleLab")
         .select("*")
         .eq("id_user", session.user.id)
         .order("created_at", { ascending: order === "asc" });
-      if (error) setThemes([]);
-      else setThemes(themesData || []);
-    } catch {
-      setThemes([]);
+
+      if (!error && data) {
+        setThemes(data);
+        themesCache = data;
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const openDeleteModal = (theme: StyleLabTheme) => {
+    modalDeleteRef.current?.open(`Deseja deletar o tema "${theme.name}"?`, () =>
+      deleteTheme(theme.id_theme)
+    );
+  };
+
   const deleteTheme = async (id_theme: number) => {
-    const confirmed = confirm("Tem certeza que deseja excluir este tema?");
-    if (!confirmed) return;
     const { error } = await supabase
       .from("styleLab")
       .delete()
       .eq("id_theme", id_theme);
     if (!error)
-      setThemes((prev) => prev.filter((t) => t.id_theme !== id_theme));
+      setThemes((prev) => {
+        const updated = prev.filter((t) => t.id_theme !== id_theme);
+        themesCache = updated;
+        return updated;
+      });
     else alert("Erro ao excluir tema: " + error.message);
   };
 
   useEffect(() => {
     fetchThemes();
-  }, [session, order]);
+  }, [session]);
 
   const filteredThemes = useMemo(() => {
     return themes
@@ -73,87 +96,99 @@ export function StyleLab() {
   }, [themes, searchText, order]);
 
   return (
-    <div className="space-y-4">
+    <div className="px-6 py-4 space-y-6 flex flex-col">
       {/* Header */}
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-base-100 p-6 rounded-xl shadow-md border border-base-300">
-        <div className="flex items-center gap-4">
-          <SparklesIcon className="hidden sm:block w-8 h-8 text-secondary/75" />
+      <div className="rounded-2xl border border-base-300 bg-gradient-to-br from-primary/10 via-base-100 to-base-300/10 p-6 flex flex-col sm:flex-row  items-start sm:items-center justify-between gap-4">
+        {/* Info */}
+        <div className="flex items-start gap-4">
+          <div className="p-3 rounded-xl bg-primary/10 text-primary">
+            <Palette className="w-6 h-6" />
+          </div>
+
           <div>
-            <h2 className="text-base-content font-bold mb-1 text-2xl sm:text-3xl">
-              Style<span className="text-secondary">Lab</span>
-            </h2>
-            <p className="text-sm text-base-content">
-              Crie temas personalizados para seus eventos no showLive.
+            <h1 className="text-xl font-semibold leading-tight">InnoLab</h1>
+            <p className="text-sm text-base-content/70 max-w-md">
+              Crie, organize e evolua seus diagramas de engenharia e ideação.
             </p>
           </div>
         </div>
-        <button
-          className="btn btn-secondary"
-          onClick={() => setShowModal(true)}
-        >
-          Criar Tema
-        </button>
-      </section>
+
+        {/* Action */}
+        <div className="shrink-0">
+          <button
+            onClick={() => setShowModal(true)}
+            className="btn btn-primary"
+          >
+            Novo Tema
+          </button>
+        </div>
+      </div>
 
       {/* Filtros */}
-      <section className="flex flex-col sm:flex-row gap-3 mt-4 mb-2 items-stretch sm:items-center">
-        <input
-          type="text"
-          className="input input-bordered w-full sm:w-64 flex-1 p-2"
-          placeholder="Buscar tema por nome..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-        />
-        <select
-          className="select select-bordered w-full sm:w-52"
-          value={order}
-          onChange={(e) => setOrder(e.target.value as "desc" | "asc")}
-        >
-          <option value="desc">Mais recentes primeiro</option>
-          <option value="asc">Mais antigos primeiro</option>
-        </select>
+      <section className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center rounded-2xl bg-base-100/60 backdrop-blur-md border border-base-300 p-3">
+        {/* Busca */}
+        <div className="flex-1">
+          <input
+            type="text"
+            className="input input-bordered w-full h-10 rounded-xl"
+            placeholder="Buscar tema..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </div>
+
+        {/* Ordenação */}
+        <div className="sm:w-52">
+          <select
+            className="select select-bordered w-full h-10 rounded-xl px-2"
+            value={order}
+            onChange={(e) => setOrder(e.target.value as "desc" | "asc")}
+          >
+            <option value="desc">Mais recentes</option>
+            <option value="asc">Mais antigos</option>
+          </select>
+        </div>
       </section>
 
       {loading ? (
-        <Loader />
+        Array.from({ length: 8 }).map((_, i) => (
+          <section
+            key={i}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+          >
+            <ThemeCardSkeleton key={i} />
+          </section>
+        ))
       ) : (
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {/* Card de aviso */}
           {filteredThemes.length === 0 && (
-            <div className="col-span-full flex flex-col justify-center items-center bg-base-100 border border-base-300 rounded-lg shadow-md p-6 text-center">
-              <PaintBrushIcon className="w-12 h-12 text-gray-400 mb-2 hidden md:block" />
-              <span className="text-gray-400 text-lg font-semibold">
+            <div className="col-span-full flex flex-col justify-center items-center rounded-2xl border border-base-300 bg-base-100/60 backdrop-blur-md p-8 text-center">
+              <span className="text-base-content/70 text-lg font-semibold">
                 Nenhum tema encontrado
               </span>
               {themes.length > 0 && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Tente ajustar o nome ou a ordem do filtro.
+                <p className="text-sm text-base-content/50 mt-1">
+                  Ajuste o nome ou a ordenação do filtro.
                 </p>
               )}
             </div>
           )}
 
           {/* Card Criar Novo Tema */}
-          <div
-            className="card h-48 sm:h-52  flex flex-col justify-center items-center bg-base-100 border border-dashed border-base-300 cursor-pointer hover:bg-base-200 transition"
+          <button
             onClick={() => setShowModal(true)}
+            className="h-52 rounded-2xl border-2 border-dashed border-base-300 flex flex-col justify-center items-center gap-2 text-base-content/50 font-semibold hover:border-primary hover:text-primary hover:bg-base-200/40 transition-all duration-300"
           >
-            <span className="text-lg sm:text-xl font-semibold text-gray-400 text-center">
-              + Criar Novo Tema
-            </span>
-          </div>
+            <span className="text-2xl leading-none">＋</span>
+            <span className="text-sm sm:text-base">Criar novo tema</span>
+          </button>
 
           {/* Cards dos temas */}
           {filteredThemes.map((theme) => (
             <div
               key={theme.id_theme}
-              className="
-                card h-48 sm:h-52 
-                bg-base-100/5 backdrop-blur-xl 
-                shadow-xl 
-                relative overflow-hidden group cursor-pointer
-                transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]
-              "
+              className="relative overflow-hidden group cursor-pointer rounded-2xl h-40 sm:h-52 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
               style={{
                 backgroundImage: `url(${
                   theme.background_url ||
@@ -162,42 +197,53 @@ export function StyleLab() {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
+              onClick={() => setPreviewTheme(theme)}
             >
-              {/* Fade overlay */}
-              <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-all duration-300" />
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+
+              {/* Menu contextual */}
+              <div
+                className="absolute top-3 right-3 z-20"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="dropdown dropdown-end">
+                  <button className="btn btn-ghost btn-xs text-white/80 hover:text-white hover:bg-black/30">
+                    ⋮
+                  </button>
+
+                  <ul className="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-xl w-40">
+                    <li>
+                      <button onClick={() => openDeleteModal(theme)}>
+                        Excluir
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
 
               {/* Conteúdo */}
-              <div className="card-body relative z-10 p-5 flex flex-col justify-end">
-                <h3 className="text-white text-base sm:text-lg font-semibold drop-shadow-lg line-clamp-2">
+              <div className="relative z-10 h-full p-4 sm:p-5 flex flex-col justify-end">
+                <h3 className="text-white font-semibold leading-tight drop-shadow text-sm sm:text-lg line-clamp-2">
                   {theme.name || `Tema #${theme.id_theme}`}
                 </h3>
 
-                <div className="flex justify-between items-center gap-3 mt-3 flex-wrap">
-                  {/* Paleta */}
-                  <div className="flex gap-2 flex-wrap">
-                    {theme.colors?.map((c, i) => (
-                      <div
-                        key={i}
-                        className="
-                          w-5 h-5 sm:w-6 sm:h-6 rounded-md 
-                          border border-white/40 shadow-md
-                          transition-transform duration-200 hover:scale-110
-                        "
-                        style={{ backgroundColor: c }}
-                      />
-                    ))}
-                  </div>
+                {/* Paleta */}
+                <div className="flex gap-1.5 mt-2 sm:mt-3 flex-wrap">
+                  {theme.colors?.slice(0, 6).map((c, i) => (
+                    <span
+                      key={i}
+                      className="w-4 h-4 sm:w-5 sm:h-5 rounded-md border border-white/30"
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
 
-                  {/* Ações */}
-                  <button
-                    className="
-                      btn btn-error btn-xs sm:btn-sm 
-                      shadow-md group-hover:brightness-110 
-                    "
-                    onClick={() => deleteTheme(theme.id_theme)}
-                  >
-                    Excluir
-                  </button>
+                  {/* Indicador de overflow */}
+                  {theme.colors?.length > 6 && (
+                    <span className="text-xs text-white/70 ml-1">
+                      +{theme.colors.length - 6}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -214,6 +260,20 @@ export function StyleLab() {
           }}
         />
       )}
+
+      {previewTheme && (
+        <ThemePreviewModal
+          theme={previewTheme}
+          onClose={() => setPreviewTheme(null)}
+        />
+      )}
+
+      <ModalConfirm
+        ref={modalDeleteRef}
+        title="Confirmar delete"
+        confirmLabel="Deletar"
+        cancelLabel="Cancelar"
+      />
     </div>
   );
 }

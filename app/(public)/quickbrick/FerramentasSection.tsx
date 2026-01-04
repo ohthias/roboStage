@@ -2,17 +2,32 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  DocumentTextIcon,
-  BeakerIcon,
-  PuzzlePieceIcon,
-} from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { BookText, Puzzle, TestTube } from "lucide-react";
 
 interface FerramentasSectionProps {
   seasons: string[];
   seasonLogos: Record<string, { name: string; image: string }>;
+}
+
+interface Ferramenta {
+  id: number;
+  titulo: string;
+  descricao: string;
+  categoria: string;
+  icon: React.ReactNode;
+  image?: string;
+  link?: string;
+  badge?: string;
+  feitoPor?: string;
+  customContent?:
+    | null
+    | ((
+        seasons: string[],
+        seasonLogos: { [x: string]: any },
+        router: any
+      ) => React.ReactNode);
 }
 
 export default function FerramentasSection({
@@ -31,11 +46,10 @@ export default function FerramentasSection({
       descricao:
         "Desenhe diretamente sobre a imagem do tapete e planeje cada movimento do seu robô.",
       categoria: "Criar",
-      icon: <PuzzlePieceIcon className="w-5 h-5" />,
+      icon: <Puzzle className="w-5 h-5" />,
       image: "/images/QuickBrick/Estrategia.png",
       link: "/quickbrick/estrategia",
       customContent: null,
-      badge: "Atualizado",
     },
     {
       id: 2,
@@ -43,34 +57,75 @@ export default function FerramentasSection({
       descricao:
         "Escolha uma temporada para organizar as missões em Forças, Fraquezas, Oportunidades e Ameaças.",
       categoria: "Documentar",
-      icon: <DocumentTextIcon className="w-5 h-5" />,
+      icon: <BookText className="w-5 h-5" />,
       customContent: (
         seasons: string[],
         seasonLogos: { [x: string]: any },
         router: any
       ) => (
-        <div className="flex flex-wrap gap-3 justify-center mt-3">
+        <div className="flex flex-col gap-2 mt-2 w-full mx-auto">
           {seasons.map((s: string) => {
             const season = seasonLogos[s];
+
             return (
-              <div
+              <button
                 key={s}
-                className="card w-24 aspect-square bg-base-200 hover:bg-base-300 border border-base-300 hover:border-secondary transition-all duration-200 cursor-pointer"
                 onClick={() => router.push(`/quickbrick/matriz-swot/${s}`)}
+                className="
+          group
+          w-full
+          flex items-center gap-4
+          px-4 py-3
+          rounded-xl
+          border border-base-300/60
+          bg-base-100
+          hover:border-primary
+          hover:bg-base-200/50
+          transition-all duration-300
+        "
               >
-                <figure className="p-2">
+                {/* Ícone / Logo */}
+                <div
+                  className="
+          w-10 h-10
+          flex items-center justify-center
+          rounded-lg
+          bg-base-200/70
+          group-hover:bg-primary/10
+          transition-colors
+          shrink-0
+        "
+                >
                   <Image
                     src={season?.image || "/images/icons/default-season.png"}
                     alt={season?.name || s}
-                    className="rounded-md object-contain"
-                    width={80}
-                    height={80}
+                    width={32}
+                    height={32}
+                    className="object-contain"
                   />
-                </figure>
-                <div className="card-body p-1 text-center">
-                  <p className="text-xs font-semibold">{season?.name}</p>
                 </div>
-              </div>
+
+                {/* Texto */}
+                <div className="flex flex-col text-left flex-1">
+                  <span className="text-sm font-semibold leading-tight">
+                    {season?.name}
+                  </span>
+                  <span className="text-xs opacity-60">Temporada FLL</span>
+                </div>
+
+                {/* Ação */}
+                <span
+                  className="
+          text-xs font-semibold
+          text-primary
+          opacity-0
+          group-hover:opacity-100
+          transition-opacity
+        "
+                >
+                  Abrir →
+                </span>
+              </button>
             );
           })}
         </div>
@@ -82,7 +137,7 @@ export default function FerramentasSection({
       descricao:
         "Planeje e visualize o percurso do seu robô no tapete, ajustando ângulos e distâncias.",
       categoria: "Simular",
-      icon: <BeakerIcon className="w-5 h-5" />,
+      icon: <TestTube className="w-5 h-5" />,
       image: "/images/QuickBrick/SharksSimulator.png",
       link: "/quickbrick/robot-track",
       feitoPor: "Sharks",
@@ -93,7 +148,7 @@ export default function FerramentasSection({
       descricao:
         "Identifique e avalie os riscos potenciais para o sucesso do seu robô.",
       categoria: "Documentar",
-      icon: <DocumentTextIcon className="w-5 h-5" />,
+      icon: <BookText className="w-5 h-5" />,
       link: "/quickbrick/matriz-de-risco",
       image: "/images/matriz-de-risco.png",
       customContent: null,
@@ -104,7 +159,7 @@ export default function FerramentasSection({
       descricao:
         "Análise seu robô usando a ferramenta SWOT para identificar pontos de força, fraquezas, oportunidades e ameaças.",
       categoria: "Documentar",
-      icon: <DocumentTextIcon className="w-5 h-5" />,
+      icon: <BookText className="w-5 h-5" />,
       link: "/quickbrick/swot-template",
       image: "/images/quickbrick_matrizSWOT.png",
       customContent: null,
@@ -115,40 +170,81 @@ export default function FerramentasSection({
       descricao:
         "Organize e Analise as missões da temporada UNEARTHED de forma prática.",
       categoria: "Documentar",
-      icon: <DocumentTextIcon className="w-5 h-5" />,
+      icon: <BookText className="w-5 h-5" />,
       customContent: (
         seasons: string[],
         seasonLogos: { [x: string]: any },
         router: any
       ) => (
-        <div className="flex flex-wrap gap-3 justify-center mt-3">
+        <div className="flex flex-col gap-2 mt-2 w-full mx-auto">
           {seasons.map((s: string) => {
             const season = seasonLogos[s];
+
             return (
-              <div
+              <button
                 key={s}
-                className="card w-24 aspect-square bg-base-200 hover:bg-base-300 border border-base-300 hover:border-secondary transition-all duration-200 cursor-pointer"
-                onClick={() => router.push(`/quickbrick/tabela-de-missoes/${s}`)}
+                onClick={() => router.push(`/quickbrick/matriz-swot/${s}`)}
+                className="
+          group
+          w-full
+          flex items-center gap-4
+          px-4 py-3
+          rounded-xl
+          border border-base-300/60
+          bg-base-100
+          hover:border-primary
+          hover:bg-base-200/50
+          transition-all duration-300
+        "
               >
-                <figure className="p-2">
+                {/* Ícone / Logo */}
+                <div
+                  className="
+          w-10 h-10
+          flex items-center justify-center
+          rounded-lg
+          bg-base-200/70
+          group-hover:bg-primary/10
+          transition-colors
+          shrink-0
+        "
+                >
                   <Image
                     src={season?.image || "/images/icons/default-season.png"}
                     alt={season?.name || s}
-                    className="rounded-md object-contain"
-                    width={80}
-                    height={80}
+                    width={32}
+                    height={32}
+                    className="object-contain"
                   />
-                </figure>
-                <div className="card-body p-1 text-center">
-                  <p className="text-xs font-semibold">{season?.name}</p>
                 </div>
-              </div>
+
+                {/* Texto */}
+                <div className="flex flex-col text-left flex-1">
+                  <span className="text-sm font-semibold leading-tight">
+                    {season?.name}
+                  </span>
+                  <span className="text-xs opacity-60">Temporada FLL</span>
+                </div>
+
+                {/* Ação */}
+                <span
+                  className="
+          text-xs font-semibold
+          text-primary
+          opacity-0
+          group-hover:opacity-100
+          transition-opacity
+        "
+                >
+                  Abrir →
+                </span>
+              </button>
             );
           })}
         </div>
-      )
-    }
-  ];
+      ),
+    },
+  ] as Ferramenta[];
 
   const filtradas =
     filtro === "Todos"
@@ -156,7 +252,7 @@ export default function FerramentasSection({
       : ferramentas.filter((f) => f.categoria === filtro);
 
   return (
-    <section className="w-full px-4 py-10 flex flex-col items-center">
+    <section className="w-full flex flex-col items-center">
       <h1 className="text-2xl font-bold mb-6 text-center">
         Ferramentas disponíveis
       </h1>
@@ -188,56 +284,98 @@ export default function FerramentasSection({
             <motion.div
               key={ferramenta.id}
               layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="card bg-base-100 shadow-sm border border-base-300 hover:shadow-xl hover:border-secondary transition-all duration-200 cursor-pointer relative"
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="
+    group relative
+    card bg-base-100
+    border border-base-300
+    rounded-2xl
+    overflow-hidden
+    hover:border-primary
+    hover:shadow-2xl
+    hover:-translate-y-1
+    transition-all duration-300
+    cursor-pointer
+  "
               onClick={() => {
                 if (ferramenta.link) router.push(ferramenta.link);
               }}
             >
+              {/* Badge */}
               {ferramenta.badge && (
-                <div className="absolute top-3 right-3 badge badge-secondary">
+                <div className="absolute top-4 right-4 z-10 badge badge-secondary badge-sm">
                   {ferramenta.badge}
                 </div>
               )}
 
+              {/* Imagem */}
               {ferramenta.image && (
-                <figure className="overflow-hidden rounded-t-2xl">
+                <figure className="relative">
                   <Image
                     src={ferramenta.image}
                     alt={ferramenta.titulo}
-                    className="aspect-[16/9] object-cover w-full"
-                    width={300}
-                    height={169}
+                    width={400}
+                    height={225}
+                    className="
+          w-full aspect-video object-cover
+          transition-transform duration-300
+          group-hover:scale-105
+        "
                   />
+
+                  {/* Overlay suave */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-base-100/70 via-transparent to-transparent" />
                 </figure>
               )}
 
-              <div className="card-body text-left">
-                <h2 className="card-title text-lg">{ferramenta.titulo}</h2>
-                <p className="text-sm opacity-80">{ferramenta.descricao}</p>
+              {/* Corpo */}
+              <div className="card-body gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="p-2 rounded-xl bg-primary/10 text-primary">
+                    {ferramenta.icon}
+                  </span>
 
-                {/* Conteúdo customizado (para Matriz SWOT) */}
-                {ferramenta.customContent &&
-                  ferramenta.customContent(seasons, seasonLogos, router)}
-              </div>
-
-              {/* Footer com categoria e créditos */}
-              <div className="card-footer flex items-center justify-between border-t border-base-300 px-4 py-3">
-                <div
-                  className={`flex items-center gap-2 text-primary/75 font-semibold text-sm`}
-                >
-                  {ferramenta.icon}
-                  <span className="text-xs font-semibold uppercase tracking-wide">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-primary/70">
                     {ferramenta.categoria}
                   </span>
                 </div>
 
-                {ferramenta.feitoPor && (
-                  <span className="badge bg-secondary/20 text-secondary font-semibold text-xs">
-                    Feito por: {ferramenta.feitoPor}
+                <h2 className="text-lg font-bold leading-tight">
+                  {ferramenta.titulo}
+                </h2>
+
+                <p className="text-sm opacity-80 leading-relaxed">
+                  {ferramenta.descricao}
+                </p>
+
+                {/* Conteúdo customizado */}
+                {ferramenta.customContent &&
+                  ferramenta.customContent(seasons, seasonLogos, router)}
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between px-6 pb-5 pt-0">
+                {ferramenta.feitoPor ? (
+                  <span className="text-xs font-semibold text-secondary">
+                    Desenvolvido por {ferramenta.feitoPor}
+                  </span>
+                ) : (
+                  <span />
+                )}
+
+                {ferramenta.customContent ? null : (
+                  <span
+                    className="
+      text-xs font-semibold
+      opacity-0 group-hover:opacity-100
+      transition-opacity duration-300
+      text-primary
+    "
+                  >
+                    Abrir ferramenta →
                   </span>
                 )}
               </div>

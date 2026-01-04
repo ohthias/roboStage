@@ -216,7 +216,7 @@ export const SWOTCanvas = ({
       {/* Ações */}
       <div className="mt-10 flex flex-col gap-6">
         {/* Ações principais */}
-        <div className="flex flex-wrap items-center justify-center gap-4">
+        <div className="flex flex-wrap items-center justify-end gap-4">
           <button
             onClick={exportPNG}
             className="btn btn-outline btn-accent gap-2"

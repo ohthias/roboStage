@@ -5,6 +5,7 @@ import { Navbar } from "@/components/UI/Navbar";
 import { Footer } from "@/components/UI/Footer";
 import Loader from "@/components/Loader";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
+import Header from "@/components/UI/Header";
 
 interface ToolDetail {
   title: string;
@@ -40,45 +41,23 @@ export default function HelpDesk() {
 
       <main className="min-h-screen bg-base-100">
         <div className="max-w-5xl mx-auto px-4 py-12">
-          {/* Header + Command Search */}
-          <section className="relative mb-16 overflow-hidden rounded-3xl border border-base-200 bg-gradient-to-br from-base-100 via-base-100 to-base-200/40">
-            {/* Decorative grid */}
-            <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
+          <Header
+            type="Help Desk"
+            name="Encontre"
+            highlight="a ajuda que você precisa"
+            description="Explore nossas ferramentas e recursos para tirar suas dúvidas e aprimorar sua experiência com o RoboStage."
+          />
 
-            <div className="relative px-6 py-12 md:px-12 md:py-16">
-              <div className="max-w-3xl">
-                <span className="inline-block mb-4 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-1 text-sm font-medium text-red-500">
-                  RoboStage
-                </span>
-
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight">
-                  Central de Dúvidas <br />
-                  <span className="text-red-500">RoboStage</span>
-                </h1>
-
-                <p className="mt-4 text-base-content/70 max-w-xl">
-                  Explore, compreenda e utilize as ferramentas que sustentam o
-                  planejamento, testes e engenharia do robô — do conceito à
-                  execução.
-                </p>
-
-                {/* Command Search */}
-                <div className="mt-8 max-w-xl">
-                  <input
-                    type="text"
-                    placeholder="Digite um comando ou ferramenta…"
-                    className="input input-bordered w-full h-12 text-base focus:outline-none focus:border-red-500"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-
-                  <p className="mt-2 text-xs text-base-content/50">
-                    Busque por nomes de ferramentas ou funcionalidades.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
+          {/* Search Bar */}
+          <div className="my-8">
+            <input
+              type="text"
+              placeholder="Buscar ferramentas..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-lg border border-base-300 bg-base-200/50 px-4 py-2 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+            />
+          </div>
 
           {/* Loading */}
           {loading ? (

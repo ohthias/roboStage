@@ -88,29 +88,55 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
   }
 
   return (
-    <div className="flex flex-col items-start justify-center w-full">
+    <div>
       <Navbar />
       <div className="px-4 md:px-8">
         <Breadcrumbs />
-      </div>
-      <div className="flex flex-col items-start w-full px-4 mb-8">
-        <h1 className="text-2xl font-bold my-4 text-primary">
-          Matriz SWOT das{" "}
-          {selectedSeason && seasonLogos[selectedSeason]
-            ? seasonLogos[selectedSeason].name
-            : "Missões"}
-        </h1>
-        <p className="text-sm mb-2 text-base-content max-w-3xl">
-          Arraste as missões para os quadrantes da matriz SWOT para organizar a
-          estratégia da sua equipe. Ao final, exporte e use como desejar!
-        </p>
-        <SWOTCanvas
-          missions={missions}
-          setMissions={setMissions}
-          seasons={seasons}
-          selectedSeason={selectedSeason}
-          setSelectedSeason={setSelectedSeason}
-        />
+        <div className="flex flex-col items-start px-4 mb-8">
+          <div className="my-4 space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="p-4 rounded-2xl bg-base-300/10 text-primary shadow-sm">
+                {selectedSeason && seasonLogos[selectedSeason] ? (
+                  <img
+                    src={seasonLogos[selectedSeason].image}
+                    alt={seasonLogos[selectedSeason].name}
+                    className="w-16 h-16 object-contain"
+                  />
+                ) : (
+                  <div className="w-16 h-16 flex items-center justify-center bg-primary rounded-full text-white font-bold">
+                    ?
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary">
+                  Matriz SWOT
+                </h1>
+                <span className="text-sm text-base-content/70 font-medium">
+                  {selectedSeason && seasonLogos[selectedSeason]
+                    ? seasonLogos[selectedSeason].name
+                    : "Missões"}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-base md:text-lg text-base-content/80 max-w-3xl leading-relaxed">
+              Organize estrategicamente as missões da sua equipe distribuindo-as
+              nos quadrantes da matriz{" "}
+              <strong>Forças, Fraquezas, Oportunidades</strong> e
+              <strong> Ameaças</strong>. Ao final, você pode exportar a análise
+              e utilizá-la nos treinos, apresentações ou planejamentos.
+            </p>
+          </div>
+          <SWOTCanvas
+            missions={missions}
+            setMissions={setMissions}
+            seasons={seasons}
+            selectedSeason={selectedSeason}
+            setSelectedSeason={setSelectedSeason}
+          />
+        </div>
       </div>
       <Footer />
     </div>

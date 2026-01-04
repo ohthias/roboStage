@@ -3,9 +3,9 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { Navbar } from "@/components/ui/Navbar";
-import Breadcrumbs from "@/components/Breadcrumbs";
-import { Footer } from "@/components/ui/Footer";
+import { Navbar } from "@/components/UI/Navbar";
+import Breadcrumbs from "@/components/UI/Breadcrumbs";
+import { Footer } from "@/components/UI/Footer";
 import RobotTrackCanvas from "@/components/QuickBrick/RobotTrack/RobotTrack";
 
 const RobotTrack: React.FC = () => {

@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import FormMission from "@/components/FormMission/FormMission";
-import Loader from "@/components/loader";
-import { Navbar } from "@/components/ui/Navbar";
+import Loader from "@/components/Loader";
+import { Navbar } from "@/components/UI/Navbar";
 import { sumAllMissions } from "@/utils/scores";
-import { Footer } from "@/components/ui/Footer";
+import { Footer } from "@/components/UI/Footer";
 import SubmergedLogo from "@/public/images/logos/Submerged.webp";
 import MasterpieceLogo from "@/public/images/logos/Masterpiece.png";
 import {

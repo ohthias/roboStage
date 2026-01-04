@@ -1,6 +1,6 @@
 import { ArrowRight, ChevronDown } from "lucide-react";
-import Logo from "./ui/Logo";
-import RevealOnScroll from "./ui/RevealOnScroll";
+import Logo from "./UI/Logo";
+import RevealOnScroll from "./UI/RevealOnScroll";
 
 export default function Hero() {
   return (

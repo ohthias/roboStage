@@ -2,9 +2,9 @@
 import React from "react";
 import { StrategyBoard } from "@/components/QuickBrick/SWOT-template/StrategyBoard";
 import { TeamInfo } from "@/components/QuickBrick/SWOT-template/TeamInfo";
-import { Navbar } from "@/components/ui/Navbar";
-import { Footer } from "@/components/ui/Footer";
-import Breadcrumbs from "@/components/Breadcrumbs";
+import { Navbar } from "@/components/UI/Navbar";
+import { Footer } from "@/components/UI/Footer";
+import Breadcrumbs from "@/components/UI/Breadcrumbs";
 
 export default function SWOTPage() {
   return (

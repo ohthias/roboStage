@@ -1,6 +1,6 @@
 "use client";
 import { useRef } from "react";
-import LabTestForm from "@/components/LabTest/LabTestForm";
+import LabTestForm from "@/components/Dashboard/LabTest/LabTestForm";
 
 export default function ModalLabTest() {
   const modalRef = useRef<HTMLDialogElement | null>(null);

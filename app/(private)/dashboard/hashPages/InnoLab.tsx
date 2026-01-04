@@ -9,14 +9,14 @@ import { LayoutGrid, Lightbulb, List } from "lucide-react";
 
 import ModalConfirm, {
   ModalConfirmRef,
-} from "@/components/ui/Modal/ModalConfirm";
+} from "@/components/UI/Modal/ModalConfirm";
 
 import DiagramCard, {
   Document,
-} from "@/components/ui/dashboard/innolab/DiagramCard";
-import CreateDiagramModal from "@/components/ui/Modal/CreateDiagramModal";
+} from "@/components/Dashboard/InnoLab/Card/DiagramCard";
+import CreateDiagramModal from "@/components/Dashboard/InnoLab/CreateDiagramModal";
 import { useToast } from "@/app/context/ToastContext";
-import DiagramCardSkeleton from "@/components/ui/dashboard/innolab/DiagramCardSkeleton";
+import DiagramCardSkeleton from "@/components/Dashboard/InnoLab/Card/DiagramCardSkeleton";
 
 export default function InnoLab() {
   const router = useRouter();

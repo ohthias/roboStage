@@ -1,9 +1,9 @@
 
-import { INITIAL_DOCUMENTS } from '@/components/Workspace/constants';
-import { Editor } from '@/components/Workspace/Editor';
-import { SearchModal } from '@/components/Workspace/SearchModal';
-import { Sidebar } from '@/components/Workspace/Sidebar';
-import { DocumentMap, Template, Document } from '@/components/Workspace/types';
+import { INITIAL_DOCUMENTS } from '@/components/Dashboard/Workspace/constants';
+import { Editor } from '@/components/Dashboard/Workspace/Editor';
+import { SearchModal } from '@/components/Dashboard/Workspace/SearchModal';
+import { Sidebar } from '@/components/Dashboard/Workspace/Sidebar';
+import { DocumentMap, Template, Document } from '@/components/Dashboard/Workspace/types';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 

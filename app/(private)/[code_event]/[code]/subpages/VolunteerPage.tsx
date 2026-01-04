@@ -3,9 +3,9 @@ import { useParams } from "next/navigation";
 import { NavigationBar } from "../components/NavigationBar";
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
-import AvaliacaoRounds from "@/components/AvaRound";
+import AvaliacaoRounds from "@/components/showLive/RoundSubmission";
 import robo from "@/public/robo.gif";
-import Loader from "@/components/loader";
+import Loader from "@/components/Loader";
 import AvaliacaoPlayOffs from "@/components/showLive/volunteer/AvaliacaoPlayOffs";
 
 export default function VolunteerPage() {

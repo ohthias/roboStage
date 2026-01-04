@@ -10,7 +10,7 @@ import {
   Trash2,
   User,
 } from "lucide-react";
-import EditProfileModal from "@/components/ui/Modal/ModalEditProfile";
+import EditProfileModal from "@/components/UI/Modal/ModalEditProfile";
 
 export default function AccountSettings() {
   const router = useRouter();

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Eye, EyeClosed } from "lucide-react";
 
-import Logo from "@/components/ui/Logo";
+import Logo from "@/components/UI/Logo";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {

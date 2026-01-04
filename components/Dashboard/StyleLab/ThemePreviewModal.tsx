@@ -1,5 +1,5 @@
 import { StyleLabTheme } from "@/app/(private)/dashboard/hashPages/StyleLab";
-import { FllRankingPreview } from "../dashboard/FllRankingPreview";
+import { FllRankingPreview } from "./FllRankingPreview";
 
 interface ThemePreviewModalProps {
   theme: StyleLabTheme;

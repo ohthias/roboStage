@@ -8,7 +8,7 @@ import TeamsSection from "@/components/showLive/subpages/TeamsSection";
 import RankingSection from "@/components/showLive/subpages/RankingSection";
 import VisualizationSection from "@/components/showLive/subpages/VisualizationSection";
 import ConfiguracoesSection from "@/components/showLive/subpages/ConfiguracoesSection";
-import Loader from "@/components/loader";
+import Loader from "@/components/Loader";
 import Sidebar from "@/components/showLive/Sidebar";
 import ThemeSection from "@/components/showLive/subpages/ThemePage";
 import TabelaGracious from "@/components/showLive/subpages/TabelaGracious";

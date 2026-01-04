@@ -58,9 +58,9 @@ import {
   Strikethrough,
   Slash,
 } from "lucide-react";
-import DiagramCanvas from "@/components/InnoLab/DiagramCanvas";
-import StickerPicker from "@/components/InnoLab/StickerPicker";
-import FloatingToolbar from "@/components/InnoLab/FloatingToolbar";
+import DiagramCanvas from "@/components/Dashboard/InnoLab/DiagramCanvas";
+import StickerPicker from "@/components/Dashboard/InnoLab/StickerPicker";
+import FloatingToolbar from "@/components/Dashboard/InnoLab/FloatingToolbar";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/app/context/ToastContext";

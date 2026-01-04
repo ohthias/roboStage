@@ -1,8 +1,8 @@
 'use client';
 import Hero from "@/components/Hero";
-import { Navbar } from "@/components/ui/Navbar";
-import { Footer } from "@/components/ui/Footer";
-import RevealOnScroll from "@/components/ui/RevealOnScroll";
+import { Navbar } from "@/components/UI/Navbar";
+import { Footer } from "@/components/UI/Footer";
+import RevealOnScroll from "@/components/UI/RevealOnScroll";
 
 import {
   Brain,

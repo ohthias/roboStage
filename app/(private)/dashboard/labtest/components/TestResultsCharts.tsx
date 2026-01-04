@@ -20,7 +20,7 @@ import {
   Pie,
 } from "recharts";
 
-import Loader from "@/components/loader";
+import Loader from "@/components/Loader";
 
 type ResultRow = {
   id: number;

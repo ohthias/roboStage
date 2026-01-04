@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Navbar } from "@/components/ui/Navbar";
+import { Navbar } from "@/components/UI/Navbar";
 import { SWOTCanvas } from "@/components/QuickBrick/SwotCanva";
-import { Footer } from "@/components/ui/Footer";
-import Breadcrumbs from "@/components/Breadcrumbs";
+import { Footer } from "@/components/UI/Footer";
+import Breadcrumbs from "@/components/UI/Breadcrumbs";
 
 const seasonLogos: Record<string, { name: string; image: string }> = {
   submerged: {

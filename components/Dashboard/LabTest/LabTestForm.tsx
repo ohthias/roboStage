@@ -5,7 +5,7 @@ import { supabase } from "@/utils/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/app/context/ToastContext";
 import { Square, SquareStack, Bot } from "lucide-react";
-import CardSeason from "../ui/Cards/CardSeason";
+import CardSeason from "../../UI/Cards/CardSeason";
 import UnearthedLogo from "@/public/images/logos/Unearthed.webp";
 import SubmergedLogo from "@/public/images/logos/Submerged.webp";
 

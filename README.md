@@ -83,16 +83,6 @@ O **InnoLab** ajuda sua equipe a estruturar o caminho do Projeto de Inovação d
 
 ---
 
-# 📸 Demonstrações
-
-![Dashboard](./assets/screenshot_dashboard.png)
-*Dashboard com visão geral dos torneios criados.*
-
-![QuickBrick Studio](./assets/screenshot_quickbrick.png)
-*Ferramenta de criação de estratégia de mesa*
-
----
-
 # 🛠 Tecnologias Utilizadas
 
 * **Next.js** — Fullstack completo

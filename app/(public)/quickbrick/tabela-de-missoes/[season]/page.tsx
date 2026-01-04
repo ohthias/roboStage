@@ -6,13 +6,13 @@ import { ImageDown, Table as TableIcon, RotateCcw } from "lucide-react";
 import { MissionTable } from "@/components/QuickBrick/Tabela-de-analise-de-missoes/MissionTable";
 import { Analytics } from "@/components/QuickBrick/Tabela-de-analise-de-missoes/Analytics";
 import { useParams } from "next/navigation";
-import { Navbar } from "@/components/ui/Navbar";
-import { Footer } from "@/components/ui/Footer";
-import Breadcrumbs from "@/components/Breadcrumbs";
+import { Navbar } from "@/components/UI/Navbar";
+import { Footer } from "@/components/UI/Footer";
+import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
 import { useToast } from "@/app/context/ToastContext";
-import Loader from "@/components/loader";
+import Loader from "@/components/Loader";
 
 function MissionTablePage() {
   const params = useParams();

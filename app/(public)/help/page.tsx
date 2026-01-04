@@ -1,10 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import Card from "@/components/Card";
-import Accordion from "@/components/Accordion";
-import { Navbar } from "@/components/ui/Navbar";
-import { Footer } from "@/components/ui/Footer";
-import Loader from "@/components/loader";
+import Accordion from "@/components/UI/Accordion";
+import { Navbar } from "@/components/UI/Navbar";
+import { Footer } from "@/components/UI/Footer";
+import Loader from "@/components/Loader";
 
 interface ToolDetail {
   title: string;
@@ -68,9 +67,14 @@ export default function HelpDesk() {
             {/* Cards das ferramentas */}
             <div className="grid gap-6">
               {filteredTools.map((tool, idx) => (
-                <Card key={idx} title={tool.name} description={tool.description}>
-                  <Accordion items={tool.details || []} />
-                </Card>
+                <div
+                  key={idx}
+                  className="border border-base-200 rounded-lg p-6 shadow-sm hover:shadow-md transition"
+                >
+                  <h2 className="text-2xl font-semibold mb-2">{tool.name}</h2>
+                  <p className="text-gray-700 mb-4">{tool.description}</p>
+                  <Accordion items={tool.details} />
+                </div>
               ))}
 
               {filteredTools.length === 0 && (

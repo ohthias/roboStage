@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/ui/Navbar";
+import { Navbar } from "@/components/UI/Navbar";
 import QuickBrickCanvas from "@/components/QuickBrick/Estrategia/QuickBrickCanva";
-import { Footer } from "@/components/ui/Footer";
-import Breadcrumbs from "@/components/Breadcrumbs";
+import { Footer } from "@/components/UI/Footer";
+import Breadcrumbs from "@/components/UI/Breadcrumbs";
 
 export default function StrategyPage() {
   const [isMobile, setIsMobile] = useState(false);

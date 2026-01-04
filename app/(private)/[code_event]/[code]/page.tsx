@@ -6,7 +6,7 @@ import { supabase } from "@/utils/supabase/client";
 import VisitPage from "./subpages/VisitPage";
 import VolunteerPage from "./subpages/VolunteerPage";
 import { useRouter } from "next/navigation";
-import Loader from "@/components/loader";
+import Loader from "@/components/Loader";
 
 export default function EventAcessPage() {
     const params = useParams();

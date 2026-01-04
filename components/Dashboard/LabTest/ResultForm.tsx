@@ -9,8 +9,8 @@ import {
   useRef,
   useCallback,
 } from "react";
-import { RangeInput } from "../FormMission/RangeInput";
-import { SwitchInput } from "../FormMission/SwitchInput";
+import { RangeInput } from "../../FormMission/RangeInput";
+import { SwitchInput } from "../../FormMission/SwitchInput";
 import { useToast } from "@/app/context/ToastContext";
 
 export interface ModalResultFormRef {

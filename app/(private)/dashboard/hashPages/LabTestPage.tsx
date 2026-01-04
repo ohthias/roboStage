@@ -1,13 +1,13 @@
 "use client";
 import React, { useState, useMemo, useRef } from "react";
-import ModalLabTest from "@/components/ui/Modal/ModalLabTest";
+import ModalLabTest from "@/components/Dashboard/LabTest/ModalLabTest";
 import ModalConfirm, {
   ModalConfirmRef,
-} from "@/components/ui/Modal/ModalConfirm";
-import ModalInput, { ModalInputRef } from "@/components/ui/Modal/ModalInput";
+} from "@/components/UI/Modal/ModalConfirm";
+import ModalInput, { ModalInputRef } from "@/components/UI/Modal/ModalInput";
 import ModalResultForm, {
   ModalResultFormRef,
-} from "@/components/LabTest/ResultForm";
+} from "@/components/Dashboard/LabTest/ResultForm";
 import { useToast } from "@/app/context/ToastContext";
 import { PresentationChartBarIcon } from "@heroicons/react/24/outline";
 import { useLabTests } from "@/hooks/useLabTests";

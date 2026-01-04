@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 
-import Logo from "@/components/ui/Logo";
-import { BackgroundStars } from "@/components/ui/BackgroundStars";
+import Logo from "@/components/UI/Logo";
+import { BackgroundStars } from "@/components/UI/BackgroundStars";
 
 import {
   ArrowRight,

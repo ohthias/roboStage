@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
-import Loader from "./loader";
+import Loader from "../Loader";
 import { TrophyIcon } from "@heroicons/react/24/solid";
 
 interface Equipe {

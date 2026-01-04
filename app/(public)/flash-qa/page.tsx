@@ -9,8 +9,8 @@ import { FLL_QUESTIONS } from "./constants";
 import SetupScreen from "@/components/FlashQA/SetupScreen";
 import FlashcardScreen from "@/components/FlashQA/FlashcardScreen";
 import ResultScreen from "@/components/FlashQA/ResultScreen";
-import { Footer } from "@/components/ui/Footer";
-import { Navbar } from "@/components/ui/Navbar";
+import { Footer } from "@/components/UI/Footer";
+import { Navbar } from "@/components/UI/Navbar";
 
 const FlashQA: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({

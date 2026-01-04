@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { EventModal } from "@/components/EventModal";
-import Loader from "@/components/loader";
+import { EventModal } from "@/components/showLive/EventModal";
+import Loader from "@/components/Loader";
 import { useUser } from "@/app/context/UserContext";
 import { useEvents } from "@/hooks/useEventsLoad";
 import { MagnifyingGlassIcon, SignalIcon } from "@heroicons/react/24/outline";

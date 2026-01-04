@@ -5,9 +5,9 @@ import { Impacto, Probabilidade, Risco } from "@/types/MatrizRisco";
 import { INITIAL_RISCOS } from "./constants";
 import RiscoDetalhesModal from "@/components/QuickBrick/MatrizRisco/RiscoDetalhesModal";
 import RiscoModal from "@/components/QuickBrick/MatrizRisco/MatrizModal";
-import { Navbar } from "@/components/ui/Navbar";
-import Breadcrumbs from "@/components/Breadcrumbs";
-import { Footer } from "@/components/ui/Footer";
+import { Navbar } from "@/components/UI/Navbar";
+import Breadcrumbs from "@/components/UI/Breadcrumbs";
+import { Footer } from "@/components/UI/Footer";
 import html2canvas from "html2canvas-pro";
 import { useToast } from "@/app/context/ToastContext";
 

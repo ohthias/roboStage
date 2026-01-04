@@ -1,13 +1,13 @@
 'use client";';
 import { useState, useEffect, useMemo, useRef } from "react";
 import { supabase } from "@/utils/supabase/client";
-import StyleLabModal from "@/components/StyleLabModal";
+import StyleLabModal from "@/components/Dashboard/StyleLab/StyleLabModal";
 import { useUser } from "@/app/context/UserContext";
-import { ThemeCardSkeleton } from "@/components/ui/Cards/ThemeCardSkeleton";
-import { ThemePreviewModal } from "@/components/ui/Modal/ThemePreviewModal";
+import { ThemeCardSkeleton } from "@/components/Dashboard/StyleLab/ThemeCardSkeleton";
+import { ThemePreviewModal } from "@/components/Dashboard/StyleLab/ThemePreviewModal";
 import ModalConfirm, {
   ModalConfirmRef,
-} from "@/components/ui/Modal/ModalConfirm";
+} from "@/components/UI/Modal/ModalConfirm";
 import { Palette } from "lucide-react";
 
 export interface StyleLabTheme {

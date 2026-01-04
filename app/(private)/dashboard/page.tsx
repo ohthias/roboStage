@@ -7,18 +7,18 @@ import AccountSettings from "./hashPages/AccountSettings";
 import { useUser } from "../../context/UserContext";
 import { StyleLab } from "@/app/(private)/dashboard/hashPages/StyleLab";
 import LabTestPage from "./hashPages/LabTestPage";
-import HubHero from "@/components/ui/dashboard/HubHero";
+import HubHero from "@/components/Dashboard/HubPage";
 import { useRouter } from "next/navigation";
-import Sidebar from "@/components/ui/dashboard/Navbar";
+import Sidebar from "@/components/Dashboard/UI/Navbar";
 import { useHashSection } from "@/hooks/useHashSection";
 import { useAchievements } from "@/hooks/useAchievements";
 import ModalConfirm, {
   ModalConfirmRef,
-} from "@/components/ui/Modal/ModalConfirm";
+} from "@/components/UI/Modal/ModalConfirm";
 import InnoLab from "./hashPages/InnoLab";
 import ComingSoon from "@/components/ComingSoon";
-import Logo from "@/components/ui/Logo";
-import { ThemeController } from "@/components/ui/themeController";
+import Logo from "@/components/UI/Logo";
+import { ThemeController } from "@/components/UI/themeController";
 import {
   Bell,
   Calendar1,

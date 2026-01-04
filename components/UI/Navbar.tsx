@@ -118,6 +118,7 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
             <label
               htmlFor="navbar-drawer"
               className="btn btn-square btn-ghost btn-sm"
+              aria-label="Abrir menu de navegação"
             >
               <Menu size={20} />
             </label>

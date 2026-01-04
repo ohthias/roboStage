@@ -196,7 +196,7 @@ export default function Page() {
       <Navbar />
 
       {/* Barra de progresso */}
-      <div className="h-3 w-full bg-neutral">
+      <div className="h-3 w-full bg-neutral sticky top-0 z-50">
         <div
           className={`h-full transition-all duration-300 ${progressColor}`}
           style={{ width: `${progress}%` }}
@@ -214,7 +214,7 @@ export default function Page() {
             <span
               id="timer"
               className="
-                font-mono text-3xl sm:text-4xl
+                font-mono text-2xl sm:text-4xl
                 px-4 py-2
                 rounded-xl
                 bg-base-200
@@ -276,7 +276,7 @@ export default function Page() {
             <div className="flex flex-1 items-center gap-4 text-left">
               <img
                 src={background}
-                className="w-20 h-20 object-contain"
+                className="w-20 h-20 object-contain hidden sm:block"
                 alt="Logo da temporada FLL"
               />
 

@@ -18,9 +18,9 @@ export default function Accordion({ items }: AccordionProps) {
   };
 
   return (
-    <div className="divide-y divide-base-300 border border-base-200 rounded-md">
+    <div className="space-y-4">
       {items.map((item, i) => (
-        <div key={i} className="collapse collapse-arrow">
+        <div key={i} className="collapse bg-base-100 border border-base-300 transition-all duration-300 rounded-lg peer-checked:shadow-lg">
           <input
             type="checkbox"
             checked={openIndex === i}

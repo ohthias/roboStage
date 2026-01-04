@@ -21,7 +21,7 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
       <input id="navbar-drawer" type="checkbox" className="drawer-toggle" />
 
       {/* Conteúdo principal */}
-      <div className={`drawer-content flex flex-col ${isIndexPage ? 'fixed top-0 left-0 right-0 z-50' : ''}`}>
+      <div className={`drawer-content flex flex-col ${isIndexPage ? 'fixed top-0 left-0 right-0 z-20' : ''}`}>
         <div className={`navbar flex justify-between px-4 sm:px-8 lg:px-10 shadow-sm h-16 ${isIndexPage ? 'bg-base-200/70 backdrop-blur-md' : 'bg-base-200'}`}>
           <div className="flex items-center space-x-2">
             <Logo logoSize="lg" redirectIndex={true} />
@@ -126,7 +126,7 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
       </div>
 
       {/* Sidebar Drawer Mobile */}
-      <div className="drawer-side">
+      <div className="drawer-side z-50">
         <label htmlFor="navbar-drawer" className="drawer-overlay"></label>
         <div className="menu flex flex-col justify-between h-full p-4 w-64 bg-base-200">
           <div className="space-y-2">

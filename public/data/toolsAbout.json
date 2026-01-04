@@ -1,6 +1,6 @@
 [
   {
-    "name": "FLL Score",
+    "name": "FLL Score/Pontuador",
     "description": "Ferramenta para registrar e acompanhar a pontuação da temporada da FLLC. Permite simulações rápidas de missões ou o acompanhamento completo de rounds com cronômetro integrado, auxiliando tanto em treinos quanto em competições oficiais de forma prática e confiável.",
     "details": [
       {

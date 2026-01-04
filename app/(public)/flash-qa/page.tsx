@@ -11,6 +11,7 @@ import FlashcardScreen from "@/components/FlashQA/FlashcardScreen";
 import ResultScreen from "@/components/FlashQA/ResultScreen";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
+import "./flashQA.css";
 
 const FlashQA: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({

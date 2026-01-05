@@ -1,4 +1,4 @@
-
+'use client';
 import { INITIAL_DOCUMENTS } from '@/components/Dashboard/Workspace/constants';
 import { Editor } from '@/components/Dashboard/Workspace/Editor';
 import { SearchModal } from '@/components/Dashboard/Workspace/SearchModal';

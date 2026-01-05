@@ -1,4 +1,4 @@
-'use client";';
+'use client';
 import { useState, useEffect, useMemo, useRef } from "react";
 import { supabase } from "@/utils/supabase/client";
 import StyleLabModal from "@/components/Dashboard/StyleLab/StyleLabModal";
@@ -19,7 +19,7 @@ export interface StyleLabTheme {
   name?: string;
 }
 
-export function StyleLab() {
+export default function StyleLab() {
   const [showModal, setShowModal] = useState(false);
   const [themes, setThemes] = useState<StyleLabTheme[]>([]);
   const [searchText, setSearchText] = useState("");

@@ -208,7 +208,7 @@ export default function ShowLiveHub() {
                     <div className="mt-auto flex justify-end">
                       <button
                         onClick={() =>
-                          router.push(`/dashboard/showlive/${event.code_event}`)
+                          router.push(`/showlive/${event.code_event}`)
                         }
                         className="btn btn-primary btn-sm flex items-center gap-2 transition-transform duration-300 hover:scale-105 hover:bg-primary-focus"
                       >

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { DiagramType } from "@/types/InnoLabType";
 import { useDiagram } from "@/hooks/useDiagram";
-import { AVAILABLE_FONTS } from "../../constants";
+import { AVAILABLE_FONTS } from "./constants";
 import {
   ArrowLeft,
   Save,

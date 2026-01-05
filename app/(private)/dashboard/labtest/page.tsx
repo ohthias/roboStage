@@ -11,11 +11,11 @@ import ModalResultForm, {
 import { useToast } from "@/app/context/ToastContext";
 import { PresentationChartBarIcon } from "@heroicons/react/24/outline";
 import { useLabTests } from "@/hooks/useLabTests";
-import TestTabs from "../labtest/components/TestTabs";
-import TestList from "../labtest/components/TestList";
-import ResultsList from "../labtest/components/ResultsList";
+import TestTabs from "./components/TestTabs";
+import TestList from "./components/TestList";
+import ResultsList from "./components/ResultsList";
 import { supabase } from "@/utils/supabase/client";
-import TestCardSkeleton from "../labtest/components/TestCardSkeleton";
+import TestCardSkeleton from "./components/TestCardSkeleton";
 
 /* --------------------------
   HOOK DE FILTRAGEM OTIMIZADO

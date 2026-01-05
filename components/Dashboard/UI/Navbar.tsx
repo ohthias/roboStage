@@ -10,11 +10,10 @@ import {
   Users,
   Notebook,
 } from "lucide-react";
-import { JSX, useMemo, useState } from "react";
+import { JSX } from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 interface SidebarProps {
-  active: string;
-  setActive: (value: string) => void;
   profile: {
     avatar_url?: string;
     username?: string;
@@ -23,27 +22,32 @@ interface SidebarProps {
   collapsed: boolean;
 }
 
+interface NavItemProps {
+  icon: JSX.Element;
+  label: string;
+  path: string;
+  pathname: string;
+  collapsed: boolean;
+  onClick: () => void;
+}
+
 const NavItem = ({
   icon,
   label,
-  section,
-  active,
-  onClick,
+  path,
+  pathname,
   collapsed,
-}: {
-  icon: JSX.Element;
-  label: string;
-  section: string;
-  active: string;
-  onClick?: () => void;
-  collapsed: boolean;
-}) => {
-  const isActive = active === section;
+  onClick,
+}: NavItemProps) => {
+  const isActive =
+     path === "/dashboard/labtest"
+      ? pathname === path || pathname.startsWith(path + "/")
+      : pathname === path;
 
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-3 p-3 rounded-xl w-full transition-all
+      className={`flex items-center gap-3 p-3 rounded-xl w-full transition-all cursor-pointer
         ${
           isActive
             ? "bg-primary/10 text-primary font-semibold"
@@ -59,16 +63,16 @@ const NavItem = ({
 };
 
 export default function Sidebar({
-  active,
-  setActive,
   profile,
   session,
   collapsed,
 }: SidebarProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   return (
     <aside
-      className={`
-        flex flex-col h-full bg-base-100 border-r border-base-300
+      className={`flex flex-col h-full bg-base-100 border-r border-base-300
         transition-all duration-300
         ${collapsed ? "w-20 px-3" : "w-64 px-6"}
       `}
@@ -77,81 +81,82 @@ export default function Sidebar({
         <NavItem
           icon={<House className="w-5 h-5" />}
           label="Hub"
-          section="hub"
-          active={active}
+          path="/dashboard"
+          pathname={pathname}
           collapsed={collapsed}
-          onClick={() => setActive("hub")}
+          onClick={() => router.push("/dashboard")}
         />
 
         <NavItem
           icon={<Notebook className="w-5 h-5" />}
           label="Workspace"
-          section="workspace"
-          active={active}
+          path="/dashboard/workspace"
+          pathname={pathname}
           collapsed={collapsed}
-          onClick={() => setActive("workspace")}
+          onClick={() => router.push("/dashboard/workspace")}
         />
 
         <NavItem
           icon={<ChartPie className="w-5 h-5" />}
           label="LabTest"
-          section="labTest"
-          active={active}
+          path="/dashboard/labtest"
+          pathname={pathname}
           collapsed={collapsed}
-          onClick={() => setActive("labTest")}
+          onClick={() => router.push("/dashboard/labtest")}
         />
 
         <NavItem
           icon={<Book className="w-5 h-5" />}
           label="InnoLab"
-          section="innoLab"
-          active={active}
+          path="/dashboard/innolab"
+          pathname={pathname}
           collapsed={collapsed}
-          onClick={() => setActive("innoLab")}
+          onClick={() => router.push("/dashboard/innolab")}
         />
 
         <NavItem
           icon={<Bot className="w-5 h-5" />}
           label="CalibraBot"
-          section="calibraBot"
-          active={active}
+          path="/dashboard/calibrabot"
+          pathname={pathname}
           collapsed={collapsed}
-          onClick={() => setActive("calibraBot")}
+          onClick={() => router.push("/dashboard/calibrabot")}
         />
 
         <NavItem
           icon={<Users className="w-5 h-5" />}
           label="Equipes"
-          section="teamSpace"
-          active={active}
+          path="/dashboard/teamspace"
+          pathname={pathname}
           collapsed={collapsed}
-          onClick={() => setActive("teamSpace")}
+          onClick={() => router.push("/dashboard/teams")}
         />
 
         <div className="pt-4 border-t border-base-300">
           <NavItem
             icon={<RadioIcon className="w-5 h-5" />}
             label="ShowLive"
-            section="showLive"
-            active={active}
+            path="/dashboard/showlive"
+            pathname={pathname}
             collapsed={collapsed}
-            onClick={() => setActive("showLive")}
+            onClick={() => router.push("/dashboard/showlive")}
           />
 
           <NavItem
             icon={<Palette className="w-5 h-5" />}
             label="StyleLab"
-            section="styleLab"
-            active={active}
+            path="/dashboard/stylelab"
+            pathname={pathname}
             collapsed={collapsed}
-            onClick={() => setActive("styleLab")}
+            onClick={() => router.push("/dashboard/stylelab")}
           />
         </div>
       </nav>
 
+      {/* Perfil */}
       <div className="pt-4 border-t border-base-300">
         <button
-          onClick={() => setActive("profile")}
+          onClick={() => router.push("/dashboard/profile")}
           className={`flex items-center gap-3 p-3 rounded-xl w-full hover:bg-base-200
             ${collapsed ? "justify-center" : ""}
           `}

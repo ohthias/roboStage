@@ -110,7 +110,7 @@ export default function InnoLab() {
 
     await supabase
       .from("documents")
-      .update({ is_favorite: updated.is_favorite })
+      .update({ Favorite: updated.is_favorite })
       .eq("id", doc.id);
     addToast("Favorito atualizado!", "info");
   };
@@ -238,22 +238,32 @@ export default function InnoLab() {
           ))}
 
         {!loading &&
-          documents.map((doc) => (
-            <DiagramCard
-              key={doc.id}
-              doc={doc}
-              viewMode={viewMode}
-              onOpen={() =>
-                router.push(`/dashboard/innolab/${doc.id}/${doc.diagram_type}`)
-              }
-              onToggleFavorite={() => toggleFavorite(doc)}
-              onDelete={() => openDeleteModal(doc)}
-            />
-          ))}
+          documents.map(
+            (doc) =>
+              filteredDocuments.includes(doc) && (
+                <DiagramCard
+                  key={doc.id}
+                  doc={doc}
+                  viewMode={viewMode}
+                  onOpen={() =>
+                    router.push(
+                      `/innolab/${doc.id}/${doc.diagram_type}`
+                    )
+                  }
+                  onToggleFavorite={() => toggleFavorite(doc)}
+                  onDelete={() => openDeleteModal(doc)}
+                />
+              )
+          )}
 
         {!loading && documents.length === 0 && (
           <div className="col-span-full text-center text-base-content/60 py-12">
             Nenhum diagrama criado ainda.
+          </div>
+        )}
+        {!loading && documents.length > 0 && filteredDocuments.length === 0 && (
+          <div className="col-span-full text-center text-base-content/60 py-12">
+            Nenhum diagrama encontrado com os filtros aplicados.
           </div>
         )}
       </section>

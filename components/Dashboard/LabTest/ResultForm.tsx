@@ -28,7 +28,9 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
     const [selectedTest, setSelectedTest] = useState<any>(null);
     const [missions, setMissions] = useState<any[]>([]);
     const [formData, setFormData] = useState<any>({});
-    const [customVars, setCustomVars] = useState<{ name: string; values: Record<number, string> }[]>([{ name: "", values: {} }]);
+    const [customVars, setCustomVars] = useState<
+      { name: string; values: Record<number, string> }[]
+    >([{ name: "", values: {} }]);
     const [parameters, setParameters] = useState<any[]>([]);
     const [season, setSeason] = useState<string | null>(null);
     const [description, setDescription] = useState<string>("");
@@ -83,7 +85,9 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
 
             const filteredMissions = testMissions
               .map((tm: any) => {
-                const missionData = missionsData[season]?.find((m: any) => m.id === tm.mission_key);
+                const missionData = missionsData[season]?.find(
+                  (m: any) => m.id === tm.mission_key
+                );
                 if (!missionData) return null;
                 return {
                   ...missionData,
@@ -130,7 +134,11 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
       setCustomVars(updated);
     };
 
-    const handleCustomParamChange = (varIndex: number, paramId: number, value: string) => {
+    const handleCustomParamChange = (
+      varIndex: number,
+      paramId: number,
+      value: string
+    ) => {
       const updated = [...customVars];
       updated[varIndex].values[paramId] = value;
       setCustomVars(updated);
@@ -146,16 +154,23 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
         <>
           <div className="flex flex-col mb-2">
             <div className="flex items-center justify-between">
-              <p className="font-medium flex-1 text-left">{mission.name || mission.submission}</p>
+              <p className="font-medium flex-1 text-left">
+                {mission.name || mission.submission}
+              </p>
               {isMainMission && (
-                <span className="badge badge-primary badge-outline ml-2">{missionKey}</span>
+                <span className="badge badge-primary badge-outline ml-2">
+                  {missionKey}
+                </span>
               )}
             </div>
             <p>{mission.mission}</p>
           </div>
 
-          {(mission.type?.[0] === "range" || mission.type?.[0] === "switch") && (
-            <div className="mb-2">{renderFieldInput(mission, missionKey, 0)}</div>
+          {(mission.type?.[0] === "range" ||
+            mission.type?.[0] === "switch") && (
+            <div className="mb-2">
+              {renderFieldInput(mission, missionKey, 0)}
+            </div>
           )}
 
           {mission["sub-mission"]?.length > 0 && (
@@ -170,7 +185,10 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
 
       if (isMainMission) {
         return (
-          <div key={missionKey} className="mb-4 border rounded-lg p-4 bg-base-100 border-base-300 shadow-sm">
+          <div
+            key={missionKey}
+            className="mb-4 border rounded-lg p-4 bg-base-100 border-base-300 shadow-sm"
+          >
             {content}
           </div>
         );
@@ -179,7 +197,11 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
       return <div key={missionKey}>{content}</div>;
     };
 
-    const renderFieldInput = (field: any, missionKey: string, index: number) => {
+    const renderFieldInput = (
+      field: any,
+      missionKey: string,
+      index: number
+    ) => {
       if (field.type?.[0] === "range") {
         const max = field.maxValue ?? field.type[2] ?? 10;
         return (
@@ -225,43 +247,42 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
     const handleSubmit = async () => {
       if (!selectedTest) return;
 
-      // Validações
-      if (selectedTest.type === "personalizado") {
-        for (const v of customVars) {
-          if (!v.name || parameters.some((p) => !v.values[p.id])) {
-            addToast("Por favor, preencha todas as variáveis e valores.", "error");
-            return;
+      try {
+        let payload: any[] = [];
+
+        if (selectedTest.type === "personalizado") {
+          for (const variable of customVars) {
+            for (const param of parameters) {
+              payload.push({
+                test_id: selectedTest.id,
+                parameter_id: param.id,
+                metric: variable.name,
+                value: { value: variable.values[param.id] },
+                season,
+                description,
+              });
+            }
           }
+        } else {
+          payload.push({
+            test_id: selectedTest.id,
+            metric: "missions",
+            value: formData,
+            season,
+            description,
+            precision_tokens: formData.precision_tokens ?? null,
+          });
         }
-      } else {
-        for (const m of missions) {
-          const val = formData[m.id]?.[0];
-          if (val === undefined || val === null || val === "") {
-            addToast(`Preencha o valor da missão ${m.name || m.id}`, "error");
-            return;
-          }
-        }
-      }
 
-      const payload: any[] = [
-        {
-          test_id: selectedTest.id,
-          metric: selectedTest.type,
-          value: formData,
-          created_at: new Date(),
-          season: season,
-          description: description,
-        },
-      ];
+        const { error } = await supabase.from("results").insert(payload);
 
-      const { data, error } = await supabase.from("results").insert(payload).select();
+        if (error) throw error;
 
-      if (!error) {
         addToast("Resultado salvo com sucesso!", "success");
         closeModal();
-        if (onResultSaved) onResultSaved(); // Atualiza lista de resultados
-      } else {
-        console.error(error);
+        onResultSaved?.();
+      } catch (err) {
+        console.error(err);
         addToast("Erro ao salvar resultado.", "error");
       }
     };
@@ -285,7 +306,10 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
         </button>
 
         <dialog ref={modalRef} className="modal">
-          <form method="dialog" className="modal-box w-11/12 max-w-3xl max-h-[80vh] overflow-y-auto">
+          <form
+            method="dialog"
+            className="modal-box w-11/12 max-w-3xl max-h-[80vh] overflow-y-auto"
+          >
             <h2 className="text-xl font-bold mb-4">Adicionar Resultado</h2>
 
             {!selectedTest && (
@@ -306,7 +330,11 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
             {selectedTest && (
               <div className="mb-4">
                 <p className="text-sm text-gray-600">
-                  Teste selecionado: <span className="font-semibold">{selectedTest.name_test}</span> ({selectedTest.type})
+                  Teste selecionado:{" "}
+                  <span className="font-semibold">
+                    {selectedTest.name_test}
+                  </span>{" "}
+                  ({selectedTest.type})
                 </p>
               </div>
             )}
@@ -323,7 +351,9 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
                       placeholder="Nome da variável"
                       className="input input-bordered w-full mb-2"
                       value={v.name}
-                      onChange={(e) => handleCustomVarChange(idx, e.target.value)}
+                      onChange={(e) =>
+                        handleCustomVarChange(idx, e.target.value)
+                      }
                       required
                     />
                     {parameters.map((p) => (
@@ -333,21 +363,57 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
                         placeholder={p.name}
                         className="input input-bordered w-full mb-1"
                         value={v.values[p.id] || ""}
-                        onChange={(e) => handleCustomParamChange(idx, p.id, e.target.value)}
+                        onChange={(e) =>
+                          handleCustomParamChange(idx, p.id, e.target.value)
+                        }
                         required
                       />
                     ))}
                   </div>
                 ))}
-                <button type="button" className="btn btn-sm btn-outline" onClick={addCustomVar}>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline"
+                  onClick={addCustomVar}
+                >
                   + Adicionar variável
                 </button>
               </div>
             )}
 
+            {selectedTest?.type !== "personalizado" && (
+              <div className="mt-4 border border-base-300 rounded-lg p-4 space-y-2 shadow-sm bg-base-300/10">
+                <h3 className="font-semibold">Discos de Precisão</h3>
+                <p>Quantos discos de precisão foram utilizados?</p>
+                <div className="mt-2">
+                  {[0, 1, 2, 3, 4, 5, 6].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      className={`btn btn-md mr-2 ${
+                        formData["precision_tokens"] === num
+                          ? "btn-primary"
+                          : "btn-default"
+                      }`}
+                      onClick={() =>
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          precision_tokens: num,
+                        }))
+                      }
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="form-control mt-4">
               <label className="label">
-                <span className="label-text">Descrição do que foi mudado (opcional)</span>
+                <span className="label-text">
+                  Descrição do que foi mudado (opcional)
+                </span>
               </label>
               <textarea
                 className="textarea textarea-bordered w-full"
@@ -368,7 +434,11 @@ const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
               <button type="button" className="btn" onClick={closeModal}>
                 Cancelar
               </button>
-              <button type="button" className="btn btn-primary" onClick={handleSubmit}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleSubmit}
+              >
                 Salvar Resultado
               </button>
             </div>

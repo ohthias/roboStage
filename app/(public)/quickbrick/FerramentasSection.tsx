@@ -150,7 +150,7 @@ export default function FerramentasSection({
       categoria: "Documentar",
       icon: <BookText className="w-5 h-5" />,
       link: "/quickbrick/matriz-de-risco",
-      image: "/images/matriz-de-risco.png",
+      image: "/images/QuickBrick/MatrizRisco.png",
       customContent: null,
     },
     {
@@ -161,7 +161,7 @@ export default function FerramentasSection({
       categoria: "Documentar",
       icon: <BookText className="w-5 h-5" />,
       link: "/quickbrick/swot",
-      image: "/images/quickbrick_matrizSWOT.png",
+      image: "/images/QuickBrick/MatrizSWOT.png",
       customContent: null,
     },
     {
@@ -183,7 +183,7 @@ export default function FerramentasSection({
             return (
               <button
                 key={s}
-                onClick={() => router.push(`/quickbrick/matriz-swot/${s}`)}
+                onClick={() => router.push(`/quickbrick/tabela-de-missoes/${s}`)}
                 className="
           group
           w-full

@@ -1,18 +1,18 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Column, Mission, ViewMode } from "@/types/TableAnalytics";
+import React, { useState, useEffect, useRef } from "react";
+import { Column, Mission } from "@/types/TableAnalytics";
 import { INITIAL_COLUMNS, INITIAL_MISSIONS } from "./constants";
-import { ImageDown, Table as TableIcon, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { MissionTable } from "@/components/QuickBrick/Tabela-de-analise-de-missoes/MissionTable";
-import { Analytics } from "@/components/QuickBrick/Tabela-de-analise-de-missoes/Analytics";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/UI/Navbar";
 import { Footer } from "@/components/UI/Footer";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
-import html2canvas from "html2canvas-pro";
-import { jsPDF } from "jspdf";
 import { useToast } from "@/app/context/ToastContext";
 import Loader from "@/components/Loader";
+import ModalConfirm, {
+  ModalConfirmRef,
+} from "@/components/UI/Modal/ModalConfirm";
 
 function MissionTablePage() {
   const params = useParams();
@@ -26,8 +26,8 @@ function MissionTablePage() {
   const season = selectedSeason || "unearthed"; // Default season
   const [missions, setMissions] = useState<Mission[] | null>(null);
   const [columns, setColumns] = useState<Column[]>(INITIAL_COLUMNS);
+  const modalClearAll = useRef<ModalConfirmRef>(null);
 
-  const [viewMode, setViewMode] = useState(ViewMode.TABLE);
   const { addToast } = useToast();
 
   // Carrega missões baseado na season
@@ -64,24 +64,28 @@ function MissionTablePage() {
   }, [missions, season]);
 
   const handleReset = async () => {
-    if (!confirm("Restaurar valores padrão?")) return;
+    modalClearAll.current?.open(
+      "Tem certeza que deseja restaurar os dados da tabela? Isso irá apagar todas as suas alterações.",
+      async () => {
+        const res = await fetch(`/api/data/missions/`);
+        const data = await res.json();
+        const seasonData = data?.[season] || INITIAL_MISSIONS;
 
-    const res = await fetch(`/api/data/missions/`);
-    const data = await res.json();
-    const seasonData = data?.[season] || INITIAL_MISSIONS;
-
-    const filteredMissions = seasonData.filter((mission: any) => {
-      return mission.id && mission.id !== "GP" && mission.id !== "PT";
-    });
-    setMissions(filteredMissions);
-    localStorage.removeItem(`fll_missions_${season}`);
-    addToast("Dados restaurados!", "success");
+        const filteredMissions = seasonData.filter((mission: any) => {
+          return mission.id && mission.id !== "GP" && mission.id !== "PT";
+        });
+        setMissions(filteredMissions);
+        setColumns(INITIAL_COLUMNS);
+        localStorage.removeItem(`fll_missions_${season}`);
+        addToast("Dados restaurados!", "success");
+      }
+    );
   };
 
   // Enquanto as missões carregam
   if (!missions) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+      <div className="fixed inset-0 bg-white bg-opacity-30 flex justify-center items-center z-50">
         <Loader />
       </div>
     );
@@ -90,75 +94,46 @@ function MissionTablePage() {
   return (
     <div className="min-h-screen bg-base-100">
       <Navbar />
-      <div className="px-4 md:px-8">
+      <div className="px-4 md:px-8 space-y-4">
         <Breadcrumbs />
-      </div>
-      <section className="w-full flex flex-col items-center text-center px-4 py-8">
-        <article className="max-w-3xl">
-          <h1 className="text-4xl font-bold text-primary mb-4">
-            Tabela de Missões
+        <section className="space-y-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary">
+            Tabela de Missões - Temporada {season.toUpperCase()}
           </h1>
-          <p className="text-base-content/75 text-lg leading-relaxed">
-            Analise as missões da temporada {season.toUpperCase()} usando esta
-            tabela interativa. Avalie pontos, dificuldades e status de cada
-            missão para otimizar o desempenho do seu robô.
+          <p className="text-base md:text-lg text-base-content/80 max-w-3xl leading-relaxed">
+            Documente e analise as missões da temporada {season.toUpperCase()}.
+            Utilize a tabela para registrar detalhes, pontuações e estratégias.
+            Ou crie novas colunas e análises personalizadas para atender às suas
+            necessidades.
           </p>
-        </article>
-      </section>
-      <header className="sticky top-0 z-30 bg-base-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold">
-              Tabela de Missões - {season.toUpperCase()}
-            </h1>
-          </div>
+        </section>
 
-          <div className="flex items-center gap-2">
-            <div className="btn-group">
-              <button
-                onClick={() => setViewMode(ViewMode.TABLE)}
-                className={`btn btn-sm gap-2 ${
-                  viewMode === ViewMode.TABLE ? "btn-primary" : "btn-ghost"
-                }`}
-                aria-pressed={viewMode === ViewMode.TABLE}
-              >
-                <TableIcon size={16} />
-                <span>Tabela</span>
-              </button>
-            </div>
+        <MissionTable
+          missions={missions}
+          setMissions={setMissions}
+          columns={columns}
+          setColumns={setColumns}
+          season={season}
+        />
 
-            <button
-              onClick={handleReset}
-              className="btn btn-sm btn-ghost tooltip tooltip-bottom text-error"
-              title="Resetar Dados"
-            >
-              <RotateCcw size={18} />
-            </button>
-          </div>
+        <div className="flex items-center gap-2 justify-end mb-12">
+          <button
+            onClick={handleReset}
+            className="btn btn-sm btn-soft btn-warning"
+            title="Resetar Dados"
+          >
+            <RotateCcw size={18} />
+            Limpar
+          </button>
         </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col">
-        <div className="flex-1 min-h-0">
-          <div className="card bg-base-100 shadow">
-            <div className="card-body p-4">
-              {viewMode === ViewMode.TABLE ? (
-                <MissionTable
-                  missions={missions}
-                  setMissions={setMissions}
-                  columns={columns}
-                  setColumns={setColumns}
-                  season={season}
-                />
-              ) : (
-                <Analytics missions={missions} columns={columns} />
-              )}
-            </div>
-          </div>
-        </div>
-      </main>
-
+      </div>
       <Footer />
+      <ModalConfirm
+        ref={modalClearAll}
+        title="Restaurar tabela"
+        confirmLabel="Sim"
+        cancelLabel="Cancelar"
+      />
     </div>
   );
 }

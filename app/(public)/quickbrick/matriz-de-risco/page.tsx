@@ -10,6 +10,7 @@ import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import { Footer } from "@/components/UI/Footer";
 import html2canvas from "html2canvas-pro";
 import { useToast } from "@/app/context/ToastContext";
+import { PlusIcon, Image, RotateCcw } from "lucide-react";
 
 export default function MatrizDeRiscoPage() {
   const [riscos, setRiscos] = useState<Risco[]>(INITIAL_RISCOS);
@@ -164,60 +165,57 @@ export default function MatrizDeRiscoPage() {
   return (
     <div className="flex flex-col items-start justify-center w-full">
       <Navbar />
-      <div className="px-4 md:px-8">
+      <div className="px-4 md:px-8 space-y-4 w-full min-h-screen">
         <Breadcrumbs />
-      </div>
-      <div className="flex flex-col items-center w-full min-h-screen py-8">
-        <main className="flex flex-col w-full px-4 md:px-8">
-          <section className="w-full flex flex-col items-center text-center px-4 py-8">
-            <article className="max-w-3xl">
-              <h1 className="text-4xl font-bold text-primary mb-4">
-                Matriz de Risco
-              </h1>
-              <p className="text-base-content/75 text-lg leading-relaxed">
-                Identifique e avalie os riscos potenciais para o sucesso do seu
-                robô.
-                <br />
-                <strong className="text-base-content">
-                  Arraste e solte
-                </strong>{" "}
-                os cartões para reavaliar os riscos.
-              </p>
-            </article>
-          </section>
+        <section className="space-y-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary">
+            Matriz de Risco
+          </h1>
+          <p className="text-base md:text-lg text-base-content/80 max-w-3xl leading-relaxed">
+            A Matriz de Risco ajuda identificar e avaliar os{" "}
+            <strong>riscos potenciais</strong> para o sucesso do seu robô. Ao
+            mapear os riscos em uma matriz de impacto versus probabilidade, pode{" "}
+            <strong>priorizar</strong> quais riscos precisam ser gerenciados
+            ativamente e quais podem ser monitorados passivamente.
+          </p>
+        </section>
 
-          <section className="w-full max-w-6xl mx-auto flex justify-end gap-4 mb-4">
-            <button
-              onClick={() => handleOpenModal()}
-              className="btn btn-primary"
-            >
-              Adicionar Risco
-            </button>
-            <button
-              onClick={handleExport}
-              className="btn btn-success btn-outline"
-            >
-              Exportar Matriz
-            </button>
-            <button
-              onClick={handleResetRiscos}
-              className="btn btn-error btn-outline"
-            >
-              Resetar
-            </button>
-          </section>
+        <section className="flex flex-wrap items-center justify-end gap-4">
+          <button
+            onClick={() => handleOpenModal()}
+            className="btn btn-primary btn-soft gap-2 shadow-sm"
+          >
+            <PlusIcon className="size-5" />
+            Adicionar Risco
+          </button>
 
-          <section className="w-full flex justify-center mt-2">
-            <MatrizRisco
-              ref={matrixRef}
-              riscos={riscos}
-              onDropRisco={handleDropRisco}
-              onEditRisco={handleOpenModal}
-              onRemoveRisco={handleRemoveRisco}
-              onViewRisco={handleOpenDetalhesModal}
-            />
-          </section>
-        </main>
+          <button
+            onClick={handleExport}
+            className="btn btn-outline btn-success gap-2"
+          >
+            <Image className="size-5" />
+            Exportar
+          </button>
+
+          <button
+            onClick={handleResetRiscos}
+            className="btn btn-outline btn-error gap-2"
+          >
+            <RotateCcw className="size-5" />
+            Resetar
+          </button>
+        </section>
+
+        <section className="w-full flex justify-center mt-4 mb-12">
+          <MatrizRisco
+            ref={matrixRef}
+            riscos={riscos}
+            onDropRisco={handleDropRisco}
+            onEditRisco={handleOpenModal}
+            onRemoveRisco={handleRemoveRisco}
+            onViewRisco={handleOpenDetalhesModal}
+          />
+        </section>
       </div>
       <RiscoModal
         isOpen={isModalOpen}

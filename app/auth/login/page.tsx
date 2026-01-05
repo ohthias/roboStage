@@ -34,16 +34,16 @@ export default function LoginPage() {
       </Link>
 
       {/* Lado institucional */}
-      <aside className="w-2/3 hidden md:flex flex-col justify-between bg-base-300 p-8">
+      <aside className="w-2/3 hidden md:flex flex-col justify-between bg-gradient-to-r from-base-300 to-primary/10 p-8 ">
         <Logo logoSize="lg" redirectIndex />
       </aside>
 
       {/* Formulário */}
       <main className="w-full md:w-1/3 flex items-center justify-center bg-base-100 p-6">
-        <div className="card w-full max-w-md shadow-xl">
+        <div className="card w-full max-w-md">
           <div className="card-body gap-6">
             <header className="text-center">
-              <h1 className="text-3xl font-bold">Bem-vindo de volta</h1>
+              <h1 className="text-3xl font-bold">Bem-vindo de volta!</h1>
               <p className="text-base-content/70 text-sm mt-1">
                 Entre com sua conta para acessar o RoboStage
               </p>
@@ -70,7 +70,7 @@ export default function LoginPage() {
                 <input
                   id="email"
                   type="email"
-                  className="input input-bordered"
+                  className="input input-bordered w-full"
                   placeholder="robostage@email.com"
                   required
                   value={email}
@@ -86,7 +86,7 @@ export default function LoginPage() {
                   </label>
                   <Link
                     href="/auth/forgot-password"
-                    className="text-sm link link-hover"
+                    className="text-sm link link-hover text-base-content/70"
                   >
                     Esqueceu a senha?
                   </Link>
@@ -104,7 +104,7 @@ export default function LoginPage() {
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 px-4 flex items-center"
+                    className="absolute inset-y-0 right-0 px-4 flex items-center text-base-content/70 hover:text-base-content transition duration-200"
                     aria-label={
                       showPassword ? "Ocultar senha" : "Mostrar senha"
                     }

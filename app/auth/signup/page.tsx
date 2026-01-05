@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Logo from "@/components/UI/Logo";
 
 export default function SignupPage() {
   const { signup, loading, error, success } = useAuth();
@@ -60,14 +61,10 @@ export default function SignupPage() {
       </Link>
 
       {/* Lado esquerdo */}
-      <div className="w-2/3 hidden md:flex flex-col justify-between bg-base-300 p-8 relative overflow-hidden">
-        <Link href="/" className="inline-block">
-          <h1 className="text-2xl font-bold">
-            Robo<strong className="text-primary">stage</strong>
-          </h1>
-        </Link>
-      </div>
-
+      <aside className="w-2/3 hidden md:flex flex-col justify-between bg-gradient-to-r from-base-300 to-secondary/20 p-8">
+        <Logo logoSize="lg" redirectIndex />
+      </aside>
+      
       {/* Formulário */}
       <div className="w-full md:w-1/3 flex items-center justify-center bg-base-100 p-6">
         <div className="card w-full max-w-md">
@@ -201,6 +198,7 @@ export default function SignupPage() {
                   placeholder="••••••••"
                   className="input input-bordered w-full"
                   required
+                  disabled={!password || passwordErrors.length > 0}
                 />
               </motion.div>
 

@@ -132,7 +132,7 @@ export default function Sidebar({
           onClick={() => router.push("/dashboard/teams")}
         />
 
-        <div className="pt-4 border-t border-base-300">
+        <div className="pt-4 border-t border-base-300 space-y-2">
           <NavItem
             icon={<RadioIcon className="w-5 h-5" />}
             label="ShowLive"

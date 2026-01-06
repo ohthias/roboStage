@@ -3,14 +3,14 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { EventModal } from "@/components/showLive/EventModal";
-import Loader from "@/components/Loader";
 import { useUser } from "@/app/context/UserContext";
 import { useEvents } from "@/hooks/useEventsLoad";
 import { MagnifyingGlassIcon, SignalIcon } from "@heroicons/react/24/outline";
+import { EventCardSkeleton } from "@/components/UI/Cards/EventCardSkeleton";
 
 export default function ShowLiveHub() {
   const router = useRouter();
-  const { session, loading } = useUser();
+  const { session } = useUser();
   const { events, loading: loadingEvents } = useEvents(session?.user?.id);
 
   const [showModal, setShowModal] = useState(false);
@@ -18,7 +18,6 @@ export default function ShowLiveHub() {
   const [order, setOrder] = useState<"desc" | "asc">("desc");
   const [seasonFilter, setSeasonFilter] = useState<"all" | string>("all");
 
-  if (loading) return <Loader />;
   if (!session) {
     router.push("/auth/login");
     return null;
@@ -62,62 +61,78 @@ export default function ShowLiveHub() {
   }, [events]);
 
   return (
-    <>
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-base-100 p-6 rounded-xl shadow-md border border-base-300">
-        <div className="flex items-center gap-4">
-          <SignalIcon className="hidden sm:block size-16 text-primary/75" />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="rounded-2xl border border-base-300 bg-gradient-to-br from-primary/10 via-base-100 to-base-300/10 p-6 flex flex-col sm:flex-row  items-start sm:items-center justify-between gap-4">
+        {/* Info */}
+        <div className="flex items-start gap-4">
+          <div className="p-3 rounded-xl bg-primary/10 text-primary">
+            <SignalIcon className="w-6 h-6" />
+          </div>
           <div>
-            <h2 className="text-base-content font-bold mb-2 text-3xl">
-              Show<span className="text-primary">Live</span>
-            </h2>
-            <p className="text-sm text-base-content">
-              Gerencie seus eventos de robótica ao vivo aqui.
+            <h1 className="text-xl font-semibold leading-tight">LabTest</h1>
+            <p className="text-sm text-base-content/70 max-w-lg">
+              Gerencie seus testes de missões e visualize os resultados de forma
+              eficiente.
             </p>
           </div>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          Criar Evento
-        </button>
-      </section>
+
+        {/* Action */}
+        <div className="shrink-0">
+          <button
+            onClick={() => setShowModal(true)}
+            className="btn btn-primary btn-sm flex items-center gap-2"
+          >
+            <SignalIcon className="w-4 h-4" />
+            Novo Evento
+          </button>
+        </div>
+      </div>
 
       {/* 🔍 Filtros */}
-      <section className="flex flex-col gap-3 mt-4 mb-4 w-full sm:flex-row sm:gap-4 sm:items-center">
+      <div className="flex flex-col sm:flex-row gap-3 bg-base-100/60 border border-base-300 rounded-xl p-3">
+        {/* Search */}
         <input
           type="text"
-          className="input input-bordered w-full sm:w-64 flex-1 py-2"
-          placeholder="Buscar evento por nome..."
+          placeholder="Buscar evento..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
+          className="input input-sm input-bordered w-full flex-1"
         />
 
-        <div className="flex flex-col w-full gap-3 sm:flex-row sm:w-auto sm:gap-4">
-          <select
-            className="select select-bordered w-full sm:w-52"
-            value={seasonFilter}
-            onChange={(e) => setSeasonFilter(e.target.value)}
-          >
-            <option value="all">Todas as temporadas</option>
-            {seasons.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+        {/* Season */}
+        <select
+          value={seasonFilter}
+          onChange={(e) => setSeasonFilter(e.target.value)}
+          className="select select-sm select-bordered w-full px-2 rounded-box flex-1"
+        >
+          <option value="all">Todas as temporadas</option>
+          {seasons.map((season) => (
+            <option key={season} value={season}>
+              Temporada {season}
+            </option>
+          ))}
+        </select>
 
-          <select
-            className="select select-bordered w-full sm:w-52"
-            value={order}
-            onChange={(e) => setOrder(e.target.value as "desc" | "asc")}
-          >
-            <option value="desc">Mais recentes primeiro</option>
-            <option value="asc">Mais antigos primeiro</option>
-          </select>
-        </div>
-      </section>
+        {/* Order */}
+        <select
+          value={order}
+          onChange={(e) => setOrder(e.target.value as "asc" | "desc")}
+          className="select select-sm select-bordered w-full px-2 rounded-box flex-1"
+        >
+          <option value="desc">Mais recentes primeiro</option>
+          <option value="asc">Mais antigos primeiro</option>
+        </select>
+      </div>
 
-      <section className="flex flex-wrap justify-start gap-6 mt-6">
+      <section className="flex flex-wrap justify-start gap-6">
         {loadingEvents ? (
-          <Loader />
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <EventCardSkeleton key={index} />
+            ))}
+          </section>
         ) : (
           <>
             {filteredEvents.length === 0 && (
@@ -147,89 +162,104 @@ export default function ShowLiveHub() {
             )}
 
             {/* Lista de eventos filtrados */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
               {filteredEvents.map((event) => (
                 <div
                   key={event.id_evento}
-                  className="card bg-base-100/80 backdrop-blur-md border border-base-200 rounded-xl flex flex-col md:flex-row overflow-hidden shadow-md transition-transform duration-300 hover:scale-103 hover:shadow-lg"
+                  className="
+        group relative overflow-hidden rounded-2xl
+        bg-base-100 border border-base-200
+        shadow-sm hover:shadow-xl
+        transition-all duration-300
+        hover:-translate-y-1
+      "
                 >
-                  {/* Logo da Temporada */}
-                  <figure className="w-full md:w-1/3 h-32 md:h-auto flex items-center justify-center bg-gradient-to-br from-base-200 to-base-300 rounded-lg overflow-hidden">
+                  {/* Header visual */}
+                  <div className="relative h-36 w-full overflow-hidden">
                     <img
                       src={sessionBackground(event.config?.temporada)}
                       alt="Evento"
-                      className="object-cover w-full h-full transition-transform duration-500 hover:scale-105"
+                      className="
+            w-full h-full object-cover
+            transition-transform duration-500
+            group-hover:scale-110
+          "
                     />
-                  </figure>
+
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-base-100/90 via-base-100/30 to-transparent" />
+
+                    {/* Status */}
+                    <span className="absolute top-3 right-3 badge badge-success badge-sm gap-1">
+                      <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                      Ativo
+                    </span>
+                  </div>
 
                   {/* Conteúdo */}
-                  <div className="flex flex-col flex-1 p-4 gap-2">
-                    {/* Título e status */}
-                    <div className="flex justify-between items-start">
-                      <h2 className="text-lg font-semibold text-base-content truncate">
+                  <div className="p-5 flex flex-col gap-4">
+                    {/* Título */}
+                    <div className="space-y-1">
+                      <h2 className="text-lg font-bold text-base-content leading-tight line-clamp-2">
                         {event.name_event}
                       </h2>
-                      <span className="badge badge-success badge-sm flex items-center gap-1">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-3 w-3"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={3}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        Ativo
-                      </span>
-                    </div>
 
-                    {/* Informações */}
-                    <div className="text-xs text-base-content flex flex-col gap-1">
-                      <p>
-                        <span className="font-semibold">Categoria:</span>{" "}
+                      <p className="text-xs text-base-content/60">
                         {event.config?.base === "FLL"
                           ? "FIRST LEGO League"
-                          : "Robótica"}
+                          : "Evento de Robótica"}
                       </p>
+                    </div>
+
+                    {/* Metadados */}
+                    <div className="flex flex-wrap gap-2 text-xs">
                       {event.config?.base === "FLL" && (
-                        <p>
-                          <span className="font-semibold">Temporada:</span>{" "}
-                          {event.config?.temporada}
-                        </p>
+                        <span className="badge badge-outline">
+                          Temporada {event.config?.temporada}
+                        </span>
                       )}
                     </div>
 
-                    {/* Botão */}
-                    <div className="mt-auto flex justify-end">
-                      <button
-                        onClick={() =>
-                          router.push(`/showlive/${event.code_event}`)
-                        }
-                        className="btn btn-primary btn-sm flex items-center gap-2 transition-transform duration-300 hover:scale-105 hover:bg-primary-focus"
+                    {/* Ação */}
+                    <button
+                      onClick={() =>
+                        router.push(`/showlive/${event.code_event}`)
+                      }
+                      className="
+            mt-2 btn btn-primary btn-sm w-full
+            gap-2
+            transition-all duration-300
+            group-hover:gap-3
+          "
+                    >
+                      Acessar Hub
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M14 5l7 7m0 0l-7 7m7-7H3"
-                          />
-                        </svg>
-                        Hub
-                      </button>
-                    </div>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M14 5l7 7m0 0l-7 7m7-7H3"
+                        />
+                      </svg>
+                    </button>
                   </div>
+
+                  {/* Borda animada no hover */}
+                  <div
+                    className="
+        absolute inset-0 rounded-2xl
+        ring-1 ring-transparent
+        group-hover:ring-primary/40
+        transition-all duration-300
+        pointer-events-none
+      "
+                  />
                 </div>
               ))}
             </section>
@@ -240,6 +270,6 @@ export default function ShowLiveHub() {
       {showModal && (
         <EventModal session={session} onClose={() => setShowModal(false)} />
       )}
-    </>
+    </div>
   );
 }

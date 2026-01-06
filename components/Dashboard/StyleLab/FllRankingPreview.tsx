@@ -7,36 +7,48 @@ interface FllRankingPreviewProps {
 export function FllRankingPreview({ theme }: FllRankingPreviewProps) {
   const primary = theme.colors?.[0] || "#2563eb";
   const secondary = theme.colors?.[1] || "#1e293b";
+  const textColor = theme.colors?.[2] || "#ffffff";
 
   return (
     <div
       className="relative min-h-[420px] p-8"
       style={{
         backgroundImage: `url(${
-          theme.background_url || "/images/showLive/banners/banner_default.webp"
+          theme.background_url ||
+          "/images/showLive/banners/banner_default.webp"
         })`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div
+        className={`absolute inset-0 bg-black/60 ${
+          theme.background_blur ? "backdrop-blur-sm" : ""
+        }`}
+      />
 
       {/* Conteúdo */}
       <div className="relative z-10 space-y-6">
         {/* Título */}
-        <div
-          className="rounded-xl p-4 text-white"
-        >
-          <h2 className="text-2xl font-bold text-center" style={{color: primary}}>
+        <div className="rounded-xl p-4">
+          <h2
+            className="text-2xl font-bold text-center"
+            style={{ color: primary }}
+          >
             FIRST LEGO League – Ranking Geral
           </h2>
-          <p className="text-sm opacity-90 font-italic text-center">Pré-visualização de tabela</p>
+          <p className="text-sm opacity-90 italic text-center text-white">
+            Pré-visualização de tabela
+          </p>
         </div>
 
         {/* Tabela */}
         <div className="overflow-hidden rounded-xl border border-white/20">
-          <table className="w-full text-sm text-white" style={{color: theme.colors?.[2] || "#ffffff"}}>
+          <table
+            className="w-full text-sm"
+            style={{ color: textColor }}
+          >
             <thead style={{ backgroundColor: secondary }}>
               <tr>
                 <th className="p-3 text-left">#</th>
@@ -78,6 +90,12 @@ export function FllRankingPreview({ theme }: FllRankingPreviewProps) {
             style={{ backgroundColor: secondary }}
           />
           <span>Cabeçalho da tabela</span>
+
+          <span
+            className="w-3 h-3 rounded ml-4 border border-white/30"
+            style={{ backgroundColor: textColor }}
+          />
+          <span>Texto</span>
         </div>
       </div>
     </div>

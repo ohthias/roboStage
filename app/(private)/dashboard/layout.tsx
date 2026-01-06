@@ -64,8 +64,8 @@ export default function DashboardLayout({
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="btn btn-ghost btn-circle btn-sm">
-            <Calendar1 size={20} />
+          <button className="btn btn-ghost btn-sm" onClick={() => router.push("/dashboard/projects")}>
+            Meus Projetos
           </button>
           <button className="btn btn-ghost btn-circle btn-sm">
             <Bell size={20} />
@@ -101,7 +101,7 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main */}
-      <main className="overflow-y-auto p-6">{children}</main>
+      <main className="overflow-y-auto p-4 sm:p-6">{children}</main>
 
       <ModalConfirm
         ref={modalLogoutRef}

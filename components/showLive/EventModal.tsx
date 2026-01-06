@@ -1,3 +1,5 @@
+"use client";
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/utils/supabase/client";
@@ -8,23 +10,36 @@ interface EventModalProps {
 }
 
 export function EventModal({ session, onClose }: EventModalProps) {
+  const router = useRouter();
+
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+
   const [nameEvent, setNameEvent] = useState("");
   const [competitionType, setCompetitionType] = useState("");
+  const [season, setSeason] = useState("");
+
   const [rounds, setRounds] = useState<string[]>([]);
   const [roundInput, setRoundInput] = useState("");
-  const [season, setSeason] = useState("");
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const router = useRouter();
+  const nextStep = () => {
+    if (step === 1 && !nameEvent.trim()) return;
+    if (step === 2 && (!competitionType || !season)) return;
+    setStep((s) => (s + 1) as 1 | 2 | 3);
+  };
+
+  const prevStep = () => {
+    setStep((s) => (s - 1) as 1 | 2 | 3);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validação: precisa de pelo menos uma rodada
     if (rounds.length === 0) {
-      setError("É necessário adicionar pelo menos uma rodada.");
-      return; // impede execução abaixo
+      setError("Adicione pelo menos uma rodada.");
+      return;
     }
 
     setSubmitting(true);
@@ -50,6 +65,7 @@ export function EventModal({ session, onClose }: EventModalProps) {
         rodadas: rounds,
         temporada: season,
       };
+
       const { error: typeError } = await supabase
         .from("typeEvent")
         .insert({ id_event: eventData.id_evento, config });
@@ -66,149 +82,180 @@ export function EventModal({ session, onClose }: EventModalProps) {
   };
 
   return (
-    <div className="modal modal-open">
-      <div className="modal-box w-full max-w-4xl p-0 overflow-hidden mx-auto">
-        <div className="flex justify-between items-center border-b border-base-300 p-4">
-          <h3 className="text-lg font-semibold text-info">Criar Evento</h3>
-          <button onClick={onClose} className="btn btn-sm btn-ghost">
-            ✕
-          </button>
+    <div className="modal modal-open backdrop-blur-md">
+      <div className="modal-box w-full max-w-5xl p-0 overflow-hidden shadow-xl">
+        {/* Header */}
+        <div className="px-8 py-6 bg-primary/10 border-b border-base-300">
+          <h3 className="text-2xl font-bold text-primary">Criar Evento</h3>
+          <p className="text-sm text-base-content/70">
+            Configure sua competição em poucos passos
+          </p>
+        </div>
+
+        {/* Stepper */}
+        <div className="px-8 py-4 border-b border-base-300 bg-base-100">
+          <ul className="steps w-full">
+            <li className={`step ${step >= 1 ? "step-primary" : ""}`}>
+              Evento
+            </li>
+            <li className={`step ${step >= 2 ? "step-primary" : ""}`}>
+              Competição
+            </li>
+            <li className={`step ${step >= 3 ? "step-primary" : ""}`}>
+              Rodadas
+            </li>
+          </ul>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-6 p-4 max-h-[70vh] overflow-y-auto"
+          className="p-8 space-y-8 max-h-[70vh] overflow-y-auto"
         >
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Coluna esquerda */}
-            <div className="flex-1 space-y-4">
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">
-                    Nome do Evento
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={nameEvent}
-                  onChange={(e) => setNameEvent(e.target.value)}
-                  className="input input-bordered w-full"
-                  placeholder="Digite o nome do evento"
-                />
-              </div>
+          {/* STEP 1 */}
+          {step === 1 && (
+            <div className="bg-base-100 border border-base-300 rounded-2xl p-6 space-y-4">
+              <h4 className="text-lg font-semibold">Informações do Evento</h4>
 
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">
-                    Tipo de competição
-                  </span>
-                </label>
-                <select
-                  required
-                  value={competitionType}
-                  onChange={(e) => setCompetitionType(e.target.value)}
-                  className="select select-bordered w-full"
-                >
-                  <option value="">Selecione o tipo de competição</option>
-                  <option value="FLL">FIRST LEGO League</option>
-                </select>
-              </div>
+              <input
+                type="text"
+                required
+                value={nameEvent}
+                onChange={(e) => setNameEvent(e.target.value)}
+                className="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Ex: Etapa Regional RoboStage"
+              />
+            </div>
+          )}
+
+          {/* STEP 2 */}
+          {step === 2 && (
+            <div className="bg-base-100 border border-base-300 rounded-2xl p-6 space-y-4">
+              <h4 className="text-lg font-semibold">
+                Configuração da Competição
+              </h4>
+
+              <select
+                required
+                value={competitionType}
+                onChange={(e) => setCompetitionType(e.target.value)}
+                className="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-primary rounded-lg px-3"
+              >
+                <option value="">Tipo de competição</option>
+                <option value="FLL">FIRST LEGO League</option>
+              </select>
 
               {competitionType === "FLL" && (
-                <div>
-                  <label className="label">
-                    <span className="label-text font-semibold">Temporada</span>
-                  </label>
-                  <select
-                    required
-                    value={season}
-                    onChange={(e) => setSeason(e.target.value)}
-                    className="select select-bordered w-full"
-                  >
-                    <option value="">Selecione a temporada</option>
-                    <option value="UNEARTHED">UNEARTHED</option>
-                    <option value="SUBMERGED">SUBMERGED</option>
-                    <option value="MASTERPIECE">MASTERPIECE</option>
-                  </select>
-                </div>
+                <select
+                  required
+                  value={season}
+                  onChange={(e) => setSeason(e.target.value)}
+                  className="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-primary rounded-lg px-3"
+                >
+                  <option value="" disabled>Temporada</option>
+                  <option value="UNEARTHED">UNEARTHED</option>
+                  <option value="SUBMERGED">SUBMERGED</option>
+                  <option value="MASTERPIECE">MASTERPIECE</option>
+                </select>
               )}
             </div>
+          )}
 
-            {/* Coluna direita */}
-            <div className="flex-1 space-y-2">
-              <label className="label">
-                <span className="label-text font-semibold">Rodadas</span>
-              </label>
+          {/* STEP 3 */}
+          {step === 3 && (
+            <div className="bg-base-100 border border-base-300 rounded-2xl p-6 space-y-4">
+              <h4 className="text-lg font-semibold">Rodadas</h4>
+
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={roundInput}
                   onChange={(e) => setRoundInput(e.target.value)}
-                  placeholder="Digite o nome da rodada"
-                  className="input input-bordered flex-1"
+                  className="input input-bordered flex-1 focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Ex: Classificatória 1"
                 />
                 <button
                   type="button"
+                  className="btn btn-outline btn-primary"
                   onClick={() => {
-                    if (roundInput.trim() !== "") {
+                    if (roundInput.trim()) {
                       setRounds([...rounds, roundInput.trim()]);
                       setRoundInput("");
                     }
                   }}
-                  className="btn btn-outline btn-info"
                 >
                   Adicionar
                 </button>
               </div>
 
-              {rounds.length > 0 ? (
-                <ul className="space-y-1 max-h-40 overflow-y-auto">
-                  {rounds.map((r, i) => (
-                    <li
-                      key={i}
-                      className="flex items-center justify-between bg-base-200 p-2 rounded"
+              {/* Chips */}
+              <div className="flex flex-wrap gap-2">
+                {rounds.map((r, i) => (
+                  <div
+                    key={i}
+                    className="badge badge-lg gap-2 px-4 py-3 bg-primary/10 text-primary border border-primary/20"
+                  >
+                    {r}
+                    <button
+                      type="button"
+                      className="font-bold hover:text-error transition"
+                      onClick={() =>
+                        setRounds(rounds.filter((_, idx) => idx !== i))
+                      }
                     >
-                      <span>{r}</span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setRounds(rounds.filter((_, index) => index !== i))
-                        }
-                        className="btn btn-xs btn-error"
-                      >
-                        Remover
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="text-warning text-sm mt-1">
-                  Adicione pelo menos uma rodada para criar o evento.
-                </div>
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {rounds.length === 0 && (
+                <p className="text-sm text-warning">
+                  Adicione pelo menos uma rodada para continuar.
+                </p>
               )}
             </div>
-          </div>
+          )}
 
-          {/* Rodapé */}
-          <div className="flex justify-end gap-4 border-t border-base-300 pt-4">
-            {error && <div className="text-error text-sm mr-auto">{error}</div>}
-            <button type="button" onClick={onClose} className="btn">
-              Fechar
-            </button>
-            <button
-              type="submit"
-              disabled={submitting || rounds.length === 0}
-              className="btn btn-info"
-            >
-              {submitting ? (
-                <>
-                  <span className="loading loading-spinner"></span> Criando...
-                </>
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-6 border-t border-base-300">
+            {error && (
+              <span className="text-error text-sm font-medium">{error}</span>
+            )}
+
+            <div className="flex gap-3 ml-auto">
+              <button
+                type="button"
+                onClick={step === 1 ? onClose : prevStep}
+                className="btn btn-ghost"
+              >
+                {step === 1 ? "Cancelar" : "Voltar"}
+              </button>
+
+              {step < 3 ? (
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="btn btn-primary"
+                >
+                  Próximo
+                </button>
               ) : (
-                "Criar Evento"
+                <button
+                  type="submit"
+                  disabled={submitting || rounds.length === 0}
+                  className="btn btn-primary"
+                >
+                  {submitting ? (
+                    <>
+                      <span className="loading loading-spinner"></span>
+                      Criando...
+                    </>
+                  ) : (
+                    "Criar Evento"
+                  )}
+                </button>
               )}
-            </button>
+            </div>
           </div>
         </form>
       </div>

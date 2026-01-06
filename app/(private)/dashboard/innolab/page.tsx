@@ -104,15 +104,36 @@ export default function InnoLab() {
   };
 
   const toggleFavorite = async (doc: Document) => {
-    const updated = { ...doc, is_favorite: !doc.is_favorite };
+    const updatedFavorite = !doc.is_favorite;
 
-    setDocuments((prev) => prev.map((d) => (d.id === doc.id ? updated : d)));
+    // Atualiza UI imediatamente (optimistic update)
+    setDocuments((prev) =>
+      prev.map((d) =>
+        d.id === doc.id ? { ...d, is_favorite: updatedFavorite } : d
+      )
+    );
 
-    await supabase
+    const { error } = await supabase
       .from("documents")
-      .update({ Favorite: updated.is_favorite })
+      .update({ is_favorite: updatedFavorite })
       .eq("id", doc.id);
-    addToast("Favorito atualizado!", "info");
+
+    if (error) {
+      addToast("Erro ao atualizar favorito", "error");
+
+      // rollback em caso de erro
+      setDocuments((prev) =>
+        prev.map((d) =>
+          d.id === doc.id ? { ...d, is_favorite: doc.is_favorite } : d
+        )
+      );
+      return;
+    }
+
+    addToast(
+      updatedFavorite ? "Adicionado aos favoritos!" : "Removido dos favoritos",
+      "info"
+    );
   };
 
   const handleCreateDiagram = async (data: { title: string; type: string }) => {
@@ -246,9 +267,7 @@ export default function InnoLab() {
                   doc={doc}
                   viewMode={viewMode}
                   onOpen={() =>
-                    router.push(
-                      `/innolab/${doc.id}/${doc.diagram_type}`
-                    )
+                    router.push(`/innolab/${doc.id}/${doc.diagram_type}`)
                   }
                   onToggleFavorite={() => toggleFavorite(doc)}
                   onDelete={() => openDeleteModal(doc)}

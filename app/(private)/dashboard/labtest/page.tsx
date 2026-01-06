@@ -175,7 +175,7 @@ export default function LabTestPage() {
              UI
   --------------------------- */
   return (
-    <div className="px-6 pt-4 space-y-4 flex flex-col h-full">
+    <div className="space-y-6">
       {/* Header */}
       <div className="rounded-2xl border border-base-300 bg-gradient-to-br from-primary/10 via-base-100 to-base-300/10 p-6 flex flex-col sm:flex-row  items-start sm:items-center justify-between gap-4">
         {/* Info */}

@@ -26,13 +26,13 @@ export default function ShowLiveHub() {
   const sessionBackground = (temporada: string) => {
     switch (temporada) {
       case "UNEARTHED":
-        return "/images/background_uneartherd.png";
+        return "/images/showLive/banners/banner_uneartherd.webp";
       case "SUBMERGED":
-        return "/images/background_submerged.png";
+        return "/images/showLive/banners/banner_submerged.webp";
       case "MASTERPIECE":
         return "/images/showLive/banners/banner_masterpiece.webp";
       default:
-        return "/images/icons/Icone.png";
+        return "/images/showLive/banners/banner_default.webp";
     }
   };
 

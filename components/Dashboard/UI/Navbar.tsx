@@ -88,6 +88,15 @@ export default function Sidebar({
         />
 
         <NavItem
+          icon={<Users className="w-5 h-5" />}
+          label="Equipes"
+          path="/dashboard/teamspace"
+          pathname={pathname}
+          collapsed={collapsed}
+          onClick={() => router.push("/dashboard/teams")}
+        />
+
+        <NavItem
           icon={<Notebook className="w-5 h-5" />}
           label="Workspace"
           path="/dashboard/workspace"
@@ -123,15 +132,6 @@ export default function Sidebar({
           onClick={() => router.push("/dashboard/calibrabot")}
         />
 
-        <NavItem
-          icon={<Users className="w-5 h-5" />}
-          label="Equipes"
-          path="/dashboard/teamspace"
-          pathname={pathname}
-          collapsed={collapsed}
-          onClick={() => router.push("/dashboard/teams")}
-        />
-
         <div className="pt-4 border-t border-base-300 space-y-2">
           <NavItem
             icon={<RadioIcon className="w-5 h-5" />}
@@ -157,14 +157,14 @@ export default function Sidebar({
       <div className="pt-4 border-t border-base-300">
         <button
           onClick={() => router.push("/dashboard/profile")}
-          className={`flex items-center gap-3 p-3 rounded-xl w-full hover:bg-base-200
+          className={`flex items-center gap-3 p-3 rounded-xl w-full hover:bg-base-200 mb-4 transition-all cursor-pointer
             ${collapsed ? "justify-center" : ""}
           `}
         >
           <img
             src={
               profile?.avatar_url ||
-              "https://api.dicebear.com/7.x/bottts/svg?seed=user"
+              "https://static.vecteezy.com/system/resources/previews/055/591/320/non_2x/chatbot-avatar-sending-and-receiving-messages-using-artificial-intelligence-vector.jpg"
             }
             className="w-8 h-8 rounded-md"
             alt="Avatar"

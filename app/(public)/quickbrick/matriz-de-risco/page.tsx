@@ -11,6 +11,7 @@ import { Footer } from "@/components/UI/Footer";
 import html2canvas from "html2canvas-pro";
 import { useToast } from "@/app/context/ToastContext";
 import { PlusIcon, Image, RotateCcw } from "lucide-react";
+import CardMobileNotUse from "@/components/MobileNotUse";
 
 export default function MatrizDeRiscoPage() {
   const [riscos, setRiscos] = useState<Risco[]>(INITIAL_RISCOS);
@@ -148,18 +149,7 @@ export default function MatrizDeRiscoPage() {
   }, []);
 
   if (isMobile) {
-    return (
-      <div className="flex flex-col items-center justify-center text-center">
-        <Navbar />
-        <h1 className="text-2xl font-bold my-4 text-primary">
-          Ops! Ferramenta não está disponível no celular
-        </h1>
-        <p className="text-sm mb-2 text-base-content px-5">
-          O criador de Matriz de Risco é uma ferramenta que ajuda sua equipe a
-          identificar e avaliar os riscos potenciais para o sucesso do seu robô.
-        </p>
-      </div>
-    );
+    return <CardMobileNotUse />;
   }
 
   return (

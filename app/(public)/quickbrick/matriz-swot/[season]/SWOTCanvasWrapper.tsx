@@ -6,6 +6,7 @@ import { Navbar } from "@/components/UI/Navbar";
 import { SWOTCanvas } from "@/components/QuickBrick/SwotCanva";
 import { Footer } from "@/components/UI/Footer";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
+import CardMobileNotUse from "@/components/MobileNotUse";
 
 const seasonLogos: Record<string, { name: string; image: string }> = {
   submerged: {
@@ -71,20 +72,7 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
   }, [selectedSeason]);
 
   if (isMobile) {
-    return (
-      <div className="flex flex-col items-center justify-center text-center">
-        <Navbar />
-        <h1 className="text-2xl font-bold my-4 text-primary">
-          Ops! Ferramenta não está disponível no celular
-        </h1>
-        <p className="text-sm mb-2 text-base-content px-5">
-          A Matriz SWOT é uma ferramenta que ajuda sua equipe a organizar as
-          missões da FIRST LEGO League Challenge em quatro quadrantes: Forças,
-          Fraquezas, Oportunidades e Ameaças. No momento, ela está disponível
-          apenas em telas maiores, como notebooks e desktops.
-        </p>
-      </div>
-    );
+    return <CardMobileNotUse />;
   }
 
   return (

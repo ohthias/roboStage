@@ -5,6 +5,7 @@ import { Navbar } from "@/components/UI/Navbar";
 import QuickBrickCanvas from "@/components/QuickBrick/Estrategia/QuickBrickCanva";
 import { Footer } from "@/components/UI/Footer";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
+import CardMobileNotUse from "@/components/MobileNotUse";
 
 export default function StrategyPage() {
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
@@ -25,24 +26,7 @@ export default function StrategyPage() {
   if (isMobile === null) return null;
 
   if (isMobile) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <div className="flex flex-col items-center justify-center flex-1 text-center px-6">
-          <img src="/progress.svg" alt="Ícone do robô" className="w-48 mb-4" />
-          <h1 className="text-2xl font-bold text-primary mb-4">
-            Ops! Ferramenta não disponível no celular
-          </h1>
-          <p className="text-sm text-base-content max-w-md">
-            O QuickBrick Studio é um conjunto de ferramentas para criação de
-            estratégias avançadas no FIRST LEGO League Challenge. Para garantir
-            a melhor experiência, esta funcionalidade está disponível apenas em
-            telas maiores.
-          </p>
-        </div>
-        <Footer />
-      </div>
-    );
+    return <CardMobileNotUse />;
   }
 
   return (

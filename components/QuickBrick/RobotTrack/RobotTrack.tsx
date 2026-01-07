@@ -288,48 +288,13 @@ const RobotTrackCanvas: React.FC = () => {
 
   return (
     <>
-      <div className="flex flex-col h-screen w-7xl overflow-hidden mx-auto my-4 p-4">
+      <div className="">
         <main className="flex-1 flex flex-col lg:flex-row overflow-hidden h-full">
-          {/* Left Sidebar */}
           <aside className="w-full lg:w-[340px] flex flex-col bg-base-200 z-30 h-full max-h-full shrink-0 relative border border-base-content/10 rounded-lg">
-            {/* Header & Main Controls */}
             <div
               id="tour-controls"
               className="p-4 border-b border-base-content/10"
             >
-              {/* Logo Area */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="lucide lucide-shark-icon lucide-shark text-primary-content"
-                    >
-                      <path d="M3.6 15a9.07 9.07 0 0 0 11.7 5.3S19 22 22 22c0 0-1-3-3-4.5 1.1-1.5 1.9-3.3 2-5.3l-8 4.6a1.94 1.94 0 1 1-2-3.4l6-3.5s5-2.8 5-6.8c0-.6-.4-1-1-1h-9c-1.8 0-3.4.5-4.8 1.5C5.7 2.5 3.9 2 2 2c0 0 1.4 2.1 2.3 4.5A10.63 10.63 0 0 0 3.1 13" />
-                      <path d="M13.8 7 13 6" />
-                      <path d="M21.12 6h-3.5c-1.1 0-2.8.5-3.82 1L9 9.8C3 11 2 15 2 15h4" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h1 className="text-md font-black tracking-tight text-base-content">
-                      UNEARTHED Sharks Simulator
-                    </h1>
-                    <div className="badge badge-xs badge-ghost font-mono uppercase tracking-widest">
-                      V2.0
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stats & Actions */}
               <div className="stats shadow w-full bg-base-100 mb-4">
                 <div className="stat p-2 px-4">
                   <div className="stat-title text-xs font-bold uppercase opacity-60">
@@ -369,7 +334,7 @@ const RobotTrackCanvas: React.FC = () => {
               className="flex-1 overflow-y-auto custom-scrollbar min-h-0"
             >
               {/* Start Position Section */}
-              <div className="collapse collapse-arrow border-b border-base-content/5">
+              <div className="collapse border-b border-base-content/5">
                 <input type="checkbox" />
                 <div className="collapse-title text-xs font-bold uppercase tracking-widest text-base-content/70">
                   Posição Inicial
@@ -455,7 +420,7 @@ const RobotTrackCanvas: React.FC = () => {
               </div>
 
               {/* Robot Config Section */}
-              <div className="collapse collapse-arrow border-b border-base-content/5">
+              <div className="collapse border-b border-base-content/5">
                 <input type="checkbox" />
                 <div className="collapse-title text-xs font-bold uppercase tracking-widest text-base-content/70">
                   Configuração do Robô

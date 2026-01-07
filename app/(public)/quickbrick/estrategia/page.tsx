@@ -46,23 +46,26 @@ export default function StrategyPage() {
   }
 
   return (
-    <div className="flex flex-col w-full">
+    <div>
       <Navbar />
       <div className="px-4 md:px-8">
         <Breadcrumbs />
-      </div>
 
-      <div className="flex flex-col items-center w-full">
-        <h1 className="text-2xl font-bold my-4 text-primary">
-          QuickBrick Studio – Estratégias
-        </h1>
-        <p className="text-sm text-base-content text-center max-w-3xl px-2 mb-4">
-          Selecione uma das ferramentas disponíveis e desenhe diretamente sobre o
-          tapete, planejando cada movimento com precisão. Ao final, exporte e
-          utilize como preferir.
-        </p>
+        <section className="space-y-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary">
+            Estratégia de Mesa
+          </h1>
+          <p className="text-base md:text-lg text-base-content/80 max-w-3xl leading-relaxed">
+            Planeje e visualize a estratégia da sua equipe utilizando o
+            QuickBrick. Distribua as saidas, defina zonas e crie um plano de
+            ação eficiente para maximizar o desempenho no FIRST LEGO League
+            Challenge.
+          </p>
+        </section>
 
-        <QuickBrickCanvas />
+        <div className="flex justify-center mt-8 mb-16">
+          <QuickBrickCanvas />
+        </div>
       </div>
 
       <Footer />

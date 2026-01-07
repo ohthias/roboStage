@@ -180,7 +180,7 @@ export default function EditProfileModal({
           <div>
             <h3 className="text-base sm:text-lg font-bold">Editar Perfil</h3>
             <p className="hidden sm:block text-sm text-base-content/70">
-              Atualize sua foto e banner público
+              Atualize sua foto de perfil
             </p>
           </div>
 
@@ -240,42 +240,6 @@ export default function EditProfileModal({
           </section>
 
           <div className="divider" />
-
-          {/* BANNER */}
-          <section className="space-y-4">
-            <header className="space-y-1">
-              <h4 className="font-semibold text-sm sm:text-base">
-                Banner do Perfil
-              </h4>
-              <p className="text-xs sm:text-sm text-base-content/60">
-                Recomendado: imagem horizontal
-              </p>
-            </header>
-
-            <figure
-              className="h-28 sm:h-32 lg:h-40 rounded-xl border border-base-300 bg-base-200 bg-cover bg-center flex items-center justify-center text-xs sm:text-sm text-base-content/60"
-              style={{
-                backgroundImage: bannerPreview
-                  ? `url(${bannerPreview})`
-                  : undefined,
-              }}
-            >
-              {!bannerPreview && "Pré-visualização do banner"}
-            </figure>
-
-            <input
-              type="file"
-              accept="image/*"
-              className="file-input file-input-bordered w-full"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const previewUrl = URL.createObjectURL(file);
-                setBannerPreview(previewUrl);
-                setBannerFile(file);
-              }}
-            />
-          </section>
         </main>
 
         {/* ================= FOOTER ================= */}

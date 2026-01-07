@@ -20,7 +20,7 @@ export default function QuickBrickCanvas() {
     },
   ]);
   const [activeLayerId, setActiveLayerId] = useState<string>(layers[0].id);
-  const backgroundImage = "/images/quickbrick_unearthed.png";
+  const backgroundImage = "/images/QuickBrick/Estrategia_fundo.png";
 
   // UI Toggles
   const [showLabels, setShowLabels] = useState(true);
@@ -113,7 +113,7 @@ export default function QuickBrickCanvas() {
   };
 
   return (
-    <div className="flex mb-8 items-center justify-center">
+    <div className="flex items-center justify-center">
       {/* Unified Sidebar */}
       <div className="flex-none z-20 h-full bg-base-200 border border-base-300 shadow-xl rounded-lg">
         <Toolbar

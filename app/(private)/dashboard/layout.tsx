@@ -99,7 +99,10 @@ export default function DashboardLayout({
         <Sidebar
           collapsed={collapsed}
           session={session}
-          profile={profile || {}}
+          profile={{
+            avatar_url: profile?.avatar_url || undefined,
+            username: profile?.username || undefined,
+          }}
         />
       </aside>
 
@@ -117,7 +120,10 @@ export default function DashboardLayout({
             <Sidebar
               collapsed={false}
               session={session}
-              profile={profile || {}}
+              profile={{
+                avatar_url: profile?.avatar_url || undefined,
+                username: profile?.username || undefined,
+              }}
               onClose={() => setMobileOpen(false)}
             />
           </aside>

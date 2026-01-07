@@ -72,9 +72,13 @@ export default function EditProfileModal({
         canvas.toBlob(
           (blob) => {
             if (!blob) return reject("Falha ao converter para WebP");
-            const webpFile = new File([blob], `${file.name.split(".")[0]}.webp`, {
-              type: "image/webp",
-            });
+            const webpFile = new File(
+              [blob],
+              `${file.name.split(".")[0]}.webp`,
+              {
+                type: "image/webp",
+              }
+            );
             resolve(webpFile);
           },
           "image/webp",
@@ -106,7 +110,9 @@ export default function EditProfileModal({
 
         if (avatarError) throw avatarError;
 
-        const { data: { publicUrl } } = supabase.storage.from("photos").getPublicUrl(filePath);
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("photos").getPublicUrl(filePath);
         newAvatarUrl = publicUrl;
       }
 
@@ -122,7 +128,9 @@ export default function EditProfileModal({
 
         if (bannerError) throw bannerError;
 
-        const { data: { publicUrl } } = supabase.storage.from("photos").getPublicUrl(filePath);
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("photos").getPublicUrl(filePath);
         newBannerUrl = publicUrl;
       }
 
@@ -158,86 +166,136 @@ export default function EditProfileModal({
 
   return (
     <div
-      className={`modal modal-open transition-opacity duration-300 ${
+      className={`modal modal-open backdrop-blur-sm transition-opacity duration-300 ${
         open ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
     >
       <div
-        className={`modal-box space-y-6 max-w-lg transform transition-all duration-300 ${
+        className={`modal-box w-full max-w-none sm:max-w-xl lg:max-w-3xl p-0 overflow-hidden transform transition-all duration-300 overflow-y-auto ${
           open ? "scale-100 translate-y-0" : "scale-95 translate-y-3"
         }`}
       >
-        <h3 className="font-bold text-lg">Editar Perfil</h3>
-
-        {/* FOTO DE PERFIL */}
-        <div className="space-y-3">
-          <h4 className="font-semibold">Foto de Perfil</h4>
-          <div className="flex flex-col items-center gap-3">
-            {avatarPreview ? (
-              <img
-                src={avatarPreview}
-                alt="Preview avatar"
-                className="w-28 h-28 rounded-full border-2 border-primary object-cover"
-              />
-            ) : (
-              <div className="w-28 h-28 rounded-full border-2 border-dashed border-base-300 flex items-center justify-center text-sm text-base-content/70">
-                Nenhuma imagem
-              </div>
-            )}
-            <span className="text-sm text-base-content/70">Pré-visualização</span>
+        {/* ================= HEADER ================= */}
+        <header className="px-4 sm:px-6 py-4 bg-base-200 border-b border-base-300 flex items-center justify-between">
+          <div>
+            <h3 className="text-base sm:text-lg font-bold">Editar Perfil</h3>
+            <p className="hidden sm:block text-sm text-base-content/70">
+              Atualize sua foto e banner público
+            </p>
           </div>
 
-          <input
-            type="file"
-            accept="image/*"
-            className="file-input file-input-bordered w-full"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              const previewUrl = URL.createObjectURL(file);
-              setAvatarPreview(previewUrl);
-              setAvatarFile(file);
-            }}
-          />
-        </div>
-
-        <hr className="border-base-300" />
-
-        {/* BANNER */}
-        <div className="space-y-3">
-          <h4 className="font-semibold">Banner do Perfil</h4>
-          <div
-            className="h-24 rounded-lg border-2 border-primary flex items-center justify-center text-sm text-base-content/70 bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${bannerPreview || ""})`,
-            }}
+          <button
+            onClick={onClose}
+            className="btn btn-sm btn-circle btn-ghost"
+            aria-label="Fechar"
           >
-            {bannerPreview ? "Pré-visualização do banner" : "Nenhum banner selecionado"}
-          </div>
+            ✕
+          </button>
+        </header>
 
-          <input
-            type="file"
-            accept="image/*"
-            className="file-input file-input-bordered w-full"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              const previewUrl = URL.createObjectURL(file);
-              setBannerPreview(previewUrl);
-              setBannerFile(file);
-            }}
-          />
-        </div>
+        {/* ================= CONTENT ================= */}
+        <main className="p-4 sm:p-6 space-y-10">
+          {/* AVATAR */}
+          <section className="grid gap-6 lg:grid-cols-[auto_1fr] items-center">
+            <header className="lg:col-span-2 space-y-1">
+              <h4 className="font-semibold text-sm sm:text-base">
+                Foto de Perfil
+              </h4>
+              <p className="text-xs sm:text-sm text-base-content/60">
+                Recomendado: imagem quadrada
+              </p>
+            </header>
 
-        {/* Ações */}
-        <div className="modal-action">
-          <button onClick={onClose} className="btn btn-ghost" disabled={loading}>
+            <figure className="flex justify-center lg:justify-start">
+              {avatarPreview ? (
+                <img
+                  src={avatarPreview}
+                  alt="Pré-visualização do avatar"
+                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border border-base-300"
+                />
+              ) : (
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border border-dashed border-base-300 flex items-center justify-center text-xs text-base-content/60">
+                  Sem imagem
+                </div>
+              )}
+            </figure>
+
+            <div className="space-y-2">
+              <input
+                type="file"
+                accept="image/*"
+                className="file-input file-input-bordered w-full"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const previewUrl = URL.createObjectURL(file);
+                  setAvatarPreview(previewUrl);
+                  setAvatarFile(file);
+                }}
+              />
+              <p className="text-xs text-base-content/60">
+                PNG, JPG ou WEBP • até 5MB
+              </p>
+            </div>
+          </section>
+
+          <div className="divider" />
+
+          {/* BANNER */}
+          <section className="space-y-4">
+            <header className="space-y-1">
+              <h4 className="font-semibold text-sm sm:text-base">
+                Banner do Perfil
+              </h4>
+              <p className="text-xs sm:text-sm text-base-content/60">
+                Recomendado: imagem horizontal
+              </p>
+            </header>
+
+            <figure
+              className="h-28 sm:h-32 lg:h-40 rounded-xl border border-base-300 bg-base-200 bg-cover bg-center flex items-center justify-center text-xs sm:text-sm text-base-content/60"
+              style={{
+                backgroundImage: bannerPreview
+                  ? `url(${bannerPreview})`
+                  : undefined,
+              }}
+            >
+              {!bannerPreview && "Pré-visualização do banner"}
+            </figure>
+
+            <input
+              type="file"
+              accept="image/*"
+              className="file-input file-input-bordered w-full"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const previewUrl = URL.createObjectURL(file);
+                setBannerPreview(previewUrl);
+                setBannerFile(file);
+              }}
+            />
+          </section>
+        </main>
+
+        {/* ================= FOOTER ================= */}
+        <footer className="px-4 sm:px-6 py-4 bg-base-200 border-t border-base-300 flex flex-col sm:flex-row gap-3 sm:justify-end">
+          <button
+            onClick={onClose}
+            className="btn btn-ghost w-full sm:w-auto"
+            disabled={loading}
+          >
             Cancelar
           </button>
-          <button onClick={handleUpdateImages} className="btn btn-primary" disabled={loading}>
+
+          <button
+            onClick={handleUpdateImages}
+            className="btn btn-primary w-full sm:w-auto min-w-[160px]"
+            disabled={loading}
+          >
             {loading ? "Salvando..." : "Salvar Alterações"}
           </button>
-        </div>
+        </footer>
       </div>
     </div>
   );

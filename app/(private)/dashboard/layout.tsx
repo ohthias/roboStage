@@ -64,7 +64,10 @@ export default function DashboardLayout({
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="btn btn-ghost btn-sm" onClick={() => router.push("/dashboard/projects")}>
+          <button
+            className="btn btn-sm hidden md:inline-flex btn-soft"
+            onClick={() => router.push("/dashboard/projects")}
+          >
             Meus Projetos
           </button>
           <button className="btn btn-ghost btn-circle btn-sm">
@@ -99,6 +102,27 @@ export default function DashboardLayout({
           profile={profile || {}}
         />
       </aside>
+
+      {/* Sidebar Mobile */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+
+          {/* Drawer */}
+          <aside className="absolute left-0 top-0 h-full w-72 bg-base-100 shadow-xl border-r border-base-300 animate-slide-in">
+            <Sidebar
+              collapsed={false}
+              session={session}
+              profile={profile || {}}
+              onClose={() => setMobileOpen(false)}
+            />
+          </aside>
+        </div>
+      )}
 
       {/* Main */}
       <main className="overflow-y-auto p-4 sm:p-6">{children}</main>

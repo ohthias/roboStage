@@ -1,10 +1,11 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useLabTests } from "@/hooks/useLabTests";
 import TestResultsCharts from "../components/TestResultsCharts";
 import Link from "next/link";
+import { supabase } from "@/utils/supabase/client";
 
 export default function LabTestResultsExtended() {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,19 @@ export default function LabTestResultsExtended() {
   const { tests } = useLabTests();
   const test = tests.find((t) => t.id === id);
   const chartRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const updateLastAccess = async () => {
+      await supabase
+        .from("tests")
+        .update({ last_acess: new Date().toISOString() })
+        .eq("id", id);
+    };
+
+    updateLastAccess();
+  }, [id]);
 
   if (!id) {
     router.push("/dashboard/labtest");

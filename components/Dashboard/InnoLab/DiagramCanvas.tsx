@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Node, Connection, DiagramType, PathLayer } from "@/types/InnoLabType";
-import { DIAGRAM_COLORS } from "@/app/(private)/innolab/[id]/[diagram_type]/constants";
+import { DIAGRAM_COLORS } from "@/app/(private)/innolab/[id]/constants";
 import { ResizeHandle } from "@/hooks/useDiagram";
 
 interface Props {

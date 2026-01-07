@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from "react";
 import { Node, Connection, DiagramType, PathLayer } from "@/types/InnoLabType";
-import { TEMPLATE_NODES } from "@/app/(private)/innolab/[id]/[diagram_type]/constants";
+import { TEMPLATE_NODES } from "@/app/(private)/innolab/[id]/constants";
 import { v4 as uuidv4 } from "uuid";
 
 interface HistoryState {

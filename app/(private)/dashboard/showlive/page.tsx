@@ -7,6 +7,7 @@ import { useUser } from "@/app/context/UserContext";
 import { useEvents } from "@/hooks/useEventsLoad";
 import { MagnifyingGlassIcon, SignalIcon } from "@heroicons/react/24/outline";
 import { EventCardSkeleton } from "@/components/UI/Cards/EventCardSkeleton";
+import { supabase } from "@/utils/supabase/client";
 
 export default function ShowLiveHub() {
   const router = useRouter();
@@ -34,6 +35,13 @@ export default function ShowLiveHub() {
       default:
         return "/images/showLive/banners/banner_default.webp";
     }
+  };
+
+  const updateEventLastAccess = async (id_evento: number) => {
+    await supabase
+      .from("events")
+      .update({ last_acess: new Date().toISOString() })
+      .eq("id_evento", id_evento);
   };
 
   // Filtragem e ordenação de eventos
@@ -223,7 +231,9 @@ export default function ShowLiveHub() {
                     {/* Ação */}
                     <button
                       onClick={() =>
-                        router.push(`/showlive/${event.code_event}`)
+                        updateEventLastAccess(event.id_evento).then(() =>
+                          router.push(`/showlive/${event.code_event}`)
+                        )
                       }
                       className="
             mt-2 btn btn-primary btn-sm w-full

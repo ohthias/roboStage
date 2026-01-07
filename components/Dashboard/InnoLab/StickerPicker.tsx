@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Smile, X, Upload, Search, Image as ImageIcon, LayoutGrid } from 'lucide-react';
-import { STICKER_PACKS } from '@/app/(private)/innolab/[id]/[diagram_type]/constants';
+import { STICKER_PACKS } from '@/app/(private)/innolab/[id]/constants';
 
 interface Props {
   isOpen: boolean;

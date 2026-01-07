@@ -47,9 +47,7 @@ export default function StyleLab() {
     if (hasHydrated.current) return;
 
     setSearchText(searchParams.get("q") ?? "");
-    setOrder(
-      (searchParams.get("order") as "asc" | "desc") ?? "desc"
-    );
+    setOrder((searchParams.get("order") as "asc" | "desc") ?? "desc");
 
     hasHydrated.current = true;
   }, [searchParams]);
@@ -97,9 +95,8 @@ export default function StyleLab() {
      Delete
   ========================= */
   const openDeleteModal = (theme: StyleLabTheme) => {
-    modalDeleteRef.current?.open(
-      `Deseja deletar o tema "${theme.name}"?`,
-      () => deleteTheme(theme.id_theme)
+    modalDeleteRef.current?.open(`Deseja deletar o tema "${theme.name}"?`, () =>
+      deleteTheme(theme.id_theme)
     );
   };
 
@@ -110,9 +107,7 @@ export default function StyleLab() {
       .eq("id_theme", id_theme);
 
     if (!error) {
-      setThemes((prev) =>
-        prev.filter((t) => t.id_theme !== id_theme)
-      );
+      setThemes((prev) => prev.filter((t) => t.id_theme !== id_theme));
     }
   };
 
@@ -123,9 +118,7 @@ export default function StyleLab() {
     return themes
       .filter(
         (theme) =>
-          theme.name
-            .toLowerCase()
-            .includes(searchText.toLowerCase()) ||
+          theme.name.toLowerCase().includes(searchText.toLowerCase()) ||
           `Tema #${theme.id_theme}`.includes(searchText)
       )
       .sort((a, b) => {
@@ -134,6 +127,13 @@ export default function StyleLab() {
         return order === "asc" ? aTime - bTime : bTime - aTime;
       });
   }, [themes, searchText, order]);
+
+  const updateThemeLastAccess = async (id_theme: number) => {
+    await supabase
+      .from("stylelab")
+      .update({ last_acess: new Date().toISOString() })
+      .eq("id_theme", id_theme);
+  };
 
   return (
     <div className="space-y-6">
@@ -144,7 +144,7 @@ export default function StyleLab() {
             <Palette className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold">InnoLab</h1>
+            <h1 className="text-xl font-semibold">StyleLab</h1>
             <p className="text-sm text-base-content/70">
               Crie, organize e evolua seus temas visuais.
             </p>
@@ -175,9 +175,7 @@ export default function StyleLab() {
         <select
           className="select select-bordered sm:w-52 px-3 rounded-lg"
           value={order}
-          onChange={(e) =>
-            setOrder(e.target.value as "asc" | "desc")
-          }
+          onChange={(e) => setOrder(e.target.value as "asc" | "desc")}
         >
           <option value="desc">Mais recentes</option>
           <option value="asc">Mais antigos</option>
@@ -209,7 +207,10 @@ export default function StyleLab() {
           {filteredThemes.map((theme) => (
             <div
               key={theme.id_theme}
-              onClick={() => setPreviewTheme(theme)}
+              onClick={async () => {
+                await updateThemeLastAccess(theme.id_theme);
+                setPreviewTheme(theme);
+              }}
               className="relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition"
               style={{
                 backgroundImage: `url(${
@@ -227,13 +228,12 @@ export default function StyleLab() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="dropdown dropdown-end">
-                  <button className="btn btn-ghost btn-xs text-white">
-                    ⋮
-                  </button>
+                  <button className="btn btn-ghost btn-xs text-white">⋮</button>
                   <ul className="dropdown-content menu p-2 bg-base-100 rounded-xl w-40">
                     <li>
                       <button
-                        onClick={() => {
+                        onClick={async () => {
+                          await updateThemeLastAccess(theme.id_theme);
                           setEditingTheme(theme);
                           setShowModal(true);
                         }}
@@ -242,9 +242,7 @@ export default function StyleLab() {
                       </button>
                     </li>
                     <li className="text-error">
-                      <button
-                        onClick={() => openDeleteModal(theme)}
-                      >
+                      <button onClick={() => openDeleteModal(theme)}>
                         Excluir
                       </button>
                     </li>
@@ -253,9 +251,7 @@ export default function StyleLab() {
               </div>
 
               <div className="relative z-10 p-4 flex flex-col justify-end h-52">
-                <h3 className="text-white font-semibold">
-                  {theme.name}
-                </h3>
+                <h3 className="text-white font-semibold">{theme.name}</h3>
                 <div className="flex gap-1 mt-2">
                   {theme.colors.slice(0, 6).map((c, i) => (
                     <span

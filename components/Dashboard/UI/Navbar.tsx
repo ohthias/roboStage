@@ -20,6 +20,7 @@ interface SidebarProps {
   };
   session: any;
   collapsed: boolean;
+  onClose?: () => void;
 }
 
 interface NavItemProps {
@@ -40,7 +41,7 @@ const NavItem = ({
   onClick,
 }: NavItemProps) => {
   const isActive =
-     path === "/dashboard/labtest"
+    path === "/dashboard/labtest"
       ? pathname === path || pathname.startsWith(path + "/")
       : pathname === path;
 
@@ -66,9 +67,18 @@ export default function Sidebar({
   profile,
   session,
   collapsed,
+  onClose,
 }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
+
+  const handleNavigate = (path: string) => {
+    router.push(path);
+
+    if (window.innerWidth < 1024) {
+      onClose?.();
+    }
+  };
 
   return (
     <aside
@@ -84,7 +94,7 @@ export default function Sidebar({
           path="/dashboard"
           pathname={pathname}
           collapsed={collapsed}
-          onClick={() => router.push("/dashboard")}
+          onClick={() => handleNavigate("/dashboard")}
         />
 
         <NavItem
@@ -93,7 +103,7 @@ export default function Sidebar({
           path="/dashboard/teamspace"
           pathname={pathname}
           collapsed={collapsed}
-          onClick={() => router.push("/dashboard/teams")}
+          onClick={() => handleNavigate("/dashboard/teams")}
         />
 
         <NavItem
@@ -102,7 +112,7 @@ export default function Sidebar({
           path="/dashboard/workspace"
           pathname={pathname}
           collapsed={collapsed}
-          onClick={() => router.push("/dashboard/workspace")}
+          onClick={() => handleNavigate("/dashboard/workspace")}
         />
 
         <NavItem
@@ -111,7 +121,7 @@ export default function Sidebar({
           path="/dashboard/labtest"
           pathname={pathname}
           collapsed={collapsed}
-          onClick={() => router.push("/dashboard/labtest")}
+          onClick={() => handleNavigate("/dashboard/labtest")}
         />
 
         <NavItem
@@ -120,7 +130,7 @@ export default function Sidebar({
           path="/dashboard/innolab"
           pathname={pathname}
           collapsed={collapsed}
-          onClick={() => router.push("/dashboard/innolab")}
+          onClick={() => handleNavigate("/dashboard/innolab")}
         />
 
         <NavItem
@@ -129,7 +139,7 @@ export default function Sidebar({
           path="/dashboard/calibrabot"
           pathname={pathname}
           collapsed={collapsed}
-          onClick={() => router.push("/dashboard/calibrabot")}
+          onClick={() => handleNavigate("/dashboard/calibrabot")}
         />
 
         <div className="pt-4 border-t border-base-300 space-y-2">
@@ -139,7 +149,7 @@ export default function Sidebar({
             path="/dashboard/showlive"
             pathname={pathname}
             collapsed={collapsed}
-            onClick={() => router.push("/dashboard/showlive")}
+            onClick={() => handleNavigate("/dashboard/showlive")}
           />
 
           <NavItem
@@ -148,7 +158,7 @@ export default function Sidebar({
             path="/dashboard/stylelab"
             pathname={pathname}
             collapsed={collapsed}
-            onClick={() => router.push("/dashboard/stylelab")}
+            onClick={() => handleNavigate("/dashboard/stylelab")}
           />
         </div>
       </nav>
@@ -156,7 +166,7 @@ export default function Sidebar({
       {/* Perfil */}
       <div className="pt-4 border-t border-base-300">
         <button
-          onClick={() => router.push("/dashboard/profile")}
+          onClick={() => handleNavigate("/dashboard/profile")}
           className={`flex items-center gap-3 p-3 rounded-xl w-full hover:bg-base-200 mb-4 transition-all cursor-pointer
             ${collapsed ? "justify-center" : ""}
           `}

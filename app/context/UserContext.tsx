@@ -29,8 +29,6 @@ const UserContext = createContext<UserContextType>({
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   /* ================= HELPERS ================= */
@@ -49,9 +47,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const applyProfile = async (data: Profile) => {
     setProfile(data);
     localStorage.setItem("userProfile", JSON.stringify(data));
-
-    setAvatarUrl(await resolvePublicUrl(data.avatar_url));
-    setBannerUrl(await resolvePublicUrl(data.banner_url));
   };
 
   /* ================= FETCH ================= */
@@ -59,19 +54,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, username, avatar_url, banner_url")
+      .select("id, username")
       .eq("id", userId)
       .single();
 
     if (error || !data) {
       setProfile(null);
-      setAvatarUrl(null);
-      setBannerUrl(null);
       localStorage.removeItem("userProfile");
       return;
     }
 
-    await applyProfile(data);
+    await applyProfile(data as Profile);
   };
 
   /* ================= INIT ================= */
@@ -107,8 +100,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           await fetchProfile(newSession.user.id);
         } else {
           setProfile(null);
-          setAvatarUrl(null);
-          setBannerUrl(null);
           localStorage.removeItem("userProfile");
         }
 
@@ -126,8 +117,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       value={{
         session,
         profile,
-        avatarUrl,
-        bannerUrl,
         loading,
       }}
     >

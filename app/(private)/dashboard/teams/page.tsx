@@ -1,6 +1,52 @@
+"use client";
+
+import CreateTeamSpaceModal from "@/components/UI/Modal/CreateTeamSpaceModal";
 import { Users, Settings, Search, Plus, LogIn, Filter } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/utils/supabase/client";
+
+interface TeamSpace {
+  id: number;
+  name: string;
+  description: string | null;
+  role: "owner" | "admin" | "member";
+}
 
 export default function TeamSpacePage() {
+  const [openModal, setOpenModal] = useState(false);
+  const [teams, setTeams] = useState<TeamSpace[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function fetchTeams() {
+    setLoading(true);
+
+    const { data, error } = await supabase.from("team_members").select(`
+        role,
+        team_spaces (
+          id,
+          name,
+          description
+        )
+      `);
+
+    if (!error && data) {
+      const mapped = data.map((item: any) => ({
+        id: item.team_spaces.id,
+        name: item.team_spaces.name,
+        description: item.team_spaces.description,
+        role: item.role,
+      }));
+
+      setTeams(mapped);
+    }
+
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    fetchTeams();
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -50,7 +96,10 @@ export default function TeamSpacePage() {
               Entrar em equipe
             </button>
 
-            <button className="btn btn-info text-info-content">
+            <button
+              className="btn btn-info text-info-content"
+              onClick={() => setOpenModal(true)}
+            >
               <Plus className="w-4 h-4" />
               Criar equipe
             </button>
@@ -60,42 +109,64 @@ export default function TeamSpacePage() {
 
       {/* Grid de Equipes */}
       <section>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Card de Equipe */}
-          <div className="group bg-base-100 rounded-2xl border border-base-200 shadow-md hover:shadow-xl transition-all duration-300 p-6 flex flex-col justify-between">
-            <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-xl bg-info/10 text-info flex items-center justify-center text-xl font-bold">
-                T
-              </div>
-
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold group-hover:text-info transition-colors">
-                  Nome da Equipe
-                </h3>
-                <p className="text-sm text-base-content/70 mt-1 line-clamp-2">
-                  Descrição curta da equipe explicando o foco ou objetivo
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-base-content/70">
-                <Users className="w-4 h-4" />
-                <span>5 membros</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button className="btn btn-sm btn-ghost">
-                  <Settings className="w-4 h-4" />
-                </button>
-                <button className="btn btn-sm btn-info text-info-content">
-                  Entrar
-                </button>
-              </div>
-            </div>
+        {loading ? (
+          <div className="text-center py-12 opacity-70">
+            Carregando equipes...
           </div>
-        </div>
+        ) : teams.length === 0 ? (
+          <div className="text-center py-12 opacity-70">
+            Você ainda não participa de nenhuma equipe
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {teams.map((team) => (
+              <div
+                key={team.id}
+                className="group bg-base-100 rounded-2xl border border-base-200 shadow-md hover:shadow-xl transition-all duration-300 p-6 flex flex-col justify-between"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-info/10 text-info flex items-center justify-center text-xl font-bold">
+                    {team.name.charAt(0).toUpperCase()}
+                  </div>
+
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold group-hover:text-info transition-colors">
+                      {team.name}
+                    </h3>
+                    <p className="text-sm text-base-content/70 mt-1 line-clamp-2">
+                      {team.description || "Sem descrição"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-base-content/70">
+                    <Users className="w-4 h-4" />
+                    <span>{team.role}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {team.role !== "member" && (
+                      <button className="btn btn-sm btn-ghost">
+                        <Settings className="w-4 h-4" />
+                      </button>
+                    )}
+
+                    <button className="btn btn-sm btn-info text-info-content">
+                      Entrar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
+      <CreateTeamSpaceModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        onCreated={fetchTeams}
+      />
     </div>
   );
 }

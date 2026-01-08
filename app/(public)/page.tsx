@@ -218,10 +218,11 @@ export default function Home() {
               <div className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow">
                 <div className="card-body space-y-4">
                   <Dumbbell className="w-10 h-10 text-error" />
-                  <h3 className="font-black uppercase">TrainLab</h3>
+                  <h3 className="font-black uppercase inline-block">TrainLab <span className="badge badge-sm badge-error">Em Breve</span></h3>
                   <p className="text-sm text-base-content/60">
                     Organize treinos com metas, registros, análises e evolução contínua.
                   </p>
+                  
                 </div>
               </div>
             </div>

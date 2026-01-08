@@ -1,10 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, easeInOut } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { BookText, Puzzle, TestTube } from "lucide-react";
+import {
+  ArrowRightLeft,
+  BookText,
+  Puzzle,
+  Scale,
+  TestTube,
+  Wrench,
+} from "lucide-react";
 
 interface FerramentasSectionProps {
   seasons: string[];
@@ -183,7 +190,9 @@ export default function FerramentasSection({
             return (
               <button
                 key={s}
-                onClick={() => router.push(`/quickbrick/tabela-de-missoes/${s}`)}
+                onClick={() =>
+                  router.push(`/quickbrick/tabela-de-missoes/${s}`)
+                }
                 className="
           group
           w-full
@@ -244,7 +253,217 @@ export default function FerramentasSection({
         </div>
       ),
     },
+    {
+      id: 7,
+      titulo: "Comparador de Estratégias",
+      descricao:
+        "Compare duas ou mais estratégias por pontuação estimada, tempo, risco operacional e consistência.",
+      categoria: "Simular",
+      icon: <Scale className="w-5 h-5" />,
+      link: "/quickbrick/comparador-estrategias",
+      customContent: (
+        seasons: string[],
+        seasonLogos: { [x: string]: any },
+        router: any
+      ) => (
+        <div className="flex flex-col gap-2 mt-2 w-full mx-auto">
+          {seasons.map((s: string) => {
+            const season = seasonLogos[s];
+
+            return (
+              <button
+                key={s}
+                onClick={() =>
+                  router.push(`/quickbrick/tabela-de-missoes/${s}`)
+                }
+                className="
+          group
+          w-full
+          flex items-center gap-4
+          px-4 py-3
+          rounded-xl
+          border border-base-300/60
+          bg-base-100
+          hover:border-primary
+          hover:bg-base-200/50
+          transition-all duration-300
+        "
+              >
+                {/* Ícone / Logo */}
+                <div
+                  className="
+          w-10 h-10
+          flex items-center justify-center
+          rounded-lg
+          bg-base-200/70
+          group-hover:bg-primary/10
+          transition-colors
+          shrink-0
+        "
+                >
+                  <Image
+                    src={season?.image || "/images/icons/default-season.png"}
+                    alt={season?.name || s}
+                    width={32}
+                    height={32}
+                    className="object-contain"
+                  />
+                </div>
+
+                {/* Texto */}
+                <div className="flex flex-col text-left flex-1">
+                  <span className="text-sm font-semibold leading-tight">
+                    {season?.name}
+                  </span>
+                  <span className="text-xs opacity-60">Temporada FLL</span>
+                </div>
+
+                {/* Ação */}
+                <span
+                  className="
+          text-xs font-semibold
+          text-primary
+          opacity-0
+          group-hover:opacity-100
+          transition-opacity
+        "
+                >
+                  Abrir →
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ),
+      badge: "Em breve",
+    },
+    {
+      id: 8,
+      titulo: "Planejador de Anexos",
+      descricao:
+        "Organize estrategicamente os anexos do robô, relacionando missões, rodadas, risco operacional e tempo de troca.",
+      categoria: "Documentar",
+      icon: <Wrench className="w-5 h-5" />,
+      link: "/quickbrick/planejador-de-anexos",
+      image: "/images/QuickBrick/Estrategia.png",
+      customContent: null,
+      badge: "Em breve",
+    },
+    {
+      id: 9,
+      titulo: "Inspiração de Robôs e Conceitos",
+      descricao:
+        "Explore uma coleção de designs e conceitos de robôs para inspirar suas criações.",
+      categoria: "Criar",
+      icon: <TestTube className="w-5 h-5" />,
+      link: "/quickbrick/inspiracao-de-robos-e-conceitos",
+      image: "/images/QuickBrick/Inspiracao.jpg",
+      customContent: null,
+      badge: "Em breve",
+    },
+    {
+      id: 10,
+      titulo: "Estratégia em Saída",
+      descricao:
+        "Crie e organize as saídas do robô com suas missões e exporte os dados para análise comparativa.",
+      categoria: "Criar",
+      icon: <ArrowRightLeft className="w-5 h-5" />,
+      link: "/quickbrick/geradorsaidas",
+      image: "/images/QuickBrick/Estrategia.png",
+      customContent: (
+        seasons: string[],
+        seasonLogos: { [x: string]: any },
+        router: any
+      ) => (
+        <div className="flex flex-col gap-2 mt-2 w-full mx-auto">
+          {seasons.map((s: string) => {
+            const season = seasonLogos[s];
+
+            return (
+              <button
+                key={s}
+                onClick={() =>
+                  router.push(`/quickbrick/tabela-de-missoes/${s}`)
+                }
+                className="
+          group
+          w-full
+          flex items-center gap-4
+          px-4 py-3
+          rounded-xl
+          border border-base-300/60
+          bg-base-100
+          hover:border-primary
+          hover:bg-base-200/50
+          transition-all duration-300
+        "
+              >
+                {/* Ícone / Logo */}
+                <div
+                  className="
+          w-10 h-10
+          flex items-center justify-center
+          rounded-lg
+          bg-base-200/70
+          group-hover:bg-primary/10
+          transition-colors
+          shrink-0
+        "
+                >
+                  <Image
+                    src={season?.image || "/images/icons/default-season.png"}
+                    alt={season?.name || s}
+                    width={32}
+                    height={32}
+                    className="object-contain"
+                  />
+                </div>
+
+                {/* Texto */}
+                <div className="flex flex-col text-left flex-1">
+                  <span className="text-sm font-semibold leading-tight">
+                    {season?.name}
+                  </span>
+                  <span className="text-xs opacity-60">Temporada FLL</span>
+                </div>
+
+                {/* Ação */}
+                <span
+                  className="
+          text-xs font-semibold
+          text-primary
+          opacity-0
+          group-hover:opacity-100
+          transition-opacity
+        "
+                >
+                  Abrir →
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ),
+      badge: "Em breve",
+    },
   ] as Ferramenta[];
+
+  const cardVariants = {
+    hidden: { opacity: 0, scale: 0.96 },
+    show: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.25,
+        ease: easeInOut,
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.96,
+      transition: { duration: 0.2 },
+    },
+  };
 
   const filtradas =
     filtro === "Todos"
@@ -284,22 +503,13 @@ export default function FerramentasSection({
             <motion.div
               key={ferramenta.id}
               layout
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="
-    group relative
-    card bg-base-100
-    border border-base-300
-    rounded-2xl
-    overflow-hidden
-    hover:border-primary
-    hover:shadow-2xl
-    hover:-translate-y-1
-    transition-all duration-300
-    cursor-pointer
-  "
+              variants={cardVariants}
+              initial="hidden"
+              animate="show"
+              exit="exit"
+              whileHover={{ scale: 1.015 }}
+              transition={{ type: "spring", stiffness: 260, damping: 22 }}
+              className="group relative card bg-base-100 border border-base-300 rounded-2xl overflow-hidden hover:border-primary hover:shadow-xl transition-colors cursor-pointer"
               onClick={() => {
                 if (ferramenta.link) router.push(ferramenta.link);
               }}
@@ -319,11 +529,7 @@ export default function FerramentasSection({
                     alt={ferramenta.titulo}
                     width={400}
                     height={225}
-                    className="
-          w-full aspect-video object-cover
-          transition-transform duration-300
-          group-hover:scale-105
-        "
+                    className="w-full aspect-video object-cover transition-transform duration-300 group-hover:scale-105"
                   />
 
                   {/* Overlay suave */}
@@ -367,14 +573,7 @@ export default function FerramentasSection({
                 )}
 
                 {ferramenta.customContent ? null : (
-                  <span
-                    className="
-      text-xs font-semibold
-      opacity-0 group-hover:opacity-100
-      transition-opacity duration-300
-      text-primary
-    "
-                  >
+                  <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-primary">
                     Abrir ferramenta →
                   </span>
                 )}

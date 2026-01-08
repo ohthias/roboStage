@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 
 const PUBLIC_ROUTES = [
-  "/",
   "/auth/login",
   "/auth/signup",
 ];

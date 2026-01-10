@@ -2,6 +2,7 @@
 
 import React from "react";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { Folder } from "lucide-react";
 
 export default function TestCard({
   test,
@@ -96,6 +97,9 @@ export default function TestCard({
 
         {/* ACTIONS */}
         <div className="card-actions justify-end pt-2">
+          <button className="btn btn-ghost btn-xs" title="Adicionar à pasta">
+            <Folder size={18} />
+          </button>
           <button
             className="btn btn-primary btn-xs"
             onClick={() => onAddResult(test.id)}

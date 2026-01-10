@@ -12,6 +12,7 @@ import DiagramCard, {
 } from "@/components/Dashboard/InnoLab/Card/DiagramCard";
 import CreateDiagramModal from "@/components/Dashboard/InnoLab/CreateDiagramModal";
 import DiagramCardSkeleton from "@/components/Dashboard/InnoLab/Card/DiagramCardSkeleton";
+import MoveToFolderModal from "@/components/UI/Modal/MoveToFolderModal";
 
 type DiagramType = "5W2H" | "Ishikawa" | "Mapa Mental" | "Flowchart" | "SWOT";
 
@@ -20,6 +21,8 @@ export default function InnoLab() {
   const { addToast } = useToast();
 
   const [openDiagramModal, setOpenDiagramModal] = useState(false);
+  const [moveDocId, setMoveDocId] = useState<string | null>(null);
+
   const [documents, setDocuments] = useState<Document[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [loading, setLoading] = useState(true);
@@ -249,6 +252,7 @@ export default function InnoLab() {
                   }
                   onToggleFavorite={() => toggleFavorite(doc)}
                   onDelete={() => openDeleteModal(doc)}
+                  onMoveToFolder={() => setMoveDocId(doc.id)}
                 />
               )
           )}
@@ -276,6 +280,17 @@ export default function InnoLab() {
         open={openDiagramModal}
         onClose={() => setOpenDiagramModal(false)}
       />
+      {moveDocId && (
+        <MoveToFolderModal
+          open={!!moveDocId}
+          documentId={moveDocId}
+          onClose={() => setMoveDocId(null)}
+          onMoved={() => {
+            addToast("Diagrama movido para a pasta", "success");
+            fetchDocuments();
+          }}
+        />
+      )}
     </div>
   );
 }

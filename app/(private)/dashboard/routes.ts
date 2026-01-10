@@ -1,5 +1,5 @@
 import { NavItem } from "@/types/navigation";
-import { LayoutDashboard, User, Users, Radio, Palette, ChartPie, Book } from "lucide-react";
+import { LayoutDashboard, User, Users, Radio, Palette, ChartPie, Book, Folder} from "lucide-react";
 
 export const NAV_ITEMS: NavItem[] = [
   {
@@ -7,6 +7,18 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Dashboard",
     icon: LayoutDashboard,
     href: "/dashboard",
+  },
+  {
+    id: "folders",
+    label: "Pastas",
+    icon: Folder,
+    href: "/dashboard/folders",
+  },
+  {
+    id: "teams",
+    label: "Equipes",
+    icon: Users,
+    href: "/dashboard/teams",
   },
   {
     id: "innolab",
@@ -19,12 +31,6 @@ export const NAV_ITEMS: NavItem[] = [
     label: "LabTest",
     icon: ChartPie,
     href: "/dashboard/labtest",
-  },
-  {
-    id: "teams",
-    label: "Equipes",
-    icon: Users,
-    href: "/dashboard/teams",
   },
   {
     id: "showlive",

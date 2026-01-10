@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { AppMode } from "@/types/TimersType";
-import { Mic, Plus, Minus, ArrowLeftCircleIcon } from "lucide-react";
+import { Plus, Minus, ArrowLeftCircleIcon } from "lucide-react";
 import { playSound } from "@/lib/audio";
 import { CompletionModal } from "@/components/Timers/CompletionModal";
 import { ConfirmModal } from "@/components/Timers/ConfirmModal";

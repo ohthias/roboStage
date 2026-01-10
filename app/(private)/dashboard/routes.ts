@@ -1,5 +1,5 @@
 import { NavItem } from "@/types/navigation";
-import { LayoutDashboard, Settings, User, Users, Radio, Palette, ChartPie, Book } from "lucide-react";
+import { LayoutDashboard, User, Users, Radio, Palette, ChartPie, Book } from "lucide-react";
 
 export const NAV_ITEMS: NavItem[] = [
   {

@@ -1,7 +1,7 @@
 "use client";
 
 import CreateTeamSpaceModal from "@/components/UI/Modal/CreateTeamSpaceModal";
-import { Users, Settings, Search, Plus, LogIn, Filter, Route } from "lucide-react";
+import { Users, Settings, Search, Plus, LogIn, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";

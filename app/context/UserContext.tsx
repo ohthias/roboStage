@@ -107,14 +107,12 @@ interface Profile {
 interface UserContextType {
   session: any;
   profile: Profile | null;
-  avatarUrl?: string | null;
   loading: boolean;
 }
 
 const UserContext = createContext<UserContextType>({
   session: null,
   profile: null,
-  avatarUrl: null,
   loading: true,
 });
 
@@ -123,12 +121,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const applyProfile = async (data: Profile) => {
+  const applyProfile = (data: Profile) => {
     setProfile(data);
     localStorage.setItem("userProfile", JSON.stringify(data));
   };
-
-  /* ================= FETCH ================= */
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -143,25 +139,29 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    await applyProfile(data as Profile);
+    applyProfile(data);
   };
 
-  /* ================= INIT ================= */
+  /* ================= BOOTSTRAP ================= */
 
   useEffect(() => {
+    let mounted = true;
+
     const init = async () => {
-      setLoading(true);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
+      if (!mounted) return;
 
-      if (data.session?.user) {
+      setSession(session);
+
+      if (session?.user) {
         const cached = localStorage.getItem("userProfile");
         if (cached) {
-          const parsed: Profile = JSON.parse(cached);
-          await applyProfile(parsed);
+          applyProfile(JSON.parse(cached));
         } else {
-          await fetchProfile(data.session.user.id);
+          await fetchProfile(session.user.id);
         }
       }
 
@@ -172,8 +172,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
+        // 🔒 NÃO mexe em loading
         setSession(newSession);
-        setLoading(true);
 
         if (newSession?.user) {
           await fetchProfile(newSession.user.id);
@@ -181,24 +181,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           setProfile(null);
           localStorage.removeItem("userProfile");
         }
-
-        setLoading(false);
       }
     );
 
     return () => {
+      mounted = false;
       listener.subscription.unsubscribe();
     };
   }, []);
 
   return (
-    <UserContext.Provider
-      value={{
-        session,
-        profile,
-        loading,
-      }}
-    >
+    <UserContext.Provider value={{ session, profile, loading }}>
       {children}
     </UserContext.Provider>
   );

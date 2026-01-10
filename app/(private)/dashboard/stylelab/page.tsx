@@ -23,7 +23,7 @@ export interface StyleLabTheme {
 }
 
 export default function StyleLab() {
-  const { session } = useUser();
+  const { session, loading: userLoading } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -74,22 +74,27 @@ export default function StyleLab() {
 
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("styleLab")
-      .select("*")
-      .eq("id_user", session.user.id)
-      .order("created_at", { ascending: order === "asc" });
+    try {
+      const { data, error } = await supabase
+        .from("styleLab")
+        .select("*")
+        .eq("id_user", session.user.id)
+        .order("created_at", { ascending: order === "asc" });
 
-    if (!error && data) {
-      setThemes(data);
+      if (!error && data) {
+        setThemes(data);
+      }
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {
+    if (userLoading) return;
+    if (!session?.user) return;
+
     fetchThemes();
-  }, [session, order]);
+  }, [userLoading, session?.user?.id, order]);
 
   /* =========================
      Delete

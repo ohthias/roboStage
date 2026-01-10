@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Metadata } from "next";
 
 import { useUser } from "@/app/context/UserContext";
 import HeaderDashboard from "@/components/Dashboard/UI/Header";
@@ -31,8 +30,20 @@ export default function DashboardLayout({
     }
   }, [loading, session, profile, router]);
 
-  if (loading || !session || !profile) {
-    return null;
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg" />
+      </div>
+    );
+  }
+
+  if (!session || !profile) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        Redirecionando...
+      </div>
+    );
   }
 
   const Logout = async () => {
@@ -47,9 +58,7 @@ export default function DashboardLayout({
         onLogout={Logout}
         onMobileMenu={() => {}}
       />
-
       <Sidebar profile={profile} collapsed={collapsed} items={NAV_ITEMS} />
-
       <main className="p-6 overflow-y-auto">{children}</main>
       <ModalConfirm
         ref={modalLogoutRef}

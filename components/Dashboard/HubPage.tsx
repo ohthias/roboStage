@@ -5,6 +5,7 @@ import { supabase } from "@/utils/supabase/client";
 import { RecentAccess } from "./RecentAccess";
 import { QuickActions } from "./QuickActions";
 import { DashboardStats } from "./DashboardStats";
+import DashboardQuickActions from "./DashboardQuickActions";
 
 type LastAccessItem = {
   resource_type: "test" | "event" | "document" | "style";
@@ -96,7 +97,7 @@ export default function HubHero({ session, username }: HubHeroProps) {
       <main className="grid grid-cols-1 lg:grid-cols-6 gap-6 px-6">
         <section className="lg:col-span-6 space-y-6">
           <DashboardStats stats={stats} />
-          <QuickActions />
+          <DashboardQuickActions session={session} />
         </section>
       </main>
 

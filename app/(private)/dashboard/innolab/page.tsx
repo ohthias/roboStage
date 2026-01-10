@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef} from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/app/context/ToastContext";
@@ -19,6 +19,7 @@ export default function InnoLab() {
   const router = useRouter();
   const { addToast } = useToast();
 
+  const [openDiagramModal, setOpenDiagramModal] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [loading, setLoading] = useState(true);
@@ -133,31 +134,6 @@ export default function InnoLab() {
     );
   };
 
-  const handleCreateDiagram = async (data: { title: string; type: string }) => {
-    if (!data.title || !data.type) return;
-
-    try {
-      const user = (await supabase.auth.getUser()).data.user;
-
-      const { error } = await supabase.from("documents").insert([
-        {
-          title: data.title,
-          diagram_type: data.type,
-          content: {},
-          user_id: user?.id || null,
-        },
-      ]);
-
-      if (error) throw error;
-
-      await fetchDocuments();
-      addToast("Diagrama criado com sucesso!", "success");
-    } catch (error) {
-      addToast("Erro ao criar diagrama", "error");
-      console.error(error);
-    }
-  };
-
   /* ================= UI ================= */
   return (
     <div className="space-y-6">
@@ -179,7 +155,12 @@ export default function InnoLab() {
 
         {/* Action */}
         <div className="shrink-0">
-          <CreateDiagramModal onCreate={handleCreateDiagram} />
+          <button
+            onClick={() => setOpenDiagramModal(true)}
+            className="btn btn-primary"
+          >
+            Criar Novo Diagrama
+          </button>
         </div>
       </div>
 
@@ -290,6 +271,10 @@ export default function InnoLab() {
         title="Confirmar delete"
         confirmLabel="Deletar"
         cancelLabel="Cancelar"
+      />
+      <CreateDiagramModal
+        open={openDiagramModal}
+        onClose={() => setOpenDiagramModal(false)}
       />
     </div>
   );

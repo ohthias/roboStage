@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/app/context/ToastContext";
 import { StyleLabTheme } from "@/app/(private)/dashboard/stylelab/page";
+import { BaseModal } from "../UI/BaseModal";
 
 type StyleLabModalProps = {
   onClose: () => void;
@@ -48,9 +49,9 @@ export default function StyleLabModal({ onClose, theme }: StyleLabModalProps) {
 
   const { addToast } = useToast();
 
-  /* =========================================================
-     Pré-carregar dados (edição)
-  ========================================================= */
+  /* =======================
+     Pré-carregar dados
+  ======================= */
   useEffect(() => {
     if (theme) {
       setName(theme.name);
@@ -90,9 +91,7 @@ export default function StyleLabModal({ onClose, theme }: StyleLabModalProps) {
           (blob) => {
             if (!blob) return reject();
             resolve(
-              new File([blob], "background.webp", {
-                type: "image/webp",
-              })
+              new File([blob], "background.webp", { type: "image/webp" })
             );
           },
           "image/webp",
@@ -101,9 +100,9 @@ export default function StyleLabModal({ onClose, theme }: StyleLabModalProps) {
       };
     });
 
-  /* =========================================================
-     CREATE / UPDATE
-  ========================================================= */
+  /* =======================
+     Submit
+  ======================= */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -119,8 +118,7 @@ export default function StyleLabModal({ onClose, theme }: StyleLabModalProps) {
 
       if (file) {
         const webp = await convertToWebP(file);
-        const safeFileName = `background-${crypto.randomUUID()}.webp`;
-        const path = `style-lab/backgrounds/${userId}/${safeFileName}`;
+        const path = `style-lab/backgrounds/${userId}/background-${crypto.randomUUID()}.webp`;
 
         const { error } = await supabase.storage
           .from("style-backgrounds")
@@ -134,7 +132,7 @@ export default function StyleLabModal({ onClose, theme }: StyleLabModalProps) {
       }
 
       if (isEdit && theme) {
-        const { error } = await supabase
+        await supabase
           .from("styleLab")
           .update({
             name,
@@ -144,21 +142,15 @@ export default function StyleLabModal({ onClose, theme }: StyleLabModalProps) {
           })
           .eq("id_theme", theme.id_theme);
 
-        if (error) throw error;
-
         addToast("Tema atualizado com sucesso!", "success");
       } else {
-        const { error } = await supabase.from("styleLab").insert([
-          {
-            id_user: userId,
-            name,
-            colors,
-            background_url: finalBackgroundUrl,
-            background_blur: backgroundBlur,
-          },
-        ]);
-
-        if (error) throw error;
+        await supabase.from("styleLab").insert({
+          id_user: userId,
+          name,
+          colors,
+          background_url: finalBackgroundUrl,
+          background_blur: backgroundBlur,
+        });
 
         addToast("Tema criado com sucesso!", "success");
       }
@@ -173,218 +165,164 @@ export default function StyleLabModal({ onClose, theme }: StyleLabModalProps) {
   };
 
   return (
-    <div className="modal modal-open px-2">
-      <div className="modal-box max-w-lg w-full rounded-2xl">
-        <button
-          className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3"
-          onClick={onClose}
-        >
-          ✕
-        </button>
-
-        {/* Steps */}
-        <ul className="steps steps-horizontal w-full mb-6 text-xs sm:text-sm">
-          {["Nome", "Cores", "Imagem", "Finalizar"].map((label, i) => (
-            <li
-              key={i}
-              className={`step ${step >= i + 1 ? "step-primary" : ""}`}
-            >
-              {label}
-            </li>
-          ))}
-        </ul>
-
-        <h2 className="text-xl font-bold">
-          {stepMeta[step as keyof typeof stepMeta].title}
-        </h2>
-        <p className="text-sm text-base-content/60 mb-6">
-          {stepMeta[step as keyof typeof stepMeta].description}
-        </p>
-
-        <form onSubmit={handleSubmit} className="relative">
-          <AnimatePresence mode="wait">
-            {/* STEP 1 */}
-            {step === 1 && (
-              <motion.div
-                variants={stepVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                className="form-control"
-              >
-                <input
-                  type="text"
-                  className="input input-bordered w-full"
-                  placeholder="Ex: Dark Modern"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </motion.div>
-            )}
-
-            {/* STEP 2 */}
-            {step === 2 && (
-              <motion.div
-                variants={stepVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                className="space-y-4"
-              >
-                <div
-                  className="rounded-xl p-4"
-                  style={{ backgroundColor: colors[1], color: colors[2] }}
-                >
-                  <h3
-                    className="text-lg font-bold"
-                    style={{ color: colors[0] }}
-                  >
-                    Preview
-                  </h3>
-                  <table className="mt-3 w-full text-sm">
-                    <thead>
-                      <tr style={{ backgroundColor: colors[1] }}>
-                        <th className="p-2 text-left">Equipe</th>
-                        <th className="p-2 text-right">Score</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="p-2">Alpha</td>
-                        <td className="p-2 text-right">320</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  {["Primária", "Secundária", "Texto"].map((label, i) => (
-                    <label key={i} className="form-control">
-                      <span className="label-text text-xs">{label}</span>
-                      <input
-                        type="color"
-                        value={colors[i]}
-                        onChange={(e) => {
-                          const c = [...colors];
-                          c[i] = e.target.value;
-                          setColors(c);
-                        }}
-                        className="h-10 rounded-lg cursor-pointer"
-                      />
-                    </label>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* STEP 3 */}
-            {step === 3 && (
-              <motion.div
-                variants={stepVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                className="space-y-4"
-              >
-                <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-6 cursor-pointer">
-                  <span className="text-sm opacity-60">
-                    Clique ou arraste uma imagem (opcional)
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  />
-                </label>
-
-                {(file || backgroundUrl) && (
-                  <img
-                    src={file ? URL.createObjectURL(file) : backgroundUrl || ""}
-                    className={`rounded-xl max-h-40 mx-auto object-cover ${
-                      backgroundBlur ? "blur-sm" : ""
-                    }`}
-                  />
-                )}
-
-                <label className="label cursor-pointer justify-start gap-3">
-                  <input
-                    type="checkbox"
-                    className="toggle toggle-primary"
-                    checked={backgroundBlur}
-                    onChange={(e) => setBackgroundBlur(e.target.checked)}
-                  />
-                  <span className="label-text">Aplicar desfoque no fundo</span>
-                </label>
-              </motion.div>
-            )}
-
-            {/* STEP 4 */}
-            {step === 4 && (
-              <motion.div
-                variants={stepVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                className="space-y-4"
-              >
-                <p className="font-semibold">{name}</p>
-                <div className="flex gap-2">
-                  {colors.map((c, i) => (
-                    <div
-                      key={i}
-                      className="w-6 h-6 rounded-full border"
-                      style={{ backgroundColor: c }}
-                    />
-                  ))}
-                </div>
-                <p className="text-sm opacity-70">
-                  Blur do fundo: {backgroundBlur ? "Ativado" : "Desativado"}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {loading && (
-            <div className="absolute inset-0 bg-base-200/70 flex items-center justify-center rounded-xl">
-              <span className="loading loading-spinner loading-lg text-primary" />
-            </div>
+    <BaseModal
+      open
+      onClose={onClose}
+      size="lg"
+      title={isEdit ? "Editar Estilo" : "Novo Estilo"}
+      description={stepMeta[step as keyof typeof stepMeta].description}
+      footer={
+        <div className="flex gap-3">
+          {step > 1 && (
+            <button className="btn btn-ghost flex-1" onClick={prev}>
+              Voltar
+            </button>
           )}
 
-          {/* Actions */}
-          <div className="mt-8 flex justify-between gap-2">
-            {step > 1 && (
-              <button
-                type="button"
-                className="btn btn-ghost w-1/2"
-                onClick={prev}
-              >
-                Voltar
-              </button>
+          {step < 4 ? (
+            <button
+              className="btn btn-primary flex-1"
+              onClick={next}
+              disabled={step === 1 && !name.trim()}
+            >
+              Próximo
+            </button>
+          ) : (
+            <button
+              className="btn btn-success flex-1"
+              onClick={handleSubmit}
+              disabled={loading}
+            >
+              {isEdit ? "Salvar Alterações" : "Criar Tema"}
+            </button>
+          )}
+        </div>
+      }
+    >
+      {/* Stepper */}
+      <ul className="steps w-full mb-6 text-xs sm:text-sm">
+        {["Nome", "Cores", "Imagem", "Finalizar"].map((label, i) => (
+          <li
+            key={label}
+            className={`step ${step >= i + 1 ? "step-primary" : ""}`}
+          >
+            {label}
+          </li>
+        ))}
+      </ul>
+
+      <h3 className="text-lg font-semibold mb-4">
+        {stepMeta[step as keyof typeof stepMeta].title}
+      </h3>
+
+      <AnimatePresence mode="wait">
+        {/* STEP 1 */}
+        {step === 1 && (
+          <motion.div {...stepVariants}>
+            <input
+              type="text"
+              className="input input-bordered w-full"
+              placeholder="Ex: Dark Modern"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </motion.div>
+        )}
+
+        {/* STEP 2 */}
+        {step === 2 && (
+          <motion.div {...stepVariants} className="space-y-4">
+            <div
+              className="rounded-xl p-4"
+              style={{ backgroundColor: colors[1], color: colors[2] }}
+            >
+              <h4 className="font-bold" style={{ color: colors[0] }}>
+                Preview
+              </h4>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {["Primária", "Secundária", "Texto"].map((label, i) => (
+                <label key={label} className="form-control">
+                  <span className="label-text text-xs">{label}</span>
+                  <input
+                    type="color"
+                    value={colors[i]}
+                    onChange={(e) => {
+                      const c = [...colors];
+                      c[i] = e.target.value;
+                      setColors(c);
+                    }}
+                    className="h-10 rounded-lg cursor-pointer"
+                  />
+                </label>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* STEP 3 */}
+        {step === 3 && (
+          <motion.div {...stepVariants} className="space-y-4">
+            <label className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer">
+              <span className="text-sm opacity-60">
+                Clique ou arraste uma imagem
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+            </label>
+
+            {(file || backgroundUrl) && (
+              <img
+                src={file ? URL.createObjectURL(file) : backgroundUrl || ""}
+                className={`rounded-xl max-h-40 mx-auto ${
+                  backgroundBlur ? "blur-sm" : ""
+                }`}
+              />
             )}
 
-            {step < 4 ? (
-              <button
-                type="button"
-                className="btn btn-primary flex-1"
-                onClick={next}
-                disabled={step === 1 && !name.trim()}
-              >
-                Próximo
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="btn btn-success flex-1"
-                disabled={loading}
-              >
-                {isEdit ? "Salvar Alterações" : "Criar Tema"}
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-    </div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                className="toggle toggle-primary"
+                checked={backgroundBlur}
+                onChange={(e) => setBackgroundBlur(e.target.checked)}
+              />
+              <span className="text-sm">Aplicar desfoque no fundo</span>
+            </label>
+          </motion.div>
+        )}
+
+        {/* STEP 4 */}
+        {step === 4 && (
+          <motion.div {...stepVariants} className="space-y-4">
+            <p className="font-semibold">{name}</p>
+            <div className="flex gap-2">
+              {colors.map((c) => (
+                <div
+                  key={c}
+                  className="w-6 h-6 rounded-full border"
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+            <p className="text-sm opacity-70">
+              Blur do fundo: {backgroundBlur ? "Ativado" : "Desativado"}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {loading && (
+        <div className="absolute inset-0 bg-base-200/70 flex items-center justify-center rounded-xl">
+          <span className="loading loading-spinner loading-lg text-primary" />
+        </div>
+      )}
+    </BaseModal>
   );
 }

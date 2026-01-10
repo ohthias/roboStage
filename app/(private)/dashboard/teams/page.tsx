@@ -1,9 +1,10 @@
 "use client";
 
 import CreateTeamSpaceModal from "@/components/UI/Modal/CreateTeamSpaceModal";
-import { Users, Settings, Search, Plus, LogIn, Filter } from "lucide-react";
+import { Users, Settings, Search, Plus, LogIn, Filter, Route } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
 interface TeamSpace {
   id: number;
@@ -16,30 +17,40 @@ export default function TeamSpacePage() {
   const [openModal, setOpenModal] = useState(false);
   const [teams, setTeams] = useState<TeamSpace[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   async function fetchTeams() {
     setLoading(true);
 
-    const { data, error } = await supabase.from("team_members").select(`
-        role,
-        team_spaces (
-          id,
-          name,
-          description
-        )
-      `);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const { data, error } = await supabase
+      .from("team_members")
+      .select(
+        `
+    role,
+    team_spaces (
+      id,
+      name,
+      description
+    )
+  `
+      )
+      .eq("user_id", user!.id);
 
     if (!error && data) {
-      const mapped = data.map((item: any) => ({
-        id: item.team_spaces.id,
-        name: item.team_spaces.name,
-        description: item.team_spaces.description,
-        role: item.role,
-      }));
-
+      const mapped = data
+        .filter((item) => item.team_spaces)
+        .map((item: any) => ({
+          id: item.team_spaces.id,
+          name: item.team_spaces.name,
+          description: item.team_spaces.description,
+          role: item.role,
+        }));
       setTeams(mapped);
     }
-
     setLoading(false);
   }
 
@@ -152,7 +163,7 @@ export default function TeamSpacePage() {
                       </button>
                     )}
 
-                    <button className="btn btn-sm btn-info text-info-content">
+                    <button className="btn btn-sm btn-info text-info-content" onClick={() => router.push(`/dashboard/teams/${team.id}`)}>
                       Entrar
                     </button>
                   </div>

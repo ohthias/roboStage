@@ -351,7 +351,7 @@ export default function TestResultsCharts({
                             >
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="tentativa" />
-                              <YAxis allowDecimals={false} />
+                              <YAxis allowDecimals={false}/>
                               <Tooltip
                                 formatter={(value) => [value, "Valor"]}
                                 labelFormatter={(label, payload) => {

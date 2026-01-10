@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { Users, X, Copy, Check } from "lucide-react";
+import { useUser } from "@/app/context/UserContext";
 
 interface CreateTeamSpaceModalProps {
   open: boolean;
@@ -21,6 +22,7 @@ export default function CreateTeamSpaceModal({
   const [error, setError] = useState<string | null>(null);
   const [joinCode, setJoinCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const {profile} = useUser();
 
   async function handleCreate() {
     if (!name.trim()) {
@@ -50,7 +52,8 @@ export default function CreateTeamSpaceModal({
     // 2️⃣ Criar owner automaticamente
     const { error: memberError } = await supabase.from("team_members").insert({
       team_id: teamSpace.id,
-      role: "owner",
+      user_id: profile?.id,
+      role: "admin",
     });
 
     if (memberError) {

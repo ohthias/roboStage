@@ -1,22 +1,19 @@
 "use client";
-
-type DiagramType = "5W2H" | "Ishikawa" | "Mapa Mental" | "Flowchart" | "SWOT";
-
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef} from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
+import { useToast } from "@/app/context/ToastContext";
 import { LayoutGrid, Lightbulb, List } from "lucide-react";
-
 import ModalConfirm, {
   ModalConfirmRef,
 } from "@/components/UI/Modal/ModalConfirm";
-
 import DiagramCard, {
   Document,
 } from "@/components/Dashboard/InnoLab/Card/DiagramCard";
 import CreateDiagramModal from "@/components/Dashboard/InnoLab/CreateDiagramModal";
-import { useToast } from "@/app/context/ToastContext";
 import DiagramCardSkeleton from "@/components/Dashboard/InnoLab/Card/DiagramCardSkeleton";
+
+type DiagramType = "5W2H" | "Ishikawa" | "Mapa Mental" | "Flowchart" | "SWOT";
 
 export default function InnoLab() {
   const router = useRouter();

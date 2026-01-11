@@ -102,6 +102,12 @@ interface Profile {
   id: string;
   username: string | null;
   avatar_url: string | null;
+  bio: string | null;
+  created_at?: string;
+
+  tags: string[];
+  followersCount: number;
+  followingCount: number;
 }
 
 interface UserContextType {
@@ -127,19 +133,45 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, username, avatar_url")
-      .eq("id", userId)
-      .single();
+    try {
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, username, avatar_url, bio, created_at")
+        .eq("id", userId)
+        .single();
 
-    if (error || !data) {
+      if (profileError || !profileData) throw profileError;
+
+      const { data: tagsData } = await supabase
+        .from("user_tags")
+        .select("tag")
+        .eq("user_id", userId);
+
+      const tags = tagsData?.map((t) => t.tag) ?? [];
+
+      const { count: followersCount } = await supabase
+        .from("user_followers")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+      const { count: followingCount } = await supabase
+        .from("user_followers")
+        .select("*", { count: "exact", head: true })
+        .eq("follower_id", userId);
+
+      const aggregatedProfile: Profile = {
+        ...profileData,
+        tags,
+        followersCount: followersCount ?? 0,
+        followingCount: followingCount ?? 0,
+      };
+
+      applyProfile(aggregatedProfile);
+    } catch (error) {
+      console.error("Erro ao carregar perfil:", error);
       setProfile(null);
       localStorage.removeItem("userProfile");
-      return;
     }
-
-    applyProfile(data);
   };
 
   /* ================= BOOTSTRAP ================= */

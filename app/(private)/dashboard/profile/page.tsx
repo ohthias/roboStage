@@ -11,12 +11,18 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useUser } from "@/app/context/UserContext";
+import { supabase } from "@/utils/supabase/client";
+import { useToast } from "@/app/context/ToastContext";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const { session, profile } = useUser();
+  const { addToast } = useToast();
+  const router = useRouter();
 
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingPassword, setEditingPassword] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [username, setUsername] = useState(profile?.username ?? "");
   const [bio, setBio] = useState(profile?.bio ?? "");
@@ -73,17 +79,84 @@ export default function ProfilePage() {
     setTags((prev) => prev.filter((t) => t !== tag));
   };
 
-  /* ================= SAVE ================= */
-
   const handleSaveProfile = async () => {
-    console.log({
-      username,
-      bio,
-      avatarFile,
-      tags,
-    });
+    try {
+      setSaving(true);
 
-    setEditingProfile(false);
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          username: username.trim(),
+          bio: bio.trim(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", profile.id);
+
+      if (profileError) throw profileError;
+      if (avatarFile) {
+        const fileName = `avatar-${Date.now()}.webp`;
+        const filePath = `${profile.id}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("photos")
+          .upload(filePath, avatarFile, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("photos").getPublicUrl(filePath);
+
+        const { error: avatarError } = await supabase
+          .from("profiles")
+          .update({ avatar_url: publicUrl })
+          .eq("id", profile.id);
+
+        if (avatarError) throw avatarError;
+      }
+      const { data: currentTags, error: fetchTagsError } = await supabase
+        .from("user_tags")
+        .select("tag")
+        .eq("user_id", profile.id);
+
+      if (fetchTagsError) throw fetchTagsError;
+
+      const currentTagList = currentTags.map((t) => t.tag);
+
+      const tagsToInsert = tags.filter((tag) => !currentTagList.includes(tag));
+      const tagsToDelete = currentTagList.filter((tag) => !tags.includes(tag));
+
+      if (tagsToInsert.length > 0) {
+        const payload = tagsToInsert.map((tag) => ({
+          user_id: profile.id,
+          tag,
+        }));
+
+        const { error: insertError } = await supabase
+          .from("user_tags")
+          .insert(payload);
+
+        if (insertError) throw insertError;
+      }
+
+      if (tagsToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from("user_tags")
+          .delete()
+          .eq("user_id", profile.id)
+          .in("tag", tagsToDelete);
+
+        if (deleteError) throw deleteError;
+      }
+
+      addToast("Perfil atualizado com sucesso!", "success");
+      setEditingProfile(false);
+    } catch (error: any) {
+      console.error(error);
+      addToast(error?.message || "Erro ao salvar perfil", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* ================= DELETE ================= */
@@ -169,10 +242,10 @@ export default function ProfilePage() {
 
               <div className="flex gap-4 text-sm opacity-70">
                 <span>
-                  <strong>{profile.followersCount ?? 0}</strong> followers
+                  <strong>{profile.followersCount ?? 0}</strong> Seguidores
                 </span>
                 <span>
-                  <strong>{profile.followingCount ?? 0}</strong> following
+                  <strong>{profile.followingCount ?? 0}</strong> Seguindo
                 </span>
               </div>
             </>
@@ -249,12 +322,12 @@ export default function ProfilePage() {
 
       {/* ACCOUNT */}
       <section className="border border-base-300 rounded-lg p-4 space-y-3 bg-base-100">
-        <h2 className="font-semibold">Account</h2>
+        <h2 className="font-semibold">Conta</h2>
 
         <div className="space-y-1 text-sm">
           <p className="opacity-70">{session.user.email}</p>
           <p className="opacity-60">
-            Member since {formatDate(profile.created_at)}
+            Membro desde {formatDate(profile.created_at)}
           </p>
         </div>
 
@@ -264,7 +337,7 @@ export default function ProfilePage() {
             onClick={() => setEditingPassword(true)}
           >
             <Lock size={14} />
-            Change password
+            Alterar senha
           </button>
         )}
 
@@ -303,7 +376,7 @@ export default function ProfilePage() {
       <section className="border border-error rounded-lg p-4 bg-error/5 space-y-3">
         <div className="flex items-center gap-2 text-error">
           <AlertTriangle size={18} />
-          <h2 className="font-semibold">Danger Zone</h2>
+          <h2 className="font-semibold">Zona de Perigo</h2>
         </div>
 
         <p className="text-sm opacity-80">
@@ -316,7 +389,7 @@ export default function ProfilePage() {
           className="btn btn-error btn-outline"
           onClick={handleDeleteProfile}
         >
-          Delete profile
+          Deletar perfil
         </button>
       </section>
 
@@ -324,13 +397,13 @@ export default function ProfilePage() {
       {editingProfile && (
         <div className="flex gap-3">
           <button className="btn btn-primary" onClick={handleSaveProfile}>
-            Save changes
+            {saving ? "Salvando..." : "Salvar alterações"}
           </button>
           <button
             className="btn btn-ghost"
             onClick={() => setEditingProfile(false)}
           >
-            Cancel
+            Cancelar
           </button>
         </div>
       )}

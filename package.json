@@ -11,6 +11,10 @@
   "dependencies": {
     "@flaticon/flaticon-uicons": "^3.3.1",
     "@heroicons/react": "^2.2.0",
+    "@lexical/code": "^0.39.0",
+    "@lexical/list": "^0.39.0",
+    "@lexical/react": "^0.39.0",
+    "@lexical/rich-text": "^0.39.0",
     "@react-pdf/renderer": "^4.3.1",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/realtime-js": "^2.15.5",
@@ -29,6 +33,7 @@
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "jszip": "^3.10.1",
+    "lexical": "^0.39.0",
     "lucide-react": "^0.539.0",
     "marked": "^17.0.1",
     "next": "^15.4.8",

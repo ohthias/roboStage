@@ -16,6 +16,7 @@ import TestList from "./components/TestList";
 import ResultsList from "./components/ResultsList";
 import { supabase } from "@/utils/supabase/client";
 import TestCardSkeleton from "./components/TestCardSkeleton";
+import MoveToFolderModal from "@/components/UI/Modal/MoveToFolderModal";
 
 /* --------------------------
   HOOK DE FILTRAGEM OTIMIZADO
@@ -61,6 +62,14 @@ export default function LabTestPage() {
   const modalConfirmRef = useRef<ModalConfirmRef>(null);
   const modalInputRef = useRef<ModalInputRef>(null);
   const modalResultFormRef = useRef<ModalResultFormRef>(null);
+  const [moveModalOpen, setMoveModalOpen] = useState(false);
+  const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
+
+  const handleMoveToFolder = (testId: string) => {
+    setSelectedTestId(testId);
+    setMoveModalOpen(true);
+  };
+
   const { addToast } = useToast();
 
   const [missionsData, setMissionsData] = useState<Record<string, any[]>>({});
@@ -233,6 +242,7 @@ export default function LabTestPage() {
               onAddResult={(id) => modalResultFormRef.current?.openWithTest(id)}
               onRename={handleRename}
               onDelete={handleDelete}
+              onMoveToFolder={handleMoveToFolder}
             />
           )}
         </>
@@ -258,6 +268,17 @@ export default function LabTestPage() {
 
       {/* Modais */}
       <ModalConfirm ref={modalConfirmRef} title="Confirmação" />
+      {selectedTestId && (
+        <MoveToFolderModal
+          open={moveModalOpen}
+          onClose={() => setMoveModalOpen(false)}
+          resourceId={selectedTestId}
+          resourceType="tests"
+          onMoved={() => {
+            addToast("Teste movido para a pasta com sucesso!", "success");
+          }}
+        />
+      )}
       <ModalInput
         ref={modalInputRef}
         title="Renomear Teste"

@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
-import { Folder } from "lucide-react";
+import { Folder, Pencil, Plus, Trash } from "lucide-react";
 
 export default function TestCard({
   test,
@@ -12,6 +11,7 @@ export default function TestCard({
   onRename,
   onDelete,
   group_id,
+  onMoveToFolder,
 }: {
   test: any;
   testTypeName: string;
@@ -20,31 +20,31 @@ export default function TestCard({
   onRename: (testId: string, oldName: string) => void;
   onDelete: (testId: string) => void;
   group_id?: boolean;
+  onMoveToFolder?: (testId: string, folderId?: number | null) => void;
 }) {
   const missionKeys = test.test_missions?.map((m: any) => m.mission_key) || [];
 
   return (
     <div className="card bg-base-100 border border-base-300 shadow-md hover:shadow-xl transition-all duration-300 rounded-lg">
-      {/* IMAGE / PREVIEW */}
       <figure className="bg-base-300/20 h-40 flex items-center justify-center shadow-inner rounded-t-lg overflow-hidden">
         {images.length > 1 ? (
           <div className="grid grid-cols-2 grid-rows-2 gap-1 w-28 h-28">
-            {images.slice(0, 4).map(
-              (img, idx) =>
-                img && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={idx}
-                    src={img}
-                    alt={`Missão ${missionKeys[idx]}`}
-                    className="object-contain rounded-md p-1"
-                  />
-                )
-            )}
+            {images
+              .slice(0, 4)
+              .map(
+                (img, idx) =>
+                  img && (
+                    <img
+                      key={idx}
+                      src={img}
+                      alt={`Missão ${missionKeys[idx]}`}
+                      className="object-contain rounded-md p-1"
+                    />
+                  )
+              )}
           </div>
         ) : (
           images[0] && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={images[0]}
               alt={`Missão ${missionKeys?.[0]}`}
@@ -54,7 +54,6 @@ export default function TestCard({
         )}
       </figure>
 
-      {/* BODY */}
       <div className="card-body p-4 gap-2">
         <div className="flex items-start justify-between gap-2">
           <h2 className="card-title text-base truncate">{test.name_test}</h2>
@@ -95,34 +94,43 @@ export default function TestCard({
           Criado em {new Date(test.created_at).toLocaleDateString("pt-BR")}
         </p>
 
-        {/* ACTIONS */}
-        <div className="card-actions justify-end pt-2">
-          <button className="btn btn-ghost btn-xs" title="Adicionar à pasta">
-            <Folder size={18} />
-          </button>
-          <button
-            className="btn btn-primary btn-xs"
-            onClick={() => onAddResult(test.id)}
-            title="Adicionar resultado"
-          >
-            <PlusIcon className="size-4" />
-          </button>
+        <div className="divider my-1" />
+        <div className="flex justify-between items-center">
+          <div className="flex gap-2">
+            <button
+              className="btn btn-primary btn-circle btn-sm tooltip tooltip-right"
+              data-tip="Adicionar resultado"
+              onClick={() => onAddResult(test.id)}
+            >
+              <Plus size={16} />
+            </button>
 
-          <button
-            className="btn btn-ghost btn-xs"
-            onClick={() => onRename(test.id, test.name_test)}
-            title="Renomear teste"
-          >
-            <PencilIcon className="size-4" />
-          </button>
+            <button
+              className="btn btn-ghost btn-circle btn-sm tooltip tooltip-top"
+              data-tip="Mover para pasta"
+              onClick={() => onMoveToFolder?.(test.id, test.folder_id)}
+            >
+              <Folder size={16} />
+            </button>
+          </div>
 
-          <button
-            className="btn btn-ghost btn-xs text-error"
-            onClick={() => onDelete(test.id)}
-            title="Excluir teste"
-          >
-            <TrashIcon className="size-4" />
-          </button>
+          <div className="flex gap-2">
+            <button
+              className="btn btn-ghost btn-circle btn-sm tooltip tooltip-top"
+              data-tip="Renomear teste"
+              onClick={() => onRename(test.id, test.name_test)}
+            >
+              <Pencil size={16} />
+            </button>
+
+            <button
+              className="btn btn-ghost btn-circle btn-sm tooltip tooltip-top text-error"
+              data-tip="Excluir teste"
+              onClick={() => onDelete(test.id)}
+            >
+              <Trash size={16} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

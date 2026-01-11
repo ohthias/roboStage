@@ -248,7 +248,7 @@ export default function InnoLab() {
                   doc={doc}
                   viewMode={viewMode}
                   onOpen={() =>
-                    router.push(`/innolab/${doc.id}/${doc.diagram_type}`)
+                    router.push(`/innolab/${doc.id}`)
                   }
                   onToggleFavorite={() => toggleFavorite(doc)}
                   onDelete={() => openDeleteModal(doc)}
@@ -283,7 +283,8 @@ export default function InnoLab() {
       {moveDocId && (
         <MoveToFolderModal
           open={!!moveDocId}
-          documentId={moveDocId}
+          resourceId={moveDocId}
+          resourceType="documents"
           onClose={() => setMoveDocId(null)}
           onMoved={() => {
             addToast("Diagrama movido para a pasta", "success");

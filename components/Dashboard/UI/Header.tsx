@@ -13,6 +13,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
+import { NotificationsMenu, Notification } from "@/components/Notifications/NotificationsMenu";
 
 /* =========================
    Tipagem
@@ -103,6 +104,22 @@ export default function HeaderDashboard({
   const [tab, setTab] = useState<"content" | "users">("content");
 
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: "1",
+      title: "Bem-vindo ao RoboStage!",
+      description: "Sua conta foi criada com sucesso.",
+      read: false,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: "2",
+      title: "Atualização disponível",
+      description: "Uma nova versão do RoboStage está disponível.",
+      read: true,
+      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+    },
+  ]);
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -333,9 +350,13 @@ export default function HeaderDashboard({
           <Search size={18} />
         </button>
 
-        <button className="btn btn-ghost btn-circle btn-sm">
-          <Bell size={18} />
-        </button>
+        <NotificationsMenu
+          notifications={notifications}
+          onNotificationClick={(n) => {
+            console.log("Clicou:", n);
+            // router.push(...)
+          }}
+        />
 
         <div className="hidden sm:block">
           <ThemeController />

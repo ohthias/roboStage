@@ -1,26 +1,12 @@
 "use client";
-import jsPDF from "jspdf";
 import { useState, useRef } from "react";
 import html2canvas from "html2canvas-pro";
 import { useToast } from "@/app/context/ToastContext";
 import {
   ArrowUturnLeftIcon,
-  DocumentIcon,
-  PhotoIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { Image } from "lucide-react";
-
-const seasonLogos: Record<string, { name: string; image: string }> = {
-  unearthed: {
-    name: "Unearthed (2025/26)",
-    image: "/images/logos/Unearthed.webp",
-  },
-  submerged: {
-    name: "Submerged (2024/25)",
-    image: "/images/logos/Submerged.webp",
-  },
-};
 
 export const SWOTCanvas = ({
   missions,

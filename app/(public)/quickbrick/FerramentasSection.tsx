@@ -284,7 +284,7 @@ export default function FerramentasSection({
               <button
                 key={s}
                 onClick={() =>
-                  router.push(`/quickbrick/geradorsaidas/${s}`)
+                  router.push(`/quickbrick/estrategia-em-saidas/${s}`)
                 }
                 className="
           group

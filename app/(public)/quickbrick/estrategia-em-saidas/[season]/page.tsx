@@ -1,8 +1,17 @@
+import { StrategyBoard } from "@/components/QuickBrick/EstrategiaSaida/StrategyBoard";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
 
-export default function GeradorSaidasPage() {
+interface GeradorSaidasPageProps {
+  params: {
+    season: string;
+  };
+}
+
+export default function GeradorSaidasPage({ params }: GeradorSaidasPageProps) {
+  const season = params.season
+
   return (
     <div>
       <Navbar />
@@ -20,12 +29,8 @@ export default function GeradorSaidasPage() {
           </p>
         </section>
 
-        <div className="flex justify-center mt-8 mb-16">
-          <div className="w-full h-64 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
-            <span className="text-gray-500">
-              Em breve, esta funcionalidade estará disponível.
-            </span>
-          </div>
+        <div className="flex justify-center mt-8 mb-16 h-screen">
+          <StrategyBoard seasonSelect={season} />
         </div>
       </div>
 

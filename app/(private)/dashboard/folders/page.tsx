@@ -75,7 +75,7 @@ export default function FoldersPage() {
       </header>
 
       {/* Criar pasta */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-row sm:items-center sm:justify-between gap-4">
         <input
           type="text"
           placeholder="Buscar pastas..."

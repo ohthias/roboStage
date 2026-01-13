@@ -144,7 +144,7 @@ export default function InnoLab() {
       <div className="rounded-2xl border border-base-300 bg-gradient-to-br from-primary/10 via-base-100 to-base-300/10 p-6 flex flex-col sm:flex-row  items-start sm:items-center justify-between gap-4">
         {/* Info */}
         <div className="flex items-start gap-4">
-          <div className="p-3 rounded-xl bg-primary/10 text-primary">
+          <div className="p-3 rounded-xl bg-primary/10 text-primary hidden sm:flex items-center justify-center">
             <Lightbulb className="w-6 h-6" />
           </div>
 

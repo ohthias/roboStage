@@ -145,7 +145,7 @@ export default function StyleLab() {
       {/* Header */}
       <div className="rounded-2xl border border-base-300 bg-gradient-to-br from-primary/10 via-base-100 to-base-300/10 p-6 flex justify-between gap-4">
         <div className="flex gap-4">
-          <div className="p-3 rounded-xl bg-primary/10 text-primary">
+          <div className="p-3 rounded-xl bg-primary/10 text-primary hidden sm:flex items-center justify-center">
             <Palette className="w-6 h-6" />
           </div>
           <div>
@@ -171,14 +171,14 @@ export default function StyleLab() {
       <section className="flex flex-col sm:flex-row gap-3 bg-base-100/60 border border-base-300 p-3 rounded-2xl">
         <input
           type="text"
-          className="input input-bordered flex-1"
+          className="input input-bordered flex-1 w-full px-3 py-2 rounded-lg"
           placeholder="Buscar tema..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
 
         <select
-          className="select select-bordered sm:w-52 px-3 rounded-lg"
+          className="select select-bordered sm:w-52 px-3 rounded-lg w-full"
           value={order}
           onChange={(e) => setOrder(e.target.value as "asc" | "desc")}
         >

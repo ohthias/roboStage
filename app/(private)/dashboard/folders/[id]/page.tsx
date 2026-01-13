@@ -120,42 +120,51 @@ export default function FolderPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full">
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-base-100 shadow-md">
-        <div className="flex items-center gap-3 flex-1 flex-wrap">
-          <button
-            onClick={() => router.back()}
-            className="btn btn-ghost btn-sm"
-          >
-            <ArrowLeft size={16} />
-          </button>
+        {/* ESQUERDA */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.back()}
+              className="btn btn-ghost btn-sm"
+            >
+              <ArrowLeft size={16} />
+            </button>
 
-          <div className="flex flex-col sm:gap-2">
-            <h1 className="text-3xl font-bold truncate">{folderName}</h1>
-            {folderDescription && (
-              <p className="text-sm text-base-content/70 mt-1 sm:mt-0">
-                {folderDescription}
-              </p>
-            )}
+            <h1 className="text-xl sm:text-3xl font-bold truncate">
+              {folderName}
+            </h1>
           </div>
-          <button
-            onClick={() => setEditingFolder(true)}
-            className="btn btn-outline hover:bg-base-200 transition ml-auto"
-          >
-            <Pencil size={14} />
-          </button>
+
+          {folderDescription && (
+            <p className="text-sm text-base-content/70 sm:ml-9">
+              {folderDescription}
+            </p>
+          )}
         </div>
 
-        {!editingFolder && (
+        {/* DIREITA – AÇÕES */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <button
-            onClick={() => setCreatingSubfolder(true)}
-            className="btn btn-primary flex items-center gap-2 shadow hover:shadow-lg transition"
+            onClick={() => setEditingFolder(true)}
+            className="btn btn-outline btn-sm sm:btn-md w-full sm:w-auto"
           >
-            <Plus size={16} />
-            Nova Subpasta
+            <Pencil size={14} />
+            <span className="sm:hidden">Editar pasta</span>
           </button>
-        )}
+
+          {!editingFolder && (
+            <button
+              onClick={() => setCreatingSubfolder(true)}
+              className="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto flex items-center gap-2"
+            >
+              <Plus size={16} />
+              Nova Subpasta
+            </button>
+          )}
+        </div>
       </header>
 
       {editingFolder && (
@@ -302,7 +311,7 @@ export default function FolderPage() {
           <p>Esta pasta está vazia</p>
         </div>
       ) : (
-        <ul className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {items.map((item) => (
             <li
               key={`${item.type}-${item.item_id}`}

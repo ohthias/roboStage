@@ -189,7 +189,7 @@ export default function LabTestPage() {
       <div className="rounded-2xl border border-base-300 bg-gradient-to-br from-primary/10 via-base-100 to-base-300/10 p-6 flex flex-col sm:flex-row  items-start sm:items-center justify-between gap-4">
         {/* Info */}
         <div className="flex items-start gap-4">
-          <div className="p-3 rounded-xl bg-primary/10 text-primary">
+          <div className="p-3 rounded-xl bg-primary/10 text-primary hidden sm:flex items-center justify-center">
             <PresentationChartBarIcon className="w-6 h-6" />
           </div>
           <div>
@@ -321,14 +321,14 @@ function FiltersSection({
           placeholder={placeholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="input input-sm input-bordered w-full flex-1"
+          className="input input-md sm:input-sm input-bordered w-full flex-1 px-2 py-2 rounded-box"
         />
 
         {/* Type */}
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
-          className="select select-sm select-bordered w-full sm:max-w-xs rounded-box px-2 flex-1"
+          className="select select-sm select-bordered w-full sm:max-w-xs rounded-box px-2 py-2 flex-1"
         >
           <option value="all">Todos os tipos</option>
           {Object.entries(testTypes).map(([id, name]) => (
@@ -342,7 +342,7 @@ function FiltersSection({
         <select
           value={order}
           onChange={(e) => setOrder(e.target.value as "asc" | "desc")}
-          className="select select-sm select-bordered w-full sm:max-w-xs rounded-box px-2 flex-1"
+          className="select select-sm select-bordered w-full sm:max-w-xs rounded-box px-2 py-2 flex-1"
         >
           <option value="desc">Mais recentes</option>
           <option value="asc">Mais antigos</option>

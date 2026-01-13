@@ -22,6 +22,8 @@ export default function DashboardLayout({
   const logout = useLogout();
 
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
   const modalLogoutRef = useRef<ModalConfirmRef>(null);
 
   useEffect(() => {
@@ -46,20 +48,33 @@ export default function DashboardLayout({
     );
   }
 
-  const Logout = async () => {
+  const handleLogout = async () => {
     modalLogoutRef.current?.open("Tem certeza que deseja sair?", logout);
   };
 
   return (
-    <div className="h-screen grid grid-rows-[64px_1fr] grid-cols-[auto_1fr] bg-base-200">
-      <HeaderDashboard
-        collapsed={collapsed}
-        onToggleSidebar={() => setCollapsed((v) => !v)}
-        onLogout={Logout}
-        onMobileMenu={() => {}}
-      />
-      <Sidebar profile={profile} collapsed={collapsed} items={NAV_ITEMS} />
-      <main className="p-6 overflow-y-auto">{children}</main>
+    <div className="h-screen grid grid-cols-[auto_1fr] grid-rows-[64px_1fr] bg-base-200">
+      <header className="col-span-2">
+        <HeaderDashboard
+          collapsed={collapsed}
+          onToggleSidebar={() => setCollapsed((v) => !v)}
+          onLogout={handleLogout}
+          onMobileMenu={() => setMobileSidebarOpen(true)}
+        />
+      </header>
+
+      <aside className="row-span-1">
+        <Sidebar
+          profile={profile}
+          collapsed={collapsed}
+          items={NAV_ITEMS}
+          isMobileOpen={mobileSidebarOpen}
+          onCloseMobile={() => {setMobileSidebarOpen(false);}}
+        />
+      </aside>
+
+      <main className="p-6 overflow-y-auto w-full">{children}</main>
+
       <ModalConfirm
         ref={modalLogoutRef}
         title="Confirmar Logout"

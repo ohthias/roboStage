@@ -102,6 +102,8 @@ export default function HeaderDashboard({
   const [activeIndex, setActiveIndex] = useState(0);
   const [tab, setTab] = useState<"content" | "users">("content");
 
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -149,21 +151,17 @@ export default function HeaderDashboard({
     }));
 
     const priority = scored
-      .filter((r) => r.score >= 0.50)
+      .filter((r) => r.score >= 0.5)
       .sort((a, b) => b.score - a.score)
       .slice(0, 6);
 
     if (priority.length > 0) return priority;
 
     if (tab === "users") {
-      return scored
-        .filter((r) => r.entity_type === "user")
-        .slice(0, 5);
+      return scored.filter((r) => r.entity_type === "user").slice(0, 5);
     }
 
-    return scored
-      .filter((r) => r.entity_type !== "user")
-      .slice(0, 6);
+    return scored.filter((r) => r.entity_type !== "user").slice(0, 6);
   }, [results, query, tab]);
 
   useEffect(() => {
@@ -233,9 +231,12 @@ export default function HeaderDashboard({
   }
 
   return (
-    <header className="h-16 bg-base-100 border-b border-base-300 flex items-center px-6 justify-between col-span-2">
-      <div className="flex items-center gap-2">
-        <button className="lg:hidden btn btn-ghost btn-circle" onClick={onMobileMenu}>
+    <header className="h-16 bg-base-100 border-b border-base-300 flex items-center px-3 sm:px-6 justify-between col-span-2">
+      <div className="flex items-center gap-2 min-w-0">
+        <button
+          className="lg:hidden btn btn-ghost btn-circle"
+          onClick={onMobileMenu}
+        >
           <Menu size={20} />
         </button>
 
@@ -249,15 +250,28 @@ export default function HeaderDashboard({
         <Logo logoSize="md" />
       </div>
 
-      <div className="flex items-center gap-2">
-        <div ref={containerRef} className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-2" size={16} />
+      <div className="flex items-center gap-1 sm:gap-2">
+        <div
+          ref={containerRef}
+          className="
+        relative
+        hidden
+        sm:block
+        w-48
+        md:w-64
+        lg:w-72
+      "
+        >
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-2"
+            size={16}
+          />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Buscar usuários, documentos, testes..."
-            className="input input-sm input-bordered rounded-full w-72 pl-10"
+            placeholder="Buscar..."
+            className="input input-sm input-bordered rounded-full w-full pl-10"
           />
 
           {open && (
@@ -297,9 +311,7 @@ export default function HeaderDashboard({
                     key={`${item.entity_type}-${item.id}`}
                     onClick={() => handleRedirect(item)}
                     className={`w-full px-4 py-2 text-left ${
-                      i === activeIndex
-                        ? "bg-primary/10"
-                        : "hover:bg-base-200"
+                      i === activeIndex ? "bg-primary/10" : "hover:bg-base-200"
                     }`}
                   >
                     <div className="font-medium">
@@ -314,16 +326,125 @@ export default function HeaderDashboard({
           )}
         </div>
 
-        <button className="btn btn-ghost btn-circle btn-sm">
-          <Bell size={20} />
+        <button
+          className="btn btn-ghost btn-circle btn-sm"
+          onClick={() => setMobileSearchOpen(true)}
+        >
+          <Search size={18} />
         </button>
 
-        <ThemeController />
+        <button className="btn btn-ghost btn-circle btn-sm">
+          <Bell size={18} />
+        </button>
 
-        <button onClick={onLogout} className="btn btn-error btn-soft btn-circle btn-sm">
-          <LogOut size={20} />
+        <div className="hidden sm:block">
+          <ThemeController />
+        </div>
+
+        <button
+          onClick={onLogout}
+          className="btn btn-error btn-soft btn-circle btn-sm"
+        >
+          <LogOut size={18} />
         </button>
       </div>
+      {mobileSearchOpen && (
+        <div className="fixed inset-0 z-[100] bg-base-100/20 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
+          {/* Header */}
+          <div className="flex items-center gap-3 px-4 py-3 border border-base-300 bg-base-100 sticky top-5 z-10 mx-2 rounded-lg shadow-md">
+            <button
+              className="btn btn-ghost btn-circle btn-sm"
+              onClick={() => {
+                setMobileSearchOpen(false);
+                setQuery("");
+                setOpen(false);
+              }}
+            >
+              <ChevronLeft size={20} />
+            </button>
+
+            <div className="relative flex-1">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40 z-2"
+                size={16}
+              />
+              <input
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Buscar conteúdos, usuários..."
+                className="
+            input
+            w-full
+            pl-10
+            focus:outline-none
+            focus:ring-2
+            focus:ring-primary/40
+            transition
+          "
+              />
+            </div>
+          </div>
+
+          {/* Resultados */}
+          <div className="flex-1 overflow-y-auto px-2 py-3 space-y-2">
+            {loading && (
+              <div className="flex items-center gap-2 px-4 py-6 text-sm opacity-60">
+                <span className="loading loading-spinner loading-sm" />
+                Buscando…
+              </div>
+            )}
+
+            {!loading && finalResults.length === 0 && query.length >= 2 && (
+              <div className="flex flex-col items-center justify-center gap-2 py-12 opacity-60 text-sm">
+                <Search size={28} />
+                Nenhum resultado encontrado
+              </div>
+            )}
+
+            {!loading &&
+              finalResults.map((item) => (
+                <button
+                  key={`${item.entity_type}-${item.id}`}
+                  onClick={() => {
+                    handleRedirect(item);
+                    setMobileSearchOpen(false);
+                  }}
+                  className="
+              w-full
+              text-left
+              rounded-xl
+              px-4
+              py-3
+              bg-base-100
+              hover:bg-base-200
+              active:scale-[0.98]
+              transition
+              shadow-sm
+              border border-base-300
+            "
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-medium truncate">
+                      {highlightText(item.title, query)}
+                    </div>
+
+                    <span className="text-[10px] uppercase tracking-wide opacity-60">
+                      {item.entity_type}
+                    </span>
+                  </div>
+
+                  {item.subtitle && (
+                    <div className="text-xs opacity-60 mt-1 truncate">
+                      {item.subtitle}
+                    </div>
+                  )}
+                </button>
+              ))}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

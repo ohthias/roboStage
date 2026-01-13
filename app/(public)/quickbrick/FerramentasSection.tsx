@@ -255,121 +255,22 @@ export default function FerramentasSection({
     },
     {
       id: 7,
-      titulo: "Comparador de Estratégias",
-      descricao:
-        "Compare duas ou mais estratégias por pontuação estimada, tempo, risco operacional e consistência.",
-      categoria: "Simular",
-      icon: <Scale className="w-5 h-5" />,
-      link: "/quickbrick/comparador-estrategias",
-      customContent: (
-        seasons: string[],
-        seasonLogos: { [x: string]: any },
-        router: any
-      ) => (
-        <div className="flex flex-col gap-2 mt-2 w-full mx-auto">
-          {seasons.map((s: string) => {
-            const season = seasonLogos[s];
-
-            return (
-              <button
-                key={s}
-                onClick={() =>
-                  router.push(`/quickbrick/tabela-de-missoes/${s}`)
-                }
-                className="
-          group
-          w-full
-          flex items-center gap-4
-          px-4 py-3
-          rounded-xl
-          border border-base-300/60
-          bg-base-100
-          hover:border-primary
-          hover:bg-base-200/50
-          transition-all duration-300
-        "
-              >
-                {/* Ícone / Logo */}
-                <div
-                  className="
-          w-10 h-10
-          flex items-center justify-center
-          rounded-lg
-          bg-base-200/70
-          group-hover:bg-primary/10
-          transition-colors
-          shrink-0
-        "
-                >
-                  <Image
-                    src={season?.image || "/images/icons/default-season.png"}
-                    alt={season?.name || s}
-                    width={32}
-                    height={32}
-                    className="object-contain"
-                  />
-                </div>
-
-                {/* Texto */}
-                <div className="flex flex-col text-left flex-1">
-                  <span className="text-sm font-semibold leading-tight">
-                    {season?.name}
-                  </span>
-                  <span className="text-xs opacity-60">Temporada FLL</span>
-                </div>
-
-                {/* Ação */}
-                <span
-                  className="
-          text-xs font-semibold
-          text-primary
-          opacity-0
-          group-hover:opacity-100
-          transition-opacity
-        "
-                >
-                  Abrir →
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      ),
-      badge: "Em breve",
-    },
-    {
-      id: 8,
       titulo: "Planejador de Anexos",
       descricao:
         "Organize estrategicamente os anexos do robô, relacionando missões, rodadas, risco operacional e tempo de troca.",
       categoria: "Documentar",
       icon: <Wrench className="w-5 h-5" />,
       link: "/quickbrick/planejador-de-anexos",
-      image: "/images/QuickBrick/Estrategia.png",
       customContent: null,
-      badge: "Em breve",
+      badge: "Novo",
     },
     {
-      id: 9,
-      titulo: "Inspiração de Robôs e Conceitos",
-      descricao:
-        "Explore uma coleção de designs e conceitos de robôs para inspirar suas criações.",
-      categoria: "Criar",
-      icon: <TestTube className="w-5 h-5" />,
-      link: "/quickbrick/inspiracao-de-robos-e-conceitos",
-      image: "/images/QuickBrick/Inspiracao.jpg",
-      customContent: null,
-      badge: "Em breve",
-    },
-    {
-      id: 10,
+      id: 8,
       titulo: "Estratégia em Saída",
       descricao:
         "Crie e organize as saídas do robô com suas missões e exporte os dados para análise comparativa.",
       categoria: "Criar",
       icon: <ArrowRightLeft className="w-5 h-5" />,
-      link: "/quickbrick/geradorsaidas",
-      image: "/images/QuickBrick/Estrategia.png",
       customContent: (
         seasons: string[],
         seasonLogos: { [x: string]: any },
@@ -383,7 +284,7 @@ export default function FerramentasSection({
               <button
                 key={s}
                 onClick={() =>
-                  router.push(`/quickbrick/tabela-de-missoes/${s}`)
+                  router.push(`/quickbrick/geradorsaidas/${s}`)
                 }
                 className="
           group
@@ -444,7 +345,7 @@ export default function FerramentasSection({
           })}
         </div>
       ),
-      badge: "Em breve",
+      badge: "Novo",
     },
   ] as Ferramenta[];
 

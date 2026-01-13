@@ -38,7 +38,6 @@ export function useAchievements(userId?: string) {
         `)
         .eq("user_id", userId)
         .order("unlocked_at", { ascending: true });
-        console.log("Fetched achievements:", data, error);
 
       if (!active) return;
 

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Document, DocumentMap } from './types';
-import { Search, Sparkles, X, FileText, ChevronRight } from 'lucide-react';
+import { Search, X, FileText, ChevronRight } from 'lucide-react';
 
 interface SearchModalProps {
   isOpen: boolean;

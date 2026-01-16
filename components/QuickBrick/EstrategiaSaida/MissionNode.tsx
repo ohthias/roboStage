@@ -139,21 +139,12 @@ export const MissionNode: React.FC<MissionNodeProps> = ({
               >
                 <button
                   onClick={() => {
-                    setIsEditing(true);
-                    setShowMenu(false);
-                  }}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                >
-                  <Edit3 size={12} /> Rename
-                </button>
-                <button
-                  onClick={() => {
                     onDelete(mission.id);
                     setShowMenu(false);
                   }}
                   className="w-full text-left px-3 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2"
                 >
-                  <Trash2 size={12} /> Delete
+                  <Trash2 size={12} /> Excluir
                 </button>
               </div>
             )}
@@ -162,47 +153,20 @@ export const MissionNode: React.FC<MissionNodeProps> = ({
 
         {/* Content */}
         <div className="space-y-2">
-          {isEditing ? (
-            <div
-              className="flex flex-col gap-2"
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <input
-                type="text"
-                value={editedName}
-                onChange={(e) => setEditedName(e.target.value)}
-                className="w-full text-sm font-semibold bg-white/50 border border-black/10 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                autoFocus
-                onKeyDown={(e) => e.key === "Enter" && handleSave()}
-              />
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="text-xs text-slate-500 hover:underline"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="text-xs font-medium text-primary-600 hover:underline"
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <h3
-                className="font-bold text-sm leading-tight pr-2 select-none"
-                onDoubleClick={() => setIsEditing(true)}
-              >
-                {mission.name}
-              </h3>
-              <p className="text-xs opacity-70 leading-relaxed line-clamp-2 select-none">
-                {mission.description || "No description provided."}
-              </p>
-            </>
-          )}
+          <img
+            src={mission.image}
+            alt={mission.name}
+            className="w-full h-24 object-contain rounded"
+          />
+          <h3
+            className="font-bold text-sm leading-tight pr-2 select-none"
+            onDoubleClick={() => setIsEditing(true)}
+          >
+            {mission.name}
+          </h3>
+          <p className="text-xs opacity-70 leading-relaxed line-clamp-2 select-none">
+            {mission.description || "No description provided."}
+          </p>
         </div>
       </div>
     </div>

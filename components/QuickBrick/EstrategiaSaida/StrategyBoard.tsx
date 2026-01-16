@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import {
   Plus,
   Trash2,
@@ -42,6 +42,16 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
     setSeason(seasonSelect as "masterpiece" | "submerged" | "unearthed");
   }, [seasonSelect]);
 
+  const filteredMissions =
+    catalog[season]?.filter((mission: any) => {
+      return (
+        mission.id &&
+        mission.id !== "GP" &&
+        mission.id !== "PT" &&
+        mission.id !== "EL"
+      );
+    }) || [];
+
   const [strategies, setStrategies] = useState<ExitStrategy[]>([
     {
       id: "strat-1",
@@ -58,7 +68,7 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
   const addStrategy = useCallback(() => {
     const newStrategy: ExitStrategy = {
       id: `strat-${Date.now()}`,
-      name: `New Strategy ${strategies.length + 1}`,
+      name: `Saida ${strategies.length + 1}`,
       steps: [],
       createdAt: Date.now(),
     };
@@ -129,15 +139,13 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
     [activeStrategy]
   );
 
-  const usedMissionIds = React.useMemo(() => {
+  const usedMissionIds = useMemo(() => {
     const ids = new Set<string>();
 
     strategies.forEach((strategy) => {
       strategy.steps.forEach((step) => {
         step.missions.forEach((mission) => {
-          if (mission.apiMissionId && mission.apiMissionId !== "custom") {
-            ids.add(mission.apiMissionId);
-          }
+          ids.add(mission.apiMissionId);
         });
       });
     });
@@ -160,6 +168,7 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
         name: apiMission.name,
         description: apiMission.mission,
         status: "pending",
+        image: apiMission.image,
       };
 
       const newStep: MissionStep = {
@@ -271,6 +280,19 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
     },
     [activeStrategy]
   );
+
+  const editStrategyName = useCallback(
+    (newName: string) => {
+      if (!activeStrategy) return;
+      setStrategies((prev) =>
+        prev.map((s) =>
+          s.id === activeStrategy.id ? { ...s, name: newName } : s
+        )
+      );
+    },
+    [activeStrategy]
+  );
+
   return (
     <div className="flex h-full w-full">
       {/* Sidebar - Strategies List */}
@@ -278,12 +300,12 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
         <div className="p-5 border-b border-slate-100 flex justify-between items-center">
           <h2 className="font-semibold text-slate-800 flex items-center gap-2">
             <LayoutList size={18} className="text-slate-500" />
-            Strategies
+            Estrategias
           </h2>
           <button
             onClick={addStrategy}
             className="p-1.5 hover:bg-slate-100 rounded-md text-primary-600 transition-colors"
-            title="Create new strategy"
+            title="Criar novo bloco de estrategia"
           >
             <Plus size={20} />
           </button>
@@ -316,7 +338,7 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
                     {strategy.name}
                   </span>
                   <span className="text-xs text-slate-400 mt-0.5">
-                    {missionCount} Missions • {strategy.steps.length} Steps
+                    {missionCount} Missões • {strategy.steps.length} Etapas
                   </span>
                 </div>
 
@@ -338,12 +360,23 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
         <div className="h-16 px-8 flex items-center justify-between border-b border-slate-200 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">
-              {activeStrategy?.name}
+              <input
+                type="text"
+                value={activeStrategy?.name || ""}
+                onChange={(e) => editStrategyName(e.target.value)}
+                onBlur={() => {
+                  if (!activeStrategy?.name.trim()) {
+                    editStrategyName("Saida Sem Nome");
+                  }
+                }}
+                onClick={(e) => e.currentTarget.select()}
+                className="bg-transparent border-b border-transparent focus:border-primary-300 focus:outline-none text-2xl font-bold w-64"
+              />
             </h2>
             <p className="text-sm text-slate-500">
               {activeStrategy?.steps.length === 0
-                ? "Drafting Phase"
-                : "Active Execution Flow"}
+                ? "Fase de Rascunho"
+                : "Fluxo de Execução Ativo"}
             </p>
           </div>
 
@@ -351,16 +384,16 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
             <button
               onClick={exportStrategy}
               className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg font-medium transition-all shadow-sm active:scale-95"
-              title="Export Strategy to JSON"
+              title="Exportar estratégia como JSON"
             >
               <Download size={18} />
-              Export
+              Exportar
             </button>
 
             <button
               onClick={() => {
                 const confirmDelete = confirm(
-                  "Are you sure you want to delete this strategy? This action cannot be undone."
+                  "Você tem certeza que deseja excluir esta estratégia?"
                 );
                 if (confirmDelete) {
                   deleteStrategyById(activeStrategyId);
@@ -369,7 +402,7 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
               className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium transition-all shadow-lg shadow-slate-200 active:scale-95"
             >
               <Trash2 size={18} />
-              Delete
+              Excluir
             </button>
           </div>
         </div>
@@ -382,7 +415,7 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
               <div className="flex flex-col items-center justify-center pt-20 gap-4 opacity-50 shrink-0">
                 <div className="w-16 h-16 rounded-full bg-slate-100 border-2 border-slate-300 border-dashed flex items-center justify-center">
                   <span className="text-xs font-semibold text-slate-400">
-                    START
+                    Início
                   </span>
                 </div>
               </div>
@@ -397,9 +430,11 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
                   <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
                     <Plus size={24} className="text-slate-400" />
                   </div>
-                  <p className="text-slate-400 font-medium">No missions yet.</p>
+                  <p className="text-slate-400 font-medium">Sem missões</p>
                   <p className="text-sm text-slate-400">
-                    Click 'Add Sequence Step' to start.
+                    Clique em alguma missão
+                    <br />
+                    no catálogo para adicioná-la à estratégia.
                   </p>
                 </div>
               ) : (
@@ -452,7 +487,7 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
                                 {/* Simultaneous Label */}
                                 {step.missions.length > 1 && (
                                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white px-2 py-0.5 rounded-full border border-slate-100">
-                                    Simultaneous
+                                    Simultâneas
                                   </div>
                                 )}
 
@@ -535,22 +570,18 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
       </div>
       <div className="w-80 border-r bg-white overflow-y-auto">
         <div className="p-3 space-y-2">
-          {catalog[season]
-            ?.filter((m) => !usedMissionIds.has(m.id))
-            .map((m) => (
-              <button
-                key={m.id}
-                onClick={() => addMissionFromCatalog(m)}
-                className="w-full text-left p-3 rounded-lg border hover:bg-slate-50"
-              >
-                <div className="font-semibold text-sm">
-                  {m.id} — {m.name}
-                </div>
-                <p className="text-xs text-slate-500 line-clamp-2">
-                  {m.mission}
-                </p>
-              </button>
-            ))}
+          {filteredMissions.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => addMissionFromCatalog(m)}
+              className="w-full text-left p-3 rounded-lg border hover:bg-slate-50"
+            >
+              <div className="font-semibold text-sm">
+                {m.id} — {m.name}
+              </div>
+              <p className="text-xs text-slate-500 line-clamp-2">{m.mission}</p>
+            </button>
+          ))}
         </div>
       </div>
     </div>

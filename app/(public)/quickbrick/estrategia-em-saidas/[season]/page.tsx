@@ -1,15 +1,12 @@
+'use client';
 import { StrategyBoard } from "@/components/QuickBrick/EstrategiaSaida/StrategyBoard";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
+import { useParams } from "next/navigation";
 
-interface GeradorSaidasPageProps {
-  params: {
-    season: string;
-  };
-}
-
-export default function GeradorSaidasPage({ params }: GeradorSaidasPageProps) {
+export default function GeradorSaidasPage() {
+  const params = useParams();
   const season = params.season
 
   return (
@@ -20,7 +17,7 @@ export default function GeradorSaidasPage({ params }: GeradorSaidasPageProps) {
 
         <section className="space-y-2">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary">
-            Gerador de Saídas
+            Estratégia em Saídas
           </h1>
           <p className="text-base md:text-lg text-base-content/80 max-w-3xl leading-relaxed">
             Crie e organize as saídas do robô com suas missões, ordene-as de
@@ -33,7 +30,6 @@ export default function GeradorSaidasPage({ params }: GeradorSaidasPageProps) {
           <StrategyBoard seasonSelect={season} />
         </div>
       </div>
-
       <Footer />
     </div>
   );

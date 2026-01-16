@@ -42,16 +42,6 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
     setSeason(seasonSelect as "masterpiece" | "submerged" | "unearthed");
   }, [seasonSelect]);
 
-  const filteredMissions =
-    catalog[season]?.filter((mission: any) => {
-      return (
-        mission.id &&
-        mission.id !== "GP" &&
-        mission.id !== "PT" &&
-        mission.id !== "EL"
-      );
-    }) || [];
-
   const [strategies, setStrategies] = useState<ExitStrategy[]>([
     {
       id: "strat-1",
@@ -153,6 +143,17 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
     return ids;
   }, [strategies]);
 
+  const filteredMissions =
+    catalog[season]?.filter((mission: ApiMission) => {
+      return (
+        mission.id &&
+        mission.id !== "GP" &&
+        mission.id !== "PT" &&
+        mission.id !== "EL" &&
+        !usedMissionIds.has(mission.id)
+      );
+    }) || [];
+
   const addMissionFromCatalog = useCallback(
     (apiMission: ApiMission) => {
       if (!activeStrategy) return;
@@ -233,47 +234,72 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
         return;
       }
 
-      // Reorder Missions
       if (type === "MISSION") {
+        if (!destination) return;
+
         const sourceStepId = source.droppableId;
-        const destStepId = destination.droppableId;
-
-        // Find step indices
-        const sourceStepIndex = activeStrategy.steps.findIndex(
-          (s) => s.id === sourceStepId
-        );
-        const destStepIndex = activeStrategy.steps.findIndex(
-          (s) => s.id === destStepId
-        );
-
-        if (sourceStepIndex === -1 || destStepIndex === -1) return;
+        const destDroppableId = destination.droppableId;
 
         const newSteps = Array.from(activeStrategy.steps);
+
+        const sourceStepIndex = newSteps.findIndex(
+          (s) => s.id === sourceStepId
+        );
+
+        if (sourceStepIndex === -1) return;
+
         const sourceStep = newSteps[sourceStepIndex];
-        const destStep = newSteps[destStepIndex];
-
-        // Create copies of mission arrays
         const sourceMissions = Array.from(sourceStep.missions);
-        const destMissions =
-          sourceStepId === destStepId
-            ? sourceMissions
-            : Array.from(destStep.missions);
 
-        // Remove from source
         const [movedMission] = sourceMissions.splice(source.index, 1);
 
-        // Add to destination
-        destMissions.splice(destination.index, 0, movedMission);
+        // 🔹 CASO 1 — solto fora (criar novo step)
+        if (destDroppableId === "NEW_STEP_DROPZONE") {
+          const timestamp = Date.now();
 
-        // Update steps
-        newSteps[sourceStepIndex] = { ...sourceStep, missions: sourceMissions };
-        if (sourceStepId !== destStepId) {
-          newSteps[destStepIndex] = { ...destStep, missions: destMissions };
+          const newStep: MissionStep = {
+            id: `step-${timestamp}`,
+            missions: [movedMission],
+          };
+
+          newSteps[sourceStepIndex] = {
+            ...sourceStep,
+            missions: sourceMissions,
+          };
+
+          newSteps.push(newStep);
         }
+        // 🔹 CASO 2 — mover para outro step existente
+        else {
+          const destStepIndex = newSteps.findIndex(
+            (s) => s.id === destDroppableId
+          );
+
+          if (destStepIndex === -1) return;
+
+          const destStep = newSteps[destStepIndex];
+          const destMissions = Array.from(destStep.missions);
+
+          destMissions.splice(destination.index, 0, movedMission);
+
+          newSteps[sourceStepIndex] = {
+            ...sourceStep,
+            missions: sourceMissions,
+          };
+
+          newSteps[destStepIndex] = {
+            ...destStep,
+            missions: destMissions,
+          };
+        }
+
+        const cleanedSteps = newSteps.filter(
+          (step) => step.missions.length > 0
+        );
 
         setStrategies((prev) =>
           prev.map((s) =>
-            s.id === activeStrategy.id ? { ...s, steps: newSteps } : s
+            s.id === activeStrategy.id ? { ...s, steps: cleanedSteps } : s
           )
         );
       }
@@ -296,146 +322,126 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
   return (
     <div className="flex h-full w-full">
       {/* Sidebar - Strategies List */}
-      <aside className="w-72 bg-white border-r border-slate-200 flex flex-col h-full shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] z-10">
-        <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-          <h2 className="font-semibold text-slate-800 flex items-center gap-2">
-            <LayoutList size={18} className="text-slate-500" />
-            Estrategias
+      <aside className="w-64 bg-base-100 border-r border-base-300 flex flex-col h-full z-10">
+        <div className="p-4 border-b border-base-300 flex justify-between items-center">
+          <h2 className="font-semibold flex items-center gap-2">
+            <LayoutList size={18} />
+            Estratégias
           </h2>
           <button
             onClick={addStrategy}
-            className="p-1.5 hover:bg-slate-100 rounded-md text-primary-600 transition-colors"
-            title="Criar novo bloco de estrategia"
+            className="btn btn-ghost btn-sm btn-circle"
+            title="Criar nova estratégia"
           >
-            <Plus size={20} />
+            <Plus size={18} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {strategies.map((strategy) => {
             const missionCount = strategy.steps.reduce(
               (acc, step) => acc + step.missions.length,
               0
             );
+
+            const active = activeStrategyId === strategy.id;
+
             return (
               <div
                 key={strategy.id}
                 onClick={() => setActiveStrategyId(strategy.id)}
-                className={`group flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all border ${
-                  activeStrategyId === strategy.id
-                    ? "bg-primary-50 border-primary-200 shadow-sm"
-                    : "hover:bg-slate-50 border-transparent hover:border-slate-200"
-                }`}
+                className={`group cursor-pointer rounded-lg border p-3 transition
+              ${
+                active
+                  ? "bg-primary/10 border-primary"
+                  : "hover:bg-base-200 border-transparent"
+              }`}
               >
-                <div className="flex flex-col overflow-hidden">
-                  <span
-                    className={`font-medium truncate ${
-                      activeStrategyId === strategy.id
-                        ? "text-primary-800"
-                        : "text-slate-700"
-                    }`}
-                  >
-                    {strategy.name}
-                  </span>
-                  <span className="text-xs text-slate-400 mt-0.5">
-                    {missionCount} Missões • {strategy.steps.length} Etapas
-                  </span>
-                </div>
+                <div className="flex justify-between items-start">
+                  <div className="overflow-hidden">
+                    <div className="font-medium truncate">{strategy.name}</div>
+                    <div className="text-xs opacity-60">
+                      {missionCount} Missões • {strategy.steps.length} Etapas
+                    </div>
+                  </div>
 
-                <button
-                  onClick={() => deleteStrategyById(strategy.id)}
-                  className={`p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity`}
-                >
-                  <Trash2 size={16} />
-                </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteStrategyById(strategy.id);
+                    }}
+                    className="btn btn-ghost btn-xs opacity-0 group-hover:opacity-100"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             );
           })}
         </div>
       </aside>
 
-      {/* Main Content - Mission Flow */}
-      <div className="flex-1 flex flex-col h-full bg-slate-50/50 relative overflow-hidden">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col h-full bg-base-200/40 overflow-hidden">
         {/* Toolbar */}
-        <div className="h-16 px-8 flex items-center justify-between border-b border-slate-200 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="h-16 px-6 flex items-center justify-between border-b border-base-300 bg-base-100 sticky top-0 z-10">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">
-              <input
-                type="text"
-                value={activeStrategy?.name || ""}
-                onChange={(e) => editStrategyName(e.target.value)}
-                onBlur={() => {
-                  if (!activeStrategy?.name.trim()) {
-                    editStrategyName("Saida Sem Nome");
-                  }
-                }}
-                onClick={(e) => e.currentTarget.select()}
-                className="bg-transparent border-b border-transparent focus:border-primary-300 focus:outline-none text-2xl font-bold w-64"
-              />
-            </h2>
-            <p className="text-sm text-slate-500">
+            <input
+              type="text"
+              value={activeStrategy?.name || ""}
+              onChange={(e) => editStrategyName(e.target.value)}
+              onBlur={() => {
+                if (!activeStrategy?.name.trim()) {
+                  editStrategyName("Saída sem nome");
+                }
+              }}
+              className="input input-ghost text-xl font-bold w-64"
+            />
+            <p className="text-sm opacity-60">
               {activeStrategy?.steps.length === 0
-                ? "Fase de Rascunho"
-                : "Fluxo de Execução Ativo"}
+                ? "Fase de rascunho"
+                : "Fluxo de execução ativo"}
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={exportStrategy}
-              className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg font-medium transition-all shadow-sm active:scale-95"
-              title="Exportar estratégia como JSON"
-            >
-              <Download size={18} />
+          <div className="flex gap-2">
+            <button onClick={exportStrategy} className="btn btn-outline btn-sm">
+              <Download size={16} />
               Exportar
             </button>
 
             <button
               onClick={() => {
-                const confirmDelete = confirm(
-                  "Você tem certeza que deseja excluir esta estratégia?"
-                );
-                if (confirmDelete) {
+                if (confirm("Deseja excluir esta estratégia?")) {
                   deleteStrategyById(activeStrategyId);
                 }
               }}
-              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium transition-all shadow-lg shadow-slate-200 active:scale-95"
+              className="btn btn-neutral btn-sm"
             >
-              <Trash2 size={18} />
+              <Trash2 size={16} />
               Excluir
             </button>
           </div>
         </div>
 
-        {/* Visualization Area */}
+        {/* Board */}
         <DragDropContext onDragEnd={onDragEnd}>
-          <div className="flex-1 overflow-x-auto overflow-y-hidden p-8 flex items-center">
+          <div className="flex-1 overflow-x-auto p-6">
             <div className="flex items-start gap-4 min-w-full">
-              {/* Start Node */}
-              <div className="flex flex-col items-center justify-center pt-20 gap-4 opacity-50 shrink-0">
-                <div className="w-16 h-16 rounded-full bg-slate-100 border-2 border-slate-300 border-dashed flex items-center justify-center">
-                  <span className="text-xs font-semibold text-slate-400">
-                    Início
-                  </span>
+              {/* Start */}
+              <div className="pt-20 opacity-50">
+                <div className="w-16 h-16 rounded-full border border-dashed flex items-center justify-center">
+                  <span className="text-xs">Início</span>
                 </div>
               </div>
 
-              {/* Connecting Line from Start */}
-              <div className="pt-28 shrink-0">
-                <ArrowRight size={24} className="text-slate-300" />
-              </div>
+              <ArrowRight className="mt-28 opacity-40" />
 
               {activeStrategy?.steps.length === 0 ? (
-                <div className="flex flex-col items-center justify-center pt-20 px-8 text-center animate-pulse">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
-                    <Plus size={24} className="text-slate-400" />
-                  </div>
-                  <p className="text-slate-400 font-medium">Sem missões</p>
-                  <p className="text-sm text-slate-400">
-                    Clique em alguma missão
-                    <br />
-                    no catálogo para adicioná-la à estratégia.
-                  </p>
+                <div className="text-center opacity-60 pt-24">
+                  <Plus size={28} />
+                  <p className="font-medium mt-2">Sem missões</p>
+                  <p className="text-sm">Selecione uma missão no catálogo</p>
                 </div>
               ) : (
                 <Droppable
@@ -447,9 +453,9 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
                     <div
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      className="flex items-start gap-4"
+                      className="flex gap-4"
                     >
-                      {activeStrategy?.steps.map((step, stepIndex) => (
+                      {activeStrategy.steps.map((step, stepIndex) => (
                         <Draggable
                           key={step.id}
                           draggableId={step.id}
@@ -459,107 +465,89 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              className={`flex items-start gap-4 shrink-0 transition-opacity ${
-                                snapshot.isDragging ? "opacity-80" : ""
-                              }`}
+                              className={`flex gap-4
+                            ${snapshot.isDragging ? "opacity-80" : ""}`}
                             >
-                              {/* Mission Stack (Step) */}
-                              <div
-                                className={`flex flex-col gap-3 relative group/step bg-slate-100/50 p-2 rounded-2xl border transition-all min-w-[280px]
-                                                        ${
-                                                          snapshot.isDragging
-                                                            ? "border-primary-300 shadow-xl bg-white rotate-2 cursor-grabbing"
-                                                            : "border-transparent hover:border-slate-200"
-                                                        }
-                                                     `}
-                              >
-                                {/* Step Handle */}
+                              <div className="card bg-base-100 border border-base-300 w-72">
                                 <div
                                   {...provided.dragHandleProps}
-                                  className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 cursor-grab active:cursor-grabbing p-1 bg-white border border-slate-200 rounded-md shadow-sm opacity-0 group-hover/step:opacity-100 transition-opacity"
+                                  className="absolute -top-3 left-1/2 -translate-x-1/2 btn btn-xs btn-ghost cursor-grab"
                                 >
-                                  <GripVertical
-                                    size={14}
-                                    className="text-slate-400"
-                                  />
+                                  <GripVertical size={14} />
                                 </div>
 
-                                {/* Simultaneous Label */}
-                                {step.missions.length > 1 && (
-                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white px-2 py-0.5 rounded-full border border-slate-100">
-                                    Simultâneas
-                                  </div>
-                                )}
-
-                                <Droppable droppableId={step.id} type="MISSION">
-                                  {(provided, snapshot) => (
-                                    <div
-                                      ref={provided.innerRef}
-                                      {...provided.droppableProps}
-                                      className={`flex flex-col gap-3 min-h-[100px] rounded-xl transition-colors ${
-                                        snapshot.isDraggingOver
-                                          ? "bg-primary-50/50"
-                                          : ""
-                                      }`}
-                                    >
-                                      {step.missions.map((mission, mIndex) => (
-                                        <Draggable
-                                          key={mission.id}
-                                          draggableId={mission.id}
-                                          index={mIndex}
-                                        >
-                                          {(provided, snapshot) => (
-                                            <div
-                                              ref={provided.innerRef}
-                                              {...provided.draggableProps}
-                                              {...provided.dragHandleProps}
-                                              style={{
-                                                ...provided.draggableProps
-                                                  .style,
-                                              }}
+                                <div className="card-body gap-3">
+                                  <Droppable
+                                    droppableId={step.id}
+                                    type="MISSION"
+                                  >
+                                    {(provided) => (
+                                      <div
+                                        ref={provided.innerRef}
+                                        {...provided.droppableProps}
+                                        className="space-y-2 min-h-[80px]"
+                                      >
+                                        {step.missions.map(
+                                          (mission, mIndex) => (
+                                            <Draggable
+                                              key={mission.id}
+                                              draggableId={mission.id}
+                                              index={mIndex}
                                             >
-                                              <MissionNode
-                                                mission={mission}
-                                                index={stepIndex}
-                                                subIndex={mIndex}
-                                                onUpdate={updateMission}
-                                                onDelete={removeMission}
-                                                isDragging={snapshot.isDragging}
-                                              />
-                                            </div>
-                                          )}
-                                        </Draggable>
-                                      ))}
-                                      {provided.placeholder}
-                                    </div>
-                                  )}
-                                </Droppable>
-                              </div>
-
-                              {/* Connector Arrow */}
-                              <div className="pt-28 text-slate-300">
-                                {stepIndex < activeStrategy.steps.length - 1 ? (
-                                  <ArrowRight size={24} />
-                                ) : (
-                                  <div className="flex items-center gap-2 opacity-50 ml-2">
-                                    <ArrowRight
-                                      size={24}
-                                      className="text-slate-300"
-                                    />
-                                    <div className="w-16 h-16 rounded-full border-2 border-slate-200 bg-slate-50 flex items-center justify-center ml-2">
-                                      <Target
-                                        size={20}
-                                        className="text-slate-300"
-                                      />
-                                    </div>
-                                  </div>
-                                )}
+                                              {(provided, snapshot) => (
+                                                <div
+                                                  ref={provided.innerRef}
+                                                  {...provided.draggableProps}
+                                                  {...provided.dragHandleProps}
+                                                >
+                                                  <MissionNode
+                                                    mission={mission}
+                                                    index={stepIndex}
+                                                    subIndex={mIndex}
+                                                    onUpdate={updateMission}
+                                                    onDelete={removeMission}
+                                                    isDragging={
+                                                      snapshot.isDragging
+                                                    }
+                                                  />
+                                                </div>
+                                              )}
+                                            </Draggable>
+                                          )
+                                        )}
+                                        {provided.placeholder}
+                                      </div>
+                                    )}
+                                  </Droppable>
+                                </div>
                               </div>
                             </div>
                           )}
                         </Draggable>
                       ))}
-                      {provided.placeholder}
+
+                      {/* Dropzone para criar novo step */}
+                      <Droppable droppableId="NEW_STEP_DROPZONE" type="MISSION">
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                            className={`flex items-center justify-center w-40 min-h-[260px] rounded-xl border-2 border-dashed transition
+                            ${
+                              snapshot.isDraggingOver
+                                ? "border-primary bg-primary/10"
+                                : "border-base-300 opacity-40"
+                            }`}
+                          >
+                            <div className="text-xs text-center opacity-70">
+                              Solte aqui para criar
+                              <br />
+                              nova etapa
+                            </div>
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
                     </div>
                   )}
                 </Droppable>
@@ -568,22 +556,26 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
           </div>
         </DragDropContext>
       </div>
-      <div className="w-80 border-r bg-white overflow-y-auto">
+
+      {/* Mission Catalog */}
+      <aside className="w-80 bg-base-100 border-l border-base-300 overflow-y-auto">
         <div className="p-3 space-y-2">
           {filteredMissions.map((m) => (
             <button
               key={m.id}
               onClick={() => addMissionFromCatalog(m)}
-              className="w-full text-left p-3 rounded-lg border hover:bg-slate-50"
+              className="card card-compact bg-base-100 border hover:bg-base-200 text-left"
             >
-              <div className="font-semibold text-sm">
-                {m.id} — {m.name}
+              <div className="card-body">
+                <div className="font-semibold text-sm">
+                  {m.id} — {m.name}
+                </div>
+                <p className="text-xs opacity-60 line-clamp-2">{m.mission}</p>
               </div>
-              <p className="text-xs text-slate-500 line-clamp-2">{m.mission}</p>
             </button>
           ))}
         </div>
-      </div>
+      </aside>
     </div>
   );
 };

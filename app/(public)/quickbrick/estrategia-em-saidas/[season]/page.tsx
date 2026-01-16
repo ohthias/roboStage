@@ -1,13 +1,36 @@
-'use client';
+"use client";
+import CardMobileNotUse from "@/components/MobileNotUse";
 import { StrategyBoard } from "@/components/QuickBrick/EstrategiaSaida/StrategyBoard";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
 import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export default function GeradorSaidasPage() {
   const params = useParams();
-  const season = params.season
+  const season = Array.isArray(params.season) ? params.season[0] : params.season;
+
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 720px)");
+
+    const handleChange = () => {
+      setIsMobile(mediaQuery.matches);
+    };
+
+    handleChange(); // verifica no mount
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  if (isMobile === null) return null;
+
+  if (isMobile) {
+    return <CardMobileNotUse />;
+  }
 
   return (
     <div>

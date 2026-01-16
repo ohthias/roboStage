@@ -82,11 +82,11 @@ export const MissionNode: React.FC<MissionNodeProps> = ({
     <div className="relative group">
       {/* Node Number Badge */}
       <div
-        className={`absolute -left-3 top-1/2 -translate-y-1/2 z-10 transition-opacity ${
-          isDragging ? "opacity-0" : "opacity-0 group-hover:opacity-100"
-        }`}
+        className={`absolute -left-3 top-1/2 -translate-y-1/2 z-10 transition-opacity
+      ${isDragging ? "opacity-0" : "opacity-0 group-hover:opacity-100"}
+    `}
       >
-        <div className="bg-slate-900 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm border border-white">
+        <div className="badge badge-neutral text-[9px] font-bold shadow border border-base-100">
           {index + 1}.{subIndex + 1}
         </div>
       </div>
@@ -94,79 +94,82 @@ export const MissionNode: React.FC<MissionNodeProps> = ({
       {/* Main Card */}
       <div
         className={`
-        relative w-64 p-4 rounded-xl border-2 shadow-sm transition-all duration-200
-        ${
-          isDragging
-            ? "shadow-xl ring-2 ring-primary-400 rotate-2 scale-105 z-50"
-            : "hover:shadow-md hover:scale-[1.02] hover:-translate-y-0.5"
-        }
-        ${
-          mission.status === "active" && !isDragging
-            ? "ring-2 ring-blue-100 ring-offset-2"
-            : ""
-        }
-        ${getStatusColor()}
-      `}
+      card w-64 bg-base-100 border-2 transition-all duration-200
+      ${
+        isDragging
+          ? "shadow-xl ring-2 ring-primary rotate-2 scale-105 z-50"
+          : "hover:shadow-md hover:scale-[1.02] hover:-translate-y-0.5"
+      }
+      ${
+        mission.status === "active" && !isDragging
+          ? "ring-2 ring-info/20 ring-offset-2"
+          : ""
+      }
+      ${getStatusColor()}
+    `}
       >
-        {/* Header */}
-        <div className="flex justify-between items-start mb-3">
-          <button
-            onClick={toggleStatus}
-            className="p-1 rounded-full hover:bg-black/5 transition-colors"
-            title={`Status: ${mission.status}`}
-            onMouseDown={(e) =>
-              e.stopPropagation()
-            } /* Prevent drag start on button */
-          >
-            {getStatusIcon()}
-          </button>
-
-          <div className="relative" ref={menuRef}>
+        <div className="card-body p-4 gap-3">
+          {/* Header */}
+          <div className="flex justify-between items-start">
             <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-1 text-slate-400 hover:text-slate-600 rounded-md hover:bg-black/5 transition-colors"
-              onMouseDown={(e) =>
-                e.stopPropagation()
-              } /* Prevent drag start on menu trigger */
+              onClick={toggleStatus}
+              title={`Status: ${mission.status}`}
+              onMouseDown={(e) => e.stopPropagation()}
+              className="btn btn-ghost btn-xs btn-circle"
             >
-              <MoreHorizontal size={16} />
+              {getStatusIcon()}
             </button>
 
-            {showMenu && (
-              <div
-                className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-slate-100 py-1 z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right"
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setShowMenu(!showMenu)}
                 onMouseDown={(e) => e.stopPropagation()}
+                className="btn btn-ghost btn-xs btn-circle"
               >
-                <button
-                  onClick={() => {
-                    onDelete(mission.id);
-                    setShowMenu(false);
-                  }}
-                  className="w-full text-left px-3 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2"
-                >
-                  <Trash2 size={12} /> Excluir
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+                <MoreHorizontal size={16} />
+              </button>
 
-        {/* Content */}
-        <div className="space-y-2">
-          <img
-            src={mission.image}
-            alt={mission.name}
-            className="w-full h-24 object-contain rounded"
-          />
-          <h3
-            className="font-bold text-sm leading-tight pr-2 select-none"
-            onDoubleClick={() => setIsEditing(true)}
-          >
-            {mission.name}
-          </h3>
-          <p className="text-xs opacity-70 leading-relaxed line-clamp-2 select-none">
-            {mission.description || "No description provided."}
-          </p>
+              {showMenu && (
+                <ul
+                  className="menu menu-sm absolute right-0 mt-1 w-36 bg-base-100 border border-base-300 rounded-box shadow z-20"
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <li>
+                    <button
+                      onClick={() => {
+                        onDelete(mission.id);
+                        setShowMenu(false);
+                      }}
+                      className="text-error flex items-center gap-2"
+                    >
+                      <Trash2 size={12} />
+                      Excluir
+                    </button>
+                  </li>
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="space-y-2">
+            <img
+              src={mission.image}
+              alt={mission.name}
+              className="w-full h-24 object-contain rounded-box bg-base-200"
+            />
+
+            <h3
+              className="font-bold text-sm leading-tight select-none"
+              onDoubleClick={() => setIsEditing(true)}
+            >
+              {mission.name}
+            </h3>
+
+            <p className="text-xs opacity-70 leading-relaxed line-clamp-2 select-none">
+              {mission.description || "No description provided."}
+            </p>
+          </div>
         </div>
       </div>
     </div>

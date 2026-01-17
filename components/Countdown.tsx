@@ -45,7 +45,7 @@ export default function CountdownBanner() {
             v4.0.0
           </span>
           <span className="text-sm opacity-70 hidden sm:block">
-            26 de janeiro de 2026 • 12h
+            23 de fevereiro de 2026 • 12h
           </span>
         </div>
 

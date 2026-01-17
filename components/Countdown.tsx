@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const TARGET_TIMESTAMP = Date.UTC(2026, 0, 26, 15, 0, 0); // 26/01/2026 às 12h BR
+const TARGET_TIMESTAMP = Date.UTC(2026, 1, 23, 15, 0, 0); // 26/01/2026 às 12h BR
 
 export default function CountdownBanner() {
   const [mounted, setMounted] = useState(false);

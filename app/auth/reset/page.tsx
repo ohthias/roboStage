@@ -22,10 +22,20 @@ export default function ResetPasswordPage() {
      Validação da sessão
   ========================= */
   useEffect(() => {
-    const validateSession = async () => {
-      const { data } = await supabase.auth.getSession();
+    const handleRecovery = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
 
-      if (!data.session) {
+      if (!code) {
+        setIsError(true);
+        setStatus("Link de redefinição inválido.");
+        setCheckingSession(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+      if (error) {
         setIsError(true);
         setStatus("Este link de redefinição é inválido ou já expirou.");
         setCanReset(false);
@@ -36,7 +46,7 @@ export default function ResetPasswordPage() {
       setCheckingSession(false);
     };
 
-    validateSession();
+    handleRecovery();
   }, []);
 
   /* =========================

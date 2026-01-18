@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
+import Logo from "@/components/UI/Logo";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -98,20 +99,16 @@ export default function ResetPasswordPage() {
   return (
     <div className="flex h-screen relative">
       {/* Lado visual */}
-      <aside className="w-2/3 hidden md:flex flex-col justify-between bg-base-300 p-8">
-        <Link href="/" className="inline-block">
-          <img
-            src="/images/logos/Icone.png"
-            alt="Logo RoboStage"
-            className="h-12 w-auto hover:scale-105 transition-transform bg-base-100/60 rounded-full p-1"
-            style={{ backdropFilter: "blur(10px)" }}
-          />
-        </Link>
+      <aside className="w-2/3 hidden md:flex flex-col justify-between bg-gradient-to-l from-error/10 via-base-100 to-base-200 p-8">
+          <Logo logoSize="xl" redirectIndex />
       </aside>
 
       {/* Formulário */}
-      <main className="w-full md:w-1/3 flex items-center justify-center bg-base-100 p-6">
-        <div className="card w-full max-w-md shadow-xl">
+      <main className="w-full md:w-1/3 flex items-center justify-center bg-gradient-to-t from-error/5 via-base-100 to-base-200 p-6">
+        <span className="absolute top-6 left-6 md:hidden">
+          <Logo redirectIndex logoSize="md" />
+        </span>
+        <div className="card w-full max-w-md">
           <div className="card-body gap-6">
             <header className="text-center">
               <h1 className="text-3xl font-bold">Redefinir senha</h1>
@@ -122,7 +119,7 @@ export default function ResetPasswordPage() {
 
             {status && (
               <div
-                className={`alert ${
+                className={`alert alert-soft ${
                   isError ? "alert-error" : "alert-success"
                 } text-sm`}
               >
@@ -174,9 +171,9 @@ export default function ResetPasswordPage() {
                 </button>
               </form>
             ) : (
-              <div className="text-center text-sm space-y-4">
+              <div className="text-center text-sm space-y-4 text-base-content/70">
                 <p>Solicite um novo link para redefinir sua senha.</p>
-                <Link href="/auth/forgot-password" className="btn btn-outline">
+                <Link href="/auth/forgot-password" className="btn btn-soft">
                   Reenviar link
                 </Link>
               </div>

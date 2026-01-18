@@ -19,6 +19,8 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (email.trim() === "" || password.trim() === "") return;
+    if (password.length < 8) return;
     const ok = await login(email, password);
     if (ok) router.push("/dashboard");
   };
@@ -35,6 +37,7 @@ export default function LoginPage() {
 
       {/* Lado institucional */}
       <aside className="w-2/3 hidden md:flex flex-col justify-between bg-gradient-to-r from-base-300 to-primary/10 p-8 ">
+        <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px] w-2/3" />
         <Logo logoSize="lg" redirectIndex />
       </aside>
 
@@ -51,20 +54,20 @@ export default function LoginPage() {
 
             {/* Feedback */}
             {error && (
-              <div className="alert alert-error text-sm py-2">
+              <div className="alert alert-soft alert-error text-sm py-2">
                 {error}
               </div>
             )}
             {success && (
-              <div className="alert alert-success text-sm py-2">
+              <div className="alert alert-soft alert-success text-sm py-2">
                 {success}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <form onSubmit={handleSubmit} className="flex flex-col space-y-6">
               {/* Email */}
-              <div className="form-control">
-                <label className="label" htmlFor="email">
+              <div className="form-control mb-4">
+                <label className="label mb-1" htmlFor="email">
                   <span className="label-text">Email</span>
                 </label>
                 <input
@@ -77,20 +80,10 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-
-              {/* Senha */}
               <div className="form-control">
-                <div className="flex justify-between items-center">
-                  <label className="label" htmlFor="password">
-                    <span className="label-text">Senha</span>
-                  </label>
-                  <Link
-                    href="/auth/forgot-password"
-                    className="text-sm link link-hover text-base-content/70"
-                  >
-                    Esqueceu a senha?
-                  </Link>
-                </div>
+                <label className="label mb-1" htmlFor="password">
+                  <span className="label-text">Senha</span>
+                </label>
 
                 <div className="relative">
                   <input
@@ -110,8 +103,14 @@ export default function LoginPage() {
                     }
                     onClick={() => setShowPassword((v) => !v)}
                   >
-                    {showPassword ? <Eye /> : <EyeClosed />}
+                    {showPassword ? <Eye size={16} /> : <EyeClosed size={16} />}
                   </button>
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-sm link link-hover text-base-content/70 absolute right-0 bottom-[-1.5rem]"
+                  >
+                    Esqueceu a senha?
+                  </Link>
                 </div>
               </div>
 

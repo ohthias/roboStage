@@ -48,7 +48,7 @@ export function NavigationBar({ eventId, activeTab, onTabChange }: Props) {
 
   return (
     <>
-      <nav className="sticky top-4 z-50 max-w-7xl mx-auto">
+      <nav className="relative top-4 z-50 max-w-7xl mx-auto">
         <div className="bg-base-100/70 backdrop-blur-xl border border-base-300 rounded-2xl px-6 py-4 shadow-md flex items-center justify-between text-base-content">
           <div className="flex items-end gap-3">
             <h1 className="font-black uppercase italic tracking-tight text-2xl">

@@ -47,6 +47,8 @@ export function MissionCard({
   mission,
   responses = {},
   onSelect,
+  imagesEnabled = true,
+  isBadgeEnabled = true,
 }: MissionCardProps) {
   const renderInput = (
     index: number,
@@ -110,7 +112,7 @@ export function MissionCard({
         </div>
 
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          {mission.image && (
+          {mission.image && imagesEnabled && (
             <figure className="flex-shrink-0 mx-auto md:mx-0">
               <img
                 src={mission.image}
@@ -127,7 +129,7 @@ export function MissionCard({
                   <span className="max-w-3/4">
                     {mission.mission}
                   </span>
-                  {mission.id !== "GP" && (
+                  {mission.id !== "GP" && isBadgeEnabled && (
                     <span className="badge badge-neutral rounded-md badge-outline w-auto text-center badge-sm h-auto">
                     Pontos: {mainPoints}
                   </span>
@@ -156,9 +158,11 @@ export function MissionCard({
                 <div key={`${mission.id}-sub${idx}`} className="mb-4">
                   <p className="mb-2 text-sm sm:text-base flex justify-between items-center">
                     {sub.submission}
-                    <span className="badge badge-neutral rounded-md badge-outline w-auto text-center badge-sm h-auto">
-                      Pontos: {subPoints}
-                    </span>
+                    {isBadgeEnabled && (
+                      <span className="badge badge-neutral rounded-md badge-outline w-auto text-center badge-sm h-auto">
+                        Pontos: {subPoints}
+                      </span>
+                    )}
                   </p>
                   {renderInput(idx + 1, sub.type, sub.points)}
                 </div>

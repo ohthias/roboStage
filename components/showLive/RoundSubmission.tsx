@@ -1,10 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import FormMission from "../FormMission/FormMission";
 import Loader from "../Loader";
 import { useRouter } from "next/navigation";
 import { sumAllMissions } from "@/utils/scores";
+import ModalConfirm, { ModalConfirmRef } from "../UI/Modal/ModalConfirm";
+import ModalAlert, { ModalAlertRef } from "../UI/Modal/ModalAlert";
 
 interface SubMission {
   submission: string;
@@ -46,6 +48,9 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
   const [loading, setLoading] = useState(true);
   const [allRoundsCompleted, setAllRoundsCompleted] = useState(false);
 
+  const modalConfirmRef = useRef<ModalConfirmRef>(null);
+  const modalAlertRef = useRef<ModalAlertRef>(null);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -72,7 +77,7 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
           setMissions(missionsData[season]);
         } else {
           console.warn(
-            `Temporada '${season}' não encontrada no arquivo missions.json`
+            `Temporada '${season}' não encontrada no arquivo missions.json`,
           );
           setMissions([]);
         }
@@ -95,8 +100,8 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
 
         const allCompleted = formattedTeams.every((team) =>
           visibleRounds.every(
-            (round: string | number) => team.points[round] !== -1
-          )
+            (round: string | number) => team.points[round] !== -1,
+          ),
         );
 
         setAllRoundsCompleted(allCompleted);
@@ -119,7 +124,7 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
     if (!equipe) return;
 
     const roundsDisponiveis = roundsOrder.filter(
-      (round) => equipe.points?.[round] === -1
+      (round) => equipe.points?.[round] === -1,
     );
     setAvailableRounds(roundsDisponiveis);
     setSelectedRound("");
@@ -128,7 +133,7 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
   const handleSelectMission = (
     missionId: string,
     index: number,
-    value: string | number
+    value: string | number,
   ) => {
     setResponses((prev) => ({
       ...prev,
@@ -138,7 +143,7 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
 
   const totalPoints = sumAllMissions(
     missions.filter((m) => m.id !== "GP"),
-    responses
+    responses,
   );
 
   const handleSubmit = async () => {
@@ -147,107 +152,94 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
       return;
     }
 
-    const confirm = window.confirm("Deseja realmente enviar a avaliação?");
-    if (!confirm) return;
+    modalConfirmRef.current?.open(
+      "A pontuação será final e não poderá ser alterada.",
+      async () => {
+        try {
+          setLoading(true);
 
-    try {
-      setLoading(true);
+          const equipe = teams.find((t) => t.name_team === selectedEquipe);
+          if (!equipe) throw new Error("Equipe não encontrada");
 
-      const equipe = teams.find((t) => t.name_team === selectedEquipe);
-      if (!equipe) throw new Error("Equipe não encontrada");
-
-      if (equipe.points[selectedRound] !== -1) {
-        alert("Essa equipe já foi avaliada nesse round.");
-        return;
-      }
-
-      const updatedPoints = { ...equipe.points, [selectedRound]: totalPoints };
-
-      // 🔎 GP e PT armazenados no data_extra
-      const roundExtra: Record<string, any> = {};
-      ["GP", "PT"].forEach((id) => {
-        const mission = missions.find((m) => m.id === id);
-        const response = responses[id];
-
-        if (mission && response) {
-          const index = Object.values(response)[0];
-          let value: string | number = index;
-          let points = 0;
-
-          // Calcula pontos
-          if (Array.isArray(mission.points)) {
-            points = mission.points[index as number] ?? 0;
-          } else {
-            points = mission.points as number;
+          if (equipe.points[selectedRound] !== -1) {
+            alert("Essa equipe já foi avaliada nesse round.");
+            return;
           }
 
-          // Ajusta o "value" de acordo com o tipo
-          if (typeof index === "number") {
-            if (mission.type[0] === "range") {
-              // para range → pega label (mission.type[index+1]) ou mantém index
-              value = mission.type[index + 1] ?? index;
-            } else if (mission.type[0] === "switch") {
-              // para switch → pega label (mission.type[index+1]) ou mantém index
+          const updatedPoints = {
+            ...equipe.points,
+            [selectedRound]: totalPoints,
+          };
+
+          const roundExtra: Record<string, any> = {};
+
+          ["GP", "PT"].forEach((id) => {
+            const mission = missions.find((m) => m.id === id);
+            const response = responses[id];
+
+            if (!mission || !response) return;
+
+            const index = Object.values(response)[0];
+            let value: string | number = index;
+            let points = 0;
+
+            if (Array.isArray(mission.points)) {
+              points = mission.points[index as number] ?? 0;
+            } else {
+              points = mission.points as number;
+            }
+
+            if (typeof index === "number") {
               value = mission.type[index + 1] ?? index;
             }
-          }
 
-          roundExtra[id] = { value, points };
+            roundExtra[id] = { value, points };
+          });
+
+          const { data: current, error: fetchError } = await supabase
+            .from("team")
+            .select("data_extra")
+            .eq("id_team", equipe.id_team)
+            .maybeSingle();
+
+          if (fetchError) throw fetchError;
+
+          const currentExtra = current?.data_extra || {};
+
+          const newExtra = {
+            ...currentExtra,
+            [selectedRound]: roundExtra,
+          };
+
+          const { error } = await supabase
+            .from("team")
+            .update({
+              points: updatedPoints,
+              data_extra: newExtra,
+            })
+            .eq("id_team", equipe.id_team);
+
+          if (error) throw error;
+
+          setTeams((prev) =>
+            prev.map((t) =>
+              t.id_team === equipe.id_team
+                ? { ...t, points: updatedPoints }
+                : t,
+            ),
+          );
+
+          modalAlertRef.current?.open(
+            `Avaliação enviada com sucesso! Pontuação da equipe ${selectedEquipe}: ${totalPoints} pontos.`,
+          );
+        } catch (err) {
+          alert("Erro ao atualizar equipe.");
+        } finally {
+          setLoading(false);
         }
-      });
-
-      // 🔎 Pega data_extra atual para não sobrescrever
-      const { data: current, error: fetchError } = await supabase
-        .from("team")
-        .select("data_extra")
-        .eq("id_team", equipe.id_team)
-        .maybeSingle();
-
-      if (fetchError) throw fetchError;
-
-      const currentExtra = current?.data_extra || {};
-
-      // Mescla com round atual
-      const newExtra = {
-        ...currentExtra,
-        [selectedRound]: roundExtra,
-      };
-
-      // 🔄 Atualiza no banco
-      const { error } = await supabase
-        .from("team")
-        .update({
-          points: updatedPoints,
-          data_extra: newExtra,
-        })
-        .eq("id_team", equipe.id_team);
-
-      if (error) throw error;
-
-      alert(
-        `Pontuação salva para ${selectedEquipe} no ${selectedRound}: ${totalPoints}`
-      );
-
-      // Atualiza estado local
-      setTeams((prev) =>
-        prev.map((t) =>
-          t.id_team === equipe.id_team
-            ? { ...t, points: updatedPoints, data_extra: newExtra }
-            : t
-        )
-      );
-      router.refresh();
-    } catch (err) {
-      console.error("Erro ao salvar avaliação:", err);
-      alert("Erro ao atualizar equipe.");
-    } finally {
-      setLoading(false);
-    }
+      },
+    );
   };
-
-  if (loading) {
-    return <Loader />;
-  }
 
   if (allRoundsCompleted) {
     return (
@@ -266,98 +258,124 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
   }
 
   return (
-    <main className="flex flex-col items-center justify-start min-h-screen py-12 px-2">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-primary">
-        Avaliação de Rounds
-      </h1>
+    <main className="flex flex-col items-center justify-start min-h-screen mt-4">
+      {(loading && <Loader />) || (
+        <>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-primary">
+            Avaliação de Rounds
+          </h1>
 
-      <div className="text-left mb-6 w-full max-w-4xl">
-        <p className="text-base-content">
-          Selecione a equipe e o round para avaliar.
-        </p>
-        <p className="text-base-content">
-          A pontuação total será atualizada automaticamente com base nas missões
-          avaliadas.
-        </p>
-        <p className="text-base-content">
-          Após enviar, a pontuação não poderá ser alterada.
-        </p>
-      </div>
+          <div className="text-left mb-6 w-full max-w-4xl">
+            <p className="text-base-content">
+              Selecione a equipe e o round para avaliar.
+            </p>
+            <p className="text-base-content">
+              A pontuação total será atualizada automaticamente com base nas
+              missões avaliadas.
+            </p>
+            <p className="text-base-content">
+              Após enviar, a pontuação não poderá ser alterada.
+            </p>
+          </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-start gap-4 relative w-full max-w-4xl bg-base-200 px-8 py-4 rounded-md animate-fade-in-down mb-8">
-        <img src="/images/icons/NoEquip.png" className="w-16 h-16 mr-4" />
-        <p className="text-base-content text-sm">
-          <b>Sem restrição de equipamento:</b> Quando este símbolo aparece,
-          aplica-se a seguinte regra:{" "}
-          <i className="text-secondary">
-            “Um modelo de missão não pode ganhar pontos se estiver tocando no
-            equipamento no final da partida.”
-          </i>
-        </p>
-      </div>
+          <div className="flex flex-col sm:flex-row items-center justify-start gap-4 relative w-full max-w-4xl bg-base-300 px-8 py-4 rounded-md animate-fade-in-down mb-8">
+            <img src="/images/icons/NoEquip.png" className="w-16 h-16 mr-4" />
+            <p className="text-base-content text-sm">
+              <b>Sem restrição de equipamento:</b> Quando este símbolo aparece,
+              aplica-se a seguinte regra:{" "}
+              <i className="text-secondary">
+                “Um modelo de missão não pode ganhar pontos se estiver tocando
+                no equipamento no final da partida.”
+              </i>
+            </p>
+          </div>
 
-      {/* Seletor de equipe e round */}
-      <div className="w-full max-w-4xl bg-light-smoke rounded-lg mb-8 p-4 flex flex-col gap-4 sm:flex-row sm:gap-8">
-        <div className="flex flex-col w-full">
-          <label className="font-medium text-primary text-md mb-2">
-            Equipe
-          </label>
-          <select
-            className="input w-full"
-            value={selectedEquipe}
-            onChange={(e) => setSelectedEquipe(e.target.value)}
+          {/* Seletor de equipe e round */}
+          <div className="card w-full max-w-4xl bg-base-100 shadow-md mb-8">
+            <div className="card-body p-4 flex flex-col gap-4 sm:flex-row sm:gap-8">
+              <div className="form-control w-full">
+                <label className="label">
+                  <span className="label-text font-medium text-primary mb-1">
+                    Equipe
+                  </span>
+                </label>
+                <select
+                  className="select select-bordered w-full rounded-md px-3"
+                  value={selectedEquipe}
+                  onChange={(e) => setSelectedEquipe(e.target.value)}
+                >
+                  <option value="">Selecione a equipe</option>
+                  {teams.map((team) => (
+                    <option key={team.id_team} value={team.name_team}>
+                      {team.name_team}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-control w-full">
+                <label className="label">
+                  <span className="label-text font-medium text-primary mb-1">
+                    Round
+                  </span>
+                </label>
+                <select
+                  className="select select-bordered w-full rounded-md px-3"
+                  value={selectedRound}
+                  onChange={(e) => setSelectedRound(e.target.value)}
+                  disabled={availableRounds.length === 0 || !selectedEquipe}
+                >
+                  <option value="">Selecione o round</option>
+                  {roundsOrder.map((round) => (
+                    <option
+                      key={round}
+                      value={round}
+                      disabled={!availableRounds.includes(round)}
+                    >
+                      {round}{" "}
+                      {!availableRounds.includes(round) && "(já avaliado)"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <FormMission
+            missions={missions.map((mission) => ({
+              ...mission,
+              ["sub-mission"]: mission["sub-mission"]
+                ? mission["sub-mission"].map((sub) => ({
+                    ...sub,
+                    points: sub.points ?? 0,
+                  }))
+                : undefined,
+            }))}
+            responses={responses}
+            onSelect={handleSelectMission}
+            imagesEnabled={false}
+            isBadgeEnabled={false}
+          />
+          <button
+            className="btn btn-accent rounded-md mt-8 w-full max-w-4xl"
+            disabled={!selectedRound || !selectedEquipe || loading}
+            onClick={handleSubmit}
           >
-            <option value="">Selecione a equipe</option>
-            {teams.map((team) => (
-              <option key={team.id_team} value={team.name_team}>
-                {team.name_team}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex flex-col w-full">
-          <label className="font-medium text-primary text-md mb-2">Round</label>
-          <select
-            className="input w-full"
-            value={selectedRound}
-            onChange={(e) => setSelectedRound(e.target.value)}
-            disabled={availableRounds.length === 0}
-          >
-            <option value="">Selecione o round</option>
-            {roundsOrder.map((round) => (
-              <option
-                key={round}
-                value={round}
-                disabled={!availableRounds.includes(round)}
-              >
-                {round} {!availableRounds.includes(round) && "(já avaliado)"}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <FormMission
-        missions={missions.map((mission) => ({
-          ...mission,
-          ["sub-mission"]: mission["sub-mission"]
-            ? mission["sub-mission"].map((sub) => ({
-              ...sub,
-              points: sub.points ?? 0,
-            }))
-            : undefined,
-        }))}
-        responses={responses}
-        onSelect={handleSelectMission}
-      />
-      <button
-        className="btn btn-accent"
-        disabled={!selectedRound || !selectedEquipe || loading}
-        onClick={handleSubmit}
-      >
-        Enviar pontuação
-      </button>
+            Enviar pontuação
+          </button>
+          <ModalConfirm
+            ref={modalConfirmRef}
+            title="Avaliação Enviada"
+            cancelLabel="Cancelar"
+            confirmLabel="Enviar"
+          />
+          <ModalAlert
+            ref={modalAlertRef}
+            title="Avaliação Enviada"
+            confirmLabel="OK"
+          />
+        </>
+      )}
     </main>
   );
 }

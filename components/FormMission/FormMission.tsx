@@ -5,6 +5,8 @@ export default function FormMission({
   missions = [],
   responses = {},
   onSelect = () => {},
+  imagesEnabled = true,
+  isBadgeEnabled = true,
   className = "",
 }: FormMissionProps) {
   return (
@@ -15,6 +17,8 @@ export default function FormMission({
           mission={mission}
           responses={responses[mission.id]}
           onSelect={onSelect}
+          imagesEnabled={imagesEnabled}
+          isBadgeEnabled={isBadgeEnabled}
         />
       ))}
     </div>

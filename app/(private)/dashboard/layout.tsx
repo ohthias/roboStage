@@ -23,6 +23,12 @@ export default function DashboardLayout({
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [WorkspacePathBool, setWorkspacePathBool] = useState(false);
+
+  useEffect(() => {
+    const path = window.location.pathname;
+    setWorkspacePathBool(path.includes("/dashboard/workspace"));
+  }, []);
 
   const modalLogoutRef = useRef<ModalConfirmRef>(null);
 
@@ -73,7 +79,7 @@ export default function DashboardLayout({
         />
       </aside>
 
-      <main className="p-6 overflow-y-auto w-full">{children}</main>
+      <main className={`overflow-y-auto w-full ${WorkspacePathBool ? "p-0" : "p-6 "}`}>{children}</main>
 
       <ModalConfirm
         ref={modalLogoutRef}

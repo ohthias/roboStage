@@ -1,51 +1,52 @@
-import { EditorThemeClasses } from "lexical";
-
-const theme: EditorThemeClasses = {
-  paragraph: "mb-3",
-
+const theme = {
+  ltr: "ltr",
+  rtl: "rtl",
+  placeholder: "editor-placeholder",
+  paragraph: "mb-1 relative leading-7 text-[#37352f]",
+  quote: "border-l-4 border-gray-900 pl-4 text-lg italic text-gray-700 my-4",
   heading: {
-    h1: "text-3xl font-semibold mt-6 mb-3",
-    h2: "text-2xl font-semibold mt-5 mb-3",
-    h3: "text-xl font-semibold mt-4 mb-2",
+    h1: "text-4xl font-bold text-[#37352f] mt-8 mb-2 tracking-tight",
+    h2: "text-2xl font-semibold text-[#37352f] mt-6 mb-2 border-b border-gray-100 pb-1",
+    h3: "text-xl font-semibold text-[#37352f] mt-4 mb-1",
   },
-
+  list: {
+    nested: {
+      listitem: "list-none",
+    },
+    ol: "list-decimal list-outside ml-6 mb-1",
+    ul: "list-disc list-outside ml-6 mb-1",
+    listitem: "pl-1 marker:text-gray-400",
+  },
+  image: "editor-image",
+  link: "text-gray-500 underline decoration-gray-400 cursor-pointer hover:text-blue-500 transition-colors",
   text: {
     bold: "font-semibold",
     italic: "italic",
-    underline: "underline",
-    code:
-      "font-mono bg-base-200 px-1.5 py-0.5 rounded text-sm",
+    overflowed: "editor-text-overflowed",
+    hashtag: "text-blue-500 font-medium",
+    underline: "underline decoration-gray-300 underline-offset-4",
+    strikethrough: "line-through text-gray-400",
+    code: "text-[#eb5757] bg-[rgba(135,131,120,0.15)] font-mono text-[85%] px-1.5 py-0.5 rounded",
   },
-
-  code:
-    "block bg-base-200 text-sm font-mono p-4 rounded-lg my-4 overflow-x-auto",
-
+  code: "bg-[#f7f6f3] text-[#37352f] font-mono block p-8 rounded my-4 overflow-x-auto text-sm leading-6",
   codeHighlight: {
-    comment: "text-base-content/40 italic",
-    keyword: "text-primary",
-    string: "text-success",
-    function: "text-secondary",
-    number: "text-warning",
-    operator: "text-base-content",
-    punctuation: "text-base-content/60",
-    class: "text-info",
-    variable: "text-accent",
-  },
-
-  list: {
-    ul: "list-disc pl-6 my-3",
-    ol: "list-decimal pl-6 my-3",
-    listitem: "mb-1",
-  },
-
-  quote:
-    "border-l-2 border-base-300 pl-4 italic text-base-content/70 my-3",
-
-  align: {
-    left: "text-left",
-    center: "text-center",
-    right: "text-right",
-    justify: "text-justify",
+    atrule: "text-[#005cc5]",
+    attr: "text-[#6f42c1]",
+    boolean: "text-[#005cc5]",
+    builtin: "text-[#6f42c1]",
+    comment: "text-[#6a737d] italic",
+    constant: "text-[#005cc5]",
+    entity: "text-[#22863a]",
+    function: "text-[#6f42c1]",
+    important: "font-bold text-[#d73a49]",
+    keyword: "text-[#d73a49]",
+    number: "text-[#005cc5]",
+    operator: "text-[#d73a49]",
+    property: "text-[#005cc5]",
+    punctuation: "text-[#24292e]",
+    string: "text-[#032f62]",
+    tag: "text-[#22863a]",
+    variable: "text-[#e36209]",
   },
 };
 

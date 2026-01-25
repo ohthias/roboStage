@@ -15,11 +15,16 @@ import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { CodeNode, CodeHighlightNode } from "@lexical/code";
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { TRANSFORMERS } from "@lexical/markdown";
-import { EditorState } from "lexical";
+import { EditorState, ParagraphNode, TextNode } from "lexical";
+import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
+import { TableNode, TableRowNode, TableCellNode } from "@lexical/table";
 
 import theme from "./theme";
 import FloatingToolbarPlugin from "./FloatingToolbarPlugin";
 import SlashMenuPlugin from "./SlashMenuPlugin";
+import TableOfContents from "./TableOfContents";
+import ImagesPlugin from "./Images/ImagesPlugin";
+import { ImageNode } from "./Images/ImageNode";
 
 interface TextEditorProps {
   initialTitle: string;
@@ -28,19 +33,26 @@ interface TextEditorProps {
   onUpdate: (data: { title?: string; icon?: string; content?: string }) => void;
 }
 
-export default function TextEditor({ initialTitle, initialIcon, initialContent, onUpdate }: TextEditorProps) {
+export default function TextEditor({
+  initialTitle,
+  initialIcon,
+  initialContent,
+  onUpdate,
+}: TextEditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const [icon, setIcon] = useState(initialIcon);
   const [showIconPicker, setShowIconPicker] = useState(false);
 
   const editorConfig = {
-    namespace: "NotionClone",
+    namespace: "RobostageEditor",
     theme,
-    editorState: initialContent, // Load saved content
+    editorState: initialContent,
     onError(error: Error) {
       console.error(error);
     },
     nodes: [
+      ParagraphNode,
+      TextNode,
       HeadingNode,
       ListNode,
       ListItemNode,
@@ -49,17 +61,20 @@ export default function TextEditor({ initialTitle, initialIcon, initialContent, 
       AutoLinkNode,
       CodeNode,
       CodeHighlightNode,
+      TableNode,
+      TableRowNode,
+      TableCellNode,
+      ImageNode,
     ],
   };
 
-  // Debounce updates to parent for content
   const onChange = (editorState: EditorState) => {
-    // We can serialize here. In a real app, maybe debounce this.
-    const jsonString = JSON.stringify(editorState);
-    onUpdate({ content: jsonString });
+    editorState.read(() => {
+      const json = editorState.toJSON();
+      onUpdate({ content: JSON.stringify(json) });
+    });
   };
 
-  // Immediate update for Title and Icon
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
     setTitle(newTitle);
@@ -75,42 +90,44 @@ export default function TextEditor({ initialTitle, initialIcon, initialContent, 
   return (
     <LexicalComposer initialConfig={editorConfig}>
       <div className="flex flex-col min-h-full pb-32">
-        
-        {/* Cover Image */}
-        <div className="group relative h-48 w-full bg-gradient-to-r from-pink-100 to-blue-100 border-b border-black/5">
-          <button className="absolute bottom-4 right-12 bg-white/70 hover:bg-white text-xs px-2 py-1 rounded shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
-            Change cover
-          </button>
-        </div>
+        <div className="group relative h-48 w-full bg-gradient-to-r from-primary/20 to-secondary/10"></div>
 
-        {/* Editor Content Area */}
         <div className="max-w-[900px] w-full mx-auto px-12 sm:px-24 relative -mt-10">
-          
-          {/* Icon */}
           <div className="relative group w-fit">
-            <div 
+            <div
               className="text-7xl cursor-pointer hover:bg-notion-hover rounded-lg transition-colors select-none flex items-center justify-center w-[90px] h-[90px]"
               onClick={() => setShowIconPicker(!showIconPicker)}
             >
               {icon}
             </div>
-            {/* Simple Icon Picker Mockup */}
             {showIconPicker && (
               <div className="absolute top-full left-0 mt-2 bg-white shadow-xl border rounded-lg p-2 z-50 grid grid-cols-4 gap-2 w-48">
-                 {["🤖", "📄", "🚀", "💡", "⚠️", "✅", "🎉", "🔥", "💻", "🎨", "📈", "📅"].map(emoji => (
-                   <button 
+                {[
+                  "🤖",
+                  "📄",
+                  "🚀",
+                  "💡",
+                  "⚠️",
+                  "✅",
+                  "🎉",
+                  "🔥",
+                  "💻",
+                  "🎨",
+                  "📈",
+                  "📅",
+                ].map((emoji) => (
+                  <button
                     key={emoji}
                     onClick={() => handleIconSelect(emoji)}
                     className="text-2xl hover:bg-slate-100 rounded p-1"
-                   >
-                     {emoji}
-                   </button>
-                 ))}
+                  >
+                    {emoji}
+                  </button>
+                ))}
               </div>
             )}
           </div>
 
-          {/* Title Input */}
           <div className="mt-4 mb-8 group">
             <input
               type="text"
@@ -121,23 +138,17 @@ export default function TextEditor({ initialTitle, initialIcon, initialContent, 
             />
           </div>
 
-          {/* Lexical Editor */}
           <div className="relative">
             <RichTextPlugin
               contentEditable={
-                <ContentEditable
-                  className="outline-none text-base leading-7 min-h-[400px]"
-                />
+                <ContentEditable className="outline-none text-base leading-7" />
               }
               placeholder={
-                <div className="editor-placeholder">
-                  Type '/' for commands
-                </div>
+                <div className="editor-placeholder">Type '/' for commands</div>
               }
               ErrorBoundary={() => <div>Error</div>}
             />
 
-            {/* Notion Characteristics Plugins */}
             <LinkPlugin />
             <ListPlugin />
             <HistoryPlugin />
@@ -146,6 +157,9 @@ export default function TextEditor({ initialTitle, initialIcon, initialContent, 
             <OnChangePlugin onChange={onChange} />
             <FloatingToolbarPlugin />
             <SlashMenuPlugin />
+            <ImagesPlugin />
+            <TablePlugin />
+            <TableOfContents />
           </div>
         </div>
       </div>

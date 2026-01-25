@@ -273,7 +273,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <button className="btn btn-error btn-lg rounded-2xl font-black uppercase tracking-widest">
+              <button className="btn btn-error btn-lg rounded-2xl font-black uppercase tracking-widest" onClick={() => router.push("/showlive")}>
                 Conhecer o ShowLive
               </button>
             </div>

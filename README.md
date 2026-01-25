@@ -1,11 +1,9 @@
 # <div align="center">🤖 Robo<span style="color:#e63946">Stage</span></div>
-
 <div align="center">
-
 Plataforma completa para equipes, técnicos, juízes e organizadores da <strong>FIRST LEGO League Challenge (FLLC)</strong>.
 Gerencie torneios, documente robôs, planeje estratégias e acompanhe tudo em tempo real.
 
-<a href="https://robo-stage.vercel.app/"><strong>🌐 Acessar Plataforma</strong></a> • <a href="https://github.com/ohthias/roboStage/releases">📦 Releases</a> • <a href="https://github.com/ohthias/roboStage/issues">🐞 Issues</a>
+<a href="https://robostage.com.br/"><strong>🌐 Acessar Plataforma</strong></a> • <a href="https://github.com/ohthias/roboStage/releases">📦 Releases</a> • <a href="https://github.com/ohthias/roboStage/issues">🐞 Issues</a> • <em>v4.0.0</em></br>
 
 ![Status](https://img.shields.io/badge/status-active-brightgreen.svg)
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js\&logoColor=white)
@@ -15,126 +13,106 @@ Gerencie torneios, documente robôs, planeje estratégias e acompanhe tudo em te
 
 </div>
 
-# ✨ Visão Geral
+# O que é o RoboStage?
 
-O **roboStage** foi criado para conectar todos os elementos da FLL — do planejamento do robô às apresentações, dos testes ao torneio final.
-Um ecossistema completo que une tecnologia, estratégia e inovação em uma única plataforma.
+O RoboStage é um ambiente online que centraliza tudo o que uma equipe FLL precisa ao longo da temporada. 
 
-Ele é projetado para:
+Em vez de planilhas soltas, anotações em papel ou arquivos espalhados, a plataforma reúne:
 
-- Equipes que precisam de organização e buscam ferramentas sólidas
-- Juízes que necessitam de precisão
-- Organizadores que querem automação e fluxos mais rápidos
+- Planejamento técnico do robô
+- Registro de testes e treinos
+- Organização do Projeto de Inovação
+- Acompanhamento de desempenho
+- Apoio a apresentações e torneios
 
-# 🧰 Ferramentas Oficiais do roboStage
+Tudo em um único lugar, acessível de qualquer dispositivo.
 
-Cada ferramenta foi criada para uma etapa fundamental da temporada — do técnico ao projeto de inovação.
+## 👥 Para quem é o RoboStage?
 
-## ⚙️ QuickBrick Studio
+O RoboStage foi pensado para diferentes papéis dentro da FLL:
 
-**Simule, documente e planeje seu robô.**
+### 🤖 Equipes
 
-O **QuickBrick Studio** é o núcleo técnico da plataforma.
-Ele permite que sua equipe **visualize, documente e planeje** a engenharia do robô com eficiência.
+- Organizam o desenvolvimento do robô
+- Registram estratégias e melhorias
+- Acompanham a evolução ao longo da temporada
 
-### Recursos:
+### 🧑‍🏫 Técnicos e Mentores
 
-* Criação de diagramas estruturados
-* Registro de mecanismos, motores e sensores
-* Simulação de estratégias e movimentos
-* Histórico de versões e evolução do robô
+- Visualizam o progresso da equipe
+- Apoiam decisões com dados reais
+- Facilitam a organização e o planejamento
 
-> Ideal para documentar o robô na temporada **FLL CHALLENGE – UNEARTHED!**
+## 🧠 Principais Ferramentas
 
----
+O RoboStage é dividido em ferramentas, cada uma focada em uma parte da temporada.
 
-## 🧪 LabTest
+### ⚙️ QuickBrick Studio
 
-**Teste e valide suas execuções com precisão.**
+**Planejamento e documentação do robô**
 
-O **LabTest** transforma treino em dados.
-A ferramenta registra execuções e gera **estatísticas completas** para decisões mais inteligentes.
+O QuickBrick Studio ajuda a equipe a visualizar e explicar como o robô foi construído.
 
-### Recursos:
+Com ele, a equipe pode:
 
-* Registro individual de tentativas
-* Estatísticas automáticas de desempenho
-* Comparação entre estratégias
-* Identificação de padrões, erros e estabilidade
+- Organizar mecanismos, sensores e motores
+- Planejar estratégias de missões
+- Registrar mudanças e melhorias
+- Ter um histórico claro da evolução do robô
 
-> Uma ferramenta indispensável para equipes que levam melhoria contínua a sério.
+> 📌 Ideal para preparação de apresentações técnicas e explicação do projeto para juízes.
 
----
+### 🧪 LabTest
 
-## 💡 InnoLab
+**Registro de treinos e desempenho**
 
-**Organize e visualize todo o Projeto de Inovação.**
+O LabTest transforma os treinos do tapete em informações úteis. A equipe pode:
 
-O **InnoLab** ajuda sua equipe a estruturar o caminho do Projeto de Inovação de forma clara e criativa.
+- Registrar cada tentativa de missão
+- Anotar erros, acertos e observações
+- Comparar estratégias diferentes
+- Identificar qual abordagem é mais estável
 
-### Recursos:
+> 📌 Ajuda a equipe a tomar decisões baseadas em dados, não apenas em achismos.
 
-* Criação de diagramas temáticos
-* Mapeamento visual de problema, solução e impacto
-* Exportação para PDF e apresentações
-* Trabalho colaborativo entre membros da equipe
+### 💡 InnoLab
 
-> Perfeito para equipes que desejam clareza e uma apresentação impecável.
+**Organização do Projeto de Inovação por meio de diagramas**
 
----
+O InnoLab apoia toda a construção do Projeto de Inovação de forma visual e estruturada. A equipe consegue:
 
-# 🛠 Tecnologias Utilizadas
+- Mapear problema, solução e impacto
+- Organizar ideias em diagramas claros
+- Trabalhar de forma colaborativa
+- Preparar material para apresentações
 
-* **Next.js** — Fullstack completo
-* **React** — Interface reativa e modular
-* **TailwindCSS + DaisyUI** — Estilização rápida e elegante
-* **Supabase** — Banco, autenticação e real time
-* **Vercel** — Hospedagem e deploy contínuo
-* **Lucide Icons** — Ícones modernos e leves
+> 📌 Ideal para equipes que querem clareza, coesão e boa comunicação.
 
----
+### ✨ Por que usar o RoboStage?
 
-# 🧪 Como Rodar Localmente
+- Centraliza tudo da temporada em um só lugar
+- Facilita a organização da equipe
+- Ajuda na preparação para apresentações
+- Estimula pensamento estratégico e melhoria contínua
+- Economiza tempo e reduz confusão
+- O foco é menos bagunça, mais estratégia.
 
-```bash
-# Clone o repositório
-git clone https://github.com/ohthias/roboStage.git
 
-# Acesse a pasta
-cd roboStage
-
-# Instale dependências
-npm install
-
-# Configure as variáveis do Supabase
-cp .env.local
-
-# Execute o servidor
-npm run dev
-```
-
-Abra:
-👉 [http://localhost:3000](http://localhost:3000)
-
----
-
-# 📄 Licença
+## 📄 Licença
 
 Distribuído sob a **MIT License**.
 Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
 
----
-
-# 🙏 Créditos
+## 🙏 Créditos
 
 * Ícones: Flaticon / Freepik
 * UI: DaisyUI
 * Desenvolvimento: **Matheus (ohthias)**
 * Comunidade FLL que contribui diariamente com feedbacks
 
----
-
-# 📬 Suporte
+## 📬 Suporte
 
 * GitHub: [https://github.com/ohthias/roboStage](https://github.com/ohthias/roboStage)
 * Reportar problemas: [https://github.com/ohthias/roboStage/issues](https://github.com/ohthias/roboStage/issues)
+
+O RoboStage evolui constantemente com feedback da comunidade FLL.

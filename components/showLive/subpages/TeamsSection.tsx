@@ -1,10 +1,10 @@
 import { useToast } from "@/app/context/ToastContext";
-import CardDefault from "@/components/ui/Cards/CardDefault";
+import CardDefault from "@/components/UI/Cards/CardDefault";
 import ModalConfirm, {
   ModalConfirmRef,
-} from "@/components/ui/Modal/ModalConfirm";
-import ModalInput, { ModalInputRef } from "@/components/ui/Modal/ModalInput";
-import ModalPoints, { ModalPointsRef } from "@/components/ui/Modal/ModalPoints";
+} from "@/components/UI/Modal/ModalConfirm";
+import ModalInput, { ModalInputRef } from "@/components/UI/Modal/ModalInput";
+import ModalPoints, { ModalPointsRef } from "@/components/UI/Modal/ModalPoints";
 import { supabase } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";

@@ -5,7 +5,7 @@ import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { sumAllMissions } from "@/utils/scores";
 import FormMission from "@/components/FormMission/FormMission";
-import Loader from "@/components/loader";
+import Loader from "@/components/Loader";
 
 interface SubMission {
   submission: string;

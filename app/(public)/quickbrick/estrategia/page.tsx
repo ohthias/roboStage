@@ -1,59 +1,57 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
+import { Navbar } from "@/components/UI/Navbar";
 import QuickBrickCanvas from "@/components/QuickBrick/Estrategia/QuickBrickCanva";
-import { Footer } from "@/components/ui/Footer";
-import Breadcrumbs from "@/components/Breadcrumbs";
+import { Footer } from "@/components/UI/Footer";
+import Breadcrumbs from "@/components/UI/Breadcrumbs";
+import CardMobileNotUse from "@/components/MobileNotUse";
 
 export default function StrategyPage() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const checkSize = () => setIsMobile(window.innerWidth <= 720);
-    checkSize();
-    window.addEventListener("resize", checkSize);
-    return () => window.removeEventListener("resize", checkSize);
+    const mediaQuery = window.matchMedia("(max-width: 720px)");
+
+    const handleChange = () => {
+      setIsMobile(mediaQuery.matches);
+    };
+
+    handleChange(); // verifica no mount
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  if (isMobile === null) return null;
+
   if (isMobile) {
-    return (
-      <div className="flex flex-col">
-        <Navbar />
-        <div className="px-4 md:px-8 flex flex-col items-center w-full text-center h-screen justify-center">
-          <img src="/progress.svg" alt="Icone do robô" />
-          <h1 className="text-2xl font-bold my-4 text-primary">
-            Ops! Ferramenta não está disponível no celular
-          </h1>
-          <p className="text-sm mb-2 text-base-content px-5">
-            O QuickBrick Studio é um conjunto de ferramentas que ajuda sua
-            equipe a criar estratégias eficientes para o robô durante sua
-            jornada no FIRST LEGO League Challenge. Basta selecionar uma das
-            ferramentas disponíveis e aproveitá-las.
-          </p>
-        </div>
-        <Footer />
-      </div>
-    );
+    return <CardMobileNotUse />;
   }
 
   return (
-    <div className="flex flex-col items-start justify-center w-full">
+    <div>
       <Navbar />
       <div className="px-4 md:px-8">
         <Breadcrumbs />
+
+        <section className="space-y-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary">
+            Estratégia de Mesa
+          </h1>
+          <p className="text-base md:text-lg text-base-content/80 max-w-3xl leading-relaxed">
+            Planeje e visualize a estratégia da sua equipe utilizando o
+            QuickBrick. Distribua as saidas, defina zonas e crie um plano de
+            ação eficiente para maximizar o desempenho no FIRST LEGO League
+            Challenge.
+          </p>
+        </section>
+
+        <div className="flex justify-center mt-8 mb-16">
+          <QuickBrickCanvas />
+        </div>
       </div>
-      <div className="flex flex-col items-center w-full">
-        <h1 className="text-2xl font-bold my-4 text-primary">
-          QuickBrick Studio - Estratégias
-        </h1>
-        <p className="text-sm mb-2 text-base-content px-2 text-center max-w-3xl">
-          Selecione uma das ferramentas disponíveis e desenhar diretamente sobre
-          a imagem do tapete, planejando cada movimento com precisão e
-          facilidade. Ao final, exporte e use como desejar!
-        </p>
-        <QuickBrickCanvas />
-      </div>
+
       <Footer />
     </div>
   );

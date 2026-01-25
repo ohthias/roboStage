@@ -266,9 +266,9 @@ const Mat: React.FC<MatProps> = ({
   };
 
   return (
-    <div className="relative group/mat overflow-hidden rounded-lg shadow-2xl bg-white border border-white/10 select-none">
+    <div className="relative group/mat overflow-hidden rounded-lg bg-white border border-white/10 select-none overflow-visible">
        {/* Collapsible Info Overlay */}
-       <div className="absolute top-2 left-2 z-50 pointer-events-auto flex flex-col items-start gap-2">
+       <div className="absolute -top-12 left-2 z-50 pointer-events-auto flex flex-col items-start gap-2">
           <div className="card bg-base-200/70 backdrop-blur-md border border-base-200 shadow-lg">
             {/* Header / Toggle */}
             <div className="card-body p-0">
@@ -343,7 +343,7 @@ const Mat: React.FC<MatProps> = ({
             height: `${TAPETE_HEIGHT_CM * scale}px`,
             transform: `translate(${panOffset.x}px, ${panOffset.y}px)`,
             cursor: cursorStyle,
-            backgroundImage: "url('/images/quickbrick_robottrack.png')",
+            backgroundImage: "url('/images/QuickBrick/quickbrick_robottrack.png')",
             backgroundSize: 'cover',
           }}
           className="relative mx-auto overflow-visible rounded-lg transition-transform duration-75 ease-out"

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/app/context/ToastContext";
-import Loader from "@/components/loader";
+import Loader from "@/components/Loader";
 import EventSettings from "../configs/EventSettings";
 import DangerZone from "../configs/DangerZone";
 

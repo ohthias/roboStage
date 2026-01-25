@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { TrophyIcon, UserGroupIcon } from "@heroicons/react/24/outline";
-import Loader from "@/components/loader";
+import Loader from "@/components/Loader";
 
 interface ExtraData {
   GP?: { value: string | number; points: number };

@@ -24,7 +24,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ totalQuestions, flaggedCoun
   }
 
   return (
-    <div className="max-w-md mx-auto text-center">
+    <div className="max-w-md mx-auto text-center min-h-screen flex items-center justify-center">
         <div className="card bg-base-100 p-8 rounded-2xl shadow-xl border border-base-200">
             <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Trophy className="w-10 h-10 text-primary" />

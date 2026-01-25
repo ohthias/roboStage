@@ -47,6 +47,8 @@ export function MissionCard({
   mission,
   responses = {},
   onSelect,
+  imagesEnabled = true,
+  isBadgeEnabled = true,
 }: MissionCardProps) {
   const renderInput = (
     index: number,
@@ -94,7 +96,7 @@ export function MissionCard({
     <div className="card border border-base-200 mb-6">
       <div className="card-body p-4 sm:p-6">
         <div className="flex flex-wrap items-center gap-3 mb-4">
-          <div className="badge badge-secondary text-md p-4 rounded-md w-12 h-12 font-bold flex items-center justify-center">
+          <div className="badge bg-base-300/50 text-base-content text-md p-4 rounded-md w-12 h-12 font-bold flex items-center justify-center">
             {mission.id}
           </div>
           <h3 className="card-title text-lg sm:text-xl font-bold flex-1">
@@ -110,7 +112,7 @@ export function MissionCard({
         </div>
 
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          {mission.image && (
+          {mission.image && imagesEnabled && (
             <figure className="flex-shrink-0 mx-auto md:mx-0">
               <img
                 src={mission.image}
@@ -127,7 +129,7 @@ export function MissionCard({
                   <span className="max-w-3/4">
                     {mission.mission}
                   </span>
-                  {mission.id !== "GP" && (
+                  {mission.id !== "GP" && isBadgeEnabled && (
                     <span className="badge badge-neutral rounded-md badge-outline w-auto text-center badge-sm h-auto">
                     Pontos: {mainPoints}
                   </span>
@@ -156,9 +158,11 @@ export function MissionCard({
                 <div key={`${mission.id}-sub${idx}`} className="mb-4">
                   <p className="mb-2 text-sm sm:text-base flex justify-between items-center">
                     {sub.submission}
-                    <span className="badge badge-neutral rounded-md badge-outline w-auto text-center badge-sm h-auto">
-                      Pontos: {subPoints}
-                    </span>
+                    {isBadgeEnabled && (
+                      <span className="badge badge-neutral rounded-md badge-outline w-auto text-center badge-sm h-auto">
+                        Pontos: {subPoints}
+                      </span>
+                    )}
                   </p>
                   {renderInput(idx + 1, sub.type, sub.points)}
                 </div>

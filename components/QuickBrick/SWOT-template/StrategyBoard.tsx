@@ -36,7 +36,6 @@ export const StrategyBoard: React.FC = () => {
     threats: [],
   });
 
-  // 🟦 Carregar do localStorage APENAS no navegador
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("fll_swot_data");
@@ -157,47 +156,21 @@ export const StrategyBoard: React.FC = () => {
       exportContainer.style.position = "absolute";
       exportContainer.style.top = "-9999px";
       exportContainer.style.left = "-9999px";
-      exportContainer.style.width = "1200px"; // Fixed width for A4 Landscape consistency
+      exportContainer.style.width = "1200px";
       exportContainer.style.backgroundColor = "#ffffff";
       exportContainer.style.padding = "40px";
       exportContainer.className = "font-sans text-slate-900";
 
-      // Custom PDF Header
-      const header = document.createElement("div");
-      header.className =
-        "flex justify-between items-end mb-10 border-b-4 border-red-600 pb-4";
-      header.innerHTML = `
-        <div>
-          <h1 class="text-4xl font-black text-red-600 uppercase tracking-tighter leading-none mb-1">Matriz SWOT</h1>
-          <p class="text-slate-500 font-bold text-sm uppercase tracking-widest">ROBOSTAGE</p>
-        </div>
-        <div class="text-right">
-          <h2 class="text-3xl font-bold text-slate-800">${
-            teamData.name || "Meu Time"
-          }</h2>
-          <p class="text-slate-500 text-lg">#${
-            teamData.number || "0000"
-          } • ${new Date().toLocaleDateString()}</p>
-        </div>
-      `;
-      exportContainer.appendChild(header);
-
-      // Clone the board content
       const boardClone = originalBoard.cloneNode(true) as HTMLElement;
-
-      // Style adjustments for print
       boardClone.style.backgroundColor = "transparent";
       boardClone.style.padding = "0";
       boardClone.style.border = "none";
 
-      // Adjust Grid Gap
       const grid = boardClone.querySelector(".grid");
       if (grid) {
         (grid as HTMLElement).style.gap = "20px";
       }
 
-      // CRITICAL: Fix scrollbars to show ALL content
-      // Find all scrollable containers and quadrants and expand them
       const scrollables = boardClone.querySelectorAll(".overflow-y-auto");
       scrollables.forEach((el) => {
         (el as HTMLElement).classList.remove("overflow-y-auto");
@@ -206,7 +179,6 @@ export const StrategyBoard: React.FC = () => {
         (el as HTMLElement).style.maxHeight = "none";
       });
 
-      // Expand parent containers that have fixed height
       const quadrants = boardClone.querySelectorAll(".h-\\[500px\\]");
       quadrants.forEach((el) => {
         (el as HTMLElement).classList.remove("h-[500px]");
@@ -220,33 +192,21 @@ export const StrategyBoard: React.FC = () => {
         (el as HTMLElement).style.height = "auto";
       });
 
-      // Remove the footer from the clone (we made a better header)
       const footerInClone = boardClone.querySelector(".mt-12");
       if (footerInClone) footerInClone.remove();
 
       exportContainer.appendChild(boardClone);
-
-      // Append to body for rendering
       document.body.appendChild(exportContainer);
-
-      // Wait a moment for DOM to settle
       await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Capture
       const canvas = await html2canvas(exportContainer, {
         scale: 2, // High resolution
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: false,
       });
-
-      // Clean up DOM
       document.body.removeChild(exportContainer);
-
-      // Generate PDF
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("l", "mm", "a4");
-
       const pdfWidth = pdf.internal.pageSize.getWidth();
       pdf.addImage(
         imgData,
@@ -256,13 +216,8 @@ export const StrategyBoard: React.FC = () => {
         pdfWidth,
         (canvas.height * pdfWidth) / canvas.width
       );
-
       pdf.save(
-        `fll-strategy-${
-          teamData.name
-            ? teamData.name.replace(/\s+/g, "-").toLowerCase()
-            : "team"
-        }-${new Date().toISOString().split("T")[0]}.pdf`
+        `fll-swot-${new Date().toISOString().split("T")[0]}.pdf`
       );
     } catch (error) {
       console.error("Failed to export PDF", error);
@@ -273,9 +228,9 @@ export const StrategyBoard: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="mb-12">
       {/* Toolbar */}
-      <div className="flex justify-end items-center mb-6">
+      <nav className="flex justify-end items-center mb-6">
         <div className="flex gap-3">
           <button
             onClick={handleExportPdf}
@@ -287,28 +242,28 @@ export const StrategyBoard: React.FC = () => {
             ) : (
               <FileDown size={18} />
             )}
-            {isExporting ? "GERANDO..." : "PDF"}
+            {isExporting ? "Gerando..." : "Exportar"}
           </button>
           <button
             onClick={clearBoard}
-            className="flex items-center gap-2 btn btn-warning btn-sm"
+            className="flex items-center gap-2 btn btn-warning btn-sm btn-soft"
           >
             <RotateCcw size={18} />
             LIMPAR
           </button>
         </div>
-      </div>
+      </nav>
 
       {/* Unified Input Bar */}
-      <div className="bg-base-100 p-1.5 rounded-2xl shadow-lg border border-base-200 mb-8 transform hover:scale-[1.01] transition-transform duration-200 z-20 relative">
+      <section className="bg-base-100 p-1.2 rounded-lg shadow-lg border border-base-200 mb-8 transform hover:scale-[1.01] transition-transform duration-200 z-20 relative">
         <form onSubmit={handleGlobalAdd} className="flex flex-col md:flex-row">
-          <div className="flex-1 flex items-center px-4 py-2">
+          <div className="flex-1 flex items-center px-4 py-1">
             <input
               type="text"
               value={globalInputText}
               onChange={(e) => setGlobalInputText(e.target.value)}
               placeholder="Escreva sua ideia, problema ou estratégia aqui..."
-              className="w-full text-lg outline-none text-base-content placeholder:text-base-content/60 bg-transparent font-medium"
+              className="w-full text-md outline-none text-base-content placeholder:text-base-content/60 bg-transparent font-medium"
             />
           </div>
 
@@ -357,14 +312,12 @@ export const StrategyBoard: React.FC = () => {
             </button>
           </div>
         </form>
-      </div>
+      </section>
 
-      <div ref={contentRef} className="p-2 rounded-xl mt-6">
-        {/* Matrix Grid */}
+      <div ref={contentRef}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-fr">
           {QUADRANT_CONFIGS.map((config) => (
             <div key={config.id} className="h-[500px] relative group">
-              {/* Decorative Corner */}
               <div
                 className={`absolute -inset-0.5 bg-gradient-to-r 
                 ${
@@ -376,10 +329,10 @@ export const StrategyBoard: React.FC = () => {
                     ? "from-sky-400 to-blue-600"
                     : "from-amber-400 to-orange-600"
                 } 
-                rounded-xl opacity-30 group-hover:opacity-70 blur transition duration-500`}
+                rounded-lg opacity-30 group-hover:opacity-70 blur transition duration-500`}
               ></div>
 
-              <div className="relative h-full bg-white rounded-xl">
+              <div className="relative h-full bg-white rounded-lg">
                 <SwotQuadrant
                   config={config}
                   items={swotData[config.id]}

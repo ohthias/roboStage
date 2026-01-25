@@ -38,14 +38,6 @@ export function Footer() {
           </nav>
         </nav>
         <nav>
-          <h6 className="footer-title">Tutoriais</h6>
-          <a className="link link-hover" href="#">QuickBrick Studio Aplicado</a>
-          <a className="link link-hover" href="#">LabTest na prática</a>
-          <a className="link link-hover" href="#">InnoLab - Documentando seu projeto</a>
-          <a className="link link-hover" href="#">ShowLive: Básico</a>
-          <a className="link link-hover" href="#">ShowLive: Avançado</a>
-        </nav>
-        <nav>
           <h6 className="footer-title">Legal</h6>
           <a className="link link-hover" href="https://github.com/ohthias/roboStage/wiki/terms">Termos de Serviço</a>
           <a className="link link-hover" href="https://github.com/ohthias/roboStage/wiki/privacy">Política de Privacidade</a>

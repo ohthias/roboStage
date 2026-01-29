@@ -21,12 +21,6 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/teams",
   },
   {
-    id: "workspace",
-    label: "Workspace",
-    icon: NotebookTabs,
-    href: "/dashboard/workspace",
-  },
-  {
     id: "innolab",
     label: "InnoLab",
     icon: Book,

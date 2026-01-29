@@ -44,5 +44,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/auth/:path*"], // protege dashboard e evita login se já logado
+  matcher: ["/dashboard/:path*", "/auth/:path*", "/u/:path*"], // protege dashboard e evita login se já logado
 };

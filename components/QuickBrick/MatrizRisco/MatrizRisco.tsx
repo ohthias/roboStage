@@ -29,7 +29,7 @@ const MatrizRisco = React.forwardRef<HTMLDivElement, MatrizRiscoProps>(
     };
 
     return (
-      <div ref={ref} className="w-full max-w-6xl mx-auto p-4 bg-base-100 rounded-xl shadow-lg border border-base-300">
+      <div ref={ref} className="w-full mx-auto p-4">
         <div 
           role="grid" 
           aria-label="Matriz de Risco"

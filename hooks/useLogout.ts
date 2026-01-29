@@ -16,7 +16,6 @@ export function useLogout() {
       );
     }
 
-    // Agora sim limpar cookies e storage
     try {
       document.cookie = "sb-access-token=; path=/; max-age=0";
       document.cookie = "sb-refresh-token=; path=/; max-age=0";

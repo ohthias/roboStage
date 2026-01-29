@@ -12,6 +12,8 @@ interface FormMissionProps {
   responses?: Responses;
   onSelect?: (missionId: string, index: number, value: string | number) => void;
   className?: string;
+  imagesEnabled?: boolean;
+  isBadgeEnabled?: boolean;
 }
 
 /* Interface Range Input */
@@ -61,4 +63,6 @@ interface MissionCardProps {
   mission: Mission;
   responses?: { [index: number]: string | number };
   onSelect: (missionId: string, index: number, value: string | number) => void;
+  imagesEnabled?: boolean;
+  isBadgeEnabled?: boolean;
 }

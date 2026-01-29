@@ -1,56 +1,57 @@
 "use client";
-import React, {
-  useState,
-  useEffect,
-} from "react";
-import { Navbar } from "@/components/Navbar";
-import Breadcrumbs from "@/components/Breadcrumbs";
-import { Footer } from "@/components/ui/Footer";
+import React, { useState, useEffect } from "react";
+import { Navbar } from "@/components/UI/Navbar";
+import Breadcrumbs from "@/components/UI/Breadcrumbs";
+import { Footer } from "@/components/UI/Footer";
 import RobotTrackCanvas from "@/components/QuickBrick/RobotTrack/RobotTrack";
+import Link from "next/link";
+import CardMobileNotUse from "@/components/MobileNotUse";
 
 const RobotTrack: React.FC = () => {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const checkSize = () => setIsMobile(window.innerWidth <= 720);
-    checkSize();
-    window.addEventListener("resize", checkSize);
-    return () => window.removeEventListener("resize", checkSize);
+    const mediaQuery = window.matchMedia("(max-width: 720px)");
+
+    const handleChange = () => {
+      setIsMobile(mediaQuery.matches);
+    };
+
+    handleChange(); // verifica no mount
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  if (isMobile === null) return null;
+
   if (isMobile) {
-    return (
-      <div className="flex flex-col">
-        <Navbar />
-        <div className="px-4 md:px-8 flex flex-col items-center w-full text-center h-screen justify-center">
-          <img src="/progress.svg" alt="Icone do robô" />
-          <h1 className="text-2xl font-bold my-4 text-primary">
-            Ops! Ferramenta não está disponível no celular
-          </h1>
-          <p className="text-sm mb-2 text-base-content px-5">
-            O QuickBrick Studio é um conjunto de ferramentas que ajuda sua
-            equipe a criar estratégias eficientes para o robô durante sua
-            jornada no FIRST LEGO League Challenge. Basta selecionar uma das
-            ferramentas disponíveis e aproveitá-las.
-          </p>
-        </div>
-        <Footer />
-      </div>
-    );
+    return <CardMobileNotUse />;
   }
 
   return (
-    <div className="flex flex-col items-start justify-center w-full">
+    <div>
       <Navbar />
       <div className="px-4 md:px-8">
         <Breadcrumbs />
-      </div>
-      <div className="flex flex-col items-center w-full">
+        <section className="space-y-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary">
+            SHARKS UNEARTHED Simulator
+          </h1>
+          <p className="text-base md:text-lg text-base-content/80 max-w-3xl leading-relaxed">
+            Simule o percurso do seu robô na mesa do desafio feito pela equipe <Link href="#">SHARKS</Link>. Planeje
+            movimentos, teste estratégias e visualize como seu robô interagirá
+            com os elementos da mesa para maximizar sua pontuação.
+          </p>
+        </section>
+
+        <div className="flex justify-center mt-8 mb-16">
         <RobotTrackCanvas />
+        </div>
       </div>
-      <Footer />
+        <Footer />
     </div>
-  )
-}
+  );
+};
 
 export default RobotTrack;

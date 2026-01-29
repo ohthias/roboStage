@@ -32,21 +32,6 @@ export function useAuth() {
     };
   }, []);
 
-  // Turnstile validate (continua igual)
-  const validateTurnstile = async (token: string) => {
-    try {
-      const res = await fetch("/api/validate-turnstile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      });
-      const data = await res.json();
-      return data.success;
-    } catch {
-      return false;
-    }
-  };
-
   const login = async (
     email: string,
     password: string,
@@ -94,7 +79,7 @@ export function useAuth() {
     }
 
     if (data.session) {
-      setUser(data.session.user); // 🔹 seta o usuário
+      setUser(data.session.user);
       setSuccess("Login realizado com sucesso!");
       return true;
     }
@@ -117,7 +102,7 @@ export function useAuth() {
       if (error) throw error;
 
       if (data.user) {
-        setUser(data.user); // 🔹 seta usuário novo
+        setUser(data.user);
         const { error: profileError } = await supabase
           .from("profiles")
           .insert([{ id: data.user.id, username: name }]);

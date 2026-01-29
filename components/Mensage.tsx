@@ -1,4 +1,4 @@
-import MessageCard from "./ui/MessageCard";
+import MessageCard from "./UI/MessageCard";
 
 interface MessageProps {
   tipo: "sucesso" | "erro" | "aviso" | "";

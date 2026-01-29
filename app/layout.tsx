@@ -4,7 +4,7 @@ import "./globals.css";
 import { UserProvider } from "./context/UserContext";
 import { ToastProvider } from "./context/ToastContext";
 import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -14,6 +14,15 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: "RoboStage",
   description: "Facilitando sua jornada na robótica!",
+  keywords: [
+    "RoboStage",
+    "Robótica Educacional",
+    "FLL",
+    "First Lego League",
+    "STEM",
+    "Programação",
+    "Robotica",
+  ],
 };
 
 export default function RootLayout({
@@ -27,9 +36,7 @@ export default function RootLayout({
         <Analytics />
         <SpeedInsights />
         <UserProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
+          <ToastProvider>{children}</ToastProvider>
         </UserProvider>
       </body>
     </html>

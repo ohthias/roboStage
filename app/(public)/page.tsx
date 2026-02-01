@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import Hero from "@/components/Hero";
 import { Navbar } from "@/components/UI/Navbar";
 import { Footer } from "@/components/UI/Footer";
@@ -32,89 +32,49 @@ export default function Home() {
       <Navbar isIndexPage />
       <Hero />
 
-      {/* O PROBLEMA */}
-      <section className="py-24 bg-base-300">
-        <RevealOnScroll>
-          <div className="max-w-6xl mx-auto px-6 space-y-16">
-            <div className="text-center space-y-4">
-              <span className="badge badge-secondary uppercase tracking-widest">
-                O problema
-              </span>
-              <h2 className="text-4xl md:text-5xl font-black uppercase">
-                O desafio real da temporada FLL
-              </h2>
-              <p className="text-base-content/60 max-w-3xl mx-auto">
-                Durante a temporada FLL, muitas equipes enfrentam os mesmos desafios —
-                decisões sem dados, testes pouco estruturados e dificuldade em evoluir
-                com consistência.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                {
-                  icon: Brain,
-                  title: "Decisões no improviso",
-                  desc: "Escolhas estratégicas sem dados claros comprometem o desempenho da equipe.",
-                },
-                {
-                  icon: FlaskConical,
-                  title: "Testes sem histórico",
-                  desc: "Sem registros, não há comparação, aprendizado ou evolução real.",
-                },
-                {
-                  icon: TrendingUp,
-                  title: "Evolução inconsistente",
-                  desc: "Dificuldade em repetir bons resultados ao longo da temporada.",
-                },
-              ].map(({ icon: Icon, title, desc }) => (
-                <div
-                  key={title}
-                  className="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow"
-                >
-                  <div className="card-body items-center text-center space-y-4">
-                    <Icon className="w-10 h-10 text-secondary" />
-                    <h3 className="font-black uppercase">{title}</h3>
-                    <p className="text-sm text-base-content/60">{desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </RevealOnScroll>
-      </section>
-
       {/* MÉTODO ROBOSTAGE */}
-      <section className="py-24 bg-base-100">
+      <section className="py-24 bg-base-300">
         <RevealOnScroll>
           <div className="max-w-6xl mx-auto px-6 space-y-16 text-center">
             <div className="space-y-4">
-              <span className="badge badge-accent uppercase tracking-widest">
-                O método
+              <span className="badge badge-accent tracking-widest uppercase">
+                Peça por peça
               </span>
-              <h2 className="text-4xl md:text-5xl font-black uppercase">
-                Um método claro para competir com consistência
+              <h2 className="text-3xl md:text-4xl font-black uppercase max-w-3xl mx-auto text-secondary">
+                Criado com um método focado em evolução contínua
               </h2>
               <p className="text-base-content/60 max-w-3xl mx-auto">
-                O RoboStage organiza planejamento, testes e dados em um fluxo simples,
-                repetível e focado em evolução contínua.
+                O RoboStage organiza planejamento, testes e dados em um fluxo
+                simples, repetível e focado em evolução contínua. Como peças de
+                LEGO, cada etapa se conecta para formar uma estrutura sólida de
+                aprendizado e melhoria.
               </p>
             </div>
 
-            <ul className="steps steps-vertical md:steps-horizontal max-w-5xl mx-auto">
-              <li className="step step-accent font-semibold">
-                Planejar missões
-              </li>
-              <li className="step step-accent font-semibold">
-                Testar estratégias
-              </li>
-              <li className="step step-accent font-semibold">
-                Analisar dados
-              </li>
-              <li className="step step-accent font-semibold">
-                Evoluir com consistência
-              </li>
-            </ul>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+              {[
+              "Planejar estratégias",
+              "Testar e registrar",
+              "Organizar e analisar",
+              "Evoluir continuamente",
+              ].map((title) => (
+              <div key={title} className="relative mt-4 sm:mt-6">
+                <div className="flex gap-2 sm:gap-3 px-2 sm:px-4">
+                {[...Array(4)].map((_, i) => (
+                  <div
+                  key={i}
+                  className="h-5 w-8 sm:h-6 sm:w-10 lg:h-6 lg:w-12 -mt-3 sm:-mt-4 rounded-t-sm z-10 stud-shadow flex items-center justify-center bg-secondary"
+                  />
+                ))}
+                </div>
+                <div className="pt-6 sm:pt-8 pb-4 sm:pb-6 px-4 sm:px-6 rounded-lg lego-shadow transition-transform hover:-translate-y-1 duration-300 bg-secondary text-secondary-content">
+                <h3 className="text-lg sm:text-xl lg:text-2xl font-black uppercase tracking-wide text-center">
+                  {title}
+                </h3>
+                </div>
+              </div>
+              ))}
+            </div>
           </div>
         </RevealOnScroll>
       </section>
@@ -134,12 +94,27 @@ export default function Home() {
 
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
               {[
-                { icon: Target, text: "Planejamento estratégico de missões e rodadas" },
-                { icon: ClipboardList, text: "Registro estruturado de testes e tentativas" },
+                {
+                  icon: Target,
+                  text: "Planejamento estratégico de missões e rodadas",
+                },
+                {
+                  icon: ClipboardList,
+                  text: "Registro estruturado de testes e tentativas",
+                },
                 { icon: BarChart3, text: "Comparação clara entre estratégias" },
-                { icon: TrendingUp, text: "Acompanhamento da evolução da equipe" },
-                { icon: Rocket, text: "Preparação para competições e avaliações" },
-                { icon: Layers, text: "Organização completa por temporada FLL" },
+                {
+                  icon: TrendingUp,
+                  text: "Acompanhamento da evolução da equipe",
+                },
+                {
+                  icon: Rocket,
+                  text: "Preparação para competições e avaliações",
+                },
+                {
+                  icon: Layers,
+                  text: "Organização completa por temporada FLL",
+                },
               ].map(({ icon: Icon, text }) => (
                 <div
                   key={text}
@@ -168,8 +143,9 @@ export default function Home() {
                 Um ecossistema completo para a temporada FLL
               </h2>
               <p className="text-base-content/60 max-w-3xl mx-auto">
-                Cada ambiente do RoboStage resolve uma etapa crítica da temporada —
-                do planejamento inicial à análise em tempo real durante a competição.
+                Cada ambiente do RoboStage resolve uma etapa crítica da
+                temporada — do planejamento inicial à análise em tempo real
+                durante a competição.
               </p>
             </div>
 
@@ -180,7 +156,8 @@ export default function Home() {
                   <Puzzle className="w-10 h-10 text-primary" />
                   <h3 className="font-black uppercase">QuickBrick</h3>
                   <p className="text-sm text-base-content/60">
-                    Documente, teste e simule estratégias do robô enfrentando os desafios da FLL.
+                    Documente, teste e simule estratégias do robô enfrentando os
+                    desafios da FLL.
                   </p>
                 </div>
               </div>
@@ -190,7 +167,8 @@ export default function Home() {
                   <Lightbulb className="w-10 h-10 text-accent" />
                   <h3 className="font-black uppercase">InnoLab</h3>
                   <p className="text-sm text-base-content/60">
-                    Organização de ideias, soluções técnicas e estratégias da equipe.
+                    Organização de ideias, soluções técnicas e estratégias da
+                    equipe.
                   </p>
                 </div>
               </div>
@@ -200,7 +178,8 @@ export default function Home() {
                   <FlaskConical className="w-10 h-10 text-secondary" />
                   <h3 className="font-black uppercase">LabTest</h3>
                   <p className="text-sm text-base-content/60">
-                    Registro de testes, métricas, tentativas e comparação de resultados.
+                    Registro de testes, métricas, tentativas e comparação de
+                    resultados.
                   </p>
                 </div>
               </div>
@@ -210,7 +189,8 @@ export default function Home() {
                   <Bot className="w-10 h-10 text-success" />
                   <h3 className="font-black uppercase">CalibraBot</h3>
                   <p className="text-sm text-base-content/60">
-                    Documente todo o processo de construção, ajustes e calibração do robô.
+                    Documente todo o processo de construção, ajustes e
+                    calibração do robô.
                   </p>
                 </div>
               </div>
@@ -218,11 +198,14 @@ export default function Home() {
               <div className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow">
                 <div className="card-body space-y-4">
                   <Dumbbell className="w-10 h-10 text-error" />
-                  <h3 className="font-black uppercase inline-block">TrainLab <span className="badge badge-sm badge-error">Em Breve</span></h3>
+                  <h3 className="font-black uppercase inline-block">
+                    TrainLab{" "}
+                    <span className="badge badge-sm badge-error">Em Breve</span>
+                  </h3>
                   <p className="text-sm text-base-content/60">
-                    Organize treinos com metas, registros, análises e evolução contínua.
+                    Organize treinos com metas, registros, análises e evolução
+                    contínua.
                   </p>
-                  
                 </div>
               </div>
             </div>
@@ -245,9 +228,9 @@ export default function Home() {
               </h2>
 
               <p className="text-base-content/70 text-lg max-w-xl">
-                O <strong>ShowLive</strong> permite criar, gerenciar e acompanhar
-                competições FLL de forma visual, organizada e profissional — do treino
-                ao dia do evento.
+                O <strong>ShowLive</strong> permite criar, gerenciar e
+                acompanhar competições FLL de forma visual, organizada e
+                profissional — do treino ao dia do evento.
               </p>
 
               <div className="grid sm:grid-cols-3 gap-6">
@@ -273,7 +256,10 @@ export default function Home() {
                 </div>
               </div>
 
-              <button className="btn btn-error btn-lg rounded-2xl font-black uppercase tracking-widest" onClick={() => router.push("/showlive")}>
+              <button
+                className="btn btn-error btn-lg rounded-2xl font-black uppercase tracking-widest"
+                onClick={() => router.push("/showlive")}
+              >
                 Conhecer o ShowLive
               </button>
             </div>
@@ -311,18 +297,16 @@ export default function Home() {
                 Explorar. Reconstruir. Entender.
               </h2>
               <p className="text-base-content/60 max-w-3xl mx-auto">
-                A nova temporada da FIRST LEGO League Challenge convida equipes a
-                investigar o passado para criar soluções para o futuro, unindo
+                A nova temporada da FIRST LEGO League Challenge convida equipes
+                a investigar o passado para criar soluções para o futuro, unindo
                 pesquisa, tecnologia e impacto social.
               </p>
             </div>
 
             {/* Cards */}
             <div className="grid lg:grid-cols-2 gap-10">
-
               {/* UNEARTHED */}
               <div className="relative group overflow-hidden bg-neutral text-neutral-content rounded-[3rem] p-10 md:p-14 flex flex-col justify-between h-full shadow-2xl">
-
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(217,4,41,0.18),transparent_60%)] opacity-70 group-hover:opacity-100 transition-opacity" />
 
                 <div className="relative z-10 space-y-10">
@@ -340,15 +324,16 @@ export default function Home() {
                   </h3>
 
                   <p className="text-lg md:text-xl text-neutral-content/70 max-w-md leading-relaxed">
-                    A temporada UNEARTHED™ desafia equipes a explorarem e identificarem
-                    problemas enfrentados por arqueólogos, propondo soluções que aliem
-                    tecnologia, pesquisa e colaboração humana.
+                    A temporada UNEARTHED™ desafia equipes a explorarem e
+                    identificarem problemas enfrentados por arqueólogos,
+                    propondo soluções que aliem tecnologia, pesquisa e
+                    colaboração humana.
                   </p>
 
                   <p className="text-sm text-neutral-content/50 max-w-md">
-                    Seja em escavações, análises em laboratório ou reconstrução de
-                    artefatos, o processo arqueológico orienta a descoberta de como
-                    gerações passadas viviam, aprendiam e celebravam.
+                    Seja em escavações, análises em laboratório ou reconstrução
+                    de artefatos, o processo arqueológico orienta a descoberta
+                    de como gerações passadas viviam, aprendiam e celebravam.
                   </p>
                 </div>
               </div>
@@ -372,14 +357,14 @@ export default function Home() {
                   </h3>
 
                   <p className="text-lg md:text-xl text-base-content/70 max-w-md leading-relaxed">
-                    FIRST AGE™ amplia o desafio ao convidar equipes a refletirem sobre
-                    como a tecnologia pode apoiar pessoas em diferentes fases da vida,
-                    conectando passado, presente e futuro.
+                    FIRST AGE™ amplia o desafio ao convidar equipes a refletirem
+                    sobre como a tecnologia pode apoiar pessoas em diferentes
+                    fases da vida, conectando passado, presente e futuro.
                   </p>
 
                   <p className="text-sm text-base-content/60 max-w-md">
-                    Mais do que construir robôs, é sobre entender o impacto humano,
-                    social e educacional das soluções desenvolvidas.
+                    Mais do que construir robôs, é sobre entender o impacto
+                    humano, social e educacional das soluções desenvolvidas.
                   </p>
                 </div>
               </div>

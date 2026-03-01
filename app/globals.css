@@ -84,3 +84,79 @@
 .btn {
   border-radius: var(--radius-box);
 }
+
+body {
+  @apply bg-base-100 text-base-content;
+  scroll-behavior: smooth;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.25s ease-out forwards;
+}
+
+@layer components {
+  .editor-content table tr:first-child td {
+    @apply font-medium bg-gray-50;
+  }
+
+  .editor-content table {
+    @apply w-full border-collapse my-6 text-sm;
+  }
+
+  .editor-content thead tr {
+    @apply bg-gray-50;
+  }
+
+  .editor-content th,
+  .editor-content td {
+    @apply border border-gray-200 px-3 py-2 align-top relative;
+  }
+
+  .editor-content th {
+    @apply font-medium text-gray-700;
+  }
+
+  .editor-content td {
+    @apply text-gray-700;
+  }
+
+  /* Hover de linha */
+  .editor-content tbody tr:hover td {
+    @apply bg-gray-50;
+  }
+
+  /* Célula ativa */
+  .editor-content td:focus,
+  .editor-content th:focus {
+    @apply outline-none bg-blue-50;
+  }
+
+  /* Seleção Lexical */
+  .editor-content .selectedCell {
+    @apply ring-2 ring-blue-400 ring-inset;
+  }
+
+  /* Resize handle (Lexical) */
+  .editor-content .tableCellResizer {
+    @apply absolute right-0 top-0 h-full w-1 cursor-col-resize bg-transparent;
+  }
+
+  .editor-content .tableCellResizer:hover {
+    @apply bg-blue-400/40;
+  }
+}
+
+.editor-content span {
+  background-color: inherit;
+  color: inherit;
+}

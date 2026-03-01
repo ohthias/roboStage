@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
-import Loader from "@/components/loader";
+import Loader from "@/components/Loader";
 
 interface Team {
   id_team: number;

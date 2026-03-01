@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/ui/Footer";
-import Breadcrumbs from "@/components/Breadcrumbs";
+import { Navbar } from "@/components/UI/Navbar";
+import { Footer } from "@/components/UI/Footer";
+import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import FerramentasSection from "./FerramentasSection";
+import Header from "@/components/UI/Header";
 
 const seasonLogos: Record<string, { name: string; image: string }> = {
   unearthed: {
@@ -26,33 +27,15 @@ export default function QuickBrickHome() {
   return (
     <div className="flex flex-col items-start w-full">
       <Navbar />
-      <main className="flex flex-col w-full px-4 md:px-8">
+      <main className="flex flex-col w-full px-4 md:px-8 space-y-8 pb-16">
         <Breadcrumbs />
 
-        {/* Header animado */}
-        <section className="w-full flex flex-col items-center text-center px-4 py-8">
-          <article className="max-w-3xl">
-            <h1 className="text-4xl font-bold text-primary mb-4">
-              QuickBrick Studio
-            </h1>
-
-            <p className="text-base-content text-lg opacity-90 leading-relaxed">
-              Bem-vindo ao{" "}
-              <span className="font-semibold text-primary">
-                QuickBrick Studio
-              </span>
-              ! Aqui você encontra ferramentas para{" "}
-              <span className="text-secondary font-semibold">
-                criar, simular e documentar
-              </span>{" "}
-              estratégias do seu robô durante o{" "}
-              <span className="font-semibold text-secondary">
-                FIRST LEGO League Challenge
-              </span>
-              .
-            </p>
-          </article>
-        </section>
+        <Header
+          type="QuickBrick"
+          name="QuickBrick"
+          highlight="Studio"
+          description="Ferramentas para criar, simular e documentar as estratégias do seu robô durante a temporada."
+        />
         <div className="w-full md:hidden px-4">
           <div
             role="status"

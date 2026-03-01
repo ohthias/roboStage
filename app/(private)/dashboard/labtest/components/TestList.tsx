@@ -10,6 +10,7 @@ export default function TestList({
   onAddResult,
   onRename,
   onDelete,
+  onMoveToFolder,
 }: {
   tests: any[];
   testTypes: Record<string, string>;
@@ -18,6 +19,7 @@ export default function TestList({
   onAddResult: (id: string) => void;
   onRename: (id: string, oldName: string) => void;
   onDelete: (id: string) => void;
+  onMoveToFolder?: (testId: string, folderId?: number | null) => void;
 }) {
   const getMissionImages = (season: string, missionKeys: string[] | string) => {
     if (!missionsData || !missionsData[season]) return [];
@@ -55,6 +57,7 @@ export default function TestList({
             onAddResult={onAddResult}
             onRename={onRename}
             onDelete={onDelete}
+            onMoveToFolder={onMoveToFolder}
           />
         );
       })}

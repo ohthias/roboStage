@@ -1,7 +1,0 @@
-Versão #
-
-## Alterações Propostas
-
-  -
-  -
-  -

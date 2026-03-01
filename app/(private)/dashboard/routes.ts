@@ -15,12 +15,6 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/folders",
   },
   {
-    id: "teams",
-    label: "Equipes",
-    icon: Users,
-    href: "/dashboard/teams",
-  },
-  {
     id: "innolab",
     label: "InnoLab",
     icon: Book,
@@ -31,12 +25,6 @@ export const NAV_ITEMS: NavItem[] = [
     label: "LabTest",
     icon: ChartPie,
     href: "/dashboard/labtest",
-  },
-  {
-    id: "calibrabot",
-    label: "CalibraBot",
-    icon: Bot,
-    href: "/dashboard/calibrabot",
   },
   {
     id: "showlive",

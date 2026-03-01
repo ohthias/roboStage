@@ -33,47 +33,72 @@ export default function Home() {
       <Hero />
 
       {/* MÉTODO ROBOSTAGE */}
-      <section className="py-24 bg-base-300">
+      <section className="py-20 lg:py-24 bg-base-300">
         <RevealOnScroll>
-          <div className="max-w-6xl mx-auto px-6 space-y-16 text-center">
-            <div className="space-y-4">
+          <div className="max-w-6xl mx-auto px-6">
+            {/* HEADER */}
+            <div className="text-center space-y-4 mb-16">
               <span className="badge badge-accent tracking-widest uppercase">
-                Peça por peça
+                Método RoboStage
               </span>
-              <h2 className="text-3xl md:text-4xl font-black uppercase max-w-3xl mx-auto text-secondary">
-                Criado com um método focado em evolução contínua
+
+              <h2 className="text-3xl md:text-4xl font-black uppercase text-secondary max-w-3xl mx-auto">
+                Um fluxo simples para evoluir seu robô
               </h2>
-              <p className="text-base-content/60 max-w-3xl mx-auto">
-                O RoboStage organiza planejamento, testes e dados em um fluxo
-                simples, repetível e focado em evolução contínua. Como peças de
-                LEGO, cada etapa se conecta para formar uma estrutura sólida de
-                aprendizado e melhoria.
+
+              <p className="text-base-content/60 max-w-2xl mx-auto">
+                O RoboStage organiza estratégia, testes e análise de dados em um
+                ciclo contínuo de melhoria. Cada etapa fortalece a próxima,
+                criando evolução consistente ao longo das competições.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-              {[
-              "Planejar estratégias",
-              "Testar e registrar",
-              "Organizar e analisar",
-              "Evoluir continuamente",
-              ].map((title) => (
-              <div key={title} className="relative mt-4 sm:mt-6">
-                <div className="flex gap-2 sm:gap-3 px-2 sm:px-4">
-                {[...Array(4)].map((_, i) => (
+            {/* FLUXO */}
+            <div className="relative">
+              {/* linha central */}
+              <div className="hidden lg:block absolute top-6 left-0 right-0 h-1 bg-base-content/10" />
+
+              <div className="grid gap-12 lg:grid-cols-4 relative">
+                {[
+                  {
+                    title: "Planejar estratégias",
+                    desc: "Defina objetivos, missões prioritárias e abordagem da rodada.",
+                  },
+                  {
+                    title: "Testar e registrar",
+                    desc: "Execute tentativas e registre resultados para entender o comportamento do robô.",
+                  },
+                  {
+                    title: "Organizar e analisar",
+                    desc: "Transforme registros em dados claros para identificar padrões e erros.",
+                  },
+                  {
+                    title: "Evoluir continuamente",
+                    desc: "Ajuste estratégia e programação com base nos resultados obtidos.",
+                  },
+                ].map((step, i) => (
                   <div
-                  key={i}
-                  className="h-5 w-8 sm:h-6 sm:w-10 lg:h-6 lg:w-12 -mt-3 sm:-mt-4 rounded-t-sm z-10 stud-shadow flex items-center justify-center bg-secondary"
-                  />
+                    key={step.title}
+                    className="relative text-center space-y-4"
+                  >
+                    {/* PONTO */}
+                    <div className="mx-auto w-12 h-12 rounded-full bg-secondary text-secondary-content flex items-center justify-center font-black text-lg z-10 relative">
+                      {i + 1}
+                    </div>
+
+                    {/* CARD */}
+                    <div className="space-y-2">
+                      <h3 className="font-black uppercase text-lg">
+                        {step.title}
+                      </h3>
+
+                      <p className="text-sm text-base-content/60">
+                        {step.desc}
+                      </p>
+                    </div>
+                  </div>
                 ))}
-                </div>
-                <div className="pt-6 sm:pt-8 pb-4 sm:pb-6 px-4 sm:px-6 rounded-lg lego-shadow transition-transform hover:-translate-y-1 duration-300 bg-secondary text-secondary-content">
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-black uppercase tracking-wide text-center">
-                  {title}
-                </h3>
-                </div>
               </div>
-              ))}
             </div>
           </div>
         </RevealOnScroll>
@@ -187,7 +212,10 @@ export default function Home() {
               <div className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow">
                 <div className="card-body space-y-4">
                   <Bot className="w-10 h-10 text-success" />
-                  <h3 className="font-black uppercase">CalibraBot</h3>
+                  <h3 className="font-black uppercase">
+                    CalibraBot{" "}
+                    <span className="badge badge-sm badge-error">Em Breve</span>
+                  </h3>
                   <p className="text-sm text-base-content/60">
                     Documente todo o processo de construção, ajustes e
                     calibração do robô.
@@ -198,7 +226,7 @@ export default function Home() {
               <div className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow">
                 <div className="card-body space-y-4">
                   <Dumbbell className="w-10 h-10 text-error" />
-                  <h3 className="font-black uppercase inline-block">
+                  <h3 className="font-black uppercase">
                     TrainLab{" "}
                     <span className="badge badge-sm badge-error">Em Breve</span>
                   </h3>

@@ -29,9 +29,9 @@ export const FAQSection: React.FC = () => {
         "Sim! Ele é totalmente gratuito para todos, com todas as funcionalidades disponíveis sem custo.",
     },
     {
-      question: "Quais categorias de robótica são suportadas?",
+      question: "O RoboStage é compatível com outras competições?",
       answer:
-        "Embora focado na FIRST LEGO League (FLL), o RoboStage é versátil e pode ser usado por equipes de VEX, FTC, FRC e outras competições de robótica educacional. Usando as ferramentas Workspace e InnoLab, qualquer equipe pode se beneficiar do RoboStage.",
+        "Atualmente, o RoboStage é focado na FLL, mas estamos planejando expandir para outras competições de robótica no futuro. Fique ligado para novidades!",
     },
     {
       question: "Como o LabTest funciona?",
@@ -39,9 +39,9 @@ export const FAQSection: React.FC = () => {
         "O LabTest permite que você crie e execute testes personalizados para avaliar o desempenho do seu robô nas missões da temporada selecionada. Você lança os resultados em tempo real e acompanha o progresso, taxa de sucesso e missões mais realizadas pelo teste.",
     },
     {
-      question: "Posso exportar dados para o diário de bordo?",
+      question: "InnoLab é apenas para diagramas?",
       answer:
-        "Sim! Você pode exportar dados de testes e anotações para compor o portfólio de engenharia físico ou digital da sua equipe com facilidade.",
+        "O InnoLab é mais do que um criador de diagramas. Ele é uma ferramenta de apoio ao desenvolvimento do projeto de inovação, permitindo criar diagramas como 5W2H, Ishikawa e fluxogramas, além de organizar ideias e estratégias para a fase de inovação da temporada.",
     },
   ];
 

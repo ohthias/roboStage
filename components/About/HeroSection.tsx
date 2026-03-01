@@ -8,13 +8,13 @@ export const HeroSection: React.FC = () => {
         <RevealOnScroll>
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-base-content mb-6 tracking-tight leading-tight">
-              Elevando a Robótica a um <br className="hidden sm:block" />
+               Robótica em um <br className="hidden sm:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-800">
-                Novo Patamar de Gestão.
+                Novo Patamar.
               </span>
             </h1>
             <p className="max-w-2xl mx-auto text-base md:text-lg text-base-content leading-relaxed mb-8 px-2">
-              O RoboStage é a plataforma definitiva para transformar o caos de
+              O RoboStage é a plataforma para transformar o caos de
               planilhas e documentos espalhados em uma estrutura organizada e
               eficiente para treinos e torneios.
             </p>

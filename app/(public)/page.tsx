@@ -258,7 +258,7 @@ export default function Home() {
               <p className="text-base-content/70 text-lg max-w-xl">
                 O <strong>ShowLive</strong> permite criar, gerenciar e
                 acompanhar competições FLL de forma visual, organizada e
-                profissional — do treino ao dia do evento.
+                profissional.
               </p>
 
               <div className="grid sm:grid-cols-3 gap-6">
@@ -272,14 +272,7 @@ export default function Home() {
                 <div className="flex items-start gap-4">
                   <Activity className="w-6 h-6 text-error mt-1" />
                   <p className="text-sm text-base-content/70">
-                    Monitoramento das rodadas e salas de avaliação em tempo real
-                  </p>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <Clock className="w-6 h-6 text-error mt-1" />
-                  <p className="text-sm text-base-content/70">
-                    Relatórios detalhados para análise pós-competição
+                    Monitoramento das rodadas em tempo real
                   </p>
                 </div>
               </div>

@@ -61,7 +61,7 @@ export default function ShowLivePage() {
           </div>
           <div className="flex justify-center">
             <img
-              src="/showlive/screenshots/interface.png"
+              src="/images/showLive/ShowLiveDashboard.png"
               alt="ShowLive Interface Screenshot"
               className="rounded-lg shadow-lg border border-base-300 max-w-full h-auto"
             />

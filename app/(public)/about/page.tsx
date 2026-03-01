@@ -39,9 +39,7 @@ export default function AboutRoboStage() {
                     <div className="prose prose-blue prose-sm sm:prose-base lg:prose-lg max-w-none text-gray-700 space-y-6">
                       <p className="leading-relaxed first-letter:text-5xl first-letter:font-bold first-letter:text-primary first-letter:mr-3 first-letter:float-left text-base-content">
                         O <strong>RoboStage</strong> nasceu da necessidade real
-                        de um mentor. Matheus Gabriel percebeu que a paixão pela
-                        robótica educacional muitas vezes era freada pela
-                        burocracia de planilhas infinitas e documentos perdidos.
+                        de um membro de um equipe. Um local que fosse facilmente acessível para documentar testes, organizar estratégias e acompanhar o progresso ao longo da temporada.
                       </p>
                       <p className="leading-relaxed text-base-content">
                         O que começou como o{" "}
@@ -49,10 +47,7 @@ export default function AboutRoboStage() {
                           ShowLive
                         </span>{" "}
                         — um hub para micro eventos da FLL — rapidamente se
-                        transformou em algo maior. A comunidade pedia por mais:
-                        queriam documentar testes, criar estratégias e provar
-                        que seus robôs evoluíam através de dados estatísticos
-                        sólidos.
+                        transformou em algo maior. Para expandir de acordo com as necessidades crescentes.
                       </p>
                       <p className="leading-relaxed text-base-content">
                         Hoje, o ecossistema abrange desde a análise inicial da
@@ -60,12 +55,11 @@ export default function AboutRoboStage() {
                         <span className="font-medium text-secondary">
                           QuickBrick
                         </span>{" "}
-                        até o diário de bordo digital completo no{" "}
+                        até a análise dos resultados no{" "}
                         <span className="font-medium text-secondary">
-                          Workspace
+                          LabTest
                         </span>
-                        . É uma plataforma feita por quem vive a robótica para
-                        quem quer vencer nela.
+                        . E isso é só o começo!
                       </p>
                     </div>
                   </div>
@@ -136,51 +130,6 @@ export default function AboutRoboStage() {
             </div>
           </RevealOnScroll>
         </section>
-
-        {/* Philosophy & Team Section */}
-        <section className="py-16 md:py-20 bg-secondary relative overflow-hidden">
-          <RevealOnScroll>
-            <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
-              <h2 className="text-2xl md:text-3xl font-bold text-secondary-content mb-6 md:mb-8">
-                Nunca estamos sozinhos, estamos em equipe.
-              </h2>
-              <p className="text-secondary-content text-base md:text-lg leading-relaxed mb-10 md:mb-12">
-                O RoboStage permite a criação de espaços de equipe
-                compartilhados, onde testes, documentos e anotações ficam
-                centralizados com acesso para todos os membros.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
-                <div className="p-6 bg-base-100/20 rounded-2xl backdrop-blur-sm border border-base-100 flex flex-row items-center gap-4">
-                  <Users className="w-8 h-8 text-secondary-content" />
-                  <h4 className="text-white font-bold text-sm md:text-base">
-                    Colaborativo
-                  </h4>
-                </div>
-                <div className="p-6 bg-base-100/20 rounded-2xl backdrop-blur-sm border border-base-100 flex flex-row items-center gap-4">
-                  <Database className="w-8 h-8 text-secondary-content" />
-                  <h4 className="text-white font-bold text-sm md:text-base">
-                    Baseado em Dados
-                  </h4>
-                </div>
-                <div className="p-6 bg-base-100/20 rounded-2xl backdrop-blur-sm border border-base-100 flex flex-row items-center gap-4">
-                  <Newspaper className="w-8 h-8 text-secondary-content" />
-                  <h4 className="text-white font-bold text-sm md:text-base">
-                    Feedback Contínuo
-                  </h4>
-                </div>
-              </div>
-            </div>
-          </RevealOnScroll>
-          {/* Background decoration */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-48 h-48 md:w-64 md:h-64 bg-white rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
-            <div className="absolute bottom-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-indigo-900 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
-          </div>
-        </section>
-
-        {/* Team Spaces Section */}
-        <TeamSpacesSection />
 
         {/* Contact/CTA */}
         <section className="py-16 md:py-24 text-center">

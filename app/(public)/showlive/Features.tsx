@@ -21,7 +21,6 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
     setTimeout(() => setIsClicked(false), 200);
   };
 
-  // Map colors to specific Tailwind classes to ensure they are generated correctly
   const styles = {
     primary: {
       bar: "bg-primary",
@@ -121,18 +120,6 @@ const Features: React.FC = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <FeatureCard
-            icon={<Timer size={32} />}
-            title="Cronômetro Oficial"
-            description="Timer de 2:30 com sons oficiais, controle de pausas e sincronia em múltiplas telas de arena."
-            color="primary"
-          />
-          <FeatureCard
-            icon={<ClipboardCheck size={32} />}
-            title="Rubricas Digitais"
-            description="Avaliação de Design, Projeto e Core Values direto no tablet. Cálculo automático de notas."
-            color="secondary"
-          />
-          <FeatureCard
             icon={<Tv size={32} />}
             title="Ranking em Tempo Real"
             description="Assim que o juiz envia a nota da mesa, o ranking no telão é atualizado automaticamente."
@@ -173,8 +160,13 @@ const Features: React.FC = () => {
             </div>
             <div className="flex-1">
               <div className="mockup-window border bg-base-300 border-base-content/20 shadow-lg">
-                <div className="flex justify-center px-4 py-16 bg-base-200 relative overflow-hidden">
-                  {/* TODO - Inserir imagem depois */}
+                <div className="flex justify-center bg-base-200 relative overflow-hidden">
+                  <video className="w-full h-auto rounded-lg shadow-md" autoPlay loop muted controlsList="ShowLive Robot Game">
+                    <source src="/images/showLive/Showlive_voluntario.mp4" type="video/mp4" />
+                    Seu navegador não suporta o elemento de vídeo.
+                  </video>
+                  {/* Subtle Animated Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-transparent to-base-content/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 </div>
               </div>
             </div>

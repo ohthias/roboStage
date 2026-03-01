@@ -38,12 +38,6 @@ export const PLATFORM_FEATURES: FeatureCardProps[] = [
     colorClass: 'text-yellow-600 bg-yellow-50'
   },
   {
-    title: 'Workspace',
-    description: 'Diário de bordo colaborativo para documentar progressos, comentários e coleta de dados globais.',
-    icon: BookOpen,
-    colorClass: 'text-purple-600 bg-purple-50'
-  },
-  {
     title: 'StyleLab',
     description: 'Ferramenta de personalização visual para criar temas únicos e imersivos para os seus eventos.',
     icon: Palette,

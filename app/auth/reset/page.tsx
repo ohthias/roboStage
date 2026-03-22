@@ -29,21 +29,21 @@ export default function ResetPasswordPage() {
   const [checkingSession, setCheckingSession] = useState(true);
   const [canReset, setCanReset] = useState(false);
 
-  const passwordMismatch =
-    confirmPassword.length > 0 && password !== confirmPassword;
-
   const passwordTooShort =
     password.length > 0 && password.length < MIN_PASSWORD_LENGTH;
+
+  const passwordMismatch =
+    confirmPassword.length > 0 && password !== confirmPassword;
 
   const isFormInvalid = useMemo(() => {
     return (
       !password ||
       !confirmPassword ||
-      passwordMismatch ||
       passwordTooShort ||
+      passwordMismatch ||
       loading
     );
-  }, [password, confirmPassword, passwordMismatch, passwordTooShort, loading]);
+  }, [password, confirmPassword, passwordTooShort, passwordMismatch, loading]);
 
   const showFeedback = useCallback(
     (type: FeedbackState["type"], message: string) => {
@@ -55,19 +55,9 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     let isMounted = true;
 
-    const validateRecoverySession = async () => {
+    const checkRecoverySession = async () => {
       try {
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get("code");
-
-        if (!code) {
-          if (!isMounted) return;
-          setCanReset(false);
-          showFeedback("error", "Link de redefinição inválido.");
-          return;
-        }
-
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        const { data, error } = await supabase.auth.getSession();
 
         if (!isMounted) return;
 
@@ -75,18 +65,24 @@ export default function ResetPasswordPage() {
           setCanReset(false);
           showFeedback(
             "error",
-            "Este link de redefinição é inválido ou já expirou."
+            "Não foi possível validar a recuperação de senha."
           );
           return;
         }
 
-        setCanReset(true);
+        if (data.session) {
+          setCanReset(true);
+          return;
+        }
+
+        setCanReset(false);
+        showFeedback("error", "Link inválido ou expirado.");
       } catch {
         if (!isMounted) return;
         setCanReset(false);
         showFeedback(
           "error",
-          "Não foi possível validar o link de redefinição. Tente novamente."
+          "Ocorreu um erro ao validar o link de recuperação."
         );
       } finally {
         if (isMounted) {
@@ -95,10 +91,23 @@ export default function ResetPasswordPage() {
       }
     };
 
-    validateRecoverySession();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (!isMounted) return;
+
+      if (event === "PASSWORD_RECOVERY") {
+        setCanReset(true);
+        setCheckingSession(false);
+        setFeedback({ type: null, message: null });
+      }
+    });
+
+    checkRecoverySession();
 
     return () => {
       isMounted = false;
+      subscription.unsubscribe();
 
       if (redirectTimeoutRef.current) {
         clearTimeout(redirectTimeoutRef.current);
@@ -140,12 +149,13 @@ export default function ResetPasswordPage() {
       setLoading(true);
       setFeedback({ type: null, message: null });
 
-      const { error } = await supabase.auth.updateUser({
-        password,
-      });
+      const { error } = await supabase.auth.updateUser({ password });
 
       if (error) {
-        showFeedback("error", error.message || "Erro ao redefinir a senha.");
+        showFeedback(
+          "error",
+          error.message || "Erro ao redefinir a senha."
+        );
         return;
       }
 

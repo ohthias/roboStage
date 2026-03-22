@@ -11,7 +11,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useUser } from "@/app/context/UserContext";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import { useToast } from "@/app/context/ToastContext";
 import { useRouter } from "next/navigation";
 

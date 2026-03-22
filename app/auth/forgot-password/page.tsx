@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import Logo from "@/components/UI/Logo";
+
+const supabase = createClient();
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -14,7 +16,7 @@ export default function ForgotPasswordPage() {
     setStatus(null);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "https://robo-stage.vercel.app/auth/reset",
+      redirectTo: "https://www.robostage.com.br/auth/reset",
     });
 
     if (error) {

@@ -1,6 +1,7 @@
 "use client";
 
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import { useRouter } from "next/navigation";
 
 export function useLogout() {

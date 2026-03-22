@@ -96,7 +96,9 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+
+const supabase = createClient();
 
 interface Profile {
   id: string;

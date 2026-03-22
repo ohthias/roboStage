@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Brain, Fish, List, CircleDashed, Workflow } from "lucide-react";
 import { BaseModal } from "../UI/BaseModal";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import { useToast } from "@/app/context/ToastContext";
 
 interface CreateDiagramModalProps {

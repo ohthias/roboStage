@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import { useToast } from "@/app/context/ToastContext";
 import Loader from "@/components/Loader";
 import EventSettings from "../configs/EventSettings";

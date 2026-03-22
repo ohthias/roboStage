@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import missionsData from "@/public/data/missions.json";
 import {
   BarChart,

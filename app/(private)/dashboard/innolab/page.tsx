@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import { useToast } from "@/app/context/ToastContext";
 import { LayoutGrid, Lightbulb, List } from "lucide-react";
 import ModalConfirm, {

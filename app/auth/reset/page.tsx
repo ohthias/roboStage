@@ -1,168 +1,242 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabase/client";
 import Logo from "@/components/UI/Logo";
+import { createClient } from "@/utils/supabase/client";
+
+type FeedbackState = {
+  type: "success" | "error" | null;
+  message: string | null;
+};
+
+const MIN_PASSWORD_LENGTH = 8;
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [status, setStatus] = useState<string | null>(null);
-  const [isError, setIsError] = useState(false);
+  const [feedback, setFeedback] = useState<FeedbackState>({
+    type: null,
+    message: null,
+  });
 
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [canReset, setCanReset] = useState(false);
 
-  /* =========================
-     Validação da sessão
-  ========================= */
-  useEffect(() => {
-    const handleRecovery = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
+  const showFeedback = useCallback(
+    (type: FeedbackState["type"], message: string) => {
+      setFeedback({ type, message });
+    },
+    []
+  );
 
-      if (!code) {
-        setIsError(true);
-        setStatus("Link de redefinição inválido.");
-        setCheckingSession(false);
+  useEffect(() => {
+    let isMounted = true;
+
+    const validateRecoveryState = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+
+        if (!isMounted) return;
+
+        if (error) {
+          setCanReset(false);
+          showFeedback("error", "Não foi possível validar a recuperação de senha.");
+          return;
+        }
+
+        if (data.session) {
+          setCanReset(true);
+        } else {
+          setCanReset(false);
+          showFeedback("error", "Link inválido ou expirado. Solicite um novo link.");
+        }
+      } catch {
+        if (!isMounted) return;
+        setCanReset(false);
+        showFeedback("error", "Erro ao validar o link de recuperação.");
+      } finally {
+        if (isMounted) {
+          setCheckingSession(false);
+        }
+      }
+    };
+
+    validateRecoveryState();
+
+    return () => {
+      isMounted = false;
+
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, [showFeedback, supabase]);
+
+  const passwordTooShort =
+    password.length > 0 && password.length < MIN_PASSWORD_LENGTH;
+
+  const passwordMismatch =
+    confirmPassword.length > 0 && password !== confirmPassword;
+
+  const isFormInvalid =
+    !password ||
+    !confirmPassword ||
+    passwordTooShort ||
+    passwordMismatch ||
+    loading;
+
+  const validateForm = () => {
+    if (!password || !confirmPassword) {
+      showFeedback("error", "Preencha todos os campos.");
+      return false;
+    }
+
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      showFeedback(
+        "error",
+        `A senha deve ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`
+      );
+      return false;
+    }
+
+    if (password !== confirmPassword) {
+      showFeedback("error", "As senhas não coincidem.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!canReset || loading) return;
+    if (!validateForm()) return;
+
+    try {
+      setLoading(true);
+      setFeedback({ type: null, message: null });
+
+      const { error } = await supabase.auth.updateUser({ password });
+
+      if (error) {
+        showFeedback("error", error.message || "Erro ao redefinir a senha.");
         return;
       }
 
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      showFeedback("success", "Senha redefinida com sucesso. Redirecionando...");
 
-      if (error) {
-        setIsError(true);
-        setStatus("Este link de redefinição é inválido ou já expirou.");
-        setCanReset(false);
-      } else {
-        setCanReset(true);
-      }
-
-      setCheckingSession(false);
-    };
-
-    handleRecovery();
-  }, []);
-
-  /* =========================
-     Submit
-  ========================= */
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!canReset) return;
-
-    if (password !== confirm) {
-      setIsError(true);
-      setStatus("As senhas não coincidem.");
-      return;
+      redirectTimeoutRef.current = setTimeout(() => {
+        router.push("/auth/login");
+      }, 1500);
+    } catch {
+      showFeedback("error", "Ocorreu um erro inesperado ao redefinir sua senha.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(true);
-    setStatus(null);
-    setIsError(false);
-
-    const { error } = await supabase.auth.updateUser({ password });
-
-    setLoading(false);
-
-    if (error) {
-      setIsError(true);
-      setStatus(error.message);
-      return;
-    }
-
-    setStatus("Senha redefinida com sucesso. Redirecionando...");
-    setTimeout(() => router.push("/auth/login"), 1500);
   };
 
-  /* =========================
-     Loading inicial
-  ========================= */
   if (checkingSession) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <span className="loading loading-spinner loading-lg"></span>
+      <div className="flex min-h-screen items-center justify-center">
+        <span className="loading loading-spinner loading-lg" />
       </div>
     );
   }
 
-  /* =========================
-     UI
-  ========================= */
   return (
-    <div className="flex h-screen relative">
-      {/* Lado visual */}
-      <aside className="w-2/3 hidden md:flex flex-col justify-between bg-gradient-to-l from-error/10 via-base-100 to-base-200 p-8">
-          <Logo logoSize="xl" redirectIndex />
+    <div className="relative flex min-h-screen">
+      <aside className="hidden w-2/3 flex-col justify-between bg-gradient-to-l from-error/10 via-base-100 to-base-200 p-8 md:flex">
+        <Logo logoSize="xl" redirectIndex />
       </aside>
 
-      {/* Formulário */}
-      <main className="w-full md:w-1/3 flex items-center justify-center bg-gradient-to-t from-error/5 via-base-100 to-base-200 p-6">
-        <span className="absolute top-6 left-6 md:hidden">
+      <main className="flex w-full items-center justify-center bg-gradient-to-t from-error/5 via-base-100 to-base-200 p-6 md:w-1/3">
+        <span className="absolute left-6 top-6 md:hidden">
           <Logo redirectIndex logoSize="md" />
         </span>
-        <div className="card w-full max-w-md">
+
+        <section className="card w-full max-w-md">
           <div className="card-body gap-6">
             <header className="text-center">
               <h1 className="text-3xl font-bold">Redefinir senha</h1>
-              <p className="text-sm text-base-content/70 mt-1">
+              <p className="mt-1 text-sm text-base-content/70">
                 Crie uma nova senha para sua conta
               </p>
             </header>
 
-            {status && (
+            {feedback.message && (
               <div
-                className={`alert alert-soft ${
-                  isError ? "alert-error" : "alert-success"
-                } text-sm`}
+                role="alert"
+                className={`alert alert-soft text-sm ${
+                  feedback.type === "error" ? "alert-error" : "alert-success"
+                }`}
               >
-                {status}
+                {feedback.message}
               </div>
             )}
 
             {canReset ? (
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <div className="form-control">
-                  <label className="label">
+                  <label htmlFor="password" className="label">
                     <span className="label-text">Nova senha</span>
                   </label>
                   <input
+                    id="password"
                     type="password"
-                    className="input input-bordered"
+                    className={`input input-bordered w-full ${
+                      passwordTooShort ? "input-error" : ""
+                    }`}
                     required
+                    autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
+                  {passwordTooShort && (
+                    <span className="mt-1 text-xs text-error">
+                      A senha deve ter pelo menos {MIN_PASSWORD_LENGTH} caracteres.
+                    </span>
+                  )}
                 </div>
 
                 <div className="form-control">
-                  <label className="label">
+                  <label htmlFor="confirmPassword" className="label">
                     <span className="label-text">Confirmar senha</span>
                   </label>
                   <input
+                    id="confirmPassword"
                     type="password"
-                    className="input input-bordered"
+                    className={`input input-bordered w-full ${
+                      passwordMismatch ? "input-error" : ""
+                    }`}
                     required
-                    value={confirm}
-                    onChange={(e) => setConfirm(e.target.value)}
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                   />
+                  {passwordMismatch && (
+                    <span className="mt-1 text-xs text-error">
+                      As senhas precisam ser iguais.
+                    </span>
+                  )}
                 </div>
 
                 <button
                   type="submit"
                   className="btn btn-primary w-full"
-                  disabled={loading}
+                  disabled={isFormInvalid}
                 >
                   {loading ? (
                     <>
-                      <span className="loading loading-spinner"></span>
+                      <span className="loading loading-spinner loading-sm" />
                       Salvando...
                     </>
                   ) : (
@@ -171,7 +245,7 @@ export default function ResetPasswordPage() {
                 </button>
               </form>
             ) : (
-              <div className="text-center text-sm space-y-4 text-base-content/70">
+              <div className="space-y-4 text-center text-sm text-base-content/70">
                 <p>Solicite um novo link para redefinir sua senha.</p>
                 <Link href="/auth/forgot-password" className="btn btn-soft">
                   Reenviar link
@@ -185,7 +259,7 @@ export default function ResetPasswordPage() {
               </Link>
             </footer>
           </div>
-        </div>
+        </section>
       </main>
     </div>
   );

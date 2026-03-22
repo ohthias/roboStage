@@ -5,7 +5,8 @@ import ModalConfirm, {
 } from "@/components/UI/Modal/ModalConfirm";
 import ModalInput, { ModalInputRef } from "@/components/UI/Modal/ModalInput";
 import ModalPoints, { ModalPointsRef } from "@/components/UI/Modal/ModalPoints";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 

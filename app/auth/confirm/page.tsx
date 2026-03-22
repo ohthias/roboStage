@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
-
+const supabase = createClient();
 export default function ConfirmEmailPage() {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
 

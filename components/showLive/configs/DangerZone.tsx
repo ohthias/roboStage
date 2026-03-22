@@ -1,5 +1,6 @@
 import { useToast } from "@/app/context/ToastContext";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import { useState } from "react";
 
 export default function DangerZone({ eventId }: { eventId: string }) {

@@ -3,7 +3,8 @@
 import CreateTeamSpaceModal from "@/components/UI/Modal/CreateTeamSpaceModal";
 import { Users, Settings, Search, Plus, LogIn, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import { useRouter } from "next/navigation";
 
 interface TeamSpace {

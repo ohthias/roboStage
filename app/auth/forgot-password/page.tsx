@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
     setStatus(null);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "https://robo-stage.vercel.app/auth/reset",
+      redirectTo: "https://www.robostage.com.br/auth/reset",
     });
 
     if (error) {

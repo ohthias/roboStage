@@ -1,4 +1,5 @@
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import { DiagramType } from "@/types/InnoLabType";
 
 export async function getDiagramById(id: string) {

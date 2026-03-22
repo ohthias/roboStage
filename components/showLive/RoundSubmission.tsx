@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import FormMission from "../FormMission/FormMission";
 import Loader from "../Loader";
 import { useRouter } from "next/navigation";

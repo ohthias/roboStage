@@ -62,7 +62,8 @@ import DiagramCanvas from "@/components/Dashboard/InnoLab/DiagramCanvas";
 import StickerPicker from "@/components/Dashboard/InnoLab/StickerPicker";
 import FloatingToolbar from "@/components/Dashboard/InnoLab/FloatingToolbar";
 import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import { useToast } from "@/app/context/ToastContext";
 
 // Expanded Color Palettes

@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabase/client";
 import Logo from "@/components/UI/Logo";
+import { createClient } from "@/utils/supabase/client";
 
 type FeedbackState = {
   type: "success" | "error" | null;
@@ -15,6 +15,7 @@ const MIN_PASSWORD_LENGTH = 8;
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [password, setPassword] = useState("");
@@ -29,22 +30,6 @@ export default function ResetPasswordPage() {
   const [checkingSession, setCheckingSession] = useState(true);
   const [canReset, setCanReset] = useState(false);
 
-  const passwordTooShort =
-    password.length > 0 && password.length < MIN_PASSWORD_LENGTH;
-
-  const passwordMismatch =
-    confirmPassword.length > 0 && password !== confirmPassword;
-
-  const isFormInvalid = useMemo(() => {
-    return (
-      !password ||
-      !confirmPassword ||
-      passwordTooShort ||
-      passwordMismatch ||
-      loading
-    );
-  }, [password, confirmPassword, passwordTooShort, passwordMismatch, loading]);
-
   const showFeedback = useCallback(
     (type: FeedbackState["type"], message: string) => {
       setFeedback({ type, message });
@@ -55,7 +40,7 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     let isMounted = true;
 
-    const checkRecoverySession = async () => {
+    const validateRecoveryState = async () => {
       try {
         const { data, error } = await supabase.auth.getSession();
 
@@ -63,27 +48,20 @@ export default function ResetPasswordPage() {
 
         if (error) {
           setCanReset(false);
-          showFeedback(
-            "error",
-            "Não foi possível validar a recuperação de senha."
-          );
+          showFeedback("error", "Não foi possível validar a recuperação de senha.");
           return;
         }
 
         if (data.session) {
           setCanReset(true);
-          return;
+        } else {
+          setCanReset(false);
+          showFeedback("error", "Link inválido ou expirado. Solicite um novo link.");
         }
-
-        setCanReset(false);
-        showFeedback("error", "Link inválido ou expirado.");
       } catch {
         if (!isMounted) return;
         setCanReset(false);
-        showFeedback(
-          "error",
-          "Ocorreu um erro ao validar o link de recuperação."
-        );
+        showFeedback("error", "Erro ao validar o link de recuperação.");
       } finally {
         if (isMounted) {
           setCheckingSession(false);
@@ -91,31 +69,31 @@ export default function ResetPasswordPage() {
       }
     };
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (!isMounted) return;
-
-      if (event === "PASSWORD_RECOVERY") {
-        setCanReset(true);
-        setCheckingSession(false);
-        setFeedback({ type: null, message: null });
-      }
-    });
-
-    checkRecoverySession();
+    validateRecoveryState();
 
     return () => {
       isMounted = false;
-      subscription.unsubscribe();
 
       if (redirectTimeoutRef.current) {
         clearTimeout(redirectTimeoutRef.current);
       }
     };
-  }, [showFeedback]);
+  }, [showFeedback, supabase]);
 
-  const validateForm = useCallback(() => {
+  const passwordTooShort =
+    password.length > 0 && password.length < MIN_PASSWORD_LENGTH;
+
+  const passwordMismatch =
+    confirmPassword.length > 0 && password !== confirmPassword;
+
+  const isFormInvalid =
+    !password ||
+    !confirmPassword ||
+    passwordTooShort ||
+    passwordMismatch ||
+    loading;
+
+  const validateForm = () => {
     if (!password || !confirmPassword) {
       showFeedback("error", "Preencha todos os campos.");
       return false;
@@ -135,15 +113,13 @@ export default function ResetPasswordPage() {
     }
 
     return true;
-  }, [password, confirmPassword, showFeedback]);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!canReset || loading) return;
-
-    const isValid = validateForm();
-    if (!isValid) return;
+    if (!validateForm()) return;
 
     try {
       setLoading(true);
@@ -152,10 +128,7 @@ export default function ResetPasswordPage() {
       const { error } = await supabase.auth.updateUser({ password });
 
       if (error) {
-        showFeedback(
-          "error",
-          error.message || "Erro ao redefinir a senha."
-        );
+        showFeedback("error", error.message || "Erro ao redefinir a senha.");
         return;
       }
 
@@ -165,10 +138,7 @@ export default function ResetPasswordPage() {
         router.push("/auth/login");
       }, 1500);
     } catch {
-      showFeedback(
-        "error",
-        "Ocorreu um erro inesperado ao redefinir sua senha."
-      );
+      showFeedback("error", "Ocorreu um erro inesperado ao redefinir sua senha.");
     } finally {
       setLoading(false);
     }

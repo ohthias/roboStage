@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import Logo from "@/components/UI/Logo";
+
+const supabase = createClient();
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

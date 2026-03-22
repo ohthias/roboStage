@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import { RecentAccess } from "./RecentAccess";
 import { QuickActions } from "./QuickActions";
 import { DashboardStats } from "./DashboardStats";

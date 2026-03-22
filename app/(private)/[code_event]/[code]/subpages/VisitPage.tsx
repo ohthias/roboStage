@@ -1,12 +1,9 @@
 "use client";
-import { Navbar } from "@/components/UI/Navbar";
 import TabelaEquipes from "@/components/showLive/TabelaEquipes";
-import { Footer } from "@/components/UI/Footer";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/utils/supabase/client";
-import { ArrowsPointingOutIcon } from "@heroicons/react/24/outline";
-import { ArrowsPointingInIcon } from "@heroicons/react/24/solid";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 
 interface Preset {
   colors: string[];

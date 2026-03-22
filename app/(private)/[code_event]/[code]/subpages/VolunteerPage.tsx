@@ -2,7 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 import { NavigationBar } from "../components/NavigationBar";
 import AvaliacaoRounds from "@/components/showLive/RoundSubmission";
 import AvaliacaoPlayOffs from "@/components/showLive/volunteer/AvaliacaoPlayOffs";

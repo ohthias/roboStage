@@ -5,7 +5,8 @@ import { useEffect, useRef } from "react";
 import { useLabTests } from "@/hooks/useLabTests";
 import TestResultsCharts from "../components/TestResultsCharts";
 import Link from "next/link";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
+const supabase = createClient();
 
 export default function LabTestResultsExtended() {
   const { id } = useParams<{ id: string }>();

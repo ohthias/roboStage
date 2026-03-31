@@ -1,48 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 
-const PUBLIC_ROUTES = [
-  "/auth/login",
-  "/auth/signup",
-  "/auth/forgot-password",
-  "/auth/reset",
-];
+const MAINTENANCE_MODE = true;
+const MAINTENANCE_ROUTE = "/maintenance";
 
-const DASHBOARD_ROUTE = "/dashboard";
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
 
-export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  
-  if(PUBLIC_ROUTES.includes(req.nextUrl.pathname)){
-    return res;
+  // Permite acessar a página de manutenção
+  if (pathname.startsWith(MAINTENANCE_ROUTE)) {
+    return NextResponse.next();
   }
 
-  const supabase = createMiddlewareClient({ req, res });
-  const path = req.nextUrl.pathname;
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  const loggedIn = !!session?.user;
-  const isDashboardRoute = path.startsWith(DASHBOARD_ROUTE);
-
-  // 🔹 Usuário não autenticado tentando acessar rota privada
-  if (!loggedIn && isDashboardRoute) {
+  if (MAINTENANCE_MODE) {
     const url = req.nextUrl.clone();
-    url.pathname = "/auth/login";
-    url.searchParams.set("redirectTo", path);
+    url.pathname = MAINTENANCE_ROUTE;
     return NextResponse.redirect(url);
   }
 
-  // 🔹 Usuário autenticado tentando acessar login/signup
-  if (loggedIn && (path === "/auth/login" || path === "/auth/signup")) {
-    return NextResponse.redirect(new URL(DASHBOARD_ROUTE, req.url));
-  }
-
-  return res;
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/auth/:path*", "/u/:path*"], // protege dashboard e evita login se já logado
+  matcher: ["/((?!_next|favicon.ico).*)"],
 };

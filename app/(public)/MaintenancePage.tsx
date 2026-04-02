@@ -1,59 +1,172 @@
 import Logo from "@/components/UI/Logo";
 
 export default function MaintenancePage() {
+  const currentPhase = 1;
+
+  const phases = [
+    {
+      id: 1,
+      title: "Base FLL",
+      description: "Estrutura original da FLL liberada, sem autenticação.",
+      badge: "primary",
+    },
+    {
+      id: 2,
+      title: "Novas modalidades",
+      description: "Inclusão de duas novas competições na plataforma.",
+      badge: "secondary",
+    },
+    {
+      id: 3,
+      title: "Usuários e ecossistema",
+      description: "Retorno com Innolab, equipes e TrainLab.",
+      badge: "accent",
+    },
+    {
+      id: 4,
+      title: "Tipos de usuários",
+      description: "Permissões específicas por modalidade.",
+      badge: "info",
+    },
+    {
+      id: 5,
+      title: "ShowLive",
+      description: "3 modalidades + modo livre de criação.",
+      badge: "success",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-base-200 flex items-center justify-center p-6">
-      <div className="max-w-2xl w-full text-center">
-        {/* Nome */}
-        <p>
-          <Logo logoSize="4xl" />
-        </p>
+    <div className="min-h-screen bg-gradient-to-b from-base-200 via-base-100 to-primary/5 flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-6xl">
 
-        {/* Status */}
-        <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-warning/10 text-warning text-sm font-medium border border-warning/20">
-          <span className="w-2 h-2 rounded-full bg-warning animate-pulse"></span>
-          Plataforma em atualização
+        {/* HERO */}
+        <div className="text-center">
+          <h1>
+            <Logo logoSize="5xl" />
+          </h1>
+
+          <div className="mt-5 inline-flex items-center gap-2 px-5 py-2 rounded-full bg-warning/10 text-warning text-sm font-medium border border-warning/20">
+            <span className="w-2 h-2 rounded-full bg-warning animate-pulse"></span>
+            Atualização progressiva
+          </div>
+
+          <h2 className="mt-6 text-2xl md:text-4xl font-semibold text-base-content">
+            Estamos reconstruindo por fases 🚀
+          </h2>
+
+          <p className="mt-4 text-base-content/70 max-w-2xl mx-auto text-sm md:text-base">
+            O RoboStage está evoluindo para suportar múltiplas competições,
+            novos formatos e um ecossistema completo de robótica.
+          </p>
         </div>
 
-        {/* Headline */}
-        <h2 className="mt-8 text-2xl md:text-3xl font-semibold text-base-content">
-          Estamos preparando o próximo nível da competição 🤖
-        </h2>
+        {/* CURRENT PHASE HIGHLIGHT */}
+        <div className="mt-10 bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-2xl p-6 text-center shadow-sm">
+          <p className="text-sm text-base-content/60">
+            Fase atual
+          </p>
 
-        {/* Descrição */}
-        <p className="mt-4 text-base-content/70 text-base md:text-lg leading-relaxed">
-          O RoboStage está passando por uma reestruturação importante para se
-          tornar uma plataforma mais robusta, escalável e preparada para o
-          futuro.
-        </p>
+          <h3 className="text-xl md:text-2xl font-bold text-primary mt-2">
+            Fase {currentPhase} — {phases[currentPhase - 1].title}
+          </h3>
 
-        {/* Expansão estratégica */}
-        <div className="mt-6 bg-base-100 border border-base-300 rounded-xl p-5 text-left">
-          <h3 className="text-base-content font-medium">O que vem por aí</h3>
-          <ul className="mt-3 text-base-content/70 text-sm space-y-2">
-            <li>• Expansão para múltiplas competições de robótica</li>
-            <li>• Suporte a diferentes regras e formatos de torneio</li>
-            <li>• Melhor gestão de equipes, missões e pontuações</li>
-            <li>• Novas ferramentas para organização e análise</li>
-          </ul>
+          <p className="mt-2 text-base-content/70 text-sm">
+            {phases[currentPhase - 1].description}
+          </p>
         </div>
 
-        {/* Aviso */}
-        <p className="mt-6 text-base-content/60 text-sm">
-          Durante esse período, a plataforma ficará indisponível por tempo
-          indeterminado.
-        </p>
+        {/* ROADMAP */}
+        <div className="mt-12 relative">
 
-        {/* Tempo */}
-        <div className="mt-4 text-base-content/50 text-sm">
-          Status: <span className="text-warning font-medium">em progresso</span>
+          {/* Linha vertical (desktop) */}
+          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-base-300"></div>
+
+          <div className="space-y-6">
+
+            {phases.map((phase, index) => {
+              const isActive = phase.id === currentPhase;
+              const isPast = phase.id < currentPhase;
+
+              return (
+                <div
+                  key={phase.id}
+                  className={`flex flex-col lg:flex-row items-center gap-4 ${
+                    index % 2 === 0 ? "lg:flex-row-reverse" : ""
+                  }`}
+                >
+                  {/* Card */}
+                  <div
+                    className={`w-full lg:w-1/2 card transition-all duration-300 ${
+                      isActive
+                        ? "bg-base-100 border-2 border-primary shadow-lg scale-[1.02]"
+                        : isPast
+                        ? "bg-base-100 border border-success/30 opacity-80"
+                        : "bg-base-100 border border-base-300 opacity-60"
+                    }`}
+                  >
+                    <div className="card-body">
+                      <div className="flex items-center justify-between">
+                        <div
+                          className={`badge badge-${phase.badge} badge-outline`}
+                        >
+                          Fase {phase.id}
+                        </div>
+
+                        {isActive && (
+                          <span className="text-xs text-primary font-medium">
+                            Em andamento
+                          </span>
+                        )}
+
+                        {isPast && (
+                          <span className="text-xs text-success font-medium">
+                            Concluído
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="mt-2 font-semibold text-base-content">
+                        {phase.title}
+                      </h3>
+
+                      <p className="text-sm text-base-content/70">
+                        {phase.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Dot */}
+                  <div className="hidden lg:flex items-center justify-center w-10">
+                    <div
+                      className={`w-4 h-4 rounded-full ${
+                        isActive
+                          ? "bg-primary scale-125"
+                          : isPast
+                          ? "bg-success"
+                          : "bg-base-300"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="hidden lg:block w-1/2" />
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Footer */}
-        <p className="mt-10 text-base-content/40 text-xs">
-          Estamos trabalhando para entregar algo maior, mais completo e pronto
-          para o futuro da robótica competitiva.
-        </p>
+        {/* FOOTER */}
+        <div className="mt-14 text-center">
+          <p className="text-base-content/60 text-sm">
+            Funcionalidades podem ser liberadas gradualmente e sofrer ajustes durante o processo.
+          </p>
+
+          <div className="mt-3 text-sm text-base-content/50">
+            Status: <span className="text-warning font-medium">reconstrução progressiva</span>
+          </div>
+        </div>
+
       </div>
     </div>
   );

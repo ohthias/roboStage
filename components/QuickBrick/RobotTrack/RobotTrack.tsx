@@ -26,7 +26,7 @@
    interpolateState,
    commandsToCode,
  } from "@/utils/engineRobotTrack";
- import { DEFAULT_CODE, START_ANGLE, START_X, START_Y } from "@/app/(public)/quickbrick/robot-track/constants";
+ import { DEFAULT_CODE, START_ANGLE, START_X, START_Y } from "@/app/[competicao]/(fll)/quickbrick/robot-track/constants";
  import {
    RobotState,
    AnimationSegment,

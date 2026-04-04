@@ -1,6 +1,6 @@
 import React from 'react';
 import { Impacto, Probabilidade, Risco } from '@/types/MatrizRisco';
-import { IMPACTO_LABELS, PROBABILIDADE_LABELS, getRiskColor } from '@/app/(public)/quickbrick/matriz-de-risco/constants';
+import { IMPACTO_LABELS, PROBABILIDADE_LABELS, getRiskColor } from '@/app/[competicao]/(fll)/quickbrick/matriz-de-risco/constants';
 import RiscoCard from './RiscoCard';
 
 interface MatrizRiscoProps {

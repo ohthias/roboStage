@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { Risco, Impacto, Probabilidade } from '@/types/MatrizRisco';
-import { IMPACTO_LABELS, PROBABILIDADE_LABELS } from '@/app/(public)/quickbrick/matriz-de-risco/constants';
+import { IMPACTO_LABELS, PROBABILIDADE_LABELS } from '@/app/[competicao]/(fll)/quickbrick/matriz-de-risco/constants';
 
 interface RiscoModalProps {
   isOpen: boolean;

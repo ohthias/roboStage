@@ -1,6 +1,6 @@
 
 import React, { useRef, useState, useMemo, useEffect } from 'react';
-import { TAPETE_WIDTH_CM, TAPETE_HEIGHT_CM } from '@/app/(public)/quickbrick/robot-track/constants';
+import { TAPETE_WIDTH_CM, TAPETE_HEIGHT_CM } from '@/app/[competicao]/(fll)/quickbrick/robot-track/constants';
 import { PathPoint, RobotState, RobotConfig } from '@/types/RobotTrackType';
 import { cmToPct, pxToCm } from '@/utils/engineRobotTrack';
 import { ChevronDown, ChevronUp } from 'lucide-react';

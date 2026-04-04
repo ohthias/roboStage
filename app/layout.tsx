@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
+// @ts-ignore
 import "./globals.css";
 import { UserProvider } from "./context/UserContext";
 import { ToastProvider } from "./context/ToastContext";

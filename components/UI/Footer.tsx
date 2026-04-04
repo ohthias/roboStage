@@ -22,40 +22,19 @@ export function Footer() {
           </a>
         </aside>
         <nav>
-          <h6 className="footer-title">Sobre</h6>
-          <a className="link link-hover" href="/about">Sobre o projeto</a>
-          <a
-            href="https://github.com/ohthias/roboStage/wiki"
-            className="link link-hover"
-          >
-            Wiki
+          <p className="font-bold">Geral</p>
+          <a href="/fll" className="hover:text-primary transition-colors">
+            FLL
           </a>
-          <a className="link link-hover" href="/help">Dúvidas</a>
-          <a className="link link-hover" href="/fll-docs">Documentações UNEARTHED</a>
-          <nav className="mt-4 flex flex-col">
-            <h6 className="footer-title">Comunidade</h6>
-            <a className="link link-hover" href="https://www.instagram.com/robo.stage/">Instagram</a>
-          </nav>
+          <a href="/fll/about" className="hover:text-primary transition-colors">
+            Sobre
+          </a>
+          <a href="/fll/help" className="hover:text-primary transition-colors">
+            Ajuda
+          </a>
         </nav>
-        <nav>
-          <h6 className="footer-title">Legal</h6>
-          <a className="link link-hover" href="https://github.com/ohthias/roboStage/wiki/terms">Termos de Serviço</a>
-          <a className="link link-hover" href="https://github.com/ohthias/roboStage/wiki/privacy">Política de Privacidade</a>
-          <a className="link link-hover" href="https://github.com/ohthias/roboStage/wiki/cookies">Política de Cookies</a>
-          <nav className="mt-4 flex flex-col">
-            <h6 className="footer-title">Suporte</h6>
-            <a className="link link-hover" href="https://github.com/ohthias/roboStage/issues">Reportar bugs</a>
-          </nav>
-        </nav>
-        <nav>
-          <h6 className="footer-title">Desenvolvedores</h6>
-          <a className="link link-hover" href="https://github.com/ohthias">@ohthias</a>
-          <nav className="mt-4 flex flex-col">
-            <h6 className="footer-title">Parceiros</h6>
-            <a className="link link-hover" href="https://github.com/VMRT-SESI">@VMRT</a>
-            <a className="link link-hover" href="https://github.com/G-Tomboly/">@G-Tomboly</a>
-          </nav>
-        </nav>
+        <nav></nav>
+        <nav></nav>
       </footer>
       <footer className="footer sm:footer-horizontal footer-center bg-base-300 text-base-content p-4">
         <aside>
@@ -63,7 +42,9 @@ export function Footer() {
             Copyright © {new Date().getFullYear()} - Todos os direitos
             reservados
             <br className="sm:hidden" />
-            <span className="text-xs opacity-75 ml-1">roboStage v{pkg.version}</span>
+            <span className="text-xs opacity-75 ml-1">
+              roboStage v{pkg.version}
+            </span>
           </p>
         </aside>
       </footer>

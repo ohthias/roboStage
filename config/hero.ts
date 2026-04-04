@@ -20,17 +20,16 @@ export const HERO_CONFIG = {
 
   obr: {
     badge: "Precisão em cada sensor",
-    titulo: "Robstage OBR",
     descricao:
       "Desenvolva lógica de resgate, navegação e sensores com eficiência.",
     imagem:
-      "https://i.ytimg.com/vi/7FF8l9PAOQs/sddefault.jpg",
+      "https://obr.robocup.org.br/wp-content/uploads/2026/03/Resgate-OBR-1-1024x683.jpg",
     ctaPrimario: {
-      label: "Entrar na OBR",
+      label: "LabTest",
       href: "/obr/dashboard",
     },
     ctaSecundario: {
-      label: "Ver arena",
+      label: "Saiba Mais",
       href: "/obr/resgate",
     },
   },

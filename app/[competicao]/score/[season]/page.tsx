@@ -187,7 +187,7 @@ export default function Page() {
   return (
     <>
       {/* Barra de progresso */}
-      <div className="h-3 w-full bg-neutral sticky top-0 z-50">
+      <div className="h-3 w-full bg-neutral sticky top-0 z-30">
         <div
           className={`h-full transition-all duration-300 ${progressColor}`}
           style={{ width: `${progress}%` }}

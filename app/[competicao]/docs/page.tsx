@@ -2,7 +2,9 @@
 
 import { Footer } from "@/components/UI/Footer";
 import { useEffect, useState } from "react";
-import { FileText, ExternalLink, BookOpen } from "lucide-react";
+import { FileText, ExternalLink, BookOpen, Bot } from "lucide-react";
+import { useParams } from "next/navigation";
+import { COMPETICOES } from "@/config/competicoes";
 
 interface DocCard {
   title: string;
@@ -10,43 +12,71 @@ interface DocCard {
   url: string;
 }
 
-export default function FllDocs() {
+export default function DocsPage() {
+  const { competicao } = useParams() as { competicao: keyof typeof COMPETICOES };
+
+  const config = COMPETICOES[competicao];
+
   const [docs, setDocs] = useState<DocCard[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/data/fllDocs")
+    if (!competicao) return;
+
+    fetch(`/api/data/${competicao}Docs`)
       .then((res) => res.json())
       .then((data) => setDocs(data))
-      .catch((err) => console.error("Erro ao carregar documentos:", err));
-  }, []);
+      .catch((err) => console.error("Erro ao carregar documentos:", err))
+      .finally(() => setLoading(false));
+  }, [competicao]);
+
+  if (!config) {
+    return <p className="p-8">Competição não encontrada.</p>;
+  }
 
   return (
     <>
       <main className="p-8 max-w-6xl mx-auto min-h-screen">
+        {/* HEADER */}
         <header className="mb-16 flex flex-row items-start gap-6 md:gap-8 justify-center">
           <div className="p-4 rounded-2xl bg-primary/10 text-primary shrink-0">
             <BookOpen size={36} strokeWidth={2.2} />
           </div>
+
           <div className="flex flex-col gap-3 text-left">
             <h1 className="text-3xl md:text-5xl font-extrabold text-base-content">
-              Central de Documentações
+              Central de Documentações {config.nome}
             </h1>
 
             <p className="max-w-2xl text-base md:text-lg text-base-content/70">
               Reúna em um único lugar os documentos oficiais da temporada,
-              incluindo regras, guias técnicos, caderno de engenharia e
-              atualizações importantes.
+              incluindo regras, guias técnicos e atualizações importantes.
             </p>
           </div>
         </header>
 
+        {/* LOADING */}
+        {loading && (
+          <p className="text-center text-base-content/60">
+            Carregando documentos...
+          </p>
+        )}
+
+        {!loading && docs.length === 0 && (
+          <p className="text-center text-base-content/60">
+            <Bot size={20} className="inline mb-1 mr-2" />
+            Nenhum documento encontrado para esta competição.
+          </p>
+        )}
+
+        {/* GRID */}
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {docs.map((doc, idx) => (
             <div
               key={idx}
               className="card bg-base-100 border border-base-300 
-             hover:border-primary hover:shadow-lg 
-             transition-all duration-200"
+              hover:border-primary hover:shadow-lg 
+              transition-all duration-200"
             >
               <div className="card-body gap-5">
                 {/* Cabeçalho */}
@@ -65,7 +95,6 @@ export default function FllDocs() {
                   </div>
                 </div>
 
-                {/* Divider */}
                 <div className="divider my-0" />
 
                 {/* Ação */}
@@ -78,7 +107,6 @@ export default function FllDocs() {
                     href={doc.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={`Abrir documento ${doc.title}`}
                     className="btn btn-primary btn-sm gap-2"
                   >
                     Abrir
@@ -90,6 +118,7 @@ export default function FllDocs() {
           ))}
         </section>
       </main>
+
       <Footer />
     </>
   );

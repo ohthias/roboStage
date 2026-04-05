@@ -17,7 +17,6 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart }) => {
 
   return (
     <div className="w-full max-w-7xl grid lg:grid-cols-2 gap-8 lg:gap-16 items-center py-10">
-      {/* Vector Illustration Section (Desktop Only) */}
       <div className="hidden lg:flex flex-col justify-center space-y-8 p-4 flex-1">
         <div className="space-y-4">
           <span className="text-sm font-bold text-base-content">Flash Q&A</span>
@@ -30,7 +29,6 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart }) => {
           </p>
         </div>
 
-        {/* Custom SVG Vector Illustration */}
         <div className="relative w-full aspect-square max-w-md">
           <svg
             viewBox="0 0 400 400"
@@ -152,7 +150,6 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart }) => {
         </div>
       </div>
 
-      {/* Setup Card (Centered on Mobile, Right on Desktop) */}
       <div className="bg-base-200 rounded-3xl shadow-3xl overflow-hidden border border-base-300 max-w-2xl mx-auto lg:mx-0 w-full flex-1">
         <div className="bg-secondary p-8 text-center">
           <h2 className="text-2xl font-bold text-secondary-content">

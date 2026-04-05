@@ -1,4 +1,4 @@
-import { Category, Question } from '@/types/FlashQATypes';
+import { Category, FlashQAMode, Question } from '@/types/FlashQATypes';
 
 export const FLL_QUESTIONS: Question[] = [
   // Core Values
@@ -457,3 +457,20 @@ export const FLL_QUESTIONS: Question[] = [
     hint: 'Mostrem visão futura.'
   }
 ];
+
+export const FLL_MODE: FlashQAMode = {
+  name: "FLL",
+  questions: FLL_QUESTIONS,
+  categories: [
+    Category.ALL,
+    Category.CORE_VALUES,
+    Category.INNOVATION_PROJECT,
+    Category.ROBOT_DESIGN,
+  ],
+
+  defaultSettings: {
+    category: Category.ALL,
+    count: 10,
+    timePerCard: 60, // mantém consistência com sua engine
+  },
+};

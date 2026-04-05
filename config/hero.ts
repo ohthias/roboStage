@@ -3,11 +3,11 @@
 export const HERO_CONFIG = {
   fll: {
     badge: "Onde o LEGO ganham vida",
-    titulo: "FLL",
+    titulo: "FIRST LEGO League Challenge",
     descricao:
       "Planeje missões, analise pontuações e evolua sua estratégia na mesa.",
     imagem:
-      "https://www.first-lego-league.org/assets/images/f/FLL_C_Robi_Detail_Girl_BG-ddda704b.jpg",
+      "https://fspartner.no/cdn/shop/collections/FLL-3.jpg?v=1741335945",
     ctaPrimario: {
       label: "Saiba Mais",
       href: "/fll/about",
@@ -20,7 +20,7 @@ export const HERO_CONFIG = {
 
   obr: {
     badge: "Precisão em cada sensor",
-    titulo: "OBR",
+    titulo: "Olimpíada Brasileira de Robótica",
     descricao:
       "Desenvolva lógica de resgate, navegação e sensores com eficiência.",
     imagem:

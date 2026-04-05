@@ -1,4 +1,4 @@
-import MaintenancePage from "../MaintenanceBanner"
+import MaintenancePage from "../../../components/MaintenanceBanner"
 
 export default function manutencaoPage() {
     return (

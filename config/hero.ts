@@ -3,7 +3,7 @@
 export const HERO_CONFIG = {
   fll: {
     badge: "Onde o LEGO ganham vida",
-    titulo: "",
+    titulo: "FLL",
     descricao:
       "Planeje missões, analise pontuações e evolua sua estratégia na mesa.",
     imagem:
@@ -20,6 +20,7 @@ export const HERO_CONFIG = {
 
   obr: {
     badge: "Precisão em cada sensor",
+    titulo: "OBR",
     descricao:
       "Desenvolva lógica de resgate, navegação e sensores com eficiência.",
     imagem:

@@ -8,11 +8,11 @@ export default async function Layout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ competicao: Competicao }>;
+  params: Promise<{ competicao: string }>;
 }) {
   const { competicao } = await params;
 
-  if (!COMPETICOES[competicao as Competicao]) {
+  if (!COMPETICOES[competicao as keyof typeof COMPETICOES]) {
     throw new Error("Competição não encontrada");
   }
 

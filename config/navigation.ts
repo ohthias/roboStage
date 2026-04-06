@@ -1,9 +1,10 @@
 import {
   BookOpen,
   Clock,
+  LayoutDashboard,
   MessageSquare,
   Table2,
-  Trophy,
+  UsersRound,
 } from "lucide-react";
 
 export const NAVIGATION = {
@@ -22,9 +23,31 @@ export const NAVIGATION = {
     label: "OBR",
     scorePath: "score",
     menu: [
-      { nome: "Arena", path: "arena", icon: Table2 },
-      { nome: "Resgate", path: "resgate", icon: MessageSquare },
+      { nome: "Construtor de Arenas", path: "arena", icon: LayoutDashboard },
+      { nome: "Timers", path: "timers", icon: Clock },
       { nome: "Guias", path: "docs", icon: BookOpen },
+      { nome: "Comunidade", path: "community", icon: UsersRound },
     ],
+  },
+
+  wro: {
+    label: "WRO",
+    scorePath: "score",
+    menu: [
+    ]
+  },
+
+  tbr: {
+    label: "TBR",
+    scorePath: "score",
+    menu : [
+    ]
+  },
+
+  showlive: {
+    label: "ShowLive",
+    menu: [
+
+    ]
   },
 };

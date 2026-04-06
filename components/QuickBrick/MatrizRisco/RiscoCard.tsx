@@ -1,6 +1,6 @@
 import React from 'react';
 import { Risco } from '@/types/MatrizRisco';
-import { getRiskTextColor } from '@/app/[competicao]/(fll)/quickbrick/matriz-de-risco/constants';
+import { getRiskTextColor } from '@/app/[competicao]/quickbrick/matriz-de-risco/constants';
 
 interface RiscoCardProps {
   risco: Risco;

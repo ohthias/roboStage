@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Risco } from '@/types/MatrizRisco';
-import { IMPACTO_LABELS, PROBABILIDADE_LABELS, getRiskColor } from '@/app/[competicao]/(fll)/quickbrick/matriz-de-risco/constants';
+import { IMPACTO_LABELS, PROBABILIDADE_LABELS, getRiskColor } from '@/app/[competicao]/quickbrick/matriz-de-risco/constants';
 
 interface RiscoDetalhesModalProps {
   isOpen: boolean;

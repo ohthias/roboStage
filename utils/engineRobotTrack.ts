@@ -1,4 +1,4 @@
-import { TAPETE_WIDTH_CM, TAPETE_HEIGHT_CM } from '@/app/[competicao]/(fll)/quickbrick/robot-track/constants';
+import { TAPETE_WIDTH_CM, TAPETE_HEIGHT_CM } from '@/app/[competicao]/quickbrick/robot-track/constants';
 import { Command, PathPoint, RobotState, AnimationSegment } from '@/types/RobotTrackType';
 
 /**

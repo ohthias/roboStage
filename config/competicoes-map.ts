@@ -8,4 +8,13 @@ export const COMPETICOES_COMPONENTES = {
   obr: {
     Home: OBRHome,
   },
+  wro: {
+    Home: () => "Em breve...",
+  },
+  tbr: {
+    Home: () => "Em breve...",
+  },
+  showlive: {
+    Home: () => "Em breve...",
+  }
 };

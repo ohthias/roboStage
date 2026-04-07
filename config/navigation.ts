@@ -29,25 +29,4 @@ export const NAVIGATION = {
       { nome: "Comunidade", path: "community", icon: UsersRound },
     ],
   },
-
-  wro: {
-    label: "WRO",
-    scorePath: "score",
-    menu: [
-    ]
-  },
-
-  tbr: {
-    label: "TBR",
-    scorePath: "score",
-    menu : [
-    ]
-  },
-
-  showlive: {
-    label: "ShowLive",
-    menu: [
-
-    ]
-  },
 };

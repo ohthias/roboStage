@@ -177,7 +177,7 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
               })}
 
               <li>
-                <Link href="/help" className="btn btn-ghost w-full">
+                <Link href="/fll/help" className="btn btn-ghost w-full">
                   Ajuda & Dúvidas
                 </Link>
               </li>

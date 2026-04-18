@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 const supabase = createClient();
 import { TrophyIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import Loader from "@/components/Loader";

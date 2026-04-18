@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 const supabase = createClient();
 import StyleLabModal from "@/components/Dashboard/StyleLab/StyleLabModal";
 import { useUser } from "@/app/context/UserContext";

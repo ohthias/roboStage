@@ -1,5 +1,5 @@
 import { useToast } from "@/app/context/ToastContext";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 const supabase = createClient();
 import { useState } from "react";
 

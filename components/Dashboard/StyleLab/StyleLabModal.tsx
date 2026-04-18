@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 const supabase = createClient();
 import { useToast } from "@/app/context/ToastContext";
 import { StyleLabTheme } from "@/app/(private)/dashboard/stylelab/page";

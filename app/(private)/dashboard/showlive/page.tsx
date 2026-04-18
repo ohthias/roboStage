@@ -7,7 +7,7 @@ import { useUser } from "@/app/context/UserContext";
 import { useEvents } from "@/hooks/useEventsLoad";
 import { MagnifyingGlassIcon, SignalIcon } from "@heroicons/react/24/outline";
 import { EventCardSkeleton } from "@/components/UI/Cards/EventCardSkeleton";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 const supabase = createClient();
 
 export default function ShowLiveHub() {

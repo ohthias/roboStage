@@ -2,7 +2,7 @@
 import TabelaEquipes from "@/components/showLive/TabelaEquipes";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 const supabase = createClient();
 
 interface Preset {

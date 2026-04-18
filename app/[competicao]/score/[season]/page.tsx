@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import FormMission from "@/components/FormMission/FormMission";
 import Loader from "@/components/Loader";
-import { sumAllMissions } from "@/utils/scores";
+import { sumAllMissions } from "@/lib/scores";
 import { Footer } from "@/components/UI/Footer";
 import SubmergedLogo from "@/public/images/logos/Submerged.webp";
 import MasterpieceLogo from "@/public/images/logos/Masterpiece.png";

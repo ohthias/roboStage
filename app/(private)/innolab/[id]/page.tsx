@@ -62,7 +62,7 @@ import DiagramCanvas from "@/components/Dashboard/InnoLab/DiagramCanvas";
 import StickerPicker from "@/components/Dashboard/InnoLab/StickerPicker";
 import FloatingToolbar from "@/components/Dashboard/InnoLab/FloatingToolbar";
 import { useParams, useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 const supabase = createClient();
 import { useToast } from "@/app/context/ToastContext";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 const supabase = createClient();
 import { Users, X, Copy, Check } from "lucide-react";
 import { useUser } from "@/app/context/UserContext";

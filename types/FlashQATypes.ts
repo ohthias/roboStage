@@ -2,7 +2,7 @@ export enum Category {
   ALL = 'Todas',
   CORE_VALUES = 'Core Values',
   INNOVATION_PROJECT = 'Projeto de Inovação',
-  ROBOT_DESIGN = 'Design do Robô'
+  ROBOT_DESIGN = 'Design do Robô',
 }
 
 export interface Question {
@@ -23,4 +23,11 @@ export interface GameState {
   currentQuestionIndex: number;
   selectedQuestions: Question[];
   answers: { questionId: string; flagged: boolean }[]; // Track which ones were difficult
+}
+
+export interface FlashQAMode {
+  name: string;
+  questions: Question[];
+  categories: Category[];
+  defaultSettings: GameSettings;
 }

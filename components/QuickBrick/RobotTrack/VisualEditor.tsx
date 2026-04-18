@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowUp, RotateCw, Trash2, Plus, RotateCcw } from 'lucide-react';
 import { Command } from '@/types/RobotTrackType';
-import { parseCode, commandsToCode } from '@/utils/engineRobotTrack';
+import { parseCode, commandsToCode } from '@/lib/engineRobotTrack';
 
 interface VisualEditorProps {
   code: string;

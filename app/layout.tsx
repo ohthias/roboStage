@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
+// @ts-ignore
 import "./globals.css";
 import { UserProvider } from "./context/UserContext";
 import { ToastProvider } from "./context/ToastContext";
@@ -31,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-br">
+    <html lang="pt-BR">
       <body className={`${roboto.variable} antialiased`}>
         <Analytics />
         <SpeedInsights />

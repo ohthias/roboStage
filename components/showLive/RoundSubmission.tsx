@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 const supabase = createClient();
 import FormMission from "../FormMission/FormMission";
 import Loader from "../Loader";
 import { useRouter } from "next/navigation";
-import { sumAllMissions } from "@/utils/scores";
+import { sumAllMissions } from "@/lib/scores";
 import ModalConfirm, { ModalConfirmRef } from "../UI/Modal/ModalConfirm";
 import ModalAlert, { ModalAlertRef } from "../UI/Modal/ModalAlert";
 

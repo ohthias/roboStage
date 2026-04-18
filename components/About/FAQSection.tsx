@@ -68,7 +68,7 @@ export const FAQSection: React.FC = () => {
           ))}
         </div>
 
-        <h3 className="mt-8 text-center">Tem mais perguntas? <a href="/help" className="text-primary hover:underline">Acesse aqui!</a></h3>
+        <h3 className="mt-8 text-center">Tem mais perguntas? <a href="/fll/help" className="text-primary hover:underline">Acesse aqui!</a></h3>
       </div>
     </section>
   );

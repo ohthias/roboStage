@@ -14,7 +14,7 @@ import { useLabTests } from "@/hooks/useLabTests";
 import TestTabs from "./components/TestTabs";
 import TestList from "./components/TestList";
 import ResultsList from "./components/ResultsList";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 const supabase = createClient();
 import TestCardSkeleton from "./components/TestCardSkeleton";
 import MoveToFolderModal from "@/components/UI/Modal/MoveToFolderModal";

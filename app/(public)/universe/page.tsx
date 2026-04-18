@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 const supabase = createClient();
 import Logo from "@/components/UI/Logo";
 import { BackgroundStars } from "@/components/UI/BackgroundStars";

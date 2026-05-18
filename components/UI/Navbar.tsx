@@ -105,6 +105,18 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
 
           {/* Ações Desktop */}
           <div className="hidden lg:flex items-center space-x-2">
+            <Link
+              href="/auth/login"
+              className="btn btn-ghost btn-sm flex items-center gap-2 backdrop-blur-sm"
+            >
+              Login
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="btn btn-primary btn-sm flex items-center gap-2"
+            >
+              Cadastrar
+            </Link>
             <ThemeController />
           </div>
 

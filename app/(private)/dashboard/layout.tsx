@@ -11,7 +11,6 @@ import { useLogout } from "@/hooks/useLogout";
 import ModalConfirm, {
   ModalConfirmRef,
 } from "@/components/UI/Modal/ModalConfirm";
-import '../../globals.css';
 
 export default function DashboardLayout({
   children,

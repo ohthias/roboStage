@@ -1,103 +1,99 @@
 "use client";
 
-interface GeneralPageProps {
-  name_event: string;
-  event_data?: {} | null;
-  event_config: {
-    base: string;
-    rodadas: string[];
-    temporada?: string;
-    preset?: {
-      colors: [string, string, string];
-      url_background: string;
-    };
-  } | null;
+interface EventConfig {
+  base: string;
+  rodadas: string[];
+  temporada?: string;
+  preset?: {
+    colors: [string, string, string];
+    url_background: string;
+  };
 }
 
-export default function GeneralPage({
-  name_event,
-  event_data,
-  event_config,
-}: GeneralPageProps) {
-  const urlBackground = () => {
-    switch (event_config?.temporada) {
-      case "MASTERPIECE":
-        return "/images/showLive/banners/banner_masterpiece.webp";
-      case "SUBMERGED":
-        return "/images/showLive/banners/banner_submerged.webp";
-      case "UNEARTHED":
-        return "/images/showLive/banners/banner_uneartherd.webp";
-      default:
-        return "/images/showLive/banners/banner_default.webp";
-    }
-  };
+interface GeneralPageProps {
+  name_event: string;
+  event_data?: Record<string, unknown> | null;
+  event_config: EventConfig | null;
+}
 
-  const seasonLogo = () => {
-    switch (event_config?.temporada) {
-      case "MASTERPIECE":
-        return "/images/logos/Masterpiece.png";
-      case "SUBMERGED":
-        return "/images/logos/Submerged.webp";
-      case "UNEARTHED":
-        return "/images/logos/Unearthed.webp";
-      default:
-        return "/images/logos/Icone.png";
-    }
-  };
+const SEASON_ASSETS: Record<string, { banner: string; logo: string }> = {
+  MASTERPIECE: {
+    banner: "/images/showLive/banners/banner_masterpiece.webp",
+    logo: "/images/logos/Masterpiece.png",
+  },
+  SUBMERGED: {
+    banner: "/images/showLive/banners/banner_submerged.webp",
+    logo: "/images/logos/Submerged.webp",
+  },
+  UNEARTHED: {
+    banner: "/images/showLive/banners/banner_uneartherd.webp",
+    logo: "/images/logos/Unearthed.webp",
+  },
+};
+
+const DEFAULT_ASSETS = {
+  banner: "/images/showLive/banners/banner_default.webp",
+  logo: "/images/logos/Icone.png",
+};
+
+function getSeasonAssets(temporada?: string) {
+  return temporada ? (SEASON_ASSETS[temporada] ?? DEFAULT_ASSETS) : DEFAULT_ASSETS;
+}
+
+export default function GeneralPage({ name_event, event_config }: GeneralPageProps) {
+  const { banner, logo } = getSeasonAssets(event_config?.temporada);
+  const hasRodadas = (event_config?.rodadas?.length ?? 0) > 0;
+  const hasPreset = Boolean(event_config?.preset);
 
   return (
     <div className="px-4 md:px-6">
-      <h1 className="text-primary font-bold text-3xl mb-4">Geral</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div
-          className={`relative card shadow-lg flex flex-col justify-between overflow-hidden 
-        w-full h-52 transition-all duration-300`}
-        >
-          <div className="absolute inset-0">
-            <img
-              src={urlBackground()}
-              alt={name_event}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/30"></div>
-          </div>
+      <h1 className="text-primary font-bold text-3xl mb-5">Geral</h1>
 
-          <div className="card-body relative flex flex-col justify-between h-full p-3 sm:p-4">
-            <h2 className="card-title flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-              <span className="text-white text-base sm:text-lg">
-                {name_event}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+        {/* Event banner */}
+        <div className="relative rounded-xl overflow-hidden h-48 shadow-sm border border-base-300">
+          <img src={banner} alt={name_event} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            <p className="text-white font-semibold text-sm mb-1.5">{name_event}</p>
+            {event_config?.temporada && (
+              <span className="inline-block text-xs font-mono bg-white/15 border border-white/25 text-white px-2 py-0.5 rounded backdrop-blur-sm tracking-wider">
+                {event_config.temporada}
               </span>
-              <div className="badge badge-secondary">
-                {event_config?.temporada}
-              </div>
-            </h2>
+            )}
           </div>
         </div>
+
+        {/* Season */}
         {event_config?.temporada && (
-          <div className="card bg-base-100 shadow-md border border-base-300 overflow-y-auto">
-            <div className="card-body">
-              <h3 className="card-title text-lg font-semibold text-secondary">
+          <div className="card bg-base-100 border border-base-300 shadow-sm">
+            <div className="card-body items-center justify-center py-4">
+              <p className="text-xs uppercase tracking-widest text-base-content/50 mb-3">
                 Temporada
-              </h3>
+              </p>
               <img
-                src={seasonLogo()}
+                src={logo}
                 alt={event_config.temporada}
-                className="w-32 h-auto mx-auto"
+                className="w-28 h-auto object-contain"
               />
             </div>
           </div>
         )}
-        {event_config?.rodadas && event_config.rodadas.length > 0 && (
-          <div className="card bg-base-100 shadow-md border border-base-300 h-52 overflow-y-auto">
-            <div className="card-body">
-              <h3 className="card-title text-lg font-semibold">Rodadas</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
-                {event_config.rodadas.map((rodada, index) => (
+
+        {/* Rounds */}
+        {hasRodadas && (
+          <div className="card bg-base-100 border border-base-300 shadow-sm h-48">
+            <div className="card-body py-4 overflow-y-auto">
+              <p className="text-xs uppercase tracking-widest text-base-content/50 mb-3">
+                Rodadas
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {event_config!.rodadas.map((rodada) => (
                   <div
-                    key={index}
-                    className="p-3 rounded-lg bg-base-200 border border-base-300 hover:bg-base-300 transition-colors w-full"
+                    key={rodada}
+                    className="bg-base-200 border border-base-300 rounded-lg px-3 py-2 text-xs font-medium text-center hover:bg-base-300 transition-colors"
                   >
-                    <span className="text-sm font-medium">{rodada}</span>
+                    {rodada}
                   </div>
                 ))}
               </div>
@@ -105,31 +101,34 @@ export default function GeneralPage({
           </div>
         )}
 
-        {event_config?.preset && (
-          <div className="card bg-base-100/80 shadow-sm rounded-xl border border-base-200 overflow-hidden">
-            {/* Imagem de fundo como header moderno */}
-            {event_config.preset.url_background && (
-              <figure className="max-h-44 overflow-hidden">
+        {/* Preset */}
+        {hasPreset && (
+          <div className="card bg-base-100 border border-base-300 shadow-sm overflow-hidden">
+            {event_config!.preset!.url_background && (
+              <figure className="h-28 overflow-hidden">
                 <img
-                  src={event_config.preset.url_background}
-                  alt="Imagem de Fundo"
-                  className="w-full h-44 object-cover"
+                  src={event_config!.preset!.url_background}
+                  alt="Imagem de fundo do preset"
+                  className="w-full h-full object-cover"
                 />
               </figure>
             )}
-
-            <div className="card-body">
-              <h3 className="card-title text-md font-semibold">
-                Paleta de Cores
-              </h3>
-              <div className="flex gap-2">
-                {event_config.preset.colors.map((color, index) => (
+            <div className="card-body py-3 px-4">
+              <p className="text-xs uppercase tracking-widest text-base-content/50 mb-2">
+                Paleta de cores
+              </p>
+              <div className="flex gap-2 items-center">
+                {event_config!.preset!.colors.map((color, i) => (
                   <div
-                    key={index}
-                    className="w-8 h-8 rounded-lg border border-base-300 shadow-sm"
+                    key={i}
+                    className="w-7 h-7 rounded-md border border-base-300 shadow-sm"
                     style={{ backgroundColor: color }}
+                    title={color}
                   />
                 ))}
+                <span className="text-xs text-base-content/40 font-mono ml-1">
+                  {event_config!.preset!.colors.join(" · ")}
+                </span>
               </div>
             </div>
           </div>

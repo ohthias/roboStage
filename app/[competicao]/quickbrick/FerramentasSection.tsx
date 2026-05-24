@@ -139,17 +139,6 @@ export default function FerramentasSection({
       ),
     },
     {
-      id: 3,
-      titulo: "UNEARTHED Sharks Simulator",
-      descricao:
-        "Planeje e visualize o percurso do seu robô no tapete, ajustando ângulos e distâncias.",
-      categoria: "Simular",
-      icon: <TestTube className="w-5 h-5" />,
-      image: "/images/QuickBrick/SharksSimulator.png",
-      link: "/fll/quickbrick/robot-track",
-      feitoPor: "Sharks",
-    },
-    {
       id: 4,
       titulo: "Matriz de Risco",
       descricao:

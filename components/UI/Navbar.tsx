@@ -1,7 +1,18 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { Menu, Trophy } from "lucide-react";
+import {
+  Calendar,
+  Earth,
+  Fish,
+  LucideIcon,
+  Menu,
+  Palette,
+  Pickaxe,
+  Table2,
+  ToolCase,
+  Trophy,
+} from "lucide-react";
 import Logo from "./Logo";
 import { ThemeController } from "./themeController";
 import { NAVIGATION } from "@/config/navigation";
@@ -11,20 +22,23 @@ interface Season {
   key: string;
   name: string;
   period: string;
+  icon: LucideIcon;
 }
 
 const seasons: Season[] = [
-  { key: "unearthed", name: "UNEARTHED", period: "2025/2026" },
-  { key: "submerged", name: "SUBMERGED", period: "2024/2025" },
-  { key: "masterpiece", name: "MASTERPIECE", period: "2023/2024" },
+  { key: "unearthed", name: "UNEARTHED", period: "2025/2026", icon: Pickaxe },
+  { key: "submerged", name: "SUBMERGED", period: "2024/2025", icon: Fish },
+  {
+    key: "masterpiece",
+    name: "MASTERPIECE",
+    period: "2023/2024",
+    icon: Palette,
+  },
 ];
 
 export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
   const params = useParams();
   const competicao = (params?.competicao as string) || "fll";
-  const competitionOptions = Object.keys(NAVIGATION) as Array<
-    keyof typeof NAVIGATION
-  >;
 
   const nav =
     NAVIGATION[competicao as keyof typeof NAVIGATION] || NAVIGATION.fll;
@@ -48,7 +62,6 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
               <summary className="list-none cursor-pointer font-bold italic text-base-content/50 hover:text-primary">
                 {nav.label}
               </summary>
-              
             </details>
           </div>
 
@@ -64,7 +77,7 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
                   </summary>
 
                   <ul className="menu dropdown-content bg-base-200 rounded-box shadow-lg py-3 px-2 mt-6 w-48 space-y-2">
-                    <li className="font-semibold text-xs uppercase text-center">
+                    <li className="font-semibold text-sm uppercase text-center">
                       Temporadas
                     </li>
 
@@ -72,12 +85,18 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
                       <li key={season.key}>
                         <Link
                           href={`/${competicao}/${nav.scorePath}/${season.key}`}
-                          className="flex flex-col text-primary font-semibold hover:bg-primary/10"
+                          className="flex flex-row items-start gap-2 px-3 py-2 rounded hover:bg-base-300 font-medium"
                         >
-                          {season.name}
-                          <span className="text-xs opacity-70">
-                            {season.period}
-                          </span>
+                          <season.icon
+                            size={20}
+                            className="text-base-content/35"
+                          />
+                          <div className="flex flex-col items-start gap-1">
+                            {season.name}
+                            <span className="text-xs opacity-70 font-normal">
+                              {season.period}
+                            </span>
+                          </div>
                         </Link>
                       </li>
                     ))}
@@ -85,26 +104,65 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
                 </details>
               </li>
 
+              <li>
+                <Link
+                  href={`/fll/quickbrick`}
+                  className="text-base-content/70 hover:text-primary hover:bg-primary/10"
+                >
+                  <Table2 size={16} className="inline mr-1" />
+                  QuickBrick Studio
+                </Link>
+              </li>
+
               {/* Menu dinâmico */}
-              {nav.menu.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <li key={item.path}>
-                    <Link
-                      href={`/${competicao}/${item.path}`}
-                      className="text-base-content/70 hover:text-primary hover:bg-primary/10 flex items-center gap-2"
-                    >
-                      <Icon size={16} />
-                      {item.nome}
-                    </Link>
-                  </li>
-                );
-              })}
+              <li>
+                <details>
+                  <summary className="cursor-pointer text-base-content/70 hover:text-primary hover:bg-primary/10">
+                    <ToolCase size={16} />
+                    Ferramentas
+                  </summary>
+
+                  <ul className="menu dropdown-content bg-base-200 rounded-box shadow-lg py-3 px-2 mt-6 w-56 space-y-2">
+                    {nav.menu.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <li key={item.path}>
+                          <Link
+                            href={`/${competicao}/${item.path}`}
+                            className="flex flex-row items-start gap-2 px-3 py-2 rounded hover:bg-base-300 font-medium"
+                          >
+                            <Icon
+                              size={20}
+                              className="text-base-content/35 flex-shrink-0"
+                            />
+                            <div className="flex flex-col items-start gap-1">
+                              {item.nome}
+                              <span className="text-xs opacity-70 font-normal">
+                                {item.description || "Ferramenta"}
+                              </span>
+                            </div>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </details>
+              </li>
             </ul>
           </div>
 
           {/* Ações Desktop */}
           <div className="hidden lg:flex items-center space-x-2">
+            <ThemeController />
+            <div className="divider divider-horizontal" />
+            <Link
+              href="/universe"
+              className="btn btn-ghost btn-sm flex items-center gap-2 backdrop-blur-sm"
+            >
+              <Earth size={16} />
+              Competições
+            </Link>
+            <div className="divider divider-horizontal" />
             <Link
               href="/auth/login"
               className="btn btn-ghost btn-sm flex items-center gap-2 backdrop-blur-sm"
@@ -117,7 +175,6 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
             >
               Cadastrar
             </Link>
-            <ThemeController />
           </div>
 
           {/* Mobile */}
@@ -138,62 +195,88 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
       <div className="drawer-side z-50">
         <label htmlFor="navbar-drawer" className="drawer-overlay"></label>
 
-        <div className="menu flex flex-col justify-between h-full p-4 w-64 bg-base-200">
+        <div className="menu flex flex-col justify-start h-full p-4 w-64 bg-base-200 overflow-y-auto gap-2">
           <div>
             <Logo logoSize="lg" redirectIndex={true} />
-            <div className="divider" />
-
-            <ul className="space-y-2">
-              {/* Pontuador */}
+            <div className="divider">Ferramentas</div>
+            <ul className="menu gap-2 w-full">
               <li>
                 <details>
-                  <summary className="btn btn-ghost w-full justify-between">
-                    <span className="flex items-center gap-2">
-                      <Trophy size={16} />
-                      Pontuador
-                    </span>
+                  <summary className="cursor-pointer font-medium">
+                    <Trophy size={16} className="inline mr-1" />
+                    Pontuador
                   </summary>
 
-                  <ul className="mt-2">
+                  <ul className="menu bg-base-200 rounded-box py-2 px-4 mt-2 w-full">
                     {seasons.map((season) => (
                       <li key={season.key}>
                         <Link
                           href={`/${competicao}/${nav.scorePath}/${season.key}`}
-                          className="flex flex-col font-semibold"
+                          className="flex flex-row items-start gap-2 px-3 py-2 rounded hover:bg-base-300 font-medium"
                         >
-                          {season.name}
-                          <span className="text-xs opacity-70">
-                            {season.period}
-                          </span>
+                          <season.icon
+                            size={20}
+                            className="text-base-content/35"
+                          />
+                          <div className="flex flex-col items-start gap-1">
+                            {season.name}
+                            <span className="text-xs opacity-70 font-normal">
+                              {season.period}
+                            </span>
+                          </div>
                         </Link>
                       </li>
                     ))}
                   </ul>
                 </details>
               </li>
+              <li>
+                <Link href={`/fll/quickbrick`} className="font-medium">
+                  <Table2 size={16} className="inline mr-1" />
+                  QuickBrick Studio
+                </Link>
+              </li>
 
-              {/* Menu dinâmico */}
               {nav.menu.map((item) => {
                 const Icon = item.icon;
                 return (
                   <li key={item.path}>
                     <Link
                       href={`/${competicao}/${item.path}`}
-                      className="btn btn-ghost w-full justify-start gap-2"
+                      className="font-medium"
                     >
-                      <Icon size={16} />
+                      <Icon
+                        size={16}
+                        className="text-base-content/35 inline-flex-shrink-0 mr-1"
+                      />
                       {item.nome}
                     </Link>
                   </li>
                 );
               })}
-
-              <li>
-                <Link href="/fll/help" className="btn btn-ghost w-full">
-                  Ajuda & Dúvidas
-                </Link>
-              </li>
             </ul>
+            <div className="divider">Acessos</div>
+            <div className="flex flex-col gap-4 mt-auto">
+              <Link
+                href="/universe"
+                className="btn btn-soft flex items-center gap-2 justify-center"
+              >
+                <Earth size={16} />
+                Competições
+              </Link>
+              <Link
+                href="/auth/login"
+                className="btn btn-soft flex items-center gap-2 justify-center"
+              >
+                Login
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="btn btn-primary flex items-center gap-2 justify-center"
+              >
+                Cadastrar
+              </Link>
+            </div>
           </div>
         </div>
       </div>

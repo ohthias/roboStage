@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { AppMode, DEFAULT_JUDGING_FLOW } from "@/types/TimersType";
-import { playSound } from "@/lib/audio";
+import { playSound } from "@/utils/audio";
 import { CompletionModal } from "@/components/Timers/CompletionModal";
 import { ConfirmModal } from "@/components/Timers/ConfirmModal";
 import { ControlBar } from "@/components/Timers/ControlBar";

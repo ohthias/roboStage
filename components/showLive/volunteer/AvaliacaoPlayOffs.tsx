@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 const supabase = createClient();
 import { useRouter } from "next/navigation";
-import { sumAllMissions } from "@/lib/scores";
+import { sumAllMissions } from "@/utils/scores";
 import FormMission from "@/components/FormMission/FormMission";
 import Loader from "@/components/Loader";
 

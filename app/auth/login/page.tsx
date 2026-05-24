@@ -10,20 +10,36 @@ import Logo from "@/components/UI/Logo";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
-  const { login, loading, error, success } = useAuth();
   const router = useRouter();
+  const { login, user, error, loading } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [success, setSuccess] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (email.trim() === "" || password.trim() === "") return;
-    if (password.length < 8) return;
-    const ok = await login(email, password);
-    if (ok) router.push("/dashboard");
-  };
+    setSuccess(null);
+
+    try {
+      await login(email, password);
+
+      router.refresh();
+
+      const data = user;
+
+      if (!data?.profile?.onboarding_completed) {
+        router.push("/onboarding");
+        return;
+      }
+
+      router.push("/dashboard");
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   return (
     <div className="flex h-screen relative">

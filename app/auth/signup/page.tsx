@@ -8,13 +8,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/UI/Logo";
 
 export default function SignupPage() {
-  const { signup, loading, error, success } = useAuth();
+  const router = useRouter();
+  const { register, loading, error } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [name, setName] = useState("");
+
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
-  const router = useRouter();
+  const [success, setSuccess] = useState<string | null>(null);
 
   const validatePassword = (value: string) => {
     const errors: string[] = [];
@@ -36,22 +38,21 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (passwordErrors.length > 0) {
-      alert("A senha não atende aos requisitos de segurança.");
-      return;
-    }
+    setSuccess(null);
 
     if (password !== confirm) {
-      alert("As senhas não coincidem!");
+      setPasswordErrors(["As senhas não coincidem."]);
       return;
     }
 
-    const ok = await signup(email, password, name);
-    if (ok) {
-      router.push("/dashboard");
+     try {
+      await register(email, password);
+      router.push("/onboarding");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
     }
-  };
+  }
 
   return (
     <div className="flex h-screen relative ">
@@ -77,19 +78,6 @@ export default function SignupPage() {
             )}
 
             <form className="form-control" onSubmit={handleSubmit}>
-              <label className="label" htmlFor="name">
-                <span className="label-text">Nome de Usuário</span>
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Seu nome de usuário"
-                className="input input-bordered w-full"
-                required
-              />
-
               <label className="label mt-4" htmlFor="email">
                 <span className="label-text">Email</span>
               </label>

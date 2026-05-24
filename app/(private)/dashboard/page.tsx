@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@/app/context/UserContext";
-import HubHero from "@/components/Dashboard/HubPage";
+import HubHero from "@/components/Dashboard/MainPage";
 
 export default function DashboardPage() {
   const { session, profile, loading } = useUser();
@@ -22,10 +22,5 @@ export default function DashboardPage() {
     );
   }
 
-  return (
-    <HubHero
-      session={session}
-      username={profile.username ?? "Usuário"}
-    />
-  );
+  return <HubHero />;
 }

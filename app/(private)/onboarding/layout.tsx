@@ -1,7 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
-// @ts-expect-error CSS import is handled by Next.js
-import '@/app/globals.css'
 
 export default async function OnboardingLayout({
   children,

@@ -88,25 +88,25 @@ export const dashboardService = {
             id: "event",
             label: "Novo Evento",
             description: "Agende uma competição",
-            href: "/events/new",
             icon: "calendar-event",
             colorClass: "text-primary",
+            modal: "theme"
           },
           {
             id: "showlive",
             label: "ShowLive",
             description: "Transmita ao vivo",
-            href: "/showlive",
             icon: "broadcast",
             colorClass: "text-secondary",
+            modal: "event"
           },
           {
             id: "style",
             label: "Novo Estilo",
             description: "Personalize o visual",
-            href: "/stylelab/new",
             icon: "palette",
             colorClass: "text-accent",
+            modal: "event"
           },
         ],
         statsToShow: ["eventsCount", "stylesCount", "testsCount", "documentsCount"],
@@ -122,25 +122,25 @@ export const dashboardService = {
             id: "test",
             label: "Novo Teste",
             description: "Crie uma avaliação",
-            href: "/labtest/new",
             icon: "clipboard-check",
             colorClass: "text-primary",
+            modal: "event"
           },
           {
             id: "document",
             label: "Novo Documento",
             description: "Escreva um conteúdo",
-            href: "/innolab/new",
             icon: "file-text",
             colorClass: "text-secondary",
+            modal: "event"
           },
           {
             id: "event",
             label: "Novo Evento",
             description: "Organize uma atividade",
-            href: "/events/new",
             icon: "calendar-event",
             colorClass: "text-accent",
+            modal: "event"
           },
         ],
         statsToShow: ["testsCount", "documentsCount", "eventsCount", "stylesCount"],
@@ -156,17 +156,17 @@ export const dashboardService = {
             id: "test",
             label: "Novo Teste",
             description: "Pratique uma missão",
-            href: "/labtest/new",
             icon: "clipboard-check",
             colorClass: "text-primary",
+            modal: "event"
           },
           {
             id: "document",
             label: "Novo Documento",
             description: "Documente seu projeto",
-            href: "/innolab/new",
             icon: "file-text",
             colorClass: "text-secondary",
+            modal: "event"
           },
         ],
         statsToShow: ["testsCount", "documentsCount", "eventsCount", "stylesCount"],
@@ -182,33 +182,33 @@ export const dashboardService = {
           id: "test",
           label: "Novo Teste",
           description: "Crie uma avaliação",
-          href: "/labtest/new",
           icon: "clipboard-check",
           colorClass: "text-primary",
+          modal: "event"
         },
         {
           id: "event",
           label: "Novo Evento",
           description: "Agende uma atividade",
-          href: "/events/new",
           icon: "calendar-event",
           colorClass: "text-secondary",
+          modal: "event"
         },
         {
           id: "document",
           label: "Novo Documento",
           description: "Escreva um conteúdo",
-          href: "/innolab/new",
           icon: "file-text",
           colorClass: "text-accent",
+          modal: "event"
         },
         {
           id: "style",
           label: "Novo Estilo",
           description: "Personalize o visual",
-          href: "/stylelab/new",
           icon: "palette",
           colorClass: "text-neutral",
+          modal: "event"
         },
       ],
       statsToShow: ["testsCount", "documentsCount", "eventsCount", "stylesCount"],

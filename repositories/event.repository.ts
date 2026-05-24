@@ -1,26 +1,15 @@
-import { createClient } from "@/utils/supabase/client"
+import { createClient } from "@/utils/supabase/client";
 
-const supabase = createClient()
-
-interface CreateEventPayload {
-  userId: string
-  name: string
-}
-
-interface CreateTypeEventPayload {
-  eventId: number
-  config: {
-    base: string
-    rodadas: string[]
-    temporada: string
-  }
-}
+const supabase = createClient();
 
 export const eventRepository = {
   async createEvent({
     userId,
     name,
-  }: CreateEventPayload) {
+  }: {
+    userId: string;
+    name: string;
+  }) {
     return await supabase
       .from("events")
       .insert({
@@ -40,26 +29,85 @@ export const eventRepository = {
           .toUpperCase(),
       })
       .select("id_evento, code_event")
-      .single()
+      .single();
   },
 
   async createTypeEvent({
     eventId,
     config,
-  }: CreateTypeEventPayload) {
+  }: {
+    eventId: number;
+    config: any;
+  }) {
     return await supabase
       .from("typeEvent")
       .insert({
         id_event: eventId,
         config,
-      })
+      });
   },
 
-  async createDefaultSettings(eventId: number) {
+  async createDefaultSettings(
+    eventId: number
+  ) {
     return await supabase
       .from("event_settings")
       .insert({
         id_evento: eventId,
-      })
+      });
   },
-}
+
+  async updateLastAccess(
+    eventId: number
+  ) {
+    return await supabase
+      .from("events")
+      .update({
+        last_acess:
+          new Date().toISOString(),
+      })
+      .eq("id_evento", eventId);
+  },
+
+  async getEventByCode(
+    codeEvent: string
+  ) {
+    return await supabase
+      .from("events")
+      .select("*")
+      .eq("code_event", codeEvent)
+      .limit(1);
+  },
+
+  async getEventConfig(
+    eventId: number
+  ) {
+    return await supabase
+      .from("typeEvent")
+      .select("*")
+      .eq("id_event", eventId);
+  },
+
+  async getTeamsByEvent(
+    eventId: number
+  ) {
+    return await supabase
+      .from("team")
+      .select("*")
+      .eq("id_event", eventId);
+  },
+
+  async getEventSettings(
+    eventId: number
+  ) {
+    return await supabase
+      .from("event_settings")
+      .select(`
+        enable_playoffs,
+        pre_round_inspection,
+        advanced_view
+      `)
+      .eq("id_evento", eventId)
+      .maybeSingle();
+  },
+};

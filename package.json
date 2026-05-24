@@ -20,7 +20,6 @@
     "@lexical/rich-text": "^0.39.0",
     "@lexical/table": "^0.39.0",
     "@react-pdf/renderer": "^4.3.1",
-    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/realtime-js": "^2.15.5",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.57.4",

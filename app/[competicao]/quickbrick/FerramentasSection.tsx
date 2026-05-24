@@ -5,12 +5,8 @@ import { motion, AnimatePresence, easeInOut } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  ArrowRightLeft,
   BookText,
   Puzzle,
-  Scale,
-  TestTube,
-  Wrench,
 } from "lucide-react";
 
 interface FerramentasSectionProps {

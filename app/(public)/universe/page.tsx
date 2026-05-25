@@ -37,7 +37,7 @@ export default function UniversePage() {
 
     const { data, error: fetchError } = await supabase
       .from("public_event_lookup")
-      .select("code_event, code")
+      .select("code_event, code, access_type")
       .eq("code", trimmedCode)
       .maybeSingle();
 
@@ -47,7 +47,7 @@ export default function UniversePage() {
       return;
     }
 
-    router.push(`/${data.code_event}/${data.code}`);
+    router.push(`/universe/${data.code_event}/${data.code}`);
   };
 
   return (

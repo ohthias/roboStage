@@ -233,9 +233,43 @@ export default function ProfilePage() {
 
   /* ================= DELETE ================= */
   const handleDeleteProfile = async () => {
-    const confirmed = confirm("Deseja realmente deletar seu perfil?");
+    const confirmed = confirm(
+      "Deseja realmente deletar sua conta?\n\nEsta ação é irreversível.",
+    );
+
     if (!confirmed) return;
-    addToast("Função ainda não implementada", "warning");
+
+    try {
+      setSaving(true);
+
+      const response = await fetch("/api/delete-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: profile.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
+
+      addToast("Conta deletada com sucesso", "success");
+
+      await supabase.auth.signOut();
+
+      router.push("/");
+    } catch (error: any) {
+      console.error(error);
+
+      addToast(error.message || "Erro ao deletar conta", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

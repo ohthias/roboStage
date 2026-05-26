@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import {
   BookText,
   Puzzle,
+  FlaskConical
 } from "lucide-react";
 
 interface FerramentasSectionProps {
@@ -135,7 +136,31 @@ export default function FerramentasSection({
       ),
     },
     {
+      id: 3,
+      titulo: "Mapa de calor de missões",
+      descricao:
+        "Visualize as regiões mais problemáticas do tapete com um mapa de calor interativo.",
+      categoria: "Simular",
+      icon: <FlaskConical className="w-5 h-5" />,
+      image: "/images/QuickBrick/Heatmap.png",
+      link: "/fll/quickbrick/heatmap",
+      badge: "Novo!",
+      customContent: null,
+    },
+    {
       id: 4,
+      titulo: "Sharks Simulator",
+      descricao:
+        "Simulador visual de trajetórias para robôs da FLL. Permite definir movimentos retos e giros, visualizando a trajetória resultante sobre o tapete de competição.",
+      categoria: "Simular",
+      icon: <FlaskConical className="w-5 h-5" />,
+      image: "/images/QuickBrick/SharksSimulator.png",
+      link: "/fll/quickbrick/sharks-simulator",
+      badge: "Em atualização!",
+      customContent: null,
+    },
+    {
+      id: 5,
       titulo: "Matriz de Risco",
       descricao:
         "Identifique e avalie os riscos potenciais para o sucesso do seu robô.",
@@ -146,7 +171,7 @@ export default function FerramentasSection({
       customContent: null,
     },
     {
-      id: 5,
+      id: 6,
       titulo: "Matriz SWOT",
       descricao:
         "Análise seu robô usando a ferramenta SWOT para identificar pontos de força, fraquezas, oportunidades e ameaças.",
@@ -157,7 +182,7 @@ export default function FerramentasSection({
       customContent: null,
     },
     {
-      id: 6,
+      id: 7,
       titulo: "Tabela de análise de missões",
       descricao:
         "Organize e Analise as missões da temporada UNEARTHED de forma prática.",

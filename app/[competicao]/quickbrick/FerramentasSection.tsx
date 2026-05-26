@@ -135,6 +135,18 @@ export default function FerramentasSection({
       ),
     },
     {
+      id: 3,
+      titulo: "Mapa de calor de missões",
+      descricao:
+        "Visualize as regiões mais problemáticas do tapete com um mapa de calor interativo.",
+      categoria: "Simular",
+      icon: <Puzzle className="w-5 h-5" />,
+      image: "/images/QuickBrick/Heatmap.png",
+      link: "/fll/quickbrick/heatmap",
+      badge: "Novo!",
+      customContent: null,
+    },
+    {
       id: 4,
       titulo: "Matriz de Risco",
       descricao:

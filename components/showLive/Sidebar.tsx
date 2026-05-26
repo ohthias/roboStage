@@ -360,7 +360,7 @@ export default function Sidebar({
           "
         >
           <button
-            onClick={() => router.push("/dashboard/showLive")}
+            onClick={() => router.push("/dashboard/showlive")}
             className="
               btn btn-outline btn-error
               w-full rounded-xl

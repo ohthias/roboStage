@@ -24,7 +24,9 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
 
   const [themes, setThemes] = useState<StyleLabTheme[]>([]);
   const [presets, setPresets] = useState<StyleLabTheme[]>([]);
-  const [selectedTheme, setSelectedTheme] = useState<StyleLabTheme | null>(null);
+  const [selectedTheme, setSelectedTheme] = useState<StyleLabTheme | null>(
+    null,
+  );
   const [typeEventId, setTypeEventId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"themes" | "preview">("themes");
@@ -93,6 +95,7 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
     if (!typeEventId) return;
 
     setLoading(true);
+
     addToast("Salvando tema...", "info");
 
     try {
@@ -102,28 +105,47 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
         .eq("id", typeEventId)
         .single();
 
-      if (fetchError || !eventData) throw fetchError;
+      if (fetchError || !eventData) {
+        throw fetchError;
+      }
+
+      const isPreset = presets.some((p) => p.id_theme === theme.id_theme);
 
       const updatedConfigs = {
         ...eventData.config,
+
         preset: {
           ...eventData.config?.preset,
+
           url_background: theme.background_url,
+
           colors: theme.colors,
+
+          preset_id: theme.id_theme,
+
+          preset_type: isPreset ? "preset" : "user",
+
+          preset_route: isPreset ? `/api/data/preset/${theme.id_theme}` : null,
         },
       };
 
       const { error: updateError } = await supabase
         .from("typeEvent")
-        .update({ config: updatedConfigs })
+        .update({
+          config: updatedConfigs,
+        })
         .eq("id", typeEventId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        throw updateError;
+      }
 
       setSelectedTheme(theme);
+
       addToast("Tema atualizado!", "success");
     } catch (err) {
       console.error(err);
+
       addToast("Erro ao atualizar tema.", "error");
     } finally {
       setLoading(false);
@@ -187,7 +209,9 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
   ========================================================= */
   return (
     <div className="min-h-screen px-4 md:px-8 py-4">
-      <h1 className="text-4xl font-extrabold mb-6 text-primary">Personalização</h1>
+      <h1 className="text-4xl font-extrabold mb-6 text-primary">
+        Personalização
+      </h1>
       {/* Tabs */}
       <div className="tabs tabs-box mb-8 w-fit bg-base-200 rounded-xl shadow">
         <button
@@ -212,9 +236,7 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
       {/* TEMA SECTION */}
       {activeTab === "themes" && (
         <>
-          <h2 className="text-2xl font-extrabold text-primary mb-2">
-            Temas
-          </h2>
+          <h2 className="text-2xl font-extrabold text-primary mb-2">Temas</h2>
           <p className="text-base-content/70 mb-8">
             Escolha um tema criado no <b>StyleLab</b> ou use um dos presets!
           </p>
@@ -249,7 +271,7 @@ export default function ThemeSection({ eventId }: { eventId: string }) {
               .filter((t) =>
                 (t.name || `tema #${t.id_theme}`)
                   .toLowerCase()
-                  .includes(searchTerm.toLowerCase())
+                  .includes(searchTerm.toLowerCase()),
               )
               .map(renderThemeCard)}
           </div>

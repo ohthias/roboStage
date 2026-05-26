@@ -1,11 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-
 import { TrophyIcon } from "@heroicons/react/24/solid";
-
 import { createClient } from "@/utils/supabase/client";
-
 import Loader from "../Loader";
 
 const supabase = createClient();
@@ -13,7 +10,6 @@ const supabase = createClient();
 interface Equipe {
   id_team: number;
   name_team: string;
-
   rounds: Record<string, number | null>;
 }
 
@@ -26,39 +22,40 @@ interface EventSettings {
 
 interface Props {
   idEvent: string;
-
+  nameEvent?: string;
   primaryColor?: string;
   secondaryColor?: string;
   textColor?: string;
-
   backgroundUrl?: string;
   backgroundBlur?: boolean;
 }
 
 export default function TabelaEquipes({
   idEvent,
-
-  primaryColor = "#111827",
-  secondaryColor = "#2563eb",
-  textColor = "#ffffff",
-
+  nameEvent,
+  primaryColor,
+  secondaryColor,
+  textColor,
   backgroundUrl,
-  backgroundBlur = false,
+  backgroundBlur,
 }: Props) {
   const [loading, setLoading] = useState(true);
-
   const [equipes, setEquipes] = useState<Equipe[]>([]);
-
   const [visibleRounds, setVisibleRounds] = useState<string[]>([]);
-
   const [settings, setSettings] = useState<EventSettings>({
     highlight_winner: false,
     show_scores_after_round: false,
     show_brackets: false,
     auto_semifinals: false,
   });
-
   const [activeTab, setActiveTab] = useState<"ranking" | "playoffs">("ranking");
+  const [theme, setTheme] = useState({
+    primary: primaryColor || "#111827",
+    secondary: secondaryColor || "#2563eb",
+    text: textColor || "#ffffff",
+    background: backgroundUrl || "",
+    blur: backgroundBlur ?? false,
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -96,6 +93,19 @@ export default function TabelaEquipes({
         if (teamsResponse.error) {
           throw teamsResponse.error;
         }
+        const config = typeEventResponse.data?.config || {};
+        const preset = config?.preset || {};
+        const presetColors = Array.isArray(preset.colors) ? preset.colors : [];
+
+        if (mounted) {
+          setTheme({
+            primary: primaryColor || presetColors[0] || "#111827",
+            secondary: secondaryColor || presetColors[1] || "#2563eb",
+            text: textColor || presetColors[2] || "#ffffff",
+            background: backgroundUrl || preset.url_background || "",
+            blur: backgroundBlur ?? preset.background_blur ?? false,
+          });
+        }
 
         const teams = (teamsResponse.data || []).map((team: any) => ({
           id_team: team.id_team,
@@ -115,21 +125,20 @@ export default function TabelaEquipes({
 
         const allRounds = Array.from(roundsSet);
 
-        const visible = typeEventResponse.data?.config?.visibleRounds?.length
-          ? typeEventResponse.data.config.visibleRounds.filter(
-              (r: string) => r !== "Semi-final" && r !== "Final",
-            )
-          : allRounds;
+        const visible =
+          config?.visibleRounds?.length > 0
+            ? config.visibleRounds.filter(
+                (r: string) => r !== "Semi-final" && r !== "Final",
+              )
+            : allRounds;
 
         const sortedTeams = [...teams].sort((a, b) => {
           const maxA = Math.max(
             ...visible.map((r: string) => a.rounds[r] ?? 0),
           );
-
           const maxB = Math.max(
             ...visible.map((r: string) => b.rounds[r] ?? 0),
           );
-
           return maxB - maxA;
         });
 
@@ -159,11 +168,22 @@ export default function TabelaEquipes({
 
     return () => {
       mounted = false;
+
       clearInterval(interval);
     };
-  }, [idEvent]);
+  }, [
+    idEvent,
+    primaryColor,
+    secondaryColor,
+    textColor,
+    backgroundUrl,
+    backgroundBlur,
+  ]);
 
-  const formatNota = (nota: number | null, round: string) => {
+  const formatNota = (
+    nota: number | null,
+    round: string,
+  ) => {
     if (settings.show_scores_after_round) {
       const allEvaluated = equipes.every(
         (eq) => eq.rounds[round] !== -1 && eq.rounds[round] !== null,
@@ -187,11 +207,13 @@ export default function TabelaEquipes({
 
   const semifinais = useMemo(
     () => equipes.filter((eq) => eq.rounds["Semi-final"] !== undefined),
+
     [equipes],
   );
 
   const finais = useMemo(
     () => equipes.filter((eq) => eq.rounds["Final"] !== undefined),
+
     [equipes],
   );
 
@@ -204,39 +226,22 @@ export default function TabelaEquipes({
   }
 
   return (
-    <div
-      className="relative min-h-screen w-full overflow-hidden"
-      style={{
-        backgroundColor: primaryColor,
-
-        backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : undefined,
-
-        backgroundSize: "cover",
-
-        backgroundPosition: "center",
-      }}
-    >
-      {backgroundBlur && (
-        <div className="absolute inset-0 backdrop-blur-md bg-black/40" />
-      )}
-
-      <div className="relative z-10 p-4">
+    <div className="relative min-h-screen overflow-hidden">
+      <h1 className="text-3xl font-bold text-white mb-2 text-center" style={{color: primaryColor}}>{nameEvent}</h1>
+      <p className="text-white/70 text-center uppercase tracking-wider">Ranking - Geral</p>
+      <div className="relative z-10 p-4 md:p-8">
         {settings.show_brackets && (
-          <div className="tabs mb-6">
+          <div className="tabs tabs-box w-fit mb-6 bg-black/40 backdrop-blur-xl">
             <button
               onClick={() => setActiveTab("ranking")}
-              className={`tab tab-lg ${
-                activeTab === "ranking" ? "tab-active" : ""
-              }`}
+              className={`tab ${activeTab === "ranking" ? "tab-active" : ""}`}
             >
               Ranking
             </button>
 
             <button
               onClick={() => setActiveTab("playoffs")}
-              className={`tab tab-lg ${
-                activeTab === "playoffs" ? "tab-active" : ""
-              }`}
+              className={`tab ${activeTab === "playoffs" ? "tab-active" : ""}`}
             >
               Playoffs
             </button>
@@ -244,13 +249,13 @@ export default function TabelaEquipes({
         )}
 
         {(!settings.show_brackets || activeTab === "ranking") && (
-          <div className="overflow-x-auto rounded-2xl border border-white/10 backdrop-blur-xl bg-black/30">
+          <div className="overflow-x-auto rounded-3xl bg-base-300 shadow-2xl">
             <table className="table table-zebra">
               <thead
                 style={{
-                  backgroundColor: secondaryColor,
+                  backgroundColor: theme.secondary,
 
-                  color: textColor,
+                  color: theme.text,
                 }}
               >
                 <tr>
@@ -287,7 +292,11 @@ export default function TabelaEquipes({
 
                       {visibleRounds.map((round) => (
                         <td key={round} className="text-center">
-                          {formatNota(eq.rounds[round] ?? null, round)}
+                          {formatNota(
+                            eq.rounds[round] ?? null,
+
+                            round,
+                          )}
                         </td>
                       ))}
                     </tr>
@@ -307,14 +316,18 @@ export default function TabelaEquipes({
                 {semifinais.map((eq) => (
                   <div
                     key={eq.id_team}
-                    className="p-5 rounded-2xl shadow-xl backdrop-blur-xl bg-black/40 border border-white/10"
-                    style={{
-                      color: textColor,
-
-                      backgroundColor: secondaryColor,
-                    }}
+                    className="card bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl"
                   >
-                    {eq.name_team}
+                    <div
+                      className="card-body font-bold"
+                      style={{
+                        backgroundColor: theme.secondary,
+
+                        color: theme.text,
+                      }}
+                    >
+                      {eq.name_team}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -323,18 +336,22 @@ export default function TabelaEquipes({
             <div>
               <h2 className="text-3xl font-black mb-4 text-white">Final</h2>
 
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid gap-4">
                 {finais.map((eq) => (
                   <div
                     key={eq.id_team}
-                    className="p-5 rounded-2xl shadow-xl backdrop-blur-xl bg-black/40 border border-white/10"
-                    style={{
-                      color: textColor,
-
-                      backgroundColor: secondaryColor,
-                    }}
+                    className="card bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl"
                   >
-                    {eq.name_team}
+                    <div
+                      className="card-body font-bold"
+                      style={{
+                        backgroundColor: theme.secondary,
+
+                        color: theme.text,
+                      }}
+                    >
+                      {eq.name_team}
+                    </div>
                   </div>
                 ))}
               </div>

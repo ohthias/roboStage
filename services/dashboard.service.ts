@@ -85,14 +85,6 @@ export const dashboardService = {
         subtitle: "Gerencie seus eventos e acompanhe as equipes.",
         primaryActions: [
           {
-            id: "event",
-            label: "Novo Evento",
-            description: "Agende uma competição",
-            icon: "calendar-event",
-            colorClass: "text-primary",
-            modal: "theme"
-          },
-          {
             id: "showlive",
             label: "ShowLive",
             description: "Transmita ao vivo",
@@ -106,7 +98,7 @@ export const dashboardService = {
             description: "Personalize o visual",
             icon: "palette",
             colorClass: "text-accent",
-            modal: "event"
+            modal: "theme"
           },
         ],
         statsToShow: ["eventsCount", "stylesCount", "testsCount", "documentsCount"],

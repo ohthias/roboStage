@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 interface LayoutShellProps {
   children: React.ReactNode;
   profile: {
-    username: string;
+    username: string | null;
     avatar_url: string | null;
     onboarding_completed: boolean;
   };

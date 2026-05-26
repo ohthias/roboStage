@@ -77,11 +77,11 @@ export function useAuth() {
       setError(null);
 
       await authService.resetPassword(password);
+      alert("Senha alterada com sucesso!");
     } catch (err: any) {
       setError(err.message);
       throw err;
     } finally {
-      alert("Senha alterada com sucesso!");
       setLoading(false);
     }
   }
@@ -117,7 +117,7 @@ export function useAuth() {
   useEffect(() => {
     const publicRoutes = [
       "/auth/login",
-      "/auth/register",
+      "/auth/signup",
       "/auth/forgot-password",
       "/auth/reset",
     ];

@@ -37,8 +37,12 @@ export const eventService = {
       name,
     });
 
-    if (error || !data) {
+    if (error) {
       throw error;
+    }
+
+    if (!data) {
+      throw new Error("Erro ao criar o evento");
     }
 
     const config = {

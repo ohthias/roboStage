@@ -33,7 +33,7 @@ export default function OnboardingPage() {
 
   async function handleSubmit(
     e: React.FormEvent<HTMLFormElement>
-  ) {
+  ): Promise<void> {
     e.preventDefault()
 
     await completeOnboarding({

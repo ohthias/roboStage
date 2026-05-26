@@ -236,11 +236,11 @@ export default function HubHero() {
       </div>
       {/* MODALS */}
       {activeModal === "event" && (
-        <EventModal onClose={() => setActiveModal(null)} open={false} />
+        <EventModal onClose={() => setActiveModal(null)} open={true} />
       )}
       {activeModal === "test" && <ModalLabTest />}
       {activeModal === "content" && (
-        <CreateDiagramModal onClose={() => setActiveModal(null)} open={false} />
+        <CreateDiagramModal onClose={() => setActiveModal(null)} open={true} />
       )}
       {activeModal === "theme" && (
         <StyleLabModal onClose={() => setActiveModal(null)} />

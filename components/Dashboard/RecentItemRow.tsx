@@ -12,7 +12,7 @@ const badgeVariant: Record<RecentItem["type"], string> = {
 };
 
 const routeMap: Record<RecentItem["type"], string> = {
-  Evento: "/showlive/{id}",
+  Evento: "/showlive/{code_event}",
   Teste: "/dashboard/labtest/{id}",
   Documento: "/innolab/{id}",
   Estilo: "/dashboard/stylelab",
@@ -22,7 +22,11 @@ export default function RecentItemRow({ item }: { item: RecentItem }) {
   const badge = badgeVariant[item.type] ?? "badge-ghost";
 
   const route = routeMap[item.type] ?? "";
-  const href = route.includes("{id}") ? route.replace("{id}", item.id) : `${route}/${item.id}`;
+  const placeholderMatch = route.match(/{([^}]+)}/);
+  const href = placeholderMatch
+    ? route.replace(placeholderMatch[0], // e.g. "{code_event}"
+        (item as any)[placeholderMatch[1]] ?? item.id)
+    : `${route}/${item.id}`;
 
   return (
     <Link

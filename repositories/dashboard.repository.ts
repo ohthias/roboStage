@@ -66,7 +66,7 @@ export const dashboardRepository = {
   async getRecentEvents(userId: string, limit = 2) {
     return await supabase
       .from("events")
-      .select("id_evento, name_event, last_acess")
+      .select("id_evento, code_event, name_event, last_acess")
       .eq("id_responsavel", userId)
       .order("last_acess", { ascending: false })
       .limit(limit)

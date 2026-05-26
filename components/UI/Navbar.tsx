@@ -1,8 +1,7 @@
 "use client";
-
 import { useParams } from "next/navigation";
 import {
-  Calendar,
+  ChevronDown,
   Earth,
   Fish,
   LucideIcon,
@@ -46,83 +45,97 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
   return (
     <div className="drawer drawer-start z-50">
       <input id="navbar-drawer" type="checkbox" className="drawer-toggle" />
-
-      {/* Conteúdo principal */}
       <div
         className={`drawer-content flex flex-col ${isIndexPage ? "fixed top-0 left-0 right-0 z-20" : ""}`}
       >
         <div
           className={`navbar flex justify-between px-4 sm:px-8 lg:px-10 shadow-sm h-16 ${isIndexPage ? "bg-base-200/70 backdrop-blur-md" : "bg-base-200"}`}
         >
-          {/* Logo + competição */}
           <div className="flex items-center space-x-2">
             <Logo logoSize="lg" redirectIndex={true} />
             <div className="divider divider-horizontal" />
-            <details className="dropdown">
-              <summary className="list-none cursor-pointer font-bold italic text-base-content/50 hover:text-primary">
-                {nav.label}
-              </summary>
-            </details>
+
+            <Link
+              href={`/${competicao}`}
+              className="font-bold italic text-base-content/50 hover:text-primary"
+            >
+              {nav.label}
+            </Link>
           </div>
 
           {/* Menu Desktop */}
           <div className="hidden lg:flex flex-none flex-1 justify-center">
             <ul className="menu menu-horizontal gap-2 items-center">
-              {/* Pontuador */}
               <li>
-                <details>
-                  <summary className="cursor-pointer text-base-content/70 hover:text-primary hover:bg-primary/10">
+                <div className="dropdown hover:bg-base-300 rounded-lg px-3 py-2">
+                  <div
+                    tabIndex={0}
+                    role="button"
+                    className="cursor-pointer text-base-content/70 rounded-lg flex items-center gap-2"
+                  >
                     <Trophy size={16} />
                     Pontuador
-                  </summary>
+                    <ChevronDown size={12} className="text-base-content/50" />
+                  </div>
 
-                  <ul className="menu dropdown-content bg-base-200 rounded-box shadow-lg py-3 px-2 mt-6 w-48 space-y-2">
-                    <li className="font-semibold text-sm uppercase text-center">
-                      Temporadas
+                  <ul
+                    tabIndex={-1}
+                    className="menu dropdown-content bg-base-200 rounded-box shadow-lg p-2 mt-4 w-48 z-[1]"
+                  >
+                    <li className="menu-title">
+                      <span>Temporadas</span>
                     </li>
 
-                    {seasons.map((season) => (
-                      <li key={season.key}>
-                        <Link
-                          href={`/${competicao}/${nav.scorePath}/${season.key}`}
-                          className="flex flex-row items-start gap-2 px-3 py-2 rounded hover:bg-base-300 font-medium"
-                        >
-                          <season.icon
-                            size={20}
-                            className="text-base-content/35"
-                          />
-                          <div className="flex flex-col items-start gap-1">
-                            {season.name}
-                            <span className="text-xs opacity-70 font-normal">
-                              {season.period}
-                            </span>
-                          </div>
-                        </Link>
-                      </li>
-                    ))}
+                    {seasons.map((season) => {
+                      const Icon = season.icon;
+
+                      return (
+                        <li key={season.key}>
+                          <Link
+                            href={`/${competicao}/${nav.scorePath}/${season.key}`}
+                            className="flex flex-row items-start gap-2 px-3 py-2 rounded font-medium"
+                          >
+                            <Icon size={20} className="text-base-content/35" />
+                            <div className="flex flex-col items-start gap-1">
+                              {season.name}
+                              <span className="text-xs opacity-70 font-normal">
+                                {season.period}
+                              </span>
+                            </div>
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
-                </details>
+                </div>
               </li>
 
               <li>
                 <Link
-                  href={`/fll/quickbrick`}
-                  className="text-base-content/70 hover:text-primary hover:bg-primary/10"
+                  href="/fll/quickbrick"
+                  className="text-base-content/70 hover:bg-base-300 px-3 py-2 rounded-lg "
                 >
                   <Table2 size={16} className="inline mr-1" />
                   QuickBrick Studio
                 </Link>
               </li>
 
-              {/* Menu dinâmico */}
               <li>
-                <details>
-                  <summary className="cursor-pointer text-base-content/70 hover:text-primary hover:bg-primary/10">
+                <div className="dropdown hover:bg-base-300 rounded-lg px-3 py-2">
+                  <div
+                    tabIndex={0}
+                    role="button"
+                    className="cursor-pointer text-base-content/70 flex items-center gap-2"
+                  >
                     <ToolCase size={16} />
                     Ferramentas
-                  </summary>
+                    <ChevronDown size={12} className="text-base-content/50" />
+                  </div>
 
-                  <ul className="menu dropdown-content bg-base-200 rounded-box shadow-lg py-3 px-2 mt-6 w-56 space-y-2">
+                  <ul
+                    tabIndex={-1}
+                    className="menu dropdown-content bg-base-200 rounded-box shadow-lg p-2 mt-4 w-56 z-[1]"
+                  >
                     {nav.menu.map((item) => {
                       const Icon = item.icon;
                       return (
@@ -146,7 +159,7 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
                       );
                     })}
                   </ul>
-                </details>
+                </div>
               </li>
             </ul>
           </div>
@@ -195,43 +208,64 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
       <div className="drawer-side z-50">
         <label htmlFor="navbar-drawer" className="drawer-overlay"></label>
 
-        <div className="menu flex flex-col justify-start h-full p-4 w-64 bg-base-200 overflow-y-auto gap-2">
-          <div>
-            <Logo logoSize="lg" redirectIndex={true} />
-            <div className="divider">Ferramentas</div>
+        <aside className="menu flex flex-col justify-start h-full p-0 w-72 bg-base-200 overflow-y-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-base-300">
+            <Logo logoSize="md" redirectIndex={true} />
+            <label
+              htmlFor="navbar-drawer"
+              className="btn btn-ghost btn-square"
+              aria-label="Fechar menu"
+            >
+              ✕
+            </label>
+          </div>
+
+          <div className="p-4">
+            <div className="text-sm font-semibold mb-2">Ferramentas</div>
             <ul className="menu gap-2 w-full">
               <li>
-                <details>
-                  <summary className="cursor-pointer font-medium">
-                    <Trophy size={16} className="inline mr-1" />
+                <div className="dropdown">
+                  <div
+                    tabIndex={0}
+                    role="button"
+                    className="cursor-pointer font-medium flex items-center gap-2 px-3 py-2 rounded-lg"
+                  >
+                    <Trophy size={16} />
                     Pontuador
-                  </summary>
+                    <ChevronDown size={12} className="text-base-content/50" />
+                  </div>
 
-                  <ul className="menu bg-base-200 rounded-box py-2 px-4 mt-2 w-full">
-                    {seasons.map((season) => (
-                      <li key={season.key}>
-                        <Link
-                          href={`/${competicao}/${nav.scorePath}/${season.key}`}
-                          className="flex flex-row items-start gap-2 px-3 py-2 rounded hover:bg-base-300 font-medium"
-                        >
-                          <season.icon
-                            size={20}
-                            className="text-base-content/35"
-                          />
-                          <div className="flex flex-col items-start gap-1">
-                            {season.name}
-                            <span className="text-xs opacity-70 font-normal">
-                              {season.period}
-                            </span>
-                          </div>
-                        </Link>
-                      </li>
-                    ))}
+                  <ul
+                    tabIndex={-1}
+                    className="menu dropdown-content bg-base-200 rounded-box p-2 mt-2 w-full z-50 absolute"
+                  >
+                    {seasons.map((season) => {
+                      const Icon = season.icon;
+
+                      return (
+                        <li key={season.key}>
+                          <Link
+                            href={`/${competicao}/${nav.scorePath}/${season.key}`}
+                            className="flex flex-row items-start gap-2 px-3 py-2 rounded hover:bg-base-300 font-medium"
+                          >
+                            <Icon size={20} className="text-base-content/35" />
+                            <div className="flex flex-col items-start gap-1">
+                              {season.name}
+                              <span className="text-xs opacity-70 font-normal">
+                                {season.period}
+                              </span>
+                            </div>
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
-                </details>
+                </div>
               </li>
+
               <li>
-                <Link href={`/fll/quickbrick`} className="font-medium">
+                <Link href="/fll/quickbrick" className="font-medium">
                   <Table2 size={16} className="inline mr-1" />
                   QuickBrick Studio
                 </Link>
@@ -255,8 +289,9 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
                 );
               })}
             </ul>
-            <div className="divider">Acessos</div>
-            <div className="flex flex-col gap-4 mt-auto">
+
+            <div className="divider my-4">Acessos</div>
+            <div className="flex flex-col gap-3">
               <Link
                 href="/universe"
                 className="btn btn-soft flex items-center gap-2 justify-center"
@@ -266,19 +301,19 @@ export function Navbar({ isIndexPage = false }: { isIndexPage?: boolean }) {
               </Link>
               <Link
                 href="/auth/login"
-                className="btn btn-soft flex items-center gap-2 justify-center"
+                className="btn btn-ghost w-full"
               >
                 Login
               </Link>
               <Link
                 href="/auth/signup"
-                className="btn btn-primary flex items-center gap-2 justify-center"
+                className="btn btn-primary w-full"
               >
                 Cadastrar
               </Link>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );

@@ -23,6 +23,7 @@ import type {
   TestRow,
 } from "@/repositories/folders.repository";
 import { useFolder } from "@/hooks/useFolder";
+import FolderSidebar from "../components/FolderSidebar";
 
 function formatDate(date?: string | null) {
   if (!date) return "—";
@@ -400,360 +401,366 @@ export default function FolderViewPage() {
     folder.subfolder_count > 0 || folder.file_count > 0 || tests.length > 0;
 
   return (
-    <div className="space-y-6">
-      {/* ── Header ─────────────────────────────────────────────────── */}
-      <header className="relative overflow-hidden rounded-3xl border border-base-300 bg-base-100">
-        {folder.cover_url && (
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-[0.06]"
-            style={{ backgroundImage: `url(${folder.cover_url})` }}
-          />
-        )}
+    <div className="grid gap-6 xl:grid-cols-[250px_minmax(0,1fr)] h-full overflow-hidden">
+      <FolderSidebar currentFolderId={folder.id} />
 
-        <div className="relative flex flex-col gap-5 p-5 md:p-7">
-          {/* Topbar */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => router.push("/dashboard/folders")}
-                className="btn btn-ghost btn-sm btn-circle"
-                aria-label="Voltar"
-              >
-                <ArrowLeft size={16} />
-              </button>
+      <div className="space-y-6 overflow-auto">
+        {/* ── Header ─────────────────────────────────────────────────── */}
+        <header className="relative overflow-hidden rounded-3xl border border-base-300 bg-base-100">
+          {folder.cover_url && (
+            <div
+              className="absolute inset-0 bg-cover bg-center opacity-[0.06]"
+              style={{ backgroundImage: `url(${folder.cover_url})` }}
+            />
+          )}
 
-              <nav className="breadcrumbs p-0 text-sm text-base-content/55">
-                <ul>
-                  <li>
-                    <button onClick={() => router.push("/dashboard/folders")}>
-                      Pastas
-                    </button>
-                  </li>
-                  {breadcrumbs.slice(0, -1).map((crumb) => (
-                    <li key={crumb.id}>
-                      <button
-                        onClick={() =>
-                          router.push(`/dashboard/folders/${crumb.id}`)
-                        }
-                        className="max-w-[100px] truncate"
-                      >
-                        {crumb.name}
+          <div className="relative flex flex-col gap-5 p-5 md:p-7">
+            {/* Topbar */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => router.push("/dashboard/folders")}
+                  className="btn btn-ghost btn-sm btn-circle"
+                  aria-label="Voltar"
+                >
+                  <ArrowLeft size={16} />
+                </button>
+
+                <nav className="breadcrumbs p-0 text-sm text-base-content/55">
+                  <ul>
+                    <li>
+                      <button onClick={() => router.push("/dashboard/folders")}>
+                        Pastas
                       </button>
                     </li>
-                  ))}
-                  <li className="font-semibold text-base-content">
-                    {folder.name}
-                  </li>
-                </ul>
-              </nav>
+                    {breadcrumbs.slice(0, -1).map((crumb) => (
+                      <li key={crumb.id}>
+                        <button
+                          onClick={() =>
+                            router.push(`/dashboard/folders/${crumb.id}`)
+                          }
+                          className="max-w-[100px] truncate"
+                        >
+                          {crumb.name}
+                        </button>
+                      </li>
+                    ))}
+                    <li className="font-semibold text-base-content">
+                      {folder.name}
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  className="btn btn-ghost btn-sm btn-circle"
+                  onClick={toggleFavorite}
+                  aria-label="Favoritar"
+                >
+                  <Star
+                    size={15}
+                    className={
+                      folder.is_favorite ? "fill-warning text-warning" : ""
+                    }
+                  />
+                </button>
+
+                <button
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setShowEdit(true)}
+                >
+                  <Pencil size={15} />
+                  <span className="hidden sm:inline">Editar</span>
+                </button>
+
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={() => setShowCreate(true)}
+                >
+                  <Plus size={15} />
+                  <span className="hidden sm:inline">Nova subpasta</span>
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <button
-                className="btn btn-ghost btn-sm btn-circle"
-                onClick={toggleFavorite}
-                aria-label="Favoritar"
-              >
-                <Star
-                  size={15}
-                  className={
-                    folder.is_favorite ? "fill-warning text-warning" : ""
-                  }
-                />
-              </button>
+            {/* Folder info */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-start gap-4">
+                <div
+                  className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-white shadow-md"
+                  style={{
+                    background:
+                      folder.color || "var(--fallback-p,oklch(var(--p)))",
+                  }}
+                >
+                  <Folder size={28} />
+                </div>
 
-              <button
-                className="btn btn-ghost btn-sm"
-                onClick={() => setShowEdit(true)}
-              >
-                <Pencil size={15} />
-                <span className="hidden sm:inline">Editar</span>
-              </button>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="text-2xl font-black tracking-tight md:text-3xl">
+                      {folder.name}
+                    </h1>
+                    {folder.is_archived && (
+                      <span className="badge badge-outline gap-1 text-xs">
+                        <Archive size={11} />
+                        Arquivada
+                      </span>
+                    )}
+                  </div>
 
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={() => setShowCreate(true)}
-              >
-                <Plus size={15} />
-                <span className="hidden sm:inline">Nova subpasta</span>
-              </button>
+                  {folder.description && (
+                    <p className="max-w-2xl text-sm leading-relaxed text-base-content/55">
+                      {folder.description}
+                    </p>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-base-content/50">
+                    <span className="badge badge-ghost">
+                      {folder.file_count} arquivos
+                    </span>
+                    <span className="badge badge-ghost">
+                      {folder.subfolder_count} subpastas
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock3 size={11} />
+                      {formatDate(folder.updated_at)}
+                    </span>
+                  </div>
+
+                  {folder.tags && folder.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {folder.tags.map((tag, i) => (
+                        <span
+                          key={`${tag}-${i}`}
+                          className="badge badge-outline badge-xs"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-2">
+                <button
+                  className="btn btn-outline btn-sm"
+                  onClick={folder.is_archived ? unarchiveFolder : archiveFolder}
+                >
+                  <Archive size={14} />
+                  {folder.is_archived ? "Desarquivar" : "Arquivar"}
+                </button>
+
+                <button
+                  className="btn btn-ghost btn-sm text-error"
+                  onClick={() => setConfirmDelete(true)}
+                  aria-label="Excluir pasta"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
             </div>
           </div>
+        </header>
 
-          {/* Folder info */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-start gap-4">
-              <div
-                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-white shadow-md"
-                style={{
-                  background:
-                    folder.color || "var(--fallback-p,oklch(var(--p)))",
-                }}
-              >
-                <Folder size={28} />
+        {/* ── Search bar ─────────────────────────────────────────────── */}
+        <div className="relative">
+          <Search
+            size={15}
+            className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-base-content/40"
+          />
+          <input
+            type="text"
+            placeholder="Buscar subpastas..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="input input-bordered w-full rounded-2xl pl-10 shadow-sm transition focus:border-primary focus:ring-2 focus:ring-primary/10 focus:outline-none"
+          />
+        </div>
+
+        {/* ── Empty state ─────────────────────────────────────────────── */}
+        {!hasContent && (
+          <div className="rounded-3xl border border-dashed border-base-300 bg-base-100 px-8 py-16 text-center">
+            <FolderOpen size={44} className="mx-auto mb-3 opacity-35" />
+            <h2 className="text-xl font-black">Pasta vazia</h2>
+            <p className="mt-1 text-sm text-base-content/50">
+              Crie subpastas ou adicione documentos para começar.
+            </p>
+            <button
+              className="btn btn-primary btn-sm mt-5"
+              onClick={() => setShowCreate(true)}
+            >
+              <Plus size={15} />
+              Nova subpasta
+            </button>
+          </div>
+        )}
+
+        {/* ── Subfolders ──────────────────────────────────────────────── */}
+        {folder.subfolder_count > 0 && (
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-black">Subpastas</h2>
+              <span className="text-sm text-base-content/50">
+                {filteredChildren.length} de {children.length}
+              </span>
+            </div>
+
+            {filteredChildren.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-base-300 bg-base-100 px-8 py-14 text-center">
+                <FolderOpen size={40} className="mx-auto mb-3 opacity-35" />
+                <h3 className="font-black">
+                  Nenhum resultado para "{searchTerm}"
+                </h3>
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {filteredChildren.map((item) => (
+                  <SubfolderCard
+                    key={item.id}
+                    item={item}
+                    onClick={() => router.push(`/dashboard/folders/${item.id}`)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ── Documents + Tests ───────────────────────────────────────── */}
+        {(documents.length > 0 || tests.length > 0) && (
+          <section className="grid gap-5 xl:grid-cols-2">
+            <div className="rounded-3xl border border-base-300 bg-base-100 p-6">
+              <div className="mb-4 flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <FileText size={18} />
+                </div>
+                <h2 className="text-xl font-black">Documentos</h2>
+                {documents.length > 0 && (
+                  <span className="badge badge-ghost ml-auto">
+                    {documents.length}
+                  </span>
+                )}
               </div>
 
               <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-black tracking-tight md:text-3xl">
-                    {folder.name}
-                  </h1>
-                  {folder.is_archived && (
-                    <span className="badge badge-outline gap-1 text-xs">
-                      <Archive size={11} />
-                      Arquivada
-                    </span>
-                  )}
-                </div>
-
-                {folder.description && (
-                  <p className="max-w-2xl text-sm leading-relaxed text-base-content/55">
-                    {folder.description}
-                  </p>
-                )}
-
-                <div className="flex flex-wrap items-center gap-2 text-xs text-base-content/50">
-                  <span className="badge badge-ghost">
-                    {folder.file_count} arquivos
-                  </span>
-                  <span className="badge badge-ghost">
-                    {folder.subfolder_count} subpastas
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock3 size={11} />
-                    {formatDate(folder.updated_at)}
-                  </span>
-                </div>
-
-                {folder.tags && folder.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {folder.tags.map((tag, i) => (
-                      <span
-                        key={`${tag}-${i}`}
-                        className="badge badge-outline badge-xs"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                {documents.length === 0 ? (
+                  <EmptyState message="Nenhum documento nesta pasta" />
+                ) : (
+                  documents.map((doc) => (
+                    <DocumentItem key={doc.id} doc={doc} />
+                  ))
                 )}
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
-              <button
-                className="btn btn-outline btn-sm"
-                onClick={folder.is_archived ? unarchiveFolder : archiveFolder}
-              >
-                <Archive size={14} />
-                {folder.is_archived ? "Desarquivar" : "Arquivar"}
-              </button>
+            <div className="rounded-3xl border border-base-300 bg-base-100 p-6">
+              <div className="mb-4 flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+                  <TestTube2 size={18} />
+                </div>
+                <h2 className="text-xl font-black">Testes</h2>
+                {tests.length > 0 && (
+                  <span className="badge badge-ghost ml-auto">
+                    {tests.length}
+                  </span>
+                )}
+              </div>
 
-              <button
-                className="btn btn-ghost btn-sm text-error"
-                onClick={() => setConfirmDelete(true)}
-                aria-label="Excluir pasta"
-              >
-                <Trash2 size={15} />
-              </button>
+              <div className="space-y-2">
+                {tests.length === 0 ? (
+                  <EmptyState message="Nenhum teste nesta pasta" />
+                ) : (
+                  tests.map((test) => <TestItem key={test.id} test={test} />)
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── Modals ──────────────────────────────────────────────────── */}
+        {showEdit && (
+          <EditModal
+            initial={{
+              name: folder.name,
+              description: folder.description ?? "",
+              color: folder.color ?? "",
+              visibility: folder.visibility ?? "private",
+              tags: folder.tags?.join(", ") ?? "",
+            }}
+            onSave={async (data) => {
+              await updateFolder({
+                ...data,
+                tags: data.tags
+                  .split(",")
+                  .map((t) => t.trim())
+                  .filter(Boolean),
+                // ensure visibility matches expected union type
+                visibility: data.visibility as
+                  | "private"
+                  | "team"
+                  | "public"
+                  | "unlisted"
+                  | undefined,
+              });
+            }}
+            onClose={() => setShowEdit(false)}
+          />
+        )}
+
+        {showCreate && (
+          <CreateSubfolderModal
+            onSave={async (name, description) => {
+              await createSubfolder({
+                owner_id: folder.owner_id,
+                team_id: folder.team_id,
+                parent_id: folder.id,
+                name,
+                description,
+                visibility: folder.visibility,
+                position: children.length,
+              });
+            }}
+            onClose={() => setShowCreate(false)}
+          />
+        )}
+
+        {confirmDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-sm rounded-3xl border border-base-300 bg-base-100 p-6 shadow-2xl">
+              <div className="mb-1 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-error/10 text-error">
+                  <Trash2 size={18} />
+                </div>
+                <h2 className="text-lg font-black">Excluir pasta?</h2>
+              </div>
+              <p className="mb-5 mt-2 text-sm text-base-content/60">
+                A pasta <strong>"{folder.name}"</strong> será arquivada e não
+                aparecerá mais na listagem. Esta ação pode ser desfeita.
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => setConfirmDelete(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="btn btn-error"
+                  onClick={async () => {
+                    await deleteFolder();
+                    router.push("/dashboard/folders");
+                  }}
+                >
+                  Excluir
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
-
-      {/* ── Search bar ─────────────────────────────────────────────── */}
-      <div className="relative">
-        <Search
-          size={15}
-          className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-base-content/40"
-        />
-        <input
-          type="text"
-          placeholder="Buscar subpastas..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="input input-bordered w-full rounded-2xl pl-10 shadow-sm transition focus:border-primary focus:ring-2 focus:ring-primary/10 focus:outline-none"
-        />
+        )}
       </div>
-
-      {/* ── Empty state ─────────────────────────────────────────────── */}
-      {!hasContent && (
-        <div className="rounded-3xl border border-dashed border-base-300 bg-base-100 px-8 py-16 text-center">
-          <FolderOpen size={44} className="mx-auto mb-3 opacity-35" />
-          <h2 className="text-xl font-black">Pasta vazia</h2>
-          <p className="mt-1 text-sm text-base-content/50">
-            Crie subpastas ou adicione documentos para começar.
-          </p>
-          <button
-            className="btn btn-primary btn-sm mt-5"
-            onClick={() => setShowCreate(true)}
-          >
-            <Plus size={15} />
-            Nova subpasta
-          </button>
-        </div>
-      )}
-
-      {/* ── Subfolders ──────────────────────────────────────────────── */}
-      {folder.subfolder_count > 0 && (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black">Subpastas</h2>
-            <span className="text-sm text-base-content/50">
-              {filteredChildren.length} de {children.length}
-            </span>
-          </div>
-
-          {filteredChildren.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-base-300 bg-base-100 px-8 py-14 text-center">
-              <FolderOpen size={40} className="mx-auto mb-3 opacity-35" />
-              <h3 className="font-black">
-                Nenhum resultado para "{searchTerm}"
-              </h3>
-            </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredChildren.map((item) => (
-                <SubfolderCard
-                  key={item.id}
-                  item={item}
-                  onClick={() => router.push(`/dashboard/folders/${item.id}`)}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* ── Documents + Tests ───────────────────────────────────────── */}
-      {(documents.length > 0 || tests.length > 0) && (
-        <section className="grid gap-5 xl:grid-cols-2">
-          <div className="rounded-3xl border border-base-300 bg-base-100 p-6">
-            <div className="mb-4 flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <FileText size={18} />
-              </div>
-              <h2 className="text-xl font-black">Documentos</h2>
-              {documents.length > 0 && (
-                <span className="badge badge-ghost ml-auto">
-                  {documents.length}
-                </span>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              {documents.length === 0 ? (
-                <EmptyState message="Nenhum documento nesta pasta" />
-              ) : (
-                documents.map((doc) => <DocumentItem key={doc.id} doc={doc} />)
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-base-300 bg-base-100 p-6">
-            <div className="mb-4 flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
-                <TestTube2 size={18} />
-              </div>
-              <h2 className="text-xl font-black">Testes</h2>
-              {tests.length > 0 && (
-                <span className="badge badge-ghost ml-auto">
-                  {tests.length}
-                </span>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              {tests.length === 0 ? (
-                <EmptyState message="Nenhum teste nesta pasta" />
-              ) : (
-                tests.map((test) => <TestItem key={test.id} test={test} />)
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── Modals ──────────────────────────────────────────────────── */}
-      {showEdit && (
-        <EditModal
-          initial={{
-            name: folder.name,
-            description: folder.description ?? "",
-            color: folder.color ?? "",
-            visibility: folder.visibility ?? "private",
-            tags: folder.tags?.join(", ") ?? "",
-          }}
-          onSave={async (data) => {
-            await updateFolder({
-              ...data,
-              tags: data.tags
-                .split(",")
-                .map((t) => t.trim())
-                .filter(Boolean),
-              // ensure visibility matches expected union type
-              visibility: data.visibility as
-                | "private"
-                | "team"
-                | "public"
-                | "unlisted"
-                | undefined,
-            });
-          }}
-          onClose={() => setShowEdit(false)}
-        />
-      )}
-
-      {showCreate && (
-        <CreateSubfolderModal
-          onSave={async (name, description) => {
-            await createSubfolder({
-              owner_id: folder.owner_id,
-              team_id: folder.team_id,
-              parent_id: folder.id,
-              name,
-              description,
-              visibility: folder.visibility,
-              position: children.length,
-            });
-          }}
-          onClose={() => setShowCreate(false)}
-        />
-      )}
-
-      {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl border border-base-300 bg-base-100 p-6 shadow-2xl">
-            <div className="mb-1 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-error/10 text-error">
-                <Trash2 size={18} />
-              </div>
-              <h2 className="text-lg font-black">Excluir pasta?</h2>
-            </div>
-            <p className="mb-5 mt-2 text-sm text-base-content/60">
-              A pasta <strong>"{folder.name}"</strong> será arquivada e não
-              aparecerá mais na listagem. Esta ação pode ser desfeita.
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                className="btn btn-ghost"
-                onClick={() => setConfirmDelete(false)}
-              >
-                Cancelar
-              </button>
-              <button
-                className="btn btn-error"
-                onClick={async () => {
-                  await deleteFolder();
-                  router.push("/dashboard/folders");
-                }}
-              >
-                Excluir
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

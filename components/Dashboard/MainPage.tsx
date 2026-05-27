@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
-import { Calendar, RefreshCw } from "lucide-react";
+import { Calendar, RefreshCw, Star } from "lucide-react";
 
 import RecentItemRow from "./RecentItemRow";
 import ActionCard from "./UI/ActionCard";
@@ -14,14 +14,19 @@ import { QuickAction } from "@/types/dashboard.types";
 import { useState } from "react";
 import StyleLabModal from "./StyleLab/StyleLabModal";
 import CreateDiagramModal from "./InnoLab/CreateDiagramModal";
-import ModalLabTest from "./LabTest/ModalLabTest";
 import { EventModal } from "../showLive/EventModal";
+import { useFavoriteFolders } from "@/hooks/useFavoriteFolders";
+import FavoriteFolderCard from "./UI/FavoriteFolderCard";
+import LabTestForm from "./LabTest/LabTestForm";
 
 export default function HubHero() {
   const { profile } = useAuth();
 
   const { stats, recentItems, config, loading, error, refresh } =
     useDashboard();
+
+  const { folders: favoriteFolders, loading: favoritesLoading } =
+    useFavoriteFolders();
 
   const firstName =
     profile?.full_name?.split(" ")[0] ?? profile?.username ?? "você";
@@ -94,7 +99,7 @@ export default function HubHero() {
                           // prevent infinite loop if placeholder missing
                           if (!target.dataset.fallback) {
                             target.dataset.fallback = "1";
-                            target.src = '/images/logos/Icone.png';
+                            target.src = "/images/logos/Icone.png";
                           }
                         }}
                       />
@@ -211,39 +216,82 @@ export default function HubHero() {
           initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.15, duration: 0.3 }}
+          className="space-y-6"
         >
-          <h2 className="text-sm font-bold text-base-content/70 uppercase tracking-wider mb-3">
-            Acessos recentes
-          </h2>
+          {/* FAVORITES */}
+          <div>
+            <div className="mb-3 flex items-center gap-2">
+              <Star size={14} className="fill-warning text-warning" />
 
-          <div className="card bg-base-100 border border-base-200 hover:border-primary/20 transition-all rounded-2xl shadow-sm">
-            <div className="card-body p-5">
-              {loading ? (
-                <div className="space-y-3">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="skeleton h-10 rounded-xl opacity-70"
-                    />
-                  ))}
-                </div>
-              ) : recentItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <p className="font-medium text-sm text-base-content/60">
-                    Nenhuma atividade recente
-                  </p>
+              <h2 className="text-sm font-bold text-base-content/70 uppercase tracking-wider">
+                Pastas favoritas
+              </h2>
+            </div>
 
-                  <p className="text-xs text-base-content/40 mt-1">
-                    Seus últimos acessos aparecerão aqui.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {recentItems.map((item) => (
-                    <RecentItemRow key={item.id} item={item} />
-                  ))}
-                </div>
-              )}
+            <div className="card rounded-3xl border border-base-200 bg-base-100 shadow-sm">
+              <div className="card-body p-4">
+                {favoritesLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="skeleton h-16 rounded-2xl" />
+                    ))}
+                  </div>
+                ) : favoriteFolders.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <p className="text-sm font-medium text-base-content/60">
+                      Nenhuma pasta favoritada
+                    </p>
+
+                    <p className="mt-1 text-xs text-base-content/40">
+                      Favorite pastas importantes para acesso rápido.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {favoriteFolders.map((folder) => (
+                      <FavoriteFolderCard key={folder.id} folder={folder} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* RECENTS */}
+          <div>
+            <h2 className="text-sm font-bold text-base-content/70 uppercase tracking-wider mb-3">
+              Acessos recentes
+            </h2>
+
+            <div className="card bg-base-100 border border-base-200 hover:border-primary/20 transition-all rounded-3xl shadow-sm">
+              <div className="card-body p-5">
+                {loading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="skeleton h-10 rounded-xl opacity-70"
+                      />
+                    ))}
+                  </div>
+                ) : recentItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-center">
+                    <p className="font-medium text-sm text-base-content/60">
+                      Nenhuma atividade recente
+                    </p>
+
+                    <p className="text-xs text-base-content/40 mt-1">
+                      Seus últimos acessos aparecerão aqui.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {recentItems.map((item) => (
+                      <RecentItemRow key={item.id} item={item} />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -252,7 +300,7 @@ export default function HubHero() {
       {activeModal === "event" && (
         <EventModal onClose={() => setActiveModal(null)} open={true} />
       )}
-      {activeModal === "test" && <ModalLabTest />}
+      {activeModal === "test" && <LabTestForm />}
       {activeModal === "content" && (
         <CreateDiagramModal onClose={() => setActiveModal(null)} open={true} />
       )}

@@ -1,52 +1,83 @@
-import { foldersRepository } from "@/repositories/folders.repository";
+// services/folders.service.ts
+
+import {
+  foldersRepository,
+  type CreateSubfolderPayload,
+  type UpdateFolderPayload,
+} from "@/repositories/folders.repository";
 
 export const foldersService = {
-  async getFolders(userId: string) {
-    const { data, error } = await foldersRepository.getFolders(userId);
+  async getFolderPageData(folderId: number) {
+    const [folderRes, childrenRes, documentsRes, testsRes] = await Promise.all([
+      foldersRepository.getFolderById(folderId),
+      foldersRepository.getFolderChildren(folderId),
+      foldersRepository.getFolderDocuments(folderId),
+      foldersRepository.getFolderTests(folderId),
+    ]);
 
-    if (error) throw error;
+    if (folderRes.error) throw folderRes.error;
+    if (childrenRes.error) throw childrenRes.error;
+    if (documentsRes.error) throw documentsRes.error;
+    if (testsRes.error) throw testsRes.error;
 
-    return data;
+    // fire-and-forget — don't block page load
+    foldersRepository.updateLastAccess(folderId).catch(() => null);
+
+    return {
+      folder: folderRes.data,
+      children: childrenRes.data ?? [],
+      documents: documentsRes.data ?? [],
+      tests: testsRes.data ?? [],
+    };
   },
 
-  async createFolder(data: {
-    owner_id: string;
-    name: string;
-    description?: string;
-    parent_id?: number | null;
-    team_id?: number | null;
-  }) {
-    if (data.name.length < 2) {
+  async updateFolder(id: number, data: UpdateFolderPayload) {
+    if (data.name !== undefined && data.name.trim().length < 2) {
       throw new Error("Nome da pasta muito curto");
     }
 
-    const { data: folder, error } = await foldersRepository.createFolder(data);
-
-    if (error) throw error;
-
-    return folder;
-  },
-
-  async updateFolder(
-    id: number,
-    data: {
-      name?: string;
-      description?: string;
-    },
-  ) {
     const { data: folder, error } = await foldersRepository.updateFolder(
       id,
       data,
     );
-
     if (error) throw error;
+    return folder;
+  },
 
+  async createSubfolder(
+    data: CreateSubfolderPayload & {
+      color?: string | null;
+      icon?: string | null;
+      tags?: string[];
+    },
+  ) {
+    if (data.name.trim().length < 2) {
+      throw new Error("Nome da pasta muito curto");
+    }
+
+    const { data: folder, error } =
+      await foldersRepository.createSubfolder(data);
+    if (error) throw error;
     return folder;
   },
 
   async deleteFolder(id: number) {
-    const { error } = await foldersRepository.deleteFolder(id);
-
+    const { error } = await foldersRepository.markFolderAsDeleted(id);
     if (error) throw error;
+  },
+
+  async getBreadcrumbs(folderId: number) {
+    const breadcrumbs = [];
+    let currentId: number | null = folderId;
+
+    while (currentId) {
+      const { data, error } =
+        await foldersRepository.getFolderBreadcrumb(currentId);
+      if (error || !data) break;
+      breadcrumbs.unshift(data);
+      currentId = data.parent_id;
+    }
+
+    return breadcrumbs;
   },
 };

@@ -21,12 +21,6 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard",
   },
   {
-    id: "workspaces",
-    label: "Equipes",
-    icon: Users,
-    href: "/dashboard/workspace",
-  },
-  {
     id: "folders",
     label: "Minhas Pastas",
     icon: Folder,

@@ -83,7 +83,21 @@ export default function HubHero() {
                 {profile?.avatar_url ? (
                   <div className="avatar">
                     <div className="w-14 h-14 rounded-full ring ring-primary/20 ring-offset-2 shadow-md">
-                      <img src={profile.avatar_url} alt={firstName} />
+                      <img
+                        src={profile.avatar_url}
+                        alt={firstName}
+                        draggable={false}
+                        tabIndex={-1}
+                        className="pointer-events-none select-none"
+                        onError={(e) => {
+                          const target = e.currentTarget as HTMLImageElement;
+                          // prevent infinite loop if placeholder missing
+                          if (!target.dataset.fallback) {
+                            target.dataset.fallback = "1";
+                            target.src = '/images/logos/Icone.png';
+                          }
+                        }}
+                      />
                     </div>
                   </div>
                 ) : (

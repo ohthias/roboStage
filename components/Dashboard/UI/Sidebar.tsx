@@ -3,11 +3,13 @@
 import { useRouter, usePathname } from "next/navigation";
 import { NavItem } from "@/types/navigation";
 import Logo from "@/components/UI/Logo";
+import Link from "next/link";
 
 interface SidebarProps {
   profile: {
     username: string | null;
     avatar_url?: string | null;
+    user_role?: string | null;
   };
   collapsed: boolean;
   items: NavItem[];
@@ -26,6 +28,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const avatarFallback = profile.username?.[0]?.toUpperCase() ?? "U";
 
   const handleNavigate = (item: NavItem) => {
     if (item.page && onNavigate) onNavigate(item.page);
@@ -158,19 +161,33 @@ export default function Sidebar({
               </div>
             );
           })}
+
+          {items.length === 0 && (
+            <div className="px-3 py-2 text-sm text-base-content/50">
+              Nenhuma página disponível
+            </div>
+          )}
         </nav>
 
-        <div className="flex items-center gap-3 p-4 border-t border-base-300">
+        <Link
+          href="/dashboard/profile"
+          className="flex items-center gap-3 p-4 border-t border-base-300 hover:bg-base-200 transition-colors"
+        >
           <div className="avatar">
             <div className="w-10 rounded-full bg-base-300 flex items-center justify-center overflow-hidden">
               {profile.avatar_url ? (
                 <img
                   src={profile.avatar_url}
                   alt={`Avatar de ${profile.username ?? "usuário"}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    e.currentTarget.parentElement?.classList.add("bg-base-300");
+                  }}
                 />
               ) : (
                 <span className="text-sm font-semibold opacity-60">
-                  {profile.username?.[0]?.toUpperCase() ?? "U"}
+                  {avatarFallback}
                 </span>
               )}
             </div>
@@ -184,9 +201,11 @@ export default function Sidebar({
             <span className="font-semibold truncate">
               {profile.username ?? "Usuário"}
             </span>
-            <span className="text-xs opacity-60">Online</span>
+            <span className="text-xs opacity-60">
+              {profile.user_role ?? "Usuário"}
+            </span>
           </div>
-        </div>
+        </Link>
       </aside>
     </>
   );

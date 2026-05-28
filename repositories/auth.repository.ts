@@ -62,11 +62,11 @@ export const authRepository = {
 
   async updateProfile(
     userId: string,
-    data: {
-      username?: string;
-      bio?: string;
-      avatar_url?: string;
-    },
+    data: Partial<{
+      username: string;
+      bio: string;
+      avatar_url: string;
+    }>,
   ) {
     return await supabase
       .from("profiles")
@@ -74,7 +74,9 @@ export const authRepository = {
         ...data,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", userId);
+      .eq("id", userId)
+      .select()
+      .single();
   },
 
   async logout() {

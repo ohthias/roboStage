@@ -1,137 +1,341 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
-const supabase = createClient();
-import { Folder } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  Archive,
+  Clock3,
+  Folder,
+  FolderOpen,
+  Search,
+  Star,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import NewFolderButton from "./ModalCreateFolder";
 
-type FolderType = {
-  id: number;
+import { useFolders } from "@/hooks/useFolders";
+import type { FolderRow } from "@/repositories/folders.repository";
+
+import FolderIcon from "@/components/Dashboard/folders/FolderIcon";
+import CreateFolderModal from "../../../../components/Dashboard/folders/ModalCreateFolder";
+
+function formatDate(date?: string | null) {
+  if (!date) return "—";
+  return new Date(date).toLocaleDateString("pt-BR");
+}
+
+function FolderCard({
+  folder,
+  onClick,
+}: {
+  folder: FolderRow;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="group relative overflow-hidden rounded-3xl border border-base-300 bg-base-100 p-5 text-left transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
+      {folder.cover_url && (
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-10 transition-opacity group-hover:opacity-15"
+          style={{
+            backgroundImage: `url(${folder.cover_url})`,
+          }}
+        />
+      )}
+
+      <div className="relative">
+        <div className="flex items-start justify-between gap-3">
+          <div
+            className="flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-md transition-transform duration-200 group-hover:scale-105"
+            style={{
+              background: folder.color || "var(--fallback-p,oklch(var(--p)))",
+            }}
+          >
+            <FolderIcon icon={folder.icon} size={26} className="text-white" />
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            {folder.is_favorite && (
+              <Star size={15} className="fill-warning text-warning" />
+            )}
+
+            {folder.is_archived && (
+              <Archive size={15} className="text-base-content/40" />
+            )}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <h2 className="truncate text-lg font-black tracking-tight transition-colors group-hover:text-primary">
+            {folder.name}
+          </h2>
+
+          <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-base-content/55">
+            {folder.description || "Sem descrição"}
+          </p>
+        </div>
+
+        {folder.tags && folder.tags.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {folder.tags.slice(0, 3).map((tag) => (
+              <span key={tag} className="badge badge-outline badge-xs">
+                {tag}
+              </span>
+            ))}
+
+            {folder.tags.length > 3 && (
+              <span className="badge badge-ghost badge-xs">
+                +{folder.tags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          {[
+            {
+              label: "Arquivos",
+              value: folder.file_count,
+            },
+            {
+              label: "Pastas",
+              value: folder.subfolder_count,
+            },
+            {
+              label: "Nível",
+              value: folder.depth ?? 0,
+            },
+          ].map(({ label, value }) => (
+            <div
+              key={label}
+              className="rounded-xl border border-base-300 bg-base-200/50 p-2.5"
+            >
+              <div className="text-[10px] uppercase tracking-wide opacity-55">
+                {label}
+              </div>
+
+              <div className="mt-0.5 text-base font-black">{value}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 flex items-center justify-between border-t border-base-300 pt-3.5 text-xs text-base-content/45">
+          <div className="flex items-center gap-1">
+            <Clock3 size={11} />
+            {formatDate(folder.updated_at)}
+          </div>
+
+          <span className="badge badge-ghost badge-xs">
+            {folder.visibility}
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: number;
+  sub: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-base-300 bg-base-100 p-4">
+      <div className="text-xs uppercase tracking-wide opacity-55">{label}</div>
+
+      <div className="mt-1 text-3xl font-black tabular-nums">{value}</div>
+
+      <div className="text-xs opacity-50">{sub}</div>
+    </div>
+  );
+}
+
+type CreateFolderData = {
   name: string;
-  description: string | null;
-  parent_id: number | null;
-  team_id: number | null;
-  created_at: string;
+  description: string;
+  color: string;
+  icon: string;
+  visibility: string;
+  tags: string[];
 };
 
 export default function FoldersPage() {
-  const [folders, setFolders] = useState<FolderType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
-  async function fetchFolders() {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("folders")
-      .select("id, name, description, parent_id, team_id, created_at")
-      .order("created_at", { ascending: false })
-      .is("parent_id", null);
+  const { folders = [], loading, createFolder } = useFolders("folders");
 
-    if (!error) setFolders(data ?? []);
-    setLoading(false);
-  }
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
-  async function createFolder(name: string) {
-    if (!name.trim()) return;
+  const filteredFolders = useMemo(() => {
+    const query = searchTerm.toLowerCase().trim();
 
-    const { error } = await supabase.from("folders").insert({
-      name,
+    if (!query) return folders as FolderRow[];
+
+    return (folders as FolderRow[]).filter((folder) => {
+      const tags = folder.tags?.join(" ").toLowerCase() ?? "";
+
+      return (
+        folder.name.toLowerCase().includes(query) ||
+        (folder.description ?? "").toLowerCase().includes(query) ||
+        tags.includes(query)
+      );
+    });
+  }, [folders, searchTerm]);
+
+  async function handleCreateFolder(data: CreateFolderData) {
+    await createFolder({
+      ...data,
       parent_id: null,
-      team_id: null,
     });
 
-    if (!error) fetchFolders();
+    setShowCreateModal(false);
   }
 
-  useEffect(() => {
-    fetchFolders();
-  }, []);
+  const favoritesCount = (folders as FolderRow[]).filter(
+    (f) => f.is_favorite,
+  ).length;
 
-  // Filtragem
-  const filteredFolders = folders.filter(
-    (folder) =>
-      folder.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (folder.description &&
-        folder.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const archivedCount = (folders as FolderRow[]).filter(
+    (f) => f.is_archived,
+  ).length;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <header className="relative overflow-hidden bg-gradient-to-br from-base-100 to-base-200 text-base-content rounded-3xl">
-        <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
+      {/* Hero */}
+      <header className="relative overflow-hidden rounded-3xl border border-base-300 bg-gradient-to-br from-base-100 to-base-200">
+        <div className="absolute inset-0 opacity-[0.035] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
 
-        <div className="relative max-w-7xl mx-auto px-6 py-12">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-            Suas pastas
-          </h1>
-          <p className="mt-3 max-w-2xl text-base md:text-lg opacity-90">
-            Organize seus testes e documentos em pastas para facilitar o acesso
-            e a gestão.
-          </p>
+        <div className="relative px-6 py-10">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+                <Folder size={15} />
+                Sistema inteligente de organização
+              </div>
+
+              <h1 className="text-4xl font-black tracking-tight md:text-5xl">
+                Suas pastas
+              </h1>
+
+              <p className="mt-3 max-w-xl text-base leading-relaxed text-base-content/60">
+                Organize testes, estratégias, documentos e conteúdos da equipe
+                em um ambiente moderno, hierárquico e preparado para grandes
+                projetos.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 sm:w-auto">
+              <StatCard
+                label="Pastas"
+                value={folders.length}
+                sub="registradas"
+              />
+
+              <StatCard
+                label="Favoritas"
+                value={favoritesCount}
+                sub="destacadas"
+              />
+
+              <StatCard
+                label="Arquivadas"
+                value={archivedCount}
+                sub="ocultas"
+              />
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Criar pasta */}
-      <div className="flex flex-row sm:items-center sm:justify-between gap-4">
-        <input
-          type="text"
-          placeholder="Buscar pastas..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="input input-md input-bordered flex-1"
-        />
-        <NewFolderButton createFolder={createFolder} />
-      </div>
+      {/* Search */}
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <label className="input input-bordered flex w-full items-center gap-2 sm:max-w-md">
+          <Search size={16} className="shrink-0 opacity-50" />
 
-      {/* Lista de pastas */}
+          <input
+            type="text"
+            className="grow"
+            placeholder="Buscar por nome, descrição ou tags..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </label>
+
+        <button
+          className="btn btn-primary rounded-2xl"
+          onClick={() => setShowCreateModal(true)}
+        >
+          Nova pasta
+        </button>
+      </section>
+
+      {/* Grid */}
       {loading ? (
-        <p className="text-sm text-base-content/60">Carregando pastas...</p>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <div key={i} className="skeleton h-56 rounded-3xl" />
+          ))}
+        </div>
       ) : filteredFolders.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-base-300 p-8 text-center text-sm text-base-content/60">
-          Nenhuma pasta encontrada.
+        <div className="rounded-3xl border border-dashed border-base-300 bg-base-100 px-8 py-20 text-center">
+          <FolderOpen size={48} className="mx-auto mb-4 opacity-35" />
+
+          <h2 className="text-2xl font-black">
+            {searchTerm ? "Nenhuma pasta encontrada" : "Sem pastas ainda"}
+          </h2>
+
+          <p className="mt-2 text-base-content/55">
+            {searchTerm
+              ? `Nenhum resultado para "${searchTerm}".`
+              : "Crie sua primeira pasta para começar a organizar conteúdos."}
+          </p>
+
+          {!searchTerm && (
+            <div className="mt-6">
+              <button
+                className="btn btn-primary rounded-2xl"
+                onClick={() => setShowCreateModal(true)}
+              >
+                Nova pasta
+              </button>
+            </div>
+          )}
         </div>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredFolders.map((folder) => (
-            <li
-              key={folder.id}
-              onClick={() => router.push(`/dashboard/folders/${folder.id}`)}
-              className="group cursor-pointer rounded-xl border border-base-300 bg-base-100 p-4 transition hover:shadow-md"
-            >
-              <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                  <Folder size={20} />
-                </div>
+        <>
+          {searchTerm && (
+            <p className="text-sm text-base-content/50">
+              {filteredFolders.length}{" "}
+              {filteredFolders.length === 1 ? "resultado" : "resultados"} para{" "}
+              <span className="font-semibold text-base-content/70">
+                "{searchTerm}"
+              </span>
+            </p>
+          )}
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-semibold truncate group-hover:underline">
-                      {folder.name}
-                    </h3>
-                    {folder.team_id && (
-                      <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
-                        Equipe {folder.team_id}
-                      </span>
-                    )}
-                  </div>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {filteredFolders.map((folder) => (
+              <FolderCard
+                key={folder.id}
+                folder={folder}
+                onClick={() => router.push(`/dashboard/folders/${folder.id}`)}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
-                  <p className="text-sm text-base-content/60">
-                    {folder.description || "Sem descrição"}
-                  </p>
-
-                  <p className="mt-1 text-xs text-base-content/60">
-                    Criada em{" "}
-                    {new Date(folder.created_at).toLocaleDateString("pt-BR")}
-                  </p>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+      {/* Modal */}
+      {showCreateModal && (
+        <CreateFolderModal
+          onCreate={handleCreateFolder}
+          onClose={() => setShowCreateModal(false)}
+        />
       )}
     </div>
   );

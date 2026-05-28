@@ -23,7 +23,7 @@ export default async function AppLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("onboarding_completed, username, avatar_url")
+    .select("onboarding_completed, username, avatar_url, user_role")
     .eq("id", user.id)
     .single();
 

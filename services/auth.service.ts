@@ -23,8 +23,7 @@ export const authService = {
   },
 
   async forgotPassword(email: string) {
-    const { data, error } =
-      await authRepository.forgotPassword(email);
+    const { data, error } = await authRepository.forgotPassword(email);
 
     if (error) {
       throw error;
@@ -34,8 +33,7 @@ export const authService = {
   },
 
   async resetPassword(password: string) {
-    const { data, error } =
-      await authRepository.updatePassword(password);
+    const { data, error } = await authRepository.updatePassword(password);
 
     if (error) {
       throw error;
@@ -73,11 +71,24 @@ export const authService = {
       avatar_url?: string;
     },
   ) {
-    const { error } = await authRepository.updateProfile(userId, data);
+    if (data.username && data.username.length < 3) {
+      throw new Error("Username muito curto");
+    }
+
+    if (data.bio && data.bio.length > 160) {
+      throw new Error("Bio muito longa");
+    }
+
+    const { data: profile, error } = await authRepository.updateProfile(
+      userId,
+      data,
+    );
 
     if (error) {
       throw error;
     }
+
+    return profile;
   },
 
   async completeOnboarding(data: {

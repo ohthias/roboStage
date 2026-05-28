@@ -60,7 +60,7 @@ export default function TeamSpacePage() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-6 py-8">
       {/* Header */}
       <header className="relative overflow-hidden bg-gradient-to-br from-base-100 to-base-300 text-base-content rounded-3xl">
         <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />

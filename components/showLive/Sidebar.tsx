@@ -2,9 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-
 import { eventService } from "@/services/event.service";
-import { useEvent } from "@/hooks/useEvent";
 
 interface SidebarProps {
   code_volunteer: string;
@@ -78,8 +76,8 @@ const NAV_ITEMS = [
 
 const DYNAMIC_ITEMS = [
   {
-    key: "brackets",
-    label: "Brackets",
+    key: "playoffs",
+    label: "Playoffs",
     icon: "fi-rr-brackets",
     setting: "enable_playoffs",
   },

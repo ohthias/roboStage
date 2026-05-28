@@ -58,7 +58,7 @@ type Section =
   | "personalizacao"
   | "configuracoes"
   | "gracious-professionalism"
-  | "brackets"
+  | "playoffs"
   | "pre-round-inspection"
   | "advanced-view";
 
@@ -145,36 +145,24 @@ export default function EventAdminPage() {
   const content = useMemo(() => {
     switch (section) {
       case "equipes":
-        return (
-          <TeamsSection
-            event={
-              idEvent && eventConfig?.config?.rodadas
-                ? {
-                    id_event: idEvent,
-
-                    points: eventConfig.config.rodadas,
-                  }
-                : null
-            }
-          />
-        );
+        return <TeamsSection codeEvent={params.code_event} />;
 
       case "ranking":
-        return <RankingSection idEvent={idEvent} />;
+        return <RankingSection codeEvent={params.code_event} />;
 
       case "visualizacao":
-        return <VisualizationSection idEvent={idEvent} />;
+        return <VisualizationSection codeEvent={params.code_event} />;
 
       case "personalizacao":
-        return <ThemeSection eventId={String(idEvent)} />;
+        return <ThemeSection codeEvent={params.code_event} />;
 
       case "configuracoes":
-        return <ConfiguracoesSection idEvent={idEvent} />;
+        return <ConfiguracoesSection codeEvent={params.code_event} />;
 
       case "gracious-professionalism":
         return <TabelaGracious eventId={idEvent} />;
 
-      case "brackets":
+      case "playoffs":
         return <Brackets eventId={idEvent} />;
 
       case "pre-round-inspection":

@@ -1,14 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Trophy, Users, Disc3 } from "lucide-react";
+import Loader from "@/components/Loader";
 import { createClient } from "@/utils/supabase/client";
 const supabase = createClient();
-import { TrophyIcon, UserGroupIcon } from "@heroicons/react/24/outline";
-import Loader from "@/components/Loader";
 
 interface ExtraData {
-  GP?: { value: string | number; points: number };
-  PT?: { value: string | number; points: number };
+  GP?: {
+    value: string | number;
+
+    points: number;
+  };
+
+  PT?: {
+    value: string | number;
+
+    points: number;
+  };
 }
 
 interface Team {
@@ -18,9 +27,12 @@ interface Team {
   data_extra: Record<string, ExtraData>;
 }
 
-export default function TabelaGracious({ eventId }: { eventId: number }) {
+interface Props {
+  eventId: number;
+}
+
+export default function ExtraRoundsSection({ eventId }: Props) {
   const [teams, setTeams] = useState<Team[]>([]);
-  const [rounds, setRounds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,7 +43,9 @@ export default function TabelaGracious({ eventId }: { eventId: number }) {
         .from("team")
         .select("id_team, name_team, points, data_extra")
         .eq("id_event", eventId)
-        .order("id_team", { ascending: true });
+        .order("id_team", {
+          ascending: true,
+        });
 
       if (error) {
         console.error(error);
@@ -39,111 +53,124 @@ export default function TabelaGracious({ eventId }: { eventId: number }) {
         return;
       }
 
-      const teamsData = data as Team[];
+      setTeams(data || []);
 
-      // 🔹 Separar rodadas normais, semi e final
-      const normalRounds = new Set<string>();
-      let hasSemi = false;
-      let hasFinal = false;
-
-      teamsData.forEach((team) => {
-        if (team.points) {
-          Object.keys(team.points).forEach((round) => {
-            if (round === "Semi-final") hasSemi = true;
-            else if (round === "Final") hasFinal = true;
-            else normalRounds.add(round);
-          });
-        }
-      });
-
-      const orderedRounds = [
-        ...Array.from(normalRounds).sort(),
-        ...(hasSemi ? ["Semi-final"] : []),
-        ...(hasFinal ? ["Final"] : []),
-      ];
-
-      setRounds(orderedRounds);
-      setTeams(teamsData);
       setLoading(false);
     };
 
     fetchTeams();
   }, [eventId]);
 
-  if (loading)
+  const rounds = useMemo(() => {
+    const roundsSet = new Set<string>();
+
+    teams.forEach((team) => {
+      Object.keys(team.points || {}).forEach((round) => {
+        roundsSet.add(round);
+      });
+    });
+
+    return Array.from(roundsSet);
+  }, [teams]);
+
+  if (loading) {
     return (
-      <div className="flex justify-center items-center py-8">
+      <div className="flex h-[40vh] items-center justify-center">
         <Loader />
       </div>
     );
+  }
 
-  if (teams.length === 0)
+  if (teams.length === 0) {
     return (
-      <p className="text-red-500 text-center py-4">
-        Nenhuma equipe encontrada para este evento.
-      </p>
+      <div className="rounded-2xl border border-dashed border-base-300 py-12 text-center">
+        <Trophy size={40} className="mx-auto mb-3 text-base-content/30" />
+
+        <h2 className="font-medium">Nenhuma equipe encontrada</h2>
+
+        <p className="text-sm text-base-content/60 mt-1">
+          Não existem dados extras cadastrados neste evento.
+        </p>
+      </div>
     );
+  }
 
   return (
-    <section className="space-y-6 px-2 md:px-6 lg:px-8">
-      {/* 🔹 Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <h2 className="text-xl md:text-2xl font-bold text-primary text-left">
-          Gracious Professionalism® Visualização
-        </h2>
+    <section className="space-y-6 px-4 md:px-8 pb-8">
+      {/* Header */}
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <Trophy size={22} className="text-primary" />
+            <h1 className="text-2xl md:text-3xl font-bold">
+              Informações Adicionais
+            </h1>
+          </div>
 
-        <div className="alert alert-default text-sm md:text-base shadow-md px-4 py-3 rounded-lg w-full md:w-auto">
-          <span className="font-bold">Info:</span>
-          <span>
-            <strong> GP </strong> = Gracious Professionalism® |{" "}
-            <strong> PT </strong> = Discos de Precisão
-          </span>
+          <p className="text-sm text-base-content/60 mt-1">
+            Dados extras das rodadas exibidos aos visitantes.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 text-sm text-base-content/60">
+          <div className="flex items-center gap-1">
+            <Users size={14} />
+            GP
+          </div>
+          <div className="flex items-center gap-1">
+            <Disc3 size={14} />
+            PT
+          </div>
         </div>
       </div>
 
-      {/* 🔹 Tabela responsiva */}
-      <div className="overflow-x-auto rounded-lg shadow-lg border border-base-300">
-        <table className="table table-sm md:table-md table-zebra w-full text-sm">
-          <thead className="bg-primary text-primary-content sticky top-0 z-10">
-            <tr>
-              <th className="whitespace-nowrap">Equipe</th>
-              {rounds.map((round) => (
-                <th key={round} className="whitespace-nowrap text-center">
-                  {round}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {teams.map((team) => (
-              <tr key={team.id_team}>
-                <td className="font-semibold">{team.name_team}</td>
-                {rounds.map((round) => {
-                  const extra = team.data_extra?.[round];
-                  const points = team.points?.[round] ?? -1;
-                  return (
-                    <td key={round} className="align-top text-center">
-                      {extra || points !== -1 ? (
-                        <div className="flex flex-col items-center md:items-start gap-1 text-xs md:text-sm">
-                          <span>
-                            <TrophyIcon className="w-4 h-4 inline-block mr-1 text-primary" />
-                            Discos: <span className="font-medium">{extra?.PT?.value ?? "-"}</span>
-                          </span>
-                          <span>
-                            <UserGroupIcon className="w-4 h-4 inline-block mr-1 text-secondary" />
-                            GP: <span className="font-medium">{extra?.GP?.value ?? "-"}</span>
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="text-gray-400">-</div>
-                      )}
-                    </td>
-                  );
-                })}
+      {/* Table */}
+      <div className="rounded-2xl border border-base-300 bg-base-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead className="bg-base-200">
+              <tr>
+                <th>Equipe</th>
+                {rounds.map((round) => (
+                  <th key={round} className="text-center">
+                    {round}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {teams.map((team) => (
+                <tr key={team.id_team} className="hover">
+                  <td className="font-medium whitespace-nowrap">
+                    {team.name_team}
+                  </td>
+                  {rounds.map((round) => {
+                    const extra = team.data_extra?.[round];
+                    const hasData = extra?.GP?.value || extra?.PT?.value;
+                    return (
+                      <td key={round} className="text-center">
+                        {hasData ? (
+                          <div className="flex flex-col items-center text-xs gap-1">
+                            <div className="flex items-center gap-1">
+                              <Disc3 size={12} className="text-primary" />
+                              <span>{extra?.PT?.value || "-"}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users size={12} className="text-secondary" />
+                              <span>{extra?.GP?.value || "-"}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-base-content/30">—</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   );

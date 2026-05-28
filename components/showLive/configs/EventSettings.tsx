@@ -1,254 +1,200 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+import { Shield, Eye, Trophy, Users } from "lucide-react";
+
 import { createClient } from "@/utils/supabase/client";
-const supabase = createClient();
+
 import { useToast } from "@/app/context/ToastContext";
 
-export default function EventSettings({ eventId }: { eventId: number }) {
-  const defaultSettings = {
-    allow_volunteers_edit: false,
-    show_only_current_round: false,
-    pre_round_inspection: false,
-    enable_playoffs: false,
-    auto_semifinals: false,
-    show_brackets: false,
-    show_scores_after_round: false,
-    highlight_winner: false,
-    advanced_view: false,
-    show_timer: false,
-  };
+const supabase = createClient();
 
-  const [settings, setSettings] = useState(defaultSettings);
+interface Props {
+  eventId: number;
+}
+
+const defaultSettings = {
+  allow_volunteers_edit: false,
+
+  show_only_current_round: false,
+
+  pre_round_inspection: false,
+
+  enable_playoffs: false,
+
+  auto_semifinals: false,
+
+  show_brackets: false,
+
+  show_scores_after_round: false,
+
+  highlight_winner: false,
+
+  advanced_view: false,
+
+  show_timer: false,
+};
+
+export default function EventSettings({ eventId }: Props) {
   const { addToast } = useToast();
 
-  // Carregar configs
+  const [loading, setLoading] = useState(true);
+
+  const [settings, setSettings] = useState(defaultSettings);
+
   useEffect(() => {
     const loadSettings = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("event_settings")
         .select("*")
-        .eq("id_evento", Number(eventId))
+        .eq("id_evento", eventId)
         .maybeSingle();
 
       if (data) {
         setSettings({
-          allow_volunteers_edit: data.allow_volunteers_edit,
-          show_only_current_round: data.show_only_current_round,
-          pre_round_inspection: data.pre_round_inspection,
-          enable_playoffs: data.enable_playoffs,
-          auto_semifinals: data.auto_semifinals,
-          show_brackets: data.show_brackets,
-          show_scores_after_round: data.show_scores_after_round,
-          highlight_winner: data.highlight_winner,
-          advanced_view: data.advanced_view,
-          show_timer: data.show_timer,
+          ...defaultSettings,
+
+          ...data,
         });
-      } else if (error && error.code !== "PGRST116") {
-        console.error(error);
       }
+
+      setLoading(false);
     };
 
     loadSettings();
   }, [eventId]);
 
-  // Atualizar toggle (agora só faz upsert)
-  const handleChange = async (key: keyof typeof settings) => {
-    if (key === "auto_semifinals") {
-      const { count, error: countError } = await supabase
-        .from("team")
-        .select("*", { count: "exact", head: true })
-        .eq("id_event", Number(eventId));
+  const handleToggle = async (key: keyof typeof settings) => {
+    const updated = {
+      ...settings,
 
-      if (countError) {
-        console.error("Erro ao contar equipes:", countError);
-        addToast("Erro ao verificar equipes do evento", "error");
-        return;
-      }
+      [key]: !settings[key],
+    };
 
-      if ((count || 0) <= 4) {
-        addToast(
-          "Não é possível ativar semifinais automáticas: menos de 5 equipes.",
-          "warning"
-        );
-        return; // não altera
-      }
-    }
-
-    // Atualiza o toggle normalmente
-    addToast("Salvando configuração...", "info");
-    const newSettings = { ...settings, [key]: !settings[key] };
-    setSettings(newSettings);
+    setSettings(updated);
 
     const { error } = await supabase.from("event_settings").upsert({
-      id_evento: Number(eventId),
-      ...newSettings,
+      id_evento: eventId,
+
+      ...updated,
+
       updated_at: new Date().toISOString(),
     });
 
     if (error) {
-      console.error(error);
-      addToast("Erro ao salvar configuração!", "error");
+      addToast("Erro ao salvar configuração.", "error");
     } else {
-      addToast("Configuração salva com sucesso!", "success");
+      addToast("Configuração atualizada.", "success");
     }
   };
 
-  return (
-    <section className="px-4 py-4 sm:px-6 sm:py-6">
-      <div className="divider">Outras configurações</div>
-
-      <div className="mx-auto w-full max-w-4xl space-y-6">
-        {/* Voluntários */}
-        <fieldset className="fieldset bg-base-100 border border-base-300 rounded-box p-3 sm:p-4">
-          <legend className="fieldset-legend font-semibold text-lg">
-            Voluntários
-          </legend>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label className="flex items-start justify-between gap-3">
-              <span className="text-sm leading-tight break-words md:text-base">
-                Permitir que voluntários editem pontuações após a confirmação do
-                administrador do evento.
-              </span>
-              <input
-                type="checkbox"
-                className="toggle mb-1"
-                checked={settings.allow_volunteers_edit}
-                onChange={() => handleChange("allow_volunteers_edit")}
-                aria-label="Permitir que voluntários editem pontuações"
-              />
-            </label>
-
-            <label className="flex items-start justify-between gap-3">
-              <span className="text-sm leading-tight break-words md:text-base">
-                Exibir apenas a rodada atual para os voluntários. Caso
-                desativado, todas as rodadas serão visíveis.
-              </span>
-              <input
-                type="checkbox"
-                className="toggle mb-1"
-                checked={settings.show_only_current_round}
-                onChange={() => handleChange("show_only_current_round")}
-                aria-label="Exibir apenas a rodada atual para voluntários"
-              />
-            </label>
-
-            <label className="flex items-start justify-between gap-3">
-              <span className="text-sm leading-tight break-words md:text-base">
-                Ativar inspeção pré-rodada das equipes, permitindo que
-                voluntários verifiquem detalhes e requisitos antes da liberação.
-              </span>
-              <input
-                type="checkbox"
-                className="toggle mb-1"
-                checked={settings.pre_round_inspection}
-                onChange={() => handleChange("pre_round_inspection")}
-                aria-label="Ativar inspeção pré-rodada"
-              />
-            </label>
-          </div>
-        </fieldset>
-
-        {/* Semifinais & Finais */}
-        <fieldset className="fieldset bg-base-100 border border-base-300 rounded-box p-3 sm:p-4">
-          <legend className="fieldset-legend font-semibold text-lg">
-            Semifinais & Finais
-          </legend>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label className="flex items-start justify-between gap-3">
-              <span className="text-sm leading-tight break-words md:text-base">
-                Ativar rodadas específicas para semifinais e finais.
-              </span>
-              <input
-                type="checkbox"
-                className="toggle mb-1"
-                checked={settings.enable_playoffs}
-                onChange={() => handleChange("enable_playoffs")}
-                aria-label="Ativar rodadas de playoffs"
-              />
-            </label>
-
-            <label className="flex items-start justify-between gap-3">
-              <span className="text-sm leading-tight break-words md:text-base">
-                Ativar semifinais automaticamente para eventos com mais de 4
-                equipes.
-              </span>
-              <input
-                type="checkbox"
-                className="toggle mb-1"
-                checked={settings.auto_semifinals}
-                onChange={() => handleChange("auto_semifinals")}
-                aria-label="Ativar semifinais automáticas"
-              />
-            </label>
-
-            <label className="flex items-start justify-between gap-3 md:col-span-2">
-              <span className="text-sm leading-tight break-words md:text-base">
-                Exibir brackets no estilo mata-mata.
-              </span>
-              <input
-                type="checkbox"
-                className="toggle mb-1"
-                checked={settings.show_brackets}
-                onChange={() => handleChange("show_brackets")}
-                aria-label="Exibir brackets"
-              />
-            </label>
-          </div>
-        </fieldset>
-
-        {/* Visualização */}
-        <fieldset className="fieldset bg-base-100 border border-base-300 rounded-box p-3 sm:p-4">
-          <legend className="fieldset-legend font-semibold text-lg">
-            Visualização
-          </legend>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label className="flex items-start justify-between gap-3">
-              <span className="text-sm leading-tight break-words md:text-base">
-                Mostrar pontuações apenas após todas as equipes serem avaliadas
-                na rodada.
-              </span>
-              <input
-                type="checkbox"
-                className="toggle mb-1"
-                checked={settings.show_scores_after_round}
-                onChange={() => handleChange("show_scores_after_round")}
-                aria-label="Mostrar pontuações após a rodada"
-              />
-            </label>
-
-            <label className="flex items-start justify-between gap-3">
-              <span className="text-sm leading-tight break-words md:text-base">
-                Destacar a equipe vencedora no final do evento.
-              </span>
-              <input
-                type="checkbox"
-                className="toggle mb-1"
-                checked={settings.highlight_winner}
-                onChange={() => handleChange("highlight_winner")}
-                aria-label="Destacar vencedor"
-              />
-            </label>
-
-            <label className="flex items-start justify-between gap-3 md:col-span-2">
-              <span className="text-sm leading-tight break-words md:text-base">
-                Ativar visualização avançada: layout otimizado para telas
-                grandes, exibindo logo, ranqueamento e alertas.
-              </span>
-              <input
-                type="checkbox"
-                className="toggle mb-1"
-                checked={settings.advanced_view}
-                onChange={() => handleChange("advanced_view")}
-                aria-label="Ativar visualização avançada"
-              />
-            </label>
-          </div>
-        </fieldset>
+  if (loading) {
+    return (
+      <div className="flex justify-center py-8">
+        <span className="loading loading-spinner loading-md text-primary" />
       </div>
-    </section>
+    );
+  }
+
+  const sections = [
+    {
+      title: "Voluntários",
+
+      icon: Users,
+
+      items: [
+        {
+          key: "allow_volunteers_edit",
+
+          label: "Permitir edição de pontuações",
+        },
+
+        {
+          key: "show_only_current_round",
+
+          label: "Mostrar apenas rodada atual",
+        },
+
+        {
+          key: "pre_round_inspection",
+
+          label: "Ativar inspeção pré-rodada",
+        },
+      ],
+    },
+
+    {
+      title: "Semifinais e finais",
+
+      icon: Trophy,
+
+      items: [
+        {
+          key: "enable_playoffs",
+
+          label: "Ativar playoffs",
+        },
+
+        {
+          key: "auto_semifinals",
+
+          label: "Semifinais automáticas",
+        },
+
+        {
+          key: "show_brackets",
+
+          label: "Mostrar brackets",
+        },
+      ],
+    }
+  ];
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center gap-2">
+        <Shield size={18} className="text-primary" />
+
+        <h2 className="text-lg font-semibold">Configurações avançadas</h2>
+      </div>
+
+      {sections.map((section) => {
+        const Icon = section.icon;
+
+        return (
+          <div
+            key={section.title}
+            className="rounded-2xl border border-base-300 bg-base-100 p-5"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Icon size={18} className="text-primary" />
+
+              <h3 className="font-semibold">{section.title}</h3>
+            </div>
+
+            <div className="space-y-3">
+              {section.items.map((item) => (
+                <div
+                  key={item.key}
+                  className="flex items-center justify-between rounded-xl bg-base-200 px-4 py-3"
+                >
+                  <span className="text-sm">{item.label}</span>
+
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary"
+                    checked={settings[item.key as keyof typeof settings]}
+                    onChange={() =>
+                      handleToggle(item.key as keyof typeof settings)
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }

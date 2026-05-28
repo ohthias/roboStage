@@ -10,9 +10,12 @@ import {
   Star,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+
 import { useFolders } from "@/hooks/useFolders";
 import type { FolderRow } from "@/repositories/folders.repository";
-import NewFolderButton from "./ModalCreateFolder";
+
+import FolderIcon from "@/components/Dashboard/folders/FolderIcon";
+import CreateFolderModal from "./components/ModalCreateFolder";
 
 function formatDate(date?: string | null) {
   if (!date) return "—";
@@ -34,7 +37,9 @@ function FolderCard({
       {folder.cover_url && (
         <div
           className="absolute inset-0 bg-cover bg-center opacity-10 transition-opacity group-hover:opacity-15"
-          style={{ backgroundImage: `url(${folder.cover_url})` }}
+          style={{
+            backgroundImage: `url(${folder.cover_url})`,
+          }}
         />
       )}
 
@@ -46,13 +51,14 @@ function FolderCard({
               background: folder.color || "var(--fallback-p,oklch(var(--p)))",
             }}
           >
-            <Folder size={26} />
+            <FolderIcon icon={folder.icon} size={26} className="text-white" />
           </div>
 
           <div className="flex items-center gap-2 pt-1">
             {folder.is_favorite && (
               <Star size={15} className="fill-warning text-warning" />
             )}
+
             {folder.is_archived && (
               <Archive size={15} className="text-base-content/40" />
             )}
@@ -63,6 +69,7 @@ function FolderCard({
           <h2 className="truncate text-lg font-black tracking-tight transition-colors group-hover:text-primary">
             {folder.name}
           </h2>
+
           <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-base-content/55">
             {folder.description || "Sem descrição"}
           </p>
@@ -75,6 +82,7 @@ function FolderCard({
                 {tag}
               </span>
             ))}
+
             {folder.tags.length > 3 && (
               <span className="badge badge-ghost badge-xs">
                 +{folder.tags.length - 3}
@@ -85,9 +93,18 @@ function FolderCard({
 
         <div className="mt-4 grid grid-cols-3 gap-2">
           {[
-            { label: "Arquivos", value: folder.file_count },
-            { label: "Pastas", value: folder.subfolder_count },
-            { label: "Nível", value: folder.depth ?? 0 },
+            {
+              label: "Arquivos",
+              value: folder.file_count,
+            },
+            {
+              label: "Pastas",
+              value: folder.subfolder_count,
+            },
+            {
+              label: "Nível",
+              value: folder.depth ?? 0,
+            },
           ].map(({ label, value }) => (
             <div
               key={label}
@@ -96,6 +113,7 @@ function FolderCard({
               <div className="text-[10px] uppercase tracking-wide opacity-55">
                 {label}
               </div>
+
               <div className="mt-0.5 text-base font-black">{value}</div>
             </div>
           ))}
@@ -106,6 +124,7 @@ function FolderCard({
             <Clock3 size={11} />
             {formatDate(folder.updated_at)}
           </div>
+
           <span className="badge badge-ghost badge-xs">
             {folder.visibility}
           </span>
@@ -127,23 +146,39 @@ function StatCard({
   return (
     <div className="rounded-2xl border border-base-300 bg-base-100 p-4">
       <div className="text-xs uppercase tracking-wide opacity-55">{label}</div>
+
       <div className="mt-1 text-3xl font-black tabular-nums">{value}</div>
+
       <div className="text-xs opacity-50">{sub}</div>
     </div>
   );
 }
 
+type CreateFolderData = {
+  name: string;
+  description: string;
+  color: string;
+  icon: string;
+  visibility: string;
+  tags: string[];
+};
+
 export default function FoldersPage() {
   const router = useRouter();
+
   const { folders = [], loading, createFolder } = useFolders("folders");
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const filteredFolders = useMemo(() => {
     const query = searchTerm.toLowerCase().trim();
+
     if (!query) return folders as FolderRow[];
 
     return (folders as FolderRow[]).filter((folder) => {
       const tags = folder.tags?.join(" ").toLowerCase() ?? "";
+
       return (
         folder.name.toLowerCase().includes(query) ||
         (folder.description ?? "").toLowerCase().includes(query) ||
@@ -152,29 +187,26 @@ export default function FoldersPage() {
     });
   }, [folders, searchTerm]);
 
-  async function handleCreateFolder(name: string) {
+  async function handleCreateFolder(data: CreateFolderData) {
     await createFolder({
-      name,
-      parent_id: null, // null = pasta raiz; 0 viola FK e gera 409
-      description: "",
-      visibility: "private",
-
-      color: null,
-      icon: null,
-      tags: [],
+      ...data,
+      parent_id: null,
     });
+
+    setShowCreateModal(false);
   }
 
   const favoritesCount = (folders as FolderRow[]).filter(
     (f) => f.is_favorite,
   ).length;
+
   const archivedCount = (folders as FolderRow[]).filter(
     (f) => f.is_archived,
   ).length;
 
   return (
     <div className="space-y-6">
-      {/* Hero header */}
+      {/* Hero */}
       <header className="relative overflow-hidden rounded-3xl border border-base-300 bg-gradient-to-br from-base-100 to-base-200">
         <div className="absolute inset-0 opacity-[0.035] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
 
@@ -203,11 +235,13 @@ export default function FoldersPage() {
                 value={folders.length}
                 sub="registradas"
               />
+
               <StatCard
                 label="Favoritas"
                 value={favoritesCount}
                 sub="destacadas"
               />
+
               <StatCard
                 label="Arquivadas"
                 value={archivedCount}
@@ -218,10 +252,11 @@ export default function FoldersPage() {
         </div>
       </header>
 
-      {/* Search + New */}
+      {/* Search */}
       <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <label className="input input-bordered flex w-full items-center gap-2 sm:max-w-md">
           <Search size={16} className="shrink-0 opacity-50" />
+
           <input
             type="text"
             className="grow"
@@ -231,7 +266,12 @@ export default function FoldersPage() {
           />
         </label>
 
-        <NewFolderButton createFolder={handleCreateFolder} />
+        <button
+          className="btn btn-primary rounded-2xl"
+          onClick={() => setShowCreateModal(true)}
+        >
+          Nova pasta
+        </button>
       </section>
 
       {/* Grid */}
@@ -244,17 +284,25 @@ export default function FoldersPage() {
       ) : filteredFolders.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-base-300 bg-base-100 px-8 py-20 text-center">
           <FolderOpen size={48} className="mx-auto mb-4 opacity-35" />
+
           <h2 className="text-2xl font-black">
             {searchTerm ? "Nenhuma pasta encontrada" : "Sem pastas ainda"}
           </h2>
+
           <p className="mt-2 text-base-content/55">
             {searchTerm
               ? `Nenhum resultado para "${searchTerm}".`
               : "Crie sua primeira pasta para começar a organizar conteúdos."}
           </p>
+
           {!searchTerm && (
             <div className="mt-6">
-              <NewFolderButton createFolder={handleCreateFolder} />
+              <button
+                className="btn btn-primary rounded-2xl"
+                onClick={() => setShowCreateModal(true)}
+              >
+                Nova pasta
+              </button>
             </div>
           )}
         </div>
@@ -280,6 +328,14 @@ export default function FoldersPage() {
             ))}
           </div>
         </>
+      )}
+
+      {/* Modal */}
+      {showCreateModal && (
+        <CreateFolderModal
+          onCreate={handleCreateFolder}
+          onClose={() => setShowCreateModal(false)}
+        />
       )}
     </div>
   );

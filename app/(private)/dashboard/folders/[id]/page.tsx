@@ -24,6 +24,7 @@ import type {
 } from "@/repositories/folders.repository";
 import { useFolder } from "@/hooks/useFolder";
 import FolderSidebar from "../components/FolderSidebar";
+import EditModal from "../components/EditModal";
 
 function formatDate(date?: string | null) {
   if (!date) return "—";
@@ -112,135 +113,6 @@ function EmptyState({ message }: { message: string }) {
   return (
     <div className="rounded-2xl border border-dashed border-base-300 p-6 text-center text-sm text-base-content/50">
       {message}
-    </div>
-  );
-}
-
-// ─── Edit modal ───────────────────────────────────────────────────────────────
-
-type EditData = {
-  name: string;
-  description: string;
-  color: string;
-  visibility: string;
-  tags: string;
-};
-
-function EditModal({
-  initial,
-  onSave,
-  onClose,
-}: {
-  initial: EditData;
-  onSave: (data: EditData) => Promise<void>;
-  onClose: () => void;
-}) {
-  const [data, setData] = useState<EditData>(initial);
-  const [saving, setSaving] = useState(false);
-
-  const set =
-    (key: keyof EditData) =>
-    (
-      e: React.ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      >,
-    ) =>
-      setData((prev) => ({ ...prev, [key]: e.target.value }));
-
-  async function handleSave() {
-    setSaving(true);
-    try {
-      await onSave(data);
-      onClose();
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-3xl border border-base-300 bg-base-100 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-base-300 px-6 py-4">
-          <h2 className="text-xl font-black">Editar pasta</h2>
-          <button className="btn btn-ghost btn-sm btn-circle" onClick={onClose}>
-            <X size={16} />
-          </button>
-        </div>
-
-        <div className="flex flex-col gap-3 p-6">
-          <div>
-            <label className="label label-text text-xs">Nome</label>
-            <input
-              className="input input-bordered w-full"
-              placeholder="Nome da pasta"
-              value={data.name}
-              onChange={set("name")}
-            />
-          </div>
-
-          <div>
-            <label className="label label-text text-xs">Descrição</label>
-            <textarea
-              className="textarea textarea-bordered min-h-24 w-full resize-none"
-              placeholder="Descrição da pasta"
-              value={data.description}
-              onChange={set("description")}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="label label-text text-xs">Cor</label>
-              <input
-                className="input input-bordered w-full cursor-pointer"
-                type="color"
-                value={data.color || "#6366f1"}
-                onChange={set("color")}
-              />
-            </div>
-
-            <div>
-              <label className="label label-text text-xs">Visibilidade</label>
-              <select
-                className="select select-bordered w-full"
-                value={data.visibility}
-                onChange={set("visibility")}
-              >
-                <option value="private">Privado</option>
-                <option value="team">Team</option>
-                <option value="public">Público</option>
-                <option value="unlisted">Não listado</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="label label-text text-xs">
-              Tags (separadas por vírgula)
-            </label>
-            <input
-              className="input input-bordered w-full"
-              placeholder="ex: marketing, q1, campanha"
-              value={data.tags}
-              onChange={set("tags")}
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-2 border-t border-base-300 px-6 py-4">
-          <button className="btn btn-ghost" onClick={onClose}>
-            Cancelar
-          </button>
-          <button
-            className="btn btn-primary"
-            disabled={saving || data.name.trim().length < 2}
-            onClick={handleSave}
-          >
-            {saving && <span className="loading loading-spinner loading-xs" />}
-            Salvar
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -685,28 +557,24 @@ export default function FolderViewPage() {
           <EditModal
             initial={{
               name: folder.name,
-              description: folder.description ?? "",
-              color: folder.color ?? "",
-              visibility: folder.visibility ?? "private",
-              tags: folder.tags?.join(", ") ?? "",
-            }}
-            onSave={async (data) => {
-              await updateFolder({
-                ...data,
-                tags: data.tags
-                  .split(",")
-                  .map((t) => t.trim())
-                  .filter(Boolean),
-                // ensure visibility matches expected union type
-                visibility: data.visibility as
-                  | "private"
-                  | "team"
-                  | "public"
-                  | "unlisted"
-                  | undefined,
-              });
+              description: folder.description || "",
+              color: folder.color || "",
+              visibility: folder.visibility,
+              icon: folder.icon || "",
+              tags: Array.isArray(folder.tags) ? folder.tags.join(",") : folder.tags || "",
             }}
             onClose={() => setShowEdit(false)}
+            onSave={async (data) => {
+              // ensure visibility has the correct union type for updateFolder
+              await updateFolder({
+                ...data,
+                visibility: data.visibility as any,
+                tags: data.tags
+                  ? data.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
+                  : [],
+              });
+              setShowEdit(false);
+            }}
           />
         )}
 

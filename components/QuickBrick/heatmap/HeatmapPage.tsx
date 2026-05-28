@@ -7,7 +7,7 @@ import SeasonSelector from "./SeasonSelector";
 import StatsPanel from "./StatsPanel";
 import { exportCanvasPNG } from "@/utils/heatmap/exportCanvas";
 import { showToast } from "./Toast";
-import Breadcrumbs from "../UI/Breadcrumbs";
+import Breadcrumbs from "../../UI/Breadcrumbs";
 
 export default function HeatmapPage() {
   const {

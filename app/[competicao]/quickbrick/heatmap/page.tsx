@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import HeatmapPage from '@/components/heatmap/HeatmapPage';
-import ToastProvider from '@/components/heatmap/Toast';
+import HeatmapPage from '@/components/QuickBrick/heatmap/HeatmapPage';
+import ToastProvider from '@/components/QuickBrick/heatmap/Toast';
 import { Footer } from '@/components/UI/Footer';
 
 export const metadata: Metadata = {

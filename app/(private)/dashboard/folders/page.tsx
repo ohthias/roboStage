@@ -15,7 +15,7 @@ import { useFolders } from "@/hooks/useFolders";
 import type { FolderRow } from "@/repositories/folders.repository";
 
 import FolderIcon from "@/components/Dashboard/folders/FolderIcon";
-import CreateFolderModal from "./components/ModalCreateFolder";
+import CreateFolderModal from "../../../../components/Dashboard/folders/ModalCreateFolder";
 
 function formatDate(date?: string | null) {
   if (!date) return "—";

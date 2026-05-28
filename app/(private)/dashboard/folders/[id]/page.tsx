@@ -23,8 +23,8 @@ import type {
   TestRow,
 } from "@/repositories/folders.repository";
 import { useFolder } from "@/hooks/useFolder";
-import FolderSidebar from "../components/FolderSidebar";
-import EditModal from "../components/EditModal";
+import FolderSidebar from "../../../../../components/Dashboard/folders/FolderSidebar";
+import EditModal from "../../../../../components/Dashboard/folders/EditModal";
 
 function formatDate(date?: string | null) {
   if (!date) return "—";
@@ -273,10 +273,10 @@ export default function FolderViewPage() {
     folder.subfolder_count > 0 || folder.file_count > 0 || tests.length > 0;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[250px_minmax(0,1fr)] h-full overflow-hidden">
+    <div className="flex h-full overflow-hidden w-full gap-6 transition-all">
       <FolderSidebar currentFolderId={folder.id} />
 
-      <div className="space-y-6 overflow-auto">
+      <div className=" flex-1 space-y-6 overflow-auto transition-all">
         {/* ── Header ─────────────────────────────────────────────────── */}
         <header className="relative overflow-hidden rounded-3xl border border-base-300 bg-base-100">
           {folder.cover_url && (

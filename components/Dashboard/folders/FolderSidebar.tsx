@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   Folder,
   FolderOpen,
@@ -121,6 +122,9 @@ export default function FolderSidebar({ currentFolderId }: SidebarProps) {
   const { tree, loading } = useFolderTree();
 
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // desktop collapsed state
+  const [collapsed, setCollapsed] = useState(false);
 
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
 
@@ -249,16 +253,52 @@ export default function FolderSidebar({ currentFolderId }: SidebarProps) {
       </div>
 
       {/* DESKTOP SIDEBAR */}
-      <aside className="sticky hidden h-full overflow-hidden rounded-3xl border border-base-300 bg-base-100 xl:block">
-        <div className="border-b border-base-300 p-5">
-          <h2 className="text-lg font-black">Hierarquia</h2>
+      <aside
+        className={`sticky hidden h-full overflow-hidden rounded-3xl border border-base-300 bg-base-100 xl:flex flex-col transition-[width] duration-200 items-stretch`
+        }
+        style={{ width: collapsed ? 64 : undefined }}
+      >
+        <div className="flex items-center justify-between border-b border-base-300 p-3">
+          {!collapsed ? (
+            <div>
+              <h2 className="text-lg font-black">Hierarquia</h2>
 
-          <p className="text-xs text-base-content/50">Navegação estrutural</p>
+              <p className="text-xs text-base-content/50">Navegação estrutural</p>
+            </div>
+          ) : (
+            <div className="pl-1" />
+          )}
+
+          <button
+            className="btn btn-ghost btn-square btn-sm"
+            onClick={() => setCollapsed((s) => !s)}
+            title={collapsed ? "Expandir" : "Recolher"}
+          >
+            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
         </div>
 
-        <div className="h-[calc(100%-81px)] overflow-y-auto p-3">
-          {treeContent}
-        </div>
+        {collapsed ? (
+          <div className="flex flex-col items-center gap-2 py-3">
+            {tree.map((node) => (
+              <button
+                key={node.id}
+                onClick={() => window.location.assign(`/dashboard/folders/${node.id}`)}
+                className="tooltip tooltip-right btn btn-ghost btn-square"
+                data-tip={node.name}
+              >
+                <div
+                  className="flex h-8 w-8 items-center justify-center rounded-xl text-white"
+                  style={{ background: node.color || "var(--fallback-p,oklch(var(--p)))" }}
+                >
+                  <Folder size={14} />
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="h-[calc(100%-81px)] overflow-y-auto p-3">{treeContent}</div>
+        )}
       </aside>
     </>
   );

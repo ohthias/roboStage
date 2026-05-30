@@ -6,7 +6,7 @@ import { useToast } from "@/app/context/ToastContext";
 
 const supabase = createClient();
 
-interface Props { eventId: number }
+interface Props { eventId: string; }
 
 const defaultSettings = {
   allow_volunteers_edit: false,

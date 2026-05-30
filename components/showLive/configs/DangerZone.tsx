@@ -1,18 +1,31 @@
 import { useToast } from "@/app/context/ToastContext";
-import { useUser } from "@/app/context/UserContext";
-import { useEvent } from "@/hooks/useEvent";
 import { createClient } from "@/utils/supabase/client";
-import { AlertTriangle, Flag, Trash2, Users, ToggleLeft } from "lucide-react";
+import { Flag, Trash2, Users, ToggleLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 const supabase = createClient();
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function DangerZone({ eventId }: { eventId: string }) {
   const [loading, setLoading] = useState(false);
-  const { eventData } = useEvent(eventId);
-  const { profile } = useUser();
+  const [eventActive, setEventActive] = useState(false);
   const { addToast } = useToast();
   const router = useRouter();
+
+  useEffect(() => {
+    const loadEvent = async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("event_active")
+        .eq("id_evento", eventId)
+        .single();
+
+      if (data) {
+        setEventActive(data.event_active);
+      }
+    };
+
+    loadEvent();
+  }, [eventId]);
 
   const handleResetScores = async () => {
     if (!eventId) return;
@@ -117,6 +130,7 @@ export default function DangerZone({ eventId }: { eventId: string }) {
     setLoading(false);
     addToast("Status do evento atualizado para " + status, "success");
     router.refresh();
+    window.location.reload();
   };
 
   const handleResetCodes = async () => {
@@ -128,7 +142,7 @@ export default function DangerZone({ eventId }: { eventId: string }) {
     )
       return;
     setLoading(true);
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("events")
       .select("code_volunteer, code_visit")
       .eq("id_evento", eventId)
@@ -138,8 +152,14 @@ export default function DangerZone({ eventId }: { eventId: string }) {
       setLoading(false);
       return;
     }
-    const newCodeVolunteer = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const newCodeVisit = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const newCodeVolunteer = Math.random()
+      .toString(36)
+      .substring(2, 8)
+      .toUpperCase();
+    const newCodeVisit = Math.random()
+      .toString(36)
+      .substring(2, 8)
+      .toUpperCase();
     const { error: updateError } = await supabase
       .from("events")
       .update({ code_volunteer: newCodeVolunteer, code_visit: newCodeVisit })
@@ -152,6 +172,7 @@ export default function DangerZone({ eventId }: { eventId: string }) {
     setLoading(false);
     addToast("Códigos de acesso resetados com sucesso!", "success");
     router.refresh();
+    window.location.reload();
   };
 
   if (loading) {
@@ -204,13 +225,17 @@ export default function DangerZone({ eventId }: { eventId: string }) {
             </div>
             <select
               className="select select-error w-full max-w-[180px] rounded-lg px-3 py-2"
-              defaultValue={eventData?.event_active ? "active" : "inactive"}
               onChange={(e) =>
                 handleToggleEventStatus(e.target.value as "active" | "inactive")
               }
+              value={eventActive ? "active" : "inactive"}
             >
-              <option value="active">Ativo</option>
-              <option value="inactive">Inativo</option>
+              <option value="active">
+                Ativo
+              </option>
+              <option value="inactive">
+                Inativo
+              </option>
             </select>
           </div>
         </div>

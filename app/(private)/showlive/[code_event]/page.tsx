@@ -177,10 +177,11 @@ export default function EventAdminPage() {
             event_config={eventConfig?.config ?? null}
             stats={stats}
             ranking={ranking}
+            event_active={eventData?.event_active ?? false}
           />
         );
     }
-  }, [section, idEvent, eventData, eventConfig, teams, stats, ranking]);
+  }, [section, eventData, eventConfig, teams, stats, ranking]);
 
   if (loading) {
     return (

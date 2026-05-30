@@ -36,6 +36,7 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
   const [rounds, setRounds] = useState<string[]>([]);
   const [roundInput, setRoundInput] = useState("");
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const eventId = eventData?.id_evento.toString() || "";
 
   useEffect(() => {
     if (!eventData || !eventConfig) return;
@@ -270,10 +271,10 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
       </div>
 
       {/* Configurações extras */}
-      <EventSettings eventId={eventData.id_evento} />
+      <EventSettings eventId={eventId} />
 
       {/* Danger zone */}
-      <DangerZone eventId={String(eventData.id_evento)} />
+      <DangerZone eventId={String(eventId)} />
     </section>
   );
 }

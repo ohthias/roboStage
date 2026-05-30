@@ -144,10 +144,10 @@ export default function ShowLiveHub() {
           rounded-2xl
           border border-base-300
           bg-base-100
-          p-3
+          p-3 w-full
         "
       >
-        <label className="input input-bordered flex items-center gap-2 rounded-xl">
+        <label className="input input-bordered flex items-center gap-2 rounded-xl w-full">
           <MagnifyingGlassIcon className="w-4 h-4 opacity-60" />
           <input
             type="text"
@@ -161,7 +161,7 @@ export default function ShowLiveHub() {
         <select
           value={seasonFilter}
           onChange={(e) => setSeasonFilter(e.target.value)}
-          className="select select-bordered rounded-xl px-3"
+          className="select select-bordered rounded-xl px-3 w-full"
         >
           <option value="all">Todas temporadas</option>
           {seasons.map((season) => (
@@ -174,7 +174,7 @@ export default function ShowLiveHub() {
         <select
           value={order}
           onChange={(e) => setOrder(e.target.value as "asc" | "desc")}
-          className="select select-bordered rounded-xl px-3"
+          className="select select-bordered rounded-xl px-3 w-full"
         >
           <option value="desc">Mais recentes</option>
           <option value="asc">Mais antigos</option>

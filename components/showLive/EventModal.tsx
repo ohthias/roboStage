@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
 import { BaseModal } from "../Dashboard/UI/BaseModal";
-
 import { useAuth } from "@/hooks/useAuth";
 import { eventService } from "@/services/event.service";
 
@@ -13,36 +11,19 @@ interface EventModalProps {
   onClose: () => void;
 }
 
-export function EventModal({
-  open,
-  onClose,
-}: EventModalProps) {
+export function EventModal({ open, onClose }: EventModalProps) {
   const router = useRouter();
-
   const { user } = useAuth();
 
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-
   const [nameEvent, setNameEvent] = useState("");
-  const [competitionType, setCompetitionType] =
-    useState("");
-
+  const [competitionType, setCompetitionType] = useState("");
   const [season, setSeason] = useState("");
-
-  const [rounds, setRounds] = useState<string[]>(
-    []
-  );
-
-  const [roundInput, setRoundInput] =
-    useState("");
-
-  const [submitting, setSubmitting] =
-    useState(false);
-
+  const [rounds, setRounds] = useState<string[]>([]);
+  const [roundInput, setRoundInput] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const resetModal = () => {
-    setStep(1);
     setNameEvent("");
     setCompetitionType("");
     setSeason("");
@@ -56,88 +37,55 @@ export function EventModal({
     onClose();
   };
 
-  const nextStep = () => {
-    if (step === 1 && !nameEvent.trim()) {
-      setError("Digite um nome para o evento");
-      return;
-    }
-
-    if (
-      step === 2 &&
-      (!competitionType || !season)
-    ) {
-      setError(
-        "Selecione o tipo e a temporada"
-      );
-
-      return;
-    }
-
-    setError("");
-
-    setStep((s) => (s + 1) as 1 | 2 | 3);
-  };
-
-  const prevStep = () => {
-    setError("");
-
-    setStep((s) => (s - 1) as 1 | 2 | 3);
-  };
-
   const handleAddRound = () => {
-    if (!roundInput.trim()) return;
-
-    setRounds((prev) => [
-      ...prev,
-      roundInput.trim(),
-    ]);
-
+    const value = roundInput.trim();
+    if (!value) return;
+    if (rounds.includes(value)) return;
+    setRounds((prev) => [...prev, value]);
     setRoundInput("");
   };
 
-  const handleRemoveRound = (
-    index: number
-  ) => {
-    setRounds((prev) =>
-      prev.filter((_, i) => i !== index)
-    );
+  const handleRemoveRound = (index: number) => {
+    setRounds((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
+  const addTemplateRounds = () => {
+    setRounds(["Round Teste", "Rodada 1", "Rodada 2", "Rodada 3"]);
+  };
+
+  const isValid =
+    nameEvent.trim() && competitionType && season && rounds.length > 0;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!user?.id) {
-      setError("Usuário não autenticado");
+      setError("Usuário não autenticado.");
       return;
     }
 
-    setSubmitting(true);
-    setError("");
+    if (!isValid) {
+      setError("Preencha todos os campos obrigatórios.");
+      return;
+    }
 
     try {
-      const event =
-        await eventService.createEvent({
-          userId: user.id,
-          name: nameEvent,
-          competitionType,
-          season,
-          rounds,
-        });
+      setSubmitting(true);
+      setError("");
+
+      const event = await eventService.createEvent({
+        userId: user.id,
+        name: nameEvent,
+        competitionType,
+        season,
+        rounds,
+      });
 
       handleClose();
 
-      router.push(
-        `/showlive/${event.code_event}`
-      );
+      router.push(`/showlive/${event.code_event}`);
     } catch (err: any) {
-      console.error(err);
-
-      setError(
-        err.message ||
-          "Erro ao criar evento"
-      );
+      setError(err.message || "Erro ao criar evento");
     } finally {
       setSubmitting(false);
     }
@@ -148,292 +96,250 @@ export function EventModal({
       open={open}
       onClose={handleClose}
       title="Criar Evento"
-      description="Configure sua competição em poucos passos"
-      size="xl"
-      footer={
-        <div className="flex items-center justify-end gap-3 w-full">
-          {error && (
-            <span className="text-error text-sm font-medium mr-auto">
-              {error}
-            </span>
-          )}
-
-          <button
-            type="button"
-            onClick={
-              step === 1
-                ? handleClose
-                : prevStep
-            }
-            className="btn btn-ghost"
-          >
-            {step === 1
-              ? "Cancelar"
-              : "Voltar"}
-          </button>
-
-          {step < 3 ? (
-            <button
-              type="button"
-              onClick={nextStep}
-              className="btn btn-primary"
-            >
-              Próximo
-            </button>
-          ) : (
-            <button
-              type="submit"
-              form="event-form"
-              disabled={
-                submitting ||
-                rounds.length === 0
-              }
-              className="btn btn-primary"
-            >
-              {submitting ? (
-                <>
-                  <span className="loading loading-spinner loading-sm" />
-                  Criando...
-                </>
-              ) : (
-                "Criar Evento"
-              )}
-            </button>
-          )}
-        </div>
-      }
+      description="Configure sua competição rapidamente."
+      size="lg"
     >
-      {/* STEPPER */}
-      <div className="mb-8">
-        <ul className="steps w-full">
-          <li
-            className={`step ${
-              step >= 1
-                ? "step-primary"
-                : ""
-            }`}
-          >
-            Evento
-          </li>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* INFORMAÇÕES */}
+        <div className="card bg-base-100 border border-base-300">
+          <div className="card-body">
+            <h3 className="card-title">Informações Básicas</h3>
 
-          <li
-            className={`step ${
-              step >= 2
-                ? "step-primary"
-                : ""
-            }`}
-          >
-            Competição
-          </li>
-
-          <li
-            className={`step ${
-              step >= 3
-                ? "step-primary"
-                : ""
-            }`}
-          >
-            Rodadas
-          </li>
-        </ul>
-      </div>
-
-      <form
-        id="event-form"
-        onSubmit={handleSubmit}
-        className="space-y-6"
-      >
-        {/* STEP 1 */}
-        {step === 1 && (
-          <div className="border border-base-300 rounded-3xl p-6 space-y-5 bg-base-100">
-            <div>
-              <h4 className="text-lg font-bold">
-                Informações do Evento
-              </h4>
-
-              <p className="text-sm text-base-content/50 mt-1">
-                Defina o nome principal da
-                competição.
-              </p>
-            </div>
+            <p className="text-sm text-base-content/60">
+              Defina um nome para seu evento.
+            </p>
 
             <fieldset className="space-y-2">
-              <label className="text-sm font-medium">
-                Nome do evento
-              </label>
+              <label className="font-medium">Nome do Evento *</label>
 
               <input
                 type="text"
-                required
                 value={nameEvent}
-                onChange={(e) =>
-                  setNameEvent(
-                    e.target.value
-                  )
-                }
-                className="input input-bordered w-full"
-                placeholder="Ex: Etapa Regional RoboStage"
+                onChange={(e) => setNameEvent(e.target.value)}
+                className={`input input-bordered w-full ${
+                  !nameEvent ? "input-error" : ""
+                }`}
+                placeholder="Ex: Regional RoboStage São Paulo"
               />
+
+              {!nameEvent && (
+                <span className="text-error text-sm">Campo obrigatório.</span>
+              )}
             </fieldset>
           </div>
-        )}
+        </div>
 
-        {/* STEP 2 */}
-        {step === 2 && (
-          <div className="border border-base-300 rounded-3xl p-6 space-y-5 bg-base-100">
-            <div>
-              <h4 className="text-lg font-bold">
-                Configuração da
-                Competição
-              </h4>
+        {/* COMPETIÇÃO */}
+        <div className="card bg-base-100 border border-base-300">
+          <div className="card-body">
+            <h3 className="card-title">Competição</h3>
 
-              <p className="text-sm text-base-content/50 mt-1">
-                Escolha a modalidade e
-                temporada.
-              </p>
+            <p className="text-sm text-base-content/60">
+              Escolha a modalidade do evento.
+            </p>
+
+            <div className="grid gap-3">
+              <button
+                type="button"
+                onClick={() => setCompetitionType("FLL")}
+                className={`card border transition-all cursor-pointer ${
+                  competitionType === "FLL"
+                    ? "border-primary bg-primary/5"
+                    : "border-base-300"
+                }`}
+              >
+                <div className="card-body py-4">
+                  <h4 className="font-bold">FIRST LEGO League Challenge</h4>
+
+                  <p className="text-sm opacity-70">
+                    Torneios e festivais FLL.
+                  </p>
+                </div>
+              </button>
             </div>
 
-            <fieldset className="space-y-2">
-              <label className="text-sm font-medium">
-                Tipo de competição
-              </label>
+            {!competitionType && (
+              <span className="text-error text-sm">
+                Selecione uma competição.
+              </span>
+            )}
 
-              <select
-                required
-                value={competitionType}
-                onChange={(e) =>
-                  setCompetitionType(
-                    e.target.value
-                  )
-                }
-                className="select select-bordered w-full"
-              >
-                <option value="">
-                  Selecione
-                </option>
+            {competitionType === "FLL" && (
+              <>
+                <div className="divider">Temporada</div>
 
-                <option value="FLL">
-                  FIRST LEGO League
-                </option>
-              </select>
-            </fieldset>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {["UNEARTHED", "SUBMERGED", "MASTERPIECE"].map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setSeason(item)}
+                      className={`card border cursor-pointer transition-all ${
+                        season === item
+                          ? "border-primary bg-primary/5"
+                          : "border-base-300"
+                      }`}
+                    >
+                      <div className="card-body items-center py-6">
+                        <span className="font-semibold">{item}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
 
-            {competitionType ===
-              "FLL" && (
-              <fieldset className="space-y-2">
-                <label className="text-sm font-medium">
-                  Temporada
-                </label>
-
-                <select
-                  required
-                  value={season}
-                  onChange={(e) =>
-                    setSeason(
-                      e.target.value
-                    )
-                  }
-                  className="select select-bordered w-full"
-                >
-                  <option
-                    value=""
-                    disabled
-                  >
-                    Selecione
-                  </option>
-
-                  <option value="UNEARTHED">
-                    UNEARTHED
-                  </option>
-
-                  <option value="SUBMERGED">
-                    SUBMERGED
-                  </option>
-
-                  <option value="MASTERPIECE">
-                    MASTERPIECE
-                  </option>
-                </select>
-              </fieldset>
+                {!season && (
+                  <span className="text-error text-sm">
+                    Selecione uma temporada.
+                  </span>
+                )}
+              </>
             )}
           </div>
-        )}
+        </div>
 
-        {/* STEP 3 */}
-        {step === 3 && (
-          <div className="border border-base-300 rounded-3xl p-6 space-y-5 bg-base-100">
-            <div>
-              <h4 className="text-lg font-bold">
-                Rodadas
-              </h4>
+        {/* RODADAS */}
+        <div className="card bg-base-100 border border-base-300">
+          <div className="card-body">
+            <div className="flex items-center justify-between">
+              <h3 className="card-title">Rodadas *</h3>
 
-              <p className="text-sm text-base-content/50 mt-1">
-                Adicione as rodadas da
-                competição.
-              </p>
+              <button
+                type="button"
+                onClick={addTemplateRounds}
+                className="btn btn-xs btn-outline"
+              >
+                Usar modelo FLL
+              </button>
             </div>
 
-            <div className="flex gap-2">
+            <p className="text-sm text-base-content/60">
+              Adicione pelo menos uma rodada.
+            </p>
+
+            <div className="w-full flex gap-2">
               <input
-                type="text"
                 value={roundInput}
-                onChange={(e) =>
-                  setRoundInput(
-                    e.target.value
-                  )
-                }
-                className="input input-bordered flex-1"
-                placeholder="Ex: Classificatória 1"
+                onChange={(e) => setRoundInput(e.target.value)}
+                className="input input-bordered flex-1 w-full"
+                placeholder="Ex: Rodada 1"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddRound();
+                  }
+                }}
               />
 
               <button
                 type="button"
-                className="btn btn-outline btn-primary"
                 onClick={handleAddRound}
+                className="btn btn-primary"
+                disabled={!roundInput.trim()}
               >
                 Adicionar
               </button>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {rounds.map((round, i) => (
+              {rounds.map((round, index) => (
                 <div
-                  key={i}
-                  className="
-                    badge badge-lg gap-2
-                    px-4 py-4
-                    bg-primary/10
-                    text-primary
-                    border border-primary/20
-                  "
+                  key={index}
+                  className="badge badge-primary badge-lg gap-2 p-4 cursor-default"
                 >
                   {round}
 
                   <button
                     type="button"
-                    className="font-bold hover:text-error transition-colors"
-                    onClick={() =>
-                      handleRemoveRound(
-                        i
-                      )
-                    }
+                    className="cursor-pointer"
+                    onClick={() => handleRemoveRound(index)}
                   >
-                    ×
+                    ✕
                   </button>
                 </div>
               ))}
             </div>
 
             {rounds.length === 0 && (
-              <div className="alert alert-warning">
-                <span className="text-sm">
-                  Adicione pelo menos uma
-                  rodada.
-                </span>
+              <div className="alert alert-soft alert-error">
+                <span>Pelo menos uma rodada é obrigatória.</span>
               </div>
             )}
           </div>
+        </div>
+
+        {/* RESUMO */}
+        <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h4 className="text-lg font-semibold text-base-content">
+                Resumo do Evento
+              </h4>
+              <p className="text-sm text-base-content/60">
+                Confira os detalhes antes de criar.
+              </p>
+            </div>
+
+            <div className="badge badge-primary badge-outline px-3 py-2 text-xs font-medium">
+              {rounds.length} rodada{rounds.length === 1 ? "" : "s"}
+            </div>
+          </div>
+
+          <div className="grid gap-3 text-sm sm:grid-cols-2">
+            <div className="rounded-xl bg-base-200/60 p-3">
+              <span className="text-xs uppercase tracking-wide text-base-content/50">
+                Evento
+              </span>
+              <p className="mt-1 font-medium text-base-content">
+                {nameEvent || "Não definido"}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-base-200/60 p-3">
+              <span className="text-xs uppercase tracking-wide text-base-content/50">
+                Competição
+              </span>
+              <p className="mt-1 font-medium text-base-content">
+                {competitionType || "Não definida"}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-base-200/60 p-3 sm:col-span-2">
+              <span className="text-xs uppercase tracking-wide text-base-content/50">
+                Temporada
+              </span>
+              <p className="mt-1 font-medium text-base-content">
+                {season || "Não definida"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {error && (
+          <div className="alert alert-soft alert-error">
+            <span>{error}</span>
+          </div>
         )}
+
+        <div className="flex justify-end gap-3">
+          <button type="button" className="btn btn-ghost" onClick={handleClose}>
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            disabled={!isValid || submitting}
+            className="btn btn-primary"
+          >
+            {submitting ? (
+              <>
+                <span className="loading loading-spinner loading-sm" />
+                Criando...
+              </>
+            ) : (
+              "Criar Evento"
+            )}
+          </button>
+        </div>
       </form>
     </BaseModal>
   );

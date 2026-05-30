@@ -2,9 +2,22 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-
 import { eventService } from "@/services/event.service";
-import { useEvent } from "@/hooks/useEvent";
+import {
+  ArrowLeft,
+  Brackets,
+  ClipboardList,
+  Eye,
+  Layers,
+  LayoutGrid,
+  Menu,
+  Palette,
+  Settings,
+  Star,
+  Trophy,
+  Users,
+  X,
+} from "lucide-react";
 
 interface SidebarProps {
   code_volunteer: string;
@@ -29,72 +42,72 @@ const NAV_ITEMS = [
   {
     key: "",
     label: "Geral",
-    icon: "fi-rr-apps",
+    icon: LayoutGrid,
     group: "principal",
   },
 
   {
     key: "equipes",
     label: "Equipes",
-    icon: "fi-rr-employees-woman-man",
+    icon: Users,
     group: "principal",
   },
 
   {
     key: "ranking",
     label: "Ranking",
-    icon: "fi-rr-ranking-star",
+    icon: Trophy,
     group: "principal",
   },
 
   {
     key: "visualizacao",
     label: "Visualização",
-    icon: "fi-rr-eye",
+    icon: Eye,
     group: "principal",
   },
 
   {
     key: "gracious-professionalism",
     label: "Gracious Professionalism",
-    icon: "fi-rr-star",
+    icon: Star,
     group: "competicao",
   },
 
   {
     key: "personalizacao",
     label: "Personalização",
-    icon: "fi-rr-customize-edit",
+    icon: Palette,
     group: "config",
   },
 
   {
     key: "configuracoes",
     label: "Configurações",
-    icon: "fi-rr-settings",
+    icon: Settings,
     group: "config",
   },
 ] as const;
 
 const DYNAMIC_ITEMS = [
   {
-    key: "brackets",
-    label: "Brackets",
-    icon: "fi-rr-brackets",
+    key: "playoffs",
+    label: "Playoffs",
+    icon: Brackets,
     setting: "enable_playoffs",
   },
 
   {
     key: "pre-round-inspection",
     label: "Inspeção Pré-Rodada",
-    icon: "fi-rr-clipboard-list-check",
+    icon: ClipboardList,
     setting: "pre_round_inspection",
   },
 
   {
     key: "advanced-view",
     label: "Visualização Avançada",
-    icon: "fi-rr-layers",
+    icon: Layers,
     setting: "advanced_view",
   },
 ] as const;
@@ -116,7 +129,7 @@ export default function Sidebar({
     advanced_view: false,
   });
 
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     if (!eventId) return;
@@ -183,17 +196,7 @@ export default function Sidebar({
   return (
     <>
       {/* MOBILE HEADER */}
-      <header
-        className="
-          fixed top-0 left-0 right-0 z-40
-          h-14
-          flex items-center justify-between
-          px-4
-          border-b border-base-300
-          bg-base-100/90 backdrop-blur
-          lg:hidden
-        "
-      >
+      <header className="fixed top-0 left-0 right-0 z-40 h-14 flex items-center justify-between px-4 border-b border-base-300 bg-base-100/90 backdrop-blur lg:hidden">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setOpen(true)}
@@ -202,19 +205,7 @@ export default function Sidebar({
             "
             aria-label="Abrir menu"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
+            <Menu className="h-5 w-5" />
           </button>
 
           <h1 className="font-bold text-lg">
@@ -289,7 +280,7 @@ export default function Sidebar({
               lg:hidden
             "
           >
-            ✕
+            <X className="h-4 w-4" />
           </button>
         </div>
 
@@ -367,7 +358,7 @@ export default function Sidebar({
               gap-2
             "
           >
-            <i className="fi fi-rr-arrow-left" />
+            <ArrowLeft className="h-4 w-4" />
             Voltar ao Hub
           </button>
         </div>
@@ -437,7 +428,7 @@ interface NavButtonProps {
   item: {
     key: string;
     label: string;
-    icon: string;
+    icon: React.ElementType;
   };
 
   active: boolean;
@@ -446,6 +437,8 @@ interface NavButtonProps {
 }
 
 function NavButton({ item, active, onClick }: NavButtonProps) {
+  const Icon = item.icon;
+
   return (
     <button
       onClick={onClick}
@@ -460,21 +453,13 @@ function NavButton({ item, active, onClick }: NavButtonProps) {
 
         ${
           active
-            ? `
-              bg-primary text-primary-content
-              shadow-sm
-            `
-            : `
-              hover:bg-base-300
-              text-base-content/70
-              hover:text-base-content
-            `
+            ? "bg-primary text-primary-content shadow"
+            : "hover:bg-base-300/50"
         }
       `}
     >
-      <i className={`fi ${item.icon} text-base`} />
-
-      <span className="truncate">{item.label}</span>
+      <Icon className="h-4 w-4" />
+      {item.label}
     </button>
   );
 }

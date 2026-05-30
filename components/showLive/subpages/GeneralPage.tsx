@@ -8,54 +8,41 @@ interface RankedTeam {
 
 interface EventConfig {
   base: string;
-
   rodadas: string[];
-
   temporada?: string;
-
   preset?: {
     colors: [string, string, string];
-
     url_background: string;
   };
 }
 
 interface EventStats {
   totalTeams: number;
-
   highestScore: number;
-
   averageScore: number;
-
   bestTeam: RankedTeam | null;
-
   topTeams: RankedTeam[];
 }
 
 interface GeneralPageProps {
   name_event: string;
-
   event_config: EventConfig | null;
-
   stats: EventStats;
-
   ranking: RankedTeam[];
+  event_active: boolean;
 }
 
 const SEASON_ASSETS: Record<
   string,
   {
     banner: string;
-
     logo: string;
-
     accent: string;
   }
 > = {
   MASTERPIECE: {
     banner:
       "/images/showLive/banners/banner_masterpiece.webp",
-
     logo:
       "/images/logos/Masterpiece.png",
 
@@ -65,20 +52,16 @@ const SEASON_ASSETS: Record<
   SUBMERGED: {
     banner:
       "/images/showLive/banners/banner_submerged.webp",
-
     logo:
       "/images/logos/Submerged.webp",
-
     accent: "from-cyan-500/30",
   },
 
   UNEARTHED: {
     banner:
       "/images/showLive/banners/banner_uneartherd.webp",
-
     logo:
       "/images/logos/Unearthed.webp",
-
     accent: "from-amber-500/30",
   },
 };
@@ -86,9 +69,7 @@ const SEASON_ASSETS: Record<
 const DEFAULT_ASSETS = {
   banner:
     "/images/showLive/banners/banner_default.webp",
-
   logo: "/images/logos/Icone.png",
-
   accent: "from-primary/30",
 };
 
@@ -104,12 +85,10 @@ function getSeasonAssets(
 
 export default function GeneralPage({
   name_event,
-
   event_config,
-
   stats,
-
   ranking,
+  event_active,
 }: GeneralPageProps) {
   const { banner, logo, accent } =
     getSeasonAssets(
@@ -117,14 +96,9 @@ export default function GeneralPage({
     );
 
   const tips = [
-    "Adicione equipes para iniciar o ranking.",
-
-    "Configure visualização pública para transmissões.",
-
-    "Utilize rodadas organizadas para melhorar o fluxo do evento.",
-
+    "Mantenha os dados do evento atualizados para garantir uma experiência fluida.",
+    "Revise as pontuações regularmente para evitar surpresas no ranking.",
     "Ative brackets para competições eliminatórias.",
-
     "Compartilhe os códigos de visitante e voluntário com sua equipe.",
   ];
 
@@ -171,9 +145,9 @@ export default function GeneralPage({
         >
           <div className="max-w-3xl">
             <div className="flex flex-wrap items-center gap-3 mb-5">
-              <span className="badge badge-success gap-2 border-none px-3 py-3">
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                Evento ativo
+              <span className={`badge ${event_active ? 'badge-success' : 'badge-error'} gap-2 border-none px-3 py-3`}>
+                <span className={`w-2 h-2 rounded-full bg-${event_active ? 'green-500' : 'red-500'} animate-pulse`} />
+                {event_active ? "Ativo" : "Inativo"}
               </span>
 
               {event_config?.temporada && (

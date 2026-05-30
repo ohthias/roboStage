@@ -1,14 +1,11 @@
 import { MonitorSmartphone } from "lucide-react";
 import { Footer } from "./UI/Footer";
-import { Navbar } from "./UI/Navbar";
 import { useRouter } from "next/navigation";
 
 export default function CardMobileNotUse() {
   const router = useRouter();
   return (
     <div className="flex flex-col min-h-screen ">
-      <Navbar />
-
       <main className="flex-1 flex items-center justify-center p-4 my-8">
         <div className="relative w-full max-w-md overflow-hidden rounded-3xl bg-gradient-to-br from-base-200 to-base-300 shadow-lg">
           {/* Background grid */}

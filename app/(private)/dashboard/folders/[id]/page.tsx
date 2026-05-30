@@ -273,7 +273,7 @@ export default function FolderViewPage() {
     folder.subfolder_count > 0 || folder.file_count > 0 || tests.length > 0;
 
   return (
-    <div className="flex h-full overflow-hidden w-full gap-6 transition-all">
+    <div className="flex h-full overflow-hidden w-full gap-6 transition-all flex-col xl:flex-row">
       <FolderSidebar currentFolderId={folder.id} />
 
       <div className=" flex-1 space-y-6 overflow-auto transition-all">

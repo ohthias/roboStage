@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-
 import {
   Settings2,
   Trophy,
@@ -11,17 +10,11 @@ import {
   Trash2,
   Save,
 } from "lucide-react";
-
 import { createClient } from "@/utils/supabase/client";
-
 import { useToast } from "@/app/context/ToastContext";
-
 import Loader from "@/components/Loader";
-
 import DangerZone from "../configs/DangerZone";
-
 import EventSettings from "../configs/EventSettings";
-
 import { useEvent } from "@/hooks/useEvent";
 
 const supabase = createClient();
@@ -32,34 +25,22 @@ interface Props {
 
 export default function ConfiguracoesSection({ codeEvent }: Props) {
   const { addToast } = useToast();
-
   const {
     loading: eventLoading,
-
     eventData,
-
     eventConfig,
   } = useEvent(codeEvent);
-
   const [saving, setSaving] = useState(false);
-
   const [eventName, setEventName] = useState("");
-
   const [season, setSeason] = useState("");
-
   const [rounds, setRounds] = useState<string[]>([]);
-
   const [roundInput, setRoundInput] = useState("");
-
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (!eventData || !eventConfig) return;
-
     setEventName(eventData.name_event);
-
     setSeason(eventConfig.config?.temporada || "");
-
     setRounds(eventConfig.config?.rodadas || []);
   }, [eventData, eventConfig]);
 
@@ -67,9 +48,7 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
 
   const handleAddRound = () => {
     if (!roundInput.trim()) return;
-
     setRounds((prev) => [...prev, roundInput.trim()]);
-
     setRoundInput("");
   };
 
@@ -78,7 +57,6 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
 
     try {
       setSaving(true);
-
       await supabase
         .from("events")
         .update({
@@ -91,11 +69,8 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
         .update({
           config: {
             ...eventConfig?.config,
-
             base: "FLL",
-
             temporada: season,
-
             rodadas: rounds,
           },
         })
@@ -108,7 +83,6 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
 
       for (const team of teams || []) {
         const current = team.points || {};
-
         const merged = {
           ...current,
         };
@@ -130,7 +104,6 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
       addToast("Configurações salvas.", "success");
     } catch (err) {
       console.error(err);
-
       addToast("Erro ao salvar configurações.", "error");
     } finally {
       setSaving(false);
@@ -146,17 +119,11 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
     index: number,
   ) => {
     e.preventDefault();
-
     if (draggingIndex === null || draggingIndex === index) return;
-
     const updated = [...rounds];
-
     const [moved] = updated.splice(draggingIndex, 1);
-
     updated.splice(index, 0, moved);
-
     setRounds(updated);
-
     setDraggingIndex(index);
   };
 
@@ -175,7 +142,6 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
         <div>
           <div className="flex items-center gap-2">
             <Settings2 size={22} className="text-primary" />
-
             <h1 className="text-2xl md:text-3xl font-bold">Configurações</h1>
           </div>
 
@@ -190,7 +156,6 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
           className="btn btn-primary btn-sm"
         >
           <Save size={16} />
-
           {saving ? "Salvando..." : "Salvar"}
         </button>
       </div>
@@ -200,7 +165,6 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
         <div className="rounded-2xl border border-base-300 bg-base-100 p-5 space-y-4">
           <div className="flex items-center gap-2">
             <Trophy size={18} className="text-primary" />
-
             <h2 className="font-semibold">Evento</h2>
           </div>
 
@@ -224,14 +188,11 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
               <select
                 value={season}
                 onChange={(e) => setSeason(e.target.value)}
-                className="select select-bordered w-full mt-1"
+                className="select rounded-lg w-full mt-1 px-3 py-2"
               >
-                <option value="">Selecione</option>
-
+                <option disabled>Selecione</option>
                 <option value="UNEARTHED">UNEARTHED</option>
-
                 <option value="SUBMERGED">SUBMERGED</option>
-
                 <option value="MASTERPIECE">MASTERPIECE</option>
               </select>
             </div>
@@ -242,7 +203,6 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
         <div className="rounded-2xl border border-base-300 bg-base-100 p-5">
           <div className="flex items-center gap-2 mb-4">
             <Layers3 size={18} className="text-primary" />
-
             <h2 className="font-semibold">Resumo</h2>
           </div>
 
@@ -266,7 +226,6 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
       <div className="rounded-2xl border border-base-300 bg-base-100 p-5">
         <div className="flex items-center gap-2 mb-5">
           <Layers3 size={18} className="text-primary" />
-
           <h2 className="font-semibold">Rodadas</h2>
         </div>
 
@@ -296,7 +255,6 @@ export default function ConfiguracoesSection({ codeEvent }: Props) {
             >
               <div className="flex items-center gap-3">
                 <GripVertical size={16} className="text-base-content/40" />
-
                 <span className="font-medium">{round}</span>
               </div>
 

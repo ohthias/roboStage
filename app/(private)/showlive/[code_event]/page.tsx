@@ -12,13 +12,9 @@ import {
 } from "react";
 
 import { Menu, Trophy, CalendarDays, Radio } from "lucide-react";
-
 import { useEvent } from "@/hooks/useEvent";
-
 import Loader from "@/components/Loader";
-
 import Sidebar from "@/components/showLive/Sidebar";
-
 import GeneralPage from "@/components/showLive/subpages/GeneralPage";
 
 // Lazy loading
@@ -70,11 +66,8 @@ function useHashSection() {
 
   useEffect(() => {
     setSection(getHash());
-
     const onHashChange = () => setSection(getHash());
-
     window.addEventListener("hashchange", onHashChange);
-
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
@@ -84,7 +77,6 @@ function useHashSection() {
     if (window.location.hash !== hash) {
       window.location.hash = hash;
     }
-
     setSection((key as Section) || "");
   }, []);
 
@@ -112,10 +104,9 @@ export default function EventAdminPage() {
   );
 
   const { section, navigate } = useHashSection();
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const idEvent = eventData?.id_evento ?? 0;
+  const eventActive = eventData?.event_active ?? true;
 
   // Fecha sidebar ao navegar
   const handleNavigate = useCallback(
@@ -267,7 +258,7 @@ export default function EventAdminPage() {
           <QuickStat
             icon={<Radio className="w-4 h-4" />}
             label="Status"
-            value="Ativo"
+            value={eventActive ? "Ativo" : "Inativo"}
           />
         </div>
       </header>
@@ -334,7 +325,7 @@ export default function EventAdminPage() {
               value={String(eventConfig?.config?.rodadas?.length ?? 0)}
             />
 
-            <DesktopBadge label="Status" value="Ativo" />
+            <DesktopBadge label="Status" value={eventData?.event_active ? "Ativo" : "Inativo"} />
           </div>
         </div>
 

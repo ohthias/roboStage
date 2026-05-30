@@ -53,6 +53,19 @@ export function useLabTest() {
     loadTests();
   }, [loadTests]);
 
+  const createExecution = async (payload: {
+    testId: string;
+    returnedToBase: boolean;
+    notes: string;
+    score: number;
+    missionScores: Record<string, number>;
+    variables: Record<string, string>;
+  }) => {
+    await labTestService.createExecution(payload.testId, payload);
+
+    await loadTests();
+  }
+
   return {
     tests,
     loading,
@@ -60,5 +73,6 @@ export function useLabTest() {
     loadTests,
     createTest,
     deleteTest,
+    createExecution,
   };
 }

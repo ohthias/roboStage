@@ -17,7 +17,6 @@ import CreateDiagramModal from "./InnoLab/CreateDiagramModal";
 import { EventModal } from "../showLive/EventModal";
 import { useFavoriteFolders } from "@/hooks/useFavoriteFolders";
 import FavoriteFolderCard from "./UI/FavoriteFolderCard";
-import LabTestForm from "./LabTest/LabTestForm";
 
 export default function HubHero() {
   const { profile } = useAuth();
@@ -300,7 +299,6 @@ export default function HubHero() {
       {activeModal === "event" && (
         <EventModal onClose={() => setActiveModal(null)} open={true} />
       )}
-      {activeModal === "test" && <LabTestForm />}
       {activeModal === "content" && (
         <CreateDiagramModal onClose={() => setActiveModal(null)} open={true} />
       )}

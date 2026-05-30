@@ -100,11 +100,7 @@ export function Navbar() {
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
-  const routeIndex = window.location.pathname
-    .split("/")
-    .findIndex((part) => part === competicao);
-
-  const isIndexPage = routeIndex === 1 || routeIndex === -1;
+  const isIndexPage = pathname === `/${competicao}`;
 
   const baseLink =
     "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-out";

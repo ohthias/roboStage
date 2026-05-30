@@ -2,11 +2,6 @@
 import { DiagramType, Node } from "@/types/InnoLabType";
 import { v4 as uuidv4 } from 'uuid';
 
-export const DEFAULT_FONT = "Inter";
-export const DEFAULT_FONT_SIZE = 14;
-export const DEFAULT_NODE_COLOR = "#ffffff";
-export const DEFAULT_TEXT_COLOR = "#1e293b";
-
 export const DIAGRAM_COLORS = {
   root: "#e0f2fe",
   branch: "#f0f9ff",

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 const supabase = createClient();
 import Logo from "@/components/UI/Logo";
 import { BackgroundStars } from "@/components/UI/BackgroundStars";
@@ -37,7 +37,7 @@ export default function UniversePage() {
 
     const { data, error: fetchError } = await supabase
       .from("public_event_lookup")
-      .select("code_event, code")
+      .select("code_event, code, access_type, event_active")
       .eq("code", trimmedCode)
       .maybeSingle();
 
@@ -47,7 +47,13 @@ export default function UniversePage() {
       return;
     }
 
-    router.push(`/${data.code_event}/${data.code}`);
+    if (!data.event_active) {
+      setError("Este evento não está ativo.");
+      setLoading(false);
+      return;
+    }
+
+    router.push(`/universe/${data.code_event}/${data.code}`);
   };
 
   return (
@@ -127,7 +133,7 @@ export default function UniversePage() {
                   </div>
 
                   {error && (
-                    <div className="alert alert-error text-sm">
+                    <div className="alert alert-soft alert-error text-sm my-2">
                       <AlertCircle className="w-4 h-4" />
                       <span>{error}</span>
                     </div>

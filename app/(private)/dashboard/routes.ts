@@ -1,5 +1,17 @@
 import { NavItem } from "@/types/navigation";
-import { LayoutDashboard, User, Users, Radio, Palette, ChartPie, Book, Folder, NotebookTabs, Bot} from "lucide-react";
+import {
+  LayoutDashboard,
+  User,
+  Users,
+  Radio,
+  Palette,
+  ChartPie,
+  Book,
+  Folder,
+  NotebookTabs,
+  Bot,
+  NotepadText,
+} from "lucide-react";
 
 export const NAV_ITEMS: NavItem[] = [
   {
@@ -10,7 +22,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     id: "folders",
-    label: "Pastas",
+    label: "Minhas Pastas",
     icon: Folder,
     href: "/dashboard/folders",
   },
@@ -37,11 +49,5 @@ export const NAV_ITEMS: NavItem[] = [
     label: "StyleLab",
     icon: Palette,
     href: "/dashboard/stylelab",
-  },
-  {
-    id: "profile",
-    label: "Perfil",
-    icon: User,
-    href: "/dashboard/profile",
   },
 ];

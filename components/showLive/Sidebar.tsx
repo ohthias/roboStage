@@ -1,17 +1,116 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-const supabase = createClient();
+import { eventService } from "@/services/event.service";
+import {
+  ArrowLeft,
+  Brackets,
+  ClipboardList,
+  Eye,
+  Layers,
+  LayoutGrid,
+  Menu,
+  Palette,
+  Settings,
+  Star,
+  Trophy,
+  Users,
+  X,
+} from "lucide-react";
 
-interface NavigationBarProps {
+interface SidebarProps {
   code_volunteer: string;
   code_visitor: string;
+
   open: boolean;
   setOpen: (value: boolean) => void;
+
   eventId: number;
+
+  currentSection: string;
+  onNavigate: (section: string) => void;
 }
+
+interface EventSettings {
+  enable_playoffs: boolean;
+  pre_round_inspection: boolean;
+  advanced_view: boolean;
+}
+
+const NAV_ITEMS = [
+  {
+    key: "",
+    label: "Geral",
+    icon: LayoutGrid,
+    group: "principal",
+  },
+
+  {
+    key: "equipes",
+    label: "Equipes",
+    icon: Users,
+    group: "principal",
+  },
+
+  {
+    key: "ranking",
+    label: "Ranking",
+    icon: Trophy,
+    group: "principal",
+  },
+
+  {
+    key: "visualizacao",
+    label: "Visualização",
+    icon: Eye,
+    group: "principal",
+  },
+
+  {
+    key: "gracious-professionalism",
+    label: "Gracious Professionalism",
+    icon: Star,
+    group: "competicao",
+  },
+
+  {
+    key: "personalizacao",
+    label: "Personalização",
+    icon: Palette,
+    group: "config",
+  },
+
+  {
+    key: "configuracoes",
+    label: "Configurações",
+    icon: Settings,
+    group: "config",
+  },
+] as const;
+
+const DYNAMIC_ITEMS = [
+  {
+    key: "playoffs",
+    label: "Playoffs",
+    icon: Brackets,
+    setting: "enable_playoffs",
+  },
+
+  {
+    key: "pre-round-inspection",
+    label: "Inspeção Pré-Rodada",
+    icon: ClipboardList,
+    setting: "pre_round_inspection",
+  },
+
+  {
+    key: "advanced-view",
+    label: "Visualização Avançada",
+    icon: Layers,
+    setting: "advanced_view",
+  },
+] as const;
 
 export default function Sidebar({
   code_volunteer,
@@ -19,214 +118,348 @@ export default function Sidebar({
   open,
   setOpen,
   eventId,
-}: NavigationBarProps) {
+  currentSection,
+  onNavigate,
+}: SidebarProps) {
   const router = useRouter();
-  const [settings, setSettings] = useState({
+
+  const [settings, setSettings] = useState<EventSettings>({
     enable_playoffs: false,
     pre_round_inspection: false,
     advanced_view: false,
   });
 
-  // Função para carregar os settings iniciais
-  const loadSettings = async () => {
-    const { data, error } = await supabase
-      .from("event_settings")
-      .select("enable_playoffs, pre_round_inspection, advanced_view")
-      .eq("id_evento", eventId)
-      .maybeSingle();
+  const [, setLoading] = useState(true);
 
-    if (data) {
-      setSettings({
-        enable_playoffs: data.enable_playoffs,
-        pre_round_inspection: data.pre_round_inspection,
-        advanced_view: data.advanced_view,
-      });
-    } else if (error) {
-      console.error(error);
-    }
-  };
-
-  // Carregar settings inicialmente
   useEffect(() => {
+    if (!eventId) return;
+
+    const loadSettings = async () => {
+      try {
+        setLoading(true);
+
+        const data = await eventService.getEventSettings(eventId);
+
+        if (data) {
+          setSettings({
+            enable_playoffs: data.enable_playoffs,
+            pre_round_inspection: data.pre_round_inspection,
+            advanced_view: data.advanced_view,
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao carregar configurações:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadSettings();
   }, [eventId]);
 
-  // Configurar Supabase Realtime para atualizar a sidebar em tempo real
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      loadSettings();
-    }, 5000); // Poll every 5 seconds
-
-    return () => {
-      clearInterval(intervalId);
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setOpen(true);
+      }
     };
-  }, [eventId]);
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, [setOpen]);
+
+  const handleNavigate = (section: string) => {
+    onNavigate(section);
+
+    if (window.innerWidth < 1024) {
+      setOpen(false);
+    }
+  };
+
+  const dynamicItems = useMemo(() => {
+    return DYNAMIC_ITEMS.filter(
+      (item) => settings[item.setting as keyof EventSettings],
+    );
+  }, [settings]);
+
+  const principalItems = NAV_ITEMS.filter((item) => item.group === "principal");
+
+  const competitionItems = NAV_ITEMS.filter(
+    (item) => item.group === "competicao",
+  );
+
+  const configItems = NAV_ITEMS.filter((item) => item.group === "config");
 
   return (
     <>
-      <div className="py-3 px-2 flex justify-start items-center bg-base-200 border-b border-base-300 rounded-lg">
-        <button
-          aria-label="Abrir menu"
-          aria-expanded={open}
-          aria-controls="rs-offcanvas"
-          className="btn btn-square btn-ghost"
-          onClick={() => setOpen(true)}
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
+      {/* MOBILE HEADER */}
+      <header className="fixed top-0 left-0 right-0 z-40 h-14 flex items-center justify-between px-4 border-b border-base-300 bg-base-100/90 backdrop-blur lg:hidden">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setOpen(true)}
+            className="
+              btn btn-sm btn-square btn-ghost
+            "
+            aria-label="Abrir menu"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
-        <div className="text-2xl font-bold text-base-content ml-4">
-          Show<span className="text-primary">Live</span>
+            <Menu className="h-5 w-5" />
+          </button>
+
+          <h1 className="font-bold text-lg">
+            Show
+            <span className="text-primary">Live</span>
+          </h1>
         </div>
-      </div>
 
-      {open && (
-        <div
-          className="fixed inset-0 bg-base-200/50 z-40 lg:hidden"
-          style={{ backdropFilter: "blur(4px)" }}
-          onClick={() => setOpen(false)}
-        ></div>
-      )}
+        <button
+          onClick={() => router.push("/dashboard#showLive")}
+          className="btn btn-ghost btn-sm"
+        >
+          Voltar
+        </button>
+      </header>
 
+      {/* BACKDROP */}
+      <div
+        onClick={() => setOpen(false)}
+        className={`
+          fixed inset-0 z-40
+          bg-black/50 backdrop-blur-sm
+          transition-opacity duration-300
+          lg:hidden
+
+          ${
+            open
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          }
+        `}
+      />
+
+      {/* SIDEBAR */}
       <aside
         className={`
-          fixed top-0 left-0 h-full w-72 z-50
-          bg-base-200 shadow-xl border-r border-base-300
+          fixed top-0 left-0 z-50
+          h-screen w-[280px]
+          bg-base-200
+          border-r border-base-300
           flex flex-col
-          transform transition-transform duration-300 ease-in-out
-          ${open ? "translate-x-0" : "-translate-x-full"} 
+
+          transition-transform duration-300 ease-out
+
+          ${open ? "translate-x-0" : "-translate-x-full"}
+
           lg:translate-x-0
         `}
       >
-        <div className="p-4 border-b border-base-300 flex justify-between items-center">
-          <h3 className="font-bold text-lg">
-            Show<span className="text-primary">Live</span>
-          </h3>
+        {/* HEADER */}
+        <div
+          className="
+            h-16 shrink-0
+            px-5
+            border-b border-base-300
+            flex items-center justify-between
+          "
+        >
+          <div>
+            <h2 className="font-bold text-lg">
+              Show
+              <span className="text-primary">Live</span>
+            </h2>
+
+            <p className="text-xs text-base-content/50">Painel do evento</p>
+          </div>
+
           <button
-            className="btn btn-sm btn-circle btn-ghost lg:hidden"
             onClick={() => setOpen(false)}
-            style={{ lineHeight: 0 }}
+            className="
+              btn btn-sm btn-circle btn-ghost
+              lg:hidden
+            "
           >
-            <i className="fi fi-br-cross"></i>
+            <X className="h-4 w-4" />
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4">
-          <div className="mb-2">
-            <p className="menu-title">Códigos</p>
-            <div className="bg-base-100 p-3 rounded-box flex justify-between items-center mb-2">
-              <span className="text-xs text-base-content">Voluntário</span>
-              <span className="badge badge-ghost">{code_volunteer}</span>
-            </div>
-            <div className="bg-base-100 p-3 rounded-box flex justify-between items-center">
-              <span className="text-xs text-base-content">Visitante</span>
-              <span className="badge badge-ghost">{code_visitor}</span>
-            </div>
-          </div>
+        {/* ACCESS CODES */}
+        <div className="p-4 space-y-3">
+          <AccessCard label="Voluntário" value={code_volunteer} />
 
-          <ul className="menu gap-1 w-full">
-            <li>
-              <a href="#" className="btn btn-ghost justify-start">
-                <i className="fi fi-rr-apps mr-2" />
-                Geral
-              </a>
-            </li>
-            <li>
-              <a href="#equipes" className="btn btn-ghost justify-start">
-                <i className="fi fi-rr-employees-woman-man mr-2" />
-                Equipes
-              </a>
-            </li>
-            <li>
-              <a href="#ranking" className="btn btn-ghost justify-start">
-                <i className="fi fi-rr-ranking-star mr-2" />
-                Ranking
-              </a>
-            </li>
-            <li>
-              <a href="#visualizacao" className="btn btn-ghost justify-start">
-                <i className="fi fi-rr-eye mr-2" />
-                Visualização
-              </a>
-            </li>
+          <AccessCard label="Visitante" value={code_visitor} />
+        </div>
 
-            <hr className="my-2 border border-base-300" />
-            <li>
-              {" "}
-              <a
-                href="#gracious-professionalism"
-                className="btn btn-ghost justify-start"
-              >
-                {" "}
-                Gracious Professionalism{" "}
-              </a>{" "}
-            </li>
-            {/* Itens dinâmicos */}
-            {settings.enable_playoffs && (
-              <li>
-                <a href="#brackets" className="btn btn-ghost justify-start">
-                  Brackets
-                </a>
-              </li>
-            )}
-            {settings.pre_round_inspection && (
-              <li>
-                <a
-                  href="#pre-round-inspection"
-                  className="btn btn-ghost justify-start"
-                >
-                  Inspeção Pré-Rodada
-                </a>
-              </li>
-            )}
-            {settings.advanced_view && (
-              <li>
-                <a
-                  href="#advanced-view"
-                  className="btn btn-ghost justify-start"
-                >
-                  Visualização Avançada
-                </a>
-              </li>
-            )}
+        {/* NAVIGATION */}
+        <nav
+          className="
+            flex-1 overflow-y-auto
+            px-3 pb-4
+            space-y-5
+          "
+        >
+          <SidebarGroup title="Principal">
+            {principalItems.map((item) => (
+              <NavButton
+                key={item.key}
+                item={item}
+                active={currentSection === item.key}
+                onClick={() => handleNavigate(item.key)}
+              />
+            ))}
+          </SidebarGroup>
 
-            <hr className="my-2 border border-base-300" />
+          <SidebarGroup title="Competição">
+            {competitionItems.map((item) => (
+              <NavButton
+                key={item.key}
+                item={item}
+                active={currentSection === item.key}
+                onClick={() => handleNavigate(item.key)}
+              />
+            ))}
 
-            <li>
-              <a href="#personalizacao" className="btn btn-ghost justify-start">
-                <i className="fi fi-rr-customize-edit mr-2" />
-                Personalização
-              </a>
-            </li>
-            <li>
-              <a href="#configuracoes" className="btn btn-ghost justify-start">
-                <i className="fi fi-rr-settings mr-2" />
-                Configurações
-              </a>
-            </li>
-          </ul>
+            {dynamicItems.map((item) => (
+              <NavButton
+                key={item.key}
+                item={item}
+                active={currentSection === item.key}
+                onClick={() => handleNavigate(item.key)}
+              />
+            ))}
+          </SidebarGroup>
+
+          <SidebarGroup title="Configurações">
+            {configItems.map((item) => (
+              <NavButton
+                key={item.key}
+                item={item}
+                active={currentSection === item.key}
+                onClick={() => handleNavigate(item.key)}
+              />
+            ))}
+          </SidebarGroup>
         </nav>
 
-        <div className="p-4 border-t border-base-300">
+        {/* FOOTER */}
+        <div
+          className="
+            p-4
+            border-t border-base-300
+            bg-base-200/80 backdrop-blur
+          "
+        >
           <button
-            className="btn btn-outline btn-error btn-sm w-full"
-            onClick={() => router.push("/dashboard#showLive")}
+            onClick={() => router.push("/dashboard/showlive")}
+            className="
+              btn btn-outline btn-error
+              w-full rounded-xl
+              gap-2
+            "
           >
+            <ArrowLeft className="h-4 w-4" />
             Voltar ao Hub
           </button>
         </div>
       </aside>
     </>
+  );
+}
+
+interface SidebarGroupProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+function SidebarGroup({ title, children }: SidebarGroupProps) {
+  return (
+    <section className="space-y-2">
+      <div className="px-2">
+        <span
+          className="
+            text-[11px]
+            uppercase tracking-wider
+            text-base-content/40
+            font-semibold
+          "
+        >
+          {title}
+        </span>
+      </div>
+
+      <div className="space-y-1">{children}</div>
+    </section>
+  );
+}
+
+interface AccessCardProps {
+  label: string;
+  value: string;
+}
+
+function AccessCard({ label, value }: AccessCardProps) {
+  return (
+    <div
+      className="
+        rounded-2xl
+        border border-base-300
+        bg-base-100
+        px-4 py-3
+      "
+    >
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-xs text-base-content/50">{label}</span>
+
+        <span
+          className="
+            badge badge-outline
+            font-mono
+          "
+        >
+          {value || "----"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+interface NavButtonProps {
+  item: {
+    key: string;
+    label: string;
+    icon: React.ElementType;
+  };
+
+  active: boolean;
+
+  onClick: () => void;
+}
+
+function NavButton({ item, active, onClick }: NavButtonProps) {
+  const Icon = item.icon;
+
+  return (
+    <button
+      onClick={onClick}
+      aria-current={active ? "page" : undefined}
+      className={`
+        w-full
+        flex items-center gap-3
+        py-2 px-4
+        rounded-2xl
+        text-sm font-medium
+        transition-all duration-200
+
+        ${
+          active
+            ? "bg-primary text-primary-content shadow"
+            : "hover:bg-base-300/50"
+        }
+      `}
+    >
+      <Icon className="h-4 w-4" />
+      {item.label}
+    </button>
   );
 }

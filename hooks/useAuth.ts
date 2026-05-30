@@ -1,144 +1,148 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-const supabase = createClient();
+import { authService } from "@/services/auth.service";
 
 export function useAuth() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
 
-  // 🔹 Sempre que montar o hook, busca sessão atual
-  useEffect(() => {
-    const getSession = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error(error);
-        return;
-      }
-      setUser(data.session?.user ?? null);
-    };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    getSession();
-
-    // 🔹 Listener pra mudar user em tempo real (login/logout)
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, []);
-
-  const login = async (
-    email: string,
-    password: string,
-    turnstileToken?: string
-  ) => {
-    setLoading(true);
-    setError(null);
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      const errMsg = ((): string => {
-      const e: any = error;
-      const msg = (e?.message ?? "").toString().toLowerCase();
-
-      if (e?.status === 400 || e?.status === 401) {
-        return "Credenciais inválidas. Verifique seu e-mail e senha.";
-      }
-
-      if (/invalid|credentials|password|not found|user not found/.test(msg)) {
-        return "Credenciais inválidas. Verifique seu e-mail e senha.";
-      }
-
-      if (/confirm|verification|verify/.test(msg)) {
-        return "E-mail não confirmado. Verifique sua caixa de entrada para ativar sua conta.";
-      }
-
-      if (/network|timeout|fetch|failed to fetch/.test(msg)) {
-        return "Erro de rede. Verifique sua conexão e tente novamente.";
-      }
-
-      return e?.message
-        ? `Falha ao realizar login: ${e.message}`
-        : "Falha ao realizar login.";
-      })();
-
-      setError(errMsg);
-      setLoading(false);
-      return false;
-    }
-
-    if (data.session) {
-      setUser(data.session.user);
-      setSuccess("Login realizado com sucesso!");
-      return true;
-    }
-
-    setError("Falha ao criar sessão.");
-    return false;
-  };
-
-  const signup = async (
-    email: string,
-    password: string,
-    name: string,
-    turnstileToken?: string
-  ) => {
-    setLoading(true);
-    setError(null);
-
+  async function loadUser() {
     try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
+      setLoading(true);
 
-      if (data.user) {
-        setUser(data.user);
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert([{ id: data.user.id, username: name }]);
-        if (profileError) throw profileError;
-      }
+      const data = await authService.getCurrentUserWithProfile();
 
-      setSuccess("Cadastro realizado! Clique em login para entrar.");
-      return true;
-    } catch (err: unknown) {
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        "message" in err &&
-        typeof (err as any).message === "string"
-      ) {
-        setError((err as { message: string }).message);
-      } else {
-        setError("Ocorreu um erro desconhecido.");
-      }
+      setUser(data.user);
+      setProfile(data.profile);
 
-      return false;
+      return data;
+    } catch (err: any) {
+      setError(err.message);
+
+      return null;
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const loginWithProvider = async (provider: "google" | "github") => {
-    setError(null);
-    await supabase.auth.signInWithOAuth({ provider });
-  };
+  async function login(email: string, password: string) {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-  };
+      await authService.login(email, password);
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  return { user, login, signup, loginWithProvider, logout, loading, error, success };
+  async function register(email: string, password: string) {
+    try {
+      setLoading(true);
+      setError(null);
+
+      await authService.register(email, password);
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function forgotPassword(email: string) {
+    try {
+      setLoading(true);
+      setError(null);
+
+      await authService.forgotPassword(email);
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function resetPassword(password: string) {
+    try {
+      setLoading(true);
+      setError(null);
+
+      await authService.resetPassword(password);
+      alert("Senha alterada com sucesso!");
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function completeOnboarding(data: {
+    full_name: string;
+    platform_goal: string;
+    user_role: string;
+  }) {
+    await authService.completeOnboarding(data);
+
+    await loadUser();
+  }
+
+  async function updateProfile(data: {
+    username?: string;
+    bio?: string;
+    avatar_url?: string;
+  }) {
+    if (!user) return;
+
+    await authService.updateProfile(user.id, data);
+
+    await loadUser();
+  }
+
+  async function logout() {
+    await authService.logout();
+
+    window.location.href = "/auth/login";
+  }
+
+  useEffect(() => {
+    const publicRoutes = [
+      "/auth/login",
+      "/auth/signup",
+      "/auth/forgot-password",
+      "/auth/reset",
+    ];
+
+    if (!publicRoutes.includes(window.location.pathname)) {
+      loadUser();
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    user,
+    profile,
+    loading,
+    error,
+
+    login,
+    register,
+
+    forgotPassword,
+    resetPassword,
+
+    completeOnboarding,
+    updateProfile,
+    logout,
+  };
 }

@@ -103,14 +103,15 @@ const FlashcardScreen: React.FC<FlashcardScreenProps> = ({
       </div>
 
       {/* FLASHCARD */}
-      <div className="relative h-96 w-full perspective-1000 mb-8 group">
+      <div className="relative h-96 w-full [perspective:1000px] mb-8 group">
         <div
-          className={`relative w-full h-full transition-transform duration-700 transform-style-3d ${
-            isFlipped ? "rotate-y-180" : ""
+          className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] ${
+            isFlipped ? "[transform:rotateY(180deg)]" : ""
           }`}
         >
           {/* FRONT */}
-          <div className="absolute w-full h-full backface-hidden bg-base-100 rounded-3xl shadow-xl border border-base-200 flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:shadow-2xl transition-shadow"
+          <div
+            className="absolute w-full h-full [backface-visibility:hidden] bg-base-100 rounded-3xl shadow-xl border border-base-200 flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:shadow-2xl transition-shadow"
             onClick={() => !feedbackState && setIsFlipped(true)}
           >
             <div className="absolute top-0 left-0 w-full h-4 bg-primary/90 rounded-t-3xl opacity-90"></div>
@@ -128,7 +129,7 @@ const FlashcardScreen: React.FC<FlashcardScreenProps> = ({
 
           {/* BACK */}
           <div
-            className="absolute inset-0 backface-hidden rotate-y-180 bg-neutral text-neutral-content rounded-3xl shadow-xl border border-base-200 flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:shadow-2xl transition-shadow"
+            className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-neutral text-neutral-content rounded-3xl shadow-xl border border-base-200 flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:shadow-2xl transition-shadow"
             onClick={() => !feedbackState && setIsFlipped(false)}
           >
             <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
@@ -149,38 +150,52 @@ const FlashcardScreen: React.FC<FlashcardScreenProps> = ({
       <div className="grid grid-cols-2 gap-4">
         <button
           onClick={() => handleAnswerInteraction(true)}
-            disabled={!!feedbackState}
-            className={`group relative overflow-hidden flex flex-col items-center justify-center p-6 rounded-2xl transition-all duration-300 border shadow-sm
-            ${feedbackState === 'difficult' 
-                ? 'bg-error border-error text-error-content scale-95 shadow-inner' 
-                : feedbackState === 'success'
-                    ? 'bg-base-200 border-base-200 text-base-content/40 opacity-60'
-                    : 'bg-base-100 text-base-content hover:bg-error/10 hover:text-error border-base-200 hover:border-error hover:shadow-md hover:-translate-y-1'
+          disabled={!!feedbackState}
+          className={`group relative overflow-hidden flex flex-col items-center justify-center p-6 rounded-2xl transition-all duration-300 border shadow-sm
+            ${
+              feedbackState === "difficult"
+                ? "bg-error border-error text-error-content scale-95 shadow-inner"
+                : feedbackState === "success"
+                  ? "bg-base-200 border-base-200 text-base-content/40 opacity-60"
+                  : "bg-base-100 text-base-content hover:bg-error/10 hover:text-error border-base-200 hover:border-error hover:shadow-md hover:-translate-y-1"
             }`}
         >
-            <div className={`p-3 rounded-full mb-2 transition-colors ${feedbackState === 'difficult' ? 'bg-error/20' : 'bg-error/10 group-hover:bg-error/20'}`}>
-                <XCircle className={`w-6 h-6 ${feedbackState === 'difficult' ? 'text-error-content' : 'text-error'}`} />
-            </div>
-            <span className="font-bold text-sm">Foi Difícil</span>
-            <span className="text-[10px] font-medium opacity-60 mt-1 uppercase tracking-wide">Preciso revisar</span>
+          <div
+            className={`p-3 rounded-full mb-2 transition-colors ${feedbackState === "difficult" ? "bg-error/20" : "bg-error/10 group-hover:bg-error/20"}`}
+          >
+            <XCircle
+              className={`w-6 h-6 ${feedbackState === "difficult" ? "text-error-content" : "text-error"}`}
+            />
+          </div>
+          <span className="font-bold text-sm">Foi Difícil</span>
+          <span className="text-[10px] font-medium opacity-60 mt-1 uppercase tracking-wide">
+            Preciso revisar
+          </span>
         </button>
 
         <button
           onClick={() => handleAnswerInteraction(false)}
-            disabled={!!feedbackState}
-            className={`group relative overflow-hidden flex flex-col items-center justify-center p-6 rounded-2xl transition-all duration-300 border shadow-sm
-            ${feedbackState === 'success' 
-                ? 'bg-success border-success text-success-content scale-95 shadow-inner' 
-                : feedbackState === 'difficult'
-                    ? 'bg-base-200 border-base-200 text-base-content/40 opacity-60'
-                    : 'bg-base-100 text-base-content hover:bg-success/10 hover:text-success border-base-200 hover:border-success hover:shadow-md hover:-translate-y-1'
+          disabled={!!feedbackState}
+          className={`group relative overflow-hidden flex flex-col items-center justify-center p-6 rounded-2xl transition-all duration-300 border shadow-sm
+            ${
+              feedbackState === "success"
+                ? "bg-success border-success text-success-content scale-95 shadow-inner"
+                : feedbackState === "difficult"
+                  ? "bg-base-200 border-base-200 text-base-content/40 opacity-60"
+                  : "bg-base-100 text-base-content hover:bg-success/10 hover:text-success border-base-200 hover:border-success hover:shadow-md hover:-translate-y-1"
             }`}
         >
-             <div className={`p-3 rounded-full mb-2 transition-colors ${feedbackState === 'success' ? 'bg-success/20' : 'bg-success/10 group-hover:bg-success/20'}`}>
-                <CheckCircle className={`w-6 h-6 ${feedbackState === 'success' ? 'text-success-content' : 'text-success'}`} />
-            </div>
-            <span className="font-bold text-sm">Respondi Bem</span>
-            <span className="text-[10px] font-medium opacity-60 mt-1 uppercase tracking-wide">Próxima carta</span>
+          <div
+            className={`p-3 rounded-full mb-2 transition-colors ${feedbackState === "success" ? "bg-success/20" : "bg-success/10 group-hover:bg-success/20"}`}
+          >
+            <CheckCircle
+              className={`w-6 h-6 ${feedbackState === "success" ? "text-success-content" : "text-success"}`}
+            />
+          </div>
+          <span className="font-bold text-sm">Respondi Bem</span>
+          <span className="text-[10px] font-medium opacity-60 mt-1 uppercase tracking-wide">
+            Próxima carta
+          </span>
         </button>
       </div>
 

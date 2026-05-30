@@ -10,11 +10,11 @@ export const HERO_CONFIG = {
       "https://fspartner.no/cdn/shop/collections/FLL-3.jpg?v=1741335945",
     ctaPrimario: {
       label: "Saiba Mais",
-      href: "/fll/about",
+      href: "/about",
     },
     ctaSecundario: {
-      label: "Pontuar",
-      href: "/fll/score/unearthed",
+      label: "Entrar",
+      href: "/auth/login",
     },
   },
 

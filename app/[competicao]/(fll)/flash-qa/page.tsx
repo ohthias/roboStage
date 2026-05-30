@@ -19,8 +19,8 @@ export default function FlashQA() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-grow p-6 flex items-center justify-center">
-        <div className="w-full max-w-4xl">
+      <main className="p-6 flex items-center justify-center">
+        <div className="w-full">
           {gameState.status === "setup" && (
             <SetupScreen onStart={startGame} />
           )}

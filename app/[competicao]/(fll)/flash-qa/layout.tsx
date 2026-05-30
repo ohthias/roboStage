@@ -1,4 +1,6 @@
 import { Metadata } from "next";
+// @ts-ignore: allow side-effect CSS import without type declarations
+import "./style.css";
 
 export const metadata: Metadata = {
   title: "Flash QA - RoboStage",

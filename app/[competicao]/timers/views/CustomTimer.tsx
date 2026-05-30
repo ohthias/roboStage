@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { AppMode } from "@/types/TimersType";
 import { Plus, Minus, ArrowLeftCircleIcon } from "lucide-react";
-import { playSound } from "@/lib/audio";
+import { playSound } from "@/utils/audio";
 import { CompletionModal } from "@/components/Timers/CompletionModal";
 import { ConfirmModal } from "@/components/Timers/ConfirmModal";
 import { ControlBar } from "@/components/Timers/ControlBar";

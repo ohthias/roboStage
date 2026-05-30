@@ -1,112 +1,402 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import GeneralPage from "@/components/showLive/subpages/GeneralPage";
+
+import {
+  useEffect,
+  useState,
+  useCallback,
+  lazy,
+  Suspense,
+  useMemo,
+} from "react";
+
+import { Menu, Trophy, CalendarDays, Radio } from "lucide-react";
 import { useEvent } from "@/hooks/useEvent";
-import TeamsSection from "@/components/showLive/subpages/TeamsSection";
-import RankingSection from "@/components/showLive/subpages/RankingSection";
-import VisualizationSection from "@/components/showLive/subpages/VisualizationSection";
-import ConfiguracoesSection from "@/components/showLive/subpages/ConfiguracoesSection";
 import Loader from "@/components/Loader";
 import Sidebar from "@/components/showLive/Sidebar";
-import ThemeSection from "@/components/showLive/subpages/ThemePage";
-import TabelaGracious from "@/components/showLive/subpages/TabelaGracious";
-import Brackets from "@/components/showLive/subpages/BracketsSection";
+import GeneralPage from "@/components/showLive/subpages/GeneralPage";
 
-export default function EventAdminPage() {
-  const params = useParams<{ code_event: string }>();
-  const codeEvent = params.code_event;
-  const { loading, error, eventData, eventConfig, teams } = useEvent(codeEvent);
+// Lazy loading
+const TeamsSection = lazy(
+  () => import("@/components/showLive/subpages/TeamsSection"),
+);
 
-  const [currentSection, setCurrentSection] = useState<string>("");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+const RankingSection = lazy(
+  () => import("@/components/showLive/subpages/RankingSection"),
+);
+
+const VisualizationSection = lazy(
+  () => import("@/components/showLive/subpages/VisualizationSection"),
+);
+
+const ConfiguracoesSection = lazy(
+  () => import("@/components/showLive/subpages/ConfiguracoesSection"),
+);
+
+const ThemeSection = lazy(
+  () => import("@/components/showLive/subpages/ThemePage"),
+);
+
+const TabelaGracious = lazy(
+  () => import("@/components/showLive/subpages/TabelaGracious"),
+);
+
+const Brackets = lazy(
+  () => import("@/components/showLive/subpages/BracketsSection"),
+);
+
+type Section =
+  | ""
+  | "equipes"
+  | "ranking"
+  | "visualizacao"
+  | "personalizacao"
+  | "configuracoes"
+  | "gracious-professionalism"
+  | "playoffs"
+  | "pre-round-inspection"
+  | "advanced-view";
+
+function useHashSection() {
+  const getHash = () =>
+    (window.location.hash.replace("#", "") as Section) || "";
+
+  const [section, setSection] = useState<Section>("");
 
   useEffect(() => {
-    const hash = window.location.hash.replace("#", "");
-    setCurrentSection(hash);
-
-    const handleHashChange = () => {
-      const newHash = window.location.hash.replace("#", "");
-      setCurrentSection(newHash);
-    };
-
-    window.addEventListener("hashchange", handleHashChange);
-
-    return () => {
-      window.removeEventListener("hashchange", handleHashChange);
-    };
+    setSection(getHash());
+    const onHashChange = () => setSection(getHash());
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  const renderSection = () => {
-    switch (currentSection) {
+  const navigate = useCallback((key: string) => {
+    const hash = key ? `#${key}` : "#";
+
+    if (window.location.hash !== hash) {
+      window.location.hash = hash;
+    }
+    setSection((key as Section) || "");
+  }, []);
+
+  return {
+    section,
+    navigate,
+  };
+}
+
+function SectionLoader() {
+  return (
+    <div className="flex justify-center items-center h-48">
+      <span className="loading loading-spinner loading-md text-primary" />
+    </div>
+  );
+}
+
+export default function EventAdminPage() {
+  const params = useParams<{
+    code_event: string;
+  }>();
+
+  const { loading, eventData, eventConfig, teams, stats, ranking } = useEvent(
+    params.code_event,
+  );
+
+  const { section, navigate } = useHashSection();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const idEvent = eventData?.id_evento ?? 0;
+  const eventActive = eventData?.event_active ?? true;
+
+  // Fecha sidebar ao navegar
+  const handleNavigate = useCallback(
+    (key: string) => {
+      navigate(key);
+
+      if (typeof window !== "undefined" && window.innerWidth < 1024) {
+        setSidebarOpen(false);
+      }
+    },
+    [navigate],
+  );
+
+  // Desktop reset
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const content = useMemo(() => {
+    switch (section) {
       case "equipes":
-        return (
-          <TeamsSection
-            event={
-              eventData?.id_evento && eventConfig?.config.rodadas
-                ? {
-                  id_event: eventData.id_evento,
-                  points: eventConfig.config.rodadas,
-                }
-                : null
-            }
-          />
-        );
+        return <TeamsSection codeEvent={params.code_event} />;
+
       case "ranking":
-        return <RankingSection idEvent={eventData?.id_evento || null} />;
+        return <RankingSection codeEvent={params.code_event} />;
+
       case "visualizacao":
-        return <VisualizationSection idEvent={eventData?.id_evento || null} />;
+        return <VisualizationSection codeEvent={params.code_event} />;
+
       case "personalizacao":
-        return <ThemeSection eventId={eventData?.id_evento ? String(eventData.id_evento) : ""} />;
+        return <ThemeSection codeEvent={params.code_event} />;
+
       case "configuracoes":
-        return <ConfiguracoesSection idEvent={eventData?.id_evento ?? null} />;
+        return <ConfiguracoesSection codeEvent={params.code_event} />;
+
       case "gracious-professionalism":
-        return <TabelaGracious eventId={eventData?.id_evento || 0} />;
-      case "brackets":
-        return <Brackets eventId={eventData?.id_evento || 0} />;
+        return <TabelaGracious eventId={idEvent} />;
+
+      case "playoffs":
+        return <Brackets eventId={idEvent} />;
+
       case "pre-round-inspection":
-        return <div>Inspeção Pré-Rodada Section - Em desenvolvimento</div>;
+        return (
+          <div className="px-4 md:px-6 py-4 text-sm text-base-content/50">
+            Inspeção Pré-Rodada — em desenvolvimento
+          </div>
+        );
+
       case "advanced-view":
-        return <div>Visualização Avançada Section - Em desenvolvimento</div>;
+        return (
+          <div className="px-4 md:px-6 py-4 text-sm text-base-content/50">
+            Visualização Avançada — em desenvolvimento
+          </div>
+        );
+
       default:
         return (
           <GeneralPage
             name_event={eventData?.name_event ?? ""}
-            event_data={eventData}
-            event_config={eventConfig?.config || null}
+            event_config={eventConfig?.config ?? null}
+            stats={stats}
+            ranking={ranking}
+            event_active={eventData?.event_active ?? false}
           />
         );
     }
-  };
+  }, [section, eventData, eventConfig, teams, stats, ranking]);
 
-   return (
-    <div className="flex w-full flex-col lg:flex-row items-stretch justify-start">
-      {/* Sidebar */}
+  if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-base-100">
+        <Loader />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-base-200/40">
+      {/* MOBILE HEADER */}
+      <header
+        className="
+          lg:hidden
+          sticky top-0 z-40
+          border-b border-base-300
+          bg-base-100/90
+          backdrop-blur-xl
+        "
+      >
+        <div
+          className="
+            h-16
+            px-4
+            flex items-center justify-between
+            gap-3
+          "
+        >
+          <div className="min-w-0">
+            <h1
+              className="
+                font-bold
+                truncate
+              "
+            >
+              {eventData?.name_event}
+            </h1>
+
+            <p className="text-xs text-base-content/50">ShowLive Dashboard</p>
+          </div>
+
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="
+              btn btn-square
+              btn-ghost
+              rounded-2xl
+            "
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* QUICK STATS */}
+        <div
+          className="
+            grid grid-cols-3
+            gap-2
+            px-4 pb-4
+          "
+        >
+          <QuickStat
+            icon={<Trophy className="w-4 h-4" />}
+            label="Equipes"
+            value={String(teams?.length ?? 0)}
+          />
+
+          <QuickStat
+            icon={<CalendarDays className="w-4 h-4" />}
+            label="Rodadas"
+            value={String(eventConfig?.config?.rodadas?.length ?? 0)}
+          />
+
+          <QuickStat
+            icon={<Radio className="w-4 h-4" />}
+            label="Status"
+            value={eventActive ? "Ativo" : "Inativo"}
+          />
+        </div>
+      </header>
+
+      {/* MOBILE OVERLAY */}
+      {sidebarOpen && (
+        <button
+          aria-label="Fechar menu"
+          onClick={() => setSidebarOpen(false)}
+          className="
+            fixed inset-0 z-40
+            bg-black/60
+            backdrop-blur-sm
+            lg:hidden
+          "
+        />
+      )}
+
+      {/* SIDEBAR */}
       <Sidebar
         code_volunteer={eventData?.code_volunteer ?? ""}
         code_visitor={eventData?.code_visit ?? ""}
         open={sidebarOpen}
         setOpen={setSidebarOpen}
-        eventId={eventData?.id_evento || 0}
+        currentSection={section}
+        onNavigate={handleNavigate}
+        eventId={idEvent}
       />
 
+      {/* PAGE */}
       <div
-        className={`
-          flex-1 p-4 sm:p-2 transition-all duration-300
-          ${sidebarOpen ? "lg:ml-24" : "lg:ml-24"}
-        `}
+        className="
+          lg:ml-72
+          min-h-screen
+          transition-all duration-300
+        "
       >
-        {loading ? (
-          <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
-            <Loader />
+        {/* DESKTOP HEADER */}
+        <div
+          className="
+            hidden lg:flex
+            sticky top-0 z-30
+            h-20
+            border-b border-base-300
+            bg-base-100/80
+            backdrop-blur-xl
+            items-center justify-between
+            px-8
+          "
+        >
+          <div>
+            <h1 className="text-xl font-bold">{eventData?.name_event}</h1>
+
+            <p className="text-sm text-base-content/50">
+              Painel administrativo do evento
+            </p>
           </div>
-        ) : (
-          <main className="flex-1 overflow-y-auto pt-4 mt-8 sm:mt-0 w-full">
-            {renderSection()}
-          </main>
-        )}
+
+          <div className="flex items-center gap-3">
+            <DesktopBadge label="Equipes" value={String(teams?.length ?? 0)} />
+
+            <DesktopBadge
+              label="Rodadas"
+              value={String(eventConfig?.config?.rodadas?.length ?? 0)}
+            />
+
+            <DesktopBadge label="Status" value={eventData?.event_active ? "Ativo" : "Inativo"} />
+          </div>
+        </div>
+
+        {/* CONTENT */}
+        <main
+          className="
+            w-full
+            px-3 sm:px-4 md:px-6 lg:px-8
+            py-4 md:py-6
+          "
+        >
+          <Suspense fallback={<SectionLoader />}>{content}</Suspense>
+        </main>
       </div>
     </div>
-   )
+  );
+}
+
+interface QuickStatProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}
+
+function QuickStat({ icon, label, value }: QuickStatProps) {
+  return (
+    <div
+      className="
+        rounded-2xl
+        border border-base-300
+        bg-base-100
+        px-3 py-2
+      "
+    >
+      <div
+        className="
+          flex items-center gap-2
+          text-base-content/50
+          text-xs
+        "
+      >
+        {icon}
+
+        <span>{label}</span>
+      </div>
+
+      <p className="font-bold mt-1">{value}</p>
+    </div>
+  );
+}
+
+interface DesktopBadgeProps {
+  label: string;
+  value: string;
+}
+
+function DesktopBadge({ label, value }: DesktopBadgeProps) {
+  return (
+    <div
+      className="
+        rounded-2xl
+        border border-base-300
+        bg-base-100
+        px-4 py-2
+        min-w-[110px]
+      "
+    >
+      <p className="text-xs text-base-content/50">{label}</p>
+
+      <p className="font-bold">{value}</p>
+    </div>
+  );
 }

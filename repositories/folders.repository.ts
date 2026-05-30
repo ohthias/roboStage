@@ -111,12 +111,20 @@ export const foldersRepository = {
     return supabase
       .from("tests")
       .select(
-        `id, name_test, created_at, last_acess, type_id,
-         test_types ( id, name )`,
+        `
+      id,
+      name,
+      description,
+      mode,
+      season,
+      status,
+      created_at,
+      updated_at,
+      last_access_at
+    `,
       )
       .eq("folder_id", folderId)
-      .order("created_at", { ascending: false })
-      .returns<TestRow[]>();
+      .order("created_at", { ascending: false });
   },
 
   async updateFolder(id: number, data: UpdateFolderPayload) {

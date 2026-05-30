@@ -136,7 +136,7 @@ export function Navbar() {
 
       <div className="drawer-content">
         <header className={navbarClasses}>
-          <div className="flex-1 gap-3">
+          <div className="flex-1 gap-3 flex items-center">
             <Logo logoSize="lg" redirectIndex={true} />
 
             <div className="hidden sm:block h-6 w-px bg-base-300/80" />

@@ -73,7 +73,14 @@ export function useFolder(folderId: number) {
         folder: data.folder,
         children: data.children,
         documents: data.documents,
-        tests: data.tests,
+        // map incoming tests to the TestRow shape
+        tests: (data.tests || []).map((t: any) => ({
+          id: t.id,
+          name_test: t.name ?? "",
+          last_acess: t.last_access_at ?? t.last_access ?? null,
+          type_id: t.type_id ?? t.mode ?? null,
+          test_types: t.test_types ?? t.season ?? null,
+        } as unknown as TestRow)),
         breadcrumbs,
         loading: false,
         error: null,

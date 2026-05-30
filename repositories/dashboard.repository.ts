@@ -48,7 +48,7 @@ export const dashboardRepository = {
   async getRecentTests(userId: string, limit = 3) {
     return await supabase
       .from("tests")
-      .select("id, name_test, last_acess")
+      .select("id, name, last_acess_at")
       .eq("user_id", userId)
       .order("last_acess", { ascending: false })
       .limit(limit)

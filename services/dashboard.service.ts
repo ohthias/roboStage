@@ -59,9 +59,9 @@ export const dashboardService = {
       })),
       ...(tests.data ?? []).map((t) => ({
         id: t.id,
-        title: t.name_test ?? "Teste",
+        title: t.name ?? "Teste",
         type: "Teste" as const,
-        accessedAt: timeAgo(t.last_acess),
+        accessedAt: timeAgo(t.last_acess_at),
       })),
       ...(documents.data ?? []).map((d) => ({
         id: d.id,

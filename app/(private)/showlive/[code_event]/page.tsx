@@ -12,13 +12,9 @@ import {
 } from "react";
 
 import { Menu, Trophy, CalendarDays, Radio } from "lucide-react";
-
 import { useEvent } from "@/hooks/useEvent";
-
 import Loader from "@/components/Loader";
-
 import Sidebar from "@/components/showLive/Sidebar";
-
 import GeneralPage from "@/components/showLive/subpages/GeneralPage";
 
 // Lazy loading
@@ -58,7 +54,7 @@ type Section =
   | "personalizacao"
   | "configuracoes"
   | "gracious-professionalism"
-  | "brackets"
+  | "playoffs"
   | "pre-round-inspection"
   | "advanced-view";
 
@@ -70,11 +66,8 @@ function useHashSection() {
 
   useEffect(() => {
     setSection(getHash());
-
     const onHashChange = () => setSection(getHash());
-
     window.addEventListener("hashchange", onHashChange);
-
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
@@ -84,7 +77,6 @@ function useHashSection() {
     if (window.location.hash !== hash) {
       window.location.hash = hash;
     }
-
     setSection((key as Section) || "");
   }, []);
 
@@ -112,10 +104,9 @@ export default function EventAdminPage() {
   );
 
   const { section, navigate } = useHashSection();
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const idEvent = eventData?.id_evento ?? 0;
+  const eventActive = eventData?.event_active ?? true;
 
   // Fecha sidebar ao navegar
   const handleNavigate = useCallback(
@@ -145,36 +136,24 @@ export default function EventAdminPage() {
   const content = useMemo(() => {
     switch (section) {
       case "equipes":
-        return (
-          <TeamsSection
-            event={
-              idEvent && eventConfig?.config?.rodadas
-                ? {
-                    id_event: idEvent,
-
-                    points: eventConfig.config.rodadas,
-                  }
-                : null
-            }
-          />
-        );
+        return <TeamsSection codeEvent={params.code_event} />;
 
       case "ranking":
-        return <RankingSection idEvent={idEvent} />;
+        return <RankingSection codeEvent={params.code_event} />;
 
       case "visualizacao":
-        return <VisualizationSection idEvent={idEvent} />;
+        return <VisualizationSection codeEvent={params.code_event} />;
 
       case "personalizacao":
-        return <ThemeSection eventId={String(idEvent)} />;
+        return <ThemeSection codeEvent={params.code_event} />;
 
       case "configuracoes":
-        return <ConfiguracoesSection idEvent={idEvent} />;
+        return <ConfiguracoesSection codeEvent={params.code_event} />;
 
       case "gracious-professionalism":
         return <TabelaGracious eventId={idEvent} />;
 
-      case "brackets":
+      case "playoffs":
         return <Brackets eventId={idEvent} />;
 
       case "pre-round-inspection":
@@ -198,10 +177,11 @@ export default function EventAdminPage() {
             event_config={eventConfig?.config ?? null}
             stats={stats}
             ranking={ranking}
+            event_active={eventData?.event_active ?? false}
           />
         );
     }
-  }, [section, idEvent, eventData, eventConfig, teams, stats, ranking]);
+  }, [section, eventData, eventConfig, teams, stats, ranking]);
 
   if (loading) {
     return (
@@ -279,7 +259,7 @@ export default function EventAdminPage() {
           <QuickStat
             icon={<Radio className="w-4 h-4" />}
             label="Status"
-            value="Ativo"
+            value={eventActive ? "Ativo" : "Inativo"}
           />
         </div>
       </header>
@@ -346,7 +326,7 @@ export default function EventAdminPage() {
               value={String(eventConfig?.config?.rodadas?.length ?? 0)}
             />
 
-            <DesktopBadge label="Status" value="Ativo" />
+            <DesktopBadge label="Status" value={eventData?.event_active ? "Ativo" : "Inativo"} />
           </div>
         </div>
 

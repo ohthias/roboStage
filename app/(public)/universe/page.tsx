@@ -37,12 +37,18 @@ export default function UniversePage() {
 
     const { data, error: fetchError } = await supabase
       .from("public_event_lookup")
-      .select("code_event, code, access_type")
+      .select("code_event, code, access_type, event_active")
       .eq("code", trimmedCode)
       .maybeSingle();
 
     if (fetchError || !data) {
       setError("Código inválido ou evento indisponível.");
+      setLoading(false);
+      return;
+    }
+
+    if (!data.event_active) {
+      setError("Este evento não está ativo.");
       setLoading(false);
       return;
     }
@@ -127,7 +133,7 @@ export default function UniversePage() {
                   </div>
 
                   {error && (
-                    <div className="alert alert-error text-sm">
+                    <div className="alert alert-soft alert-error text-sm my-2">
                       <AlertCircle className="w-4 h-4" />
                       <span>{error}</span>
                     </div>

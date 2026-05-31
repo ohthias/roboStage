@@ -134,26 +134,6 @@ function FolderCard({
   );
 }
 
-function StatCard({
-  label,
-  value,
-  sub,
-}: {
-  label: string;
-  value: number;
-  sub: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-base-300 bg-base-100 p-4">
-      <div className="text-xs uppercase tracking-wide opacity-55">{label}</div>
-
-      <div className="mt-1 text-3xl font-black tabular-nums">{value}</div>
-
-      <div className="text-xs opacity-50">{sub}</div>
-    </div>
-  );
-}
-
 type CreateFolderData = {
   name: string;
   description: string;
@@ -213,40 +193,14 @@ export default function FoldersPage() {
         <div className="relative px-6 py-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-                <Folder size={15} />
-                Sistema inteligente de organização
-              </div>
-
               <h1 className="text-4xl font-black tracking-tight md:text-5xl">
                 Suas pastas
               </h1>
-
               <p className="mt-3 max-w-xl text-base leading-relaxed text-base-content/60">
                 Organize testes, estratégias, documentos e conteúdos da equipe
                 em um ambiente moderno, hierárquico e preparado para grandes
                 projetos.
               </p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3 sm:w-auto">
-              <StatCard
-                label="Pastas"
-                value={folders.length}
-                sub="registradas"
-              />
-
-              <StatCard
-                label="Favoritas"
-                value={favoritesCount}
-                sub="destacadas"
-              />
-
-              <StatCard
-                label="Arquivadas"
-                value={archivedCount}
-                sub="ocultas"
-              />
             </div>
           </div>
         </div>
@@ -254,7 +208,7 @@ export default function FoldersPage() {
 
       {/* Search */}
       <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <label className="input input-bordered flex w-full items-center gap-2 sm:max-w-md">
+        <label className="input input-bordered flex w-full items-center gap-2 rounded-2xl px-4 py-2">
           <Search size={16} className="shrink-0 opacity-50" />
 
           <input

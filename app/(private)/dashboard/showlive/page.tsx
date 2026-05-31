@@ -2,12 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-
 import { MagnifyingGlassIcon, SignalIcon } from "@heroicons/react/24/outline";
-
 import { EventModal } from "@/components/showLive/EventModal";
 import { EventCardSkeleton } from "@/components/UI/Cards/EventCardSkeleton";
-
 import { useAuth } from "@/hooks/useAuth";
 import { useEvents } from "@/hooks/useEventsLoad";
 
@@ -15,25 +12,17 @@ import { eventService } from "@/services/event.service";
 
 const seasonBackgrounds: Record<string, string> = {
   UNEARTHED: "/images/showLive/banners/banner_uneartherd.webp",
-
   SUBMERGED: "/images/showLive/banners/banner_submerged.webp",
-
   MASTERPIECE: "/images/showLive/banners/banner_masterpiece.webp",
 };
 
 export default function ShowLiveHub() {
   const router = useRouter();
-
   const { user, loading } = useAuth();
-
   const [showModal, setShowModal] = useState(false);
-
   const [searchText, setSearchText] = useState("");
-
   const [order, setOrder] = useState<"asc" | "desc">("desc");
-
   const [seasonFilter, setSeasonFilter] = useState("all");
-
   const { events, loading: loadingEvents } = useEvents(user?.id);
 
   const filteredEvents = useMemo(() => {
@@ -49,9 +38,7 @@ export default function ShowLiveHub() {
 
     return filtered.sort((a, b) => {
       const dateA = new Date(a.created_at).getTime();
-
       const dateB = new Date(b.created_at).getTime();
-
       return order === "asc" ? dateA - dateB : dateB - dateA;
     });
   }, [events, searchText, order, seasonFilter]);
@@ -119,7 +106,6 @@ export default function ShowLiveHub() {
             <div className="space-y-2">
               <div>
                 <h1 className="text-2xl font-bold">ShowLive</h1>
-
                 <p className="text-sm text-base-content/60 max-w-2xl mt-1">
                   Gerencie eventos, acompanhe rodadas e transmita resultados em
                   tempo real.
@@ -130,7 +116,6 @@ export default function ShowLiveHub() {
                 <div className="badge badge-primary badge-outline">
                   {events.length} eventos
                 </div>
-
                 <div className="badge badge-outline">Tempo real</div>
               </div>
             </div>
@@ -159,12 +144,11 @@ export default function ShowLiveHub() {
           rounded-2xl
           border border-base-300
           bg-base-100
-          p-3
+          p-3 w-full
         "
       >
-        <label className="input input-bordered flex items-center gap-2 rounded-xl">
+        <label className="input input-bordered flex items-center gap-2 rounded-xl w-full">
           <MagnifyingGlassIcon className="w-4 h-4 opacity-60" />
-
           <input
             type="text"
             placeholder="Buscar evento..."
@@ -177,10 +161,9 @@ export default function ShowLiveHub() {
         <select
           value={seasonFilter}
           onChange={(e) => setSeasonFilter(e.target.value)}
-          className="select select-bordered rounded-xl px-3"
+          className="select select-bordered rounded-xl px-3 w-full"
         >
           <option value="all">Todas temporadas</option>
-
           {seasons.map((season) => (
             <option key={season} value={season}>
               {season}
@@ -191,10 +174,9 @@ export default function ShowLiveHub() {
         <select
           value={order}
           onChange={(e) => setOrder(e.target.value as "asc" | "desc")}
-          className="select select-bordered rounded-xl px-3"
+          className="select select-bordered rounded-xl px-3 w-full"
         >
           <option value="desc">Mais recentes</option>
-
           <option value="asc">Mais antigos</option>
         </select>
       </section>
@@ -227,9 +209,7 @@ export default function ShowLiveHub() {
           "
         >
           <MagnifyingGlassIcon className="w-14 h-14 text-base-content/30 mb-4" />
-
           <h2 className="text-lg font-semibold">Nenhum evento encontrado</h2>
-
           <p className="text-sm text-base-content/50 mt-1 max-w-md">
             Tente alterar os filtros ou crie um novo evento para começar.
           </p>
@@ -292,10 +272,13 @@ export default function ShowLiveHub() {
 
                   <div className="absolute bottom-4 left-4 right-4">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="badge badge-success badge-sm">
-                        AO VIVO
+                      <span
+                        className={`badge badge-sm ${
+                          event.event_active ? "badge-success" : "badge-error"
+                        }`}
+                      >
+                        {event.event_active ? "🟢 Ativo" : "🔴 Inativo"}
                       </span>
-
                       {event.config?.temporada && (
                         <span className="badge badge-outline badge-sm bg-base-100/80 backdrop-blur">
                           {event.config?.temporada}
@@ -316,7 +299,6 @@ export default function ShowLiveHub() {
                     >
                       {event.name_event}
                     </h2>
-
                     <p className="text-sm text-base-content/50 mt-1">
                       {event.config?.base === "FLL"
                         ? "FIRST LEGO League"

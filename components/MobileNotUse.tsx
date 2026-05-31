@@ -1,6 +1,5 @@
 import { MonitorSmartphone } from "lucide-react";
 import { Footer } from "./UI/Footer";
-import { Navbar } from "./UI/Navbar";
 import { useRouter } from "next/navigation";
 
 export default function CardMobileNotUse() {

@@ -31,11 +31,7 @@ interface QuickBrickHeaderProps {
   onNewProject?: () => void;
 }
 
-export default function QuickBrickHeader({
-  onFilterChange,
-  onSeasonChange,
-  onNewProject,
-}: QuickBrickHeaderProps) {
+export default function QuickBrickHeader() {
   const [category, setCategory] = useState<Category>("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("recente");
@@ -72,6 +68,10 @@ export default function QuickBrickHeader({
   ]
     .filter(Boolean)
     .join(" · ");
+
+  function onNewProject(): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <header className="space-y-4 bg-gradient-to-r from-primary/5 to-transparent rounded-lg p-6">
@@ -160,3 +160,11 @@ export default function QuickBrickHeader({
     </header>
   );
 }
+function onFilterChange(arg0: { category: Category; query: string; sort: SortOption; }) {
+  throw new Error("Function not implemented.");
+}
+
+function onSeasonChange(value: string) {
+  throw new Error("Function not implemented.");
+}
+

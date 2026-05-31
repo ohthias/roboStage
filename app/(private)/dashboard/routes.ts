@@ -8,9 +8,7 @@ import {
   ChartPie,
   Book,
   Folder,
-  NotebookTabs,
-  Bot,
-  NotepadText,
+  Cuboid,
 } from "lucide-react";
 
 export const NAV_ITEMS: NavItem[] = [
@@ -37,6 +35,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: "LabTest",
     icon: ChartPie,
     href: "/dashboard/labtest",
+  },
+  {
+    id: "quickbrick",
+    label: "QuickBrick",
+    icon: Cuboid,
+    href: "/dashboard/quickbrick",
   },
   {
     id: "showlive",

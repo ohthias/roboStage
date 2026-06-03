@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Category, GameSettings } from "@/types/FlashQATypes";
 import { Play, BookOpen, Clock, List } from "lucide-react";
-import Breadcrumbs from "../UI/Breadcrumbs";
 
 interface SetupScreenProps {
   onStart: (settings: GameSettings) => void;
@@ -18,7 +17,6 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart }) => {
 
   return (
     <div>
-      <Breadcrumbs />
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full mt-4">
         {/* Header */}
         <div className="w-full lg:w-1/3 h-full">

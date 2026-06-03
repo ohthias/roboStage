@@ -6,6 +6,7 @@ import ResultScreen from "@/components/FlashQA/ResultScreen";
 import { Footer } from "@/components/UI/Footer";
 import { useFlashQA } from "./useFlashQA";
 import { FLL_MODE } from "./modes/FLL";
+import Breadcrumbs from "@/components/UI/Breadcrumbs";
 
 export default function FlashQA() {
   const {
@@ -19,7 +20,10 @@ export default function FlashQA() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="p-6 flex items-center justify-center">
+      <div className="ml-8">
+        <Breadcrumbs />
+      </div>
+      <main className="px-8 py-4 flex items-center justify-center">
         <div className="w-full">
           {gameState.status === "setup" && (
             <SetupScreen onStart={startGame} />

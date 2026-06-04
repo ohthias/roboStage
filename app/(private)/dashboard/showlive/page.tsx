@@ -1,14 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Image from "next/image";
+import { useMemo, useState, useDeferredValue, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { MagnifyingGlassIcon, SignalIcon } from "@heroicons/react/24/outline";
 import { EventModal } from "@/components/showLive/EventModal";
 import { EventCardSkeleton } from "@/components/UI/Cards/EventCardSkeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useEvents } from "@/hooks/useEventsLoad";
-
 import { eventService } from "@/services/event.service";
+import { ArrowUpRightIcon, ListFilter, Radio, Search } from "lucide-react";
 
 const seasonBackgrounds: Record<string, string> = {
   UNEARTHED: "/images/showLive/banners/banner_uneartherd.webp",
@@ -18,17 +18,22 @@ const seasonBackgrounds: Record<string, string> = {
 
 export default function ShowLiveHub() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const [showModal, setShowModal] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [seasonFilter, setSeasonFilter] = useState("all");
+  const deferredSearch = useDeferredValue(searchText);
+
   const { events, loading: loadingEvents } = useEvents(user?.id);
+
+  const normalizedSearch = deferredSearch.trim().toLowerCase();
 
   const filteredEvents = useMemo(() => {
     const filtered = events
       .filter((event) =>
-        event.name_event?.toLowerCase().includes(searchText.toLowerCase()),
+        event.name_event?.toLowerCase().includes(normalizedSearch),
       )
       .filter((event) =>
         seasonFilter === "all"
@@ -36,12 +41,13 @@ export default function ShowLiveHub() {
           : event.config?.temporada === seasonFilter,
       );
 
-    return filtered.sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       const dateA = new Date(a.created_at).getTime();
       const dateB = new Date(b.created_at).getTime();
+
       return order === "asc" ? dateA - dateB : dateB - dateA;
     });
-  }, [events, searchText, order, seasonFilter]);
+  }, [events, normalizedSearch, seasonFilter, order]);
 
   const seasons = useMemo(() => {
     return Array.from(
@@ -49,106 +55,57 @@ export default function ShowLiveHub() {
     );
   }, [events]);
 
-  const handleOpenEvent = async (eventId: number, code: string) => {
-    try {
-      await eventService.updateLastAccess(eventId);
-
-      router.push(`/showlive/${code}`);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <span className="loading loading-spinner loading-lg" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    router.push("/auth/login");
-
-    return null;
-  }
+  const handleOpenEvent = useCallback(
+    async (eventId: number, code: string) => {
+      try {
+        await eventService.updateLastAccess(eventId);
+        router.push(`/showlive/${code}`);
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [router],
+  );
 
   return (
     <div className="space-y-6">
-      {/* HERO */}
-      <section
-        className="
-          relative overflow-hidden
-          rounded-3xl
-          border border-base-300
-          bg-gradient-to-br
-          from-primary/10
-          via-base-100
-          to-base-200/40
-          p-6 md:p-8
-        "
-      >
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div
-              className="
-                hidden sm:flex
-                h-14 w-14
-                rounded-2xl
-                bg-primary/10
-                text-primary
-                items-center justify-center
-              "
-            >
-              <SignalIcon className="w-7 h-7" />
-            </div>
+      <header className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Radio className="text-primary" width={24} height={24} />
+          <h1 className="text-2xl font-bold text-primary">ShowLive</h1>
+        </div>
 
-            <div className="space-y-2">
-              <div>
-                <h1 className="text-2xl font-bold">ShowLive</h1>
-                <p className="text-sm text-base-content/60 max-w-2xl mt-1">
-                  Gerencie eventos, acompanhe rodadas e transmita resultados em
-                  tempo real.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <div className="badge badge-primary badge-outline">
-                  {events.length} eventos
-                </div>
-                <div className="badge badge-outline">Tempo real</div>
-              </div>
-            </div>
-          </div>
+        <div className="flex items-center gap-2">
+          <button
+            className={`btn btn-sm btn-square ml-2 md:ml-4 lg:ml-6 ${
+              showFilters ? "btn-info" : "btn-default"
+            }`}
+            onClick={() => setShowFilters(!showFilters)}
+            title="Filtros"
+          >
+            <ListFilter width={16} height={16} />
+          </button>
 
           <button
             onClick={() => setShowModal(true)}
-            className="
-              btn btn-primary
-              rounded-2xl
-              gap-2
-              shadow-sm
-            "
+            className="btn btn-sm btn-outline ml-auto btn-primary hidden md:inline-flex"
           >
-            <SignalIcon className="w-4 h-4" />
-            Novo Evento
+            Criar Evento
           </button>
         </div>
-      </section>
+      </header>
 
-      {/* FILTERS */}
+      {/* FILTROS */}
       <section
-        className="
-          grid grid-cols-1 md:grid-cols-3
-          gap-3
-          rounded-2xl
-          border border-base-300
-          bg-base-100
-          p-3 w-full
-        "
+        className={`flex flex-col md:flex-row items-center gap-3 rounded-2xl border border-base-300 bg-base-100 p-3 w-full overflow-hidden transition-all duration-300 ease-in-out ${
+          showFilters
+            ? "max-h-64 opacity-100 translate-y-0"
+            : "max-h-0 opacity-0 -translate-y-2 pointer-events-none p-0 border-0 hidden"
+        }`}
       >
-        <label className="input input-bordered flex items-center gap-2 rounded-xl w-full">
-          <MagnifyingGlassIcon className="w-4 h-4 opacity-60" />
+        <label className="input input-bordered rounded-xl px-3 w-full flex items-center gap-2">
+          <Search className="text-base-content/50" />
+
           <input
             type="text"
             placeholder="Buscar evento..."
@@ -161,9 +118,10 @@ export default function ShowLiveHub() {
         <select
           value={seasonFilter}
           onChange={(e) => setSeasonFilter(e.target.value)}
-          className="select select-bordered rounded-xl px-3 w-full"
+          className="select select-bordered rounded-xl px-3 w-full md:max-w-[200px]"
         >
           <option value="all">Todas temporadas</option>
+
           {seasons.map((season) => (
             <option key={season} value={season}>
               {season}
@@ -174,46 +132,39 @@ export default function ShowLiveHub() {
         <select
           value={order}
           onChange={(e) => setOrder(e.target.value as "asc" | "desc")}
-          className="select select-bordered rounded-xl px-3 w-full"
+          className="select select-bordered rounded-xl px-3 w-full md:max-w-[200px]"
         >
           <option value="desc">Mais recentes</option>
+
           <option value="asc">Mais antigos</option>
         </select>
       </section>
 
-      {/* CONTENT */}
+      {/* CONTADOR */}
+      {!loadingEvents && (
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-base-content/60">
+            {filteredEvents.length} evento
+            {filteredEvents.length !== 1 && "s"} encontrado
+            {filteredEvents.length !== 1 && "s"}
+          </p>
+        </div>
+      )}
+
+      {/* SKELETON */}
       {loadingEvents ? (
-        <section
-          className="
-            grid grid-cols-1
-            md:grid-cols-2
-            xl:grid-cols-3
-            gap-6
-          "
-        >
-          {Array.from({
-            length: 6,
-          }).map((_, index) => (
+        <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, index) => (
             <EventCardSkeleton key={index} />
           ))}
         </section>
       ) : filteredEvents.length === 0 ? (
-        <section
-          className="
-            flex flex-col items-center justify-center
-            rounded-3xl
-            border border-dashed border-base-300
-            bg-base-100
-            py-20 px-6
-            text-center
-          "
-        >
-          <MagnifyingGlassIcon className="w-14 h-14 text-base-content/30 mb-4" />
+        <section className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-base-300 bg-base-100 py-20 px-6 text-center">
+          <Radio className="w-14 h-14 text-base-content/30 mb-4" />
           <h2 className="text-lg font-semibold">Nenhum evento encontrado</h2>
           <p className="text-sm text-base-content/50 mt-1 max-w-md">
             Tente alterar os filtros ou crie um novo evento para começar.
           </p>
-
           <button
             onClick={() => setShowModal(true)}
             className="btn btn-primary mt-6"
@@ -222,14 +173,7 @@ export default function ShowLiveHub() {
           </button>
         </section>
       ) : (
-        <section
-          className="
-            grid grid-cols-1
-            md:grid-cols-2
-            xl:grid-cols-3
-            gap-6
-          "
-        >
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredEvents.map((event) => {
             const background =
               seasonBackgrounds[event.config?.temporada] ??
@@ -238,85 +182,68 @@ export default function ShowLiveHub() {
             return (
               <article
                 key={event.id_evento}
-                className="
-                  group relative overflow-hidden
-                  rounded-3xl
-                  border border-base-200
-                  bg-base-100
-                  hover:shadow-xl
-                  transition-all duration-300
-                  hover:-translate-y-1
-                "
+                role="button"
+                tabIndex={0}
+                onClick={() =>
+                  handleOpenEvent(event.id_evento, event.code_event)
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleOpenEvent(event.id_evento, event.code_event);
+                  }
+                }}
+                className="group relative h-[350px] rounded-box overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
               >
-                {/* COVER */}
-                <div className="relative h-44 overflow-hidden">
-                  <img
-                    src={background}
-                    alt={event.name_event}
-                    className="
-                      w-full h-full object-cover
-                      transition-transform duration-500
-                      group-hover:scale-105
-                    "
-                  />
+                <Image
+                  src={background}
+                  alt={event.name_event}
+                  fill
+                  unoptimized
+                  quality={100}
+                  sizes="(max-width:640px) 100vw,
+                         (max-width:1024px) 50vw,
+                         25vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                <div
+                  className={
+                    "absolute inset-0 bg-gradient-to-t " +
+                    (event.event_active
+                      ? "from-success/40 via-success/20 to-success/0"
+                      : "from-warning/40 via-warning/20 to-warning/0")
+                  }
+                />
 
+                <div className="absolute top-5 left-5 z-10">
                   <div
-                    className="
-                      absolute inset-0
-                      bg-gradient-to-t
-                      from-black/70
-                      via-black/10
-                      to-transparent
-                    "
-                  />
-
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <span
-                        className={`badge badge-sm ${
-                          event.event_active ? "badge-success" : "badge-error"
-                        }`}
-                      >
-                        {event.event_active ? "🟢 Ativo" : "🔴 Inativo"}
-                      </span>
-                      {event.config?.temporada && (
-                        <span className="badge badge-outline badge-sm bg-base-100/80 backdrop-blur">
-                          {event.config?.temporada}
-                        </span>
-                      )}
-                    </div>
+                    className={
+                      "badge px-2 py-1 rounded-full text-xs font-semibold " +
+                      (event.event_active ? "badge-success" : "badge-warning")
+                    }
+                  >
+                    {event.event_active ? "Ativo" : "Inativo"}
                   </div>
                 </div>
 
-                {/* BODY */}
-                <div className="p-5 space-y-5">
-                  <div>
-                    <h2
-                      className="
-                        text-lg font-bold
-                        line-clamp-2
-                      "
-                    >
-                      {event.name_event}
-                    </h2>
-                    <p className="text-sm text-base-content/50 mt-1">
-                      {event.config?.base === "FLL"
+                <div className="absolute top-5 right-5 z-10">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-base-100/10 backdrop-blur-md text-base-content/50 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1">
+                    <ArrowUpRightIcon width={16} height={16} />
+                  </div>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+                  <h2 className="font-black text-base-content leading-none line-clamp-2 text-2xl md:text-3xl xl:text-4xl">
+                    {event.name_event}
+                  </h2>
+
+                  {event.config?.base && (
+                    <p className="text-neutral/80 mt-2 text-sm">
+                      {event.config.base === "FLL"
                         ? "FIRST LEGO League"
                         : "Competição"}
                     </p>
-                  </div>
-
-                  <button
-                    onClick={() =>
-                      handleOpenEvent(event.id_evento, event.code_event)
-                    }
-                    className="
-                      btn btn-primary
-                      w-full rounded-2xl
-                    "
-                  >
-                    Acessar Evento
-                  </button>
+                  )}
                 </div>
               </article>
             );

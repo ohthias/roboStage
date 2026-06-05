@@ -69,11 +69,11 @@ export function clearCache(key: string): void {
 export function clearUserCache(userId: string): void {
   const keysToDelete: string[] = [];
 
-  for (const key of cache.keys()) {
+  cache.forEach((value, key) => {
     if (key.includes(userId)) {
       keysToDelete.push(key);
     }
-  }
+  });
 
   keysToDelete.forEach(key => cache.delete(key));
 }

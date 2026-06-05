@@ -164,7 +164,7 @@ export default function FolderSidebar({ currentFolderId }: SidebarProps) {
 
     if (tree.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-base-300 p-8 text-center">
+        <div className="flex flex-col items-center justify-center rounded-box border border-dashed border-base-300 p-8 text-center">
           <FolderOpen size={36} className="mb-3 opacity-30" />
 
           <h3 className="font-black">Nenhuma pasta</h3>

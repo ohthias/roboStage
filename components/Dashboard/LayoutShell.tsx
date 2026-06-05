@@ -34,7 +34,7 @@ export default function LayoutShell({
   }>(null);
 
   const isWorkspaceRoute = useMemo(() => {
-    return pathname.includes("/dashboard/workspace");
+    return pathname.includes("/dashboard/workspace") || pathname.includes("/dashboard/folders/");
   }, [pathname]);
 
   const handleLogout = () => {

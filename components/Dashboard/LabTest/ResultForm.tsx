@@ -1,453 +1,695 @@
 "use client";
 
-import { createClient } from "@/utils/supabase/client";
-const supabase = createClient();
+import { useState } from "react";
 import {
-  useState,
-  useEffect,
-  useImperativeHandle,
-  forwardRef,
-  useRef,
-  useCallback,
-} from "react";
-import { RangeInput } from "../../FormMission/RangeInput";
-import { SwitchInput } from "../../FormMission/SwitchInput";
-import { useToast } from "@/app/context/ToastContext";
+  CheckCircle2,
+  XCircle,
+  Plus,
+  Trash2,
+  FlaskConical,
+  ListOrdered,
+  SlidersHorizontal,
+  Target,
+  ChevronDown,
+  ChevronUp,
+  Save,
+  RotateCcw,
+  TrendingUp,
+} from "lucide-react";
 
-export interface ModalResultFormRef {
-  openWithTest: (testId: string) => void;
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type Mode = "runs" | "calibrabot" | "individual";
+
+interface Mission {
+  id: string;
+  name: string;
+  maxValue?: number; // pontuação máxima possível
 }
 
-interface ModalResultFormProps {
-  onResultSaved?: () => void;
+interface CalibVariable {
+  id: number;
+  name: string;
 }
 
-const ModalResultForm = forwardRef<ModalResultFormRef, ModalResultFormProps>(
-  ({ onResultSaved }, ref) => {
-    const [tests, setTests] = useState<any[]>([]);
-    const [testTypes, setTestTypes] = useState<Record<string, string>>({});
-    const [selectedTest, setSelectedTest] = useState<any>(null);
-    const [missions, setMissions] = useState<any[]>([]);
-    const [formData, setFormData] = useState<any>({});
-    const [customVars, setCustomVars] = useState<
-      { name: string; values: Record<number, string> }[]
-    >([{ name: "", values: {} }]);
-    const [parameters, setParameters] = useState<any[]>([]);
-    const [season, setSeason] = useState<string | null>(null);
-    const [description, setDescription] = useState<string>("");
-    const { addToast } = useToast();
-    const modalRef = useRef<HTMLDialogElement | null>(null);
+interface CalibCombo {
+  index: number;
+  components: string[]; // ex: ["Motor A", "Motor B"]
+}
 
-    // Buscar tipos de teste
-    useEffect(() => {
-      const fetchTypes = async () => {
-        const { data, error } = await supabase.from("test_types").select("*");
-        if (!error && data) {
-          const typesMap: Record<string, string> = {};
-          data.forEach((t: any) => (typesMap[t.id] = t.name));
-          setTestTypes(typesMap);
-        }
-      };
-      fetchTypes();
-    }, []);
+// --- Runs ---
+interface MissionResult {
+  missionId: string;
+  completed: boolean | null; // null = não avaliado ainda
+  score: number | string;
+}
 
-    // Buscar testes do usuário
-    useEffect(() => {
-      const fetchTests = async () => {
-        const { data, error } = await supabase.from("tests").select("*");
-        if (!error && data) setTests(data);
-      };
-      fetchTests();
-    }, []);
+interface RunEntry {
+  id: number;
+  results: MissionResult[];
+  collapsed: boolean;
+}
 
-    // Selecionar teste
-    const handleTestChange = useCallback(
-      async (testId: string) => {
-        const test = tests.find((t) => t.id === testId);
-        if (!test) return;
+// --- CalibraBot ---
+interface CalibRunEntry {
+  id: number;
+  combo: CalibCombo;
+  variables: { varId: number; value: string }[];
+  notes: string;
+  collapsed: boolean;
+}
 
-        const typeName = testTypes[test.type_id] || "";
-        setSelectedTest({ ...test, type: typeName });
+// --- Individual ---
+interface IndividualAttempt {
+  id: number;
+  success: boolean | null;
+  score: number | string;
+  notes: string;
+}
 
-        try {
-          // Buscar missões do teste
-          const { data: testMissions, error: missionsErr } = await supabase
-            .from("test_missions")
-            .select("*")
-            .eq("test_id", test.id);
-          if (missionsErr) throw missionsErr;
+interface LabTestResponseFormProps {
+  mode: Mode;
+  testName: string;
+  // Runs / Individual
+  missions?: Mission[];
+  // CalibraBot
+  calibVariables?: CalibVariable[];
+  calibCombos?: CalibCombo[];
+  onSubmit?: (data: unknown) => void;
+  onCancel?: () => void;
+}
 
-          if (testMissions?.length) {
-            const season = testMissions[0].season;
-            setSeason(season);
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-            const res = await fetch("/api/data/missions");
-            const missionsData = await res.json();
+let _uid = 1;
+const uid = () => _uid++;
 
-            const filteredMissions = testMissions
-              .map((tm: any) => {
-                const missionData = missionsData[season]?.find(
-                  (m: any) => m.id === tm.mission_key
+function totalScore(results: MissionResult[]) {
+  return results.reduce((acc, r) => acc + (r.completed ? Number(r.score) || 0 : 0), 0);
+}
+
+const MODE_META: Record<Mode, { icon: React.FC<{ className?: string }>; label: string; color: string }> = {
+  runs: { icon: ListOrdered, label: "Criação de Runs", color: "text-primary" },
+  calibrabot: { icon: SlidersHorizontal, label: "CalibraBot", color: "text-secondary" },
+  individual: { icon: Target, label: "Missão Individual", color: "text-accent" },
+};
+
+// ---------------------------------------------------------------------------
+// Shared UI
+// ---------------------------------------------------------------------------
+
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 my-1">
+      <div className="h-px flex-1 bg-base-content/10" />
+      <span className="text-xs text-base-content/40 font-medium uppercase tracking-widest">{label}</span>
+      <div className="h-px flex-1 bg-base-content/10" />
+    </div>
+  );
+}
+
+function CompletedToggle({
+  value,
+  onChange,
+}: {
+  value: boolean | null;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="flex gap-1">
+      <button
+        type="button"
+        onClick={() => onChange(true)}
+        className={`btn btn-xs gap-1 rounded-lg transition-all ${
+          value === true
+            ? "btn-success text-success-content"
+            : "btn-ghost text-base-content/40 hover:text-success hover:bg-success/10"
+        }`}
+      >
+        <CheckCircle2 className="w-3.5 h-3.5" />
+        Sim
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange(false)}
+        className={`btn btn-xs gap-1 rounded-lg transition-all ${
+          value === false
+            ? "btn-error text-error-content"
+            : "btn-ghost text-base-content/40 hover:text-error hover:bg-error/10"
+        }`}
+      >
+        <XCircle className="w-3.5 h-3.5" />
+        Não
+      </button>
+    </div>
+  );
+}
+
+function CardShell({
+  header,
+  children,
+  collapsed,
+  onToggle,
+  accent,
+}: {
+  header: React.ReactNode;
+  children: React.ReactNode;
+  collapsed: boolean;
+  onToggle: () => void;
+  accent?: string;
+}) {
+  return (
+    <div
+      className={`rounded-2xl border transition-all ${
+        accent ?? "border-base-content/12 bg-base-100"
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-4 py-3 text-left"
+      >
+        {header}
+        {collapsed ? (
+          <ChevronDown className="w-4 h-4 text-base-content/40 shrink-0" />
+        ) : (
+          <ChevronUp className="w-4 h-4 text-base-content/40 shrink-0" />
+        )}
+      </button>
+      {!collapsed && (
+        <div className="px-4 pb-4 flex flex-col gap-4 border-t border-base-content/8 pt-4">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Panel: Runs
+// ---------------------------------------------------------------------------
+
+function RunsResponsePanel({ missions }: { missions: Mission[] }) {
+  const makeRun = (): RunEntry => ({
+    id: uid(),
+    collapsed: false,
+    results: missions.map((m) => ({ missionId: m.id, completed: null, score: "" })),
+  });
+
+  const [runs, setRuns] = useState<RunEntry[]>([makeRun()]);
+
+  const addRun = () => setRuns((r) => [...r, makeRun()]);
+  const removeRun = (id: number) => setRuns((r) => r.filter((x) => x.id !== id));
+  const toggleCollapse = (id: number) =>
+    setRuns((r) => r.map((x) => (x.id === id ? { ...x, collapsed: !x.collapsed } : x)));
+
+  const updateResult = (
+    runId: number,
+    missionId: string,
+    field: "completed" | "score",
+    value: boolean | string | number
+  ) => {
+    setRuns((r) =>
+      r.map((run) =>
+        run.id === runId
+          ? {
+              ...run,
+              results: run.results.map((res) =>
+                res.missionId === missionId ? { ...res, [field]: value } : res
+              ),
+            }
+          : run
+      )
+    );
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      {runs.map((run, i) => {
+        const score = totalScore(run.results);
+        const done = run.results.filter((r) => r.completed === true).length;
+        const total = run.results.length;
+        return (
+          <CardShell
+            key={run.id}
+            collapsed={run.collapsed}
+            onToggle={() => toggleCollapse(run.id)}
+            accent={
+              run.collapsed
+                ? "border-base-content/10 bg-base-200/40"
+                : "border-primary/20 bg-primary/3"
+            }
+            header={
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-7 h-7 rounded-xl bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0">
+                  {i + 1}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold leading-tight">Run #{i + 1}</p>
+                  {run.collapsed && (
+                    <p className="text-xs text-base-content/45 mt-0.5">
+                      {done}/{total} missões · {score} pts
+                    </p>
+                  )}
+                </div>
+                {runs.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); removeRun(run.id); }}
+                    className="btn btn-ghost btn-xs ml-2 text-base-content/30 hover:text-error hover:bg-error/10"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            }
+          >
+            <div className="flex flex-col gap-3">
+              {run.results.map((res, j) => {
+                const mission = missions[j];
+                return (
+                  <div
+                    key={res.missionId}
+                    className={`grid grid-cols-[auto_1fr_auto] items-center gap-3 p-3 rounded-xl border transition-all ${
+                      res.completed === true
+                        ? "border-success/30 bg-success/5"
+                        : res.completed === false
+                        ? "border-error/25 bg-error/4"
+                        : "border-base-content/10 bg-base-200/50"
+                    }`}
+                  >
+                    {/* Ordem */}
+                    <span className="w-5 h-5 rounded-full bg-base-content/10 text-base-content/50 text-xs font-semibold flex items-center justify-center">
+                      {j + 1}
+                    </span>
+
+                    {/* Nome */}
+                    <div>
+                      <p className="text-sm font-medium leading-tight">
+                        {mission?.id} — {mission?.name}
+                      </p>
+                      {res.completed && (
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <input
+                            type="number"
+                            min={0}
+                            max={mission?.maxValue}
+                            placeholder="Pontuação"
+                            value={res.score}
+                            onChange={(e) =>
+                              updateResult(run.id, res.missionId, "score", e.target.value)
+                            }
+                            className="input input-bordered input-xs w-28 focus:input-primary"
+                          />
+                          {mission?.maxValue && (
+                            <span className="text-xs text-base-content/40">
+                              / {mission.maxValue}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Toggle */}
+                    <CompletedToggle
+                      value={res.completed}
+                      onChange={(v) => updateResult(run.id, res.missionId, "completed", v)}
+                    />
+                  </div>
                 );
-                if (!missionData) return null;
-                return {
-                  ...missionData,
-                  maxValue: tm.max_value ?? missionData.type?.[2] ?? null,
-                };
-              })
-              .filter(Boolean);
+              })}
+            </div>
 
-            setMissions(filteredMissions || []);
-          } else {
-            setMissions([]);
-            setSeason(null);
-          }
+            {/* Totalizador */}
+            <div className="flex items-center justify-between bg-base-200/60 rounded-xl px-4 py-2.5 border border-base-content/8">
+              <div className="flex items-center gap-2 text-sm text-base-content/60">
+                <TrendingUp className="w-4 h-4" />
+                <span>
+                  {done}/{total} missões concluídas
+                </span>
+              </div>
+              <span className="text-base font-bold text-primary">{score} pts</span>
+            </div>
+          </CardShell>
+        );
+      })}
 
-          if (typeName === "personalizado") {
-            const { data: params, error: paramErr } = await supabase
-              .from("test_parameters")
-              .select("*")
-              .eq("test_id", test.id);
-            if (paramErr) throw paramErr;
+      <button
+        type="button"
+        onClick={addRun}
+        className="btn btn-ghost btn-sm gap-2 self-start text-primary hover:bg-primary/10 mt-1"
+      >
+        <Plus className="w-4 h-4" />
+        Adicionar run
+      </button>
+    </div>
+  );
+}
 
-            setParameters(params || []);
-            setCustomVars([{ name: "", values: {} }]);
-          }
-        } catch (err) {
-          console.error("Erro ao buscar dados do teste:", err);
-          setMissions([]);
-          setSeason(null);
-        }
-      },
-      [tests, testTypes]
+// ---------------------------------------------------------------------------
+// Panel: CalibraBot
+// ---------------------------------------------------------------------------
+
+function CalibrabotResponsePanel({
+  variables,
+  combos,
+}: {
+  variables: CalibVariable[];
+  combos: CalibCombo[];
+}) {
+  const makeEntry = (combo: CalibCombo): CalibRunEntry => ({
+    id: uid(),
+    combo,
+    collapsed: false,
+    variables: variables.map((v) => ({ varId: v.id, value: "" })),
+    notes: "",
+  });
+
+  const [entries, setEntries] = useState<CalibRunEntry[]>(combos.map(makeEntry));
+
+  const toggleCollapse = (id: number) =>
+    setEntries((e) => e.map((x) => (x.id === id ? { ...x, collapsed: !x.collapsed } : x)));
+
+  const updateVar = (entryId: number, varId: number, value: string) =>
+    setEntries((e) =>
+      e.map((entry) =>
+        entry.id === entryId
+          ? {
+              ...entry,
+              variables: entry.variables.map((v) =>
+                v.varId === varId ? { ...v, value } : v
+              ),
+            }
+          : entry
+      )
     );
 
-    useImperativeHandle(ref, () => ({
-      openWithTest: async (testId: string) => {
-        await handleTestChange(testId);
-        modalRef.current?.showModal();
-      },
-    }));
+  const updateNotes = (id: number, notes: string) =>
+    setEntries((e) => e.map((x) => (x.id === id ? { ...x, notes } : x)));
 
-    const handleCustomVarChange = (index: number, value: string) => {
-      const updated = [...customVars];
-      updated[index].name = value;
-      setCustomVars(updated);
-    };
+  const filledCount = (entry: CalibRunEntry) =>
+    entry.variables.filter((v) => v.value !== "").length;
 
-    const handleCustomParamChange = (
-      varIndex: number,
-      paramId: number,
-      value: string
-    ) => {
-      const updated = [...customVars];
-      updated[varIndex].values[paramId] = value;
-      setCustomVars(updated);
-    };
-
-    const addCustomVar = () =>
-      setCustomVars([...customVars, { name: "", values: {} }]);
-
-    const renderMissionFields = (mission: any, missionKey: string) => {
-      const isMainMission = !missionKey.includes("-sub-");
-
-      const content = (
-        <>
-          <div className="flex flex-col mb-2">
-            <div className="flex items-center justify-between">
-              <p className="font-medium flex-1 text-left">
-                {mission.name || mission.submission}
-              </p>
-              {isMainMission && (
-                <span className="badge badge-primary badge-outline ml-2">
-                  {missionKey}
-                </span>
-              )}
-            </div>
-            <p>{mission.mission}</p>
-          </div>
-
-          {(mission.type?.[0] === "range" ||
-            mission.type?.[0] === "switch") && (
-            <div className="mb-2">
-              {renderFieldInput(mission, missionKey, 0)}
-            </div>
-          )}
-
-          {mission["sub-mission"]?.length > 0 && (
-            <div className="ml-4 border-l-2 border-primary pl-4 mt-2">
-              {mission["sub-mission"].map((sub: any, subIdx: number) =>
-                renderMissionFields(sub, `${missionKey}-sub-${subIdx}`)
-              )}
-            </div>
-          )}
-        </>
-      );
-
-      if (isMainMission) {
-        return (
-          <div
-            key={missionKey}
-            className="mb-4 border rounded-lg p-4 bg-base-100 border-base-300 shadow-sm"
-          >
-            {content}
-          </div>
-        );
-      }
-
-      return <div key={missionKey}>{content}</div>;
-    };
-
-    const renderFieldInput = (
-      field: any,
-      missionKey: string,
-      index: number
-    ) => {
-      if (field.type?.[0] === "range") {
-        const max = field.maxValue ?? field.type[2] ?? 10;
-        return (
-          <RangeInput
-            missionId={missionKey}
-            index={index}
-            points={field.type[1] || 1}
-            start={field.type[1] || 0}
-            end={max}
-            value={formData[missionKey]?.[index]}
-            onSelect={(mId, idx, val) => {
-              const clamped = Math.min(val, max);
-              setFormData((prev: any) => ({
-                ...prev,
-                [mId]: { ...(prev[mId] || {}), [idx]: clamped },
-              }));
-            }}
-          />
-        );
-      }
-
-      if (field.type?.[0] === "switch") {
-        return (
-          <SwitchInput
-            missionId={missionKey}
-            index={index}
-            points={field.type[1] || 1}
-            options={field.type.slice(1).filter(Boolean).map(String)}
-            value={formData[missionKey]?.[index]}
-            onSelect={(mId, idx, val) =>
-              setFormData((prev: any) => ({
-                ...prev,
-                [mId]: { ...(prev[mId] || {}), [index]: val },
-              }))
-            }
-          />
-        );
-      }
-
-      return null;
-    };
-
-    const handleSubmit = async () => {
-      if (!selectedTest) return;
-
-      try {
-        let payload: any[] = [];
-
-        if (selectedTest.type === "personalizado") {
-          for (const variable of customVars) {
-            for (const param of parameters) {
-              payload.push({
-                test_id: selectedTest.id,
-                parameter_id: param.id,
-                metric: variable.name,
-                value: { value: variable.values[param.id] },
-                season,
-                description,
-              });
-            }
+  return (
+    <div className="flex flex-col gap-3">
+      {entries.map((entry, i) => (
+        <CardShell
+          key={entry.id}
+          collapsed={entry.collapsed}
+          onToggle={() => toggleCollapse(entry.id)}
+          accent={
+            entry.collapsed
+              ? "border-base-content/10 bg-base-200/40"
+              : "border-secondary/20 bg-secondary/3"
           }
-        } else {
-          payload.push({
-            test_id: selectedTest.id,
-            metric: "missions",
-            value: formData,
-            season,
-            description,
-            precision_tokens: formData.precision_tokens ?? null,
-          });
-        }
-
-        const { error } = await supabase.from("results").insert(payload);
-
-        if (error) throw error;
-
-        addToast("Resultado salvo com sucesso!", "success");
-        closeModal();
-        onResultSaved?.();
-      } catch (err) {
-        console.error(err);
-        addToast("Erro ao salvar resultado.", "error");
-      }
-    };
-
-    const openModal = () => modalRef.current?.showModal();
-    const closeModal = () => {
-      modalRef.current?.close();
-      setFormData({});
-      setCustomVars([{ name: "", values: {} }]);
-      setSelectedTest(null);
-      setMissions([]);
-      setParameters([]);
-      setDescription("");
-      setSeason(null);
-    };
-
-    return (
-      <>
-        <button className="btn btn-neutral btn-soft btn-sm" onClick={openModal}>
-          Adicionar Resultado
-        </button>
-
-        <dialog ref={modalRef} className="modal">
-          <form
-            method="dialog"
-            className="modal-box w-11/12 max-w-3xl max-h-[80vh] overflow-y-auto"
-          >
-            <h2 className="text-xl font-bold mb-4">Adicionar Resultado</h2>
-
-            {!selectedTest && (
-              <select
-                className="select select-bordered w-full mb-4"
-                onChange={(e) => handleTestChange(e.target.value)}
-                required
-              >
-                <option value="">Selecione um teste</option>
-                {tests.map((test) => (
-                  <option key={test.id} value={test.id}>
-                    {test.name_test} ({testTypes[test.type_id]})
-                  </option>
-                ))}
-              </select>
-            )}
-
-            {selectedTest && (
-              <div className="mb-4">
-                <p className="text-sm text-gray-600">
-                  Teste selecionado:{" "}
-                  <span className="font-semibold">
-                    {selectedTest.name_test}
-                  </span>{" "}
-                  ({selectedTest.type})
+          header={
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="w-7 h-7 rounded-xl bg-secondary/15 text-secondary text-xs font-bold flex items-center justify-center shrink-0">
+                {i + 1}
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold leading-tight">
+                  Combinação #{entry.combo.index}
+                </p>
+                <p className="text-xs text-base-content/45 mt-0.5">
+                  {entry.combo.components.join(" + ")}
+                  {entry.collapsed && (
+                    <span className="ml-2">
+                      · {filledCount(entry)}/{variables.length} variáveis
+                    </span>
+                  )}
                 </p>
               </div>
+            </div>
+          }
+        >
+          {/* Variáveis */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {variables.map((v) => {
+              const current = entry.variables.find((x) => x.varId === v.id);
+              return (
+                <div key={v.id} className="form-control gap-1">
+                  <label className="label py-0">
+                    <span className="label-text text-xs font-medium">{v.name}</span>
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Valor numérico"
+                    value={current?.value ?? ""}
+                    onChange={(e) => updateVar(entry.id, v.id, e.target.value)}
+                    className="input input-bordered input-sm focus:input-secondary"
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Notas */}
+          <div className="form-control gap-1">
+            <label className="label py-0">
+              <span className="label-text text-xs font-medium">Observações</span>
+              <span className="label-text-alt text-base-content/35">opcional</span>
+            </label>
+            <textarea
+              rows={2}
+              placeholder="Comportamento observado, anomalias, contexto..."
+              value={entry.notes}
+              onChange={(e) => updateNotes(entry.id, e.target.value)}
+              className="textarea textarea-bordered textarea-sm focus:textarea-secondary resize-none text-sm"
+            />
+          </div>
+        </CardShell>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Panel: Missão Individual
+// ---------------------------------------------------------------------------
+
+function IndividualResponsePanel({ missions }: { missions: Mission[] }) {
+  const makeAttempt = (): IndividualAttempt => ({
+    id: uid(),
+    success: null,
+    score: "",
+    notes: "",
+  });
+
+  const [attempts, setAttempts] = useState<IndividualAttempt[]>([makeAttempt()]);
+
+  const add = () => setAttempts((a) => [...a, makeAttempt()]);
+  const remove = (id: number) => setAttempts((a) => a.filter((x) => x.id !== id));
+  const update = <K extends keyof IndividualAttempt>(
+    id: number,
+    field: K,
+    value: IndividualAttempt[K]
+  ) => setAttempts((a) => a.map((x) => (x.id === id ? { ...x, [field]: value } : x)));
+
+  const mission = missions[0];
+  const best = attempts
+    .filter((a) => a.success === true)
+    .reduce((max, a) => Math.max(max, Number(a.score) || 0), 0);
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Missão alvo */}
+      {mission && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-accent/8 border border-accent/20">
+          <Target className="w-4 h-4 text-accent shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-accent">
+              {mission.id} — {mission.name}
+            </p>
+            {mission.maxValue && (
+              <p className="text-xs text-base-content/45">Pontuação máxima: {mission.maxValue}</p>
             )}
+          </div>
+          {best > 0 && (
+            <div className="ml-auto text-right">
+              <p className="text-xs text-base-content/45">Melhor resultado</p>
+              <p className="text-base font-bold text-accent">{best} pts</p>
+            </div>
+          )}
+        </div>
+      )}
 
-            {missions.map((m) => renderMissionFields(m, m.id))}
-
-            {selectedTest?.type === "personalizado" && (
-              <div>
-                <h3 className="font-semibold mb-2">Variáveis</h3>
-                {customVars.map((v, idx) => (
-                  <div key={idx} className="border p-2 mb-2 rounded">
-                    <input
-                      type="text"
-                      placeholder="Nome da variável"
-                      className="input input-bordered w-full mb-2"
-                      value={v.name}
-                      onChange={(e) =>
-                        handleCustomVarChange(idx, e.target.value)
-                      }
-                      required
-                    />
-                    {parameters.map((p) => (
-                      <input
-                        key={p.id}
-                        type="text"
-                        placeholder={p.name}
-                        className="input input-bordered w-full mb-1"
-                        value={v.values[p.id] || ""}
-                        onChange={(e) =>
-                          handleCustomParamChange(idx, p.id, e.target.value)
-                        }
-                        required
-                      />
-                    ))}
-                  </div>
-                ))}
+      {attempts.map((att, i) => (
+        <div
+          key={att.id}
+          className={`rounded-2xl border p-4 flex flex-col gap-3 transition-all ${
+            att.success === true
+              ? "border-success/30 bg-success/4"
+              : att.success === false
+              ? "border-error/25 bg-error/3"
+              : "border-base-content/12 bg-base-100"
+          }`}
+        >
+          {/* Header da tentativa */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-accent/15 text-accent text-xs font-bold flex items-center justify-center">
+                {i + 1}
+              </span>
+              <span className="text-sm font-medium">Tentativa #{i + 1}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CompletedToggle
+                value={att.success}
+                onChange={(v) => update(att.id, "success", v)}
+              />
+              {attempts.length > 1 && (
                 <button
                   type="button"
-                  className="btn btn-sm btn-outline"
-                  onClick={addCustomVar}
+                  onClick={() => remove(att.id)}
+                  className="btn btn-ghost btn-xs text-base-content/30 hover:text-error hover:bg-error/10"
                 >
-                  + Adicionar variável
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
-              </div>
-            )}
-
-            {selectedTest?.type !== "personalizado" && (
-              <div className="mt-4 border border-base-300 rounded-lg p-4 space-y-2 shadow-sm bg-base-300/10">
-                <h3 className="font-semibold">Discos de Precisão</h3>
-                <p>Quantos discos de precisão foram utilizados?</p>
-                <div className="mt-2">
-                  {[0, 1, 2, 3, 4, 5, 6].map((num) => (
-                    <button
-                      key={num}
-                      type="button"
-                      className={`btn btn-md mr-2 ${
-                        formData["precision_tokens"] === num
-                          ? "btn-primary"
-                          : "btn-default"
-                      }`}
-                      onClick={() =>
-                        setFormData((prev: any) => ({
-                          ...prev,
-                          precision_tokens: num,
-                        }))
-                      }
-                    >
-                      {num}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">
-                  Descrição do que foi mudado (opcional)
-                </span>
-              </label>
-              <textarea
-                className="textarea textarea-bordered w-full"
-                placeholder="Digite aqui uma descrição (opcional)"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                maxLength={450}
-              />
-              {description.length >= 450 && (
-                <span className="text-error text-xs mt-1 block">
-                  Limite máximo de 450 caracteres atingido.
-                </span>
               )}
             </div>
+          </div>
 
-            <div className="modal-action mt-4">
-              <button type="button" className="btn" onClick={closeModal}>
-                Cancelar
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleSubmit}
-              >
-                Salvar Resultado
-              </button>
+          {/* Pontuação */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="form-control gap-1">
+              <label className="label py-0">
+                <span className="label-text text-xs font-medium">Pontuação obtida</span>
+                {mission?.maxValue && (
+                  <span className="label-text-alt text-base-content/35">
+                    máx {mission.maxValue}
+                  </span>
+                )}
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={mission?.maxValue}
+                placeholder="0"
+                value={att.score}
+                onChange={(e) => update(att.id, "score", e.target.value)}
+                className="input input-bordered input-sm focus:input-accent"
+              />
             </div>
-          </form>
-        </dialog>
-      </>
-    );
-  }
-);
+          </div>
 
-export default ModalResultForm;
+          {/* Observação */}
+          <div className="form-control gap-1">
+            <label className="label py-0">
+              <span className="label-text text-xs font-medium">Observação</span>
+              <span className="label-text-alt text-base-content/35">opcional</span>
+            </label>
+            <textarea
+              rows={2}
+              placeholder="O que aconteceu nessa tentativa? Ponto de falha, ajuste feito..."
+              value={att.notes}
+              onChange={(e) => update(att.id, "notes", e.target.value)}
+              className="textarea textarea-bordered textarea-sm focus:textarea-accent resize-none text-sm"
+            />
+          </div>
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={add}
+        className="btn btn-ghost btn-sm gap-2 self-start text-accent hover:bg-accent/10 mt-1"
+      >
+        <Plus className="w-4 h-4" />
+        Nova tentativa
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
+export default function LabTestResponseForm({
+  mode,
+  testName,
+  missions = [],
+  calibVariables = [],
+  calibCombos = [],
+  onSubmit,
+  onCancel,
+}: LabTestResponseFormProps) {
+  const meta = MODE_META[mode];
+  const Icon = meta.icon;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: coletar estado dos painéis e enviar via Supabase
+    onSubmit?.({});
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6 max-w-2xl mx-auto">
+      {/* Header */}
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 rounded-xl bg-primary/12 flex items-center justify-center shrink-0 mt-0.5">
+          <FlaskConical className="w-5 h-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-base-content/45 font-medium uppercase tracking-widest mb-0.5">
+            Registrar resultado
+          </p>
+          <h2 className="font-semibold text-base leading-tight truncate">{testName}</h2>
+        </div>
+        <div
+          className={`flex items-center gap-1.5 badge badge-outline gap-2 py-3 ${meta.color}`}
+        >
+          <Icon className="w-3.5 h-3.5" />
+          <span className="text-xs font-medium">{meta.label}</span>
+        </div>
+      </div>
+
+      <div className="divider my-0" />
+
+      {/* Painéis por modo */}
+      {mode === "runs" && (
+        <>
+          <SectionDivider label="Lançamentos" />
+          <RunsResponsePanel missions={missions} />
+        </>
+      )}
+
+      {mode === "calibrabot" && (
+        <>
+          <SectionDivider label="Combinações" />
+          <CalibrabotResponsePanel variables={calibVariables} combos={calibCombos} />
+        </>
+      )}
+
+      {mode === "individual" && (
+        <>
+          <SectionDivider label="Tentativas" />
+          <IndividualResponsePanel missions={missions} />
+        </>
+      )}
+
+      <div className="divider my-0" />
+
+      {/* Footer */}
+      <div className="flex justify-between items-center">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="btn btn-ghost gap-2 text-base-content/50"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Descartar
+        </button>
+        <button type="submit" className="btn btn-primary gap-2">
+          <Save className="w-4 h-4" />
+          Salvar resultados
+        </button>
+      </div>
+    </form>
+  );
+}

@@ -1,44 +1,82 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+
+import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+
 const supabase = createClient();
 
-export type TestRow = any;
+export interface Test {
+  id: string;
+  user_id: string;
+  team_id: number | null;
+  folder_id: number | null;
+  name: string;
+  description: string | null;
+  mode: string;
+  season: string | null;
+  status: string;
+  config: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  last_access_at: string | null;
 
-export function useLabTests() {
-  const [tests, setTests] = useState<TestRow[]>([]);
-  const [testTypes, setTestTypes] = useState<Record<string, string>>({});
+  executions?: {
+    count: number;
+  }[];
+}
+
+export function useTests() {
+  const [tests, setTests] = useState<Test[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAll = useCallback(async () => {
+  const fetchTests = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const { data: typesData, error: typesError } = await supabase
-        .from("test_types")
-        .select("*");
-      if (typesError) throw typesError;
-      const typesMap: Record<string, string> = {};
-      typesData?.forEach((t: any) => (typesMap[t.id] = t.name));
-      setTestTypes(typesMap);
 
-      const { data: testsData, error: testsError } = await supabase
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error("Usuário não autenticado");
+      }
+
+      const { data, error } = await supabase
         .from("tests")
-        .select(`*, test_parameters(*), test_missions(*)`);
-      if (testsError) throw testsError;
-      setTests(testsData || []);
-    } catch (err: any) {
-      console.error("useLabTests:", err);
-      setError(err.message || String(err));
+        .select(
+          `
+            *,
+            executions:test_executions(count)
+          `
+        )
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false });
+
+      if (error) throw error;
+
+      setTests(data || []);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Erro ao carregar testes"
+      );
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    fetchTests();
+  }, [fetchTests]);
 
-  return { tests, setTests, testTypes, loading, error, refetch: fetchAll };
+  return {
+    tests,
+    loading,
+    error,
+    refresh: fetchTests,
+  };
 }

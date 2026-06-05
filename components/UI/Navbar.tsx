@@ -10,10 +10,10 @@ import {
   Menu,
   Palette,
   Pickaxe,
-  Table2,
   ToolCase,
   Trophy,
   X,
+  Cuboid
 } from "lucide-react";
 
 import Logo from "./Logo";
@@ -38,58 +38,6 @@ const seasons: Season[] = [
   },
 ];
 
-const renderSeasonLink = (season: Season, competicao: string, nav: any, isActive: (href: string) => boolean, className: string) => {
-  const Icon = season.icon;
-  const href = `/${competicao}/${nav.scorePath}/${season.key}`;
-  const active = isActive(href);
-
-  return (
-    <li key={season.key}>
-      <Link href={href} className={className}>
-        <Icon
-          size={18}
-          className={`mt-0.5 transition-opacity duration-200 ${
-            active ? "opacity-100" : "opacity-60"
-          }`}
-        />
-        <span className="flex flex-col">
-          <span className={`font-medium ${active ? "text-primary" : ""}`}>
-            {season.name}
-          </span>
-          <span className="text-xs opacity-60">{season.period}</span>
-        </span>
-      </Link>
-    </li>
-  );
-};
-
-const renderToolLink = (item: any, competicao: string, isActive: (href: string) => boolean, className: string) => {
-  const Icon = item.icon;
-  const href = `/${competicao}/${item.path}`;
-  const active = isActive(href);
-
-  return (
-    <li key={item.path}>
-      <Link href={href} className={className}>
-        <Icon
-          size={18}
-          className={`mt-0.5 transition-opacity duration-200 ${
-            active ? "opacity-100" : "opacity-60"
-          }`}
-        />
-        <span className="flex flex-col">
-          <span className={`font-medium ${active ? "text-primary" : ""}`}>
-            {item.nome}
-          </span>
-          <span className="text-xs opacity-60">
-            {item.description || "Ferramenta"}
-          </span>
-        </span>
-      </Link>
-    </li>
-  );
-};
-
 export function Navbar() {
   const params = useParams();
   const pathname = usePathname();
@@ -103,13 +51,12 @@ export function Navbar() {
   const isIndexPage = pathname === `/${competicao}`;
 
   const baseLink =
-    "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-out";
+    "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-out hover:bg-primary/10 hover:text-primary";
   const mutedLink =
-    "text-base-content/70 hover:bg-base-200 hover:text-base-content";
-  const activeLink = "bg-base-200 text-base-content shadow-sm";
-  const dropdownItemClass = "flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-200";
+    "text-base-content/70 hover:bg-primary/10 hover:text-primary";
+  const activeLink = "bg-primary/10 text-primary shadow-sm";
 
-  const navbarClasses = `navbar h-16 px-4 sm:px-6 lg:px-8 border-b border-base-300/60 ${
+  const navbarClasses = `navbar h-16 px-4 sm:px-6 lg:px-8 border-b border-base-300 ${
     isIndexPage
       ? "fixed top-0 left-0 right-0 z-50 bg-base-100/75 backdrop-blur-md"
       : "sticky top-0 z-40 bg-base-100"
@@ -123,16 +70,13 @@ export function Navbar() {
       active ? "bg-base-200 text-base-content" : "hover:bg-base-200"
     }`;
 
-  const getDropdownItemClass = (active: boolean) =>
-    `${dropdownItemClass} ${active ? "bg-base-200" : "hover:bg-base-200/80"}`;
-
   return (
     <div className="drawer drawer-start z-50">
       <input id="navbar-drawer" type="checkbox" className="drawer-toggle" />
 
       <div className="drawer-content">
         <header className={navbarClasses}>
-          <div className="flex-1 gap-3 flex items-center">
+          <div className="gap-3 flex items-center flex-1 lg:flex-0">
             <Logo logoSize="lg" redirectIndex={true} />
 
             <div className="hidden sm:block h-6 w-px bg-base-300/80" />
@@ -149,7 +93,7 @@ export function Navbar() {
             </Link>
           </div>
 
-          <nav className="hidden lg:flex items-center justify-center gap-1">
+          <nav className="hidden lg:flex items-center justify-center gap-1 flex-1">
             <div className="dropdown dropdown-end">
               <div
                 tabIndex={0}
@@ -165,7 +109,7 @@ export function Navbar() {
 
               <ul
                 tabIndex={0}
-                className="menu dropdown-content z-[1] mt-3 w-60 rounded-box bg-base-100 p-2 shadow-xl border border-base-300/60"
+                className="menu dropdown-content z-[1] mt-4 w-60 rounded-box bg-base-100 p-2 shadow-xl border border-base-300/60"
               >
                 <li className="menu-title px-3 pt-2 pb-1">
                   <span>Temporadas</span>
@@ -211,8 +155,8 @@ export function Navbar() {
               href="/fll/quickbrick"
               className={navItemClass(isActive("/fll/quickbrick"))}
             >
-              <Table2 size={16} />
-              <span>QuickBrick</span>
+              <Cuboid size={16} />
+              <span>QuickBrick Studio</span>
             </Link>
 
             <div className="dropdown dropdown-end">
@@ -232,7 +176,7 @@ export function Navbar() {
 
               <ul
                 tabIndex={0}
-                className="menu dropdown-content z-[1] mt-3 w-72 rounded-box bg-base-100 p-2 shadow-xl border border-base-300/60"
+                className="menu dropdown-content z-[1] mt-4 w-72 rounded-box bg-base-100 p-2 shadow-xl border border-base-300/60"
               >
                 {nav.menu.map((item) => {
                   const Icon = item.icon;
@@ -273,9 +217,7 @@ export function Navbar() {
 
           <div className="hidden lg:flex items-center gap-2">
             <ThemeController />
-
             <div className="divider divider-horizontal mx-1" />
-
             <Link
               href="/universe"
               className={navItemClass(isActive("/universe"))}
@@ -283,14 +225,12 @@ export function Navbar() {
               <Earth size={16} />
               <span>Competições</span>
             </Link>
-
             <Link
               href="/auth/login"
               className={navItemClass(isActive("/auth/login"))}
             >
               Login
             </Link>
-
             <Link
               href="/auth/signup"
               className="btn btn-primary btn-sm rounded-lg shadow-sm transition-transform duration-200 hover:scale-[1.01]"
@@ -298,7 +238,6 @@ export function Navbar() {
               Cadastrar
             </Link>
           </div>
-
           <div className="flex lg:hidden items-center gap-2">
             <ThemeController />
 
@@ -380,8 +319,8 @@ export function Navbar() {
                     href="/fll/quickbrick"
                     className={mobileItemClass(isActive("/fll/quickbrick"))}
                   >
-                    <Table2 size={16} />
-                    QuickBrick
+                    <Cuboid size={16} />
+                    QuickBrick Studio
                   </Link>
                 </li>
 

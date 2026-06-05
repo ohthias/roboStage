@@ -12,6 +12,7 @@ interface EventData {
   code_visit: string;
   code_event: string;
   created_at: string;
+  event_active: boolean;
 }
 
 interface EventConfig {
@@ -51,7 +52,7 @@ export function useEvents(userId?: string) {
         const [{ data: eventsData, error: eventsError }, { data: configsData, error: configsError }] = await Promise.all([
           supabase
             .from("events")
-            .select("id_evento, name_event, code_event")
+            .select("id_evento, name_event, code_event, event_active, created_at")
             .eq("id_responsavel", userId)
             .order("created_at", { ascending: false }),
           supabase.from("typeEvent").select("id_event, config"),

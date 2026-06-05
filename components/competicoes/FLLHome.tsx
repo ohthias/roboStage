@@ -1,21 +1,41 @@
 "use client";
-import { motion } from "framer-motion";
 import {
   Trophy,
   Cpu,
   Users,
-  Rocket,
   Zap,
   BarChart3,
   MessageSquare,
+  Construction,
 } from "lucide-react";
-import MaintenanceBanner from "@/components/MaintenanceBanner";
 import { Footer } from "../UI/Footer";
 import Hero from "../Hero";
+import Logo from "../UI/Logo";
 
 export default function FLLHome() {
   return (
     <div className="min-h-screen bg-base-100 text-base-content">
+      <div className="alert alert-warning alert-soft mt-16 rounded-none border-x-0 border-t-0">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+          <Construction className="h-6 w-6 shrink-0 self-start" />
+
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold">🚧 Novidades em teste</span>
+              <div className="badge badge-warning badge-sm">BETA</div>
+            </div>
+
+            <p className="mt-1 text-sm leading-relaxed">
+              Você está utilizando uma versão beta do{" "}
+              <span className="inline-flex align-middle">
+                <Logo logoSize="sm" />
+              </span>
+              . Novas funcionalidades estão sendo liberadas gradualmente e
+              alguns recursos podem apresentar instabilidades temporárias.
+            </p>
+          </div>
+        </div>
+      </div>
       <Hero />
 
       <section className="py-24 px-6 bg-base-300 relative overflow-hidden">
@@ -182,13 +202,12 @@ export default function FLLHome() {
           <p className="text-lg md:text-xl opacity-90 leading-relaxed mb-6">
             Nesta temporada, as equipes são desafiadas a explorar o passado para
             construir o futuro. A temática{" "}
-            <span className="font-bold">Unearthed</span> propõe
-            em ajudar os Arquologos nas dificuldades enfrentadas, seja na
-            escavação, catalogação ou preservação de artefatos históricos.
+            <span className="font-bold">Unearthed</span> propõe em ajudar os
+            Arquologos nas dificuldades enfrentadas, seja na escavação,
+            catalogação ou preservação de artefatos históricos.
           </p>
         </div>
       </section>
-      <MaintenanceBanner />
       <Footer />
     </div>
   );

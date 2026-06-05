@@ -39,7 +39,7 @@ export default function Logo({
       onClick={() => redirectIndex && router.push("/")}
       className={`
         ${sizeClasses[logoSize]}
-        font-black uppercase italic tracking-tight transition-opacity duration-300
+        font-black uppercase italic tracking-tight transition-opacity duration-300 text-base-content
         ${redirectIndex ? "cursor-pointer opacity-80 hover:opacity-100" : ""}
       `}
       aria-label="Página inicial RoboStage"

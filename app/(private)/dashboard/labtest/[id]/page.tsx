@@ -154,7 +154,6 @@ interface IndividualAttempt {
 
 interface LabTestViewProps {
   testId: string;
-  onAddResult?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -1141,9 +1140,7 @@ function mapToCalibEntries(
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function LabTestView({
-  onAddResult,
-}: LabTestViewProps) {
+export default function LabTestView() {
   const params = useParams();
   const testId = params.id;
   const [loading, setLoading] = useState(true);
@@ -1297,15 +1294,6 @@ export default function LabTestView({
               )}
             </div>
           </div>
-
-          <button
-            type="button"
-            onClick={onAddResult}
-            className={`btn ${meta.accent === "primary" ? "btn-primary" : meta.accent === "secondary" ? "btn-secondary" : "btn-accent"} gap-2 shrink-0`}
-          >
-            <Plus className="h-4 w-4" />
-            Registrar resultado
-          </button>
         </div>
 
         {mode === "runs" && <RunsView missions={missions} runs={runs} />}

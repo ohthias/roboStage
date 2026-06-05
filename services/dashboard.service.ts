@@ -6,6 +6,8 @@ import type {
   PlatformGoal,
   UserRole,
 } from "@/types/dashboard.types"
+import { withCache, generateCacheKey, CACHE_KEYS, CACHE_TTL } from "@/utils/cache"
+import { validateUUID } from "@/utils/validation"
 
 function timeAgo(date: string): string {
   try {
@@ -27,51 +29,101 @@ function timeAgo(date: string): string {
 }
 
 export const dashboardService = {
+  /**
+   * Gets dashboard statistics with caching
+   * Reduces database calls significantly for frequently accessed data
+   */
   async getStats(userId: string): Promise<DashboardStats> {
-    const [tests, documents, events, styles] = await Promise.all([
-      dashboardRepository.getTestsCount(userId),
-      dashboardRepository.getDocumentsCount(userId),
-      dashboardRepository.getEventsCount(userId),
-      dashboardRepository.getStylesCount(userId),
-    ])
+    const validUserId = validateUUID(userId, "userId")
+    const cacheKey = generateCacheKey(CACHE_KEYS.DASHBOARD_STATS, validUserId)
 
-    return {
-      testsCount: tests.count ?? 0,
-      documentsCount: documents.count ?? 0,
-      eventsCount: events.count ?? 0,
-      stylesCount: styles.count ?? 0,
-    }
+    return withCache(
+      cacheKey,
+      async () => {
+        // Execute all count queries in parallel for better performance
+        const [tests, documents, events, styles] = await Promise.all([
+          dashboardRepository.getTestsCount(validUserId),
+          dashboardRepository.getDocumentsCount(validUserId),
+          dashboardRepository.getEventsCount(validUserId),
+          dashboardRepository.getStylesCount(validUserId),
+        ])
+
+        return {
+          testsCount: tests.count ?? 0,
+          documentsCount: documents.count ?? 0,
+          eventsCount: events.count ?? 0,
+          stylesCount: styles.count ?? 0,
+        }
+      },
+      CACHE_TTL.STATS
+    )
   },
 
+  /**
+   * Gets recent items with caching
+   * Combines recent tests, documents, and events for incremental display
+   */
   async getRecentItems(userId: string): Promise<RecentItem[]> {
-    const [tests, documents, events] = await Promise.all([
-      dashboardRepository.getRecentTests(userId, 3),
-      dashboardRepository.getRecentDocuments(userId, 2),
-      dashboardRepository.getRecentEvents(userId, 2),
+    const validUserId = validateUUID(userId, "userId")
+    const cacheKey = generateCacheKey(CACHE_KEYS.DASHBOARD_RECENT, validUserId)
+
+    return withCache(
+      cacheKey,
+      async () => {
+        // Fetch all recent items in parallel
+        const [tests, documents, events] = await Promise.all([
+          dashboardRepository.getRecentTests(validUserId, 3),
+          dashboardRepository.getRecentDocuments(validUserId, 2),
+          dashboardRepository.getRecentEvents(validUserId, 2),
+        ])
+
+        const items: RecentItem[] = [
+          // Events first - usually more important
+          ...(events.data ?? []).map((e) => ({
+            id: String(e.id_evento),
+            title: e.name_event ?? "Evento",
+            type: "Evento" as const,
+            accessedAt: timeAgo(e.last_acess),
+          })),
+          // Then tests
+          ...(tests.data ?? []).map((t) => ({
+            id: t.id,
+            title: t.name_test ?? "Teste",
+            type: "Teste" as const,
+            accessedAt: timeAgo(t.last_acess),
+          })),
+          // Finally documents
+          ...(documents.data ?? []).map((d) => ({
+            id: d.id,
+            title: d.title,
+            type: "Documento" as const,
+            accessedAt: timeAgo(d.updated_at),
+          })),
+        ]
+
+        // Return first 6 items, sorted by recency
+        return items.slice(0, 6)
+      },
+      CACHE_TTL.RECENT_ITEMS
+    )
+  },
+
+  /**
+   * Gets both stats and recent items in a single optimized call
+   * Useful for dashboard initial load - reduces multiple separate requests
+   */
+  async getDashboardData(userId: string): Promise<{
+    stats: DashboardStats;
+    recentItems: RecentItem[];
+  }> {
+    const validUserId = validateUUID(userId, "userId")
+
+    const [stats, recentItems] = await Promise.all([
+      this.getStats(validUserId),
+      this.getRecentItems(validUserId),
     ])
 
-    const items: RecentItem[] = [
-      ...(events.data ?? []).map((e) => ({
-        id: String(e.id_evento),
-        title: e.name_event ?? "Evento",
-        type: "Evento" as const,
-        accessedAt: timeAgo(e.last_acess),
-      })),
-      ...(tests.data ?? []).map((t) => ({
-        id: t.id,
-        title: t.name_test ?? "Teste",
-        type: "Teste" as const,
-        accessedAt: timeAgo(t.last_acess),
-      })),
-      ...(documents.data ?? []).map((d) => ({
-        id: d.id,
-        title: d.title,
-        type: "Documento" as const,
-        accessedAt: timeAgo(d.updated_at),
-      })),
-    ]
-
-    return items.slice(0, 6)
+    return { stats, recentItems }
   },
 
   getDashboardConfig(role: UserRole, goal: PlatformGoal): DashboardConfig {

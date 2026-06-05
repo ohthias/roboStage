@@ -6,7 +6,6 @@ import TestCard from "@/components/Dashboard/LabTest/CardTest";
 import { useRouter } from "next/navigation";
 import { useTests } from "@/hooks/useLabTests";
 import TestListItem from "@/components/Dashboard/LabTest/TestListItem";
-import LabTestResponseForm from "@/components/Dashboard/LabTest/ResultForm";
 
 export default function LabTestPage() {
   const [showViewMode, setShowViewMode] = useState<"card" | "list">("card");

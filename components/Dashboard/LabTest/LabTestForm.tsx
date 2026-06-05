@@ -632,7 +632,7 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
       let testSeason: Season | null = season || null;
 
       if (mode === "runs") {
-        config.missionCount = missionCount;
+        config.missionCount = selectedRuns.length;
         config.selectedMissionIds = selectedRuns;
         config.order = selectedRuns.map((id) => {
           const m = missions.find((x) => x.id === id);

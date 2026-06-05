@@ -15,10 +15,10 @@ export interface Test {
   mode: string;
   season: string | null;
   status: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   created_at: string;
   updated_at: string;
-  last_access_at: string;
+  last_access_at: string | null;
 
   executions?: {
     count: number;

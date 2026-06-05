@@ -1,6 +1,7 @@
 // repositories/folders.repository.ts
 
 import { createClient } from "@/utils/supabase/client";
+import { validateUUID, validateNonEmptyString, validatePositiveInteger } from "@/utils/validation";
 
 const supabase = createClient();
 
@@ -78,20 +79,65 @@ export type UpdateFolderPayload = Partial<
   >
 >;
 
+// Optimized column selection
+const FOLDER_COLUMNS = `
+  id,
+  name,
+  description,
+  color,
+  icon,
+  cover_url,
+  visibility,
+  tags,
+  is_favorite,
+  is_archived,
+  is_deleted,
+  parent_id,
+  owner_id,
+  team_id,
+  file_count,
+  subfolder_count,
+  total_size,
+  depth,
+  position,
+  slug,
+  path,
+  stats,
+  created_at,
+  updated_at,
+  last_access_at
+`;
+
+const DOCUMENT_COLUMNS_FOLDER = `id, title, created_at, updated_at, diagram_type, is_favorite`;
+
+const TEST_COLUMNS_FOLDER = `
+  id,
+  name_test,
+  created_at,
+  updated_at,
+  last_acess,
+  type_id,
+  test_types (id, name)
+`;
+
 export const foldersRepository = {
   async getFolderById(id: number) {
+    const validId = validatePositiveInteger(id, "id");
+
     return supabase
       .from("folders")
-      .select("*")
-      .eq("id", id)
+      .select(FOLDER_COLUMNS)
+      .eq("id", validId)
       .single<FolderRow>();
   },
 
   async getFolderChildren(folderId: number) {
+    const validId = validatePositiveInteger(folderId, "folderId");
+
     return supabase
       .from("folders")
-      .select("*")
-      .eq("parent_id", folderId)
+      .select(FOLDER_COLUMNS)
+      .eq("parent_id", validId)
       .eq("is_deleted", false)
       .order("position", { ascending: true })
       .order("created_at", { ascending: true })
@@ -99,70 +145,92 @@ export const foldersRepository = {
   },
 
   async getFolderDocuments(folderId: number) {
+    const validId = validatePositiveInteger(folderId, "folderId");
+
     return supabase
       .from("documents")
-      .select("id, title, created_at, updated_at, diagram_type, is_favorite")
-      .eq("folder_id", folderId)
+      .select(DOCUMENT_COLUMNS_FOLDER)
+      .eq("folder_id", validId)
       .order("updated_at", { ascending: false })
       .returns<DocumentRow[]>();
   },
 
   async getFolderTests(folderId: number) {
+    const validId = validatePositiveInteger(folderId, "folderId");
+
     return supabase
       .from("tests")
-      .select(
-        `
-      id,
-      name,
-      description,
-      mode,
-      season,
-      status,
-      created_at,
-      updated_at,
-      last_access_at
-    `,
-      )
-      .eq("folder_id", folderId)
+      .select(TEST_COLUMNS_FOLDER)
+      .eq("folder_id", validId)
       .order("created_at", { ascending: false });
   },
 
   async updateFolder(id: number, data: UpdateFolderPayload) {
+    const validId = validatePositiveInteger(id, "id");
+
+    if (!data || typeof data !== "object") {
+      throw new Error("Invalid folder data");
+    }
+
+    if (data.name) {
+      data.name = validateNonEmptyString(data.name, "name", 255);
+    }
+
     return supabase
       .from("folders")
       .update({ ...data, updated_at: new Date().toISOString() })
-      .eq("id", id)
-      .select()
+      .eq("id", validId)
+      .select(FOLDER_COLUMNS)
       .single<FolderRow>();
   },
 
   async createSubfolder(payload: CreateSubfolderPayload) {
+    if (!payload || typeof payload !== "object") {
+      throw new Error("Invalid subfolder data");
+    }
+
+    const validPayload = {
+      owner_id: validateUUID(payload.owner_id, "owner_id"),
+      team_id: payload.team_id ?? null,
+      parent_id: validatePositiveInteger(payload.parent_id, "parent_id"),
+      name: validateNonEmptyString(payload.name, "name", 255),
+      description: payload.description || null,
+      visibility: payload.visibility || "private",
+      position: payload.position ?? 0,
+    };
+
     return supabase
       .from("folders")
-      .insert(payload)
-      .select()
+      .insert(validPayload)
+      .select(FOLDER_COLUMNS)
       .single<FolderRow>();
   },
 
   async markFolderAsDeleted(id: number) {
+    const validId = validatePositiveInteger(id, "id");
+
     return supabase
       .from("folders")
       .update({ is_deleted: true, updated_at: new Date().toISOString() })
-      .eq("id", id);
+      .eq("id", validId);
   },
 
   async updateLastAccess(id: number) {
+    const validId = validatePositiveInteger(id, "id");
+
     return supabase
       .from("folders")
       .update({ last_access_at: new Date().toISOString() })
-      .eq("id", id);
+      .eq("id", validId);
   },
 
   async getFolderBreadcrumb(folderId: number) {
+    const validId = validatePositiveInteger(folderId, "folderId");
+
     return supabase
       .from("folders")
       .select("id, name, parent_id")
-      .eq("id", folderId)
+      .eq("id", validId)
       .single<FolderBreadcrumb>();
   },
 };

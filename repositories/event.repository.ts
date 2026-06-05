@@ -1,6 +1,34 @@
 import { createClient } from "@/utils/supabase/client";
+import { validateUUID, validateNonEmptyString, validatePositiveInteger } from "@/utils/validation";
 
 const supabase = createClient();
+
+// Safe column selections
+const EVENT_COLUMNS = `
+  id_evento,
+  code_event,
+  name_event,
+  id_responsavel,
+  last_acess,
+  created_at,
+  updated_at
+`;
+
+const EVENT_SETTINGS_COLUMNS = `
+  id_evento,
+  enable_playoffs,
+  pre_round_inspection,
+  advanced_view
+`;
+
+const TEAM_COLUMNS = `
+  id,
+  name,
+  description,
+  id_event,
+  created_at,
+  updated_at
+`;
 
 export const eventRepository = {
   async createEvent({
@@ -10,11 +38,14 @@ export const eventRepository = {
     userId: string;
     name: string;
   }) {
+    const validUserId = validateUUID(userId, "userId");
+    const validName = validateNonEmptyString(name, "name", 255);
+
     return await supabase
       .from("events")
       .insert({
-        id_responsavel: userId,
-        name_event: name,
+        id_responsavel: validUserId,
+        name_event: validName,
         code_event: crypto
           .randomUUID()
           .slice(0, 6)
@@ -39,10 +70,16 @@ export const eventRepository = {
     eventId: number;
     config: any;
   }) {
+    const validEventId = validatePositiveInteger(eventId, "eventId");
+
+    if (!config || typeof config !== "object") {
+      throw new Error("Invalid config data");
+    }
+
     return await supabase
       .from("typeEvent")
       .insert({
-        id_event: eventId,
+        id_event: validEventId,
         config,
       });
   },
@@ -50,64 +87,71 @@ export const eventRepository = {
   async createDefaultSettings(
     eventId: number
   ) {
+    const validEventId = validatePositiveInteger(eventId, "eventId");
+
     return await supabase
       .from("event_settings")
       .insert({
-        id_evento: eventId,
+        id_evento: validEventId,
       });
   },
 
   async updateLastAccess(
     eventId: number
   ) {
+    const validEventId = validatePositiveInteger(eventId, "eventId");
+
     return await supabase
       .from("events")
       .update({
-        last_acess:
-          new Date().toISOString(),
+        last_acess: new Date().toISOString(),
       })
-      .eq("id_evento", eventId);
+      .eq("id_evento", validEventId);
   },
 
   async getEventByCode(
     codeEvent: string
   ) {
+    const validCode = validateNonEmptyString(codeEvent, "codeEvent", 50);
+
     return await supabase
       .from("events")
-      .select("*")
-      .eq("code_event", codeEvent)
+      .select(EVENT_COLUMNS)
+      .eq("code_event", validCode)
       .limit(1);
   },
 
   async getEventConfig(
     eventId: number
   ) {
+    const validEventId = validatePositiveInteger(eventId, "eventId");
+
     return await supabase
       .from("typeEvent")
       .select("*")
-      .eq("id_event", eventId);
+      .eq("id_event", validEventId);
   },
 
   async getTeamsByEvent(
     eventId: number
   ) {
+    const validEventId = validatePositiveInteger(eventId, "eventId");
+
     return await supabase
       .from("team")
-      .select("*")
-      .eq("id_event", eventId);
+      .select(TEAM_COLUMNS)
+      .eq("id_event", validEventId);
   },
 
   async getEventSettings(
     eventId: number
   ) {
+    const validEventId = validatePositiveInteger(eventId, "eventId");
+
     return await supabase
       .from("event_settings")
-      .select(`
-        enable_playoffs,
-        pre_round_inspection,
-        advanced_view
-      `)
-      .eq("id_evento", eventId)
+      .select(EVENT_SETTINGS_COLUMNS)
+      .eq("id_evento", validEventId)
       .maybeSingle();
   },
 };

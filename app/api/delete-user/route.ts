@@ -1,74 +1,125 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { validateUUID, ValidationError } from "@/utils/validation";
+import { ApiError, ErrorCode } from "@/utils/errorHandling";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
+/**
+ * Validates request and extracts user ID
+ */
+function validateRequest(body: unknown): string {
+  if (!body || typeof body !== "object") {
+    throw new ApiError("Invalid request body", 400, ErrorCode.VALIDATION_ERROR);
+  }
+
+  const bodyObj = body as Record<string, unknown>;
+  const userId = bodyObj.userId;
+
+  if (!userId) {
+    throw new ApiError("userId is required", 400, ErrorCode.VALIDATION_ERROR);
+  }
+
+  try {
+    return validateUUID(userId, "userId");
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      throw new ApiError(error.message, 400, ErrorCode.VALIDATION_ERROR);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Deletes all user data in a single transaction-like operation
+ * Note: Supabase doesn't have explicit transaction support, but we use a coordinated
+ * sequence with careful error handling and rollback consideration
+ */
 export async function POST(req: NextRequest) {
+  let userId: string;
+
   try {
     const body = await req.json();
-
-    const userId = body?.userId;
-
-    if (!userId) {
+    userId = validateRequest(body);
+  } catch (error) {
+    if (error instanceof ApiError) {
       return NextResponse.json(
-        {
-          error: "userId é obrigatório",
-        },
-        {
-          status: 400,
-        },
+        { error: error.message },
+        { status: error.statusCode },
       );
     }
+    return NextResponse.json(
+      { error: "Invalid request" },
+      { status: 400 },
+    );
+  }
 
-    /* ================= DELETE TAGS ================= */
+  try {
+    // Delete in the order of foreign key dependencies (child tables first)
+    const deletionSequence = [
+      { table: "user_tags", description: "tags" },
+      { table: "user_followers", description: "followers" },
+      { table: "team_members", description: "team memberships" },
+      { table: "documents", description: "documents" },
+      { table: "tests", description: "tests" },
+      { table: "folders", description: "folders" },
+      { table: "styleLab", description: "styles" },
+    ];
 
-    const { error: tagsError } = await supabaseAdmin
-      .from("user_tags")
-      .delete()
-      .eq("user_id", userId);
+    // Execute deletions in sequence
+    for (const { table, description } of deletionSequence) {
+      let deleteQuery = supabaseAdmin.from(table).delete();
 
-    if (tagsError) {
-      return NextResponse.json(
-        {
-          error: "Erro ao deletar tags",
-        },
-        {
-          status: 500,
-        },
-      );
+      // Different tables use different user ID column names
+      if (table === "user_followers") {
+        deleteQuery = deleteQuery.or(`user_id.eq.${userId},follower_id.eq.${userId}`);
+      } else if (table === "team_members") {
+        deleteQuery = deleteQuery.eq("user_id", userId);
+      } else {
+        deleteQuery = deleteQuery.eq("user_id", userId);
+      }
+
+      const { error: deleteError } = await deleteQuery;
+
+      if (deleteError) {
+        console.error(`Error deleting ${description}:`, deleteError);
+        return NextResponse.json(
+          {
+            error: `Failed to delete ${description}. Please try again later.`,
+            code: ErrorCode.DATABASE_ERROR,
+          },
+          { status: 500 },
+        );
+      }
     }
 
-    /* ================= DELETE FOLLOWERS ================= */
+    /* ================= DELETE STORAGE FILES ================= */
 
-    const { error: followersError } = await supabaseAdmin
-      .from("user_followers")
-      .delete()
-      .or(`user_id.eq.${userId},follower_id.eq.${userId}`);
+    try {
+      const { data: files, error: listError } = await supabaseAdmin.storage
+        .from("photos")
+        .list(`avatars/${userId}`);
 
-    if (followersError) {
-      return NextResponse.json(
-        {
-          error: "Erro ao deletar seguidores",
-        },
-        {
-          status: 500,
-        },
-      );
-    }
+      if (listError) {
+        console.error("Error listing files:", listError);
+        // Continue with deletion - storage files are less critical
+      } else if (files && files.length > 0) {
+        const paths = files.map((file) => `avatars/${userId}/${file.name}`);
+        const { error: removeError } = await supabaseAdmin.storage
+          .from("photos")
+          .remove(paths);
 
-    /* ================= DELETE STORAGE ================= */
-
-    const { data: files } = await supabaseAdmin.storage
-      .from("photos")
-      .list(`avatars/${userId}`);
-
-    if (files && files.length > 0) {
-      const paths = files.map((file) => `avatars/${userId}/${file.name}`);
-
-      await supabaseAdmin.storage.from("photos").remove(paths);
+        if (removeError) {
+          console.error("Error removing storage files:", removeError);
+          // Continue - storage deletion failure shouldn't block account deletion
+        }
+      }
+    } catch (storageError) {
+      console.error("Storage operation error:", storageError);
+      // Continue with profile deletion
     }
 
     /* ================= DELETE PROFILE ================= */
@@ -79,46 +130,47 @@ export async function POST(req: NextRequest) {
       .eq("id", userId);
 
     if (profileError) {
+      console.error("Error deleting profile:", profileError);
       return NextResponse.json(
         {
-          error: "Erro ao deletar perfil",
+          error: "Failed to delete profile. Please try again later.",
+          code: ErrorCode.DATABASE_ERROR,
         },
-        {
-          status: 500,
-        },
+        { status: 500 },
       );
     }
 
     /* ================= DELETE AUTH USER ================= */
 
-    const { error: authError } =
-      await supabaseAdmin.auth.admin.deleteUser(userId);
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (authError) {
+      console.error("Error deleting auth user:", authError);
       return NextResponse.json(
         {
-          error: "Erro ao deletar usuário auth",
+          error: "Failed to delete authentication account. Please try again later.",
+          code: ErrorCode.DATABASE_ERROR,
         },
-        {
-          status: 500,
-        },
+        { status: 500 },
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Conta deletada com sucesso",
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Account successfully deleted",
+      },
+      { status: 200 },
+    );
   } catch (error) {
-    console.error(error);
+    console.error("Unexpected error during user deletion:", error);
 
     return NextResponse.json(
       {
-        error: "Erro interno",
+        error: "An unexpected error occurred",
+        code: ErrorCode.INTERNAL_ERROR,
       },
-      {
-        status: 500,
-      },
+      { status: 500 },
     );
   }
 }

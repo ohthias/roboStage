@@ -43,14 +43,6 @@ export default function HubHero() {
       modal: "event",
     },
     {
-      id: "2",
-      label: "Novo Teste",
-      description: "Monte um teste ou desafio",
-      icon: "clipboard-check",
-      colorClass: "text-success",
-      modal: "test",
-    },
-    {
       id: "3",
       label: "Novo Conteúdo",
       description: "Adicione materiais e arquivos",
@@ -300,7 +292,6 @@ export default function HubHero() {
       {activeModal === "event" && (
         <EventModal onClose={() => setActiveModal(null)} open={true} />
       )}
-      {activeModal === "test" && <LabTestForm />}
       {activeModal === "content" && (
         <CreateDiagramModal onClose={() => setActiveModal(null)} open={true} />
       )}

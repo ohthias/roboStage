@@ -19,28 +19,10 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard",
   },
   {
-    id: "folders",
-    label: "Minhas Pastas",
-    icon: Folder,
-    href: "/dashboard/folders",
-  },
-  {
     id: "innolab",
     label: "InnoLab",
     icon: Book,
     href: "/dashboard/innolab",
-  },
-  {
-    id: "labtest",
-    label: "LabTest",
-    icon: ChartPie,
-    href: "/dashboard/labtest",
-  },
-  {
-    id: "quickbrick",
-    label: "QuickBrick",
-    icon: Cuboid,
-    href: "/dashboard/quickbrick",
   },
   {
     id: "showlive",

@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-const supabase = createClient();
+import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { sumAllMissions } from "@/lib/scores";
-import FormMission from "@/components/FormMission/FormMission";
+
+import { Trophy, ShieldCheck, Swords, Crown, Medal } from "lucide-react";
+
 import Loader from "@/components/Loader";
+import FormMission from "@/components/FormMission/FormMission";
+
+import { sumAllMissions } from "@/utils/scores";
+
+const supabase = createClient();
 
 interface SubMission {
   submission: string;
@@ -31,393 +36,558 @@ type ResponseType = {
   };
 };
 
-export default function AvaliacaoPlayOffs({ idEvento }: { idEvento: number }) {
-  const [loading, setLoading] = useState(true);
-  const [label, setLabel] = useState("");
-  const [teams, setTeams] = useState<any[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState<string>("");
-  const [missions, setMissions] = useState<MissionType[]>([]);
-  const [responses, setResponses] = useState<ResponseType>({});
-  const [fase, setFase] = useState<"Semi-final" | "Final" | null>(null);
-  const [roundsOrder, setRoundsOrder] = useState<string[]>([]);
-  const [allRoundsCompleted, setAllRoundsCompleted] = useState(false);
-  const [playoffState, setPlayoffState] = useState<"andamento" | "encerrado" | "final">("andamento");
+interface Team {
+  id_team: number;
+  name_team: string;
+  points: Record<string, number>;
+  data_extra?: any;
+  bestScore: number;
+}
 
+interface EventSettings {
+  enable_playoffs: boolean;
+  auto_semifinals: boolean;
+}
+
+type PlayoffPhase = "Semi-final" | "Final";
+
+export default function AvaliacaoPlayOffs({ idEvento }: { idEvento: number }) {
   const router = useRouter();
 
+  const [loading, setLoading] = useState(true);
+
+  const [settings, setSettings] = useState<EventSettings | null>(null);
+
+  const [missions, setMissions] = useState<MissionType[]>([]);
+
+  const [responses, setResponses] = useState<ResponseType>({});
+
+  const [selectedTeam, setSelectedTeam] = useState("");
+
+  const [fase, setFase] = useState<PlayoffPhase | null>(null);
+
+  const [semiTeams, setSemiTeams] = useState<Team[]>([]);
+
+  const [finalTeams, setFinalTeams] = useState<Team[]>([]);
+
+  const [allRoundsCompleted, setAllRoundsCompleted] = useState(false);
+
+  const [seasonLabel, setSeasonLabel] = useState("");
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-
-        // ⚙️ Buscar configurações e dados do evento em paralelo
-        const [
-          { data: settings },
-          { data: eventConfig, error: configError },
-          { data: teamsData, error: teamsError },
-          missionsRes,
-        ] = await Promise.all([
-          supabase
-            .from("event_settings")
-            .select("enable_playoffs, auto_semifinals")
-            .eq("id_evento", idEvento)
-            .single(),
-
-          supabase
-            .from("typeEvent")
-            .select("config")
-            .eq("id_event", idEvento)
-            .maybeSingle(),
-
-          supabase
-            .from("view_team_json")
-            .select("id_team, name_team, rounds")
-            .eq("id_event", idEvento),
-
-          fetch("/api/data/missions"),
-        ]);
-
-        if (configError) throw configError;
-        if (teamsError) throw teamsError;
-
-        // ⚙️ Verificar se playoffs estão habilitados
-        if (!settings || !settings.enable_playoffs) {
-          setLabel("Playoffs não habilitados");
-          return;
-        }
-
-        // 🏁 Definir fase e rótulo
-        const isSemi = settings.auto_semifinals;
-        setFase(isSemi ? "Semi-final" : "Final");
-        setLabel(isSemi ? "Modo: Semi-finais" : "Modo: Finais");
-
-        // 🧩 Configuração do evento
-        const config = eventConfig?.config || {};
-        const visibleRounds = config.rodadas || [];
-        setRoundsOrder(visibleRounds);
-
-        const season = (config.temporada || "").toLowerCase();
-
-        // 📂 Missões da temporada
-        const missionsData = await missionsRes.json();
-        if (missionsData[season]) {
-          setMissions(missionsData[season]);
-        } else {
-          console.warn(`⚠️ Temporada '${season}' não encontrada em missions.json`);
-          setMissions([]);
-        }
-
-        // 👥 Equipes
-        const formattedTeams = (teamsData || []).map((t) => ({
-          ...t,
-          points: t.rounds || Object.fromEntries(visibleRounds.map((r: any) => [r, -1])),
-        }));
-
-        // 🏆 Ranking pela melhor pontuação
-        const rankedTeams = formattedTeams
-          .map((t) => {
-            const scores = Object.values(t.points || {}) as number[];
-            const validScores = scores.filter((s) => typeof s === "number" && s >= 0);
-            const maxScore = validScores.length > 0 ? Math.max(...validScores) : 0;
-            return { ...t, bestScore: maxScore };
-          })
-          .sort((a, b) => b.bestScore - a.bestScore);
-
-        const topTeams = isSemi ? rankedTeams.slice(0, 4) : rankedTeams.slice(0, 2);
-        setTeams(topTeams);
-
-        // ✅ Verificar se todas as rodadas estão completas
-        const allCompleted = formattedTeams.every((team) =>
-          visibleRounds.every((round: string | number) => team.points[round] !== -1)
-        );
-        setAllRoundsCompleted(allCompleted);
-
-        if (isSemi) {
-          // ✅ Semi-final concluída
-          const semiCompleted = topTeams.every(
-            (t) => t.points?.["Semi-final"] !== undefined && t.points?.["Semi-final"] !== -1
-          );
-
-          if (semiCompleted) {
-            // 🏁 Selecionar finalistas
-            const top2 = topTeams
-              .sort((a, b) => (b.points?.["Semi-final"] ?? 0) - (a.points?.["Semi-final"] ?? 0))
-              .slice(0, 2);
-
-            setTeams(top2);
-            setFase("Final");
-            setLabel("Modo: Finais");
-
-            const finalCompleted = top2.every(
-              (t) => t.points?.["Final"] !== undefined && t.points?.["Final"] !== -1
-            );
-            setPlayoffState(finalCompleted ? "encerrado" : "andamento");
-          } else {
-            setPlayoffState("andamento");
-          }
-        } else {
-          // ⚙️ Finais diretas
-          const finalCompleted = topTeams.every(
-            (t) => t.points?.["Final"] !== undefined && t.points?.["Final"] !== -1
-          );
-          setPlayoffState(finalCompleted ? "encerrado" : "andamento");
-        }
-      } catch (err) {
-        console.error("Erro ao carregar dados:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (idEvento) loadData();
+    loadData();
   }, [idEvento]);
 
-  const handleSelectMission = (missionId: string, index: number, value: string | number) => {
+  async function loadData() {
+    try {
+      setLoading(true);
+
+      const [
+        { data: settingsData, error: settingsError },
+        { data: configData, error: configError },
+        { data: teamsData, error: teamsError },
+        missionsRes,
+      ] = await Promise.all([
+        supabase
+          .from("event_settings")
+          .select("enable_playoffs, auto_semifinals")
+          .eq("id_evento", idEvento)
+          .single(),
+
+        supabase
+          .from("typeEvent")
+          .select("config")
+          .eq("id_event", idEvento)
+          .single(),
+
+        supabase.from("team").select("*").eq("id_event", idEvento),
+
+        fetch("/api/data/missions"),
+      ]);
+
+      if (settingsError) throw settingsError;
+      if (configError) throw configError;
+      if (teamsError) throw teamsError;
+
+      setSettings(settingsData);
+
+      if (!settingsData.enable_playoffs) {
+        setLoading(false);
+        return;
+      }
+
+      const config = configData?.config || {};
+
+      const rounds: string[] = config.rodadas || [];
+
+      const season = (config.temporada || "").toLowerCase();
+
+      setSeasonLabel(config.temporada || "");
+
+      const missionsJson = await missionsRes.json();
+
+      setMissions(missionsJson?.[season] || []);
+
+      const formattedTeams: Team[] = (teamsData || []).map((team) => {
+        const points = team.points || {};
+
+        const validScores = Object.entries(points)
+          .filter(
+            ([round, value]) =>
+              !["Semi-final", "Final"].includes(round) &&
+              typeof value === "number" &&
+              value >= 0,
+          )
+          .map(([, value]) => Number(value));
+
+        const bestScore = validScores.length > 0 ? Math.max(...validScores) : 0;
+
+        return {
+          ...team,
+          points,
+          bestScore,
+        };
+      });
+
+      const ranking = [...formattedTeams].sort(
+        (a, b) => b.bestScore - a.bestScore,
+      );
+
+      const roundsCompleted = formattedTeams.every((team) =>
+        rounds.every((round) => {
+          const value = team.points?.[round];
+
+          return typeof value === "number" && value >= 0;
+        }),
+      );
+
+      setAllRoundsCompleted(roundsCompleted);
+
+      // SEMIFINAIS
+      if (settingsData.auto_semifinals) {
+        const top4 = ranking.slice(0, 4);
+
+        setSemiTeams(top4);
+
+        const semiCompleted = top4.every((team) => {
+          const value = team.points?.["Semi-final"];
+
+          return typeof value === "number" && value >= 0;
+        });
+
+        if (!semiCompleted) {
+          setFase("Semi-final");
+          setFinalTeams([]);
+        } else {
+          const finalists = [...top4]
+            .sort(
+              (a, b) =>
+                (b.points?.["Semi-final"] ?? 0) -
+                (a.points?.["Semi-final"] ?? 0),
+            )
+            .slice(0, 2);
+
+          setFinalTeams(finalists);
+
+          const finalCompleted = finalists.every((team) => {
+            const value = team.points?.["Final"];
+
+            return typeof value === "number" && value >= 0;
+          });
+
+          if (!finalCompleted) {
+            setFase("Final");
+          } else {
+            setFase(null);
+          }
+        }
+      }
+
+      // FINAL DIRETA
+      else {
+        const top2 = ranking.slice(0, 2);
+
+        setFinalTeams(top2);
+
+        const finalCompleted = top2.every((team) => {
+          const value = team.points?.["Final"];
+
+          return typeof value === "number" && value >= 0;
+        });
+
+        if (!finalCompleted) {
+          setFase("Final");
+        } else {
+          setFase(null);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const teamsToEvaluate = useMemo(() => {
+    if (fase === "Semi-final") {
+      return semiTeams;
+    }
+
+    if (fase === "Final") {
+      return finalTeams;
+    }
+
+    return [];
+  }, [fase, semiTeams, finalTeams]);
+
+  const totalPoints = useMemo(() => {
+    return sumAllMissions(
+      missions.filter((m) => m.id !== "GP"),
+      responses,
+    );
+  }, [missions, responses]);
+
+  const handleSelectMission = (
+    missionId: string,
+    index: number,
+    value: string | number,
+  ) => {
     setResponses((prev) => ({
       ...prev,
-      [missionId]: { ...prev[missionId], [index]: value },
+      [missionId]: {
+        ...prev[missionId],
+        [index]: value,
+      },
     }));
   };
 
-  const totalPoints = useMemo(() => sumAllMissions(
-    missions.filter((m) => m.id !== "GP"),
-    responses
-  ), [missions, responses]);
-
-
-  const handleSubmit = async () => {
+  async function handleSubmit() {
     if (!selectedTeam || !fase) {
-      alert("Selecione uma equipe!");
+      alert("Selecione uma equipe.");
       return;
     }
 
-    const equipe = teams.find((t) => t.id_team === Number(selectedTeam));
-    if (!equipe) {
-      alert("Equipe não encontrada!");
+    const team = teamsToEvaluate.find(
+      (t) => t.id_team === Number(selectedTeam),
+    );
+
+    if (!team) {
+      alert("Equipe inválida.");
       return;
     }
 
-    // 🚫 Bloqueio de reavaliação
-    if (equipe.points && equipe.points[fase]) {
+    const alreadyScored = team.points?.[fase];
+
+    if (typeof alreadyScored === "number" && alreadyScored >= 0) {
       alert(`Equipe já avaliada na ${fase}.`);
       return;
     }
 
-    const confirm = window.confirm("Deseja realmente enviar a avaliação?");
-    if (!confirm) return;
+    const confirmSubmit = window.confirm(
+      `Deseja enviar a pontuação da ${fase}?`,
+    );
+
+    if (!confirmSubmit) return;
 
     try {
       setLoading(true);
 
       const updatedPoints = {
-        ...equipe.points,
+        ...team.points,
         [fase]: totalPoints,
       };
 
-      // Extra de GP/PT
-      const roundExtra: Record<string, any> = {};
+      const extraData: Record<string, any> = {};
+
       ["GP", "PT"].forEach((id) => {
         const mission = missions.find((m) => m.id === id);
+
         const response = responses[id];
-        if (mission && response) {
-          const index = Object.values(response)[0];
-          let value: string | number = index;
-          let points = 0;
 
-          if (Array.isArray(mission.points)) {
-            points = mission.points[index as number] ?? 0;
-          } else {
-            points = mission.points as number;
-          }
+        if (!mission || !response) return;
 
-          if (typeof index === "number") {
-            value = mission.type[index + 1] ?? index;
-          }
-          roundExtra[id] = { value, points };
+        const index = Object.values(response)[0];
+
+        let points = 0;
+
+        if (Array.isArray(mission.points)) {
+          points = mission.points[index as number] ?? 0;
+        } else {
+          points = mission.points;
         }
+
+        extraData[id] = {
+          value: index,
+          points,
+        };
       });
 
-      const newExtra = {
-        ...(equipe.data_extra || {}),
-        [fase]: roundExtra,
+      const updatedExtra = {
+        ...(team.data_extra || {}),
+        [fase]: extraData,
       };
 
-      await supabase
+      const { error } = await supabase
         .from("team")
-        .update({ points: updatedPoints, data_extra: newExtra })
-        .eq("id_team", equipe.id_team);
+        .update({
+          points: updatedPoints,
+          data_extra: updatedExtra,
+        })
+        .eq("id_team", team.id_team);
 
-      alert(`✅ Pontuação salva para ${equipe.name_team} na ${fase}: ${totalPoints}`);
+      if (error) throw error;
+
+      alert(`Pontuação enviada com sucesso para ${team.name_team}.`);
+
+      setResponses({});
+      setSelectedTeam("");
+
+      await loadData();
 
       router.refresh();
     } catch (err) {
       console.error(err);
-      alert("Erro ao salvar avaliação.");
+      alert("Erro ao salvar pontuação.");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  if (loading) return <Loader />;
+  const playoffLevel = fase === "Semi-final" ? "Semifinais" : "Grande Final";
+
+  const playoffIcon =
+    fase === "Semi-final" ? (
+      <ShieldCheck className="w-8 h-8 text-info" />
+    ) : (
+      <Crown className="w-8 h-8 text-warning" />
+    );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (!settings?.enable_playoffs) {
+    return (
+      <div className="alert alert-warning">
+        Playoffs desativadas neste evento.
+      </div>
+    );
+  }
 
   if (!allRoundsCompleted) {
     return (
-      <main className="flex flex-col items-center justify-center min-h-screen">
-        <div className="alert bg-warning/25 border border-warning/50 shadow-lg flex flex-col items-center max-w-3xl">
-          <h1 className="text-3xl font-bold text-warning">
-            Até o momento, a avaliação dos playoffs não está disponível! ⏳
-          </h1>
-          <p className="text-base-content text-lg font-semibold">
-            Aguarde até que todas as equipes tenham suas rodadas avaliadas.
-          </p>
-          <p className="text-base-content/75 mt-2 font-italic text-center">
-            A avaliação dos playoffs será liberada automaticamente assim que todas as equipes tiverem suas rodadas avaliadas. Fique atento!
-          </p>
+      <main className="flex items-center justify-center min-h-screen px-4">
+        <div className="alert bg-warning/20 border border-warning/40 max-w-3xl shadow-xl">
+          <div>
+            <h2 className="font-bold text-xl">
+              Rodadas principais ainda em andamento
+            </h2>
+
+            <p className="mt-2 text-sm opacity-80">
+              As playoffs serão liberadas automaticamente quando todas as
+              equipes tiverem pontuações válidas em todas as rodadas.
+            </p>
+          </div>
         </div>
       </main>
-    )
+    );
   }
 
-  if (fase && playoffState === "encerrado") {
+  if (!fase) {
     return (
-      <main className="flex flex-col items-center justify-center min-h-screen">
-        <div className="alert bg-success/25 border border-success/50 shadow-lg flex flex-col items-center max-w-3xl">
-          <h1 className="text-3xl font-bold text-success">
-            Avaliação dos Playoffs Encerrada! 🎉
-          </h1>
-          <p className="text-base-content text-lg font-semibold">
-            A fase de playoffs foi concluída com sucesso.
-          </p>
-          <p className="text-base-content/75 mt-2 font-italic text-center">
-            Parabéns a todos os participantes e à equipe vencedora! Obrigado por fazerem parte deste evento. Os resultados finais já estão disponíveis para o administrador do evento.
-          </p>
+      <main className="flex items-center justify-center min-h-screen px-4">
+        <div className="alert bg-success/20 border border-success/40 max-w-3xl shadow-xl">
+          <div>
+            <h2 className="font-bold text-2xl">Playoffs encerradas 🎉</h2>
+
+            <p className="mt-2 opacity-80">
+              Todas as avaliações já foram concluídas.
+            </p>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="flex flex-col items-center py-6">
-      <section className="w-full max-w-4xl flex flex-row items-center justify-between mb-6">
-        <div className="flex flex-col items-start">
-          <h1 className="text-2xl font-bold text-primary mb-2">Avaliação Playoffs</h1>
-          <div className="flex gap-2">
-            <p className="badge badge-outline badge-secondary">{label}</p>
-            {playoffState === "andamento" && (
-              <p className="badge badge-outline badge-info">Fase em andamento</p>
-            )}
-            {playoffState === "encerrado" && (
-              <p className="badge badge-outline badge-success">Fase encerrada</p>
-            )}
-            {playoffState === "final" && (
-              <p className="badge badge-outline badge-warning">Final em andamento</p>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-col gap-2">
-          {selectedTeam && missions.length === 0 && (
-            <div className="alert alert-warning">
-              ⚠️ Nenhuma missão encontrada para esta temporada.
+    <main className="max-w-6xl mx-auto px-4 py-8">
+      {/* HEADER */}
+      <div className="rounded-3xl border border-base-300 bg-base-100 p-6 shadow-xl mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <div className="badge badge-primary badge-lg">{seasonLabel}</div>
+
+              <div className="badge badge-secondary badge-lg">Playoffs</div>
+
+              {settings.auto_semifinals && (
+                <div className="badge badge-outline">Sistema automático</div>
+              )}
             </div>
-          )}
 
-          {/* 🚀 Mensagem de estado da fase */}
-          {fase && playoffState === "andamento" && (
-            <div className="alert alert-info shadow-lg">
-              ⏳ A fase <b>{fase}</b> está em andamento.
-            </div>
-          )}
+            <h1 className="text-4xl font-black flex items-center gap-3">
+              <Swords className="w-9 h-9 text-error" />
+              Avaliação dos Playoffs
+            </h1>
 
-          {fase === "Final" && playoffState === "final" && (
-            <div className="alert alert-warning shadow-lg">
-              🏆 A grande <b>Final</b> está em andamento!
-            </div>
-          )}
-        </div>
-      </section>
-
-      <div className="text-left my-4 w-full max-w-4xl bg-base-200 p-6 rounded-md shadow-md border border-base-300">
-        <p className="text-base-content">
-          Selecione a equipe e o round para avaliar.
-        </p>
-        <p className="text-base-content">
-          A pontuação total será atualizada automaticamente com base nas missões
-          avaliadas.
-        </p>
-        <p className="text-base-content">
-          Após enviar, a pontuação não poderá ser alterada.
-        </p>
-      </div>
-
-      <div className="w-full mb-6 max-w-4xl">
-        <select
-          className="select select-bordered w-full"
-          value={selectedTeam}
-          onChange={(e) => setSelectedTeam(e.target.value)}
-        >
-          <option value="">Selecione uma equipe</option>
-          {teams.map((team) => {
-            const jaAvaliada = team.points?.[fase ?? ""];
-            return (
-              <option
-                key={team.id_team}
-                value={team.id_team}
-                disabled={!!jaAvaliada} // 🚫 trava reavaliação
-              >
-                {team.name_team}
-                {jaAvaliada ? " (Já avaliada)" : ` `}
-              </option>
-            );
-          })}
-        </select>
-      </div>
-
-      {selectedTeam && missions.length > 0 && (
-        <>
-          <div className="flex flex-col sm:flex-row items-center justify-start gap-4 relative w-full max-w-4xl bg-base-200 px-8 py-4 rounded-md animate-fade-in-down mb-8">
-            <img src="/images/icons/NoEquip.png" className="w-16 h-16 mr-4" />
-            <p className="text-base-content text-sm">
-              <b>Sem restrição de equipamento:</b> Quando este símbolo aparece,
-              aplica-se a seguinte regra:{" "}
-              <i className="text-secondary">
-                “Um modelo de missão não pode ganhar pontos se estiver tocando no
-                equipamento no final da partida.”
-              </i>
+            <p className="opacity-70 mt-2 text-base">
+              Área exclusiva para avaliação das equipes classificadas.
             </p>
           </div>
 
-          <FormMission
-            missions={missions.map((mission) => ({
-              ...mission,
-              ["sub-mission"]: mission["sub-mission"]
-                ? mission["sub-mission"].map((sub) => ({
-                  ...sub,
-                  points: sub.points ?? 0,
-                }))
-                : undefined,
-            }))}
-            responses={responses}
-            onSelect={handleSelectMission}
-          />
+          <div className="bg-base-200 rounded-2xl px-6 py-5 border border-base-300 min-w-[260px]">
+            <div className="flex items-center gap-3 mb-2">
+              {playoffIcon}
 
-          {(() => {
-            const equipe = teams.find((t) => t.id_team === Number(selectedTeam));
-            const jaAvaliada = equipe?.points?.[fase ?? ""];
+              <div>
+                <p className="text-sm opacity-70">Fase atual</p>
 
-            return (
-              <button
-                className="btn btn-accent mt-6"
-                onClick={handleSubmit}
-                disabled={!!jaAvaliada}
-              >
-                {jaAvaliada
-                  ? `Equipe já avaliada na ${fase}`
-                  : `Enviar pontuação ${fase}`}
-              </button>
-            );
-          })()}
-        </>
-      )}
+                <h2 className="text-2xl font-black">{playoffLevel}</h2>
+              </div>
+            </div>
+
+            <p className="text-sm opacity-70">
+              {fase === "Semi-final"
+                ? "Top 4 equipes disputando vaga na final."
+                : "As 2 melhores equipes disputam o título."}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* EQUIPES */}
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
+        {teamsToEvaluate.map((team) => {
+          const score = team.points?.[fase];
+
+          const evaluated = typeof score === "number" && score >= 0;
+
+          return (
+            <div
+              key={team.id_team}
+              className={`rounded-3xl border p-5 transition-all ${
+                evaluated
+                  ? "border-success bg-success/10"
+                  : "border-base-300 bg-base-100"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Medal className="w-5 h-5 text-warning" />
+
+                    <h2 className="text-xl font-bold">{team.name_team}</h2>
+                  </div>
+
+                  <p className="text-sm opacity-70 mt-1">
+                    Equipe classificada para{" "}
+                    {fase === "Semi-final" ? "as semifinais" : "a grande final"}
+                  </p>
+                </div>
+
+                {evaluated ? (
+                  <div className="badge badge-success">Avaliada</div>
+                ) : (
+                  <div className="badge badge-outline">Pendente</div>
+                )}
+              </div>
+
+              <div className="mt-5 rounded-2xl bg-base-200 px-4 py-3 border border-base-300">
+                <div className="text-sm opacity-70">Status da avaliação</div>
+
+                <div className="text-lg font-bold mt-1">
+                  {evaluated ? "Pontuação registrada" : "Aguardando avaliação"}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* FORM */}
+      <div className="card bg-base-100 border border-base-300 shadow-xl">
+        <div className="card-body">
+          <div className="flex items-center gap-3 mb-2">
+            {playoffIcon}
+
+            <div>
+              <h2 className="card-title text-3xl">Registrar avaliação</h2>
+
+              <p className="text-sm opacity-70">
+                Fase atual: <b>{playoffLevel}</b>
+              </p>
+            </div>
+          </div>
+
+          <div className="alert bg-info/10 border border-info/30 my-4">
+            <div>
+              <p className="font-semibold">
+                As pontuações das playoffs não são exibidas para os voluntários.
+              </p>
+
+              <p className="text-sm opacity-70">
+                Apenas o status da avaliação é mostrado nesta interface.
+              </p>
+            </div>
+          </div>
+
+          <select
+            className="select select-bordered w-full mb-6"
+            value={selectedTeam}
+            onChange={(e) => setSelectedTeam(e.target.value)}
+          >
+            <option value="">Selecione uma equipe</option>
+
+            {teamsToEvaluate.map((team) => {
+              const alreadyScored =
+                typeof team.points?.[fase] === "number" &&
+                team.points?.[fase] >= 0;
+
+              return (
+                <option
+                  key={team.id_team}
+                  value={team.id_team}
+                  disabled={alreadyScored}
+                >
+                  {team.name_team}
+                  {alreadyScored ? " • Avaliada" : ""}
+                </option>
+              );
+            })}
+          </select>
+
+          {selectedTeam && missions.length > 0 && (
+            <>
+              <FormMission
+                missions={missions.map((mission) => ({
+                  ...mission,
+                  ["sub-mission"]: mission["sub-mission"]
+                    ? mission["sub-mission"].map((sub) => ({
+                        ...sub,
+                        points: sub.points ?? 0,
+                      }))
+                    : undefined,
+                }))}
+                responses={responses}
+                onSelect={handleSelectMission}
+              />
+
+              <div className="mt-8 flex items-center justify-between flex-wrap gap-4">
+                <button
+                  className="btn btn-primary btn-lg"
+                  onClick={handleSubmit}
+                >
+                  Enviar avaliação da {playoffLevel}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </main>
   );
 }

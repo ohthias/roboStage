@@ -1,230 +1,228 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-const supabase = createClient();
+import { useEffect, useMemo, useState } from "react";
+import { Eye, EyeOff, Monitor } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
-import { Info } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { useEvent } from "@/hooks/useEvent";
+
+const supabase = createClient();
 
 interface PropsVisualizationSection {
-  idEvent: number | null;
+  codeEvent: string;
 }
 
-interface Team {
-  id_team: number;
-  name_team: string;
-  points: { [key: string]: number };
-}
+const excludedRounds = ["Semi-final", "Final"];
 
-export default function VisualizationSection({ idEvent }: PropsVisualizationSection) {
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [visibleRounds, setVisibleRounds] = useState<string[]>([]);
+export default function VisualizationSection({
+  codeEvent,
+}: PropsVisualizationSection) {
   const { addToast } = useToast();
+  const { loading, error, ranking, eventData } = useEvent(codeEvent);
+  const [visibleRounds, setVisibleRounds] = useState<string[]>([]);
 
-  // 🔹 Rodadas que devem ser excluídas da exibição e configuração
-  const excludedRounds = ["Semi-final", "Final"];
+  const filteredRanking = useMemo(() => {
+    return ranking.map((team) => {
+      const filteredPoints = Object.fromEntries(
+        Object.entries(team.points || {}).filter(
+          ([key]) => !excludedRounds.includes(key),
+        ),
+      );
 
-  const getFilteredPoints = (points: { [key: string]: number }) =>
-    Object.fromEntries(Object.entries(points).filter(([key]) => !excludedRounds.includes(key)));
+      const bestRound = Math.max(
+        ...Object.values(filteredPoints).map((value) => Number(value) || 0),
+        0,
+      );
+
+      return {
+        ...team,
+        filteredPoints,
+        bestRound,
+      };
+    });
+  }, [ranking]);
+
+  const allRounds = useMemo(() => {
+    return Array.from(
+      new Set(
+        filteredRanking.flatMap((team) => Object.keys(team.filteredPoints)),
+      ),
+    );
+  }, [filteredRanking]);
 
   useEffect(() => {
-    const fetchTeams = async () => {
-      if (!idEvent) return;
+    const loadConfig = async () => {
+      if (!eventData) return;
 
-      const { data, error } = await supabase
-        .from("team")
-        .select("*")
-        .eq("id_event", idEvent);
+      const { data } = await supabase
+        .from("typeEvent")
+        .select("config")
+        .eq("id_event", eventData.id_evento)
+        .single();
 
-      if (error) {
-        addToast("Erro ao buscar equipes: " + error.message);
+      const savedRounds = data?.config?.visibleRounds;
+
+      if (savedRounds && savedRounds.length > 0) {
+        setVisibleRounds(savedRounds);
       } else {
-        setTeams(data as Team[]);
-
-        // 🔹 Monta apenas rodadas válidas (sem semifinal/final)
-        const allRounds = Array.from(
-          new Set(
-            data.flatMap((team: Team) =>
-              Object.keys(getFilteredPoints(team.points))
-            )
-          )
-        );
         setVisibleRounds(allRounds);
-
-        // 🔹 Atualiza config no Supabase
-        const { data: existingData } = await supabase
-          .from("typeEvent")
-          .select("id, config")
-          .eq("id_event", idEvent)
-          .single();
-
-        const mergedConfig = {
-          ...(existingData?.config || {}),
-          visibleRounds: allRounds,
-        };
-
-        if (existingData) {
-          await supabase
-            .from("typeEvent")
-            .update({ config: mergedConfig })
-            .eq("id", existingData.id);
-        } else {
-          await supabase
-            .from("typeEvent")
-            .insert({ id_event: idEvent, config: mergedConfig });
-        }
       }
-      setLoading(false);
     };
 
-    fetchTeams();
-  }, [idEvent]);
-
-  if (!idEvent) return <p className="text-red-500">Evento inválido.</p>;
-
-  if (loading)
-    return (
-      <div className="flex justify-center py-8">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
-      </div>
-    );
-
-  if (teams.length === 0)
-    return (
-      <p className="text-gray-500 text-center py-4">
-        Nenhuma equipe cadastrada.
-      </p>
-    );
-
-  // 🔹 Ordenar pela maior pontuação nas rodadas válidas
-  const sortedTeams = [...teams].sort((a, b) => {
-    const validA = getFilteredPoints(a.points);
-    const validB = getFilteredPoints(b.points);
-    const maxA = Math.max(...Object.values(validA), 0);
-    const maxB = Math.max(...Object.values(validB), 0);
-    return maxB - maxA;
-  });
-
-  // 🔹 Rodadas exibidas (sem semifinal/final)
-  const allRounds = Array.from(
-    new Set(
-      sortedTeams.flatMap((team) =>
-        Object.keys(getFilteredPoints(team.points))
-      )
-    )
-  );
+    loadConfig();
+  }, [eventData, allRounds]);
 
   const toggleRound = async (round: string) => {
-    if (excludedRounds.includes(round)) return; // 🔹 Ignora semifinal/final
+    if (!eventData) return;
 
-    const newVisibleRounds = visibleRounds.includes(round)
+    const updatedRounds = visibleRounds.includes(round)
       ? visibleRounds.filter((r) => r !== round)
       : [...visibleRounds, round];
 
-    setVisibleRounds(newVisibleRounds);
+    setVisibleRounds(updatedRounds);
 
-    const { data: existingData } = await supabase
+    const { data } = await supabase
       .from("typeEvent")
       .select("id, config")
-      .eq("id_event", idEvent)
+      .eq("id_event", eventData.id_evento)
       .single();
 
     const mergedConfig = {
-      ...(existingData?.config || {}),
-      visibleRounds: newVisibleRounds,
+      ...(data?.config || {}),
+
+      visibleRounds: updatedRounds,
     };
 
-    if (existingData) {
-      const { error: updateError } = await supabase
+    if (data?.id) {
+      const { error } = await supabase
         .from("typeEvent")
-        .update({ config: mergedConfig })
-        .eq("id", existingData.id);
+        .update({
+          config: mergedConfig,
+        })
+        .eq("id", data.id);
 
-      if (updateError)
-        addToast(
-          "Erro ao atualizar rodadas visíveis: " + updateError.message,
-          "error"
-        );
-      else {
-        addToast("Configuração de rodadas visíveis atualizada.", "success");
+      if (error) {
+        addToast("Erro ao salvar visualização.", "error");
       }
     } else {
-      const { error: insertError } = await supabase
-        .from("typeEvent")
-        .insert({ id_event: idEvent, config: mergedConfig });
+      const { error } = await supabase.from("typeEvent").insert({
+        id_event: eventData.id_evento,
 
-      if (insertError)
-        addToast(
-          "Erro ao inserir rodadas visíveis: " + insertError.message,
-          "error"
-        );
-      else {
-        addToast("Configuração de rodadas visíveis salva.", "success");
+        config: mergedConfig,
+      });
+
+      if (error) {
+        addToast("Erro ao salvar visualização.", "error");
       }
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="alert alert-error">
+        <span>{error}</span>
+      </div>
+    );
+  }
+
+  if (!eventData) {
+    return (
+      <div className="alert alert-error">
+        <span>Evento não encontrado.</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4 px-2 md:px-8">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-primary">Visualização do Ranking</h2>
-        <div
-          className="tooltip tooltip-left"
-          data-tip="Clique nas rodadas para mostrar/ocultar colunas para os visitantes."
-        >
-          <button className="btn btn-sm btn-circle btn-primary">
-            <Info className="text-primary-content" size={24} />
-          </button>
+    <section className="space-y-6 px-4 md:px-8 pb-8">
+      {/* Header */}
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <Monitor size={22} className="text-primary" />
+
+            <h1 className="text-2xl md:text-3xl font-bold">
+              Visualização do Ranking
+            </h1>
+          </div>
+
+          <p className="text-sm text-base-content/60 mt-1">
+            Escolha quais rodadas serão exibidas aos visitantes.
+          </p>
+        </div>
+
+        <div className="badge badge-outline">
+          {visibleRounds.length} visíveis
         </div>
       </div>
 
-      {/* 🔹 Botões apenas para rodadas normais */}
+      {/* Rounds */}
       <div className="flex flex-wrap gap-2">
-        {allRounds.map((round) => (
-          <button
-            key={round}
-            onClick={() => toggleRound(round)}
-            className={`btn btn-sm ${visibleRounds.includes(round) ? "btn-primary" : "btn-ghost"
+        {allRounds.map((round) => {
+          const visible = visibleRounds.includes(round);
+
+          return (
+            <button
+              key={round}
+              onClick={() => toggleRound(round)}
+              className={`btn btn-sm gap-2 ${
+                visible ? "btn-primary" : "btn-ghost border border-base-300"
               }`}
-          >
-            {round}
-          </button>
-        ))}
+            >
+              {visible ? <Eye size={14} /> : <EyeOff size={14} />}
+
+              {round}
+            </button>
+          );
+        })}
       </div>
 
-      {/* 🔹 Tabela sem semifinal/final */}
-      <div className="overflow-x-auto bg-base-100 rounded-lg shadow-lg border border-base-300">
-        <table className="table table-zebra w-full">
-          <thead className="bg-primary/50 text-primary-content">
-            <tr>
-              <th className="text-center">Posição</th>
-              <th>Equipe</th>
-              {visibleRounds.map((round) => (
-                <th key={round} className="text-center">
-                  {round}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sortedTeams.map((team, index) => {
-              const filteredPoints = getFilteredPoints(team.points);
-              return (
-                <tr key={team.id_team} className="hover:bg-base-200">
-                  <td className="text-center font-bold">{index + 1}</td>
+      {/* Preview */}
+      <div className="rounded-2xl border border-base-300 bg-base-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead className="bg-base-200">
+              <tr>
+                <th className="w-20 text-center">#</th>
+
+                <th>Equipe</th>
+
+                {visibleRounds.map((round) => (
+                  <th key={round} className="text-center">
+                    {round}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredRanking.map((team, index) => (
+                <tr key={team.id_team} className="hover">
+                  <td className="text-center font-bold text-base-content/60">
+                    #{index + 1}
+                  </td>
+
                   <td className="font-medium">{team.name_team}</td>
+
                   {visibleRounds.map((round) => (
                     <td key={round} className="text-center">
-                      {filteredPoints[round] ?? 0}
+                      {Number(team.filteredPoints[round]) || 0}
                     </td>
                   ))}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

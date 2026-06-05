@@ -1,75 +1,87 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { authService } from "@/services/auth.service";
 import Logo from "@/components/UI/Logo";
-
-const supabase = createClient();
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setStatus(null);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "https://www.robostage.com.br/auth/reset",
-    });
+    try {
+      await authService.forgotPassword(email);
 
-    if (error) {
-      setStatus(error.message);
-    } else {
-      setStatus("Enviamos um link para redefinir sua senha!");
+      setSuccess(true);
+    } catch (error) {
+      console.error(error);
     }
-  };
+  }
 
   return (
-    <div className="flex h-screen bg-gradient-to-t from-primary/10 via-base-100 to-base-200 p-6 justify-center items-center relative">
+    <main className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center p-4">
+      <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
       <span className="absolute top-6 left-6">
-        <Logo redirectIndex logoSize="lg" />
+        <Logo logoSize="lg" redirectIndex />
       </span>
-      <div className="card w-full max-w-md shadow-lg bg-base-100">
-        <div className="card-body space-y-2">
-          <h2 className="text-3xl font-bold text-center text-base-content">
-            Recuperar Senha
-          </h2>
-          <p className="text-center text-sm text-base-content/70">
-            Digite seu email para receber as instruções.
-          </p>
+      <div className="card bg-base-100 shadow-2xl w-full max-w-md">
+        <form onSubmit={handleSubmit} className="card-body space-y-5">
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold text-primary">Recuperar senha</h1>
+            <p className="text-sm text-base-content/70">
+              Insira seu email para receber um link de recuperação de senha.
+            </p>
+          </div>
 
-          {status && (
-            <p className="text-center text-sm mb-2 text-secondary">{status}</p>
-          )}
-
-          <form className="form-control space-y-1" onSubmit={handleSubmit}>
-            <label className="label" htmlFor="email">
-              <span className="label-text">Email</span>
+          <div className="form-control">
+            <label className="label mb-1">
+              <span className="label-text font-medium">Email</span>
             </label>
             <input
-              id="email"
               type="email"
+              placeholder="seu@email.com"
+              className="input input-bordered input-primary focus:input-primary w-full"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="robostage@email.com"
-              className="input input-bordered w-full"
               required
             />
-
-            <button type="submit" className="btn btn-soft btn-primary w-full mt-6">
-              Enviar Link de Recuperação
+          </div>
+          <div>
+            <button type="submit" className="btn btn-primary btn-block">
+              Enviar link de recuperação
             </button>
-          </form>
+            <p className="text-center text-sm text-base-content/70 mt-4">
+              Lembrou sua senha?{" "}
+              <a href="/auth/login" className="link link-primary">
+                Faça login
+              </a>
+            </p>
+          </div>
 
-          <p className="text-center mt-2">
-            <Link href="/auth/login" className="link link-primary">
-              Voltar ao Login
-            </Link>
-          </p>
-        </div>
+          {success && (
+            <div className="alert alert-success shadow-lg">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="stroke-current shrink-0 h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>
+                Email enviado com sucesso! Verifique sua caixa de entrada.
+              </span>
+            </div>
+          )}
+        </form>
       </div>
-    </div>
+    </main>
   );
 }

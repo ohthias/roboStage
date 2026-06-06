@@ -58,7 +58,7 @@ export function Navbar() {
 
   const navbarClasses = `navbar h-16 px-4 sm:px-6 lg:px-8 border-b border-base-300 ${
     isIndexPage
-      ? "fixed top-0 left-0 right-0 z-50 bg-base-100/75 backdrop-blur-md"
+      ? "fixed top-0 left-0 right-0 z-50 bg-base-100"
       : "sticky top-0 z-40 bg-base-100"
   }`;
 
@@ -78,15 +78,13 @@ export function Navbar() {
         <header className={navbarClasses}>
           <div className="gap-3 flex items-center flex-1 lg:flex-0">
             <Logo logoSize="lg" redirectIndex={true} />
-
-            <div className="hidden sm:block h-6 w-px bg-base-300/80" />
-
+            <div className="divider divider-horizontal mx-1" />
             <Link
               href={`/${competicao}`}
-              className={`hidden sm:inline-flex text-sm font-semibold tracking-wide transition-colors duration-200 ${
+              className={`hidden sm:inline-flex text-sm font-bold italic tracking-wide transition-colors duration-200 ${
                 isActive(`/${competicao}`)
-                  ? "text-primary"
-                  : "text-base-content/55 hover:text-primary"
+                  ? "text-base-content/55 hover:text-base-content cursor-default"
+                  : "text-primary"
               }`}
             >
               {nav.label}

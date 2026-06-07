@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { authService } from "@/services/auth.service";
+import { authService } from "@/server/services/auth.service";
 import Logo from "@/components/UI/Logo";
 
 export default function ForgotPasswordPage() {

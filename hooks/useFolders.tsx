@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import type { FolderRow } from "@/repositories/folders.repository";
+import type { FolderRow } from "@/server/repositories/folders.repository";
 
 const supabase = createClient();
 

@@ -4,7 +4,7 @@ import {
   foldersRepository,
   type CreateSubfolderPayload,
   type UpdateFolderPayload,
-} from "@/repositories/folders.repository";
+} from "@/server/repositories/folders.repository";
 
 export const foldersService = {
   async getFolderPageData(folderId: number) {

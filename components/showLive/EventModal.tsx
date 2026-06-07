@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BaseModal } from "../Dashboard/UI/BaseModal";
 import { useAuth } from "@/hooks/useAuth";
-import { eventService } from "@/services/event.service";
+import { eventService } from "@/server/services/event.service";
 
 interface EventModalProps {
   open: boolean;

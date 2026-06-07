@@ -1,4 +1,4 @@
-import { documentsRepository } from "@/repositories/documents.repository";
+import { documentsRepository } from "@/server/repositories/documents.repository";
 
 export const documentsService = {
   async getDocuments(userId: string) {

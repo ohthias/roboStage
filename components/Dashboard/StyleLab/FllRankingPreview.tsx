@@ -1,4 +1,4 @@
-import { StyleLabTheme } from "@/app/(private)/dashboard/stylelab/page";
+import { StyleLabTheme } from "@/app/(protected)/dashboard/stylelab/page";
 
 interface FllRankingPreviewProps {
   theme: StyleLabTheme;

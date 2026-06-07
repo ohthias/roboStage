@@ -1,5 +1,5 @@
 // auth.service.ts
-import { authRepository } from "@/repositories/auth.repository";
+import { authRepository } from "@/server/repositories/auth.repository";
 
 export const authService = {
   async login(email: string, password: string) {

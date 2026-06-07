@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import HeaderDashboard from "@/components/Dashboard/UI/Header";
 import Sidebar from "@/components/Dashboard/UI/Sidebar";
 import ModalConfirm from "@/components/UI/Modal/ModalConfirm";
-import { NAV_ITEMS } from "@/app/(private)/dashboard/routes";
+import { NAV_ITEMS } from "@/app/(protected)/dashboard/routes";
 import { useAuth } from "@/hooks/useAuth";
 
 interface LayoutShellProps {

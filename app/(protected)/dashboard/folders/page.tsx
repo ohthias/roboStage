@@ -13,7 +13,7 @@ import {
 import { useRouter } from "next/navigation";
 
 import { useFolders } from "@/hooks/useFolders";
-import type { FolderRow } from "@/repositories/folders.repository";
+import type { FolderRow } from "@/server/repositories/folders.repository";
 
 import FolderIcon from "@/components/Dashboard/folders/FolderIcon";
 import CreateFolderModal from "../../../../components/Dashboard/folders/ModalCreateFolder";

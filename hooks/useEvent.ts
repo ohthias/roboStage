@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { eventService } from "@/services/event.service";
+import { eventService } from "@/server/services/event.service";
 
 export interface EventData {
   id_evento: number;

@@ -1,7 +1,5 @@
 import { Navbar } from "@/components/UI/Navbar";
-import { COMPETICOES } from "@/config/competicoes";
-
-type Competicao = keyof typeof COMPETICOES;
+import { COMPETICOES } from "@/utils/competitions/competicoes";
 
 export default async function Layout({
   children,

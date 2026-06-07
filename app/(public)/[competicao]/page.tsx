@@ -1,4 +1,4 @@
-import { COMPETICOES_COMPONENTES } from "@/config/competicoes-map";
+import { COMPETICOES_COMPONENTES } from "@/utils/competitions/competicoes-map";
 
 type Competicao = keyof typeof COMPETICOES_COMPONENTES;
 

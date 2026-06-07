@@ -1,4 +1,4 @@
-import { profileRepository } from "@/repositories/profile.repository";
+import { profileRepository } from "@/server/repositories/profile.repository";
 
 export const profileService = {
   async getProfile(userId: string) {

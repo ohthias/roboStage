@@ -78,12 +78,12 @@ export function Footer() {
             <h3 className="footer-title">Recursos</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/fll/about" className="link link-hover">
+                <Link href="/about" className="link link-hover">
                   Sobre
                 </Link>
               </li>
               <li>
-                <Link href="/fll/help" className="link link-hover">
+                <Link href="/help" className="link link-hover">
                   Ajuda
                 </Link>
               </li>

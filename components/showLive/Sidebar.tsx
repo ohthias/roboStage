@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { eventService } from "@/services/event.service";
+import { eventService } from "@/server/services/event.service";
 import {
   ArrowLeft,
   Brackets,

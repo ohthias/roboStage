@@ -3,7 +3,7 @@
 import { Folder, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import type { FolderRow } from "@/repositories/folders.repository";
+import type { FolderRow } from "@/server/repositories/folders.repository";
 
 type Props = {
   folder: FolderRow;

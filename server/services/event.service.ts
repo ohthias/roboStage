@@ -1,4 +1,4 @@
-import { eventRepository } from "@/repositories/event.repository";
+import { eventRepository } from "@/server/repositories/event.repository";
 
 interface CreateEventServicePayload {
   userId: string;

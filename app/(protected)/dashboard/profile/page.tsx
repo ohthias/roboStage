@@ -19,8 +19,8 @@ import {
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
 import { useToast } from "@/app/context/ToastContext";
-import { profileService } from "@/services/profile.service";
-import { authService } from "@/services/auth.service";
+import { profileService } from "@/server/services/profile.service";
+import { authService } from "@/server/services/auth.service";
 import { createClient } from "@/utils/supabase/client";
 
 const supabase = createClient();

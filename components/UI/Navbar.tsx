@@ -18,7 +18,7 @@ import {
 
 import Logo from "./Logo";
 import { ThemeController } from "./themeController";
-import { NAVIGATION } from "@/config/navigation";
+import { NAVIGATION } from "@/utils/competitions/navigation";
 
 interface Season {
   key: string;

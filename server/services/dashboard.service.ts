@@ -1,4 +1,4 @@
-import { dashboardRepository } from "@/repositories/dashboard.repository"
+import { dashboardRepository } from "@/server/repositories/dashboard.repository"
 import type {
   DashboardStats,
   DashboardConfig,

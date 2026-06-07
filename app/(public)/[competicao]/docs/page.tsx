@@ -4,7 +4,7 @@ import { Footer } from "@/components/UI/Footer";
 import { useEffect, useState } from "react";
 import { FileText, ExternalLink, BookOpen, Bot } from "lucide-react";
 import { useParams } from "next/navigation";
-import { COMPETICOES } from "@/config/competicoes";
+import { COMPETICOES } from "@/utils/competitions/competicoes";
 
 interface DocCard {
   title: string;

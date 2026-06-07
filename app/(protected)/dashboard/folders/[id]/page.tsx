@@ -21,7 +21,7 @@ import type {
   FolderRow,
   DocumentRow,
   TestRow,
-} from "@/repositories/folders.repository";
+} from "@/server/repositories/folders.repository";
 import { useFolder } from "@/hooks/useFolder";
 import FolderSidebar from "../../../../../components/Dashboard/folders/FolderSidebar";
 import EditModal from "../../../../../components/Dashboard/folders/EditModal";

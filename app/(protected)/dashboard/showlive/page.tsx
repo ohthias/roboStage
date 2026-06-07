@@ -7,7 +7,7 @@ import { EventModal } from "@/components/showLive/EventModal";
 import { EventCardSkeleton } from "@/components/UI/Cards/EventCardSkeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useEvents } from "@/hooks/useEventsLoad";
-import { eventService } from "@/services/event.service";
+import { eventService } from "@/server/services/event.service";
 import { ArrowUpRightIcon, ListFilter, Radio, Search } from "lucide-react";
 
 const seasonBackgrounds: Record<string, string> = {

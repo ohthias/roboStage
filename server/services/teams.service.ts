@@ -1,4 +1,4 @@
-import { teamsRepository } from "@/repositories/teams.repository";
+import { teamsRepository } from "@/server/repositories/teams.repository";
 
 export const teamsService = {
   async getUserTeams(userId: string) {

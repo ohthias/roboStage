@@ -14,97 +14,94 @@ export default function Hero() {
   const hero = HERO_CONFIG[competicao];
 
   return (
-    <section className="relative w-full">
-      <div className="relative isolate overflow-hidden rounded-[28px] h-[420px] md:h-[340px]">
+    <section className="w-full max-w-6xl mx-auto px-4">
+      <div className="relative w-full">
         {/* Imagem */}
-        <NoiseImage
-          variant="animated"
-          noiseOpacity={0.9}
-          className="absolute inset-0 z-0"
-        >
-          <img
-            src={hero.imagem}
-            alt={hero.titulo}
-            className="h-full w-full object-cover"
-          />
-        </NoiseImage>
+        <div className="relative h-[350px] overflow-hidden rounded-[32px] border-8 border-base-200">
+          <NoiseImage
+            variant="animated"
+            noiseOpacity={0.2}
+            className="absolute inset-0"
+          >
+            <img
+              src={hero.imagem}
+              alt={hero.titulo}
+              className="h-full w-full object-cover"
+            />
+          </NoiseImage>
 
-        {/* Overlay */}
-        <div className="absolute inset-0 z-10 bg-gradient-to-l from-primary/50 to-base-300/70" />
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-base-300/90 via-base-300/50 to-primary/50" />
 
-        {/* Conteúdo */}
-        <div className="absolute inset-0 z-30 flex flex-col justify-start md:justify-center px-5 md:px-12 pt-6 md:pt-0 max-w-2xl">
-          {/* Logo */}
-          <div className="md:hidden scale-75 origin-left">
-            <Logo logoSize="5xl" />
+          {/* Conteúdo */}
+          <div className="absolute z-20 max-w-xl p-8 md:p-12 left-4 top-1/3 -translate-y-1/3">
+            <div className="scale-75 md:scale-100 origin-left">
+              <Logo logoSize="5xl" />
+            </div>
+
+            <h1 className="mt-2 text-xl md:text-3xl font-black text-base-content">
+              {hero.titulo}
+            </h1>
+
+            <p className="mt-3 text-sm md:text-lg text-base-content/80 max-w-lg font-medium">
+              {hero.descricao}
+            </p>
           </div>
 
-          <div className="hidden md:block">
-            <Logo logoSize="5xl" />
-          </div>
-
-          <h1 className="mt-3 md:mt-4 text-xl md:text-3xl font-bold text-base-content">
-            {hero.titulo}
-          </h1>
-
-          <p className="mt-2 md:mt-3 text-sm md:text-md text-base-content/90 max-w-lg line-clamp-3 md:line-clamp-none">
-            {hero.descricao}
-          </p>
-        </div>
-
-        {/* CTA */}
-        <div className="absolute bottom-0 left-0 z-40 w-full md:max-w-sm">
+          {/* Área dos botões */}
           <div
             className="
-              relative
-              flex
-              flex-col
-              md:flex-row
-              gap-2
-              bg-base-100
-              p-3
-              rounded-tr-[28px]
+              absolute
+              bottom-0
+              left-0
               w-full
-              md:w-auto
+              md:w-[420px]
+              bg-base-200
+              border-t-8
+              border-r-8
+              border-base-200
+              rounded-tr-[24px]
+              p-3
+              flex
+              items-center
+              z-30
             "
           >
-            {/* Recorte superior esquerdo (somente desktop) */}
+            {/* Curva superior */}
             <div
               className="
-                hidden md:block
                 absolute
-                -top-7
+                -top-6
+                left-2
+                w-4
+                h-4
+                rounded-bl-2xl
+                shadow-[-7px_5px_0_hsl(var(--b3))]
+              "
+            />
+
+            {/* Curva interna */}
+            <div
+              className="
+                absolute
+                -top-4
                 left-0
-                w-7
-                h-7
-                rounded-bl-[28px]
-                bg-transparent
-                shadow-[-14px_14px_0_0_hsl(var(--b1))]
+                w-4
+                h-4
+                rounded-bl-2xl
+                shadow-[-4px_4px_0_hsl(var(--b1))]
               "
             />
 
-            {/* Recorte inferior direito (somente desktop) */}
-            <div
-              className="
-                hidden md:block
-                absolute
-                bottom-0
-                -right-7
-                w-7
-                h-7
-                rounded-bl-[28px]
-                bg-transparent
-                shadow-[-14px_14px_0_0_hsl(var(--b1))]
-              "
-            />
+            <div className="flex w-full gap-2">
+              <button className="btn btn-outline btn-sm flex-1">
+                {hero.ctaSecundario.label}
+              </button>
 
-            <button className="btn btn-ghost btn-sm min-h-11 flex-1">
-              {hero.ctaSecundario.label}
-            </button>
-
-            <button className="btn btn-primary btn-sm min-h-11 flex-1">
-              {hero.ctaPrimario.label}
-            </button>
+              <button className="btn btn-primary btn-sm flex-1">
+                {hero.ctaPrimario.label}
+              </button>
+            </div>
           </div>
         </div>
       </div>

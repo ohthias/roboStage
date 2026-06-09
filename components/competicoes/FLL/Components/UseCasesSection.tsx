@@ -23,7 +23,7 @@ const users = [
 
 export default function UseCasesSection() {
   return (
-    <section className="bg-base-100 py-24">
+    <section className="bg-base-100 py-16">
       <div className="max-w-6xl mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Ilustração */}

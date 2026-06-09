@@ -41,7 +41,7 @@ const seasons: Season[] = [
 
 const mainLinks = [
   { href: "/about", label: "Sobre" },
-  { href: "/showLive", label: "ShowLive" },
+  { href: "/showlive", label: "ShowLive" },
   { href: "/help", label: "Ajuda" },
 ];
 

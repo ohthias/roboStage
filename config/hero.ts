@@ -10,28 +10,11 @@ export const HERO_CONFIG = {
       "https://fspartner.no/cdn/shop/collections/FLL-3.jpg?v=1741335945",
     ctaPrimario: {
       label: "Entrar na plataforma",
-      href: "/about",
+      href: "/auth/login",
     },
     ctaSecundario: {
       label: "Novidades",
-      href: "/auth/login",
-    },
-  },
-
-  obr: {
-    badge: "Precisão em cada sensor",
-    titulo: "Olimpíada Brasileira de Robótica",
-    descricao:
-      "Desenvolva lógica de resgate, navegação e sensores com eficiência.",
-    imagem:
-      "https://obr.robocup.org.br/wp-content/uploads/2026/03/Resgate-OBR-1-1024x683.jpg",
-    ctaPrimario: {
-      label: "LabTest",
-      href: "/obr/dashboard",
-    },
-    ctaSecundario: {
-      label: "Saiba Mais",
-      href: "/obr/resgate",
+      href: "/robostage-canopy",
     },
   },
 };

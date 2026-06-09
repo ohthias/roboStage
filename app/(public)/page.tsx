@@ -1,5 +1,6 @@
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
+import RevealOnScroll from "@/components/UI/RevealOnScroll";
 import { Users, Trophy, Lightbulb, Radio } from "lucide-react";
 import Link from "next/link";
 
@@ -115,154 +116,162 @@ export default function Home() {
 
             <div className="absolute bottom-20 right-[30%] w-10 h-10 bg-accent/30 rotate-45" />
           </div>
+          <RevealOnScroll>
+            {/* Content */}
+            <div className="relative z-10">
+              <div className="container mx-auto px-6">
+                <div className="min-h-[85vh] flex flex-col justify-center items-center text-center">
+                  <h1 className="max-w-5xl text-5xl md:text-7xl font-black leading-tight">
+                    O palco onde a
+                    <span className="text-primary"> robótica </span>
+                    encontra a<span className="text-secondary"> inovação</span>
+                  </h1>
 
-          {/* Content */}
-          <div className="relative z-10">
-            <div className="container mx-auto px-6">
-              <div className="min-h-[85vh] flex flex-col justify-center items-center text-center">
-                <h1 className="max-w-5xl text-5xl md:text-7xl font-black leading-tight">
-                  O palco onde a<span className="text-primary"> robótica </span>
-                  encontra a<span className="text-secondary"> inovação</span>
-                </h1>
+                  <p className="mt-8 max-w-3xl text-lg md:text-xl text-base-content/70">
+                    Aprenda, projete, programe e participe de competições. Uma
+                    plataforma criada para equipes, mentores, professores e
+                    estudantes que querem transformar ideias em soluções reais.
+                  </p>
 
-                <p className="mt-8 max-w-3xl text-lg md:text-xl text-base-content/70">
-                  Aprenda, projete, programe e participe de competições. Uma
-                  plataforma criada para equipes, mentores, professores e
-                  estudantes que querem transformar ideias em soluções reais.
-                </p>
+                  <div className="flex flex-col sm:flex-row gap-4 mt-10">
+                    <Link
+                      className="btn btn-primary btn-lg"
+                      href="#competicoes"
+                    >
+                      Explorar Competições
+                    </Link>
 
-                <div className="flex flex-col sm:flex-row gap-4 mt-10">
-                  <button className="btn btn-primary btn-lg">
-                    Explorar Competições
-                  </button>
-
-                  <button className="btn btn-outline btn-lg">
-                    Conhecer a Plataforma
-                  </button>
+                    <Link className="btn btn-outline btn-lg" href="/about">
+                      Conhecer a Plataforma
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </RevealOnScroll>
         </section>
 
         <section id="recursos" className="py-28 bg-base-200">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="text-center max-w-4xl mx-auto mb-20">
-              <h2 className="text-4xl md:text-6xl font-black tracking-tight">
-                Tudo o que sua equipe precisa
-              </h2>
+          <RevealOnScroll>
+            <div className="max-w-6xl mx-auto px-4">
+              <div className="text-center max-w-4xl mx-auto mb-20">
+                <h2 className="text-4xl md:text-6xl font-black tracking-tight">
+                  Tudo o que sua equipe precisa
+                </h2>
 
-              <p className="mt-6 text-lg md:text-xl text-base-content/70">
-                Ferramentas desenvolvidas para acompanhar toda a jornada da
-                equipe, desde a organização interna até os torneios e projetos
-                de inovação.
-              </p>
+                <p className="mt-6 text-lg md:text-xl text-base-content/70">
+                  Ferramentas desenvolvidas para acompanhar toda a jornada da
+                  equipe, desde a organização interna até os torneios e projetos
+                  de inovação.
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+                {/* Gestão */}
+                <div className="card bg-base-100 border border-base-300 hover:border-primary/40 hover:shadow-2xl transition-all duration-300">
+                  <div className="card-body">
+                    <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                      <Users className="w-7 h-7 text-primary" />
+                    </div>
+
+                    <div className="badge badge-primary badge-outline mb-2">
+                      Organização
+                    </div>
+
+                    <h3 className="text-xl font-bold">Gestão de Equipes</h3>
+
+                    <p className="text-base-content/70">
+                      Organize membros, temporadas, documentos e atividades em
+                      um único lugar.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Torneios */}
+                <div className="card bg-base-100 border border-base-300 hover:border-secondary/40 hover:shadow-2xl transition-all duration-300">
+                  <div className="card-body">
+                    <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center mb-4">
+                      <Trophy className="w-7 h-7 text-secondary" />
+                    </div>
+
+                    <div className="badge badge-secondary badge-outline mb-2">
+                      Competições
+                    </div>
+
+                    <h3 className="text-xl font-bold">Torneios</h3>
+
+                    <p className="text-base-content/70">
+                      Rankings, resultados, classificações e acompanhamento em
+                      tempo real.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Projetos */}
+                <div className="card bg-base-100 border border-base-300 hover:border-accent/40 hover:shadow-2xl transition-all duration-300">
+                  <div className="card-body">
+                    <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-4">
+                      <Lightbulb className="w-7 h-7 text-accent" />
+                    </div>
+
+                    <div className="badge badge-accent badge-outline mb-2">
+                      Inovação
+                    </div>
+
+                    <h3 className="text-xl font-bold">Projetos de Inovação</h3>
+
+                    <p className="text-base-content/70">
+                      Centralize pesquisas, documentos, protótipos e entregas da
+                      temporada.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Transmissões */}
+                <div className="card bg-base-100 border border-base-300 hover:border-info/40 hover:shadow-2xl transition-all duration-300">
+                  <div className="card-body">
+                    <div className="w-14 h-14 rounded-2xl bg-info/10 flex items-center justify-center mb-4">
+                      <Radio className="w-7 h-7 text-info" />
+                    </div>
+
+                    <div className="badge badge-info badge-outline mb-2">
+                      Comunidade
+                    </div>
+
+                    <h3 className="text-xl font-bold">Transmissões</h3>
+
+                    <p className="text-base-content/70">
+                      Compartilhe eventos, conteúdos e experiências com toda a
+                      comunidade.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
-              {/* Gestão */}
-              <div className="card bg-base-100 border border-base-300 hover:border-primary/40 hover:shadow-2xl transition-all duration-300">
-                <div className="card-body">
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                    <Users className="w-7 h-7 text-primary" />
-                  </div>
-
-                  <div className="badge badge-primary badge-outline mb-2">
-                    Organização
-                  </div>
-
-                  <h3 className="text-xl font-bold">Gestão de Equipes</h3>
-
-                  <p className="text-base-content/70">
-                    Organize membros, temporadas, documentos e atividades em um
-                    único lugar.
-                  </p>
-                </div>
-              </div>
-
-              {/* Torneios */}
-              <div className="card bg-base-100 border border-base-300 hover:border-secondary/40 hover:shadow-2xl transition-all duration-300">
-                <div className="card-body">
-                  <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center mb-4">
-                    <Trophy className="w-7 h-7 text-secondary" />
-                  </div>
-
-                  <div className="badge badge-secondary badge-outline mb-2">
-                    Competições
-                  </div>
-
-                  <h3 className="text-xl font-bold">Torneios</h3>
-
-                  <p className="text-base-content/70">
-                    Rankings, resultados, classificações e acompanhamento em
-                    tempo real.
-                  </p>
-                </div>
-              </div>
-
-              {/* Projetos */}
-              <div className="card bg-base-100 border border-base-300 hover:border-accent/40 hover:shadow-2xl transition-all duration-300">
-                <div className="card-body">
-                  <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-4">
-                    <Lightbulb className="w-7 h-7 text-accent" />
-                  </div>
-
-                  <div className="badge badge-accent badge-outline mb-2">
-                    Inovação
-                  </div>
-
-                  <h3 className="text-xl font-bold">Projetos de Inovação</h3>
-
-                  <p className="text-base-content/70">
-                    Centralize pesquisas, documentos, protótipos e entregas da
-                    temporada.
-                  </p>
-                </div>
-              </div>
-
-              {/* Transmissões */}
-              <div className="card bg-base-100 border border-base-300 hover:border-info/40 hover:shadow-2xl transition-all duration-300">
-                <div className="card-body">
-                  <div className="w-14 h-14 rounded-2xl bg-info/10 flex items-center justify-center mb-4">
-                    <Radio className="w-7 h-7 text-info" />
-                  </div>
-
-                  <div className="badge badge-info badge-outline mb-2">
-                    Comunidade
-                  </div>
-
-                  <h3 className="text-xl font-bold">Transmissões</h3>
-
-                  <p className="text-base-content/70">
-                    Compartilhe eventos, conteúdos e experiências com toda a
-                    comunidade.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          </RevealOnScroll>
         </section>
 
         {/* Competições */}
-        <section className="py-16 bg-base-100">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 className="text-4xl md:text-6xl font-black tracking-tight">
-                Um lar para cada
-                <br />
-                programa de robótica
-              </h2>
-              <p className="mt-6 text-lg text-base-content/70">
-                Soluções específicas para equipes, torneios e comunidades de
-                cada modalidade.
-              </p>
-            </div>
+        <section className="py-16 bg-base-100" id="competicoes">
+          <RevealOnScroll>
+            <div className="max-w-6xl mx-auto px-4">
+              <div className="text-center max-w-3xl mx-auto mb-16">
+                <h2 className="text-4xl md:text-6xl font-black tracking-tight">
+                  Um lar para cada
+                  <br />
+                  programa de robótica
+                </h2>
+                <p className="mt-6 text-lg text-base-content/70">
+                  Soluções específicas para equipes, torneios e comunidades de
+                  cada modalidade.
+                </p>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-              {/* FLL */}
-              <Link
-                href="/fll"
-                className="
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+                {/* FLL */}
+                <Link
+                  href="/fll"
+                  className="
           group
           relative
           overflow-hidden
@@ -275,26 +284,26 @@ export default function Home() {
           hover:-translate-y-1
           hover:shadow-2xl
         "
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
 
-                <div className="relative">
-                  <div className="badge badge-neutral mb-6">
-                    Disponível agora
+                  <div className="relative">
+                    <div className="badge badge-neutral mb-6">
+                      Disponível agora
+                    </div>
+
+                    <h3 className="text-6xl font-black tracking-tight">FLL</h3>
+
+                    <p className="mt-4 opacity-80">
+                      Gestão completa para equipes, projetos, temporadas e
+                      torneios da FIRST LEGO League.
+                    </p>
                   </div>
+                </Link>
 
-                  <h3 className="text-6xl font-black tracking-tight">FLL</h3>
-
-                  <p className="mt-4 opacity-80">
-                    Gestão completa para equipes, projetos, temporadas e
-                    torneios da FIRST LEGO League.
-                  </p>
-                </div>
-              </Link>
-
-              {/* FTC */}
-              <div
-                className="
+                {/* FTC */}
+                <div
+                  className="
           rounded-3xl
           border
           border-base-300
@@ -303,42 +312,42 @@ export default function Home() {
           transition-all
           hover:border-secondary/30
         "
-              >
-                <div className="badge badge-ghost mb-6">Em breve</div>
+                >
+                  <div className="badge badge-ghost mb-6">Em breve</div>
 
-                <h3 className="text-6xl font-black text-base-content/50">
-                  FTC
-                </h3>
+                  <h3 className="text-6xl font-black text-base-content/50">
+                    FTC
+                  </h3>
 
-                <p className="mt-4 text-base-content/60">
-                  Recursos dedicados para equipes da FIRST Tech Challenge.
-                </p>
-              </div>
+                  <p className="mt-4 text-base-content/60">
+                    Recursos dedicados para equipes da FIRST Tech Challenge.
+                  </p>
+                </div>
 
-              {/* OBR */}
-              <div
-                className="
+                {/* OBR */}
+                <div
+                  className="
           rounded-3xl
           border
           border-base-300
           bg-base-200
           p-8
         "
-              >
-                <div className="badge badge-ghost mb-6">Em breve</div>
+                >
+                  <div className="badge badge-ghost mb-6">Em breve</div>
 
-                <h3 className="text-6xl font-black text-base-content/50">
-                  OBR
-                </h3>
+                  <h3 className="text-6xl font-black text-base-content/50">
+                    OBR
+                  </h3>
 
-                <p className="mt-4 text-base-content/60">
-                  Ferramentas para a Olimpíada Brasileira de Robótica.
-                </p>
-              </div>
+                  <p className="mt-4 text-base-content/60">
+                    Ferramentas para a Olimpíada Brasileira de Robótica.
+                  </p>
+                </div>
 
-              {/* Mais */}
-              <div
-                className="
+                {/* Mais */}
+                <div
+                  className="
           rounded-3xl
           border
           border-dashed
@@ -349,15 +358,18 @@ export default function Home() {
           flex-col
           justify-center
         "
-              >
-                <h3 className="text-6xl font-black text-base-content/40">+</h3>
+                >
+                  <h3 className="text-6xl font-black text-base-content/40">
+                    +
+                  </h3>
 
-                <p className="mt-4 text-base-content/60">
-                  Novas modalidades e programas serão adicionados futuramente.
-                </p>
+                  <p className="mt-4 text-base-content/60">
+                    Novas modalidades e programas serão adicionados futuramente.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          </RevealOnScroll>
         </section>
 
         {/* Temporada */}
@@ -365,20 +377,22 @@ export default function Home() {
 
         {/* CTA */}
         <section className="py-32 bg-primary text-primary-content">
-          <div className="max-w-4xl mx-auto text-center px-4">
-            <h2 className="text-4xl md:text-6xl font-black">
-              Pronto para elevar sua temporada?
-            </h2>
+          <RevealOnScroll>
+            <div className="max-w-4xl mx-auto text-center px-4">
+              <h2 className="text-4xl md:text-6xl font-black">
+                Pronto para elevar sua temporada?
+              </h2>
 
-            <p className="mt-6 text-lg md:text-xl opacity-90">
-              Centralize sua equipe, seus projetos e suas competições em uma
-              única plataforma.
-            </p>
+              <p className="mt-6 text-lg md:text-xl opacity-90">
+                Centralize sua equipe, seus projetos e suas competições em uma
+                única plataforma.
+              </p>
 
-            <Link href="/fll" className="btn btn-neutral btn-lg mt-10">
-              Entrar no RoboStage
-            </Link>
-          </div>
+              <Link href="/fll" className="btn btn-neutral btn-lg mt-10">
+                Entrar no RoboStage
+              </Link>
+            </div>
+          </RevealOnScroll>
         </section>
       </main>
       <Footer />

@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import Logo from "./UI/Logo";
 import NoiseImage from "./UI/NoiseImage";
 import { HERO_CONFIG } from "@/config/hero";
+import Link from "next/link";
 
 type Competicao = keyof typeof HERO_CONFIG;
 
@@ -94,13 +95,19 @@ export default function Hero() {
             />
 
             <div className="flex w-full gap-2">
-              <button className="btn btn-outline btn-sm flex-1">
+              <Link
+                href={hero.ctaSecundario.href}
+                className="btn btn-outline btn-sm flex-1"
+              >
                 {hero.ctaSecundario.label}
-              </button>
+              </Link>
 
-              <button className="btn btn-primary btn-sm flex-1">
+              <Link
+                href={hero.ctaPrimario.href}
+                className="btn btn-primary btn-sm flex-1"
+              >
                 {hero.ctaPrimario.label}
-              </button>
+              </Link>
             </div>
           </div>
         </div>

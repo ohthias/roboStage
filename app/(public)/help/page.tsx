@@ -5,6 +5,7 @@ import { Footer } from "@/components/UI/Footer";
 import Loader from "@/components/Loader";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
 import Header from "@/components/UI/Header";
+import { Navbar } from "@/components/UI/Navbar";
 
 interface ToolDetail {
   title: string;
@@ -36,6 +37,7 @@ export default function HelpDesk() {
 
   return (
     <>
+      <Navbar />
       <main className="min-h-screen bg-base-100">
         <div className="max-w-5xl mx-auto px-4 py-12">
           <Header

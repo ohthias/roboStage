@@ -33,7 +33,7 @@ export default function EventSettings({ eventId }: Props) {
     const loadSettings = async () => {
       const [settingsResult, teamsResult] = await Promise.all([
         supabase.from("event_settings").select("*").eq("id_evento", eventId).maybeSingle(),
-        supabase.from("event_teams").select("id", { count: "exact", head: true }).eq("id_evento", eventId),
+        supabase.from("team").select("id_event", { count: "exact", head: true }).eq("id_event", eventId),
       ]);
       const { data } = settingsResult;
       const { count } = teamsResult;

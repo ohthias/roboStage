@@ -8,6 +8,21 @@ interface CreateEventServicePayload {
   rounds: string[];
 }
 
+async function fetchWithRetry<T extends { data: any[] | null }>(
+  fn: () => Promise<T>,
+  maxAttempts = 5,
+  delayMs = 600,
+): Promise<T> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const result = await fn();
+    if (result.data && result.data.length > 0) return result;
+    if (attempt < maxAttempts - 1) {
+      await new Promise((res) => setTimeout(res, delayMs));
+    }
+  }
+  return fn(); // última tentativa, retorna o que vier
+}
+
 export const eventService = {
   async createEvent({
     userId,
@@ -82,17 +97,15 @@ export const eventService = {
 
     const eventData = event.data[0];
 
+    // Retry para aguardar propagação no Supabase nano
     const [config, teams] = await Promise.all([
-      eventRepository.getEventConfig(eventData.id_evento),
-
+      fetchWithRetry(() => eventRepository.getEventConfig(eventData.id_evento)),
       eventRepository.getTeamsByEvent(eventData.id_evento),
     ]);
 
     return {
       event: eventData,
-
       config: config.data?.[0] ?? null,
-
       teams: teams.data ?? [],
     };
   },

@@ -10,10 +10,8 @@ import ModalConfirm, {
 import ModalInput, { ModalInputRef } from "@/components/UI/Modal/ModalInput";
 import ModalPoints, { ModalPointsRef } from "@/components/UI/Modal/ModalPoints";
 
-import { createClient } from "@/utils/supabase/client";
 import { useEvent } from "@/hooks/useEvent";
-
-const supabase = createClient();
+import { useTeams } from "@/hooks/useTeams";
 
 interface PropsTeamsSection {
   codeEvent: string;
@@ -22,16 +20,22 @@ interface PropsTeamsSection {
 export default function TeamsSection({ codeEvent }: PropsTeamsSection) {
   const { addToast } = useToast();
 
-  const { loading, error, teams, eventData, eventConfig } = useEvent(codeEvent);
+  const {
+    loading,
+    error,
+    teams: initialTeams,
+    eventData,
+    eventConfig,
+  } = useEvent(codeEvent);
+
+  const { teams, loadingIds, createTeam, deleteTeam, editTeam, updatePoints } =
+    useTeams(initialTeams, loading);
 
   const [teamName, setTeamName] = useState("");
-
   const [saving, setSaving] = useState(false);
 
   const modalEditRef = useRef<ModalInputRef>(null);
-
   const modalDeleteRef = useRef<ModalConfirmRef>(null);
-
   const modalPointsRef = useRef<ModalPointsRef>(null);
 
   const rankingTeams = useMemo(() => {
@@ -41,11 +45,7 @@ export default function TeamsSection({ codeEvent }: PropsTeamsSection) {
           (acc, value) => acc + (Number(value) || 0),
           0,
         );
-
-        return {
-          ...team,
-          total,
-        };
+        return { ...team, total };
       })
       .sort((a, b) => b.total - a.total);
   }, [teams]);
@@ -55,102 +55,63 @@ export default function TeamsSection({ codeEvent }: PropsTeamsSection) {
 
     if (!teamName.trim()) {
       addToast("Digite o nome da equipe.", "warning");
-
       return;
     }
 
     if (!eventData || !eventConfig) {
       addToast("Evento inválido.", "error");
-
       return;
     }
 
     setSaving(true);
-
-    const rounds = eventConfig.config.rodadas || [];
-
-    const pointsObject = rounds.reduce<Record<string, number>>((acc, round) => {
-      acc[round] = -1;
-
-      return acc;
-    }, {});
-
-    const { error } = await supabase.from("team").insert([
-      {
-        id_event: eventData.id_evento,
-
-        name_team: teamName.trim(),
-
-        points: pointsObject,
-      },
-    ]);
-
-    if (error) {
-      addToast("Erro ao criar equipe.", "error");
-    } else {
+    try {
+      await createTeam(
+        teamName,
+        eventData.id_evento,
+        eventConfig.config.rodadas ?? [],
+      );
       addToast("Equipe criada com sucesso.", "success");
-
-      window.location.reload();
+      setTeamName("");
+    } catch {
+      addToast("Erro ao criar equipe.", "error");
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
-
-    setTeamName("");
   };
 
   const handleDelete = (id: number, name: string) => {
     modalDeleteRef.current?.open(`Deseja excluir "${name}"?`, async () => {
-      const { error } = await supabase.from("team").delete().eq("id_team", id);
-
-      if (error) {
-        addToast("Erro ao excluir equipe.", "error");
-      } else {
+      try {
+        await deleteTeam(id);
         addToast("Equipe removida.", "success");
-
-        window.location.reload();
+      } catch {
+        addToast("Erro ao excluir equipe.", "error");
       }
     });
   };
 
   const handleEdit = (id: number, currentName: string) => {
-    modalEditRef.current?.open(currentName, async (newName) => {
+    modalEditRef.current?.open(currentName, async (newName: string) => {
       if (!newName.trim()) return;
-
-      const { error } = await supabase
-        .from("team")
-        .update({
-          name_team: newName.trim(),
-        })
-        .eq("id_team", id);
-
-      if (error) {
-        addToast("Erro ao editar equipe.", "error");
-      } else {
+      try {
+        await editTeam(id, newName);
         addToast("Equipe atualizada.", "success");
-
-        window.location.reload();
+      } catch {
+        addToast("Erro ao editar equipe.", "error");
       }
     });
   };
 
-  const handlePoints = (team: any) => {
+  const handlePoints = (team: (typeof rankingTeams)[number]) => {
     modalPointsRef.current?.open(
       team.name_team,
       team.points,
       async (newPoints) => {
-        const { error } = await supabase
-          .from("team")
-          .update({
-            points: newPoints,
-          })
-          .eq("id_team", team.id_team);
-
-        if (error) {
-          addToast("Erro ao atualizar pontos.", "error");
-        } else {
+        try {
+          await updatePoints(team.id_team, newPoints);
           addToast("Pontuação atualizada.", "success");
-
-          window.location.reload();
+        } catch {
+          addToast("Erro ao atualizar pontos.", "error");
         }
       },
     );
@@ -179,15 +140,12 @@ export default function TeamsSection({ codeEvent }: PropsTeamsSection) {
         <div>
           <div className="flex items-center gap-2">
             <Users size={22} className="text-primary" />
-
             <h1 className="text-2xl md:text-3xl font-bold">Equipes</h1>
           </div>
-
           <p className="text-sm text-base-content/60 mt-1">
             Gerencie as equipes do evento.
           </p>
         </div>
-
         <div className="badge badge-outline">{rankingTeams.length} equipes</div>
       </div>
 
@@ -203,7 +161,6 @@ export default function TeamsSection({ codeEvent }: PropsTeamsSection) {
           placeholder="Nome da equipe"
           className="input input-bordered w-full"
         />
-
         <button type="submit" disabled={saving} className="btn btn-primary">
           {saving ? (
             <span className="loading loading-spinner loading-sm" />
@@ -219,60 +176,66 @@ export default function TeamsSection({ codeEvent }: PropsTeamsSection) {
       {/* Teams */}
       {rankingTeams.length > 0 ? (
         <div className="space-y-3">
-          {rankingTeams.map((team, index) => (
-            <div
-              key={team.id_team}
-              className="flex items-center justify-between rounded-2xl border border-base-300 bg-base-100 px-4 py-4"
-            >
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-10 flex justify-center">
-                  <span className="font-bold text-base-content/50">
-                    #{index + 1}
-                  </span>
-                </div>
+          {rankingTeams.map((team, index) => {
+            const isLoading = loadingIds.has(team.id_team);
 
-                <div className="min-w-0">
-                  <h2 className="font-medium truncate">{team.name_team}</h2>
-
-                  <div className="flex items-center gap-2 text-sm text-base-content/60">
-                    <Target size={14} />
-
-                    <span>{team.total} pts</span>
+            return (
+              <div
+                key={team.id_team}
+                className={`flex items-center justify-between rounded-2xl border border-base-300 bg-base-100 px-4 py-4 transition-opacity ${
+                  isLoading ? "opacity-50 pointer-events-none" : ""
+                }`}
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-10 flex justify-center">
+                    {isLoading ? (
+                      <span className="loading loading-spinner loading-xs text-primary" />
+                    ) : (
+                      <span className="font-bold text-base-content/50">
+                        #{index + 1}
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="font-medium truncate">{team.name_team}</h2>
+                    <div className="flex items-center gap-2 text-sm text-base-content/60">
+                      <Target size={14} />
+                      <span>{team.total} pts</span>
+                    </div>
                   </div>
                 </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handlePoints(team)}
+                    className="btn btn-ghost btn-sm btn-circle"
+                    disabled={isLoading}
+                  >
+                    <Target size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleEdit(team.id_team, team.name_team)}
+                    className="btn btn-ghost btn-sm btn-circle"
+                    disabled={isLoading}
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(team.id_team, team.name_team)}
+                    className="btn btn-ghost btn-sm btn-circle text-error"
+                    disabled={isLoading}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
-
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => handlePoints(team)}
-                  className="btn btn-ghost btn-sm btn-circle"
-                >
-                  <Target size={16} />
-                </button>
-
-                <button
-                  onClick={() => handleEdit(team.id_team, team.name_team)}
-                  className="btn btn-ghost btn-sm btn-circle"
-                >
-                  <Pencil size={16} />
-                </button>
-
-                <button
-                  onClick={() => handleDelete(team.id_team, team.name_team)}
-                  className="btn btn-ghost btn-sm btn-circle text-error"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-base-300 py-12 text-center">
           <Users size={40} className="mx-auto mb-3 text-base-content/30" />
-
           <h2 className="font-medium">Nenhuma equipe cadastrada</h2>
-
           <p className="text-sm text-base-content/60 mt-1">
             Adicione equipes para iniciar o evento.
           </p>
@@ -287,14 +250,12 @@ export default function TeamsSection({ codeEvent }: PropsTeamsSection) {
         confirmLabel="Salvar"
         cancelLabel="Cancelar"
       />
-
       <ModalConfirm
         ref={modalDeleteRef}
         title="Excluir equipe"
         confirmLabel="Excluir"
         cancelLabel="Cancelar"
       />
-
       <ModalPoints ref={modalPointsRef} title="Editar Pontuação" />
     </section>
   );

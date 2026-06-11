@@ -19,6 +19,12 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard",
   },
   {
+    id: "folders",
+    label: "Pastas",
+    icon: Folder,
+    href: "/dashboard/folders",
+  },
+  {
     id: "innolab",
     label: "InnoLab",
     icon: Book,

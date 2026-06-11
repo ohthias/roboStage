@@ -53,6 +53,7 @@ export const dashboardService = {
     const items: RecentItem[] = [
       ...(events.data ?? []).map((e) => ({
         id: String(e.id_evento),
+        code_event: e.code_event,
         title: e.name_event ?? "Evento",
         type: "Evento" as const,
         accessedAt: timeAgo(e.last_acess),

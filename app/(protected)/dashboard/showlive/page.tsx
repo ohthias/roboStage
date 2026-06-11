@@ -3,12 +3,13 @@
 import Image from "next/image";
 import { useMemo, useState, useDeferredValue, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowUpRightIcon, PlusIcon, Radio, Search } from "lucide-react";
+
 import { EventModal } from "@/components/showLive/EventModal";
 import { EventCardSkeleton } from "@/components/UI/Cards/EventCardSkeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useEvents } from "@/hooks/useEventsLoad";
 import { eventService } from "@/server/services/event.service";
-import { ArrowUpRightIcon, ListFilter, Radio, Search } from "lucide-react";
 
 const seasonBackgrounds: Record<string, string> = {
   UNEARTHED: "/images/showLive/banners/banner_uneartherd.webp",
@@ -19,13 +20,13 @@ const seasonBackgrounds: Record<string, string> = {
 export default function ShowLiveHub() {
   const router = useRouter();
   const { user } = useAuth();
+
   const [showModal, setShowModal] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [seasonFilter, setSeasonFilter] = useState("all");
-  const deferredSearch = useDeferredValue(searchText);
 
+  const deferredSearch = useDeferredValue(searchText);
   const { events, loading: loadingEvents } = useEvents(user?.id);
 
   const normalizedSearch = deferredSearch.trim().toLowerCase();
@@ -55,6 +56,17 @@ export default function ShowLiveHub() {
     );
   }, [events]);
 
+  const recentEvent = useMemo(() => {
+    if (events.length === 0) return null;
+
+    return [...events].sort((a, b) => {
+      const dateA = new Date(a.last_access ?? a.created_at).getTime();
+      const dateB = new Date(b.last_access ?? b.created_at).getTime();
+
+      return dateB - dateA;
+    })[0];
+  }, [events]);
+
   const handleOpenEvent = useCallback(
     async (eventId: number, code: string) => {
       try {
@@ -68,48 +80,89 @@ export default function ShowLiveHub() {
   );
 
   return (
-    <div className="space-y-6">
-      <header className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Radio className="text-primary" width={24} height={24} />
-          <h1 className="text-2xl font-bold text-primary">ShowLive</h1>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            className={`btn btn-sm btn-square ml-2 md:ml-4 lg:ml-6 ${
-              showFilters ? "btn-info" : "btn-default"
-            }`}
-            onClick={() => setShowFilters(!showFilters)}
-            title="Filtros"
-          >
-            <ListFilter width={16} height={16} />
-          </button>
-
+    <div className="relative space-y-6">
+      {/* HERO */}
+      <section className="hero overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-sm">
+        <div className="hero-content w-full flex-col justify-between py-10 lg:flex-row">
+          <div>
+            <h1 className="text-4xl font-black md:text-5xl">ShowLive</h1>
+            <p className="mt-4 max-w-2xl text-base-content/70">
+              Crie, organize e acompanhe eventos em tempo real. Gerencie
+              temporadas, transmissões e resultados em uma única plataforma.
+            </p>
+          </div>
           <button
             onClick={() => setShowModal(true)}
-            className="btn btn-sm btn-outline ml-auto btn-primary hidden md:inline-flex"
+            className="btn btn-primary btn-md mt-6 lg:mt-0"
           >
+            <PlusIcon size={18} className="mr-2" />
             Criar Evento
           </button>
         </div>
-      </header>
+      </section>
+
+      {/* CONTINUE DE ONDE PAROU */}
+      {!loadingEvents && recentEvent && (
+        <section className="card border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent shadow-sm">
+          <div className="card-body">
+            <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
+              <div>
+                <div className="badge badge-primary mb-3">
+                  Continue de onde parou
+                </div>
+
+                <h2 className="text-2xl font-black md:text-3xl">
+                  {recentEvent.name_event}
+                </h2>
+
+                <p className="mt-2 text-base-content/60">
+                  Retorne rapidamente ao último evento acessado.
+                </p>
+              </div>
+
+              <button
+                onClick={() =>
+                  handleOpenEvent(recentEvent.id_evento, recentEvent.code_event)
+                }
+                className="btn btn-primary btn-outline btn-sm gap-2"
+              >
+                Abrir Evento
+                <ArrowUpRightIcon size={18} />
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* STATS */}
+      {!loadingEvents && (
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="stat rounded-box border border-base-300 bg-base-100">
+            <div className="stat-title">Eventos</div>
+            <div className="stat-value text-primary">{events.length}</div>
+          </div>
+
+          <div className="stat rounded-box border border-base-300 bg-base-100">
+            <div className="stat-title">Ativos</div>
+            <div className="stat-value text-success">
+              {events.filter((e) => e.event_active).length}
+            </div>
+          </div>
+
+          <div className="stat rounded-box border border-base-300 bg-base-100">
+            <div className="stat-title">Temporadas</div>
+            <div className="stat-value">{seasons.length}</div>
+          </div>
+        </section>
+      )}
 
       {/* FILTROS */}
-      <section
-        className={`flex flex-col md:flex-row items-center gap-3 rounded-2xl border border-base-300 bg-base-100 p-3 w-full overflow-hidden transition-all duration-300 ease-in-out ${
-          showFilters
-            ? "max-h-64 opacity-100 translate-y-0"
-            : "max-h-0 opacity-0 -translate-y-2 pointer-events-none p-0 border-0 hidden"
-        }`}
-      >
-        <label className="input input-bordered rounded-xl px-3 w-full flex items-center gap-2">
-          <Search className="text-base-content/50" />
-
+      <div className="flex flex-col gap-3 lg:flex-row">
+        <label className="input input-bordered flex flex-1 items-center gap-2 rounded-xl w-full py-2 ">
+          <Search size={18} className="text-base-content/50" />
           <input
             type="text"
-            placeholder="Buscar evento..."
-            className="grow"
+            placeholder="Buscar eventos..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
@@ -118,10 +171,9 @@ export default function ShowLiveHub() {
         <select
           value={seasonFilter}
           onChange={(e) => setSeasonFilter(e.target.value)}
-          className="select select-bordered rounded-xl px-3 w-full md:max-w-[200px]"
+          className="select select-bordered rounded-xl lg:max-w-[220px] px-3 w-full"
         >
           <option value="all">Todas temporadas</option>
-
           {seasons.map((season) => (
             <option key={season} value={season}>
               {season}
@@ -132,17 +184,16 @@ export default function ShowLiveHub() {
         <select
           value={order}
           onChange={(e) => setOrder(e.target.value as "asc" | "desc")}
-          className="select select-bordered rounded-xl px-3 w-full md:max-w-[200px]"
+          className="select select-bordered rounded-xl lg:max-w-[220px] px-3 w-full"
         >
           <option value="desc">Mais recentes</option>
-
           <option value="asc">Mais antigos</option>
         </select>
-      </section>
+      </div>
 
       {/* CONTADOR */}
       {!loadingEvents && (
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <p className="text-sm text-base-content/60">
             {filteredEvents.length} evento
             {filteredEvents.length !== 1 && "s"} encontrado
@@ -151,29 +202,39 @@ export default function ShowLiveHub() {
         </div>
       )}
 
-      {/* SKELETON */}
+      {/* GRID */}
       {loadingEvents ? (
-        <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, index) => (
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, index) => (
             <EventCardSkeleton key={index} />
           ))}
         </section>
       ) : filteredEvents.length === 0 ? (
-        <section className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-base-300 bg-base-100 py-20 px-6 text-center">
-          <Radio className="w-14 h-14 text-base-content/30 mb-4" />
-          <h2 className="text-lg font-semibold">Nenhum evento encontrado</h2>
-          <p className="text-sm text-base-content/50 mt-1 max-w-md">
-            Tente alterar os filtros ou crie um novo evento para começar.
-          </p>
-          <button
-            onClick={() => setShowModal(true)}
-            className="btn btn-primary mt-6"
-          >
-            Criar Evento
-          </button>
+        <section className="hero min-h-[400px] rounded-box border border-dashed border-base-300 bg-base-100">
+          <div className="hero-content text-center">
+            <div>
+              <Radio className="mx-auto mb-2 h-16 w-16 text-base-content/20" />
+
+              <h2 className="mt-4 text-2xl font-bold">
+                Nenhum evento encontrado
+              </h2>
+
+              <p className="mx-auto mt-2 max-w-md text-base-content/60">
+                Parece que ainda não existem eventos com os filtros
+                selecionados. Crie seu primeiro evento para começar.
+              </p>
+
+              <button
+                onClick={() => setShowModal(true)}
+                className="btn btn-primary btn-lg mt-6"
+              >
+                Criar Primeiro Evento
+              </button>
+            </div>
+          </div>
         </section>
       ) : (
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {filteredEvents.map((event) => {
             const background =
               seasonBackgrounds[event.config?.temporada] ??
@@ -188,62 +249,95 @@ export default function ShowLiveHub() {
                   handleOpenEvent(event.id_evento, event.code_event)
                 }
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
                     handleOpenEvent(event.id_evento, event.code_event);
                   }
                 }}
-                className="group relative h-[350px] rounded-box overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                className="
+                    card
+                    group
+                    cursor-pointer
+                    border
+                    border-base-300
+                    bg-base-100
+                    shadow-sm
+                    transition-all
+                    duration-300
+                    hover:-translate-y-1
+                    hover:border-primary/30
+                    hover:shadow-xl
+                  "
               >
-                <Image
-                  src={background}
-                  alt={event.name_event}
-                  fill
-                  unoptimized
-                  quality={100}
-                  sizes="(max-width:640px) 100vw,
-                         (max-width:1024px) 50vw,
-                         25vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                <div
-                  className={
-                    "absolute inset-0 bg-gradient-to-t " +
-                    (event.event_active
-                      ? "from-success/40 via-success/20 to-success/0"
-                      : "from-warning/40 via-warning/20 to-warning/0")
-                  }
-                />
+                <figure className="relative h-32 overflow-hidden">
+                  <Image
+                    src={background}
+                    alt={event.name_event}
+                    fill
+                    unoptimized
+                    quality={100}
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black/20" />
+                </figure>
 
-                <div className="absolute top-5 left-5 z-10">
-                  <div
-                    className={
-                      "badge px-2 py-1 rounded-full text-xs font-semibold " +
-                      (event.event_active ? "badge-success" : "badge-warning")
-                    }
-                  >
-                    {event.event_active ? "Ativo" : "Inativo"}
+                <div className="card-body">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-2">
+                      <div
+                        className={`badge ${
+                          event.event_active ? "badge-success" : "badge-warning"
+                        }`}
+                      >
+                        {event.event_active ? "Ativo" : "Inativo"}
+                      </div>
+
+                      <h2 className="card-title line-clamp-2 text-lg">
+                        {event.name_event}
+                      </h2>
+                    </div>
+
+                    <ArrowUpRightIcon
+                      size={18}
+                      className="
+                          shrink-0
+                          opacity-50
+                          transition-all
+                          duration-300
+                          group-hover:translate-x-1
+                          group-hover:-translate-y-1
+                          group-hover:opacity-100
+                        "
+                    />
                   </div>
-                </div>
 
-                <div className="absolute top-5 right-5 z-10">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-base-100/10 backdrop-blur-md text-base-content/50 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1">
-                    <ArrowUpRightIcon width={16} height={16} />
+                  <div className="mt-2 space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-base-content/50">Base</span>
+                      <span className="font-medium">
+                        {event.config?.base === "FLL"
+                          ? "FIRST LEGO League"
+                          : "Competição"}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between text-sm">
+                      <span className="text-base-content/50">Temporada</span>
+                      <span className="font-medium">
+                        {event.config?.temporada ?? "Não definida"}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-                  <h2 className="font-black text-base-content leading-none line-clamp-2 text-2xl md:text-3xl xl:text-4xl">
-                    {event.name_event}
-                  </h2>
+                  <div className="card-actions mt-4 items-center justify-between">
+                    <span className="text-xs text-base-content/50">
+                      {new Date(event.created_at).toLocaleDateString("pt-BR")}
+                    </span>
 
-                  {event.config?.base && (
-                    <p className="text-neutral/80 mt-2 text-sm">
-                      {event.config.base === "FLL"
-                        ? "FIRST LEGO League"
-                        : "Competição"}
-                    </p>
-                  )}
+                    <button className="btn btn-primary btn-sm btn-outline">
+                      Abrir
+                    </button>
+                  </div>
                 </div>
               </article>
             );

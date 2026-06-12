@@ -15,6 +15,7 @@ import FLLCountdownBanner from "./Components/FLLCountdownBanner";
 import UseCasesSection from "./Components/UseCasesSection";
 import FLLRoadmap from "./Components/FLLRoadmap";
 import Link from "next/link";
+import Banner from "@/components/Banner";
 
 const modules = [
   {
@@ -71,7 +72,8 @@ const modules = [
 export default function FLLHome() {
   return (
     <div className="min-h-screen bg-base-200 text-base-content">
-      <div className="mt-24" />
+      <div className="mt-16" />
+      <Banner />
       <main>
         <Hero />
         <section className="py-12 md:py-16 max-w-7xl mx-auto my-8">

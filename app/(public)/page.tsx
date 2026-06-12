@@ -1,3 +1,4 @@
+import Banner from "@/components/Banner";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
@@ -76,6 +77,7 @@ export default function Home() {
     <>
       <Navbar />
       <main className="mt-16">
+        <Banner />
         <section className="relative overflow-hidden bg-base-100 h-[100vh]">
           {/* Background */}
           <div className="absolute inset-0">

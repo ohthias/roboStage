@@ -3,138 +3,48 @@
 import { useMemo, useState } from "react";
 import {
   Archive,
-  Clock3,
-  Folder,
+  Book,
+  Clock,
+  File,
   FolderOpen,
-  ListFilter,
+  Megaphone,
+  Palette,
+  Plus,
   Search,
   Star,
+  Tag,
+  TrafficCone,
+  Unlock,
+  Users,
+  Lock,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { useFolders } from "@/hooks/useFolders";
 import type { FolderRow } from "@/server/repositories/folders.repository";
 
-import FolderIcon from "@/components/Dashboard/folders/FolderIcon";
-import CreateFolderModal from "../../../../components/Dashboard/folders/ModalCreateFolder";
+import CreateFolderModal from "@/components/Dashboard/folders/ModalCreateFolder";
+
+// ─── helpers ────────────────────────────────────────────────────────────────
 
 function formatDate(dateString: string) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("pt-BR", {
+  return new Date(dateString).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
 }
 
-function FolderCard({
-  folder,
-  onClick,
-}: {
-  folder: FolderRow;
-  onClick: () => void;
-}) {
-  const folderColor = folder.color || "oklch(var(--p))";
-
-  return (
-    <button
-      onClick={onClick}
-      className="group relative w-full overflow-visible text-left transition-all duration-300 hover:-translate-y-1"
-    >
-      {/* ABA DA PASTA */}
-      <div
-        className="absolute left-6 top-0 z-0 h-10 w-28 rounded-t-2xl rounded-b-md shadow-sm"
-        style={{
-          backgroundColor: folderColor,
-        }}
-      />
-
-      {/* CORPO */}
-      <div
-        className="relative mt-6 overflow-hidden rounded-[32px] rounded-tl-xl border border-base-300 bg-base-200 shadow-lg transition-all duration-300 group-hover:shadow-2xl"
-      >
-        {/* TOPO COLORIDO */}
-        <div
-          className="relative h-14 w-full"
-          style={{
-            backgroundColor: folderColor,
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
-        </div>
-
-        {/* CONTEÚDO */}
-        <div className="relative flex items-center gap-4 p-5">
-          {/* ÍCONE */}
-          <div
-            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl shadow-md transition-transform duration-300 group-hover:scale-105"
-            style={{
-              backgroundColor: folderColor,
-            }}
-          >
-            <FolderIcon icon={folder.icon} size={30} className="text-white" />
-          </div>
-
-          {/* TEXTO */}
-          <div className="min-w-0 flex-1">
-            <h2
-              className="truncate text-xl font-black leading-tight text-base-content"
-            >
-              {folder.name}
-            </h2>
-
-            <p
-              className="mt-1 line-clamp-2 text-sm leading-relaxed text-base-content/65"
-            >
-              {folder.description || "Sem descrição"}
-            </p>
-          </div>
-
-          {/* STATUS */}
-          <div className="flex flex-col items-end gap-2">
-            {folder.is_favorite && (
-              <div
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-warning/15"
-              >
-                <Star size={16} className="fill-warning text-warning" />
-              </div>
-            )}
-
-            {folder.is_archived && (
-              <div
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-base-300"
-              >
-                <Archive size={15} className="text-base-content/50" />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* RODAPÉ */}
-        <div
-          className="flex items-center justify-between border-t border-base-300 bg-base-100/40 px-5 py-3 text-xs text-base-content/55"
-        >
-          <div className="flex items-center gap-1.5">
-            <Clock3 size={12} />
-            {folder.updated_at ? formatDate(folder.updated_at) : "-"}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="badge badge-ghost badge-sm">
-              {folder.file_count} arquivos
-            </span>
-
-            {folder.visibility && (
-              <span className="badge badge-outline badge-sm">
-                {folder.visibility}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </button>
-  );
+function hexToRgba(hex: string, alpha: number) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
 }
+
+// ─── types ───────────────────────────────────────────────────────────────────
+
+type FilterKey = "all" | "fav" | "archive" | "public" | "private";
 
 type CreateFolderData = {
   name: string;
@@ -145,141 +55,356 @@ type CreateFolderData = {
   tags: string[];
 };
 
+// ─── sub-components ──────────────────────────────────────────────────────────
+
+function FilterChip({
+  label,
+  count,
+  active,
+  icon,
+  onClick,
+}: {
+  label: string;
+  count?: number;
+  active: boolean;
+  icon?: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border transition-all duration-150
+        ${
+          active
+            ? "bg-base-content text-base-100 border-base-content"
+            : "border-base-300 text-base-content/60 hover:border-base-content/40 hover:text-base-content"
+        }
+      `}
+    >
+      {icon}
+      {label}
+      {count !== undefined && (
+        <span
+          className={`
+            inline-block rounded-full px-1.5 py-px text-[11px] leading-none
+            ${active ? "bg-base-100/20" : "bg-base-content/10"}
+          `}
+        >
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function FolderCard({
+  folder,
+  onClick,
+}: {
+  folder: FolderRow;
+  onClick: () => void;
+}) {
+  const color = folder.color || "#6366f1";
+  const iconBg = hexToRgba(color, 0.12);
+
+  return (
+    <button
+      onClick={onClick}
+      className="group flex w-full overflow-hidden rounded-2xl border border-base-300 bg-base-100 text-left transition-all duration-150 hover:-translate-y-px hover:border-base-content/20"
+    >
+      {/* barra lateral colorida */}
+      <div className="w-1 shrink-0" style={{ backgroundColor: color }} />
+
+      {/* conteúdo */}
+      <div className="flex flex-1 flex-col p-4 min-w-0">
+        {/* topo */}
+        <div className="flex items-start justify-between gap-2 mb-3">
+          {/* ícone */}
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+            style={{ backgroundColor: iconBg, color }}
+          >
+            <FolderIconFromString icon={folder.icon} size={18} />
+          </div>
+
+          {/* badges */}
+          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap justify-end">
+            {folder.is_favorite && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] text-amber-600">
+                <Star size={10} className="fill-amber-500 text-amber-500" />
+              </span>
+            )}
+            {folder.is_archived && (
+              <span className="badge badge-ghost badge-sm gap-1">
+                <Archive size={10} />
+              </span>
+            )}
+            {folder.visibility && (
+              <span className="badge badge-ghost badge-sm text-[11px]">
+                {folder.visibility}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* nome e descrição */}
+        <p className="truncate text-[15px] font-medium text-base-content leading-snug">
+          {folder.name}
+        </p>
+        <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-base-content/55">
+          {folder.description || "Sem descrição"}
+        </p>
+
+        {/* rodapé */}
+        <div className="mt-3 flex items-center justify-between border-t border-base-200 pt-3">
+          <span className="flex items-center gap-1 text-[12px] text-base-content/40">
+            <Clock size={12} />
+            {folder.updated_at ? formatDate(folder.updated_at) : "—"}
+          </span>
+          <span className="flex items-center gap-1 text-[12px] text-base-content/40">
+            <File size={12} />
+            {folder.file_count} arquivos
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+/** Mapeia a string do ícone salva no banco para um componente Lucide. */
+function FolderIconFromString({
+  icon,
+  size,
+}: {
+  icon?: string | null;
+  size?: number;
+}) {
+  const s = size ?? 18;
+  const map: Record<string, React.ReactNode> = {
+    palette: <Palette size={s} />,
+    users: <Users size={s} />,
+    road: <TrafficCone size={s} />,
+    speakerphone: <Megaphone size={s} />,
+    archive: <Archive size={s} />,
+    book: <Book size={s} />,
+    lock: <Lock size={s} />,
+  };
+  return <>{map[icon ?? ""] ?? <FolderOpen size={s} />}</>;
+}
+
+function EmptyState({
+  query,
+  onNew,
+}: {
+  query: string;
+  onNew: () => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 px-8 py-16 text-center">
+      <FolderOpen size={40} className="mx-auto mb-4 opacity-25" />
+
+      <h2 className="text-base font-medium text-base-content">
+        {query ? "Nenhum resultado encontrado" : "Nenhuma pasta ainda"}
+      </h2>
+
+      <p className="mt-1.5 text-sm text-base-content/50 max-w-xs mx-auto leading-relaxed">
+        {query
+          ? `Nenhuma pasta corresponde a "${query}". Tente outro termo.`
+          : "Pastas agrupam conteúdos relacionados. Crie uma para começar a organizar."}
+      </p>
+
+      {!query && (
+        <>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            {[
+              { icon: <Palette size={12} />, label: "Escolha uma cor" },
+              { icon: <Tag size={12} />, label: "Adicione tags" },
+              { icon: <Unlock size={12} />, label: "Defina visibilidade" },
+            ].map(({ icon, label }) => (
+              <span
+                key={label}
+                className="inline-flex items-center gap-1.5 rounded-full bg-base-200 px-3 py-1 text-[12px] text-base-content/60"
+              >
+                {icon}
+                {label}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-5">
+            <button
+              className="btn btn-primary btn-sm rounded-xl gap-1.5"
+              onClick={onNew}
+            >
+              <Plus size={14} />
+              Nova pasta
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── page ────────────────────────────────────────────────────────────────────
+
 export default function FoldersPage() {
   const router = useRouter();
-
   const { folders = [], loading, createFolder } = useFolders("folders");
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+
+  const allFolders = folders as FolderRow[];
+
+  const counts = useMemo(
+    () => ({
+      all: allFolders.length,
+      fav: allFolders.filter((f) => f.is_favorite).length,
+      archive: allFolders.filter((f) => f.is_archived).length,
+    }),
+    [allFolders]
+  );
 
   const filteredFolders = useMemo(() => {
+    let items = allFolders;
+
+    if (activeFilter === "fav") items = items.filter((f) => f.is_favorite);
+    else if (activeFilter === "archive")
+      items = items.filter((f) => f.is_archived);
+    else if (activeFilter === "public")
+      items = items.filter((f) => f.visibility === "public");
+    else if (activeFilter === "private")
+      items = items.filter((f) => f.visibility === "private");
+
     const query = searchTerm.toLowerCase().trim();
+    if (!query) return items;
 
-    if (!query) return folders as FolderRow[];
-
-    return (folders as FolderRow[]).filter((folder) => {
-      const tags = folder.tags?.join(" ").toLowerCase() ?? "";
-
-      return (
-        folder.name.toLowerCase().includes(query) ||
-        (folder.description ?? "").toLowerCase().includes(query) ||
-        tags.includes(query)
-      );
-    });
-  }, [folders, searchTerm]);
+    return items.filter(
+      (f) =>
+        f.name.toLowerCase().includes(query) ||
+        (f.description ?? "").toLowerCase().includes(query) ||
+        (f.tags?.join(" ").toLowerCase() ?? "").includes(query)
+    );
+  }, [allFolders, activeFilter, searchTerm]);
 
   async function handleCreateFolder(data: CreateFolderData) {
-    await createFolder({
-      ...data,
-      parent_id: null,
-    });
-
+    await createFolder({ ...data, parent_id: null });
     setShowCreateModal(false);
   }
 
+  const filters: {
+    key: FilterKey;
+    label: string;
+    count?: number;
+    icon?: React.ReactNode;
+  }[] = [
+    { key: "all", label: "Todas", count: counts.all },
+    {
+      key: "fav",
+      label: "Favoritas",
+      count: counts.fav,
+      icon: <Star size={12} />,
+    },
+    {
+      key: "archive",
+      label: "Arquivadas",
+      count: counts.archive,
+      icon: <Archive size={12} />,
+    },
+    { key: "public", label: "Públicas", icon: <Unlock size={12} /> },
+    { key: "private", label: "Privadas", icon: <Lock size={12} /> },
+  ];
+
   return (
-    <div className="space-y-6 p-6">
-      <header className="flex justify-between items-center">
-        <h1 className="flex items-center gap-3 text-2xl font-black tracking-tight">
-          <Folder size={28} className="text-base-content" />
-          Pastas
-        </h1>
-        <div className="flex items-center gap-2">
+    <div className="space-y-5 p-6">
+      {/* cabeçalho */}
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="flex items-center gap-2 text-xl font-medium tracking-tight text-base-content">
+            <FolderOpen size={22} className="text-base-content/70" />
+            Pastas
+          </h1>
+          <p className="mt-0.5 text-sm text-base-content/50">
+            Organize seus conteúdos em coleções
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
           <button
-            className={`btn btn-square btn-sm ${showFilters ? "btn-info" : "btn-default"}`}
-            onClick={() => setShowFilters(!showFilters)}
-            title="Filtros"
-          >
-            <ListFilter />
-          </button>
-          <button
-            className="btn btn-primary btn-sm"
+            className="btn btn-primary btn-sm gap-1.5 rounded-xl"
             onClick={() => setShowCreateModal(true)}
           >
+            <Plus size={15} />
             Nova pasta
           </button>
         </div>
       </header>
 
-      {/* Search */}
-      <section
-        className={`flex flex-col md:flex-row items-center gap-3 rounded-2xl border border-base-300 bg-base-100 p-3 w-full overflow-hidden transition-all duration-300 ease-in-out ${
-          showFilters
-            ? "max-h-64 opacity-100 translate-y-0"
-            : "max-h-0 opacity-0 -translate-y-2 pointer-events-none p-0 border-0 hidden"
-        }`}
-      >
-        <label className="input input-bordered flex w-full items-center gap-2 rounded-2xl px-4 py-2">
-          <Search size={16} className="shrink-0 opacity-50" />
-          <input
-            type="text"
-            className="grow"
-            placeholder="Buscar por nome, descrição ou tags..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </label>
-      </section>
+      {/* busca */}
+      <label className="input input-bordered flex items-center gap-2 rounded-xl px-4 py-2 w-full">
+        <Search size={15} className="shrink-0 opacity-40" />
+        <input
+          type="text"
+          className="grow text-sm"
+          placeholder="Buscar por nome, descrição ou tag..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </label>
 
-      {/* Grid */}
+      {/* filtros */}
+      <div className="flex flex-wrap gap-2 w-full" role="group" aria-label="Filtros">
+        {filters.map((f) => (
+          <FilterChip
+            key={f.key}
+            label={f.label}
+            count={f.count}
+            active={activeFilter === f.key}
+            icon={f.icon}
+            onClick={() => setActiveFilter(f.key)}
+          />
+        ))}
+      </div>
+
+      {/* label de resultados */}
+      {searchTerm && !loading && (
+        <p className="text-sm text-base-content/40">
+          {filteredFolders.length}{" "}
+          {filteredFolders.length === 1 ? "resultado" : "resultados"} para{" "}
+          <span className="font-medium text-base-content/60">
+            "{searchTerm}"
+          </span>
+        </p>
+      )}
+
+      {/* grid */}
       {loading ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className="skeleton h-56 rounded-3xl" />
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="skeleton h-40 rounded-2xl" />
           ))}
         </div>
       ) : filteredFolders.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-base-300 bg-base-100 px-8 py-20 text-center">
-          <FolderOpen size={48} className="mx-auto mb-4 opacity-35" />
-
-          <h2 className="text-2xl font-black">
-            {searchTerm ? "Nenhuma pasta encontrada" : "Sem pastas ainda"}
-          </h2>
-
-          <p className="mt-2 text-base-content/55">
-            {searchTerm
-              ? `Nenhum resultado para "${searchTerm}".`
-              : "Crie sua primeira pasta para começar a organizar conteúdos."}
-          </p>
-
-          {!searchTerm && (
-            <div className="mt-6">
-              <button
-                className="btn btn-primary rounded-2xl"
-                onClick={() => setShowCreateModal(true)}
-              >
-                Nova pasta
-              </button>
-            </div>
-          )}
-        </div>
+        <EmptyState
+          query={searchTerm}
+          onNew={() => setShowCreateModal(true)}
+        />
       ) : (
-        <>
-          {searchTerm && (
-            <p className="text-sm text-base-content/50">
-              {filteredFolders.length}{" "}
-              {filteredFolders.length === 1 ? "resultado" : "resultados"} para{" "}
-              <span className="font-semibold text-base-content/70">
-                "{searchTerm}"
-              </span>
-            </p>
-          )}
-
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {filteredFolders.map((folder) => (
-              <FolderCard
-                key={folder.id}
-                folder={folder}
-                onClick={() => router.push(`/dashboard/folders/${folder.id}`)}
-              />
-            ))}
-          </div>
-        </>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {filteredFolders.map((folder) => (
+            <FolderCard
+              key={folder.id}
+              folder={folder}
+              onClick={() => router.push(`/dashboard/folders/${folder.id}`)}
+            />
+          ))}
+        </div>
       )}
 
-      {/* Modal */}
+      {/* modal */}
       {showCreateModal && (
         <CreateFolderModal
           onCreate={handleCreateFolder}

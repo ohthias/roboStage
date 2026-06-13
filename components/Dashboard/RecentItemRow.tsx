@@ -22,12 +22,10 @@ export default function RecentItemRow({ item }: { item: RecentItem }) {
   const badge = badgeVariant[item.type] ?? "badge-ghost";
 
   const route = routeMap[item.type] ?? "";
-  const placeholderMatch = route.match(/{([^}]+)}/);
-  const href = placeholderMatch
-    ? route.replace(placeholderMatch[0], // e.g. "{code_event}"
-        (item as any)[placeholderMatch[1]] ?? item.id)
-    : `${route}/${item.id}`;
-
+  const href = route.replace(/{([^}]+)}/g, (_, key) => {
+    return (item as any)[key] ?? item.id;
+  });
+  
   return (
     <Link
       href={href}

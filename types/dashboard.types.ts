@@ -7,6 +7,7 @@ export interface DashboardStats {
 
 export interface RecentItem {
   id: string
+  code_event?: string
   title: string
   type: "Evento" | "Teste" | "Documento" | "Estilo"
   accessedAt: string

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useAuth } from "@/hooks/useAuth"
-import { dashboardService } from "@/services/dashboard.service"
+import { dashboardService } from "@/server/services/dashboard.service"
 import type { DashboardStats, DashboardConfig, RecentItem } from "@/types/dashboard.types"
 
 interface UseDashboardReturn {

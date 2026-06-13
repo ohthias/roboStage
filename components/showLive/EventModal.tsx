@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BaseModal } from "../Dashboard/UI/BaseModal";
 import { useAuth } from "@/hooks/useAuth";
-import { eventService } from "@/services/event.service";
+import { eventService } from "@/server/services/event.service";
 
 interface EventModalProps {
   open: boolean;
@@ -72,6 +72,7 @@ export function EventModal({ open, onClose }: EventModalProps) {
     try {
       setSubmitting(true);
       setError("");
+      handleClose();
 
       const event = await eventService.createEvent({
         userId: user.id,
@@ -80,9 +81,6 @@ export function EventModal({ open, onClose }: EventModalProps) {
         season,
         rounds,
       });
-
-      handleClose();
-
       router.push(`/showlive/${event.code_event}`);
     } catch (err: any) {
       setError(err.message || "Erro ao criar evento");

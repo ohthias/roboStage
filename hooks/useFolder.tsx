@@ -3,7 +3,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { foldersService } from "@/services/folders.service";
+import { foldersService } from "@/server/services/folders.service";
 import type {
   FolderRow,
   DocumentRow,
@@ -11,7 +11,7 @@ import type {
   FolderBreadcrumb,
   UpdateFolderPayload,
   CreateSubfolderPayload,
-} from "@/repositories/folders.repository";
+} from "@/server/repositories/folders.repository";
 
 type FolderState = {
   folder: FolderRow | null;

@@ -13,11 +13,13 @@ import {
 } from "lucide-react";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
 import { useRouter } from "next/navigation";
+import { Navbar } from "@/components/UI/Navbar";
 
 export default function AboutRoboStage() {
   const router = useRouter();
   return (
     <div className="min-h-screen bg-base-100 flex flex-col">
+      <Navbar />
       <main className="flex-1">
         <HeroSection />
         <section className="py-16 md:py-28 bg-base-200 relative overflow-hidden">

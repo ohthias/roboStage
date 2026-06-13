@@ -3,7 +3,7 @@
 Plataforma completa para equipes, técnicos, juízes e organizadores da <strong>FIRST LEGO League Challenge (FLLC)</strong>.
 Gerencie torneios, documente robôs, planeje estratégias e acompanhe tudo em tempo real.
 
-<a href="https://robostage.com.br/"><strong>🌐 Acessar Plataforma</strong></a> • <a href="https://github.com/ohthias/roboStage/releases">📦 Releases</a> • <a href="https://github.com/ohthias/roboStage/issues">🐞 Issues</a> • <em>v4.0.0</em></br>
+<a href="https://robostage.com.br/"><strong>🌐 Acessar Plataforma</strong></a> • <a href="https://github.com/ohthias/roboStage/releases">📦 Releases</a> • <a href="https://github.com/ohthias/roboStage/issues">🐞 Issues</a> • <em>v5.1</em></br>
 
 ![Status](https://img.shields.io/badge/status-active-brightgreen.svg)
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js\&logoColor=white)

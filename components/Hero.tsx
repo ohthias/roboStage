@@ -1,10 +1,10 @@
 "use client";
 
-import { ArrowRight, Bot, ChevronDown } from "lucide-react";
 import { useParams } from "next/navigation";
 import Logo from "./UI/Logo";
-import RevealOnScroll from "./UI/RevealOnScroll";
+import NoiseImage from "./UI/NoiseImage";
 import { HERO_CONFIG } from "@/config/hero";
+import Link from "next/link";
 
 type Competicao = keyof typeof HERO_CONFIG;
 
@@ -15,52 +15,102 @@ export default function Hero() {
   const hero = HERO_CONFIG[competicao];
 
   return (
-    <section className="hero h-screen relative overflow-hidden">
-      {/* Background */}
-      <img
-        src={hero.imagem}
-        alt={hero.titulo}
-        className="absolute inset-0 w-full h-full object-cover opacity-35"
-      />
-      <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:50px_50px]" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-base-100/30 to-base-300"></div>
+    <section className="w-full max-w-6xl mx-auto px-4">
+      <div className="relative w-full">
+        {/* Imagem */}
+        <div className="relative h-[350px] overflow-hidden rounded-[32px] border-8 border-base-200">
+          <NoiseImage
+            variant="animated"
+            noiseOpacity={0.2}
+            className="absolute inset-0"
+          >
+            <img
+              src={hero.imagem}
+              alt={hero.titulo}
+              className="h-full w-full object-cover"
+            />
+          </NoiseImage>
 
-      <RevealOnScroll>
-        <div className="hero-content relative z-10 px-8 flex flex-col items-start justify-content w-screen max-w-6xl">
-          <div>
-            <span className="badge badge-default badge-outline badge-sm font-semibold tracking-widest uppercase hidden sm:inline-block">
-              {hero.badge}
-            </span>
-            <div className="flex flex-col items-start gap-4 mt-2 mb-4">
-              <Logo logoSize="6xl" redirectIndex={false} />
-              <h1 className="text-2xl md:text-3xl font-bold leading-tight max-w-3xl text-base-content tracking-tight">
-                {hero.titulo}
-              </h1>
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-base-300/90 via-base-300/50 to-primary/50" />
+
+          {/* Conteúdo */}
+          <div className="absolute z-20 max-w-xl p-8 md:p-12 left-4 top-1/3 -translate-y-1/3">
+            <div className="scale-75 md:scale-100 origin-left">
+              <Logo logoSize="5xl" />
             </div>
-            <p className="text-base md:text-xl text-base-content/60 max-w-xl font-medium leading-relaxed">
+
+            <h1 className="mt-2 text-xl md:text-3xl font-black text-base-content">
+              {hero.titulo}
+            </h1>
+
+            <p className="mt-3 text-sm md:text-lg text-base-content/80 max-w-lg font-medium">
               {hero.descricao}
             </p>
-            <div className="flex flex-col sm:flex-row gap-5 pt-4">
-              <button
-                className="btn btn-primary btn-md flex items-center gap-2"
-                onClick={() => (window.location.href = hero.ctaPrimario.href)}
-              >
-                {hero.ctaPrimario.label}
-                <Bot />
-              </button>
-              <button
-                className="btn btn-outline btn-md flex items-center gap-2 backdrop-blur-sm"
-                onClick={() => (window.location.href = hero.ctaSecundario.href)}
+          </div>
+
+          {/* Área dos botões */}
+          <div
+            className="
+              absolute
+              bottom-0
+              left-0
+              w-full
+              md:w-[420px]
+              bg-base-200
+              border-t-8
+              border-r-8
+              border-base-200
+              rounded-tr-[24px]
+              p-3
+              flex
+              items-center
+              z-30
+            "
+          >
+            {/* Curva superior */}
+            <div
+              className="
+                absolute
+                -top-6
+                left-2
+                w-4
+                h-4
+                rounded-bl-2xl
+                shadow-[-7px_5px_0_hsl(var(--b3))]
+              "
+            />
+
+            {/* Curva interna */}
+            <div
+              className="
+                absolute
+                -top-4
+                left-0
+                w-4
+                h-4
+                rounded-bl-2xl
+                shadow-[-4px_4px_0_hsl(var(--b1))]
+              "
+            />
+
+            <div className="flex w-full gap-2">
+              <Link
+                href={hero.ctaSecundario.href}
+                className="btn btn-outline btn-sm flex-1"
               >
                 {hero.ctaSecundario.label}
-                <ArrowRight />
-              </button>
+              </Link>
+
+              <Link
+                href={hero.ctaPrimario.href}
+                className="btn btn-primary btn-sm flex-1"
+              >
+                {hero.ctaPrimario.label}
+              </Link>
             </div>
           </div>
         </div>
-      </RevealOnScroll>
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 opacity-20">
-        <ChevronDown size={28} />
       </div>
     </section>
   );

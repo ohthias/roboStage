@@ -53,7 +53,7 @@ export default function EditModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-2xl">
+      <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-2xl max-h-[90dvh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-base-300 px-6 py-5">
           <div>

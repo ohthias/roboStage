@@ -1,6 +1,5 @@
 "use client";
 import HeatmapPage from "@/components/QuickBrick/heatmap/HeatmapPage";
-import ToastProvider from "@/components/QuickBrick/heatmap/Toast";
 import { Footer } from "@/components/UI/Footer";
 import CardMobileNotUse from "@/components/MobileNotUse";
 import { useEffect, useState } from "react";
@@ -30,7 +29,6 @@ export default function Page() {
   return (
     <>
       <HeatmapPage />
-      <ToastProvider />
       <Footer />
     </>
   );

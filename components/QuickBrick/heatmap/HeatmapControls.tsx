@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import type { HeatmapConfig, HeatmapMode } from '@/types/heatmap';
+import { motion } from "framer-motion";
+import type { HeatmapConfig, HeatmapMode } from "@/types/heatmap";
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
@@ -15,7 +15,15 @@ type SliderProps = {
   onChange: (v: number) => void;
 };
 
-function Slider({ label, value, min, max, step = 1, display, onChange }: SliderProps) {
+function Slider({
+  label,
+  value,
+  min,
+  max,
+  step = 1,
+  display,
+  onChange,
+}: SliderProps) {
   return (
     <div className="flex flex-col gap-2 mb-3 last:mb-0">
       <div className="flex justify-between text-[11px] font-mono text-base-content/60">
@@ -25,7 +33,9 @@ function Slider({ label, value, min, max, step = 1, display, onChange }: SliderP
       <div className="w-full">
         <input
           type="range"
-          min={min} max={max} step={step}
+          min={min}
+          max={max}
+          step={step}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           className="range range-sm range-primary w-full"
@@ -38,9 +48,9 @@ function Slider({ label, value, min, max, step = 1, display, onChange }: SliderP
 // ── Modes ─────────────────────────────────────────────────────────────────────
 
 const MODES: { key: HeatmapMode; icon: string; label: string }[] = [
-  { key: 'add',    icon: '＋', label: 'Adicionar' },
-  { key: 'remove', icon: '−', label: 'Remover'   },
-  { key: 'view',   icon: '◉', label: 'Visualizar' },
+  { key: "add", icon: "＋", label: "Adicionar" },
+  { key: "remove", icon: "−", label: "Remover" },
+  { key: "view", icon: "◉", label: "Visualizar" },
 ];
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -57,9 +67,14 @@ type Props = {
 };
 
 export default function HeatmapControls({
-  config, mode, canUndo,
-  onConfigChange, onModeChange,
-  onUndo, onClear, onExport,
+  config,
+  mode,
+  canUndo,
+  onConfigChange,
+  onModeChange,
+  onUndo,
+  onClear,
+  onExport,
 }: Props) {
   return (
     <>
@@ -69,20 +84,23 @@ export default function HeatmapControls({
         <Slider
           label="Raio do brush"
           value={config.brushRadius}
-          min={10} max={80}
+          min={10}
+          max={80}
           onChange={(v) => onConfigChange({ brushRadius: v })}
         />
         <Slider
           label="Opacidade"
           value={Math.round(config.opacity * 100)}
-          min={20} max={100}
+          min={20}
+          max={100}
           display={`${Math.round(config.opacity * 100)}%`}
           onChange={(v) => onConfigChange({ opacity: v / 100 })}
         />
         <Slider
           label="Intensidade"
           value={config.clickIntensity}
-          min={1} max={10}
+          min={1}
+          max={10}
           onChange={(v) => onConfigChange({ clickIntensity: v })}
         />
       </div>
@@ -98,7 +116,7 @@ export default function HeatmapControls({
                 key={m.key}
                 onClick={() => onModeChange(m.key)}
                 whileTap={{ scale: 0.97 }}
-                className={`btn justify-start normal-case ${active ? 'btn-primary' : 'btn-ghost'}`}
+                className={`btn justify-start normal-case ${active ? "btn-primary" : "btn-ghost"}`}
               >
                 <span className="mode-icon">{m.icon}</span>
                 {m.label}
@@ -127,13 +145,25 @@ export default function HeatmapControls({
           >
             <span className="mr-2">✕</span> Limpar Tudo
           </motion.button>
+          <motion.button
+            onClick={onExport}
+            whileTap={{ scale: 0.97 }}
+            className="btn btn-success mt-2"
+          >
+            <span className="mr-2">⤓</span> Exportar PNG
+          </motion.button>
         </div>
       </div>
 
       {/* Legend */}
       <div className="card bg-base-200 p-3 rounded-md">
         <p className="font-semibold text-sm mb-2">Legenda</p>
-        <div className="w-full h-2 rounded-full mb-2" style={{ background: 'linear-gradient(to right, #06d6a0, #ffd166, #ff4d6a)' }} />
+        <div
+          className="w-full h-2 rounded-full mb-2"
+          style={{
+            background: "linear-gradient(to right, #06d6a0, #ffd166, #ff4d6a)",
+          }}
+        />
         <div className="flex justify-between text-xs font-mono text-base-content/50">
           <span>Estável</span>
           <span>Atenção</span>

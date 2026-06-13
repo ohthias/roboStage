@@ -10,12 +10,14 @@ import {
   Cuboid,
   ChartPie,
   File,
+  TreeDeciduous,
 } from "lucide-react";
 import FLLCountdownBanner from "./Components/FLLCountdownBanner";
 import UseCasesSection from "./Components/UseCasesSection";
 import FLLRoadmap from "./Components/FLLRoadmap";
 import Link from "next/link";
 import Banner from "@/components/Banner";
+import NoiseImage from "@/components/UI/NoiseImage";
 
 const modules = [
   {
@@ -212,51 +214,50 @@ export default function FLLHome() {
         </section>
         <UseCasesSection />
         {/* FLL Future Edition */}
-        <section className="py-24">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#6BA612] to-[#25D9B8] text-primary-content">
-              <div className="absolute inset-0 bg-black/50 w-full h-full" />
-              {/* Glow */}
-              <div className="absolute -left-24 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
-              <div className="absolute -right-24 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
+        <NoiseImage variant="animated" noiseOpacity={0.15} className="relative">
+          <section className="py-16 bg-gradient-to-r from-[#6BA612] to-[#25D9B8]">
+            <div className="max-w-6xl mx-auto px-4">
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#6BA612] to-[#25D9B8] text-primary-content">
+                <div className="absolute inset-0 bg-black/50 w-full h-full" />
+                {/* Glow */}
+                <div className="absolute -left-24 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
+                <div className="absolute -right-24 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
 
-              <div className="relative p-8 md:p-12">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
-                  <div className="max-w-3xl">
-                    <img src="https://www.firstinspires.org/hs-fs/hubfs/web/brand/season/2027/first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png?width=1436&height=484&name=first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png" alt="BIOGLOW Future Edition" className="max-w-xs h-auto" />
+                <div className="relative p-8 md:p-12">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+                    <div className="max-w-3xl">
+                      <img
+                        src="https://www.firstinspires.org/hs-fs/hubfs/web/brand/season/2027/first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png?width=1436&height=484&name=first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png"
+                        alt="BIOGLOW Future Edition"
+                        className="max-w-[150px] h-auto mb-4"
+                      />
 
-                    <h2 className="text-3xl md:text-5xl font-black leading-tight">
-                      Conheça a próxima geração da
-                      <br />
-                      FIRST LEGO League
-                    </h2>
+                      <h2 className="text-3xl md:text-5xl font-black leading-tight">
+                        Conheça a próxima geração da
+                        <br />
+                        FIRST LEGO League
+                      </h2>
 
-                    <p className="mt-4 text-lg opacity-90">
-                      BIOGLOW™ Future Edition introduz novos kits LEGO®
-                      Education Computer Science & AI, hardware sem fio e uma
-                      experiência colaborativa baseada em alianças.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-start lg:items-end gap-3">
-                    <div className="text-sm uppercase tracking-widest opacity-80">
-                      Lançamento do desafio
+                      <p className="mt-4 text-lg opacity-90">
+                        BIOGLOW™ Future Edition introduz novos kits LEGO®
+                        Education Computer Science & AI, hardware sem fio e uma
+                        experiência colaborativa baseada em alianças.
+                      </p>
                     </div>
 
-                    <div className="text-3xl font-black">04 AGO</div>
+                    <div className="flex flex-col items-start lg:items-end gap-3">
+                      <div className="text-sm uppercase tracking-widest opacity-80">
+                        Lançamento do desafio
+                      </div>
 
-                    <Link
-                      href="/fll/future-edition"
-                      className="btn btn-outline btn-sm"
-                    >
-                      Explorar BIOGLOW™
-                    </Link>
+                      <div className="text-3xl font-black">04 AGO</div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </NoiseImage>
         <FLLRoadmap />
         <section className="w-full bg-neutral text-neutral-content py-24 px-4">
           <div className="max-w-5xl mx-auto text-center">

@@ -584,7 +584,7 @@ export function Navbar() {
                         key={item.href}
                         href={item.href}
                         onClick={closeDrawer}
-                        className={`btn btn-outline btn-sm justify-start rounded-xl transition-all duration-200 ${
+                        className={`btn btn-outline btn-md justify-start rounded-xl transition-all duration-200 ${
                           active ? "btn-active" : ""
                         }`}
                         aria-current={active ? "page" : undefined}
@@ -601,7 +601,7 @@ export function Navbar() {
                         key={item.href}
                         href={item.href}
                         onClick={closeDrawer}
-                        className="btn btn-primary btn-sm justify-start rounded-xl shadow-sm"
+                        className="btn btn-primary btn-md justify-start rounded-xl shadow-sm"
                       >
                         {item.label}
                       </Link>
@@ -613,7 +613,7 @@ export function Navbar() {
                       key={item.href}
                       href={item.href}
                       onClick={closeDrawer}
-                      className={`btn btn-ghost btn-sm justify-start rounded-xl transition-all duration-200 ${
+                      className={`btn btn-ghost btn-md justify-start rounded-xl transition-all duration-200 ${
                         active ? "btn-active" : ""
                       }`}
                       aria-current={active ? "page" : undefined}

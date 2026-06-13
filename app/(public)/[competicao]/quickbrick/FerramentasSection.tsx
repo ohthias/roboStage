@@ -156,7 +156,7 @@ export default function FerramentasSection({
       icon: <FlaskConical className="w-5 h-5" />,
       image: "/images/QuickBrick/SharksSimulator.png",
       link: "/fll/quickbrick/sharks-simulator",
-      badge: "Em atualização!",
+      badge: "Atualizado!",
       customContent: null,
     },
     {

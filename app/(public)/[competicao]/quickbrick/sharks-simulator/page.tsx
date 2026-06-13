@@ -1,4 +1,5 @@
 import ComingSoon from "@/components/ComingSoon";
+import ViewSection from "@/components/QuickBrick/SharksSimulator/ViewSection";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import { Footer } from "@/components/UI/Footer";
 
@@ -20,7 +21,7 @@ export default function Page() {
         </section>
 
         <div className="flex justify-center mt-8 mb-16">
-          <ComingSoon />
+          <ViewSection />
         </div>
       </div>
       <Footer />

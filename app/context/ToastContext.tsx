@@ -17,6 +17,7 @@ import {
   TriangleAlert,
   X,
 } from "lucide-react";
+import { nanoid } from "nanoid";
 
 type ToastType = "info" | "success" | "warning" | "error";
 
@@ -43,19 +44,19 @@ const TOAST_STYLES: Record<
   }
 > = {
   info: {
-    className: "border-info/20 bg-info/20 text-info-content",
+    className: "border-info/20 bg-info/45 text-info-content",
     icon: <Info size={18} className="text-info" />,
   },
   success: {
-    className: "border-success/20 bg-success/20 text-success-content",
+    className: "border-success/20 bg-success/45 text-success-content",
     icon: <CheckCircle2 size={18} className="text-success" />,
   },
   warning: {
-    className: "border-warning/20 bg-warning/20 text-warning-content",
+    className: "border-warning/20 bg-warning/45 text-warning-content",
     icon: <TriangleAlert size={18} className="text-warning" />,
   },
   error: {
-    className: "border-error/20 bg-error/20 text-error-content",
+    className: "border-error/20 bg-error/45 text-error-content",
     icon: <AlertCircle size={18} className="text-error" />,
   },
 };
@@ -75,7 +76,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const addToast = useCallback(
     (message: string, type: ToastType = "info", duration = 3000) => {
-      const id = crypto.randomUUID();
+      const id = nanoid();
       const toast: Toast = {
         id,
         message,

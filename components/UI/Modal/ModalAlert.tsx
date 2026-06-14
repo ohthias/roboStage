@@ -2,7 +2,7 @@
 import { forwardRef, useImperativeHandle, useState } from "react";
 
 export interface ModalAlertRef {
-  open: (message: string) => void;
+  open: (message: string, onConfirm?: () => void) => void;
 }
 
 interface Props {
@@ -14,10 +14,12 @@ const ModalAlert = forwardRef<ModalAlertRef, Props>(
   ({ title = "Sucesso", confirmLabel = "OK" }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
+    const [onConfirm, setOnConfirm] = useState<(() => void) | null>(null);
 
     useImperativeHandle(ref, () => ({
       open(msg: string) {
         setMessage(msg);
+        setOnConfirm(() => msg ?? null);
         setIsOpen(true);
       },
     }));
@@ -33,7 +35,10 @@ const ModalAlert = forwardRef<ModalAlertRef, Props>(
           <div className="flex justify-end">
             <button
               className="btn btn-primary"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+                onConfirm?.();
+              }}
             >
               {confirmLabel}
             </button>

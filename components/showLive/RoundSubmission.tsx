@@ -1,17 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
-import { createClient } from "@/utils/supabase/client";
-
+  import { createClient } from "@/utils/supabase/client";
 import FormMission from "../FormMission/FormMission";
 import Loader from "../Loader";
-
 import { sumAllMissions } from "@/utils/scores";
-
 import ModalConfirm, { ModalConfirmRef } from "../UI/Modal/ModalConfirm";
-
-import ModalAlert, { ModalAlertRef } from "../UI/Modal/ModalAlert";
+import ScoreCelebration from "./ScoreCelebration";
 
 const supabase = createClient();
 
@@ -50,30 +45,23 @@ interface EventSettings {
 
 export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
   const [selectedRound, setSelectedRound] = useState("");
-
   const [selectedEquipe, setSelectedEquipe] = useState("");
-
   const [missions, setMissions] = useState<MissionType[]>([]);
-
   const [responses, setResponses] = useState<ResponseType>({});
-
   const [teams, setTeams] = useState<TeamType[]>([]);
-
   const [availableRounds, setAvailableRounds] = useState<string[]>([]);
-
   const [roundsOrder, setRoundsOrder] = useState<string[]>([]);
-
   const [currentRound, setCurrentRound] = useState("");
-
   const [settings, setSettings] = useState<EventSettings | null>(null);
-
   const [loading, setLoading] = useState(true);
-
   const [allRoundsCompleted, setAllRoundsCompleted] = useState(false);
+  const [scoreResult, setScoreResult] = useState<{
+    equipe: string;
+    round: string;
+    points: number;
+  } | null>(null);
 
   const modalConfirmRef = useRef<ModalConfirmRef>(null);
-
-  const modalAlertRef = useRef<ModalAlertRef>(null);
 
   useEffect(() => {
     loadData();
@@ -233,7 +221,6 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
   const handleSubmit = async () => {
     if (!selectedRound || !selectedEquipe) {
       alert("Selecione o round e a equipe!");
-
       return;
     }
 
@@ -245,13 +232,10 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
 
           const equipe = teams.find((t) => t.name_team === selectedEquipe);
 
-          if (!equipe) {
-            throw new Error("Equipe não encontrada");
-          }
+          if (!equipe) throw new Error("Equipe não encontrada");
 
           if (equipe.points[selectedRound] !== -1) {
             alert("Essa equipe já foi avaliada.");
-
             return;
           }
 
@@ -264,15 +248,11 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
 
           ["GP", "PT"].forEach((id) => {
             const mission = missions.find((m) => m.id === id);
-
             const response = responses[id];
-
             if (!mission || !response) return;
 
             const index = Object.values(response)[0];
-
             let value: string | number = index;
-
             let points = 0;
 
             if (Array.isArray(mission.points)) {
@@ -285,10 +265,7 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
               value = mission.type[index + 1] ?? index;
             }
 
-            roundExtra[id] = {
-              value,
-              points,
-            };
+            roundExtra[id] = { value, points };
           });
 
           const { data: current } = await supabase
@@ -298,18 +275,11 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
             .maybeSingle();
 
           const currentExtra = current?.data_extra || {};
-
-          const newExtra = {
-            ...currentExtra,
-            [selectedRound]: roundExtra,
-          };
+          const newExtra = { ...currentExtra, [selectedRound]: roundExtra };
 
           const { error } = await supabase
             .from("team")
-            .update({
-              points: updatedPoints,
-              data_extra: newExtra,
-            })
+            .update({ points: updatedPoints, data_extra: newExtra })
             .eq("id_team", equipe.id_team);
 
           if (error) throw error;
@@ -317,24 +287,21 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
           setTeams((prev) =>
             prev.map((t) =>
               t.id_team === equipe.id_team
-                ? {
-                    ...t,
-                    points: updatedPoints,
-                  }
+                ? { ...t, points: updatedPoints }
                 : t,
             ),
           );
 
           setResponses({});
 
-          modalAlertRef.current?.open(
-            `Pontuação enviada com sucesso para ${selectedEquipe}.`,
-          );
-
-          await loadData();
+          // Vai direto para a tela de celebração
+          setScoreResult({
+            equipe: selectedEquipe,
+            round: selectedRound,
+            points: totalPoints,
+          });
         } catch (err) {
           console.error(err);
-
           alert("Erro ao atualizar equipe.");
         } finally {
           setLoading(false);
@@ -364,6 +331,22 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
           </div>
         </div>
       </main>
+    );
+  }
+
+  if (scoreResult) {
+    return (
+      <ScoreCelebration
+        equipe={scoreResult.equipe}
+        round={scoreResult.round}
+        points={scoreResult.points}
+        onClose={() => {
+          setScoreResult(null);
+          setSelectedEquipe("");
+          setResponses({});
+          loadData();
+        }}
+      />
     );
   }
 
@@ -486,12 +469,6 @@ export default function AvaliacaoRounds({ idEvento }: { idEvento: string }) {
         title="Confirmar avaliação"
         cancelLabel="Cancelar"
         confirmLabel="Enviar"
-      />
-
-      <ModalAlert
-        ref={modalAlertRef}
-        title="Avaliação enviada"
-        confirmLabel="OK"
       />
     </main>
   );

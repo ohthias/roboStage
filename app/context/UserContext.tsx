@@ -1,9 +1,18 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import {
+  createContext, useContext, useEffect,
+  useState, useCallback, useRef
+} from "react";
 import { createClient } from "@/utils/supabase/client";
 
 const supabase = createClient();
+
+// ✅ Apenas metadados — nunca tokens
+export interface AuthMeta {
+  userId: string;
+  isAuthenticated: true;
+}
 
 export interface Profile {
   id: string;
@@ -27,96 +36,52 @@ export interface Profile {
 }
 
 interface UserContextType {
-  session: any;
+  auth: AuthMeta | null;         // ✅ sem tokens
   profile: Profile | null;
   loading: boolean;
   refreshProfile: () => Promise<void>;
-  clearProfile: () => void;
 }
 
 const UserContext = createContext<UserContextType>({
-  session: null,
+  auth: null,
   profile: null,
   loading: true,
   refreshProfile: async () => {},
-  clearProfile: () => {},
 });
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<any>(null);
+  const [auth, setAuth] = useState<AuthMeta | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetchingRef = useRef(false); // evita race condition
 
-  const applyProfile = (data: Profile) => {
-    setProfile(data);
-    localStorage.setItem("userProfile", JSON.stringify(data));
-  };
-
-  const clearProfile = () => {
+  const clearState = useCallback(() => {
+    setAuth(null);
     setProfile(null);
-    localStorage.removeItem("userProfile");
-  };
+    // ✅ Nunca persiste nada em localStorage
+  }, []);
 
   const fetchProfile = useCallback(async (userId: string) => {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+
     try {
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
+      // ✅ Uma única RPC — o servidor agrega tudo
+      const { data, error } = await supabase
+        .rpc("get_user_profile", { p_user_id: userId });
 
-      if (profileError || !profileData) throw profileError;
+      if (error || !data) throw error ?? new Error("Profile not found");
 
-      const { data: tagsData } = await supabase.from("user_tags").select("tag").eq("user_id", userId);
-      const tags = tagsData?.map((tag) => tag.tag) ?? [];
-
-      const { count: followersCount } = await supabase
-        .from("user_followers")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId);
-
-      const { count: followingCount } = await supabase
-        .from("user_followers")
-        .select("*", { count: "exact", head: true })
-        .eq("follower_id", userId);
-
-      const { count: documentsCount } = await supabase
-        .from("documents")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId);
-
-      const { count: foldersCount } = await supabase
-        .from("folders")
-        .select("*", { count: "exact", head: true })
-        .eq("owner_id", userId);
-
-      const { count: testsCount } = await supabase
-        .from("tests")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId);
-
-      const { count: teamsCount } = await supabase
-        .from("team_members")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId);
-
-      const aggregatedProfile: Profile = {
-        ...profileData,
-        tags,
-        followersCount: followersCount ?? 0,
-        followingCount: followingCount ?? 0,
-        documentsCount: documentsCount ?? 0,
-        foldersCount: foldersCount ?? 0,
-        testsCount: testsCount ?? 0,
-        teamsCount: teamsCount ?? 0,
-      };
-
-      applyProfile(aggregatedProfile);
+      // ✅ Metadados de auth separados do perfil
+      setAuth({ userId, isAuthenticated: true });
+      setProfile(data as Profile);
     } catch (error) {
       console.error("Erro ao carregar perfil:", error);
-      clearProfile();
+      clearState();
+    } finally {
+      fetchingRef.current = false;
     }
-  }, []);
+  }, [clearState]);
 
   const refreshProfile = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -131,18 +96,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!mounted) return;
-        setSession(session);
+
         if (session?.user) {
-          const cached = localStorage.getItem("userProfile");
-          if (cached) {
-            try {
-              applyProfile(JSON.parse(cached));
-            } catch {
-              await fetchProfile(session.user.id);
-            }
-          } else {
-            await fetchProfile(session.user.id);
-          }
+          await fetchProfile(session.user.id);
         }
       } catch (error) {
         console.error(error);
@@ -153,20 +109,25 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     bootstrap();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
-      setSession(newSession);
-      if (newSession?.user) await fetchProfile(newSession.user.id);
-      else clearProfile();
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_event, newSession) => {
+        if (!mounted) return;
+        if (newSession?.user) {
+          await fetchProfile(newSession.user.id);
+        } else {
+          clearState();
+        }
+      }
+    );
 
     return () => {
       mounted = false;
       listener.subscription.unsubscribe();
     };
-  }, [fetchProfile]);
+  }, [fetchProfile, clearState]);
 
   return (
-    <UserContext.Provider value={{ session, profile, loading, refreshProfile, clearProfile }}>
+    <UserContext.Provider value={{ auth, profile, loading, refreshProfile }}>
       {children}
     </UserContext.Provider>
   );

@@ -76,9 +76,9 @@ export default function Page() {
     <>
       <Navbar />
       <header className="bg-[url(/images/heroImage.webp)] bg-cover bg-bottom bg-no-repeat flex flex-col justify-center items-center h-[calc(100vh-80px)] bg-[#203935] relative overflow-hidden">
-        <div className="flex justify-center items-center flex-col gap-2">
+        <div className="flex justify-center items-center flex-col gap-2 text-center relative z-10">
           <p className="italic text-md text-white">Temporada 2026 - 2027</p>
-          <h1 className="italic text-white font-black text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-center">
+          <h1 className="italic text-white font-black text-5xl sm:text-6xl md:text-7xl lg:text-8xl">
             FIRST® CANOPY™
           </h1>
           <p className="font-semibold text-lg text-white">
@@ -197,7 +197,7 @@ export default function Page() {
               do trabalho em equipe.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-              <button className="btn btn-primary rounded-2xl px-8" onClick={() => window.location.href}>
+              <button className="btn btn-primary rounded-2xl px-8" onClick={() => window.location.href = "/auth/signup"}>
                 Criar conta grátis
               </button>
               <button className="btn btn-ghost text-neutral-content rounded-2xl px-8" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>

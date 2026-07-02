@@ -1,267 +1,106 @@
-import Banner from "@/components/Banner";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import { Users, Trophy, Lightbulb, Radio } from "lucide-react";
+import { Newspaper } from "lucide-react";
 import Link from "next/link";
 
-function SeasonBlock() {
+export default function Page() {
   return (
-    <section className="py-24 bg-[#024959] text-neutral-content">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="grid overflow-hidden rounded-3xl border border-white/10 bg-neutral lg:grid-cols-[1.15fr_0.85fr]">
-          {/* Left */}
-          <div className="p-8 sm:p-12 lg:p-14 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col justify-between">
-            <div>
-              <div className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-4 py-1 text-xs font-semibold tracking-[0.18em] text-primary uppercase">
-                Temporada 2026–2027
-              </div>
+    <>
+      <Navbar />
+      <header className="relative min-h-screen w-full overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
 
-              <h2 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-none">
-                CANOPY
-                <span className="text-primary">™</span>
-              </h2>
-
-              <p className="mt-6 max-w-2xl border-l-2 border-primary/70 pl-5 text-base sm:text-lg leading-8 text-base-content/70">
-                Nada na Terra prospera sozinha. Cada gene, espécie e ecossistema
-                faz parte de uma teia viva de diversidade biológica. Com STEM
-                como ferramenta e a natureza como inspiração.
-              </p>
-            </div>
-
-            <div className="mt-10 flex flex-col sm:flex-row gap-3">
-              <Link href="/robostage-canopy" className="btn btn-primary btn-lg">
-                Conhecer a CANOPY™
-              </Link>
-              <a href="#recursos" className="btn btn-ghost btn-lg">
-                Ver recursos
+        <div className="flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto h-full px-6 md:px-12 py-24 gap-16">
+          {/* Texto */}
+          <div className="flex flex-col justify-center max-w-xl z-10 gap-4 select-none">
+            <h1 className="text-4xl md:text-4xl lg:text-6xl font-bold leading-tight">
+              O palco onde a<br />
+              <span className="text-primary-content bg-primary px-2 inline-block">
+                robótica acontece
+              </span>
+            </h1>
+            <p className="font-semibold text-lg md:text-xl italic text-base-content/80">
+              Competições. Equipes. Comunidade. Tudo conectado!
+            </p>
+            <div className="flex flex-wrap gap-4 mt-4">
+              <a href="/auth/signup" className="btn btn-primary btn-outline">
+                Criar conta gratuitamente
+              </a>
+              <a href="/fll" className="btn btn-secondary btn-outline">
+                Explorar a Plataforma
               </a>
             </div>
           </div>
 
-          {/* Right */}
-          <div className="p-8 sm:p-12 lg:p-14 bg-base-100 text-base-content">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <div className="text-xs font-semibold tracking-[0.18em] uppercase text-base-content/50">
-                  Por que CANOPY™?
-                </div>
-                <h3 className="mt-2 text-2xl sm:text-3xl font-black tracking-tight">
-                  Uma temporada feita para crescer em conjunto
-                </h3>
-              </div>
-
-              <div className="hidden sm:inline-flex rounded-2xl bg-primary/10 px-4 py-3 text-primary font-black text-2xl leading-none">
-                🌿
-              </div>
+          {/* Colagem de imagens */}
+          <div className="relative w-full max-w-sm h-[380px] shrink-0 mr-0 md:mr-16">
+            <div className="absolute bottom-6 right-0 w-72 h-72 hover:scale-105 transition-transform duration-300">
+              <img
+                src="/images/index/rectangle.svg"
+                alt="Equipe de robótica em competição"
+                className="w-full h-full object-contain"
+              />
             </div>
 
-            <div className="mt-8 rounded-2xl border border-dashed border-base-300 bg-base-200/40 p-5">
-              <div className="text-sm font-semibold uppercase tracking-[0.16em] text-base-content/50">
-                A essência
-              </div>
-              <p className="mt-3 text-sm sm:text-base leading-7 text-base-content/75">
-                Construção, colaboração, impacto e aprendizado prático em uma
-                temporada com identidade forte e visual limpo.
-              </p>
+            <div className="absolute -bottom-5 left-0 w-50 h-50 z-5 hover:scale-110 transition-transform duration-300">
+              <img
+                src="/images/index/triangle.svg"
+                alt="Crianças montando robô"
+                className="w-full h-full object-contain"
+              />
+            </div>
+
+            <div className="absolute top-0 -right-6 w-32 h-32 z-5 hover:scale-107 transition-transform duration-300">
+              <img
+                src="/images/index/circle.svg"
+                alt="Cena de competição de robótica"
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
-
-export default function Home() {
-  return (
-    <>
-      <Navbar />
-      <main className="mt-16">
-        <Banner />
-        <section className="relative overflow-hidden bg-base-100 h-[100vh]">
-          {/* Background */}
-          <div className="absolute inset-0">
-            {/* Gradiente principal */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-base-100 to-secondary/10" />
-
-            {/* Grid */}
-            <div
-              className="absolute inset-0 opacity-10"
-              style={{
-                backgroundImage: `
-          linear-gradient(to right, currentColor 1px, transparent 1px),
-          linear-gradient(to bottom, currentColor 1px, transparent 1px)
-        `,
-                backgroundSize: "40px 40px",
-              }}
-            />
-
-            {/* Blur shapes */}
-            <div className="absolute top-20 left-20 w-72 h-72 rounded-full bg-primary/20 blur-3xl" />
-            <div className="absolute bottom-10 right-20 w-80 h-80 rounded-full bg-secondary/20 blur-3xl" />
+      </header>
+      <main className="bg-base-100">
+        <section className="max-w-7xl mx-auto px-6 md:px-12 py-16 md:py-24 flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16">
+          <div className="flex flex-col">
+            <h2 className="text-3xl md:text-4xl font-bold">
+              Muito mais que uma{" "}
+              <span className="text-primary-content bg-primary">
+                plataforma
+              </span>
+            </h2>
+            <p className="mt-4 text-base-content/70 max-w-xl text-xl">
+              O RoboStage conecta pessoas, equipes e competições em um único
+              lugar, tornando a experiência mais organizada, acessível e
+              divertida para todos.
+            </p>
+            <p className="mt-4 text-base-content/70 max-w-xl text-lg">
+              Seja você um competidor, mentor, organizador, árbitro ou apenas um
+              apaixonado por robótica, aqui sempre existe algo novo para
+              descobrir.
+            </p>
           </div>
-
-          {/* Floating geometry */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-20 left-[15%] w-12 h-12 border-2 border-primary rotate-12 opacity-40" />
-
-            <div className="absolute top-32 right-[20%] w-16 h-16 rounded-full border-2 border-secondary opacity-40" />
-
-            <div
-              className="absolute bottom-24 left-[25%] w-0 h-0 opacity-40"
-              style={{
-                borderLeft: "25px solid transparent",
-                borderRight: "25px solid transparent",
-                borderBottom: "40px solid hsl(var(--p))",
-              }}
-            />
-
-            <div className="absolute bottom-20 right-[30%] w-10 h-10 bg-accent/30 rotate-45" />
-          </div>
-          <RevealOnScroll>
-            {/* Content */}
-            <div className="relative z-10">
-              <div className="container mx-auto px-6">
-                <div className="min-h-[85vh] flex flex-col justify-center items-center text-center">
-                  <h1 className="max-w-5xl text-5xl md:text-7xl font-black leading-tight">
-                    O palco onde a
-                    <span className="text-primary"> robótica </span>
-                    encontra a<span className="text-secondary"> inovação</span>
-                  </h1>
-
-                  <p className="mt-8 max-w-3xl text-lg md:text-xl text-base-content/70">
-                    Aprenda, projete, programe e participe de competições. Uma
-                    plataforma criada para equipes, mentores, professores e
-                    estudantes que querem transformar ideias em soluções reais.
-                  </p>
-
-                  <div className="flex flex-col sm:flex-row gap-4 mt-10">
-                    <Link
-                      className="btn btn-primary btn-lg"
-                      href="#competicoes"
-                    >
-                      Explorar Competições
-                    </Link>
-
-                    <Link className="btn btn-outline btn-lg" href="/about">
-                      Conhecer a Plataforma
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </RevealOnScroll>
-        </section>
-
-        <section id="recursos" className="py-28 bg-base-200">
-          <RevealOnScroll>
-            <div className="max-w-6xl mx-auto px-4">
-              <div className="text-center max-w-4xl mx-auto mb-20">
-                <h2 className="text-4xl md:text-6xl font-black tracking-tight">
-                  Tudo o que sua equipe precisa
-                </h2>
-
-                <p className="mt-6 text-lg md:text-xl text-base-content/70">
-                  Ferramentas desenvolvidas para acompanhar toda a jornada da
-                  equipe, desde a organização interna até os torneios e projetos
-                  de inovação.
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
-                {/* Gestão */}
-                <div className="card bg-base-100 border border-base-300 hover:border-primary/40 hover:shadow-2xl transition-all duration-300">
-                  <div className="card-body">
-                    <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                      <Users className="w-7 h-7 text-primary" />
-                    </div>
-
-                    <div className="badge badge-primary badge-outline mb-2">
-                      Organização
-                    </div>
-
-                    <h3 className="text-xl font-bold">Gestão de Equipes</h3>
-
-                    <p className="text-base-content/70">
-                      Organize membros, temporadas, documentos e atividades em
-                      um único lugar.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Torneios */}
-                <div className="card bg-base-100 border border-base-300 hover:border-secondary/40 hover:shadow-2xl transition-all duration-300">
-                  <div className="card-body">
-                    <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center mb-4">
-                      <Trophy className="w-7 h-7 text-secondary" />
-                    </div>
-
-                    <div className="badge badge-secondary badge-outline mb-2">
-                      Competições
-                    </div>
-
-                    <h3 className="text-xl font-bold">Torneios</h3>
-
-                    <p className="text-base-content/70">
-                      Rankings, resultados, classificações e acompanhamento em
-                      tempo real.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Projetos */}
-                <div className="card bg-base-100 border border-base-300 hover:border-accent/40 hover:shadow-2xl transition-all duration-300">
-                  <div className="card-body">
-                    <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-4">
-                      <Lightbulb className="w-7 h-7 text-accent" />
-                    </div>
-
-                    <div className="badge badge-accent badge-outline mb-2">
-                      Inovação
-                    </div>
-
-                    <h3 className="text-xl font-bold">Projetos de Inovação</h3>
-
-                    <p className="text-base-content/70">
-                      Centralize pesquisas, documentos, protótipos e entregas da
-                      temporada.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Transmissões */}
-                <div className="card bg-base-100 border border-base-300 hover:border-info/40 hover:shadow-2xl transition-all duration-300">
-                  <div className="card-body">
-                    <div className="w-14 h-14 rounded-2xl bg-info/10 flex items-center justify-center mb-4">
-                      <Radio className="w-7 h-7 text-info" />
-                    </div>
-
-                    <div className="badge badge-info badge-outline mb-2">
-                      Comunidade
-                    </div>
-
-                    <h3 className="text-xl font-bold">Transmissões</h3>
-
-                    <p className="text-base-content/70">
-                      Compartilhe eventos, conteúdos e experiências com toda a
-                      comunidade.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </RevealOnScroll>
+          <img
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdf7TJNOmMTAIpSFfY1gu1so6SXXhEt8eVnOotnUjaKX1hnCU5CZcmkyC7&s=10"
+            alt="Robô de LEGO"
+            className="w-full max-w-sm md:max-w-lg h-auto object-cover"
+            style={{ boxShadow: "-10px 10px 0 #DE5017" }}
+          />
         </section>
 
         {/* Competições */}
-        <section className="py-16 bg-base-100" id="competicoes">
+        <section className="py-8 mb-16">
           <RevealOnScroll>
             <div className="max-w-6xl mx-auto px-4">
               <div className="text-center max-w-3xl mx-auto mb-16">
-                <h2 className="text-4xl md:text-6xl font-black tracking-tight">
+                <h2 className="text-3xl md:text-5xl font-bold leading-tight">
                   Um lar para cada
                   <br />
-                  programa de robótica
+                  <span className="bg-accent px-2 inline-block">
+                    competição
+                  </span>{" "}
+                  de robótica
                 </h2>
                 <p className="mt-6 text-lg text-base-content/70">
                   Soluções específicas para equipes, torneios e comunidades de
@@ -273,29 +112,13 @@ export default function Home() {
                 {/* FLL */}
                 <Link
                   href="/fll"
-                  className="
-          group
-          relative
-          overflow-hidden
-          rounded-3xl
-          bg-primary
-          text-primary-content
-          p-8
-          transition-all
-          duration-300
-          hover:-translate-y-1
-          hover:shadow-2xl
-        "
+                  className="group relative overflow-hidden rounded-tl-[30px] rounded-br-[30px] bg-primary text-primary-content p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-
                   <div className="relative">
                     <div className="badge badge-neutral mb-6">
                       Disponível agora
                     </div>
-
                     <h3 className="text-6xl font-black tracking-tight">FLL</h3>
-
                     <p className="mt-4 opacity-80">
                       Gestão completa para equipes, projetos, temporadas e
                       torneios da FIRST LEGO League.
@@ -304,67 +127,32 @@ export default function Home() {
                 </Link>
 
                 {/* FTC */}
-                <div
-                  className="
-          rounded-3xl
-          border
-          border-base-300
-          bg-base-200
-          p-8
-          transition-all
-          hover:border-secondary/30
-        "
-                >
+                <div className="rounded-tl-[30px] rounded-br-[30px] border border-base-300 bg-base-200 p-8 transition-all hover:border-secondary/30">
                   <div className="badge badge-ghost mb-6">Em breve</div>
-
                   <h3 className="text-6xl font-black text-base-content/50">
                     FTC
                   </h3>
-
                   <p className="mt-4 text-base-content/60">
                     Recursos dedicados para equipes da FIRST Tech Challenge.
                   </p>
                 </div>
 
                 {/* OBR */}
-                <div
-                  className="
-          rounded-3xl
-          border
-          border-base-300
-          bg-base-200
-          p-8
-        "
-                >
+                <div className="rounded-tl-[30px] rounded-br-[30px] border border-base-300 bg-base-200 p-8 transition-all hover:border-secondary/30">
                   <div className="badge badge-ghost mb-6">Em breve</div>
-
                   <h3 className="text-6xl font-black text-base-content/50">
                     OBR
                   </h3>
-
                   <p className="mt-4 text-base-content/60">
                     Ferramentas para a Olimpíada Brasileira de Robótica.
                   </p>
                 </div>
 
                 {/* Mais */}
-                <div
-                  className="
-          rounded-3xl
-          border
-          border-dashed
-          border-base-300
-          bg-base-200/50
-          p-8
-          flex
-          flex-col
-          justify-center
-        "
-                >
+                <div className="rounded-tl-[30px] rounded-br-[30px] border border-dashed border-base-300 bg-base-200/50 p-8 flex flex-col justify-center transition-all hover:border-secondary/30">
                   <h3 className="text-6xl font-black text-base-content/40">
                     +
                   </h3>
-
                   <p className="mt-4 text-base-content/60">
                     Novas modalidades e programas serão adicionados futuramente.
                   </p>
@@ -374,27 +162,99 @@ export default function Home() {
           </RevealOnScroll>
         </section>
 
-        {/* Temporada */}
-        <SeasonBlock />
+        <section className="bg-[#091A07] w-full flex flex-col md:flex-row gap-8">
+          <div className="max-w-2xl md:ml-16 px-6 md:px-4 text-white flex flex-col justify-center items-start gap-4 py-16">
+            <h3 className="text-2xl md:text-3xl font-bold">FIRST® CANOPY™</h3>
+            <p className="text-sm md:text-md">
+              Nada na Terra prospera sozinha. Cada gene, espécie e ecossistema
+              faz parte de uma teia viva de diversidade biológica. Com STEM como
+              ferramenta e a natureza como inspiração.
+            </p>
+            <Link
+              className="btn btn-neutral btn-outline btn-sm md:btn-md"
+              href="/robostage-canopy"
+            >
+              Conheça!
+            </Link>
+            <a
+              href="https://www.magnific.com/br/vetores-gratis/fundo-organico-de-selva-plana_13839964.htm#fromView=search&page=2&position=5&uuid=0d42a9de-b5ff-41eb-a3d4-967b0ab14993&query=canopy+florest"
+              className="text-xs opacity-20"
+            >
+              Imagem de freepik
+            </a>
+          </div>
 
-        {/* CTA */}
-        <section className="py-32 bg-primary text-primary-content">
-          <RevealOnScroll>
-            <div className="max-w-4xl mx-auto text-center px-4">
-              <h2 className="text-4xl md:text-6xl font-black">
-                Pronto para elevar sua temporada?
-              </h2>
+          <div className="w-full md:max-w-1/2 relative h-64 md:h-auto">
+            <img
+              src="images/index/canopy.webp"
+              className="w-full h-full object-cover"
+            />
+            <div
+              className="hidden md:block absolute inset-0"
+              style={{
+                backgroundImage: `linear-gradient(to left, transparent, #091A07)`,
+              }}
+            />
+            <div
+              className="block md:hidden absolute inset-0"
+              style={{
+                backgroundImage: `linear-gradient(to top, transparent, #091A07)`,
+              }}
+            />
+          </div>
+        </section>
 
-              <p className="mt-6 text-lg md:text-xl opacity-90">
-                Centralize sua equipe, seus projetos e suas competições em uma
-                única plataforma.
-              </p>
+        <section className="max-w-6xl mx-auto py-16 px-4 mb-24">
+          <h3 className="text-2xl md:text-3xl font-semibold">
+            Um{" "}
+            <span className="bg-secondary text-secondary-content px-1">
+              projeto independente
+            </span>
+            , construído com a comunidade.
+          </h3>
+          <div className="border-l-5 border-secondary pl-4 mt-4 max-w-xl">
+            <p className="text-lg">
+              O RoboStage é desenvolvido por uma única pessoa e evolui
+              continuamente com a ajuda de equipes de robótica, organizadores e
+              voluntários que participam dos testes e compartilham ideias para
+              novas funcionalidades.
+            </p>
+            <p className="text-lg mt-2">
+              Cada atualização nasce de experiências reais vividas dentro das
+              competições.
+            </p>
+          </div>
+          <Link href="/news" className="mt-8 btn bnt-outline">
+          <Newspaper className="inline-block mr-2"/>
+            Ver notícias
+          </Link>
+        </section>
 
-              <Link href="/fll" className="btn btn-neutral btn-lg mt-10">
-                Entrar no RoboStage
+        <div className="w-full h-10 bg-gradient-to-t from-neutral to-transparent " />
+        <section className="w-full bg-neutral text-neutral-content py-24 px-4 relative">
+          <div className="max-w-5xl mx-auto text-center">
+            <h2 className="text-4xl md:text-5xl font-black leading-tight">
+              O próximo evento começa aqui!
+            </h2>
+            <p className="mt-6 text-lg md:text-xl text-neutral-content/70 max-w-3xl mx-auto">
+              Se você compete, organiza, ensina, aprende ou simplesmente ama
+              robótica, existe um lugar esperando por você.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
+              <Link
+                className="btn btn-primary rounded-2xl px-8"
+                href="/auth/signup"
+              >
+                Criar conta grátis
+              </Link>
+              <Link
+                className="btn btn-ghost text-neutral-content rounded-2xl px-8"
+                href="/fll"
+              >
+                Começar na FLL
               </Link>
             </div>
-          </RevealOnScroll>
+          </div>
         </section>
       </main>
       <Footer />

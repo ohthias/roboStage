@@ -48,7 +48,7 @@ const mainLinks = [
 const accessLinks = [
   {
     href: "/universe",
-    label: "Competições",
+    label: "Eventos",
     icon: Earth,
     variant: "outline" as const,
   },
@@ -72,6 +72,13 @@ export function Navbar() {
   const isIndexPage = isCompetitionRoute
     ? pathname === `/${competition}`
     : isHomePage;
+
+  const competitionOptions = Object.entries(NAVIGATION).map(([key, value]) => ({
+    key,
+    label: value.label,
+    href: `/${key}`,
+    icon: value.icon,
+  }));
 
   const closeDrawer = useCallback(() => {
     const drawer = document.getElementById(
@@ -129,9 +136,42 @@ export function Navbar() {
         <header className={navbarClasses}>
           <div className="flex flex-1 items-center gap-3 lg:flex-none">
             <Logo logoSize="lg" redirectIndex={true} />
-
             <div className="divider divider-horizontal mx-1 hidden sm:flex" />
+            {isHomePage && (
+              <div className="dropdown dropdown-start">
+                <button
+                  type="button"
+                  tabIndex={0}
+                  aria-haspopup="menu"
+                  aria-label="Abrir seletor de competições"
+                  className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-base-content/70 transition-all duration-200 ease-out hover:bg-primary/10 hover:text-primary"
+                >
+                  <span className="font-medium">Competições</span>
+                  <ChevronDown size={14} className="opacity-60" />
+                </button>
 
+                <ul
+                  tabIndex={0}
+                  className="menu dropdown-content z-[1] mt-4 w-64 rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl"
+                >
+                  <li className="menu-title px-3 pb-1 pt-2">
+                    <span>Escolha uma competição</span>
+                  </li>
+
+                  {competitionOptions.map((competitionItem) => (
+                    <li key={competitionItem.key}>
+                      <Link
+                        href={competitionItem.href}
+                        className="rounded-lg px-3 py-2 transition-all duration-200 hover:bg-base-200/80"
+                      >
+                        <span>{<competitionItem.icon className="opacity-60" />}</span>
+                        {competitionItem.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <Link
               href={homeHref}
               className={`hidden sm:inline-flex text-sm font-bold italic uppercase tracking-wide transition-colors duration-200 ${
@@ -388,7 +428,9 @@ export function Navbar() {
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] opacity-60">
                     Competição atual
                   </p>
-                  <p className="mt-1 text-lg font-bold italic uppercase">{competitionLabel}</p>
+                  <p className="mt-1 text-lg font-bold italic uppercase">
+                    {competitionLabel}
+                  </p>
                   <p className="mt-1 text-sm opacity-70">
                     Navegue entre pontuador, ferramentas e atalhos.
                   </p>
@@ -552,7 +594,9 @@ export function Navbar() {
                         >
                           <span className="flex flex-col">
                             <span
-                              className={`font-medium ${active ? "text-primary" : ""}`}
+                              className={`font-medium ${
+                                active ? "text-primary" : ""
+                              }`}
                             >
                               {item.label}
                             </span>

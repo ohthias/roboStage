@@ -74,10 +74,9 @@ const modules = [
 export default function FLLHome() {
   return (
     <div className="min-h-screen bg-base-200 text-base-content">
-      <div className="mt-16" />
-      <Banner />
-      <main>
+      <main className="mt-16">
         <Hero />
+        <Banner />
         <section className="py-12 md:py-16 max-w-7xl mx-auto my-8">
           <div className="px-4 sm:px-6">
             <div className="flex flex-col xl:flex-row gap-10 xl:gap-16 items-start">
@@ -245,13 +244,7 @@ export default function FLLHome() {
                       </p>
                     </div>
 
-                    <div className="flex flex-col items-start lg:items-end gap-3">
-                      <div className="text-sm uppercase tracking-widest opacity-80">
-                        Lançamento do desafio
-                      </div>
-
-                      <div className="text-3xl font-black">04 AGO</div>
-                    </div>
+                    <div className="text-3xl font-black">04 AGO</div>
                   </div>
                 </div>
               </div>

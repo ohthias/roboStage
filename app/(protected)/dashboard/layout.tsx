@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/utils/supabase/server";
 import LayoutShell from "@/components/Dashboard/LayoutShell";
+import { AuthProvider } from "@/app/context/AuthContext";
 
 export default async function AppLayout({
   children,
@@ -14,9 +15,6 @@ export default async function AppLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  /*
-   * sem auth
-   */
   if (!user) {
     redirect("/auth/login");
   }
@@ -27,16 +25,13 @@ export default async function AppLayout({
     .eq("id", user.id)
     .single();
 
-  /*
-   * onboarding obrigatório
-   */
   if (!profile?.onboarding_completed) {
     redirect("/onboarding");
   }
 
   return (
-    <LayoutShell profile={profile}>
-      {children}
-    </LayoutShell>
+    <AuthProvider initialUser={user} initialProfile={profile}>
+        <LayoutShell profile={profile}>{children}</LayoutShell>
+    </AuthProvider>
   );
 }

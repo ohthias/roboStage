@@ -45,6 +45,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "knip": "^6.14.2",
+    "supabase": "^2.108.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

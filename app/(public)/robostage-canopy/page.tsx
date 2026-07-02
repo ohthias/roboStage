@@ -282,7 +282,7 @@ export default function RoboStageCanopy() {
                   text="Nada na Terra prospera sozinho. Cada gene, espécie e ecossistema faz parte de uma rede rica de biodiversidade que sustenta a vida."
                 />
 
-                <div className="mt-8 grid gap-4 sm:grid-rows-auto w-full">
+                <div className="mt-8 grid ">
                   {highlights.map(({ title, text, icon: Icon }) => (
                     <div
                       key={title}

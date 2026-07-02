@@ -4,7 +4,7 @@ import { useUser } from "@/app/context/UserContext";
 import HubHero from "@/components/Dashboard/MainPage";
 
 export default function DashboardPage() {
-  const { session, profile, loading } = useUser();
+  const { auth, profile, loading } = useUser();
 
   if (loading) {
     return (
@@ -14,7 +14,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (!session || !profile) {
+  if (!auth || !profile) {
     return (
       <div className="h-full flex items-center justify-center">
         Carregando sessão...

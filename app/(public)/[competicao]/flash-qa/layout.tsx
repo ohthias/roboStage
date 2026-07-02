@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import "./style.css";
 
 export const metadata: Metadata = {
-  title: "Flash QA - RoboStage",
+  title: "Flash QA",
   description: "Sistema de perguntas e respostas para sala de avaliação.",
   keywords: [
     "RoboStage",

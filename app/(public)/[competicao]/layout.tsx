@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/UI/Navbar";
 import { COMPETICOES } from "@/utils/competitions/competicoes";
+import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
 
@@ -52,7 +53,7 @@ export default async function Layout({
   const { competicao } = await params;
 
   if (!COMPETICOES[competicao as keyof typeof COMPETICOES]) {
-    throw new Error("Competição não encontrada");
+    notFound();
   }
 
   return (

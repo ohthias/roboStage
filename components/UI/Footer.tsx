@@ -6,7 +6,7 @@ export function Footer() {
   return (
     <footer className="border-t border-base-300 bg-base-100">
       <div className="mx-auto max-w-7xl px-6 py-16">
-        <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
+        <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr]">
           {/* Brand */}
           <div className="space-y-5">
             <div className="flex items-center gap-3">
@@ -71,6 +71,15 @@ export function Footer() {
                 </Link>
               </li>
             </ul>
+            <div className="mt-6">
+              <h3 className="footer-title">Atualizações</h3>
+              <p className="text-sm text-base-content/70">
+                Fique por dentro das novidades da plataforma
+              </p>
+              <Link href="/news" className="link link-hover text-sm mt-2 block">
+                Ver notícias
+              </Link>
+            </div>
           </div>
 
           {/* Recursos */}
@@ -93,6 +102,32 @@ export function Footer() {
                 </Link>
               </li>
             </ul>
+          </div>
+
+          {/* Competições */}
+          <div>
+            <h3 className="footer-title">Competições</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/fll" className="link link-hover">
+                  FIRST® LEGO® League
+                </Link>
+              </li>
+            </ul>
+
+            <div className="mt-6">
+              <h3 className="footer-title">Temporadas</h3>
+              <ul className="space-y-2 text-sm">
+                <li className="opacity-70">
+                  FIRST® AGE™
+                </li>
+                <li>
+                  <Link href="/robostage-canopy" className="link link-hover text-sm">
+                    FIRST® CANOPY™
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
 
           {/* Comunidade */}

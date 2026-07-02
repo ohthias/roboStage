@@ -8,7 +8,6 @@ import { createClient } from "@/utils/supabase/client";
 
 const supabase = createClient();
 
-// ✅ Apenas metadados — nunca tokens
 export interface AuthMeta {
   userId: string;
   isAuthenticated: true;
@@ -35,9 +34,26 @@ export interface Profile {
   testsCount?: number;
 }
 
+export interface Session {
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
+  token_type: string;
+  user: {
+    id: string;
+    email: string | null;
+    phone: string | null;
+    app_metadata: Record<string, any>;
+    user_metadata: Record<string, any>;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
 interface UserContextType {
   auth: AuthMeta | null;         // ✅ sem tokens
   profile: Profile | null;
+  session: Session | null;
   loading: boolean;
   refreshProfile: () => Promise<void>;
 }
@@ -46,12 +62,14 @@ const UserContext = createContext<UserContextType>({
   auth: null,
   profile: null,
   loading: true,
+  session: null,
   refreshProfile: async () => {},
 });
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState<AuthMeta | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const fetchingRef = useRef(false); // evita race condition
 
@@ -66,13 +84,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     fetchingRef.current = true;
 
     try {
-      // ✅ Uma única RPC — o servidor agrega tudo
       const { data, error } = await supabase
         .rpc("get_user_profile", { p_user_id: userId });
 
       if (error || !data) throw error ?? new Error("Profile not found");
 
-      // ✅ Metadados de auth separados do perfil
       setAuth({ userId, isAuthenticated: true });
       setProfile(data as Profile);
     } catch (error) {
@@ -127,7 +143,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, [fetchProfile, clearState]);
 
   return (
-    <UserContext.Provider value={{ auth, profile, loading, refreshProfile }}>
+    <UserContext.Provider value={{ auth, profile, session, loading, refreshProfile }}>
       {children}
     </UserContext.Provider>
   );

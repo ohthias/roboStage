@@ -251,7 +251,6 @@ export default function FLLHome() {
             </div>
           </section>
         </NoiseImage>
-        <FLLRoadmap />
         <section className="w-full bg-neutral text-neutral-content py-24 px-4">
           <div className="max-w-5xl mx-auto text-center">
             <h2 className="text-4xl md:text-6xl font-black leading-tight">

@@ -138,7 +138,8 @@ export default function FLLHome() {
               <img
                 src="/images/fll/fll_about.jpg"
                 alt="Equipe participando da FIRST LEGO League"
-                className="w-full h-full max-h-[400px] object-cover rounded-box shadow-xl"
+                className="w-full h-full max-h-[400px] object-cover"
+                style={{ boxShadow: "-10px -10px 0 #fabd32"}}
               />
 
               <p className="text-xs text-neutral-content/60 mt-2">

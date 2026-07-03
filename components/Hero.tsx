@@ -2,7 +2,6 @@
 
 import { useParams } from "next/navigation";
 import Logo from "./UI/Logo";
-import NoiseImage from "./UI/NoiseImage";
 import { HERO_CONFIG } from "@/config/hero";
 import Link from "next/link";
 
@@ -15,101 +14,34 @@ export default function Hero() {
   const hero = HERO_CONFIG[competicao];
 
   return (
-    <section className="w-full max-w-6xl mx-auto px-4">
-      <div className="relative w-full">
-        {/* Imagem */}
-        <div className="relative h-[350px] overflow-hidden rounded-[32px] border-8 border-base-200">
-          <NoiseImage
-            variant="animated"
-            noiseOpacity={0.2}
-            className="absolute inset-0"
-          >
-            <img
-              src={hero.imagem}
-              alt={hero.titulo}
-              className="h-full w-full object-cover"
-            />
-          </NoiseImage>
-
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-base-300/90 via-base-300/50 to-primary/50" />
-
-          {/* Conteúdo */}
-          <div className="absolute z-20 max-w-xl p-8 md:p-12 left-4 top-1/3 -translate-y-1/3">
-            <div className="scale-75 md:scale-100 origin-left">
-              <Logo logoSize="5xl" />
-            </div>
-
-            <h1 className="mt-2 text-xl md:text-3xl font-black text-base-content">
-              {hero.titulo}
-            </h1>
-
-            <p className="mt-3 text-sm md:text-lg text-base-content/80 max-w-lg font-medium">
-              {hero.descricao}
-            </p>
+    <section className="w-full mx-auto px-3 sm:px-4 relative">
+      <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
+      <div className="absolute inset-0 opacity-16 bg-gradient-to-t from-transparent via-primary to-transparent" />
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 max-w-5xl mx-auto py-8 sm:py-12 md:py-16 z-10 relative">
+        <div className="flex flex-col gap-4 sm:gap-6 max-w-2xl w-full md:w-auto">
+          <Logo logoSize="lg" />
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">{hero.titulo}</h1>
+          <p className="text-base sm:text-lg md:text-xl text-base-content/70 leading-relaxed">{hero.descricao}</p>
+          
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-2 sm:mt-4">
+            <Link
+              href={hero.ctaPrimario.href}
+              className="btn btn-primary btn-md sm:btn-lg w-full sm:w-auto"
+            >
+              {hero.ctaPrimario.label}
+            </Link>
+            <Link
+              href={hero.ctaSecundario.href}
+              className="btn btn-outline btn-md sm:btn-lg w-full sm:w-auto"
+            >
+              {hero.ctaSecundario.label}
+            </Link>
           </div>
+        </div>
 
-          {/* Área dos botões */}
-          <div
-            className="
-              absolute
-              bottom-0
-              left-0
-              w-full
-              md:w-[420px]
-              bg-base-200
-              border-t-8
-              border-r-8
-              border-base-200
-              rounded-tr-[24px]
-              p-3
-              flex
-              items-center
-              z-30
-            "
-          >
-            {/* Curva superior */}
-            <div
-              className="
-                absolute
-                -top-6
-                left-2
-                w-4
-                h-4
-                rounded-bl-2xl
-                shadow-[-7px_5px_0_hsl(var(--b3))]
-              "
-            />
-
-            {/* Curva interna */}
-            <div
-              className="
-                absolute
-                -top-4
-                left-0
-                w-4
-                h-4
-                rounded-bl-2xl
-                shadow-[-4px_4px_0_hsl(var(--b1))]
-              "
-            />
-
-            <div className="flex w-full gap-2">
-              <Link
-                href={hero.ctaSecundario.href}
-                className="btn btn-outline btn-sm flex-1"
-              >
-                {hero.ctaSecundario.label}
-              </Link>
-
-              <Link
-                href={hero.ctaPrimario.href}
-                className="btn btn-primary btn-sm flex-1"
-              >
-                {hero.ctaPrimario.label}
-              </Link>
-            </div>
-          </div>
+        <div className="relative w-full md:max-w-md mt-6 md:mt-0">
+          <div className="absolute h-12 sm:h-16 w-12 sm:w-16 border-2 sm:border-3 border-dashed border-accent rounded-full top-0 left-0 transform -translate-x-1/2 -translate-y-1/2" />
+          <img src={hero.imagem} alt={hero.titulo} className="w-full h-auto" style={{boxShadow: '8px 8px 0 #CF2A2A'}} />
         </div>
       </div>
     </section>

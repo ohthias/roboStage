@@ -13,8 +13,8 @@ export const HERO_CONFIG = {
       href: "/auth/login",
     },
     ctaSecundario: {
-      label: "Novidades",
-      href: "/robostage-canopy",
+      label: "Pontuar!",
+      href: "/fll/score/unearthed",
     },
   },
 };

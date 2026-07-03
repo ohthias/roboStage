@@ -57,13 +57,9 @@ export default async function Layout({
   }
 
   return (
-    <html lang="pt-BR">
-      <body>
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          {children}
-        </div>
-      </body>
-    </html>
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      {children}
+    </div>
   );
 }

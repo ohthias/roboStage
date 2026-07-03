@@ -3,19 +3,14 @@ import { Footer } from "../../UI/Footer";
 import Hero from "../../Hero";
 import { ModuleCard } from "./Components/FLLModules";
 import {
-  Radio,
   Trophy,
-  Palette,
   MessageCircleQuestion,
   Cuboid,
   ChartPie,
   File,
-  TreeDeciduous,
 } from "lucide-react";
 import FLLCountdownBanner from "./Components/FLLCountdownBanner";
 import UseCasesSection from "./Components/UseCasesSection";
-import FLLRoadmap from "./Components/FLLRoadmap";
-import Link from "next/link";
 import Banner from "@/components/Banner";
 import NoiseImage from "@/components/UI/NoiseImage";
 
@@ -33,13 +28,6 @@ const modules = [
       "Estruture projetos de inovação, organize pesquisas, registre evidências, acompanhe o progresso e desenvolva apresentações impactantes.",
     color: "bg-primary",
     icon: <File size={96} strokeWidth={1.5} />,
-  },
-  {
-    title: "ShowLive",
-    description:
-      "Gerencie e transmita torneios em tempo real, acompanhe rankings, resultados e compartilhe a experiência com equipes e espectadores.",
-    color: "bg-orange-600",
-    icon: <Radio size={96} strokeWidth={1.5} />,
   },
   {
     title: "QuickBrick Studio",
@@ -61,13 +49,6 @@ const modules = [
       "Realize treinos de sessões de perguntas e respostas, prepare-se para entrevistas e desenvolva habilidades de comunicação para apresentações e avaliações.",
     color: "bg-lime-600",
     icon: <MessageCircleQuestion size={96} strokeWidth={1.5} />,
-  },
-  {
-    title: "StyleLab",
-    description:
-      "Desenvolva identidades visuais, materiais gráficos, apresentações e conteúdos que destacam a personalidade da sua equipe.",
-    color: "bg-sky-500",
-    icon: <Palette size={96} strokeWidth={1.5} />,
   },
 ];
 
@@ -197,7 +178,7 @@ export default function FLLHome() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {modules.map((module) => (
                 <ModuleCard
                   key={module.title}

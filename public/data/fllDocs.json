@@ -1,32 +1,35 @@
-[
-  {
-    "title": "Livro de Regras",
-    "description": "Contém todas as regras oficiais da temporada, incluindo pontuação e restrições dos robôs.",
-    "url": "https://static.portaldaindustria.com.br/media/filer_public/2e/d7/2ed703f6-1925-43be-9aaf-5fc187bcc57a/livro_de_regras_desafio_do_robo_unearthed.pdf"
-  },
-  {
-    "title": "Caderno de Engenharia",
-    "description": "Guia para registrar todas as ideias, testes e protótipos da equipe.",
-    "url": "https://static.portaldaindustria.com.br/media/filer_public/30/61/30615602-3fb7-4f3f-9e37-001665c4eb46/caderno_de_engenharia_unearthed.pdf"
-  },
-  {
-    "title": "Guia de Reuniões",
-    "description": "Orientações para organizar reuniões produtivas e gerenciar tarefas da equipe.",
-    "url": "https://static.portaldaindustria.com.br/media/filer_public/ae/b9/aeb950c3-03a9-44a2-adfc-6249dd215f1e/guia_de_reunioes_da_equipe_unearthed.pdf"
-  },
-  {
-    "title": "Atualizações de Regras",
-    "description": "Confira todas as mudanças recentes nas regras da temporada, revisões e avisos importantes.",
-    "url": "https://static.portaldaindustria.com.br/media/filer_public/b4/1b/b41bd40f-5d7b-465c-a030-3bcfebdb5b67/atualizacoes-do-desafio-unearthed_nov25.pdf"
-  },
-  {
-    "title": "Rubricas de Avaliação",
-    "description": "Critérios detalhados para avaliação do robô, projeto de pesquisa e apresentação da equipe.",
-    "url": "https://static.portaldaindustria.com.br/media/filer_public/56/aa/56aa609c-48e4-465f-9e31-bb73e976bcb6/rubricas_unearthed_rev.pdf"
-  },
-  {
-    "title": "Fluxograma da Sessão de Avaliação",
-    "description": "Guia visual para ajudar as equipes a se prepararem para suas sessões de avaliação.",
-    "url": "https://static.portaldaindustria.com.br/media/filer_public/67/01/67019b00-36ea-40f9-82c4-6ceaa2b28308/fluxograma_da_sessao_de_avaliacao_-_equipes.pdf"
-  }
-]
+{
+  "bioglow" : [],
+  "unearthed": [
+    {
+      "title": "Livro de Regras",
+      "description": "Contém todas as regras oficiais da temporada, incluindo pontuação e restrições dos robôs.",
+      "url": "https://static.portaldaindustria.com.br/media/filer_public/2e/d7/2ed703f6-1925-43be-9aaf-5fc187bcc57a/livro_de_regras_desafio_do_robo_unearthed.pdf"
+    },
+    {
+      "title": "Caderno de Engenharia",
+      "description": "Guia para registrar todas as ideias, testes e protótipos da equipe.",
+      "url": "https://static.portaldaindustria.com.br/media/filer_public/30/61/30615602-3fb7-4f3f-9e37-001665c4eb46/caderno_de_engenharia_unearthed.pdf"
+    },
+    {
+      "title": "Guia de Reuniões",
+      "description": "Orientações para organizar reuniões produtivas e gerenciar tarefas da equipe.",
+      "url": "https://static.portaldaindustria.com.br/media/filer_public/ae/b9/aeb950c3-03a9-44a2-adfc-6249dd215f1e/guia_de_reunioes_da_equipe_unearthed.pdf"
+    },
+    {
+      "title": "Atualizações de Regras",
+      "description": "Confira todas as mudanças recentes nas regras da temporada, revisões e avisos importantes.",
+      "url": "https://static.portaldaindustria.com.br/media/filer_public/b4/1b/b41bd40f-5d7b-465c-a030-3bcfebdb5b67/atualizacoes-do-desafio-unearthed_nov25.pdf"
+    },
+    {
+      "title": "Rubricas de Avaliação",
+      "description": "Critérios detalhados para avaliação do robô, projeto de pesquisa e apresentação da equipe.",
+      "url": "https://static.portaldaindustria.com.br/media/filer_public/56/aa/56aa609c-48e4-465f-9e31-bb73e976bcb6/rubricas_unearthed_rev.pdf"
+    },
+    {
+      "title": "Fluxograma da Sessão de Avaliação",
+      "description": "Guia visual para ajudar as equipes a se prepararem para suas sessões de avaliação.",
+      "url": "https://static.portaldaindustria.com.br/media/filer_public/67/01/67019b00-36ea-40f9-82c4-6ceaa2b28308/fluxograma_da_sessao_de_avaliacao_-_equipes.pdf"
+    }
+  ]
+}

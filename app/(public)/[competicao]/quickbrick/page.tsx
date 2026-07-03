@@ -24,7 +24,7 @@ export default function QuickBrickHome() {
   }, []);
 
   return (
-    <div className="flex flex-col items-start w-full">
+    <div className="flex flex-col items-start w-full bg-base-200">
       <main className="flex flex-col w-full px-4 md:px-8 space-y-8 pb-16">
         <Breadcrumbs />
 

@@ -1,18 +1,15 @@
-"use client";
-
-import { useState } from "react";
-import { motion, AnimatePresence, easeInOut } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import {
-  BookText,
-  Puzzle,
-  FlaskConical
-} from "lucide-react";
+import { BookText, Puzzle, FlaskConical } from "lucide-react";
 
 interface FerramentasSectionProps {
   seasons: string[];
   seasonLogos: Record<string, { name: string; image: string }>;
+}
+
+interface SeasonLogo {
+  name: string;
+  image: string;
 }
 
 interface Ferramenta {
@@ -29,8 +26,8 @@ interface Ferramenta {
     | null
     | ((
         seasons: string[],
-        seasonLogos: { [x: string]: any },
-        router: any
+        seasonLogos: Record<string, SeasonLogo>,
+        router: ReturnType<typeof useRouter>,
       ) => React.ReactNode);
 }
 
@@ -39,9 +36,6 @@ export default function FerramentasSection({
   seasonLogos,
 }: FerramentasSectionProps) {
   const router = useRouter();
-  const [filtro, setFiltro] = useState("Todos");
-
-  const categorias = ["Todos", "Criar", "Documentar", "Simular"];
 
   const ferramentas = [
     {
@@ -64,8 +58,8 @@ export default function FerramentasSection({
       icon: <BookText className="w-5 h-5" />,
       customContent: (
         seasons: string[],
-        seasonLogos: { [x: string]: any },
-        router: any
+        seasonLogos: Record<string, SeasonLogo>,
+        router: ReturnType<typeof useRouter>,
       ) => (
         <div className="flex flex-col gap-2 mt-2 w-full mx-auto">
           {seasons.map((s: string) => {
@@ -144,7 +138,6 @@ export default function FerramentasSection({
       icon: <FlaskConical className="w-5 h-5" />,
       image: "/images/QuickBrick/Heatmap.png",
       link: "/fll/quickbrick/heatmap",
-      badge: "Novo!",
       customContent: null,
     },
     {
@@ -156,8 +149,8 @@ export default function FerramentasSection({
       icon: <FlaskConical className="w-5 h-5" />,
       image: "/images/QuickBrick/SharksSimulator.png",
       link: "/fll/quickbrick/sharks-simulator",
-      badge: "Atualizado!",
       customContent: null,
+      feitoPor: "Sharks",
     },
     {
       id: 5,
@@ -191,7 +184,7 @@ export default function FerramentasSection({
       customContent: (
         seasons: string[],
         seasonLogos: { [x: string]: any },
-        router: any
+        router: any,
       ) => (
         <div className="flex flex-col gap-2 mt-2 w-full mx-auto">
           {seasons.map((s: string) => {
@@ -265,140 +258,84 @@ export default function FerramentasSection({
     },
   ] as Ferramenta[];
 
-  const cardVariants = {
-    hidden: { opacity: 0, scale: 0.96 },
-    show: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.25,
-        ease: easeInOut,
-      },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.96,
-      transition: { duration: 0.2 },
-    },
-  };
-
-  const filtradas =
-    filtro === "Todos"
-      ? ferramentas
-      : ferramentas.filter((f) => f.categoria === filtro);
+  const filtradas = ferramentas;
 
   return (
-    <section className="w-full flex flex-col items-center">
-      <h1 className="text-2xl font-bold mb-6 text-center">
-        Ferramentas disponíveis
-      </h1>
+    <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-5xl mx-auto">
+      {filtradas.map((ferramenta) => (
+        <div
+          key={ferramenta.id}
+          className="group relative card bg-base-100 border border-base-300 rounded-none rounded-tl-[30px] rounded-br-[30px] overflow-hidden hover:border-primary hover:shadow-[10px_10px_0_theme(colors.primary))] transition-colors cursor-pointer"
+          onClick={() => {
+            if (ferramenta.link) router.push(ferramenta.link);
+          }}
+        >
+          {/* Badge */}
+          {ferramenta.badge && (
+            <div className="absolute top-4 right-4 z-10 badge badge-secondary badge-sm">
+              {ferramenta.badge}
+            </div>
+          )}
 
-      {/* Filtros */}
-      <div className="flex flex-wrap justify-center gap-3 mb-8">
-        {categorias.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setFiltro(cat)}
-            className={`badge badge-lg border ${
-              filtro === cat
-                ? "badge-primary text-primary-content"
-                : "badge-outline hover:bg-base-200"
-            } cursor-pointer px-4 py-2 transition-all`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+          {/* Imagem */}
+          {ferramenta.image && (
+            <figure className="relative">
+              <Image
+                src={ferramenta.image}
+                alt={ferramenta.titulo}
+                width={400}
+                height={225}
+                className="w-full aspect-video object-cover transition-transform duration-300 group-hover:scale-105"
+              />
 
-      {/* Cards */}
-      <motion.div
-        layout
-        className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-6xl"
-      >
-        <AnimatePresence>
-          {filtradas.map((ferramenta) => (
-            <motion.div
-              key={ferramenta.id}
-              layout
-              variants={cardVariants}
-              initial="hidden"
-              animate="show"
-              exit="exit"
-              whileHover={{ scale: 1.015 }}
-              transition={{ type: "spring", stiffness: 260, damping: 22 }}
-              className="group relative card bg-base-100 border border-base-300 rounded-2xl overflow-hidden hover:border-primary hover:shadow-xl transition-colors cursor-pointer"
-              onClick={() => {
-                if (ferramenta.link) router.push(ferramenta.link);
-              }}
-            >
-              {/* Badge */}
-              {ferramenta.badge && (
-                <div className="absolute top-4 right-4 z-10 badge badge-secondary badge-sm">
-                  {ferramenta.badge}
-                </div>
-              )}
+              {/* Overlay suave */}
+              <div className="absolute inset-0 bg-gradient-to-t from-base-100/70 via-transparent to-transparent -bottom-1" />
+            </figure>
+          )}
 
-              {/* Imagem */}
-              {ferramenta.image && (
-                <figure className="relative">
-                  <Image
-                    src={ferramenta.image}
-                    alt={ferramenta.titulo}
-                    width={400}
-                    height={225}
-                    className="w-full aspect-video object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
+          {/* Corpo */}
+          <div className="card-body gap-3">
+            <div className="flex items-center gap-2">
+              <span className="p-2 rounded-xl bg-primary/10 text-primary">
+                {ferramenta.icon}
+              </span>
 
-                  {/* Overlay suave */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-base-100/70 via-transparent to-transparent" />
-                </figure>
-              )}
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary/70">
+                {ferramenta.categoria}
+              </span>
+            </div>
 
-              {/* Corpo */}
-              <div className="card-body gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="p-2 rounded-xl bg-primary/10 text-primary">
-                    {ferramenta.icon}
-                  </span>
+            <h2 className="text-lg font-bold leading-tight">
+              {ferramenta.titulo}
+            </h2>
 
-                  <span className="text-xs font-semibold uppercase tracking-wider text-primary/70">
-                    {ferramenta.categoria}
-                  </span>
-                </div>
+            <p className="text-sm opacity-80 leading-relaxed">
+              {ferramenta.descricao}
+            </p>
 
-                <h2 className="text-lg font-bold leading-tight">
-                  {ferramenta.titulo}
-                </h2>
+            {/* Conteúdo customizado */}
+            {ferramenta.customContent &&
+              ferramenta.customContent(seasons, seasonLogos, router)}
+          </div>
 
-                <p className="text-sm opacity-80 leading-relaxed">
-                  {ferramenta.descricao}
-                </p>
+          {/* Footer */}
+          <div className="flex items-center justify-between px-6 pb-5 pt-0">
+            {ferramenta.feitoPor ? (
+              <span className="text-xs font-semibold text-secondary">
+                Desenvolvido por {ferramenta.feitoPor}
+              </span>
+            ) : (
+              <span />
+            )}
 
-                {/* Conteúdo customizado */}
-                {ferramenta.customContent &&
-                  ferramenta.customContent(seasons, seasonLogos, router)}
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between px-6 pb-5 pt-0">
-                {ferramenta.feitoPor ? (
-                  <span className="text-xs font-semibold text-secondary">
-                    Desenvolvido por {ferramenta.feitoPor}
-                  </span>
-                ) : (
-                  <span />
-                )}
-
-                {ferramenta.customContent ? null : (
-                  <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-primary">
-                    Abrir ferramenta →
-                  </span>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </motion.div>
+            {ferramenta.customContent ? null : (
+              <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-primary">
+                Abrir ferramenta →
+              </span>
+            )}
+          </div>
+        </div>
+      ))}
     </section>
   );
 }

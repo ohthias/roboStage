@@ -5,15 +5,13 @@ interface MenuCardProps {
   title: string;
   description: string;
   icon: LucideIcon;
-  onClick: () => void;
-  color: string; // e.g. 'bg-red-500'
+  color: string;
 }
 
-export const MenuCard: React.FC<MenuCardProps> = ({ title, description, icon: Icon, onClick, color }) => {
+export const MenuCard: React.FC<MenuCardProps> = ({ title, description, icon: Icon, color }) => {
   return (
     <button 
-      onClick={onClick}
-      className="group relative overflow-hidden rounded-2xl bg-base-300 p-8 text-left transition-all hover:-translate-y-1 hover:shadow-2xl border border-base-200 hover:border-base-200 w-full max-w-sm"
+      className="group relative overflow-hidden rounded-2xl bg-base-300 p-8 text-left transition-all hover:-translate-y-1 hover:shadow-2xl border border-base-200 hover:border-base-200 w-full max-w-sm h-full"
     >
       <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity`}>
         <Icon size={120} />

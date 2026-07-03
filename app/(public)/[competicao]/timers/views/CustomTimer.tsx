@@ -1,143 +1,157 @@
-import React, { useState, useEffect, useRef } from "react";
-import { AppMode } from "@/types/TimersType";
+"use client";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, Minus, ArrowLeftCircleIcon } from "lucide-react";
 import { playSound } from "@/utils/audio";
 import { CompletionModal } from "@/components/Timers/CompletionModal";
 import { ConfirmModal } from "@/components/Timers/ConfirmModal";
 import { ControlBar } from "@/components/Timers/ControlBar";
 import { TimerCircle } from "@/components/Timers/TimerCircle";
+type TimerStatus = "idle" | "running" | "finished" | "paused";
 
-interface Props {
-  setMode: (mode: AppMode) => void;
-}
+const MIN_TIME = 60;
+const MAX_TIME = 3600;
+const STEP = 60;
 
-export const CustomTimer: React.FC<Props> = ({ setMode }) => {
+export const CustomTimer: React.FC = () => {
   const [initialTime, setInitialTime] = useState(300);
   const [timeLeft, setTimeLeft] = useState(300);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isFinished, setIsFinished] = useState(false);
+  const [status, setStatus] = useState<TimerStatus>("idle");
   const [showExitModal, setShowExitModal] = useState(false);
 
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    if (isRunning && timeLeft > 0) {
-      intervalRef.current = window.setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            setIsRunning(false);
-            setIsFinished(true);
-            playSound("end");
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+  const clearTimer = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
+  }, []);
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [isRunning]);
-
-  const adjustTime = (delta: number) => {
-    if (isRunning) return;
-    const newTime = Math.max(60, Math.min(3600, initialTime + delta));
-    setInitialTime(newTime);
-    setTimeLeft(newTime);
-  };
-
-  const handleReset = () => {
-    setIsFinished(false);
-    setIsRunning(false);
-    setTimeLeft(initialTime);
-  };
-
-  const handleBack = () => {
-    if (isRunning) setShowExitModal(true);
-    else setMode(AppMode.MENU);
-  };
-
-  const formatTime = (seconds: number) => {
+  const formatTime = useCallback((seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${s.toString().padStart(2, "0")}`;
-  };
+  }, []);
+
+  const adjustTime = useCallback(
+    (delta: number) => {
+      if (status !== "idle") return;
+      const next = Math.max(MIN_TIME, Math.min(MAX_TIME, initialTime + delta));
+      setInitialTime(next);
+      setTimeLeft(next);
+    },
+    [initialTime, status]
+  );
+
+  const reset = useCallback(() => {
+    clearTimer();
+    setStatus("idle");
+    setTimeLeft(initialTime);
+  }, [clearTimer, initialTime]);
+
+  const handleBack = useCallback(() => {
+    if (status === "running") {
+      setShowExitModal(true);
+      return;
+    }
+    window.location.href = "/fll/timers";
+  }, [status]);
+
+  const toggle = useCallback(() => {
+    if (status === "finished") {
+      reset();
+      return;
+    }
+    setStatus((prev) => (prev === "running" ? "paused" : "running"));
+  }, [reset, status]);
+
+  /* ================= TIMER ENGINE ================= */
+  useEffect(() => {
+    if (status !== "running") {
+      clearTimer();
+      return;
+    }
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearTimer();
+          setStatus("finished");
+          playSound("end");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return clearTimer;
+  }, [status, clearTimer]);
 
   return (
-    <div className="relative min-h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-base-200/60">
-      {/* Decorative grid */}
-      <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:28px_28px]" />
-
-      {/* Soft overlay */}
+    <div className="relative flex min-h-[100dvh] w-full items-center justify-center overflow-hidden bg-base-200/60">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.04]" />
       <div className="absolute inset-0 bg-gradient-to-b from-base-100/40 via-transparent to-base-200/60" />
-
       <ConfirmModal
         isOpen={showExitModal}
         onCancel={() => setShowExitModal(false)}
-        onConfirm={() => setMode(AppMode.MENU)}
+        onConfirm={() => {
+          setShowExitModal(false);
+          window.location.href = "/fll/timers";
+        }}
       />
-
       <CompletionModal
-        isOpen={isFinished}
+        isOpen={status === "finished"}
         title="Tempo encerrado"
         subTitle="Apresentação finalizada."
-        onReset={handleReset}
-        onMenu={() => setMode(AppMode.MENU)}
+        onReset={reset}
+        onMenu={handleBack}
       />
-
-      {/* Main Card */}
-      <div className="relative z-10 w-full max-w-md mx-auto rounded-3xl bg-base-100/80 backdrop-blur-xl border border-base-300 shadow-2xl p-8 sm:p-10 animate-in zoom-in-95 duration-300">
-        <button 
+      <div className="relative z-10 w-full max-w-md rounded-3xl border border-base-300 bg-base-100/80 p-8 shadow-2xl backdrop-blur-xl sm:p-10">
+        <button
           onClick={handleBack}
-          className="absolute top-4 left-4 btn btn-ghost btn-circle btn-sm"
-          aria-label="Voltar ao menu"
+          className="btn btn-ghost btn-circle btn-sm absolute left-4 top-4"
         >
           <ArrowLeftCircleIcon size={20} />
         </button>
-        {/* Timer */}
         <TimerCircle
           totalTime={initialTime}
           currentTime={timeLeft}
-          colorClass="text-success"
+          colorClass={status === "finished" ? "text-error" : "text-success"}
         >
-          <div className="text-6xl sm:text-7xl font-mono font-bold text-base-content tabular-nums">
+          <div className="font-mono text-6xl font-bold tabular-nums text-base-content sm:text-7xl">
             {formatTime(timeLeft)}
           </div>
-
-          {!isRunning && timeLeft === initialTime && (
-            <div className="flex items-center gap-4 mt-6">
+          {status === "idle" && (
+            <div className="mt-6 flex items-center gap-4">
               <button
-                onClick={() => adjustTime(-60)}
-                className="btn btn-circle btn-sm bg-base-200 hover:bg-error/20 hover:text-error border border-base-300"
+                onClick={() => adjustTime(-STEP)}
+                className="btn btn-circle btn-sm border border-base-300 bg-base-200 hover:text-error"
               >
                 <Minus size={18} />
               </button>
-
-              <span className="text-xs font-mono font-semibold text-base-content/60">
+              <span className="font-mono text-xs font-semibold text-base-content/60">
                 AJUSTAR TEMPO
               </span>
-
               <button
-                onClick={() => adjustTime(60)}
-                className="btn btn-circle btn-sm bg-base-200 hover:bg-success/20 hover:text-success border border-base-300"
+                onClick={() => adjustTime(STEP)}
+                className="btn btn-circle btn-sm border border-base-300 bg-base-200 hover:text-success"
               >
                 <Plus size={18} />
               </button>
             </div>
           )}
         </TimerCircle>
-
-        {/* Controls */}
         <div className="mt-8">
           <ControlBar
-            isRunning={isRunning}
-            onToggle={() => setIsRunning(!isRunning)}
-            onReset={handleReset}
+            isRunning={status === "running"}
+            onToggle={toggle}
+            onReset={reset}
             onBack={handleBack}
-            onFullscreen={() => {}}
+            onFullscreen={() => {
+              if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+              } else {
+                document.exitFullscreen();
+              }
+            }}
           />
         </div>
       </div>

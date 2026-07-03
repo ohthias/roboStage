@@ -1,91 +1,60 @@
-"use client";
-
-import React, { useState } from "react";
-import { AppMode } from "@/types/TimersType";
-import { MenuCard } from "@/components/Timers/MenuCard";
-import { RobotGame } from "./views/RobotGame";
-import { JudgingRoom } from "./views/JudgingRoom";
-import { CustomTimer } from "./views/CustomTimer";
-import { Trophy, BookOpen, Clock } from "lucide-react";
-import { Footer } from "@/components/UI/Footer";
 import Header from "@/components/UI/Header";
+import { Footer } from "@/components/UI/Footer";
+import { MenuCard } from "@/components/Timers/MenuCard";
 
-const TimersPager: React.FC = () => {
-  const [mode, setMode] = useState<AppMode>(AppMode.MENU);
+import { Trophy, BookOpen, Clock } from "lucide-react";
+import Link from "next/link";
 
-  if (mode !== AppMode.MENU) {
-    return (
-      <div className="min-h-[100dvh]">
-        {mode === AppMode.ROBOT_GAME && (
-          <div
-            className="min-h-[100dvh]"
-            style={{
-              backgroundImage: "url('/images/background_uneartherd.png')",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
-            <RobotGame setMode={setMode} />
-          </div>
-        )}
+const timers = [
+  {
+    slug: "robot-game",
+    title: "Round do Robô",
+    description:
+      "Timer de rodada oficial para competições FLL, com contagem regressiva, alertas sonoros e visuais.",
+    icon: Trophy,
+    color: "primary",
+  },
+  {
+    slug: "judging",
+    title: "Sala de Avaliação",
+    description:
+      "Controle completo do tempo de Entrada, Apresentação, Perguntas e Feedback.",
+    icon: BookOpen,
+    color: "secondary",
+  },
+  {
+    slug: "custom",
+    title: "Timer Ajustável",
+    description:
+      "Timer personalizável para treinos, apresentações ou qualquer outra necessidade.",
+    icon: Clock,
+    color: "success",
+  },
+];
 
-        {mode === AppMode.JUDGING && (
-          <div className="min-h-[100dvh] bg-base-200/60">
-            <JudgingRoom setMode={setMode} />
-          </div>
-        )}
-
-        {mode === AppMode.CUSTOM && (
-          <div className="min-h-[100dvh] bg-base-200/60">
-            <CustomTimer setMode={setMode} />
-          </div>
-        )}
-      </div>
-    );
-  }
-
+export default function TimersPage() {
   return (
     <>
-      <main className="min-h-screen bg-base-100 text-base-content max-w-6xl mx-auto px-4 py-12">
-       <Header
+      <main className="mx-auto min-h-screen max-w-6xl px-4 py-12">
+        <Header
           type="Timers"
           name="Controle o tempo"
           highlight="do treino à competição"
-          description="Timers pensados para a realidade das equipes: rodada do robô, apresentação para juízes e treinos de pitch. Simples, direto e no ritmo da FLL."
+          description="Timers pensados para a realidade das equipes."
         />
 
-        {/* FEATURES */}
-        <section className="mx-auto px-4 my-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <article>
-              <MenuCard
-                title="Round do Robô"
-                description="Timer de rodada oficial para competições FLL, com contagem regressiva, alertas sonoros e visuais."
-                icon={Trophy}
-                color="primary"
-                onClick={() => setMode(AppMode.ROBOT_GAME)}
-              />
-            </article>
-
-            <article>
-              <MenuCard
-                title="Sala de Avaliação"
-                description="Controle completo do tempo de Entrada, Apresentação, Perguntas e Feedback."
-                icon={BookOpen}
-                color="secondary"
-                onClick={() => setMode(AppMode.JUDGING)}
-              />
-            </article>
-
-            <article>
-              <MenuCard
-                title="Timer Ajustável"
-                description="Timer personalizável para treinos, apresentações ou qualquer outra necessidade."
-                icon={Clock}
-                color="success"
-                onClick={() => setMode(AppMode.CUSTOM)}
-              />
-            </article>
+        <section className="my-8">
+          <div className="grid gap-6 md:grid-cols-3">
+            {timers.map((timer) => (
+              <Link key={timer.slug} href={`/fll/timers/${timer.slug}`}>
+                <MenuCard
+                  title={timer.title}
+                  description={timer.description}
+                  icon={timer.icon}
+                  color={timer.color}
+                />
+              </Link>
+            ))}
           </div>
         </section>
       </main>
@@ -93,6 +62,4 @@ const TimersPager: React.FC = () => {
       <Footer />
     </>
   );
-};
-
-export default TimersPager;
+}

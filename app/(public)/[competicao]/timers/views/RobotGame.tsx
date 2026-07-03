@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { AppMode, ROBOT_GAME_DURATION } from "@/types/TimersType";
-import { CompletionModal } from "@/components/Timers/CompletionModal";
-import { ConfirmModal } from "@/components/Timers/ConfirmModal";
+"use client";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowUpRightFromSquare,
@@ -10,74 +8,162 @@ import {
   Timer,
 } from "lucide-react";
 
-/* ================= SEASON THEMES ================= */
+import { ROBOT_GAME_DURATION } from "@/types/TimersType";
+import { CompletionModal } from "@/components/Timers/CompletionModal";
+import { ConfirmModal } from "@/components/Timers/ConfirmModal";
 
 type SeasonTheme = {
   name: string;
   accent: string;
   glow: string;
   gradient: string;
+  image: string;
 };
 
-const SEASON_THEMES: Record<string, SeasonTheme> = {
+const SEASON_THEMES = {
   unearthed: {
     name: "UNEARTHED",
-    accent: "text-yellow-800",
+    accent: "text-yellow-600",
     glow: "bg-yellow-800/20",
     gradient: "from-yellow-900/25 via-red-800/10 to-yellow-800/70",
+    image: "/images/showLive/backgrounds/background_unearthed.png",
   },
   submerged: {
     name: "SUBMERGED",
     accent: "text-cyan-400",
     glow: "bg-cyan-400/20",
     gradient: "from-cyan-500/25 via-blue-500/10 to-black/70",
-  },
-  superpowered: {
-    name: "SUPERPOWERED",
-    accent: "text-fuchsia-400",
-    glow: "bg-fuchsia-500/20",
-    gradient: "from-fuchsia-500/25 via-purple-500/10 to-fuchsia-500/70",
+    image: "/images/showLive/backgrounds/background_submerged.png",
   },
   masterpiece: {
     name: "MASTERPIECE",
     accent: "text-amber-400",
     glow: "bg-amber-400/20",
     gradient: "from-amber-500/25 via-orange-500/10 to-black/70",
+    image: "/images/showLive/backgrounds/background_masterpiece.png",
   },
-};
+} satisfies Record<string, SeasonTheme>;
 
-interface Props {
-  setMode: (mode: AppMode) => void;
-}
+type SeasonKey = keyof typeof SEASON_THEMES;
+type TimerPhase = "idle" | "countdown" | "running" | "paused" | "completed";
+type CountdownValue = number | "LEGO!";
 
-export const RobotGame: React.FC<Props> = ({ setMode }) => {
-  const [timeLeft, setTimeLeft] = useState(ROBOT_GAME_DURATION);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isArmed, setIsArmed] = useState(false);
-  const [completed, setCompleted] = useState(false);
-  const [showExitModal, setShowExitModal] = useState(false);
+const COUNTDOWN_SEQUENCE: CountdownValue[] = [3, 2, 1, "LEGO!"];
 
+export const RobotGame = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const intervalRef = useRef<number | null>(null);
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const countdownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /* ================= TEMPORADA ATUAL ================= */
-  const [currentSeasonKey, setCurrentSeasonKey] = useState<string>(
-    Object.keys(SEASON_THEMES)[0]
-  );
-  const season = useMemo(
-    () => SEASON_THEMES[currentSeasonKey],
-    [currentSeasonKey]
-  );
+  const [timeLeft, setTimeLeft] = useState(ROBOT_GAME_DURATION);
+  const [phase, setPhase] = useState<TimerPhase>("idle");
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [countdownValue, setCountdownValue] = useState<CountdownValue | null>(null);
+  const [currentSeasonKey, setCurrentSeasonKey] = useState<SeasonKey>("unearthed");
 
-  /* ================= TIMER ================= */
+  const season = SEASON_THEMES[currentSeasonKey];
+
+  const clearMainTimer = useCallback(() => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+  }, []);
+
+  const clearCountdownTimer = useCallback(() => {
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    if (countdownTimeoutRef.current) {
+      clearTimeout(countdownTimeoutRef.current);
+      countdownTimeoutRef.current = null;
+    }
+  }, []);
+
+  const resetTimer = useCallback(() => {
+    clearMainTimer();
+    clearCountdownTimer();
+    setTimeLeft(ROBOT_GAME_DURATION);
+    setPhase("idle");
+    setCountdownValue(null);
+    setShowExitModal(false);
+  }, [clearCountdownTimer, clearMainTimer]);
+
+  const goToMenu = useCallback(() => {
+    resetTimer();
+    window.location.href = "/fll/timers";
+  }, [resetTimer]);
+
+  const startCountdown = useCallback(() => {
+    clearMainTimer();
+    clearCountdownTimer();
+    setCountdownValue(COUNTDOWN_SEQUENCE[0]);
+    setPhase("countdown");
+    let index = 0;
+    countdownIntervalRef.current = setInterval(() => {
+      index += 1;
+      if (index < COUNTDOWN_SEQUENCE.length) {
+        setCountdownValue(COUNTDOWN_SEQUENCE[index]);
+        return;
+      }
+      clearCountdownTimer();
+      countdownTimeoutRef.current = setTimeout(() => {
+        setCountdownValue(null);
+        setPhase("running");
+      }, 450);
+    }, 1000);
+  }, [clearCountdownTimer, clearMainTimer]);
+
+  const handleToggle = useCallback(() => {
+    switch (phase) {
+      case "completed":
+        resetTimer();
+        break;
+      case "idle":
+        startCountdown();
+        break;
+      case "paused":
+        setPhase("running");
+        break;
+      case "running":
+        clearMainTimer();
+        setPhase("paused");
+        break;
+    }
+  }, [clearMainTimer, phase, resetTimer, startCountdown]);
+
+  const handleBack = useCallback(() => {
+    if (phase === "running" || phase === "paused" || phase === "countdown") {
+      setShowExitModal(true);
+      return;
+    }
+    goToMenu();
+  }, [goToMenu, phase]);
+
+  const handleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      void containerRef.current?.requestFullscreen();
+      return;
+    }
+    void document.exitFullscreen();
+  }, []);
+
+  const formatTime = useCallback((seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  }, []);
+
   useEffect(() => {
-    if (!isRunning || !isArmed || timeLeft <= 0) return;
-
-    intervalRef.current = window.setInterval(() => {
+    if (phase !== "running") return;
+    timerIntervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          setCompleted(true);
-          setIsRunning(false);
+          clearMainTimer();
+          setPhase("completed");
           return 0;
         }
         return prev - 1;
@@ -85,47 +171,23 @@ export const RobotGame: React.FC<Props> = ({ setMode }) => {
     }, 1000);
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      clearMainTimer();
     };
-  }, [isRunning, isArmed]);
+  }, [clearMainTimer, phase]);
 
-  const handleToggle = () => {
-    if (completed) return handleReset();
+  useEffect(() => {
+    if (phase !== "countdown") return;
+    return () => {
+      clearCountdownTimer();
+    };
+  }, [clearCountdownTimer, phase]);
 
-    if (!isRunning && timeLeft === ROBOT_GAME_DURATION) {
-      setIsArmed(false);
-      setTimeout(() => {
-        setIsArmed(true);
-        setIsRunning(true);
-      }, 1200);
-      return;
-    }
-
-    setIsRunning((v) => !v);
-  };
-
-  const handleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      containerRef.current?.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
-  };
-
-  const handleReset = () => {
-    setIsRunning(false);
-    setIsArmed(false);
-    setCompleted(false);
-    setTimeLeft(ROBOT_GAME_DURATION);
-  };
-
-  const handleBack = () => {
-    if (isRunning) setShowExitModal(true);
-    else setMode(AppMode.MENU);
-  };
-
-  const formatTime = (s: number) =>
-    `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+  useEffect(() => {
+    return () => {
+      clearMainTimer();
+      clearCountdownTimer();
+    };
+  }, [clearCountdownTimer, clearMainTimer]);
 
   const timerColor =
     timeLeft <= 10
@@ -134,82 +196,76 @@ export const RobotGame: React.FC<Props> = ({ setMode }) => {
       ? "text-warning"
       : season.accent;
 
+  const isCountdown = phase === "countdown";
+  const isTimerActive = phase === "running" || phase === "paused";
+
   return (
     <div
       ref={containerRef}
-      className="relative min-h-[100dvh] w-full overflow-hidden bg-black"
+      className="relative min-h-[100dvh] w-full overflow-hidden bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${season.image})` }}
     >
-      {/* Imagem base */}
-      <div
-        className="absolute inset-0 bg-cover bg-center scale-110 animate-slow-zoom"
-        style={{ backgroundImage: "url(/images/robot-arena.jpg)" }}
-      />
-      {/* Profundidade */}
       <div className="absolute inset-0 backdrop-blur-[2px]" />
-      {/* Gradiente da temporada */}
       <div
         key={currentSeasonKey}
-        className={`absolute inset-0 bg-gradient-to-br ${season.gradient}
-  transition-opacity duration-700 ease-in-out`}
+        className={`absolute inset-0 bg-gradient-to-br ${season.gradient} transition-opacity duration-700 ease-in-out`}
       />
-      {/* Grid técnico contextual */}
-      <div
-        className="
-          absolute inset-0 opacity-[0.045]
-          bg-[linear-gradient(to_right,rgba(255,255,255,0.4)_1px,transparent_1px),
-              linear-gradient(to_bottom,rgba(255,255,255,0.4)_1px,transparent_1px)]
-          bg-[size:48px_48px]
-          animate-grid-drift
-        "
-      />
-      {/* Glow central por temporada */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div
           key={`glow-${currentSeasonKey}`}
           className={`
-      w-[60vw] h-[60vw] max-w-[700px] max-h-[700px]
-      rounded-full blur-[160px]
-      animate-pulse-slow
-      transition-all duration-700 ease-out
-      ${season.glow}
-    `}
+            h-[60vw] w-[60vw] max-h-[700px] max-w-[700px]
+            rounded-full blur-[160px]
+            animate-pulse-slow
+            transition-all duration-700 ease-out
+            ${season.glow}
+          `}
         />
       </div>
-      {/* Vinheta */}
-      <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/40 to-black/85" />
-
-      {/* ================= MODAIS ================= */}
+      <div className="absolute inset-0 bg-black/75" />
       <ConfirmModal
         isOpen={showExitModal}
         onCancel={() => setShowExitModal(false)}
-        onConfirm={() => setMode(AppMode.MENU)}
+        onConfirm={goToMenu}
       />
-
       <CompletionModal
-        isOpen={completed}
+        isOpen={phase === "completed"}
         title="Fim de Round"
         subTitle={`Temporada ${season.name}`}
-        onReset={handleReset}
-        onMenu={() => setMode(AppMode.MENU)}
+        onReset={resetTimer}
+        onMenu={goToMenu}
       />
-
-      {/* ================= TIMER ================= */}
-      <main className="relative z-10 flex items-center justify-center min-h-[100dvh]">
-        <div className="text-center">
+      <main className="relative z-10 flex min-h-[100dvh] items-center justify-center">
+        <div className="relative text-center">
           <div
             className={`font-mono font-extrabold tracking-tight tabular-nums
             drop-shadow-[0_0_90px_rgba(0,0,0,0.95)]
             text-[5.5rem] sm:text-[7.5rem] md:text-[9.5rem]
-            transition-colors duration-300 ${timerColor}`}
+            transition-all duration-300 ${timerColor}
+            ${isCountdown ? "opacity-25 blur-[1px] scale-95" : ""}`}
+            aria-live="polite"
           >
             {formatTime(timeLeft)}
           </div>
+          {isCountdown && countdownValue !== null && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div
+                className="
+                  select-none font-black uppercase tracking-[0.22em]
+                  text-6xl sm:text-8xl md:text-9xl
+                  text-white drop-shadow-[0_0_30px_rgba(0,0,0,0.95)]
+                  animate-pulse
+                "
+                aria-live="assertive"
+              >
+                {countdownValue}
+              </div>
+            </div>
+          )}
         </div>
       </main>
-
-      {/* CONTROLES */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-black/60 backdrop-blur border-t border-white/10 md:opacity-0 md:hover:opacity-100 transition-all">
-        <div className="flex items-center justify-center gap-6 py-4 md:py-6 max-w-md mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-black/60 backdrop-blur transition-all md:opacity-0 md:hover:opacity-100">
+        <div className="mx-auto flex max-w-md items-center justify-center gap-6 py-4 md:py-6">
           <button
             onClick={handleBack}
             className="btn btn-soft btn-circle btn-sm"
@@ -220,12 +276,21 @@ export const RobotGame: React.FC<Props> = ({ setMode }) => {
           <button
             onClick={handleToggle}
             className="btn btn-primary btn-circle btn-lg"
-            aria-label={isRunning ? "Pausar timer" : "Iniciar timer"}
+            aria-label={
+              phase === "running"
+                ? "Pausar timer"
+                : phase === "paused"
+                ? "Retomar timer"
+                : phase === "countdown"
+                ? "Timer em contagem"
+                : "Iniciar timer"
+            }
+            disabled={phase === "countdown"}
           >
-            {isRunning ? <Pause size={24} /> : <Play size={24} />}
+            {isTimerActive ? <Pause size={24} /> : <Play size={24} />}
           </button>
           <button
-            onClick={handleReset}
+            onClick={resetTimer}
             className="btn btn-soft btn-circle btn-sm"
             aria-label="Resetar timer"
           >
@@ -239,18 +304,15 @@ export const RobotGame: React.FC<Props> = ({ setMode }) => {
             <ArrowUpRightFromSquare size={20} />
           </button>
         </div>
-
         <select
           value={currentSeasonKey}
-          onChange={(e) => setCurrentSeasonKey(e.target.value)}
+          onChange={(e) => setCurrentSeasonKey(e.target.value as SeasonKey)}
           className="
-    absolute top-2 right-2 z-30
-    bg-black/60 backdrop-blur
-    text-sm text-white/80
-    rounded-lg px-3 py-1.5
-    border border-white/20
-    focus:outline-none focus:ring-2 focus:ring-white/30
-  "
+            absolute right-2 top-2 z-30
+            rounded-lg border border-white/20 bg-black/60 px-3 py-1.5
+            text-sm text-white/80 backdrop-blur
+            focus:outline-none focus:ring-2 focus:ring-white/30
+          "
         >
           {Object.entries(SEASON_THEMES).map(([key, theme]) => (
             <option key={key} value={key} className="bg-black">

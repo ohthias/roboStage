@@ -20,7 +20,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart }) => {
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full mt-4">
         {/* Header */}
         <div className="w-full lg:w-1/3 h-full">
-          <div className="relative overflow-hidden rounded-3xl border border-secondary/20 bg-gradient-to-br from-secondary/10 via-base-100 to-primary/10 p-6 md:p-8 shadow-sm">
+          <div className="relative overflow-hidden rounded-3xl border border-secondary/20 bg-gradient-to-br from-secondary/10 via-base-100 to-primary/10 p-6 md:p-8 shadow-sm h-full">
             <div className="absolute -top-12 -right-12 w-36 h-36 rounded-full bg-secondary/20 blur-2xl" />
             <div className="absolute -bottom-16 -left-10 w-40 h-40 rounded-full bg-primary/20 blur-2xl" />
 
@@ -38,32 +38,12 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart }) => {
               <p className="text-sm md:text-base text-base-content/70 leading-relaxed max-w-xl">
                 Customize seu treino e comece agora. Rápido, divertido e eficaz.
               </p>
-
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-base-200/80 bg-base-200/70 backdrop-blur-sm p-3">
-                  <p className="text-[10px] md:text-xs font-bold uppercase tracking-wide text-base-content/50">
-                    Modo
-                  </p>
-                  <p className="text-sm md:text-base font-extrabold text-base-content mt-1">
-                    Treino rápido
-                  </p>
-                </div>
-                <div className="rounded-xl border border-base-200/80 bg-base-200/70 backdrop-blur-sm p-3">
-                  <p className="text-[10px] md:text-xs font-bold uppercase tracking-wide text-base-content/50">
-                    Foco
-                  </p>
-                  <p className="text-sm md:text-base font-extrabold text-base-content mt-1">
-                    Performance
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
         {/* Bento Grid Layout */}
-        <div className="w-2/3 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-          {/* Category Selection - Large Card */}
+        <div className="w-full lg:w-2/3 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           <div className="lg:col-span-2 bg-base-200 rounded-2xl p-6 border border-base-300 shadow-sm hover:shadow-md transition-shadow">
             <label className="flex items-center gap-2 text-sm font-bold text-base-content mb-5">
               <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">

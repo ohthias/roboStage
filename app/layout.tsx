@@ -16,35 +16,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://robostage.com.br"),
 
   title: {
-    default: "RoboStage | Plataforma para Competições de Robótica",
+    default: "RoboStage",
     template: "%s | RoboStage",
   },
 
   description:
     "RoboStage é uma plataforma para gestão de competições de robótica, equipes, rankings, transmissões ao vivo e eventos educacionais.",
-
-  keywords: [
-    "RoboStage",
-    "robótica",
-    "robótica educacional",
-    "FLL",
-    "FIRST LEGO League",
-    "torneios de robótica",
-    "ranking de equipes",
-    "showlive",
-    "innolab",
-    "competições STEM",
-    "programação",
-    "educação tecnológica",
-  ],
-
-  creator: "RoboStage",
-  publisher: "RoboStage",
-
-  alternates: {
-    canonical: "https://robostage.com.br",
-  },
-
   openGraph: {
     type: "website",
     locale: "pt_BR",

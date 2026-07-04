@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
@@ -15,6 +15,7 @@ import {
   Trophy,
   X,
   Cuboid,
+  ChevronUp,
 } from "lucide-react";
 
 import Logo from "./Logo";
@@ -42,6 +43,7 @@ const seasons: Season[] = [
 const mainLinks = [
   { href: "/about", label: "Sobre" },
   { href: "/showlive", label: "ShowLive" },
+  { href: "/news", label: "Notícias" },
   { href: "/help", label: "Ajuda" },
 ];
 
@@ -59,6 +61,8 @@ const accessLinks: any[] = [
 export function Navbar() {
   const params = useParams();
   const pathname = usePathname();
+  const [scoreOpen, setScoreOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
 
   const competition =
     typeof params?.competicao === "string" ? params.competicao : undefined;
@@ -112,10 +116,10 @@ export function Navbar() {
     `${baseLink} ${active ? activeLink : mutedLink}`;
 
   const mobileItemClass = (active: boolean) =>
-    `flex w-full items-start gap-3 rounded-xl px-3 py-3 transition-all duration-200 ${
+    `flex w-full items-start gap-3 rounded-xl px-3 py-2 transition-all duration-200 ${
       active
-        ? "bg-base-200 text-base-content shadow-sm"
-        : "hover:bg-base-200/80 hover:shadow-sm"
+        ? "bg-primary/10 text-base-content shadow-[4px_4px_0_theme(colors.base-300))]"
+        : "hover:bg-base-200/80 hover:shadow-[4px_4px_0_theme(colors.primary))]"
     }`;
 
   const homeHref = competition ? `/${competition}` : "/";
@@ -164,7 +168,9 @@ export function Navbar() {
                         href={competitionItem.href}
                         className="rounded-lg px-3 py-2 transition-all duration-200 hover:bg-base-200/80"
                       >
-                        <span>{<competitionItem.icon className="opacity-60" />}</span>
+                        <span>
+                          {<competitionItem.icon className="opacity-60" />}
+                        </span>
                         {competitionItem.label}
                       </Link>
                     </li>
@@ -411,7 +417,17 @@ export function Navbar() {
 
         <aside className="flex min-h-full w-80 max-w-[85vw] flex-col border-r border-base-300/60 bg-base-100">
           <div className="flex items-center justify-between border-b border-base-300/60 px-4 py-4">
-            <Logo logoSize="md" redirectIndex={true} />
+            <div className="flex items-center gap-1">
+              <Logo logoSize="md" redirectIndex={true} />
+              {competitionLabel && (
+                <>
+                  <div className="divider divider-horizontal divider-base-300/60" />
+                  <span className="inline-flex text-sm font-bold italic uppercase tracking-wide md:hidden text-base-content/70">
+                    {competitionLabel}
+                  </span>
+                </>
+              )}
+            </div>
             <label
               htmlFor="navbar-drawer"
               className="btn btn-ghost btn-square btn-sm transition-transform duration-200 hover:scale-105"
@@ -424,193 +440,178 @@ export function Navbar() {
           <div className="overflow-y-auto p-4">
             {showCompetitionNav && nav ? (
               <div className="space-y-5">
-                <div className="rounded-2xl border border-base-300/60 bg-base-200/60 p-4 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] opacity-60">
-                    Competição atual
-                  </p>
-                  <p className="mt-1 text-lg font-bold italic uppercase">
-                    {competitionLabel}
-                  </p>
-                  <p className="mt-1 text-sm opacity-70">
-                    Navegue entre pontuador, ferramentas e atalhos.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="px-1 text-xs font-semibold uppercase tracking-[0.12em] opacity-60">
-                    Navegação
-                  </p>
-
-                  <div className="mt-2 space-y-3">
-                    {nav.scorePath && (
-                      <details className="collapse collapse-arrow rounded-2xl border border-base-300/60 bg-base-100 shadow-sm">
-                        <summary className="collapse-title min-h-0 rounded-2xl px-4 py-3 text-base font-semibold hover:bg-base-200/80">
-                          <span className="flex items-center gap-2">
-                            <Trophy size={16} />
-                            Pontuador
-                          </span>
-                        </summary>
-
-                        <div className="collapse-content px-2 pb-2">
-                          <ul className="space-y-1">
-                            {seasons.map((season) => {
-                              const Icon = season.icon;
-                              const href = `/${competition}/${nav.scorePath}/${season.key}`;
-                              const active = isActive(href);
-
-                              return (
-                                <li key={season.key}>
-                                  <Link
-                                    href={href}
-                                    onClick={closeDrawer}
-                                    className={mobileItemClass(active)}
-                                    aria-current={active ? "page" : undefined}
-                                  >
-                                    <Icon
-                                      size={18}
-                                      className="mt-0.5 shrink-0 opacity-60"
-                                    />
-                                    <span className="flex flex-col">
-                                      <span
-                                        className={`font-medium ${
-                                          active ? "text-primary" : ""
-                                        }`}
-                                      >
-                                        {season.name}
-                                      </span>
-                                      <span className="text-xs opacity-60">
-                                        {season.period}
-                                      </span>
-                                    </span>
-                                  </Link>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </div>
-                      </details>
-                    )}
-
-                    {competition === "fll" && (
-                      <Link
-                        href="/fll/quickbrick"
-                        onClick={closeDrawer}
-                        className={mobileItemClass(isActive("/fll/quickbrick"))}
-                        aria-current={
-                          isActive("/fll/quickbrick") ? "page" : undefined
-                        }
-                      >
-                        <Cuboid
-                          size={18}
-                          className="mt-0.5 shrink-0 opacity-60"
-                        />
-                        <span className="flex flex-col">
-                          <span className="font-medium">QuickBrick Studio</span>
-                          <span className="text-xs opacity-60">
-                            Editor e atalho da FLL
-                          </span>
+                <div className="mt-2 space-y-3">
+                  {nav.scorePath && (
+                    <details
+                      className="collapse rounded-2xl hover:shadow-[4px_4px_0_theme(colors.primary))] transition hover:bg-base-200"
+                      open={scoreOpen}
+                      onToggle={(event) =>
+                        setScoreOpen(event.currentTarget.open)
+                      }
+                    >
+                      <summary className="collapse-title min-h-0 rounded-2xl px-4 py-3 text-base font-semibold">
+                        <span className="flex items-center gap-2">
+                          <Trophy size={16} className="shrink-0 text-base-content/70" />
+                          Pontuador
+                          {scoreOpen ? (
+                            <ChevronUp size={14} className="ml-auto opacity-60" />
+                          ) : (
+                            <ChevronDown size={14} className="ml-auto opacity-60" />
+                          )}
                         </span>
-                      </Link>
-                    )}
+                      </summary>
 
-                    {nav.menu.length > 0 && (
-                      <details className="collapse collapse-arrow rounded-2xl border border-base-300/60 bg-base-100 shadow-sm">
-                        <summary className="collapse-title min-h-0 rounded-2xl px-4 py-3 text-base font-semibold hover:bg-base-200/80">
-                          <span className="flex items-center gap-2">
-                            <ToolCase size={16} />
-                            Ferramentas
-                          </span>
-                        </summary>
+                      <div className="collapse-content px-2 pb-2">
+                        <ul className="space-y-1">
+                          {seasons.map((season) => {
+                            const Icon = season.icon;
+                            const href = `/${competition}/${nav.scorePath}/${season.key}`;
+                            const active = isActive(href);
 
-                        <div className="collapse-content px-2 pb-2">
-                          <ul className="space-y-1">
-                            {nav.menu.map((item) => {
-                              const Icon = item.icon;
-                              const href = `/${competition}/${item.path}`;
-                              const active = isActive(href);
-
-                              return (
-                                <li key={item.path}>
-                                  <Link
-                                    href={href}
-                                    onClick={closeDrawer}
-                                    className={mobileItemClass(active)}
-                                    aria-current={active ? "page" : undefined}
-                                  >
-                                    <Icon
-                                      size={18}
-                                      className="mt-0.5 shrink-0 opacity-60"
-                                    />
-                                    <span className="flex flex-col">
-                                      <span
-                                        className={`font-medium ${
-                                          active ? "text-primary" : ""
-                                        }`}
-                                      >
-                                        {item.nome}
-                                      </span>
-                                      <span className="text-xs opacity-60">
-                                        {item.description || "Ferramenta"}
-                                      </span>
+                            return (
+                              <li key={season.key}>
+                                <Link
+                                  href={href}
+                                  onClick={closeDrawer}
+                                  className={mobileItemClass(active)}
+                                  aria-current={active ? "page" : undefined}
+                                >
+                                  <Icon
+                                    size={18}
+                                    className="mt-0.5 shrink-0 opacity-60"
+                                  />
+                                  <span className="flex flex-col">
+                                    <span
+                                      className={`font-medium ${
+                                        active ? "text-primary" : ""
+                                      }`}
+                                    >
+                                      {season.name}
                                     </span>
-                                  </Link>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </div>
-                      </details>
-                    )}
-                  </div>
+                                    <span className="text-xs opacity-60">
+                                      {season.period}
+                                    </span>
+                                  </span>
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    </details>
+                  )}
+
+                  {competition === "fll" && (
+                    <Link
+                      href="/fll/quickbrick"
+                      onClick={closeDrawer}
+                      className={mobileItemClass(isActive("/fll/quickbrick"))}
+                      aria-current={
+                        isActive("/fll/quickbrick") ? "page" : undefined
+                      }
+                    >
+                      <Cuboid
+                        size={18}
+                        className="mt-0.5 shrink-0 opacity-60"
+                      />
+                      <span className="flex flex-col">
+                        <span className="font-medium">QuickBrick Studio</span>
+                        <span className="text-xs opacity-60">
+                          Editor e atalho da FLL
+                        </span>
+                      </span>
+                    </Link>
+                  )}
+
+                  {nav.menu.length > 0 && (
+                    <details
+                      className="collapse rounded-2xl hover:shadow-[4px_4px_0_theme(colors.primary))] transition hover:bg-base-200"
+                      open={toolsOpen}
+                      onToggle={(event) =>
+                        setToolsOpen(event.currentTarget.open)
+                      }
+                    >
+                      <summary className="collapse-title min-h-0 rounded-2xl px-4 py-3 text-base font-semibold">
+                        <span className="flex items-center gap-2">
+                          <ToolCase size={16} className="shrink-0 text-base-content/70" />
+                          Ferramentas
+                          {toolsOpen ? (
+                            <ChevronUp size={14} className="ml-auto opacity-60" />
+                          ) : (
+                            <ChevronDown size={14} className="ml-auto opacity-60" />
+                          )}
+                        </span>
+                      </summary>
+
+                      <div className="collapse-content px-2 pb-2">
+                        <ul className="space-y-1">
+                          {nav.menu.map((item) => {
+                            const Icon = item.icon;
+                            const href = `/${competition}/${item.path}`;
+                            const active = isActive(href);
+
+                            return (
+                              <li key={item.path}>
+                                <Link
+                                  href={href}
+                                  onClick={closeDrawer}
+                                  className={mobileItemClass(active)}
+                                  aria-current={active ? "page" : undefined}
+                                >
+                                  <Icon
+                                    size={18}
+                                    className="mt-0.5 shrink-0 opacity-60"
+                                  />
+                                  <span className="flex flex-col">
+                                    <span
+                                      className={`font-medium ${
+                                        active ? "text-primary" : ""
+                                      }`}
+                                    >
+                                      {item.nome}
+                                    </span>
+                                    <span className="text-xs opacity-60">
+                                      {item.description || "Ferramenta"}
+                                    </span>
+                                  </span>
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    </details>
+                  )}
                 </div>
               </div>
             ) : (
-              <div className="space-y-5">
-                <div className="rounded-2xl border border-base-300/60 bg-base-200/60 p-4 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] opacity-60">
-                    Navegação principal
-                  </p>
-                  <p className="mt-1 text-lg font-bold">Explorar RoboStage</p>
-                  <p className="mt-1 text-sm opacity-70">
-                    Acesse as páginas institucionais e os atalhos da plataforma.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="px-1 text-xs font-semibold uppercase tracking-[0.12em] opacity-60">
-                    Navegação
-                  </p>
-
-                  <div className="mt-2 space-y-2">
-                    {mainLinks.map((item) => {
-                      const active = isActive(item.href);
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={closeDrawer}
-                          className={mobileItemClass(active)}
-                          aria-current={active ? "page" : undefined}
+              <div className="space-y-2">
+                {mainLinks.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={closeDrawer}
+                      className={mobileItemClass(active)}
+                      aria-current={active ? "page" : undefined}
+                    >
+                      <span className="flex flex-col">
+                        <span
+                          className={`font-medium ${
+                            active ? "text-primary" : ""
+                          }`}
                         >
-                          <span className="flex flex-col">
-                            <span
-                              className={`font-medium ${
-                                active ? "text-primary" : ""
-                              }`}
-                            >
-                              {item.label}
-                            </span>
-                            <span className="text-xs opacity-60">
-                              Página institucional
-                            </span>
-                          </span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
+                          {item.label}
+                        </span>
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
             )}
+
+            <div className="divider" />
 
             <div className="mt-6">
               <p className="px-1 text-xs font-semibold uppercase tracking-[0.12em] opacity-60">

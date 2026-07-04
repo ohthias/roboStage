@@ -1,18 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateSession } from "@/utils/supabase/middleware";
 
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (
-    pathname === "/robots.txt" ||
-    pathname === "/sitemap.xml" ||
-    pathname.startsWith("/sitemap")
-  ) {
-    return NextResponse.next();
-  }
-
-  return updateSession(request);
+  return NextResponse.next();
 }
 
 export const config = {

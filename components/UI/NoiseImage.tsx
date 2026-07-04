@@ -51,7 +51,7 @@ export interface NoiseImageProps {
 }
 
 // ─── Componente ────────────────────────────────────────────────────────────
-export function NoiseImage({
+export default function NoiseImage({
   variant = "static",
   frequency = 0.75,
   octaves = 4,
@@ -172,5 +172,3 @@ function HoverNoiseLayer({
     />
   );
 }
-
-export default NoiseImage;

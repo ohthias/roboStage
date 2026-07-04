@@ -142,14 +142,18 @@ export function Footer() {
             </ul>
             <div className="mt-6">
               <h3 className="footer-title">Legal</h3>
-              <a
-                href="https://github.com/ohthias/roboStage/wiki/Pol%C3%ADtica-de-Privacidade"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link link-hover text-sm"
-              >
-                Política de Privacidade
-              </a>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link href="/legal/terms" className="link link-hover">
+                    Termos de Uso
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/legal/privacy" className="link link-hover">
+                    Política de Privacidade
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
         </div>

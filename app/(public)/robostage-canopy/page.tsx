@@ -1,5 +1,3 @@
-"use client";
-
 import CurvedLoop from "@/components/UI/CurvedLoop/CurvedLoop";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
@@ -12,6 +10,12 @@ import {
   Users,
   ShieldCheck,
 } from "lucide-react";
+import Link from "next/link";
+
+export const metadata = {
+  title: "FIRST® CANOPY™",
+  description: "Descubra a FIRST® CANOPY™, a temporada 2026-2027 da FIRST, inspirada pela natureza e impulsionada pela inovação. Explore programas para todas as idades, desde o BIOGLOW™ para crianças até o BIOCORE™ para adolescentes, e faça parte de uma comunidade global que transforma vidas através da robótica e do trabalho em equipe.",
+};
 
 const programs = [
   {
@@ -197,12 +201,12 @@ export default function Page() {
               do trabalho em equipe.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-              <button className="btn btn-primary rounded-2xl px-8" onClick={() => window.location.href = "/auth/signup"}>
+              <Link href="/auth/signup" className="btn btn-primary rounded-2xl px-8">
                 Criar conta grátis
-              </button>
-              <button className="btn btn-ghost text-neutral-content rounded-2xl px-8" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+              </Link>
+              <Link href="/" className="btn btn-ghost text-neutral-content rounded-2xl px-8">
                 Voltar para o Início
-              </button>
+              </Link>
             </div>
           </div>
         </section>

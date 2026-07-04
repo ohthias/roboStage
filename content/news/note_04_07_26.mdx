@@ -1,0 +1,55 @@
+---
+
+title: "Dados de usuários foram removidos durante a migração"
+description: "A mudança na arquitetura do banco de dados tornou inviável a migração das informações da antiga infraestrutura."
+date: "2026-07-04"
+category: "Atualizações"
+tags:
+- Plataforma
+- Usuários
+featured: false
+draft: false
+
+---
+
+Durante a migração da infraestrutura do RoboStage, **todos os dados relacionados às contas de usuários foram removidos**.
+
+Essa decisão foi necessária devido à reconstrução completa da arquitetura do banco de dados e da organização das informações utilizadas pelo backend.
+
+## Quais dados foram afetados?
+
+Os dados removidos eram exclusivamente aqueles associados à área autenticada da plataforma, incluindo informações utilizadas por serviços como:
+
+* acesso à conta;
+* LabTest;
+* ShowLive;
+* InnoLab;
+* StyleLab.
+
+No momento da remoção, a quantidade de informações armazenadas ainda era relativamente pequena, já que esses serviços estavam em fase inicial de utilização.
+
+## Por que os dados não foram migrados?
+
+A nova infraestrutura foi projetada com uma organização completamente diferente da anterior.
+
+Durante o desenvolvimento, ficou claro que adaptar os dados existentes para o novo modelo exigiria diversas conversões e exceções que acabariam comprometendo a qualidade da nova arquitetura.
+
+Em vez de transportar uma estrutura que já apresentava limitações, optei por iniciar essa nova fase com um banco de dados limpo, organizado e preparado para receber as próximas funcionalidades da plataforma.
+
+Essa decisão também permite simplificar o backend, melhorar o desempenho e facilitar a manutenção do sistema no futuro.
+
+## Será necessário criar uma nova conta?
+
+Sim.
+
+Quando o sistema de usuários voltar ao ar, será necessário realizar um novo cadastro, já que as contas anteriores não existirão mais.
+
+Como a plataforma ainda estava em processo de expansão e havia poucos dados armazenados, este foi o melhor momento para realizar essa mudança com o menor impacto possível.
+
+## Olhando para frente
+
+Embora essa decisão possa causar um pequeno inconveniente, ela representa um passo importante para a evolução do RoboStage.
+
+A nova infraestrutura foi planejada para oferecer uma base mais segura, organizada e escalável, permitindo que os próximos recursos sejam desenvolvidos de forma muito mais consistente do que era possível anteriormente.
+
+Agradeço a compreensão de todos durante esse processo de transição. O objetivo é que o retorno do sistema de usuários aconteça com uma experiência muito melhor do que a anterior.

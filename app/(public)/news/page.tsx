@@ -5,6 +5,11 @@ import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
 import Header from "@/components/UI/Header";
 
+export const metadata = {
+  title: "Notícias",
+  description: "Fique por dentro das últimas novidades, atualizações e anúncios importantes relacionados à nossa plataforma. Acompanhe as notícias para se manter informado sobre os recursos mais recentes, melhorias e eventos relevantes.",
+};
+
 export default function NewsPage() {
   const news = getAllNews();
 

@@ -1,0 +1,59 @@
+---
+
+title: "Serviço de usuários temporariamente indisponível"
+description: "O sistema de usuários foi removido temporariamente enquanto acontece uma migração completa da infraestrutura e do backend."
+date: "2026-07-03"
+category: "Atualizações"
+tags:
+  - Plataforma
+  - Backend
+  - Infraestrutura
+featured: false
+draft: false
+
+---
+
+Nos últimos meses, o RoboStage cresceu muito mais do que eu imaginava quando comecei o projeto. Com esse crescimento, algumas decisões técnicas que faziam sentido no início acabaram se tornando um obstáculo para continuar evoluindo a plataforma.
+
+Por isso, o **serviço de usuários foi removido temporariamente**.
+
+Essa decisão faz parte de uma migração completa da infraestrutura responsável por autenticação, armazenamento de dados e comunicação com o backend.
+
+## Por que isso aconteceu?
+
+Até agora, toda a estrutura utilizava o Supabase. Embora ele tenha atendido muito bem nas primeiras versões, conforme novas funcionalidades foram surgindo, as regras de **Row Level Security (RLS)** começaram a deixar o sistema cada vez mais complexo.
+
+Grande parte do backend precisou ser construída pensando em contornar essas regras, o que acabou tornando o código difícil de manter, pouco organizado e, principalmente, menos otimizado do que eu gostaria.
+
+Em vez de continuar acumulando adaptações, decidi aproveitar este momento para reconstruir essa parte da plataforma da maneira correta.
+
+## O que está sendo feito?
+
+A migração envolve muito mais do que trocar um banco de dados.
+
+Entre as mudanças estão:
+
+* reorganização completa da estrutura do backend;
+* nova arquitetura para autenticação;
+* revisão das permissões de acesso;
+* melhorias de desempenho;
+* simplificação da comunicação entre frontend e backend;
+* preparação da plataforma para futuras funcionalidades.
+
+A ideia é que toda essa base fique muito mais limpa, organizada e fácil de evoluir nos próximos anos.
+
+## Quando o serviço volta?
+
+A meta é que o sistema de usuários esteja novamente disponível **até o lançamento do desafio BioGlow da FIRST LEGO League, em 4 de agosto**.
+
+Prefiro não prometer uma data exata antes de tudo estar realmente pronto, mas esse é o objetivo que estou seguindo durante o desenvolvimento.
+
+## Obrigado pela compreensão
+
+O RoboStage continua sendo desenvolvido por apenas uma pessoa.
+
+Mesmo contando com o apoio de algumas equipes de robótica para testar novas funcionalidades e sugerir melhorias, todo o desenvolvimento, infraestrutura, manutenção e planejamento continuam sendo feitos por mim.
+
+Essas mudanças exigem um pouco de paciência agora, mas elas vão permitir que a plataforma cresça de forma muito mais sólida no futuro.
+
+Obrigado por continuar acompanhando e utilizando o RoboStage. 🚀

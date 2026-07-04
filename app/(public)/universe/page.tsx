@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-const supabase = createClient();
 import Logo from "@/components/UI/Logo";
 import { BackgroundStars } from "@/components/UI/BackgroundStars";
 
@@ -22,39 +20,6 @@ export default function UniversePage() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    const trimmedCode = code.trim().toUpperCase();
-    if (!trimmedCode) {
-      setError("Digite um código válido.");
-      return;
-    }
-
-    setLoading(true);
-
-    const { data, error: fetchError } = await supabase
-      .from("public_event_lookup")
-      .select("code_event, code, access_type, event_active")
-      .eq("code", trimmedCode)
-      .maybeSingle();
-
-    if (fetchError || !data) {
-      setError("Código inválido ou evento indisponível.");
-      setLoading(false);
-      return;
-    }
-
-    if (!data.event_active) {
-      setError("Este evento não está ativo.");
-      setLoading(false);
-      return;
-    }
-
-    router.push(`/universe/${data.code_event}/${data.code}`);
-  };
 
   return (
     <div className="relative min-h-screen flex flex-col selection:bg-primary/30">
@@ -112,7 +77,7 @@ export default function UniversePage() {
                   </p>
                 </div>
 
-                <form className="form-control gap-4" onSubmit={handleSubmit}>
+                <form className="form-control gap-4">
                   <div className="relative mb-2">
                     <input
                       type="text"
@@ -142,7 +107,7 @@ export default function UniversePage() {
                   <button
                     className="btn btn-primary btn-lg w-full gap-2"
                     type="submit"
-                    disabled={loading}
+                    disabled
                   >
                     {loading ? (
                       <span className="loading loading-spinner" />

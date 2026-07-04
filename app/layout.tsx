@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
-// @ts-ignore
 import "./globals.css";
-import { UserProvider } from "./context/UserContext";
 import { ToastProvider } from "./context/ToastContext";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -56,9 +54,7 @@ export default function RootLayout({
       <body className={`${roboto.variable} antialiased`}>
         <Analytics />
         <SpeedInsights />
-        <UserProvider>
           <ToastProvider>{children}</ToastProvider>
-        </UserProvider>
       </body>
     </html>
   );

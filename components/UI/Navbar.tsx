@@ -45,15 +45,15 @@ const mainLinks = [
   { href: "/help", label: "Ajuda" },
 ];
 
-const accessLinks = [
-  {
+const accessLinks: any[] = [
+  /*{
     href: "/universe",
     label: "Eventos",
     icon: Earth,
     variant: "outline" as const,
   },
   { href: "/auth/login", label: "Login", variant: "ghost" as const },
-  { href: "/auth/signup", label: "Cadastrar", variant: "primary" as const },
+  { href: "/auth/signup", label: "Cadastrar", variant: "primary" as const },*/
 ];
 
 export function Navbar() {
@@ -345,7 +345,7 @@ export function Navbar() {
 
             <div className="divider divider-horizontal mx-1" />
 
-            {accessLinks.map((item) => {
+            {accessLinks?.map((item) => {
               const active = isActive(item.href);
 
               if (item.variant === "primary") {

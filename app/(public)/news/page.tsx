@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getAllNews } from "@/utils/news";
+import { getAllNews } from "@/utils/institutional/news";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
 import Header from "@/components/UI/Header";

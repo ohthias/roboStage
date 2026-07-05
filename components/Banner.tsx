@@ -1,5 +1,4 @@
 import { Construction } from "lucide-react";
-import Logo from "./UI/Logo";
 
 export default function Banner() {
   return (

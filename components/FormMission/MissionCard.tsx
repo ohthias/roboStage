@@ -1,4 +1,3 @@
-"use client";
 import { SwitchInput } from "./SwitchInput";
 import { RangeInput } from "./RangeInput";
 

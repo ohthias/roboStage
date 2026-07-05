@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Logo from "./UI/Logo";
-import { HERO_CONFIG } from "@/config/hero";
+import { HERO_CONFIG } from "@/utils/competitions/hero";
 import Link from "next/link";
 
 type Competicao = keyof typeof HERO_CONFIG;

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-import { getAllLegalDocuments, getLegalDocument } from "@/utils/legal";
+import { getAllLegalDocuments, getLegalDocument } from "@/utils/institutional/legal";
 
 interface Props {
   params: Promise<{

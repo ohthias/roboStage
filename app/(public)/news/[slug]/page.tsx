@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { getNews } from "@/utils/news";
+import { getNews } from "@/utils/institutional/news";
 
 export default async function Article({
   params,

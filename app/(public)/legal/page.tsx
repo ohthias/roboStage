@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FileText } from "lucide-react";
-import { getAllLegalDocuments } from "@/utils/legal";
+import { getAllLegalDocuments } from "@/utils/institutional/legal";
 import Header from "@/components/UI/Header";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";

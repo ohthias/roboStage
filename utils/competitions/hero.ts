@@ -1,5 +1,3 @@
-// /config/hero.ts
-
 export const HERO_CONFIG = {
   fll: {
     badge: "Onde o LEGO ganham vida",

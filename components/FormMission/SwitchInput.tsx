@@ -1,5 +1,3 @@
-"use client";
-
 export function SwitchInput({
   missionId,
   index,

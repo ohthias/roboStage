@@ -3,7 +3,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-import { getGithubReleases } from "@/utils/github";
+import { getGithubReleases } from "@/utils/institutional/github";
 import Header from "@/components/UI/Header";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";

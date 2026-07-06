@@ -72,6 +72,7 @@ export function Navbar() {
     : undefined;
 
   const isCompetitionRoute = Boolean(competition);
+  const isNotCompetitionRoute = !isCompetitionRoute;
   const isHomePage = pathname === "/";
   const isIndexPage = isCompetitionRoute
     ? pathname === `/${competition}`
@@ -141,7 +142,7 @@ export function Navbar() {
           <div className="flex flex-1 items-center gap-3 lg:flex-none">
             <Logo logoSize="lg" redirectIndex={true} />
             <div className="divider divider-horizontal mx-1 hidden sm:flex" />
-            {isHomePage && (
+            {isNotCompetitionRoute && (
               <div className="dropdown dropdown-start">
                 <button
                   type="button"

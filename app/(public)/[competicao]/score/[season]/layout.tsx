@@ -12,10 +12,10 @@ export async function generateMetadata(
   const { season } = await params;
 
   const seasonFormatted =
-    season.charAt(0).toUpperCase() + season.slice(1);
+    season.toUpperCase();
 
   return {
-    title: `${seasonFormatted} - FLL Score`,
+    title: `${seasonFormatted} | RoboStage Score`,
     description: `Pontuador da temporada ${seasonFormatted} da FLL`,
   };
 }
@@ -26,7 +26,7 @@ export default function FllScoreLayout({
   children: React.ReactNode;
 }) {
   return (
-    <section className="min-h-screen bg-base-100">
+    <section className="min-h-screen bg-base-200">
       {children}
     </section>
   );

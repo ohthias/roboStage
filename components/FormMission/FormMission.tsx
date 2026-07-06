@@ -1,4 +1,3 @@
-"use client";
 import { MissionCard } from "./MissionCard";
 
 export default function FormMission({

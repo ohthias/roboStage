@@ -7,12 +7,12 @@ interface FAQItemProps {
 
 const FAQItem: React.FC<FAQItemProps> = ({ question, answer }) => {
   return (
-    <div className="collapse border-b border-base-200 rounded-none">
+    <div className="collapse border-b border-base-200 rounded-none hover:bg-base-300 transition-colors duration-300 cursor-pointer active:bg-base-300 transition-transform duration-500 [&[open]_svg]:rotate-180">
       <input type="checkbox" />
-      <div className="collapse-title text-base md:text-lg font-semibold">
+      <div className="collapse-title text-base md:text-lg font-semibold transition-all duration-500">
         {question}
       </div>
-      <div className="collapse-content">
+      <div className="collapse-content transition-all duration-500">
         <p className="text-sm md:text-base text-base-content/70 leading-relaxed">
           {answer}
         </p>
@@ -48,17 +48,17 @@ export const FAQSection: React.FC = () => {
   return (
     <section className="py-16 md:py-24 bg-base-200">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10 md:mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl md:text-3xl font-bold bg-secondary text-secondary-content inline-block px-4 py-2">
             Perguntas Frequentes
           </h2>
-          <p className="text-sm md:text-base text-base-content/70 mt-2">
+          <p className="text-sm md:text-base text-base-content/70 mt-4">
             Tire suas dúvidas sobre como o RoboStage pode potencializar os
             resultados da sua equipe.
           </p>
         </div>
 
-        <div className="bg-base-100 rounded-2xl md:rounded-3xl shadow-sm border border-base-300 divide-y divide-base-200">
+        <div className="bg-base-100 shadow-[-10px_-10px_0_theme(colors.accent)] divide-y divide-base-200 border border-base-300">
           {faqs.map((faq, index) => (
             <FAQItem
               key={index}

@@ -71,17 +71,32 @@ export function Footer() {
                 </Link>
               </li>
             </ul>
+          </div>
+
+          {/* Competições */}
+          <div>
+            <h3 className="footer-title">Competições</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/fll" className="link link-hover">
+                  FIRST® LEGO® League
+                </Link>
+              </li>
+            </ul>
+
             <div className="mt-6">
-              <h3 className="footer-title">Atualizações</h3>
-              <p className="text-sm text-base-content/70">
-                Fique por dentro das novidades da plataforma
-              </p>
-              <Link href="/news" className="link link-hover text-sm mt-2 block">
-                Ver notícias
-              </Link>
-              <Link href="/changelog" className="link link-hover text-sm mt-2 block">
-                Ver notas de versão
-              </Link>
+              <h3 className="footer-title">Temporadas FIRST®</h3>
+              <ul className="space-y-2 text-sm">
+                <li className="opacity-70">FIRST® AGE™</li>
+                <li>
+                  <Link
+                    href="/robostage-canopy"
+                    className="link link-hover text-sm"
+                  >
+                    FIRST® CANOPY™
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
 
@@ -105,31 +120,20 @@ export function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
-
-          {/* Competições */}
-          <div>
-            <h3 className="footer-title">Competições</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/fll" className="link link-hover">
-                  FIRST® LEGO® League
-                </Link>
-              </li>
-            </ul>
-
             <div className="mt-6">
-              <h3 className="footer-title">Temporadas FIRST®</h3>
-              <ul className="space-y-2 text-sm">
-                <li className="opacity-70">
-                  FIRST® AGE™
-                </li>
-                <li>
-                  <Link href="/robostage-canopy" className="link link-hover text-sm">
-                    FIRST® CANOPY™
-                  </Link>
-                </li>
-              </ul>
+              <h3 className="footer-title">Atualizações</h3>
+              <p className="text-sm text-base-content/70">
+                Fique por dentro das novidades da plataforma
+              </p>
+              <Link href="/news" className="link link-hover text-sm mt-2 block">
+                Ver notícias
+              </Link>
+              <Link
+                href="/changelog"
+                className="link link-hover text-sm mt-2 block"
+              >
+                Ver notas de versão
+              </Link>
             </div>
           </div>
 
@@ -152,6 +156,19 @@ export function Footer() {
                   <Link href="/legal/privacy" className="link link-hover">
                     Política de Privacidade
                   </Link>
+                </li>
+              </ul>
+            </div>
+            <div className="mt-6">
+              <h3 className="footer-title">Contato</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a
+                    href="mailto:robostage.dev@gmail.com"
+                    className="link link-hover"
+                  >
+                    robostage.dev@gmail.com
+                  </a>
                 </li>
               </ul>
             </div>

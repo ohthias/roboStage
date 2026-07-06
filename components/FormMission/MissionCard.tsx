@@ -1,4 +1,3 @@
-"use client";
 import { SwitchInput } from "./SwitchInput";
 import { RangeInput } from "./RangeInput";
 
@@ -130,7 +129,7 @@ export function MissionCard({
                     {mission.mission}
                   </span>
                   {mission.id !== "GP" && isBadgeEnabled && (
-                    <span className="badge badge-neutral rounded-md badge-outline w-auto text-center badge-sm h-auto">
+                    <span className="badge badge-outline rounded-md w-auto text-center badge-sm h-auto">
                     Pontos: {mainPoints}
                   </span>
                   )}
@@ -159,7 +158,7 @@ export function MissionCard({
                   <p className="mb-2 text-sm sm:text-base flex justify-between items-center">
                     {sub.submission}
                     {isBadgeEnabled && (
-                      <span className="badge badge-neutral rounded-md badge-outline w-auto text-center badge-sm h-auto">
+                      <span className="badge badge-outline rounded-md w-auto text-center badge-sm h-auto">
                         Pontos: {subPoints}
                       </span>
                     )}

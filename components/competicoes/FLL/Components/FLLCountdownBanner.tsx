@@ -77,7 +77,7 @@ export default function FLLCountdownBanner() {
       <div className="relative z-10 flex flex-col items-center justify-between gap-6 px-6 py-6 lg:flex-row">
         <div className="flex items-center justify-center">
           <img
-            src="/images/logos/bioglow_logo.png"
+            src="/images/logos/fll/seasons/bioglow_logo.png"
             alt="BIOGLOW"
             className="h-16 w-auto object-contain md:h-20"
           />

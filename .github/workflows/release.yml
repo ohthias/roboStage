@@ -3,27 +3,27 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      - "*"
 
 permissions:
   contents: write
 
 jobs:
-  release:
+  create_release:
+    if: github.ref != 'refs/tags/v1'
     runs-on: ubuntu-latest
+    name: Create GitHub Release
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Create Release
+        uses: ncipollo/release-action@v1
         with:
-          node-version: 22
-
-      - run: npm ci
-      - run: npm run build
-
-      - uses: ncipollo/release-action@v1
-        with:
-          generateReleaseNotes: true
           allowUpdates: true
-          artifactErrorsFailBuild: true
+          updateOnlyUnreleased: true
+          generateReleaseNotes: true
+          draft: false
+          prerelease: false
+          omitBodyDuringUpdate: false

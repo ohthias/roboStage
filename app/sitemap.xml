@@ -1,228 +1,163 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<!--	created with www.mysitemapgenerator.com	-->
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-	xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+﻿<!-- 	created with www.mysitemapgenerator.com	 -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 	<url>
 		<loc>https://www.robostage.com.br/</loc>
-		<lastmod>2026-07-04T14:54:11+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:30+01:00</lastmod>
 		<priority>1.0</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/index/rectangle.svg</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/index/triangle.svg</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/index/circle.svg</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/index/canopy.webp</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/showlive</loc>
-		<lastmod>2026-07-04T14:54:12+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:31+01:00</lastmod>
 		<priority>1.0</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/showLive/ShowLiveDashboard.png</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll</loc>
-		<lastmod>2026-07-04T14:54:13+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:32+01:00</lastmod>
 		<priority>1.0</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/fll/fll_about.jpg</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/bioglow_logo.png</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/icons/Equipe.svg</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/icons/EquipesIniciantes.svg</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/icons/Tecnicos.svg</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/icons/Organizadores.svg</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/icons/EquipesAvancadas.svg</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/about</loc>
-		<lastmod>2026-07-04T14:54:13+01:00</lastmod>
-		<priority>1.0</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
-	</url>
-	<url>
-		<loc>https://www.robostage.com.br/help</loc>
-		<lastmod>2026-07-04T14:54:13+01:00</lastmod>
-		<priority>1.0</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
-	</url>
-	<url>
-		<loc>https://www.robostage.com.br/fll/quickbrick</loc>
-		<lastmod>2026-07-04T14:54:13+01:00</lastmod>
-		<priority>0.8</priority>
-		<image:image>
-			<image:loc>
-				https://www.robostage.com.br/_next/image?url=%2Fimages%2FQuickBrick%2FEstrategia.png&amp;w=640&amp;q=75</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>
-				https://www.robostage.com.br/_next/image?url=%2Fimages%2FQuickBrick%2FHeatmap.png&amp;w=640&amp;q=75</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>
-				https://www.robostage.com.br/_next/image?url=%2Fimages%2FQuickBrick%2FSharksSimulator.png&amp;w=640&amp;q=75</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>
-				https://www.robostage.com.br/_next/image?url=%2Fimages%2FQuickBrick%2FMatrizRisco.png&amp;w=640&amp;q=75</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>
-				https://www.robostage.com.br/_next/image?url=%2Fimages%2FQuickBrick%2FMatrizSWOT.png&amp;w=640&amp;q=75</image:loc>
-		</image:image>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
-	</url>
-	<url>
-		<loc>https://www.robostage.com.br/universe</loc>
-		<lastmod>2026-07-04T14:54:13+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:33+01:00</lastmod>
 		<priority>1.0</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/news</loc>
-		<lastmod>2026-07-04T14:54:13+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:34+01:00</lastmod>
 		<priority>1.0</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
+	</url>
+	<url>
+		<loc>https://www.robostage.com.br/help</loc>
+		<lastmod>2026-07-06T17:01:34+01:00</lastmod>
+		<priority>1.0</priority>
+	</url>
+	<url>
+		<loc>https://www.robostage.com.br/fll/quickbrick</loc>
+		<lastmod>2026-07-06T17:01:34+01:00</lastmod>
+		<priority>0.8</priority>
+	</url>
+	<url>
+		<loc>https://www.robostage.com.br/universe</loc>
+		<lastmod>2026-07-06T17:01:34+01:00</lastmod>
+		<priority>1.0</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/robostage-canopy</loc>
-		<lastmod>2026-07-04T14:54:13+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:34+01:00</lastmod>
 		<priority>1.0</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
+	</url>
+	<url>
+		<loc>https://www.robostage.com.br/changelog</loc>
+		<lastmod>2026-07-06T17:01:34+01:00</lastmod>
+		<priority>1.0</priority>
+	</url>
+	<url>
+		<loc>https://www.robostage.com.br/legal/terms</loc>
+		<lastmod>2026-07-06T17:01:34+01:00</lastmod>
+		<priority>0.8</priority>
+	</url>
+	<url>
+		<loc>https://www.robostage.com.br/legal/privacy</loc>
+		<lastmod>2026-07-06T17:01:34+01:00</lastmod>
+		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/score/unearthed</loc>
-		<lastmod>2026-07-04T14:54:15+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:35+01:00</lastmod>
 		<priority>0.6</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/score/submerged</loc>
-		<lastmod>2026-07-04T14:54:15+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:35+01:00</lastmod>
 		<priority>0.6</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/score/masterpiece</loc>
-		<lastmod>2026-07-04T14:54:15+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:35+01:00</lastmod>
 		<priority>0.6</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/flash-qa</loc>
-		<lastmod>2026-07-04T14:54:15+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:35+01:00</lastmod>
 		<priority>0.8</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/docs</loc>
-		<lastmod>2026-07-04T14:54:15+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:35+01:00</lastmod>
 		<priority>0.8</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/timers</loc>
-		<lastmod>2026-07-04T14:54:15+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:35+01:00</lastmod>
 		<priority>0.8</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
+	</url>
+	<url>
+		<loc>https://www.robostage.com.br/news/legal</loc>
+		<lastmod>2026-07-06T17:01:41+01:00</lastmod>
+		<priority>0.8</priority>
+	</url>
+	<url>
+		<loc>https://www.robostage.com.br/news/note_04_07_26</loc>
+		<lastmod>2026-07-06T17:01:41+01:00</lastmod>
+		<priority>0.8</priority>
+	</url>
+	<url>
+		<loc>https://www.robostage.com.br/news/versionamento</loc>
+		<lastmod>2026-07-06T17:01:41+01:00</lastmod>
+		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/news/note_03_07_26</loc>
-		<lastmod>2026-07-04T14:54:20+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:41+01:00</lastmod>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/news/robostage</loc>
-		<lastmod>2026-07-04T14:54:20+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:41+01:00</lastmod>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/quickbrick/estrategia</loc>
-		<lastmod>2026-07-04T14:54:21+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:42+01:00</lastmod>
 		<priority>0.6</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/quickbrick/heatmap</loc>
-		<lastmod>2026-07-04T14:54:21+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:42+01:00</lastmod>
 		<priority>0.6</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/quickbrick/sharks-simulator</loc>
-		<lastmod>2026-07-04T14:54:21+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:42+01:00</lastmod>
 		<priority>0.6</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/quickbrick/matriz-de-risco</loc>
-		<lastmod>2026-07-04T14:54:21+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:42+01:00</lastmod>
 		<priority>0.6</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/quickbrick/swot</loc>
-		<lastmod>2026-07-04T14:54:21+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:42+01:00</lastmod>
 		<priority>0.6</priority>
-		<image:image>
-			<image:loc>https://www.robostage.com.br/images/logos/Icone.png</image:loc>
-		</image:image>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/timers/robot-game</loc>
-		<lastmod>2026-07-04T14:54:21+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:46+01:00</lastmod>
 		<priority>0.6</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/timers/judging</loc>
-		<lastmod>2026-07-04T14:54:21+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:46+01:00</lastmod>
 		<priority>0.6</priority>
 	</url>
 	<url>
 		<loc>https://www.robostage.com.br/fll/timers/custom</loc>
-		<lastmod>2026-07-04T14:54:21+01:00</lastmod>
+		<lastmod>2026-07-06T17:01:46+01:00</lastmod>
 		<priority>0.6</priority>
+	</url>
+	<url>
+		<loc>https://www.robostage.com.br/legal</loc>
+		<lastmod>2026-07-06T17:01:49+01:00</lastmod>
+		<priority>1.0</priority>
 	</url>
 </urlset>

@@ -4,8 +4,9 @@ import FormMission from "@/components/FormMission/FormMission";
 import Loader from "@/components/Loader";
 import { sumAllMissions } from "@/utils/scores";
 import { Footer } from "@/components/UI/Footer";
-import SubmergedLogo from "@/public/images/logos/Submerged.webp";
-import MasterpieceLogo from "@/public/images/logos/Masterpiece.png";
+import SubmergedLogo from "@/public/images/logos/fll/seasons/Submerged.webp";
+import MasterpieceLogo from "@/public/images/logos/fll/seasons/Masterpiece.png";
+import UnearthedLogo from "@/public/images/logos/fll/seasons/Unearthed.webp";
 import { useParams } from "next/navigation";
 import { Pause, Play, TimerReset, Trash } from "lucide-react";
 
@@ -52,7 +53,7 @@ export default function Page() {
 
   const totalPoints = sumAllMissions(
     missions.filter((m) => m.id !== "GP"),
-    responses
+    responses,
   );
 
   useEffect(() => {
@@ -67,8 +68,8 @@ export default function Page() {
     timeLeft <= 10
       ? "bg-red-500"
       : timeLeft <= 30
-      ? "bg-yellow-500"
-      : "bg-primary";
+        ? "bg-yellow-500"
+        : "bg-primary";
 
   const startTimer = () => {
     if (timeLeft === 0) {
@@ -140,9 +141,7 @@ export default function Page() {
 
         switch (params.season) {
           case "unearthed":
-            setBackground(
-              "https://static.wixstatic.com/media/381ad3_dca9f615988c479ca24a9b0b0e5bc1b0~mv2.gif"
-            );
+            setBackground(UnearthedLogo.src);
             break;
           case "submerged":
             setBackground(SubmergedLogo.src);
@@ -165,7 +164,7 @@ export default function Page() {
   const handleSelect = (
     missionId: string,
     questionIndex: number,
-    value: string | number
+    value: string | number,
   ) => {
     setResponses((prev) => ({
       ...prev,
@@ -198,19 +197,55 @@ export default function Page() {
         ></div>
       </div>
 
-      <main className="flex flex-col items-center justify-center px-4 pb-16 pt-8 sm:px-6 lg:px-8 bg-gradient-to-t from-base-200 to-base-300 space-y-6 min-h-screen">
-        <nav className="animate-fade-in-down w-full max-w-4xl flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-base-200/70 backdrop-blur shadow-md border border-base-300">
+      <main className="flex flex-col items-center justify-center px-4 pb-16 pt-8 sm:px-6 lg:px-8 space-y-6 min-h-screen">
+        <header className="sticky top-4 z-30 w-full max-w-4xl mx-auto animate-fade-in-down">
+          <section className="flex flex-row items-center justify-between gap-4 bg-base-100/80 backdrop-blur px-8 py-4 rounded-box shadow-md border border-base-300">
+            {/* IDENTIDADE */}
+            <div className="flex flex-1 items-center gap-4 text-left">
+              <img
+                src={background}
+                className="w-20 h-20 object-contain hidden sm:block"
+                alt="Logo da temporada FLL"
+              />
+
+              <div className="flex flex-col">
+                <h1 className="text-sm font-semibold text-base-content opacity-70">
+                  FLL Score
+                </h1>
+
+                <span className="uppercase font-extrabold text-primary text-xl sm:text-3xl lg:text-4xl leading-tight">
+                  {params.season}
+                </span>
+              </div>
+            </div>
+
+            {/* PONTUAÇÃO */}
+            <aside
+              aria-label="Pontuação total"
+              className="flex flex-col items-center justify-center rounded-xl bg-base-200 px-6 py-3 min-w-[140px] shadow-inner"
+            >
+              <span className="text-xs uppercase font-bold tracking-wide opacity-70">
+                Pontos
+              </span>
+
+              <strong className="text-3xl font-extrabold text-primary">
+                {totalPoints}
+              </strong>
+            </aside>
+          </section>
+        </header>
+
+        <nav className="animate-fade-in-down w-full max-w-4xl flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 px-4 py-3">
           {/* TIMER */}
           <div className="flex items-center gap-3">
             <span
               id="timer"
               className="
-                font-mono text-2xl sm:text-4xl
+                font-mono text-2xl sm:text-3xl
                 px-4 py-2
-                rounded-xl
-                bg-base-200
-                shadow-inner
-                text-primary
+                bg-base-100
+                text-base-content
+                shadow-[4px_4px_0_theme(colors.base-content)] 
               "
             >
               {formatTime(timeLeft)}
@@ -261,50 +296,11 @@ export default function Page() {
           </div>
         </nav>
 
-        <header className="sticky top-4 z-30 w-full max-w-4xl mx-auto animate-fade-in-down">
-          <section className="flex flex-row items-center justify-between gap-4 bg-base-100/80 backdrop-blur px-8 py-4 rounded-2xl shadow-md border border-base-300">
-            {/* IDENTIDADE */}
-            <div className="flex flex-1 items-center gap-4 text-left">
-              <img
-                src={background}
-                className="w-20 h-20 object-contain hidden sm:block"
-                alt="Logo da temporada FLL"
-              />
-
-              <div className="flex flex-col">
-                <h1 className="text-sm font-semibold text-base-content opacity-70">
-                  FLL Score
-                </h1>
-
-                <span className="uppercase font-extrabold text-primary text-xl sm:text-3xl lg:text-4xl leading-tight">
-                  {params.season}
-                </span>
-              </div>
-            </div>
-
-            {/* PONTUAÇÃO */}
-            <aside
-              aria-label="Pontuação total"
-              className="flex flex-col items-center justify-center rounded-xl bg-base-200 px-6 py-3 min-w-[140px] shadow-inner"
-            >
-              <span className="text-xs uppercase font-bold tracking-wide opacity-70">
-                Pontos
-              </span>
-
-              <strong className="text-3xl font-extrabold text-primary">
-                {totalPoints}
-              </strong>
-            </aside>
-          </section>
-        </header>
-
         <section
           aria-labelledby="info-no-equipment"
           className="w-full max-w-4xl mx-auto animate-fade-in-down"
         >
-          <div
-            className="flex flex-col sm:flex-row items-start gap-4 bg-info/10 backdrop-blur px-6 py-4 rounded-2xl border border-info/30 shadow-sm"
-          >
+          <div className="flex flex-col sm:flex-row items-start gap-4 bg-info/10 backdrop-blur px-6 py-4 rounded-2xl border border-info/30 shadow-sm">
             <figure className="flex items-center gap-3">
               <img
                 src="/images/icons/NoEquip.png"

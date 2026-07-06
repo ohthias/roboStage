@@ -1,6 +1,13 @@
-"use client";
 import { Footer } from "@/components/UI/Footer";
+import Header from "@/components/UI/Header";
+import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
+
+export const metadata = {
+  title: "FLL Score",
+  description:
+    "Pontuador da FIRST LEGO League (FLL) para calcular a pontuação da sua equipe.",
+};
 
 const seasons = [
   {
@@ -8,7 +15,7 @@ const seasons = [
     title: "UNEARTHED",
     description:
       "Descubra o passado para construir o futuro através da arqueologia e tecnologia.",
-    image: "/images/logos/Unearthed.webp",
+    image: "/images/logos/fll/seasons/Unearthed.webp",
     badge: "2025–2026",
     accent: "primary",
   },
@@ -17,7 +24,7 @@ const seasons = [
     title: "SUBMERGED",
     description:
       "Explore os oceanos e desenvolva soluções para proteger nossos ecossistemas aquáticos.",
-    image: "/images/logos/Submerged.webp",
+    image: "/images/logos/fll/seasons/Submerged.webp",
     badge: "2024–2025",
     accent: "secondary",
   },
@@ -26,7 +33,7 @@ const seasons = [
     title: "MASTERPIECE",
     description:
       "Celebre a criatividade, arte e inovação através da tecnologia.",
-    image: "/images/logos/Masterpiece.png",
+    image: "/images/logos/fll/seasons/Masterpiece.png",
     badge: "2023–2024",
     accent: "accent",
   },
@@ -34,34 +41,9 @@ const seasons = [
 
 export default function ScorePage() {
   return (
-    <>
-      <main className="min-h-screen bg-base-200">
-        {/* Hero */}
-        <section className="relative overflow-hidden py-8 px-4">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage:
-                "linear-gradient(var(--fallback-bc,oklch(var(--bc))) 1px, transparent 1px), linear-gradient(90deg, var(--fallback-bc,oklch(var(--bc))) 1px, transparent 1px)",
-              backgroundSize: "40px 40px",
-            }}
-          />
-
-          <div className="relative mx-auto max-w-2xl text-center">
-            <h1 className="text-6xl font-black tracking-tight leading-none mb-4">
-              Escolha uma{" "}
-              <span className="text-primary">temporada</span>
-            </h1>
-
-            <p className="text-base-content/60 text-lg max-w-md mx-auto leading-relaxed">
-              Selecione a temporada da{" "}
-              <span className="font-semibold text-base-content/80">
-                FIRST LEGO League
-              </span>{" "}
-              para calcular a pontuação da sua equipe.
-            </p>
-          </div>
-        </section>
+    <div className="bg-base-200">
+      <main className="mx-auto min-h-screen max-w-6xl px-4 py-12">
+        <Header type="Pontuador" name="Pontuadores da" highlight="FLL" description="Escolha uma temporada. E comece a calcular a pontuação da sua equipe." /> 
 
         <section className="mx-auto max-w-5xl px-4 py-12 pb-24">
           <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
@@ -71,13 +53,13 @@ export default function ScorePage() {
                 href={`/fll/score/${season.slug}`}
                 className="group"
               >
-                <div className="card bg-base-100 border border-base-300 hover:border-primary hover:shadow-[0_0_40px_-8px] hover:shadow-primary/30 transition-all duration-300 h-full overflow-hidden">
+                <div className="card bg-base-100 rounded-none rounded-tl-[30px] rounded-br-[30px] shadow-md flex flex-col overflow-hidden relative hover:scale-105 transition-all duration-300 hover:shadow-[10px_10px_0_theme(colors.primary)] cursor-default select-none h-full">
                   {/* Image */}
-                  <figure className="relative bg-base-300 h-56 overflow-hidden">
+                  <figure className="relative h-56 overflow-hidden">
                     <img
                       src={season.image}
                       alt={season.title}
-                      className="object-contain max-h-40 transition-transform duration-500 group-hover:scale-110"
+                      className="object-contain max-h-36 transition-transform duration-500 group-hover:scale-105"
                     />
                   </figure>
 
@@ -97,23 +79,10 @@ export default function ScorePage() {
                     </p>
 
                     {/* CTA */}
-                    <div className="card-actions mt-4">
-                      <button className={`btn btn-${season.accent} btn-sm w-full gap-2 group-hover:shadow-md transition-shadow`}>
+                    <div className="card-actions mt-4 group/cta">
+                      <button className={`btn btn-${season.accent} btn-sm w-full gap-2 group-hover/cta:shadow-md transition-shadow`}>
                         Abrir pontuador
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2.5}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-                          />
-                        </svg>
+                        <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover/cta:translate-x-1" />
                       </button>
                     </div>
                   </div>
@@ -124,6 +93,6 @@ export default function ScorePage() {
         </section>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

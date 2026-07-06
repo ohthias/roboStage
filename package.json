@@ -1,6 +1,6 @@
 {
   "name": "robostage",
-  "version": "5.0.5",
+  "version": "5.1.0",
   "author": "Robostage Developers",
   "license": "MIT",
   "private": true,
@@ -28,6 +28,7 @@
     "nanoid": "^5.1.11",
     "next": "^15.4.8",
     "next-mdx-remote": "^6.0.0",
+    "postcss": "^8.5.16",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-markdown": "^10.1.0",

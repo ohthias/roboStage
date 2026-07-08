@@ -8,11 +8,11 @@ import Header from "@/components/UI/Header";
 const seasonLogos: Record<string, { name: string; image: string }> = {
   unearthed: {
     name: "Unearthed (2025/26)",
-    image: "/images/logos/Unearthed.webp",
+    image: "/images/logos/fll/seasons/Unearthed.webp",
   },
   submerged: {
     name: "Submerged (2024/25)",
-    image: "/images/logos/Submerged.webp",
+    image: "/images/logos/fll/seasons/Submerged.webp",
   },
 };
 

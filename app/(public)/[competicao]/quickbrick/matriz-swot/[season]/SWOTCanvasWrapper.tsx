@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Navbar } from "@/components/UI/Navbar";
 import { SWOTCanvas } from "@/components/QuickBrick/SwotCanva";
-import { Footer } from "@/components/UI/Footer";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import CardMobileNotUse from "@/components/MobileNotUse";
 
@@ -125,7 +123,6 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
           />
         </div>
       </div>
-      <Footer />
     </>
   );
 }

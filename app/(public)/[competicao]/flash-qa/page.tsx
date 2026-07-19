@@ -3,7 +3,6 @@
 import SetupScreen from "@/components/FlashQA/SetupScreen";
 import FlashcardScreen from "@/components/FlashQA/FlashcardScreen";
 import ResultScreen from "@/components/FlashQA/ResultScreen";
-import { Footer } from "@/components/UI/Footer";
 import { useFlashQA } from "./useFlashQA";
 import { FLL_MODE } from "./modes/FLL";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
@@ -63,8 +62,6 @@ export default function FlashQA() {
           )}
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

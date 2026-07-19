@@ -1,5 +1,4 @@
 import Header from "@/components/UI/Header";
-import { Footer } from "@/components/UI/Footer";
 import { MenuCard } from "@/components/Timers/MenuCard";
 
 import { Trophy, BookOpen, Clock } from "lucide-react";
@@ -58,8 +57,6 @@ export default function TimersPage() {
           </div>
         </section>
       </main>
-
-      <Footer />
     </>
   );
 }

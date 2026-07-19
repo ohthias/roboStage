@@ -1,8 +1,6 @@
 "use client";
 import React from "react";
 import { StrategyBoard } from "@/components/QuickBrick/SWOT-template/StrategyBoard";
-import { Navbar } from "@/components/UI/Navbar";
-import { Footer } from "@/components/UI/Footer";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
 
 export default function SWOTPage() {
@@ -25,7 +23,6 @@ export default function SWOTPage() {
 
         <StrategyBoard />
       </div>
-      <Footer />
     </>
   );
 }

@@ -1,5 +1,4 @@
 "use client";
-import { Footer } from "../../UI/Footer";
 import Hero from "../../Hero";
 import { ModuleCard } from "./Components/FLLModules";
 import {
@@ -254,7 +253,6 @@ export default function FLLHome() {
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   );
 }

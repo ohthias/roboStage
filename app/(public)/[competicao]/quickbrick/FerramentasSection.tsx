@@ -61,7 +61,7 @@ export default function FerramentasSection({
         seasonLogos: Record<string, SeasonLogo>,
         router: ReturnType<typeof useRouter>,
       ) => (
-        <div className="flex flex-col gap-2 mt-2 w-full mx-auto">
+        <div className="grid grid-cols-3 gap-2 mt-2 w-full mx-auto">
           {seasons.map((s: string) => {
             const season = seasonLogos[s];
 
@@ -69,58 +69,19 @@ export default function FerramentasSection({
               <button
                 key={s}
                 onClick={() => router.push(`/fll/quickbrick/matriz-swot/${s}`)}
-                className="
-          group
-          w-full
-          flex items-center gap-4
-          px-4 py-3
-          rounded-xl
-          border border-base-300/60
-          bg-base-100
-          hover:border-primary
-          hover:bg-base-200/50
-          transition-all duration-300
-        "
+                className="group/card w-full flex items-center justify-center flex-col gap-2 px-2 py-1 rounded-xl border border-base-300/60 bg-base-100 hover:border-primary hover:bg-base-200/50 transition-all duration-300 cursor-pointer"
               >
-                {/* Ícone / Logo */}
-                <div
-                  className="
-          w-10 h-10
-          flex items-center justify-center
-          rounded-lg
-          bg-base-200/70
-          group-hover:bg-primary/10
-          transition-colors
-          shrink-0
-        "
-                >
+                <div className="flex itens-center gap-2 flex-col justify-center">
                   <Image
                     src={season?.image || "/images/icons/default-season.png"}
-                    alt={season?.name || s}
-                    width={32}
-                    height={32}
-                    className="object-contain"
+                    alt={season?.name || "Temporada FLL"}
+                    width={75}
+                    height={75}
+                    className="object-contain rounded-lg bg-base-200/70 p-1 h-20 w-20 mx-auto"
                   />
+                  <p className="text-[12px] text-center">{season?.name}</p>
                 </div>
-
-                {/* Texto */}
-                <div className="flex flex-col text-left flex-1">
-                  <span className="text-sm font-semibold leading-tight">
-                    {season?.name}
-                  </span>
-                  <span className="text-xs opacity-60">Temporada FLL</span>
-                </div>
-
-                {/* Ação */}
-                <span
-                  className="
-          text-xs font-semibold
-          text-primary
-          opacity-0
-          group-hover:opacity-100
-          transition-opacity
-        "
-                >
+                <span className="text-xs font-semibold text-primary opacity-0 group-hover/card:opacity-100 transition-opacity mt-1">
                   Abrir →
                 </span>
               </button>
@@ -186,7 +147,7 @@ export default function FerramentasSection({
         seasonLogos: { [x: string]: any },
         router: any,
       ) => (
-        <div className="flex flex-col gap-2 mt-2 w-full mx-auto">
+        <div className="grid grid-cols-3 gap-2 mt-2 w-full mx-auto">
           {seasons.map((s: string) => {
             const season = seasonLogos[s];
 
@@ -196,58 +157,19 @@ export default function FerramentasSection({
                 onClick={() =>
                   router.push(`/fll/quickbrick/tabela-de-missoes/${s}`)
                 }
-                className="
-          group
-          w-full
-          flex items-center gap-4
-          px-4 py-3
-          rounded-xl
-          border border-base-300/60
-          bg-base-100
-          hover:border-primary
-          hover:bg-base-200/50
-          transition-all duration-300
-        "
+                className="group/card w-full flex items-center justify-center flex-col gap-2 px-2 py-1 rounded-xl border border-base-300/60 bg-base-100 hover:border-primary hover:bg-base-200/50 transition-all duration-300 cursor-pointer"
               >
-                {/* Ícone / Logo */}
-                <div
-                  className="
-          w-10 h-10
-          flex items-center justify-center
-          rounded-lg
-          bg-base-200/70
-          group-hover:bg-primary/10
-          transition-colors
-          shrink-0
-        "
-                >
+                <div className="flex itens-center gap-2 flex-col justify-center">
                   <Image
                     src={season?.image || "/images/icons/default-season.png"}
-                    alt={season?.name || s}
-                    width={32}
-                    height={32}
-                    className="object-contain"
+                    alt={season?.name || "Temporada FLL"}
+                    width={75}
+                    height={75}
+                    className="object-contain rounded-lg bg-base-200/70 p-1 h-20 w-20 mx-auto"
                   />
+                  <p className="text-[12px] text-center">{season?.name}</p>
                 </div>
-
-                {/* Texto */}
-                <div className="flex flex-col text-left flex-1">
-                  <span className="text-sm font-semibold leading-tight">
-                    {season?.name}
-                  </span>
-                  <span className="text-xs opacity-60">Temporada FLL</span>
-                </div>
-
-                {/* Ação */}
-                <span
-                  className="
-          text-xs font-semibold
-          text-primary
-          opacity-0
-          group-hover:opacity-100
-          transition-opacity
-        "
-                >
+                <span className="text-xs font-semibold text-primary opacity-0 group-hover/card:opacity-100 transition-opacity mt-1">
                   Abrir →
                 </span>
               </button>
@@ -261,7 +183,7 @@ export default function FerramentasSection({
   const filtradas = ferramentas;
 
   return (
-    <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-5xl mx-auto">
+    <section className="grid gap-6 sm:grid-cols-2 w-full md:grid-cols-3">
       {filtradas.map((ferramenta) => (
         <div
           key={ferramenta.id}
@@ -286,6 +208,7 @@ export default function FerramentasSection({
                 width={400}
                 height={225}
                 className="w-full aspect-video object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="eager"
               />
 
               {/* Overlay suave */}

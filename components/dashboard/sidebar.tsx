@@ -60,8 +60,7 @@ export function DashboardSidebar() {
         {items.map((item) => {
           const Icon = item.icon;
 
-          const active =
-            pathname === item.href || pathname.startsWith(item.href + "/");
+          const active = pathname === item.href;
 
           return (
             <Link

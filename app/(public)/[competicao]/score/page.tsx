@@ -1,4 +1,3 @@
-import { Footer } from "@/components/UI/Footer";
 import Header from "@/components/UI/Header";
 import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
@@ -92,7 +91,6 @@ export default function ScorePage() {
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import QuickBrickCanvas from "@/components/QuickBrick/Estrategia/QuickBrickCanva";
-import { Footer } from "@/components/UI/Footer";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import CardMobileNotUse from "@/components/MobileNotUse";
 
@@ -49,8 +48,6 @@ export default function StrategyPage() {
           <QuickBrickCanvas />
         </div>
       </div>
-
-      <Footer />
     </>
   );
 }

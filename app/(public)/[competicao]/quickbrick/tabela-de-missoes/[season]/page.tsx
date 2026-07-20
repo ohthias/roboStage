@@ -5,8 +5,6 @@ import { INITIAL_COLUMNS, INITIAL_MISSIONS } from "./constants";
 import { RotateCcw } from "lucide-react";
 import { MissionTable } from "@/components/QuickBrick/Tabela-de-analise-de-missoes/MissionTable";
 import { useParams } from "next/navigation";
-import { Navbar } from "@/components/UI/Navbar";
-import { Footer } from "@/components/UI/Footer";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import { useToast } from "@/app/context/ToastContext";
 import Loader from "@/components/Loader";
@@ -126,7 +124,6 @@ function MissionTablePage() {
           </button>
         </div>
       </div>
-      <Footer />
       <ModalConfirm
         ref={modalClearAll}
         title="Restaurar tabela"

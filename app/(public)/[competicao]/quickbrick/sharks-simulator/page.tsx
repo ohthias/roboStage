@@ -1,7 +1,5 @@
-import ComingSoon from "@/components/ComingSoon";
 import ViewSection from "@/components/QuickBrick/SharksSimulator/ViewSection";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
-import { Footer } from "@/components/UI/Footer";
 
 export default function Page() {
   return (
@@ -24,7 +22,6 @@ export default function Page() {
           <ViewSection />
         </div>
       </div>
-      <Footer />
     </>
   );
 }

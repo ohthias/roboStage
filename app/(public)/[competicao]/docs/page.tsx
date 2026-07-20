@@ -1,8 +1,7 @@
 "use client";
 
-import { Footer } from "@/components/UI/Footer";
 import { useEffect, useState } from "react";
-import { FileText, ExternalLink, BookOpen, Bot } from "lucide-react";
+import { FileText, ExternalLink, Bot } from "lucide-react";
 import { useParams } from "next/navigation";
 import { COMPETICOES } from "@/utils/competitions/competicoes";
 
@@ -152,8 +151,6 @@ export default function DocsPage() {
           ))}
         </section>
       </main>
-
-      <Footer />
     </>
   );
 }

@@ -3,7 +3,6 @@ import { useEffect, useState, useRef } from "react";
 import FormMission from "@/components/FormMission/FormMission";
 import Loader from "@/components/Loader";
 import { sumAllMissions } from "@/utils/scores";
-import { Footer } from "@/components/UI/Footer";
 import SubmergedLogo from "@/public/images/logos/fll/seasons/Submerged.webp";
 import MasterpieceLogo from "@/public/images/logos/fll/seasons/Masterpiece.png";
 import UnearthedLogo from "@/public/images/logos/fll/seasons/Unearthed.webp";
@@ -334,7 +333,6 @@ export default function Page() {
           className="animate-fade-in-down"
         />
       </main>
-      <Footer />
     </>
   );
 }

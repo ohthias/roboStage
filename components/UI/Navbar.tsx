@@ -21,6 +21,7 @@ import {
 import Logo from "./Logo";
 import { ThemeController } from "./themeController";
 import { NAVIGATION } from "@/utils/competitions/navigation";
+import { Show, UserAvatar } from "@clerk/nextjs";
 
 interface Season {
   key: string;
@@ -45,17 +46,6 @@ const mainLinks = [
   { href: "/showlive", label: "ShowLive" },
   { href: "/news", label: "Notícias" },
   { href: "/help", label: "Ajuda" },
-];
-
-const accessLinks: any[] = [
-  {
-    href: "/universe",
-    label: "Eventos",
-    icon: Earth,
-    variant: "outline" as const,
-  },
-  { href: "/auth/login", label: "Login", variant: "ghost" as const },
-  { href: "/auth/signup", label: "Cadastrar", variant: "primary" as const },
 ];
 
 export function Navbar() {
@@ -352,47 +342,23 @@ export function Navbar() {
 
             <div className="divider divider-horizontal mx-1" />
 
-            {accessLinks?.map((item) => {
-              const active = isActive(item.href);
-
-              if (item.variant === "primary") {
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="btn btn-primary btn-sm rounded-lg shadow-sm transition-transform duration-200 hover:scale-[1.01]"
-                  >
-                    {item.label}
-                  </Link>
-                );
-              }
-
-              if (item.variant === "outline") {
-                const Icon = item.icon ?? Earth;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={navItemClass(active)}
-                    aria-current={active ? "page" : undefined}
-                  >
-                    <Icon size={16} />
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              }
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={navItemClass(active)}
-                  aria-current={active ? "page" : undefined}
-                >
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+            <Link href="/universe" className="btn btn-ghost btn-sm">
+              <Earth className="w-4 h-4 inline-block mr-2" /> Eventos
+            </Link>
+            <Show when="signed-in">
+              <Link href="/dashboard" className="btn btn-outline btn-sm">
+                <span className="hidden sm:inline-block">Dashboard</span>
+              </Link>
+              <UserAvatar />
+            </Show>
+            <Show when="signed-out">
+              <Link href="/sign-in" className="btn btn-ghost btn-sm">
+                Entrar
+              </Link>
+              <Link href="/sign-up" className="btn btn-primary btn-sm">
+                Criar conta
+              </Link>
+            </Show>
           </div>
 
           <div className="flex items-center gap-2 lg:hidden">
@@ -452,12 +418,21 @@ export function Navbar() {
                     >
                       <summary className="collapse-title min-h-0 rounded-2xl px-4 py-3 text-base font-semibold">
                         <span className="flex items-center gap-2">
-                          <Trophy size={16} className="shrink-0 text-base-content/70" />
+                          <Trophy
+                            size={16}
+                            className="shrink-0 text-base-content/70"
+                          />
                           Pontuador
                           {scoreOpen ? (
-                            <ChevronUp size={14} className="ml-auto opacity-60" />
+                            <ChevronUp
+                              size={14}
+                              className="ml-auto opacity-60"
+                            />
                           ) : (
-                            <ChevronDown size={14} className="ml-auto opacity-60" />
+                            <ChevronDown
+                              size={14}
+                              className="ml-auto opacity-60"
+                            />
                           )}
                         </span>
                       </summary>
@@ -534,12 +509,21 @@ export function Navbar() {
                     >
                       <summary className="collapse-title min-h-0 rounded-2xl px-4 py-3 text-base font-semibold">
                         <span className="flex items-center gap-2">
-                          <ToolCase size={16} className="shrink-0 text-base-content/70" />
+                          <ToolCase
+                            size={16}
+                            className="shrink-0 text-base-content/70"
+                          />
                           Ferramentas
                           {toolsOpen ? (
-                            <ChevronUp size={14} className="ml-auto opacity-60" />
+                            <ChevronUp
+                              size={14}
+                              className="ml-auto opacity-60"
+                            />
                           ) : (
-                            <ChevronDown size={14} className="ml-auto opacity-60" />
+                            <ChevronDown
+                              size={14}
+                              className="ml-auto opacity-60"
+                            />
                           )}
                         </span>
                       </summary>
@@ -619,56 +603,7 @@ export function Navbar() {
                 Acessos
               </p>
 
-              <div className="mt-2 grid gap-2">
-                {accessLinks.map((item) => {
-                  const active = isActive(item.href);
-
-                  if (item.variant === "outline") {
-                    const Icon = item.icon ?? Earth;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={closeDrawer}
-                        className={`btn btn-outline btn-md justify-start rounded-xl transition-all duration-200 ${
-                          active ? "btn-active" : ""
-                        }`}
-                        aria-current={active ? "page" : undefined}
-                      >
-                        <Icon size={16} />
-                        {item.label}
-                      </Link>
-                    );
-                  }
-
-                  if (item.variant === "primary") {
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={closeDrawer}
-                        className="btn btn-primary btn-md justify-start rounded-xl shadow-sm"
-                      >
-                        {item.label}
-                      </Link>
-                    );
-                  }
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={closeDrawer}
-                      className={`btn btn-ghost btn-md justify-start rounded-xl transition-all duration-200 ${
-                        active ? "btn-active" : ""
-                      }`}
-                      aria-current={active ? "page" : undefined}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
+              <div className="mt-2 grid gap-2"></div>
             </div>
           </div>
         </aside>

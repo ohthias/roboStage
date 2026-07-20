@@ -4,6 +4,8 @@ import "./globals.css";
 import { ToastProvider } from "./context/ToastContext";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ClerkProvider } from "@clerk/nextjs";
+import { ptBR } from "@clerk/localizations";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -52,9 +54,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${roboto.variable} antialiased`}>
-        <Analytics />
-        <SpeedInsights />
+        <ClerkProvider localization={ptBR}>
+          <Analytics />
+          <SpeedInsights />
           <ToastProvider>{children}</ToastProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

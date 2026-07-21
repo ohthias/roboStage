@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
-import { ChevronLeft, Home, Building2, LayoutGrid, Users } from "lucide-react";
+import { ChevronLeft, Home, LayoutGrid, Users } from "lucide-react";
 import Logo from "../UI/Logo";
 
 const items = [

@@ -1,11 +1,5 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  experimental: {
-    serverActions: {
-      allowedOrigins: ["*.app.github.dev"],
-    },
-  },
-};
+const nextConfig: NextConfig = {};
 
 module.exports = nextConfig;

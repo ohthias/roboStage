@@ -1,167 +1,171 @@
+import Link from "next/link";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import {
-  OrganizationList,
-  OrganizationSwitcher,
-} from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
-import {
-  Building2,
-  Users,
-  Shield,
+  ArrowRight,
+  ChevronRight,
   Sparkles,
 } from "lucide-react";
+import type { ReactNode } from "react";
+
+type MembershipWithOrganization = {
+  role?: string | null;
+  organization: {
+    id: string;
+    name: string;
+    slug?: string | null;
+    imageUrl?: string | null;
+    createdAt?: number | null;
+  };
+};
 
 export default async function OrganizationsPage() {
-  const { orgId } = await auth();
+  const { userId, orgId, isAuthenticated, redirectToSignIn } = await auth();
+
+  if (!isAuthenticated || !userId) {
+    return redirectToSignIn();
+  }
+
+  const { data: memberships, totalCount } =
+    await (await clerkClient()).users.getOrganizationMembershipList({
+      userId,
+      limit: 100,
+    });
+
+  const organizations = (memberships as MembershipWithOrganization[]).map(
+    (membership) => ({
+      id: membership.organization.id,
+      name: membership.organization.name,
+      slug: membership.organization.slug,
+      imageUrl: membership.organization.imageUrl,
+      createdAt: membership.organization.createdAt,
+      role: membership.role ?? "member",
+      active: membership.organization.id === orgId,
+    })
+  );
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">
-          Organizações
-        </h1>
-
-        <p className="mt-2 text-base-content/70">
-          Gerencie equipes, membros e permissões da plataforma.
-        </p>
-      </div>
-
-      {/* Organização ativa */}
-      <div className="card border border-base-300 bg-base-100 shadow-sm">
-        <div className="card-body">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="card-title">
-                Organização atual
-              </h2>
-
-              <p className="text-base-content/60">
-                Selecione uma organização para continuar.
-              </p>
-            </div>
-
-            <OrganizationSwitcher
-              hidePersonal={false}
-              afterSelectOrganizationUrl="/dashboard/organizations"
-              afterCreateOrganizationUrl="/dashboard/organizations"
-              appearance={{
-                elements: {
-                  organizationSwitcherTrigger:
-                    "rounded-xl border border-base-300 px-3 py-2",
-                },
-              }}
-            />
-          </div>
-
-          {orgId ? (
-            <div className="mt-6 rounded-xl bg-success/10 p-4 text-success">
-              Organização selecionada.
-            </div>
-          ) : (
-            <div className="mt-6 rounded-xl bg-warning/10 p-4 text-warning">
-              Nenhuma organização selecionada.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Estatísticas */}
-      <div className="grid gap-5 md:grid-cols-3">
-        <StatCard
-          icon={<Building2 size={22} />}
-          title="Organizações"
-          description="Gerencie várias equipes."
-        />
-
-        <StatCard
-          icon={<Users size={22} />}
-          title="Membros"
-          description="Convide participantes."
-        />
-
-        <StatCard
-          icon={<Shield size={22} />}
-          title="Permissões"
-          description="Controle acessos."
-        />
-      </div>
-
-      {/* Lista */}
-      <div className="card border border-base-300 bg-base-100 shadow-sm">
-        <div className="card-body">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h2 className="card-title">
-                Suas organizações
-              </h2>
-
-              <p className="text-sm text-base-content/60">
-                Crie uma nova organização ou entre em uma existente.
-              </p>
-            </div>
-          </div>
-
-          <OrganizationList
-            hidePersonal={false}
-            afterCreateOrganizationUrl="/dashboard/organizations"
-            afterSelectOrganizationUrl="/dashboard/organizations"
-            appearance={{
-              elements: {
-                rootBox: "w-full",
-                card: "shadow-none border-0",
-              },
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Informação */}
-      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
-        <div className="flex gap-4">
-          <div className="rounded-xl bg-primary/10 p-3 text-primary">
-            <Sparkles size={22} />
-          </div>
-
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
+      <section className="space-y-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h3 className="font-semibold">
-              Dica
-            </h3>
-
-            <p className="mt-1 text-sm text-base-content/70">
-              Cada organização representa uma equipe de robótica.
-              Dentro dela você poderá criar projetos, compartilhar
-              arquivos, utilizar o QuickBrick Studio, LabTest,
-              StyleLab e outros módulos da RoboStage.
+            <h2 className="text-2xl font-bold">Suas organizações</h2>
+            <p className="text-sm text-base-content/60">
+              Clique em uma organização para abrir sua página individual.
             </p>
           </div>
         </div>
-      </div>
+
+        {organizations.length > 0 ? (
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {organizations.map((organization) => (
+              <Link
+                key={organization.id}
+                href={`/dashboard/organizations/${organization.id}`}
+                className={[
+                  "group relative overflow-hidden rounded-2xl border bg-base-100 p-5 shadow-sm transition-all duration-300",
+                  organization.active
+                    ? "border-primary/40 ring-1 ring-primary/20"
+                    : "border-base-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl",
+                ].join(" ")}
+              >
+                <div className="absolute right-0 top-0 h-28 w-28 rounded-full bg-primary/5 blur-3xl transition-opacity group-hover:opacity-100" />
+
+                <div className="relative flex h-full flex-col gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-base-300 bg-base-200">
+                      {organization.imageUrl ? (
+                        <img
+                          src={organization.imageUrl}
+                          alt={organization.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-lg font-bold text-primary">
+                          {getInitials(organization.name)}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="truncate text-lg font-semibold transition-colors group-hover:text-primary">
+                          {organization.name}
+                        </h3>
+
+                        {organization.active && (
+                          <span className="badge badge-primary badge-sm">
+                            Atual
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-auto flex items-center justify-between pt-2">
+                    <span className="text-sm font-medium text-primary">
+                      Abrir organização
+                    </span>
+
+                    <div className="rounded-full bg-base-200 p-2 transition-all group-hover:bg-primary group-hover:text-primary-content">
+                      <ArrowRight
+                        size={16}
+                        className="transition-transform group-hover:translate-x-1"
+                      />
+                    </div>
+                  </div>
+
+                  {organization.createdAt ? (
+                    <p className="text-xs text-base-content/50">
+                      Criada em {formatDate(organization.createdAt)}
+                    </p>
+                  ) : null}
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-3xl border border-dashed border-base-300 bg-base-100 p-8">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-2">
+                <div className="badge badge-outline gap-2">
+                  <Sparkles size={14} />
+                  Sem organizações
+                </div>
+
+                <h3 className="text-2xl font-semibold">
+                  Nenhuma organização disponível
+                </h3>
+
+                <p className="max-w-2xl text-sm text-base-content/65">
+                  Quando uma organização for criada ou compartilhada com você,
+                  ela aparecerá aqui como um card clicável.
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-base-200 p-4 text-sm text-base-content/70">
+                Você ainda pode usar o seletor do Clerk para criar ou alternar
+                organizações.
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
-function StatCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-base-300 bg-base-100 p-5 transition hover:border-primary/20 hover:shadow-sm">
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-base-200">
-        {icon}
-      </div>
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] ?? "";
+  const second = parts[1]?.[0] ?? parts[0]?.[1] ?? "";
+  return `${first}${second}`.toUpperCase();
+}
 
-      <h3 className="font-semibold">
-        {title}
-      </h3>
+function formatDate(timestamp?: number | null) {
+  if (!timestamp) return "data não informada";
 
-      <p className="mt-2 text-sm text-base-content/60">
-        {description}
-      </p>
-    </div>
-  );
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(timestamp));
 }

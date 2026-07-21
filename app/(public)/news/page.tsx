@@ -11,7 +11,7 @@ export const metadata = {
     "Fique por dentro das últimas novidades, atualizações e anúncios importantes relacionados à nossa plataforma. Acompanhe as notícias para se manter informado sobre os recursos mais recentes, melhorias e eventos relevantes.",
 };
 
-const sanitizeNewsSlug = (slug: unknown): string => {
+export const sanitizeNewsSlug = (slug: unknown): string => {
   if (typeof slug !== "string") return "";
 
   return slug

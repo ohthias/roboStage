@@ -7,13 +7,29 @@ import Header from "@/components/UI/Header";
 
 export const metadata = {
   title: "Notícias",
-  description: "Fique por dentro das últimas novidades, atualizações e anúncios importantes relacionados à nossa plataforma. Acompanhe as notícias para se manter informado sobre os recursos mais recentes, melhorias e eventos relevantes.",
+  description:
+    "Fique por dentro das últimas novidades, atualizações e anúncios importantes relacionados à nossa plataforma. Acompanhe as notícias para se manter informado sobre os recursos mais recentes, melhorias e eventos relevantes.",
+};
+
+export const sanitizeNewsSlug = (slug: unknown): string => {
+  if (typeof slug !== "string") return "";
+
+  return slug
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 };
 
 export default function NewsPage() {
   const news = getAllNews();
 
   const hasCover = (article: any) => Boolean(article?.cover);
+  const toSafeNewsHref = (slug: unknown) => {
+    const safeSlug = sanitizeNewsSlug(slug);
+    return safeSlug ? `/news/${encodeURIComponent(safeSlug)}` : "/news";
+  };
 
   return (
     <>
@@ -29,7 +45,9 @@ export default function NewsPage() {
         <div className="mx-auto px-6">
           <section className="mt-16">
             <div className="mb-8 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-primary">Últimas publicações</h2>
+              <h2 className="text-3xl font-bold text-primary">
+                Últimas publicações
+              </h2>
 
               <div className="badge badge-outline">{news.length} notícias</div>
             </div>
@@ -38,7 +56,7 @@ export default function NewsPage() {
               {news.map((article: any) => (
                 <Link
                   key={article.slug}
-                  href={`/news/${article.slug}`}
+                  href={toSafeNewsHref(article.slug)}
                   className="group"
                 >
                   <article className="card h-full overflow-hidden border border-base-300 bg-base-200 transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-xl">

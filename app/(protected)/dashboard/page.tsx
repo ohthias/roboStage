@@ -144,25 +144,9 @@ function LastNews() {
             rel="noopener noreferrer"
             className="group overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl"
           >
-            {hasCover(article) ? (
-              <div className="relative h-52 overflow-hidden">
-                <img
-                  src={article.cover}
-                  alt={article.title}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-
-                <span className="absolute left-4 top-4 badge badge-primary badge-sm">
-                  Novidade
-                </span>
-              </div>
-            ) : (
-              <div className="flex h-52 items-center justify-center bg-gradient-to-br from-primary/10 via-base-200 to-base-300">
-                <Newspaper className="size-12 text-primary/60" />
-              </div>
-            )}
+            <div className="flex h-52 items-center justify-center bg-gradient-to-br from-primary/10 via-base-200 to-base-300">
+              <Newspaper className="size-12 text-primary/60" />
+            </div>
 
             <div className="space-y-3 p-5">
               <div className="flex items-center justify-between text-xs text-base-content/50">

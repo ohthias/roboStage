@@ -1,27 +1,28 @@
 import Link from "next/link";
 import { Building2, Users, Settings } from "lucide-react";
 
-export default function OrganizationLayout({
+export default async function OrganizationLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: { organizationId: string };
+  params: Promise<{ organizationId: string }>;
 }) {
+  const { organizationId } = await params;
   const tabs = [
     {
       name: "Visão Geral",
-      href: `/dashboard/organizations/${params.organizationId}`,
+      href: `/dashboard/organizations/${organizationId}`,
       icon: Building2,
     },
     {
       name: "Membros",
-      href: `/dashboard/organizations/${params.organizationId}/members`,
+      href: `/dashboard/organizations/${organizationId}/members`,
       icon: Users,
     },
     {
       name: "Configurações",
-      href: `/dashboard/organizations/${params.organizationId}/settings`,
+      href: `/dashboard/organizations/${organizationId}/settings`,
       icon: Settings,
     },
   ];

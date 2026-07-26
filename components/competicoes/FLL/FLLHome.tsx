@@ -12,6 +12,8 @@ import FLLCountdownBanner from "./Components/FLLCountdownBanner";
 import UseCasesSection from "./Components/UseCasesSection";
 import Banner from "@/components/Banner";
 import NoiseImage from "@/components/UI/NoiseImage";
+import Link from "next/link";
+import FLLHighlightSeason from "./Components/FLLHighlightSeason";
 
 const modules = [
   {
@@ -56,7 +58,6 @@ export default function FLLHome() {
     <div className="min-h-screen bg-base-200 text-base-content">
       <main className="mt-16">
         <Hero />
-        <Banner />
         <section className="py-12 md:py-16 max-w-7xl mx-auto my-8">
           <div className="px-4 sm:px-6">
             <div className="flex flex-col xl:flex-row gap-10 xl:gap-16 items-start">
@@ -119,7 +120,7 @@ export default function FLLHome() {
                 src="/images/fll/fll_about.jpg"
                 alt="Equipe participando da FIRST LEGO League"
                 className="w-full h-full max-h-[400px] object-cover"
-                style={{ boxShadow: "-10px -10px 0 #fabd32"}}
+                style={{ boxShadow: "-10px -10px 0 #fabd32" }}
               />
 
               <p className="text-xs text-neutral-content/60 mt-2">
@@ -162,13 +163,15 @@ export default function FLLHome() {
             </div>
           </div>
         </section>
-        <FLLCountdownBanner />
+        <FLLHighlightSeason />
         <section className="w-full py-24 bg-base-200">
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex flex-col items-center text-center mb-16">
               <h2 className="text-4xl md:text-6xl font-black max-w-5xl leading-tight">
                 Tudo que uma equipe FLL precisa{" "}
-                <span className="bg-primary text-white px-1">Em um único lugar</span>
+                <span className="bg-primary text-white px-1">
+                  Em um único lugar
+                </span>
               </h2>
               <p className="mt-6 text-base-content/70 max-w-2xl text-lg">
                 Planeje missões, acompanhe pontuações, desenvolva projetos de
@@ -204,9 +207,6 @@ export default function FLLHome() {
                 <div className="relative p-8 md:p-12">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
                     <div className="max-w-3xl">
-                      <div className="badge badge-lg mb-2">
-                        Novidade!
-                      </div>
                       <img
                         src="https://www.firstinspires.org/hs-fs/hubfs/web/brand/season/2027/first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png?width=1436&height=484&name=first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png"
                         alt="BIOGLOW Future Edition"
@@ -224,8 +224,13 @@ export default function FLLHome() {
                         Education Computer Science & AI, hardware sem fio e uma
                         experiência colaborativa baseada em alianças.
                       </p>
+                      <Link
+                        href="/fll/future-edition"
+                        className="btn px-8 mt-6"
+                      >
+                        Saiba mais
+                      </Link>
                     </div>
-                    <div className="text-3xl font-black">04 AGO</div>
                   </div>
                 </div>
               </div>

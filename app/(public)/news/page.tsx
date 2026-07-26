@@ -35,10 +35,13 @@ export default function NewsPage() {
             </div>
 
             <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-              {news.map((article: any) => (
+              {news.map((article: any) => {
+                const safeSlug = encodeURIComponent(String(article.slug ?? ""));
+
+                return (
                 <Link
                   key={article.slug}
-                  href={`/news/${article.slug}`}
+                  href={`/news/${safeSlug}`}
                   className="group"
                 >
                   <article className="card h-full overflow-hidden border border-base-300 bg-base-200 transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-xl">
@@ -100,7 +103,8 @@ export default function NewsPage() {
                     </div>
                   </article>
                 </Link>
-              ))}
+                );
+              })}
             </div>
           </section>
         </div>

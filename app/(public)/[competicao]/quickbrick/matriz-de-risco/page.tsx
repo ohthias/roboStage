@@ -8,8 +8,9 @@ import RiscoModal from "@/components/QuickBrick/MatrizRisco/MatrizModal";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import html2canvas from "html2canvas-pro";
 import { useToast } from "@/app/context/ToastContext";
-import { PlusIcon, Image, RotateCcw } from "lucide-react";
+import { PlusIcon, Image, RotateCcw, Grid2X2 } from "lucide-react";
 import CardMobileNotUse from "@/components/MobileNotUse";
+import HeaderTool from "@/components/QuickBrick/HeaderTool";
 
 export default function MatrizDeRiscoPage() {
   const [riscos, setRiscos] = useState<Risco[]>(INITIAL_RISCOS);
@@ -53,14 +54,14 @@ export default function MatrizDeRiscoPage() {
   const handleDropRisco = (
     riskId: number,
     newImpacto: Impacto,
-    newProbabilidade: Probabilidade
+    newProbabilidade: Probabilidade,
   ) => {
     setRiscos((prevRiscos) =>
       prevRiscos.map((r) =>
         r.id === riskId
           ? { ...r, impacto: newImpacto, probabilidade: newProbabilidade }
-          : r
-      )
+          : r,
+      ),
     );
   };
 
@@ -80,8 +81,8 @@ export default function MatrizDeRiscoPage() {
       // Editing existing risk
       setRiscos(
         riscos.map((r) =>
-          r.id === riscoData.id ? ({ ...r, ...riscoData } as Risco) : r
-        )
+          r.id === riscoData.id ? ({ ...r, ...riscoData } as Risco) : r,
+        ),
       );
       addToast("Risco atualizado com sucesso!", "success");
     } else {
@@ -132,7 +133,7 @@ export default function MatrizDeRiscoPage() {
   const handleResetRiscos = () => {
     if (
       window.confirm(
-        "Tem certeza que deseja resetar todos os riscos para o estado inicial? Esta ação não pode ser desfeita."
+        "Tem certeza que deseja resetar todos os riscos para o estado inicial? Esta ação não pode ser desfeita.",
       )
     ) {
       setRiscos(INITIAL_RISCOS);
@@ -151,59 +152,49 @@ export default function MatrizDeRiscoPage() {
   }
 
   return (
-    <div className="flex flex-col items-start justify-center w-full">
-      <div className="px-4 md:px-8 space-y-4 w-full min-h-screen">
-        <Breadcrumbs />
-        <section className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary">
-            Matriz de Risco
-          </h1>
-          <p className="text-base md:text-lg text-base-content/80 max-w-3xl leading-relaxed">
-            A Matriz de Risco ajuda identificar e avaliar os{" "}
-            <strong>riscos potenciais</strong> para o sucesso do seu robô. Ao
-            mapear os riscos em uma matriz de impacto versus probabilidade, pode{" "}
-            <strong>priorizar</strong> quais riscos precisam ser gerenciados
-            ativamente e quais podem ser monitorados passivamente.
-          </p>
-        </section>
+    <div className="px-4 md:px-8">
+      <HeaderTool
+        NameTool="Matriz de Risco"
+        DescriptionTool="A Matriz de Risco ajuda identificar e avaliar os riscos potenciais para o sucesso do seu robô. Ao mapear os riscos em uma matriz de impacto versus probabilidade, pode priorizar quais riscos precisam ser gerenciados ativamente e quais podem ser monitorados passivamente."
+        IconTool={Grid2X2}
+      />
 
-        <section className="flex flex-wrap items-center justify-end gap-4">
-          <button
-            onClick={() => handleOpenModal()}
-            className="btn btn-primary btn-soft gap-2 shadow-sm"
-          >
-            <PlusIcon className="size-5" />
-            Adicionar Risco
-          </button>
+      <section className="flex flex-wrap items-center justify-end gap-4">
+        <button
+          onClick={() => handleOpenModal()}
+          className="btn btn-primary btn-soft gap-2 shadow-sm"
+        >
+          <PlusIcon className="size-5" />
+          Adicionar Risco
+        </button>
 
-          <button
-            onClick={handleExport}
-            className="btn btn-outline btn-success gap-2"
-          >
-            <Image className="size-5" />
-            Exportar
-          </button>
+        <button
+          onClick={handleExport}
+          className="btn btn-outline btn-success gap-2"
+        >
+          <Image className="size-5" />
+          Exportar
+        </button>
 
-          <button
-            onClick={handleResetRiscos}
-            className="btn btn-outline btn-error gap-2"
-          >
-            <RotateCcw className="size-5" />
-            Resetar
-          </button>
-        </section>
+        <button
+          onClick={handleResetRiscos}
+          className="btn btn-outline btn-error gap-2"
+        >
+          <RotateCcw className="size-5" />
+          Resetar
+        </button>
+      </section>
 
-        <section className="w-full flex justify-center mt-4 mb-12">
-          <MatrizRisco
-            ref={matrixRef}
-            riscos={riscos}
-            onDropRisco={handleDropRisco}
-            onEditRisco={handleOpenModal}
-            onRemoveRisco={handleRemoveRisco}
-            onViewRisco={handleOpenDetalhesModal}
-          />
-        </section>
-      </div>
+      <section className="w-full flex justify-center mt-8 mb-16">
+        <MatrizRisco
+          ref={matrixRef}
+          riscos={riscos}
+          onDropRisco={handleDropRisco}
+          onEditRisco={handleOpenModal}
+          onRemoveRisco={handleRemoveRisco}
+          onViewRisco={handleOpenDetalhesModal}
+        />
+      </section>
       <RiscoModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

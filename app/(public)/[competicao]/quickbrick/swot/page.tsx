@@ -1,25 +1,17 @@
 "use client";
-import React from "react";
 import { StrategyBoard } from "@/components/QuickBrick/SWOT-template/StrategyBoard";
-import Breadcrumbs from "@/components/UI/Breadcrumbs";
+import HeaderTool from "@/components/QuickBrick/HeaderTool";
+import { Grid2X2 } from "lucide-react";
 
 export default function SWOTPage() {
   return (
     <>
-      <div className="min-h-screen px-4 md:px-8 space-y-4">
-        <Breadcrumbs />
-        <section className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary">
-            Matriz SWOT
-          </h1>
-          <p className="text-base md:text-lg text-base-content/80 max-w-3xl leading-relaxed">
-            Organize estrategicamente as missões da sua equipe distribuindo-as
-            nos quadrantes da matriz{" "}
-            <strong>Forças, Fraquezas, Oportunidades</strong> e
-            <strong> Ameaças</strong>. Ao final, você pode exportar a análise e
-            utilizá-la nos treinos, apresentações ou planejamentos.
-          </p>
-        </section>
+      <div className="px-4 md:px-8 ">
+        <HeaderTool
+          NameTool="Matriz SWOT"
+          DescriptionTool="Organize estrategicamente as missões da sua equipe distribuindo-as nos quadrantes da matriz Forças, Fraquezas, Oportunidades e Ameaças."
+          IconTool={Grid2X2}
+        />
 
         <StrategyBoard />
       </div>

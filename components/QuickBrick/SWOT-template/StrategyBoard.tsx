@@ -228,7 +228,7 @@ export const StrategyBoard: React.FC = () => {
   };
 
   return (
-    <div className="mb-12">
+    <div className="mt-8 mb-16">
       {/* Toolbar */}
       <nav className="flex justify-end items-center mb-6">
         <div className="flex gap-3">

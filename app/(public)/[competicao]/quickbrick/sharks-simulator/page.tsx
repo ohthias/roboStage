@@ -1,27 +1,20 @@
+"use client";
+import HeaderTool from "@/components/QuickBrick/HeaderTool";
 import ViewSection from "@/components/QuickBrick/SharksSimulator/ViewSection";
-import Breadcrumbs from "@/components/UI/Breadcrumbs";
+import { Bot } from "lucide-react";
 
 export default function Page() {
   return (
-    <>
       <div className="px-4 md:px-8">
-        <Breadcrumbs />
-
-        <section className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary">
-            Sharks Simulator
-          </h1>
-          <p className="text-base md:text-lg text-base-content/80 max-w-3xl leading-relaxed">
-            Simule visualmente as trajetórias para robôs da FLL. Defina
-            movimentos retos e giros, visualizando a trajetória resultante sobre
-            o tapete de competição.
-          </p>
-        </section>
+        <HeaderTool
+          NameTool="Sharks Simulator"
+          DescriptionTool="Simule visualmente as trajetórias para robôs da FLL. Defina movimentos retos e giros, visualizando a trajetória resultante sobre o tapete de competição."
+          IconTool={Bot}
+        />
 
         <div className="flex justify-center mt-8 mb-16">
           <ViewSection />
         </div>
       </div>
-    </>
   );
 }

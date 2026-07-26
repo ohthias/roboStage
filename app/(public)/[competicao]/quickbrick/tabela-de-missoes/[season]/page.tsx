@@ -1,16 +1,16 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Column, Mission } from "@/types/TableAnalytics";
 import { INITIAL_COLUMNS, INITIAL_MISSIONS } from "./constants";
 import { RotateCcw } from "lucide-react";
 import { MissionTable } from "@/components/QuickBrick/Tabela-de-analise-de-missoes/MissionTable";
 import { useParams } from "next/navigation";
-import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import { useToast } from "@/app/context/ToastContext";
 import Loader from "@/components/Loader";
 import ModalConfirm, {
   ModalConfirmRef,
 } from "@/components/UI/Modal/ModalConfirm";
+import HeaderTool from "@/components/QuickBrick/HeaderTool";
 
 function MissionTablePage() {
   const params = useParams();
@@ -28,10 +28,8 @@ function MissionTablePage() {
 
   const { addToast } = useToast();
 
-  // Carrega missões baseado na season
   useEffect(() => {
     async function load() {
-      // 1. Verifica localStorage
       const saved = localStorage.getItem(`fll_missions_${season}`);
       if (saved) {
         setMissions(JSON.parse(saved));
@@ -54,7 +52,6 @@ function MissionTablePage() {
     load();
   }, [season]);
 
-  // Salva no localStorage
   useEffect(() => {
     if (missions) {
       localStorage.setItem(`fll_missions_${season}`, JSON.stringify(missions));
@@ -80,7 +77,6 @@ function MissionTablePage() {
     );
   };
 
-  // Enquanto as missões carregam
   if (!missions) {
     return (
       <div className="fixed inset-0 bg-white bg-opacity-30 flex justify-center items-center z-50">
@@ -90,20 +86,13 @@ function MissionTablePage() {
   }
 
   return (
-    <div className="min-h-screen bg-base-100">
+    <div className="">
       <div className="px-4 md:px-8 space-y-4">
-        <Breadcrumbs />
-        <section className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary">
-            Tabela de Missões - Temporada {season.toUpperCase()}
-          </h1>
-          <p className="text-base md:text-lg text-base-content/80 max-w-3xl leading-relaxed">
-            Documente e analise as missões da temporada {season.toUpperCase()}.
-            Utilize a tabela para registrar detalhes, pontuações e estratégias.
-            Ou crie novas colunas e análises personalizadas para atender às suas
-            necessidades.
-          </p>
-        </section>
+        <HeaderTool
+          NameTool="Tabela de Missões"
+          DescriptionTool="Documente e analise as missões da temporada. Utilize a tabela para registrar detalhes, pontuações e estratégias. Ou crie novas colunas e análises personalizadas para atender às suas necessidades."
+          IconTool={RotateCcw}
+        />
 
         <MissionTable
           missions={missions}

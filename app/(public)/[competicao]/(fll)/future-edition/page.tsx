@@ -1,17 +1,10 @@
 import { TriangleAlert } from "lucide-react";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "FLL Future Edition | RoboStage",
-  description:
-    "Na BIOGLOW™ Future Edition, as equipes da FIRST LEGO League participam de uma experiência baseada na biodiversidade utilizando os kits LEGO® Education Computer Science & AI.",
-};
 
 export default function FutureEditionPage() {
   return (
     <div className="flex flex-col min-h-screen space-y-8 py-10">
       <header className="max-w-6xl mx-auto w-full px-6">
-        <div className="flex flex-col-reverse lg:flex-row items-center gap-16">
+        <div className="flex flex-col lg:flex-row items-center gap-16">
           <div className="flex-1">
             <h1 className="inline-block bg-secondary text-secondary-content px-3 py-1 italic font-black text-5xl">
               Future Edition

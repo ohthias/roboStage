@@ -18,8 +18,8 @@ export const NAVIGATION = {
     icon: ToyBrick,
     scorePath: "score",
     options: [
-      { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid},
-      { nome: "Future Edition", path: "future-edition", icon: Gamepad2}
+      { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid },
+      { nome: "Future Edition", path: "future-edition", icon: Gamepad2 },
     ],
     menu: [
       { nome: "Flash Q&A", path: "flash-qa", icon: MessageSquare, description: "Plataforma de perguntas e respostas" },

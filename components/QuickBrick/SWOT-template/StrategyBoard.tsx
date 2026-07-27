@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   Lightbulb,
   Swords,
+  Share,
 } from "lucide-react";
 
 const iconMap = {
@@ -146,12 +147,6 @@ export const StrategyBoard: React.FC = () => {
     setIsExporting(true);
 
     try {
-      // Get Team Data from LocalStorage for the Header
-      const teamDataStr = localStorage.getItem("fll_team_info");
-      const teamData = teamDataStr
-        ? JSON.parse(teamDataStr)
-        : { name: "Time FLL", number: "0000" };
-
       const exportContainer = document.createElement("div");
       exportContainer.style.position = "absolute";
       exportContainer.style.top = "-9999px";
@@ -229,33 +224,28 @@ export const StrategyBoard: React.FC = () => {
 
   return (
     <div className="mt-8 mb-16">
-      {/* Toolbar */}
-      <nav className="flex justify-end items-center mb-6">
-        <div className="flex gap-3">
-          <button
-            onClick={handleExportPdf}
-            disabled={isExporting}
-            className="flex items-center gap-2 btn btn-default btn-sm"
-          >
-            {isExporting ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <FileDown size={18} />
-            )}
-            {isExporting ? "Gerando..." : "Exportar"}
-          </button>
-          <button
-            onClick={clearBoard}
-            className="flex items-center gap-2 btn btn-warning btn-sm btn-soft"
-          >
-            <RotateCcw size={18} />
-            LIMPAR
-          </button>
-        </div>
-      </nav>
+      <section className="flex flex-wrap items-center justify-end gap-4">
+        <button
+          onClick={handleExportPdf}
+          className="btn btn-outline btn-success gap-2"
+        >
+          <Share className="size-5" />
+          { isExporting ? (
+            <Loader2 className="size-5 animate-spin" />
+          ) : (
+            "Exportar"
+          )}
+        </button>
 
-      {/* Unified Input Bar */}
-      <section className="bg-base-100 p-1.2 rounded-lg shadow-lg border border-base-200 mb-8 transform hover:scale-[1.01] transition-transform duration-200 z-20 relative">
+        <button
+          onClick={clearBoard}
+          className="btn btn-outline btn-error gap-2"
+        >
+          <RotateCcw className="size-5" />
+          Resetar
+        </button>
+      </section>
+      <section className="my-6 p-4">
         <form onSubmit={handleGlobalAdd} className="flex flex-col md:flex-row">
           <div className="flex-1 flex items-center px-4 py-1">
             <input
@@ -263,7 +253,7 @@ export const StrategyBoard: React.FC = () => {
               value={globalInputText}
               onChange={(e) => setGlobalInputText(e.target.value)}
               placeholder="Escreva sua ideia, problema ou estratégia aqui..."
-              className="w-full text-md outline-none text-base-content placeholder:text-base-content/60 bg-transparent font-medium"
+              className="w-full text-md text-base-content placeholder:text-base-content/60 bg-transparent font-medium cursor-text focus:bg-base-200 px-4 py-2 transition-all"
             />
           </div>
 
@@ -273,20 +263,22 @@ export const StrategyBoard: React.FC = () => {
                 const Icon = iconMap[config.iconName];
                 const isSelected = selectedCategory === config.id;
                 const activeStyle =
-                  config.colorTheme === "emerald"
-                    ? "bg-emerald-500 text-white shadow-md"
-                    : config.colorTheme === "rose"
-                    ? "bg-rose-500 text-white shadow-md"
-                    : config.colorTheme === "sky"
-                    ? "bg-sky-500 text-white shadow-md"
-                    : "bg-amber-500 text-white shadow-md";
+                  config.colorTheme === "green"
+                    ? "bg-green-500 text-white shadow-md"
+                    : config.colorTheme === "red"
+                    ? "bg-red-500 text-white shadow-md"
+                    : config.colorTheme === "blue"
+                    ? "bg-blue-500 text-white shadow-md"
+                    : config.colorTheme === "yellow"
+                    ? "bg-yellow-500 text-white shadow-md"
+                    : "bg-gray-500 text-white shadow-md";
 
                 return (
                   <button
                     key={config.id}
                     type="button"
                     onClick={() => setSelectedCategory(config.id)}
-                    className={`p-2.5 rounded-lg transition-all duration-200 relative group ${
+                    className={`p-2.5 rounded-lg transition-all duration-200 relative group cursor-pointer ${
                       isSelected
                         ? activeStyle
                         : "text-base-content hover:text-slate-600 hover:bg-base-100"
@@ -317,22 +309,22 @@ export const StrategyBoard: React.FC = () => {
       <div ref={contentRef}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-fr">
           {QUADRANT_CONFIGS.map((config) => (
-            <div key={config.id} className="h-[500px] relative group">
+            <div key={config.id} className="h-[350px] relative group">
               <div
                 className={`absolute -inset-0.5 bg-gradient-to-r 
                 ${
                   config.id === "strengths"
-                    ? "from-green-400 to-emerald-600"
-                    : config.id === "weaknesses"
-                    ? "from-red-400 to-rose-600"
+                    ? "from-green-200 to-emerald-300"
+                    : config.id === "threats"
+                    ? "from-red-200 to-rose-300"
                     : config.id === "opportunities"
-                    ? "from-sky-400 to-blue-600"
-                    : "from-amber-400 to-orange-600"
+                    ? "from-sky-200 to-blue-300"
+                    : "from-amber-200 to-orange-300"
                 } 
-                rounded-lg opacity-30 group-hover:opacity-70 blur transition duration-500`}
+                rounded-lg transition duration-500`}
               ></div>
 
-              <div className="relative h-full bg-white rounded-lg">
+              <div className="relative h-full rounded-lg">
                 <SwotQuadrant
                   config={config}
                   items={swotData[config.id]}

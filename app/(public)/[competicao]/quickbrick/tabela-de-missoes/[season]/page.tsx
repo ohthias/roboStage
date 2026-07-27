@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Column, Mission } from "@/types/TableAnalytics";
 import { INITIAL_COLUMNS, INITIAL_MISSIONS } from "./constants";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Table } from "lucide-react";
 import { MissionTable } from "@/components/QuickBrick/Tabela-de-analise-de-missoes/MissionTable";
 import { useParams } from "next/navigation";
 import { useToast } from "@/app/context/ToastContext";
@@ -91,7 +91,7 @@ function MissionTablePage() {
         <HeaderTool
           NameTool="Tabela de Missões"
           DescriptionTool="Documente e analise as missões da temporada. Utilize a tabela para registrar detalhes, pontuações e estratégias. Ou crie novas colunas e análises personalizadas para atender às suas necessidades."
-          IconTool={RotateCcw}
+          IconTool={Table}
         />
 
         <MissionTable

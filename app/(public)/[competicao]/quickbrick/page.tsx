@@ -26,7 +26,7 @@ export default function QuickBrickHome() {
   }, []);
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pb-8">
+    <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pb-8 pt-4">
       <Header
         type="QuickBrick"
         name="QuickBrick"

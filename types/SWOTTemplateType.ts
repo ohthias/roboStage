@@ -22,7 +22,7 @@ export interface SwotQuadrantConfig {
   title: string;
   description: string;
   iconName: "Shield" | "AlertTriangle" | "Lightbulb" | "Swords";
-  colorTheme: "emerald" | "rose" | "sky" | "amber";
+  colorTheme: "green" | "yellow" | "blue" | "red";
 }
 
 export const QUADRANT_CONFIGS: SwotQuadrantConfig[] = [
@@ -31,27 +31,27 @@ export const QUADRANT_CONFIGS: SwotQuadrantConfig[] = [
     title: "Pontos Fortes",
     description: "O que nosso robô faz bem?",
     iconName: "Shield",
-    colorTheme: "emerald",
+    colorTheme: "green",
   },
   {
     id: SwotCategory.Weaknesses,
     title: "Pontos de Melhoria",
     description: "Onde o robô falha?",
     iconName: "AlertTriangle",
-    colorTheme: "rose",
+    colorTheme: "yellow",
   },
   {
     id: SwotCategory.Opportunities,
     title: "Oportunidades",
     description: "Estratégias para ganhar pontos.",
     iconName: "Lightbulb",
-    colorTheme: "sky",
+    colorTheme: "blue",
   },
   {
     id: SwotCategory.Threats,
     title: "Riscos e Desafios",
     description: "Prazos, problemas na mesa e desafios externos.",
     iconName: "Swords",
-    colorTheme: "amber",
+    colorTheme: "red",
   },
 ];

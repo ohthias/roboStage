@@ -71,7 +71,7 @@ export default function FerramentasSection({
                 onClick={() => router.push(`/fll/quickbrick/matriz-swot/${s}`)}
                 className="group/card w-full flex items-center justify-center flex-col gap-2 px-2 py-1 rounded-xl border border-base-300/60 bg-base-100 hover:border-primary hover:bg-base-200/50 transition-all duration-300 cursor-pointer"
               >
-                <div className="flex itens-center gap-2 flex-col justify-center">
+                <div className="flex items-center gap-2 flex-col justify-center">
                   <Image
                     src={season?.image || "/images/icons/default-season.png"}
                     alt={season?.name || "Temporada FLL"}

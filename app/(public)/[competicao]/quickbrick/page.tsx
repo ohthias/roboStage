@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import FerramentasSection from "./FerramentasSection";
+import FerramentasSection from "../../../../components/QuickBrick/FerramentasSection";
 import Header from "@/components/UI/Header";
 
 const seasonLogos: Record<string, { name: string; image: string }> = {

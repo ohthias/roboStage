@@ -5,8 +5,7 @@ import { useToast } from "@/app/context/ToastContext";
 import {
   ArrowUturnLeftIcon,
 } from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
-import { Image } from "lucide-react";
+import { Image, RotateCcw } from "lucide-react";
 
 export const SWOTCanvas = ({
   missions,
@@ -45,7 +44,6 @@ export const SWOTCanvas = ({
   ];
 
   const { addToast } = useToast();
-  const router = useRouter();
   const [swot, setSwot] = useState<Record<string, any[]>>({
     strengths: [],
     weaknesses: [],
@@ -61,14 +59,17 @@ export const SWOTCanvas = ({
     if (!transferData) return;
 
     const mission = JSON.parse(transferData);
+    if (!fromQuadrant) {
+      setMissions(missions.filter((m) => m.id !== mission.id));
+    }
 
     setSwot((prev) => {
-      let updated = { ...prev };
-      if (fromQuadrant)
+      const updated = { ...prev };
+      if (fromQuadrant) {
         updated[fromQuadrant] = updated[fromQuadrant].filter(
           (m) => m.id !== mission.id
         );
-      else setMissions(missions.filter((m) => m.id !== mission.id));
+      }
       updated[targetQuadrant] = [...updated[targetQuadrant], mission];
       return updated;
     });
@@ -131,7 +132,25 @@ export const SWOTCanvas = ({
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="space-y-6">
+      <section className="flex flex-wrap items-center justify-end gap-4">
+        <button
+          onClick={exportPNG}
+          className="btn btn-outline btn-success gap-2"
+        >
+          <Image className="size-5" />
+          Exportar
+        </button>
+
+        <button
+          onClick={resetSwot}
+          className="btn btn-outline btn-error gap-2"
+        >
+          <RotateCcw className="size-5" />
+          Resetar
+        </button>
+      </section>
+
       <div className="flex flex-col lg:flex-row gap-6 max-h-[600px]">
         {/* Missões disponíveis */}
         <div className="w-40 h-[600px] overflow-y-auto p-3 bg-base-200 border border-base-300 rounded-lg">
@@ -196,27 +215,6 @@ export const SWOTCanvas = ({
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Ações */}
-      <div className="mt-10 flex flex-col gap-6">
-        {/* Ações principais */}
-        <div className="flex flex-wrap items-center justify-end gap-4">
-          <button
-            onClick={exportPNG}
-            className="btn btn-outline btn-accent gap-2"
-          >
-            <Image className="size-5" />
-            Exportar
-          </button>
-          <button
-            onClick={resetSwot}
-            className="btn btn-warning btn-outline gap-2"
-          >
-            <ArrowUturnLeftIcon className="size-5" />
-            Limpar Matriz
-          </button>
         </div>
       </div>
     </div>

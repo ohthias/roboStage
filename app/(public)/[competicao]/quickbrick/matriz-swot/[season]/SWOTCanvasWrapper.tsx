@@ -78,7 +78,7 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
           DescriptionTool={`Organize estrategicamente as missões da ${seasons[selectedSeason]?.name.toLocaleUpperCase() || "temporada"} distribuindo-as nos quadrantes da matriz: Forças, Fraquezas, Oportunidades e Ameaças.`}
           IconTool={LayoutGrid}
         />
-        <div className="flex flex-col items-start mt-8 mb-16">
+        <div className="mt-8 mb-16">
           <SWOTCanvas
             missions={missions}
             setMissions={setMissions}

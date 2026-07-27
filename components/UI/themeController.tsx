@@ -3,29 +3,34 @@
 import { useEffect, useState } from "react";
 import { Sun, Moon } from "lucide-react";
 
+const LIGHT_THEME = "lightScheme";
+const DARK_THEME = "darkScheme";
+const DEFAULT_THEME = LIGHT_THEME;
+const THEME_STORAGE_KEY = "theme";
+
 export function ThemeController() {
-  const [theme, setTheme] = useState<string>("bumblebee");
+  const [theme, setTheme] = useState<string>(DEFAULT_THEME);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedTheme = localStorage.getItem("theme") || "bumblebee";
+      const savedTheme = sessionStorage.getItem(THEME_STORAGE_KEY) || DEFAULT_THEME;
       setTheme(savedTheme);
       document.documentElement.setAttribute("data-theme", savedTheme);
     }
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = theme === "lightScheme" ? "darkScheme" : "lightScheme";
+    const newTheme = theme === LIGHT_THEME ? DARK_THEME : LIGHT_THEME;
     setTheme(newTheme);
     document.documentElement.setAttribute("data-theme", newTheme);
-    localStorage.setItem("theme", newTheme);
+    sessionStorage.setItem(THEME_STORAGE_KEY, newTheme);
   };
 
   return (
     <label className="swap swap-rotate cursor-pointer hover:bg-base-300 p-2 rounded-full transition-colors duration-300">
       <input
         type="checkbox"
-        checked={theme === "darkScheme"}
+        checked={theme === DARK_THEME}
         onChange={toggleTheme}
       />
 

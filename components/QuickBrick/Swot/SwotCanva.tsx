@@ -2,17 +2,12 @@
 import { useState, useRef } from "react";
 import html2canvas from "html2canvas-pro";
 import { useToast } from "@/app/context/ToastContext";
-import {
-  ArrowUturnLeftIcon,
-} from "@heroicons/react/24/outline";
 import { Image, RotateCcw } from "lucide-react";
 
 export const SWOTCanvas = ({
   missions,
   setMissions,
-  seasons,
   selectedSeason,
-  setSelectedSeason,
 }: {
   missions: any[];
   setMissions: (missions: any[]) => void;
@@ -24,22 +19,22 @@ export const SWOTCanvas = ({
     {
       id: "strengths",
       label: "Forças",
-      color: ["bg-green-100", "border-green-300"],
+      color: ["bg-success/20", "border-success", "text-success"],
     },
     {
       id: "weaknesses",
       label: "Fraquezas",
-      color: ["bg-red-100", "border-red-300"],
+      color: ["bg-error/20", "border-error", "text-error"],
     },
     {
       id: "opportunities",
       label: "Oportunidades",
-      color: ["bg-blue-100", "border-blue-300"],
+      color: ["bg-info/20", "border-info", "text-info"],
     },
     {
       id: "threats",
       label: "Ameaças",
-      color: ["bg-yellow-100", "border-yellow-300"],
+      color: ["bg-warning/20", "border-warning", "text-warning"],
     },
   ];
 
@@ -189,10 +184,10 @@ export const SWOTCanvas = ({
               key={q.id}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => handleDrop(e, q.id)}
-              className={`relative flex flex-col rounded-lg border ${q.color[0]} ${q.color[1]} bg-base-100/80 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300`}
+              className={`relative flex flex-col rounded-lg border ${q.color[0]} ${q.color[1]} ${q.color[2]} bg-base-100/80 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300`}
             >
               <div className="card-body p-3 overflow-hidden">
-                <h2 className="card-title text-black text-base">{q.label}</h2>
+                <h2 className="card-title text-base">{q.label}</h2>
                 <div className="flex flex-wrap gap-2 overflow-y-auto">
                   {swot[q.id].map((m) => (
                     <div

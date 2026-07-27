@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SWOTCanvas } from "@/components/QuickBrick/SwotCanva";
+import { SWOTCanvas } from "@/components/QuickBrick/Swot/SwotCanva";
 import CardMobileNotUse from "@/components/MobileNotUse";
 import HeaderTool from "@/components/QuickBrick/HeaderTool";
 import { LayoutGrid } from "lucide-react";
@@ -71,23 +71,21 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
   }
 
   return (
-    <>
-      <div className="px-4 md:px-8">
-        <HeaderTool
-          NameTool="Matriz SWOT"
-          DescriptionTool={`Organize estrategicamente as missões da ${seasons[selectedSeason]?.name.toLocaleUpperCase() || "temporada"} distribuindo-as nos quadrantes da matriz: Forças, Fraquezas, Oportunidades e Ameaças.`}
-          IconTool={LayoutGrid}
+    <div className="px-4 md:px-8">
+      <HeaderTool
+        NameTool="Matriz SWOT"
+        DescriptionTool={`Organize estrategicamente as missões da ${seasons[selectedSeason]?.name.toLocaleUpperCase() || "temporada"} distribuindo-as nos quadrantes da matriz: Forças, Fraquezas, Oportunidades e Ameaças.`}
+        IconTool={LayoutGrid}
+      />
+      <div className="mt-8 mb-16">
+        <SWOTCanvas
+          missions={missions}
+          setMissions={setMissions}
+          seasons={availableSeasons}
+          selectedSeason={selectedSeason}
+          setSelectedSeason={setSelectedSeason}
         />
-        <div className="mt-8 mb-16">
-          <SWOTCanvas
-            missions={missions}
-            setMissions={setMissions}
-            seasons={availableSeasons}
-            selectedSeason={selectedSeason}
-            setSelectedSeason={setSelectedSeason}
-          />
-        </div>
       </div>
-    </>
+    </div>
   );
 }

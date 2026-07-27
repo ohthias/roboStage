@@ -131,7 +131,7 @@ export default function FerramentasSection({
         "Análise seu robô usando a ferramenta SWOT para identificar pontos de força, fraquezas, oportunidades e ameaças.",
       categoria: "Documentar",
       icon: <BookText className="w-5 h-5" />,
-      link: "/fll/quickbrick/swot",
+      link: "/fll/quickbrick/matriz-swot",
       image: "/images/QuickBrick/MatrizSWOT.png",
       customContent: null,
     },

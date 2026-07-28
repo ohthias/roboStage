@@ -1,11 +1,10 @@
 "use client";
 
-import { forwardRef, useRef } from "react";
+import { useRef } from "react";
 import { useHeatmap } from "@/hooks/useHeatmap";
 import HeatmapCanvas, { HeatmapCanvasRef } from "./HeatmapCanvas";
 import HeatmapControls from "./HeatmapControls";
 import { exportCanvasPNG } from "@/utils/heatmap/exportCanvas";
-import Breadcrumbs from "../../UI/Breadcrumbs";
 import { useToast } from "@/app/context/ToastContext";
 import HeaderTool from "../HeaderTool";
 import { Flame } from "lucide-react";
@@ -45,8 +44,10 @@ export default function HeatmapPage() {
   }
 
   function handleClear() {
-    clear();
-    addToast("Heatmap limpo!");
+    if (confirm("Tem certeza que deseja limpar o heatmap?")) {
+      clear();
+      addToast("Heatmap limpo!");
+    }
   }
 
   function handleUndo() {
@@ -62,8 +63,8 @@ export default function HeatmapPage() {
         IconTool={Flame}
       />
 
-      <div className="flex justify-center mt-8 mb-16">
-        <aside className="w-[220px] flex-shrink-0 flex flex-col gap-2 overflow-y-auto max-h-[500px]">
+      <div className="flex justify-center mt-8 mb-16 h-[560px]">
+        <aside className="w-64 flex flex-col bg-base-200 border-r border-base-300 p-4 rounded-md gap-4">
           <HeatmapControls
             config={config}
             mode={mode}

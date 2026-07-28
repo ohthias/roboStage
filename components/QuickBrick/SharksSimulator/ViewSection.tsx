@@ -25,7 +25,6 @@ import {
 import Mat from "./Mat";
 import CodeEditor from "./CodeEditor";
 import VisualEditor from "./VisualEditor";
-import OnboardingTour, { TourStep } from "./OnboardingTour";
 import {
   calculateTrajectory,
   parseCode,
@@ -40,45 +39,6 @@ import {
   RobotConfig,
   Command,
 } from "@/types/SharksSimulator.types";
-
-// --- Tour Configuration ---
-const TOUR_STEPS: TourStep[] = [
-  {
-    targetId: null,
-    title: "Bem-vindo ao FLL Simulator",
-    content:
-      "Este é um simulador de estratégia moderno e minimalista. Vamos explorar as principais funcionalidades.",
-    position: "center",
-  },
-  {
-    targetId: "tour-controls",
-    title: "Dashboard",
-    content:
-      "Aqui você controla o fluxo do tempo. Visualize a duração exata e controle a execução da estratégia.",
-    position: "bottom",
-  },
-  {
-    targetId: "tour-settings",
-    title: "Parâmetros",
-    content:
-      "Ajuste o ambiente, defina a posição inicial com precisão e personalize seu robô.",
-    position: "right",
-  },
-  {
-    targetId: "tour-editor-tabs",
-    title: "Modos de Criação",
-    content:
-      "Alterne fluidamente entre programação textual (.fll) e edição visual baseada em blocos.",
-    position: "top",
-  },
-  {
-    targetId: "tour-canvas",
-    title: "Arena Virtual",
-    content:
-      "O tapete interativo. Clique para definir posições ou criar movimentos organicamente.",
-    position: "left",
-  },
-];
 
 const ViewSection: React.FC = () => {
   // --- State ---
@@ -480,31 +440,7 @@ const ViewSection: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen w-full bg-base-300 overflow-hidden font-sans">
-      <OnboardingTour
-        isOpen={isTourOpen}
-        onClose={() => setIsTourOpen(false)}
-        onComplete={handleTourComplete}
-        steps={TOUR_STEPS}
-      />
-
-      {/* Modern Top Header / Navbar using daisyUI */}
       <header className="navbar bg-base-100 border-b border-base-content/10 px-4 h-14 shrink-0 shadow-sm z-40 flex items-center justify-between">
-        {/* Brand/Logo Area */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-md">
-            <Box size={16} className="text-primary-content" strokeWidth={2.5} />
-          </div>
-          <div>
-            <h1 className="text-sm font-extrabold tracking-tight text-base-content">
-              FLL Strat Simulator
-            </h1>
-            <p className="text-[10px] opacity-50 font-mono">
-              Simulador Virtual
-            </p>
-          </div>
-        </div>
-
-        {/* Dashboard Control Box (tour-controls) */}
         <div id="tour-controls" className="flex items-center gap-3">
           <div className="join border border-base-content/10 shadow-sm bg-base-200 p-0.5 rounded-lg">
             <button
@@ -537,22 +473,6 @@ const ViewSection: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Right Corner Buttons */}
-        <div className="flex items-center gap-2">
-          {/* Quick Strategy Name for transparency */}
-          <span className="text-[11px] font-medium opacity-65 hidden xl:inline border border-base-content/10 bg-base-200 px-2 py-0.5 rounded">
-            📄 {strategyName}
-          </span>
-
-          <button
-            onClick={() => setIsTourOpen(true)}
-            className="btn btn-circle btn-ghost btn-xs text-base-content/70 hover:text-base-content"
-            title="Ver Instruções"
-          >
-            <HelpCircle size={16} />
-          </button>
         </div>
       </header>
 

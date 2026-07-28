@@ -41,7 +41,7 @@ export default function HelpDesk() {
       <main className="min-h-screen bg-base-100">
         <div className="max-w-5xl mx-auto px-4 py-12">
           <Header
-            type="Help Desk"
+            type="Help Desk FLL"
             name="Encontre"
             highlight="a ajuda que você precisa"
             description="Explore nossas ferramentas e recursos para tirar suas dúvidas e aprimorar sua experiência com o RoboStage."

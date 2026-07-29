@@ -10,17 +10,13 @@ import {
   Play,
   Pause,
   RotateCcw,
-  Box,
   Target,
   Code2,
   MousePointerClick,
   Undo2,
   Redo2,
-  HelpCircle,
-  Download,
-  Upload,
-  Plus,
   Minus,
+  Plus,
 } from "lucide-react";
 import Mat from "./Mat";
 import CodeEditor from "./CodeEditor";
@@ -40,11 +36,67 @@ import {
   Command,
 } from "@/types/SharksSimulator.types";
 
+const Panel: React.FC<{
+  title: string;
+  className?: string;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDragLeave?: () => void;
+  onDrop?: (e: React.DragEvent) => void;
+  children: React.ReactNode;
+}> = ({ title, className = "", onDragOver, onDragLeave, onDrop, children }) => (
+  <section
+    onDragOver={onDragOver}
+    onDragLeave={onDragLeave}
+    onDrop={onDrop}
+    className={`rounded-lg bg-base-100 border border-base-content/10 p-3.5 space-y-3 transition-shadow ${className}`}
+  >
+    <h2 className="text-[11px] font-bold uppercase tracking-wider text-base-content/60">
+      {title}
+    </h2>
+    {children}
+  </section>
+);
+
+const NumberField: React.FC<{
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+}> = ({ label, value, onChange }) => (
+  <label className="form-control w-full">
+    <span className="text-[10px] font-medium text-base-content/50 mb-1">
+      {label}
+    </span>
+    <input
+      type="number"
+      className="input input-bordered input-sm font-mono text-xs w-full"
+      value={value}
+      onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+    />
+  </label>
+);
+
+
 const ViewSection: React.FC = () => {
-  // --- State ---
   const [history, setHistory] = useState<string[]>([DEFAULT_CODE]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const code = history[historyIndex];
+
+  const updateCode = useCallback(
+    (newCode: string) => {
+      setHistory((prev) => {
+        if (newCode === prev[historyIndex]) return prev;
+        const trimmed = prev.slice(0, historyIndex + 1);
+        const next = [...trimmed, newCode].slice(-50);
+        setHistoryIndex(next.length - 1);
+        return next;
+      });
+    },
+    [historyIndex],
+  );
+
+  const undo = () => historyIndex > 0 && setHistoryIndex((i) => i - 1);
+  const redo = () =>
+    historyIndex < history.length - 1 && setHistoryIndex((i) => i + 1);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -52,11 +104,7 @@ const ViewSection: React.FC = () => {
   const [zoom, setZoom] = useState(4.0);
   const [editorMode, setEditorMode] = useState<"code" | "visual">("code");
 
-  const [startConfig, setStartConfig] = useState<{
-    x: number;
-    y: number;
-    angle: number;
-  }>({
+  const [startConfig, setStartConfig] = useState({
     x: START_X,
     y: START_Y,
     angle: START_ANGLE,
@@ -71,117 +119,76 @@ const ViewSection: React.FC = () => {
     customPath: "M 50 0 L 100 100 L 50 80 L 0 100 Z",
   });
 
-  const [isTourOpen, setIsTourOpen] = useState(false);
   const [robotState, setRobotState] = useState<RobotState>({
     x: START_X,
     y: START_Y,
     angle: START_ANGLE,
   });
-  const [trajectory, setTrajectory] = useState<any[]>([]);
 
   const segmentsRef = useRef<AnimationSegment[]>([]);
   const animationReqRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
   const elapsedWhenPausedRef = useRef<number>(0);
 
-  // --- Logic ---
-  const updateCode = (newCode: string) => {
-    if (newCode === code) return;
-    const newHistory = history.slice(0, historyIndex + 1);
-    if (newHistory.length >= 50) newHistory.shift();
-    newHistory.push(newCode);
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-  };
+  const commands = useMemo(() => parseCode(code), [code]);
 
-  const undo = () => historyIndex > 0 && setHistoryIndex(historyIndex - 1);
-  const redo = () =>
-    historyIndex < history.length - 1 && setHistoryIndex(historyIndex + 1);
-
-  useEffect(() => {
-    if (!localStorage.getItem("fll-sim-tour-completed"))
-      setTimeout(() => setIsTourOpen(true), 1000);
-  }, []);
-
-  const handleTourComplete = () => {
-    setIsTourOpen(false);
-    localStorage.setItem("fll-sim-tour-completed", "true");
-  };
-
-  // 1. Calculate Trajectory on Input Change
-  useEffect(() => {
-    const commands = parseCode(code);
-    const newTrajectory = calculateTrajectory(
-      commands,
-      startConfig.x,
-      startConfig.y,
-      startConfig.angle,
-    );
-    setTrajectory(newTrajectory);
-  }, [code, startConfig]);
-
-  // 2. Reset Robot logic
-  useEffect(() => {
-    setIsPlaying(false);
-    if (animationReqRef.current) cancelAnimationFrame(animationReqRef.current);
-    setRobotState({
-      x: startConfig.x,
-      y: startConfig.y,
-      angle: startConfig.angle,
-    });
-    elapsedWhenPausedRef.current = 0;
-    setTime(0);
-  }, [code, startConfig]);
-
-  // 3. Handle Speed Change
-  useEffect(() => {
-    if (isPlaying) {
-      const commands = parseCode(code);
-      const traj = calculateTrajectory(
+  const trajectory = useMemo(
+    () =>
+      calculateTrajectory(
         commands,
         startConfig.x,
         startConfig.y,
         startConfig.angle,
-      );
-      const totalDurationOld =
+      ),
+    [commands, startConfig],
+  );
+
+  const segments = useMemo(
+    () => generateSegments(trajectory, speed),
+    [trajectory, speed],
+  );
+
+  const totalDuration =
+    segments.length > 0 ? segments[segments.length - 1].endTime / 1000 : 0;
+  useEffect(() => {
+    setIsPlaying(false);
+    if (animationReqRef.current) cancelAnimationFrame(animationReqRef.current);
+    setRobotState({ x: startConfig.x, y: startConfig.y, angle: startConfig.angle });
+    elapsedWhenPausedRef.current = 0;
+    setTime(0);
+  }, [code, startConfig]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      const oldDuration =
         segmentsRef.current.length > 0
           ? segmentsRef.current[segmentsRef.current.length - 1].endTime
           : 1;
-      const currentElapsed = performance.now() - startTimeRef.current;
-      const progress = currentElapsed / totalDurationOld;
-      const newSegments = generateSegments(traj, speed);
-      segmentsRef.current = newSegments;
-      const totalDurationNew =
-        newSegments.length > 0
-          ? newSegments[newSegments.length - 1].endTime
-          : 0;
-      const newElapsed = progress * totalDurationNew;
-      startTimeRef.current = performance.now() - newElapsed;
+      const progress = (performance.now() - startTimeRef.current) / oldDuration;
+      const newDuration =
+        segments.length > 0 ? segments[segments.length - 1].endTime : 0;
+      startTimeRef.current = performance.now() - progress * newDuration;
     }
+    segmentsRef.current = segments;
   }, [speed]);
 
-  const totalDuration = useMemo(() => {
-    const segments = generateSegments(trajectory, speed);
-    if (segments.length === 0) return 0;
-    return segments[segments.length - 1].endTime / 1000;
-  }, [trajectory, speed]);
+  useEffect(() => {
+    segmentsRef.current = segments;
+  }, [segments]);
 
   const animate = useCallback(() => {
-    const now = performance.now();
-    const elapsed = now - startTimeRef.current;
-    const currentTotalDuration =
+    const elapsed = performance.now() - startTimeRef.current;
+    const duration =
       segmentsRef.current.length > 0
         ? segmentsRef.current[segmentsRef.current.length - 1].endTime
         : 0;
 
-    if (elapsed > currentTotalDuration) {
+    if (elapsed > duration) {
       setIsPlaying(false);
-      setTime(currentTotalDuration / 1000);
-      elapsedWhenPausedRef.current = currentTotalDuration;
+      setTime(duration / 1000);
+      elapsedWhenPausedRef.current = duration;
       if (segmentsRef.current.length > 0) {
-        setRobotState(
-          segmentsRef.current[segmentsRef.current.length - 1].endState,
-        );
+        setRobotState(segmentsRef.current[segmentsRef.current.length - 1].endState);
       }
       return;
     }
@@ -197,38 +204,23 @@ const ViewSection: React.FC = () => {
   const togglePlay = () => {
     if (isPlaying) {
       setIsPlaying(false);
-      const now = performance.now();
-      elapsedWhenPausedRef.current = now - startTimeRef.current;
-      if (animationReqRef.current)
-        cancelAnimationFrame(animationReqRef.current);
-    } else {
-      const commands = parseCode(code);
-      const traj = calculateTrajectory(
-        commands,
-        startConfig.x,
-        startConfig.y,
-        startConfig.angle,
-      );
-      segmentsRef.current = generateSegments(traj, speed);
-
-      const currentTotalDuration =
-        segmentsRef.current.length > 0
-          ? segmentsRef.current[segmentsRef.current.length - 1].endTime
-          : 0;
-
-      if (
-        elapsedWhenPausedRef.current >= currentTotalDuration ||
-        elapsedWhenPausedRef.current === 0
-      ) {
-        startTimeRef.current = performance.now();
-        elapsedWhenPausedRef.current = 0;
-      } else {
-        startTimeRef.current = performance.now() - elapsedWhenPausedRef.current;
-      }
-
-      setIsPlaying(true);
-      animationReqRef.current = requestAnimationFrame(animate);
+      elapsedWhenPausedRef.current = performance.now() - startTimeRef.current;
+      if (animationReqRef.current) cancelAnimationFrame(animationReqRef.current);
+      return;
     }
+
+    segmentsRef.current = segments;
+    const duration = segments.length > 0 ? segments[segments.length - 1].endTime : 0;
+
+    if (elapsedWhenPausedRef.current >= duration || elapsedWhenPausedRef.current === 0) {
+      startTimeRef.current = performance.now();
+      elapsedWhenPausedRef.current = 0;
+    } else {
+      startTimeRef.current = performance.now() - elapsedWhenPausedRef.current;
+    }
+
+    setIsPlaying(true);
+    animationReqRef.current = requestAnimationFrame(animate);
   };
 
   const handleReset = () => {
@@ -236,23 +228,13 @@ const ViewSection: React.FC = () => {
     if (animationReqRef.current) cancelAnimationFrame(animationReqRef.current);
     elapsedWhenPausedRef.current = 0;
     setTime(0);
-    setRobotState({
-      x: startConfig.x,
-      y: startConfig.y,
-      angle: startConfig.angle,
-    });
+    setRobotState({ x: startConfig.x, y: startConfig.y, angle: startConfig.angle });
   };
 
-  const handleMapClick = (
-    targetX: number,
-    targetY: number,
-    isShiftKey: boolean,
-  ) => {
+  const handleMapClick = (targetX: number, targetY: number, isShiftKey: boolean) => {
     if (isSettingStart) {
       if (isShiftKey) {
-        const dx = targetX - startConfig.x;
-        const dy = targetY - startConfig.y;
-        const angleRad = Math.atan2(dx, dy);
+        const angleRad = Math.atan2(targetX - startConfig.x, targetY - startConfig.y);
         setStartConfig((prev) => ({
           ...prev,
           angle: parseFloat(((angleRad * 180) / Math.PI).toFixed(1)),
@@ -268,240 +250,88 @@ const ViewSection: React.FC = () => {
     }
 
     if (editorMode !== "visual") return;
-    const commands = parseCode(code);
-    const traj = calculateTrajectory(
-      commands,
-      startConfig.x,
-      startConfig.y,
-      startConfig.angle,
-    );
-    const lastPoint = traj[traj.length - 1];
+
+    const lastPoint = trajectory[trajectory.length - 1];
     const dx = targetX - lastPoint.x;
     const dy = targetY - lastPoint.y;
     const dist = Math.hypot(dx, dy);
-    const targetAngleRad = Math.atan2(dx, dy);
-    const targetAngleDeg = (targetAngleRad * 180) / Math.PI;
+    const targetAngleDeg = (Math.atan2(dx, dy) * 180) / Math.PI;
     let angleDiff = targetAngleDeg - (lastPoint.angle % 360);
     if (angleDiff > 180) angleDiff -= 360;
     if (angleDiff < -180) angleDiff += 360;
 
     const newCommands: Command[] = [];
     if (Math.abs(angleDiff) > 1.0)
-      newCommands.push({
-        type: "giro",
-        val: parseFloat(angleDiff.toFixed(1)),
-        speed: 60,
-      });
+      newCommands.push({ type: "giro", val: parseFloat(angleDiff.toFixed(1)), speed: 60 });
     if (dist > 0.5)
-      newCommands.push({
-        type: "reto",
-        val: parseFloat(dist.toFixed(1)),
-        speed: 50,
-      });
+      newCommands.push({ type: "reto", val: parseFloat(dist.toFixed(1)), speed: 50 });
     if (newCommands.length > 0)
       updateCode(commandsToCode([...commands, ...newCommands]));
   };
 
-  // --- Strategy Persistence ---
-  const [strategyName, setStrategyName] = useState<string>("Estratégia FLL");
-  const [alert, setAlert] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleExport = () => {
-    const data = {
-      $schema: "fll-simulation-strategy",
-      version: 1,
-      name: strategyName,
-      code,
-      startConfig,
-      robotConfig,
-    };
-    const jsonString = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    const sanitizedName =
-      strategyName.replace(/[^a-z0-9_áéíóúãõçâêôàèìòù]/gi, "_").trim() ||
-      "estrategia";
-    link.href = url;
-    link.download = `${sanitizedName}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImportFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const text = e.target?.result as string;
-        const data = JSON.parse(text);
-
-        if (typeof data !== "object" || data === null) {
-          throw new Error("Formato inválido");
-        }
-
-        if (typeof data.code === "string") {
-          updateCode(data.code);
-        }
-
-        if (data.startConfig && typeof data.startConfig === "object") {
-          const x =
-            typeof data.startConfig.x === "number"
-              ? data.startConfig.x
-              : START_X;
-          const y =
-            typeof data.startConfig.y === "number"
-              ? data.startConfig.y
-              : START_Y;
-          const angle =
-            typeof data.startConfig.angle === "number"
-              ? data.startConfig.angle
-              : START_ANGLE;
-          setStartConfig({ x, y, angle });
-        }
-
-        if (data.robotConfig && typeof data.robotConfig === "object") {
-          setRobotConfig((prev) => ({
-            widthCm:
-              typeof data.robotConfig.widthCm === "number"
-                ? data.robotConfig.widthCm
-                : prev.widthCm,
-            lengthCm:
-              typeof data.robotConfig.lengthCm === "number"
-                ? data.robotConfig.lengthCm
-                : prev.lengthCm,
-            shape: ["tank", "4x4", "fwd", "rwd", "custom"].includes(
-              data.robotConfig.shape,
-            )
-              ? data.robotConfig.shape
-              : prev.shape,
-            color:
-              typeof data.robotConfig.color === "string"
-                ? data.robotConfig.color
-                : prev.color,
-            customPath:
-              typeof data.robotConfig.customPath === "string"
-                ? data.robotConfig.customPath
-                : prev.customPath,
-          }));
-        }
-
-        if (typeof data.name === "string") {
-          setStrategyName(data.name);
-        } else {
-          setStrategyName("Estratégia Importada");
-        }
-
-        setAlert({
-          type: "success",
-          message: "Estratégia carregada com sucesso!",
-        });
-        setTimeout(() => setAlert(null), 4000);
-      } catch (err) {
-        setAlert({
-          type: "error",
-          message: "Erro: Arquivo JSON de estratégia inválido.",
-        });
-        setTimeout(() => setAlert(null), 4000);
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      handleImportFile(file);
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleImportFile(file);
-    }
-  };
-
   return (
-    <div className="flex flex-col h-screen w-full bg-base-300 overflow-hidden font-sans">
-      <header className="navbar bg-base-100 border-b border-base-content/10 px-4 h-14 shrink-0 shadow-sm z-40 flex items-center justify-between">
-        <div id="tour-controls" className="flex items-center gap-3">
-          <div className="join border border-base-content/10 shadow-sm bg-base-200 p-0.5 rounded-lg">
+    <div className="flex flex-col w-full overflow-hidden font-sans">
+      <header className="h-14 shrink-0 px-4 flex items-center justify-between z-40">
+        <div className="flex items-center gap-4">
+          <div className="join">
             <button
               onClick={togglePlay}
-              className={`join-item btn btn-xs h-7 min-h-0 ${isPlaying ? "btn-warning" : "btn-primary"} px-3 gap-1`}
+              className={`join-item btn btn-sm ${isPlaying ? "btn-warning" : "btn-primary"} gap-1.5`}
             >
-              {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+              {isPlaying ? <Pause size={14} /> : <Play size={14} />}
               {isPlaying ? "Pausar" : "Iniciar"}
             </button>
             <button
               onClick={handleReset}
-              className="join-item btn btn-xs h-7 min-h-0 btn-ghost text-base-content/70 hover:text-base-content px-2"
-              title="Reiniciar simulação"
+              className="join-item btn btn-sm btn-ghost"
+              title="Reiniciar"
             >
-              <RotateCcw size={12} />
+              <RotateCcw size={14} />
             </button>
           </div>
 
-          {/* Time & Duration Stats */}
-          <div className="stats bg-base-200 border border-base-content/5 py-0.5 px-3 rounded-lg flex items-center shadow-sm">
-            <div className="stat p-0 flex flex-col justify-center min-w-[100px]">
-              <div className="stat-title text-[9px] font-bold uppercase tracking-wider opacity-60">
-                Tempo
-              </div>
-              <div className="stat-value text-xs font-mono text-primary flex items-baseline gap-1">
-                {time.toFixed(2)}s
-                <span className="text-[10px] text-base-content/40 font-normal">
-                  / {totalDuration.toFixed(2)}s
-                </span>
-              </div>
-            </div>
-          </div>
+          <span className="font-mono text-sm text-base-content/70">
+            <span className="text-primary font-semibold">{time.toFixed(2)}s</span>
+            <span className="text-base-content/40"> / {totalDuration.toFixed(2)}s</span>
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 w-48">
+          <span className="text-[10px] font-medium text-base-content/50 whitespace-nowrap">
+            Velocidade
+          </span>
+          <input
+            type="range"
+            min={0.1}
+            max={5.0}
+            step={0.1}
+            value={speed}
+            onChange={(e) => setSpeed(parseFloat(e.target.value))}
+            className="range range-xs range-primary"
+          />
+          <span className="text-xs font-mono w-8 text-right">{speed.toFixed(1)}x</span>
         </div>
       </header>
 
-      {/* Main Workspace below navbar */}
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden w-full h-full relative">
-        {/* Left Workspace Panel: Full Height Editor */}
-        <aside className="w-full lg:w-[300px] bg-base-200 flex flex-col z-20 h-full shrink-0 relative border-r border-base-content/10">
-          {/* Tabs Selector at the top of Left Workspace panel */}
-          <div
-            id="tour-editor-tabs"
-            className="bg-base-100 p-1.5 border-b border-base-content/10 flex items-center justify-between shrink-0"
-          >
-            <div className="tabs tabs-boxed tabs-xs bg-base-300 p-0.5 rounded-md flex gap-0.5">
+        <aside className="w-full lg:w-[300px] bg-base-200 flex flex-col h-full shrink-0 rounded-lg border border-base-content/10 overflow-hidden">
+          <div className="p-1.5 border-b border-base-content/10 flex items-center justify-between bg-base-300">
+            <div className="flex gap-0.5 bg-base-300 rounded-md p-0.5">
               <button
-                className={`btn btn-xs h-6 min-h-0 text-[11px] ${editorMode === "code" ? "btn-primary" : "btn-ghost"}`}
+                className={`btn btn-xs h-6 min-h-0 text-[11px] ${editorMode === "code" ? "btn-default" : "btn-ghost"}`}
                 onClick={() => setEditorMode("code")}
               >
-                <Code2 size={11} className="mr-1" /> Código .fll
+                <Code2 size={11} className="mr-1" /> Código
               </button>
               <button
-                className={`btn btn-xs h-6 min-h-0 text-[11px] ${editorMode === "visual" ? "btn-primary" : "btn-ghost"}`}
+                className={`btn btn-xs h-6 min-h-0 text-[11px] ${editorMode === "visual" ? "btn-default" : "btn-ghost"}`}
                 onClick={() => setEditorMode("visual")}
               >
                 <MousePointerClick size={11} className="mr-1" /> Visual
               </button>
             </div>
 
-            {/* Undo / Redo buttons */}
-            <div className="join border border-base-content/10 rounded-md">
+            <div className="join">
               <button
                 onClick={undo}
                 disabled={historyIndex === 0}
@@ -521,11 +351,7 @@ const ViewSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Active full height Editor panel */}
-          <div
-            id="tour-editor-area"
-            className="flex-1 bg-base-300 p-0 overflow-hidden relative"
-          >
+          <div className="flex-1 overflow-hidden">
             {editorMode === "code" ? (
               <CodeEditor code={code} onChange={updateCode} />
             ) : (
@@ -534,38 +360,8 @@ const ViewSection: React.FC = () => {
           </div>
         </aside>
 
-        {/* Center Section: Arena and live Virtual Mat simulation */}
-        <section
-          id="tour-canvas"
-          className="flex-grow relative bg-base-300 flex items-center justify-center p-4 overflow-hidden shadow-inner"
-        >
-          {/* Top Floating Status Info bar over the Mat */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex gap-2.5 items-center bg-base-100/90 backdrop-blur border border-base-content/15 py-1.5 px-3 rounded-full shadow-md text-xs">
-            {isSettingStart ? (
-              <span className="text-warning font-bold flex items-center gap-1.5 animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-warning"></span>
-                Clique no mapa para definir a origem
-              </span>
-            ) : (
-              <span className="text-base-content/75 font-semibold flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
-                {editorMode === "visual"
-                  ? "Modo Planejador Visual ativo"
-                  : "Pronto para Simular"}
-              </span>
-            )}
-
-            <button
-              onClick={() => setIsSettingStart(!isSettingStart)}
-              className={`btn btn-xs h-6 min-h-0 rounded-full ${isSettingStart ? "btn-warning animate-pulse" : "btn-outline btn-ghost"}`}
-            >
-              <Target size={11} className="mr-0.5" />
-              {isSettingStart ? "Concluir" : "Mudar Origem"}
-            </button>
-          </div>
-
-          {/* Virtual Mat Container */}
-          <div className="relative z-10 shadow-2xl rounded-xl max-w-full max-h-full border border-base-content/5 overflow-hidden">
+        <section className="flex-grow relative flex items-center justify-center overflow-hidden p-3.5">
+          <div className="relative z-10 max-w-full max-h-full">
             <Mat
               trajectory={trajectory}
               robotState={robotState}
@@ -579,351 +375,121 @@ const ViewSection: React.FC = () => {
             />
           </div>
 
-          {/* Bottom Floating Control Panel: Zoom widget */}
-          <div className="absolute bottom-4 right-4 z-20 bg-base-100/95 backdrop-blur border border-base-content/15 p-2 rounded-xl shadow-lg flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold opacity-60 tracking-wider">
-                MAPA ZOOM:
-              </span>
-              <div className="join border border-base-content/10">
+          <div className="absolute bottom-4 right-4 z-20 card card-compact bg-base-100/90 backdrop-blur shadow-sm border border-base-300">
+            <div className="card-body p-1.5">
+              <div className="join">
                 <button
                   onClick={() => setZoom(Math.max(2, zoom - 0.5))}
-                  className="btn btn-xs join-item"
+                  className="btn btn-xs join-item btn-square mx-1"
                   disabled={zoom <= 2}
+                  aria-label="Diminuir zoom"
                 >
                   <Minus size={11} />
                 </button>
-                <span className="join-item bg-base-200 px-2.5 flex items-center justify-center text-[10px] font-mono w-12 text-center font-bold">
+                <div className="join-item border-none font-mono rounded-none flex items-center justify-center mx-1">
                   {(zoom / 4).toFixed(1)}x
-                </span>
+                </div>
                 <button
                   onClick={() => setZoom(Math.min(8, zoom + 0.5))}
-                  className="btn btn-xs join-item"
+                  className="btn btn-xs join-item btn-square"
                   disabled={zoom >= 8}
+                  aria-label="Aumentar zoom"
                 >
                   <Plus size={11} />
                 </button>
               </div>
             </div>
-
-            <div className="text-[9px] opacity-40 font-semibold border-l border-base-content/10 pl-3 leading-snug hidden md:block">
-              Espaço + Arrastar para pan
-              <br />
-              Shift + Clique p/ virar robô
-            </div>
           </div>
         </section>
 
-        {/* Right Workspace Panel: Sim Settings and strategy parameters */}
-        <aside
-          id="tour-settings"
-          className="w-full lg:w-[325px] bg-base-200 border-l border-base-content/10 flex flex-col h-full overflow-y-auto shrink-0 relative custom-scrollbar p-4 gap-4 z-30"
-        >
-          {/* Card 1: strategy saving & loading panel */}
-          <div className="card card-compact bg-base-100 border border-base-content/10 shadow-xs p-3.5 space-y-3">
-            <div className="flex items-center justify-between border-b border-base-content/5 pb-2">
-              <h2 className="text-xs font-black uppercase tracking-wider text-primary">
-                Estratégia Atual
-              </h2>
-              <span className="badge badge-accent badge-xs font-mono text-[9px] uppercase tracking-wider font-semibold">
-                JSON
-              </span>
+        <aside className="w-full lg:w-[300px] bg-base-200 border border-base-content/10 flex flex-col h-full overflow-y-auto shrink-0 p-3.5 gap-3.5 rounded-lg">
+          <Panel title="Posição de partida">
+            <button
+              onClick={() => setIsSettingStart(!isSettingStart)}
+              className={`btn btn-sm w-full text-xs gap-1.5 ${isSettingStart ? "btn-warning" : "btn-outline"}`}
+            >
+              <Target size={13} />
+              {isSettingStart ? "Definindo no mapa…" : "Definir no mapa"}
+            </button>
+            <div className="grid grid-cols-3 gap-2">
+              <NumberField
+                label="X (cm)"
+                value={startConfig.x}
+                onChange={(v) => setStartConfig((p) => ({ ...p, x: v }))}
+              />
+              <NumberField
+                label="Y (cm)"
+                value={startConfig.y}
+                onChange={(v) => setStartConfig((p) => ({ ...p, y: v }))}
+              />
+              <NumberField
+                label="Ângulo (°)"
+                value={startConfig.angle}
+                onChange={(v) => setStartConfig((p) => ({ ...p, angle: v }))}
+              />
+            </div>
+          </Panel>
+
+          <Panel title="Robô">
+            <div className="grid grid-cols-2 gap-2">
+              <NumberField
+                label="Largura (cm)"
+                value={robotConfig.widthCm}
+                onChange={(v) => setRobotConfig((p) => ({ ...p, widthCm: v }))}
+              />
+              <NumberField
+                label="Comprimento (cm)"
+                value={robotConfig.lengthCm}
+                onChange={(v) => setRobotConfig((p) => ({ ...p, lengthCm: v }))}
+              />
             </div>
 
-            <div className="form-control w-full gap-2">
-              <div>
-                <span className="text-[10px] uppercase font-extrabold opacity-55 tracking-widest block mb-1">
-                  Título do Projeto
-                </span>
+            <label className="form-control w-full">
+              <span className="text-[10px] font-medium text-base-content/50 mb-1">Chassi</span>
+              <select
+                className="select select-bordered select-sm w-full text-xs"
+                value={robotConfig.shape}
+                onChange={(e) => setRobotConfig({ ...robotConfig, shape: e.target.value as any })}
+              >
+                <option value="tank">Esteiras (Tank Drive)</option>
+                <option value="4x4">4x4 Tração integral</option>
+                <option value="fwd">Tração dianteira (FWD)</option>
+                <option value="rwd">Tração traseira (RWD)</option>
+                <option value="custom">Desenho SVG customizado</option>
+              </select>
+            </label>
+
+            <label className="form-control w-full">
+              <span className="text-[10px] font-medium text-base-content/50 mb-1">Cor</span>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  className="w-9 h-9 rounded border border-base-content/20 bg-transparent cursor-pointer shrink-0"
+                  value={robotConfig.color}
+                  onChange={(e) => setRobotConfig({ ...robotConfig, color: e.target.value })}
+                />
                 <input
                   type="text"
-                  value={strategyName}
-                  onChange={(e) => setStrategyName(e.target.value)}
-                  className="input input-bordered input-sm w-full font-sans text-xs focus:ring-1 focus:ring-primary"
-                  placeholder="Minha Estratégia FLL"
+                  className="input input-bordered input-sm flex-1 font-mono uppercase text-xs"
+                  value={robotConfig.color}
+                  onChange={(e) => setRobotConfig({ ...robotConfig, color: e.target.value })}
                 />
               </div>
+            </label>
 
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                <button
-                  onClick={handleExport}
-                  className="btn btn-xs btn-primary gap-1.5 h-8 font-semibold text-xs py-1"
-                >
-                  <Download size={11} /> Exportar
-                </button>
-                <label className="btn btn-xs btn-outline btn-primary gap-1.5 h-8 font-semibold text-xs py-1 cursor-pointer">
-                  <Upload size={11} /> Importar
-                  <input
-                    type="file"
-                    accept=".json"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
-                </label>
-              </div>
-
-              {/* Tactical drag-and-drop landing target */}
-              <div className="form-control w-full mt-1.5">
-                <div
-                  className={`border-2 border-dashed rounded-lg p-3 text-center cursor-pointer transition-colors flex flex-col items-center justify-center gap-1 ${
-                    isDragging
-                      ? "border-primary bg-primary/10 text-primary animate-pulse"
-                      : "border-base-content/15 hover:border-base-content/30 hover:bg-base-content/5 text-base-content/65"
-                  }`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <input
-                    type="file"
-                    accept=".json"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
-                  <Upload
-                    size={14}
-                    className={isDragging ? "text-primary" : "opacity-60"}
-                  />
-                  <span className="text-[10px] font-bold">
-                    Solte arquivos aqui
-                  </span>
-                  <span className="text-[9px] opacity-60">
-                    Arraste um JSON para importar
-                  </span>
-                </div>
-              </div>
-
-              {alert && (
-                <div
-                  className={`alert ${alert.type === "success" ? "alert-success" : "alert-error"} text-[10px] p-2 rounded mt-2 flex items-center gap-1.5 shadow-sm`}
-                >
-                  <span className="font-semibold">{alert.message}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Card 2: Initial position attributes */}
-          <div className="card card-compact bg-base-100 border border-base-content/10 shadow-xs p-3.5 space-y-3">
-            <div className="flex items-center justify-between border-b border-base-content/5 pb-2">
-              <h2 className="text-xs font-black uppercase tracking-wider text-secondary">
-                Posição de Partida
-              </h2>
-              <span className="badge badge-secondary badge-xs font-mono text-[9px]">
-                ORIGEM
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              <button
-                onClick={() => setIsSettingStart(!isSettingStart)}
-                className={`btn btn-xs w-full h-8 text-xs font-semibold ${isSettingStart ? "btn-warning animate-pulse" : "btn-outline btn-secondary"}`}
-              >
-                <Target size={12} className="mr-1" />
-                {isSettingStart ? "Definindo no Mapa..." : "Definir no Canvas"}
-              </button>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div className="form-control">
-                  <span className="text-[9px] uppercase font-bold opacity-60 tracking-wider mb-1">
-                    X (cm)
-                  </span>
-                  <input
-                    type="number"
-                    className="input input-bordered input-xs font-mono text-center text-xs w-full"
-                    value={startConfig.x}
-                    onChange={(e) =>
-                      setStartConfig((p) => ({
-                        ...p,
-                        x: parseFloat(e.target.value) || 0,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="form-control">
-                  <span className="text-[9px] uppercase font-bold opacity-60 tracking-wider mb-1">
-                    Y (cm)
-                  </span>
-                  <input
-                    type="number"
-                    className="input input-bordered input-xs font-mono text-center text-xs w-full"
-                    value={startConfig.y}
-                    onChange={(e) =>
-                      setStartConfig((p) => ({
-                        ...p,
-                        y: parseFloat(e.target.value) || 0,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="form-control">
-                  <span className="text-[9px] uppercase font-bold opacity-60 tracking-wider mb-1">
-                    Ângulo (°)
-                  </span>
-                  <input
-                    type="number"
-                    className="input input-bordered input-xs font-mono text-center text-xs w-full"
-                    value={startConfig.angle}
-                    onChange={(e) =>
-                      setStartConfig((p) => ({
-                        ...p,
-                        angle: parseFloat(e.target.value) || 0,
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Robot physical traits and configuration */}
-          <div className="card card-compact bg-base-100 border border-base-content/10 shadow-xs p-3.5 space-y-3">
-            <div className="flex items-center justify-between border-b border-base-content/5 pb-2">
-              <h2 className="text-xs font-black uppercase tracking-wider text-accent">
-                Dimensões do Robô
-              </h2>
-              <span className="badge badge-accent badge-xs font-mono text-[9px]">
-                HARDWARE
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="form-control">
-                  <span className="text-[9px] uppercase font-bold opacity-60 tracking-wider mb-1">
-                    Largura (cm)
-                  </span>
-                  <input
-                    type="number"
-                    className="input input-bordered input-xs font-mono text-center text-xs"
-                    value={robotConfig.widthCm}
-                    onChange={(e) =>
-                      setRobotConfig((p) => ({
-                        ...p,
-                        widthCm: parseFloat(e.target.value) || 0,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="form-control">
-                  <span className="text-[9px] uppercase font-bold opacity-60 tracking-wider mb-1">
-                    Compr. (cm)
-                  </span>
-                  <input
-                    type="number"
-                    className="input input-bordered input-xs font-mono text-center text-xs"
-                    value={robotConfig.lengthCm}
-                    onChange={(e) =>
-                      setRobotConfig((p) => ({
-                        ...p,
-                        lengthCm: parseFloat(e.target.value) || 0,
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="form-control">
-                <span className="text-[9px] uppercase font-bold opacity-60 tracking-wider mb-1">
-                  Chassis & Tração
-                </span>
-                <select
-                  className="select select-bordered select-xs w-full text-xs"
-                  value={robotConfig.shape}
-                  onChange={(e) =>
-                    setRobotConfig({
-                      ...robotConfig,
-                      shape: e.target.value as any,
-                    })
-                  }
-                >
-                  <option value="tank">Esteiras (Tank Drive)</option>
-                  <option value="4x4">4x4 Tração integral</option>
-                  <option value="fwd">Tração Dianteira (FWD)</option>
-                  <option value="rwd">Tração Traseira (RWD)</option>
-                  <option value="custom">SVG Desenho Customizado</option>
-                </select>
-              </div>
-
-              <div className="form-control">
-                <span className="text-[9px] uppercase font-bold opacity-60 tracking-wider mb-1">
-                  Farol LED central
-                </span>
-                <div className="flex gap-2 items-center">
-                  <input
-                    type="color"
-                    className="bg-transparent border border-base-content/25 rounded cursor-pointer w-7 h-7 p-0 shrink-0"
-                    value={robotConfig.color}
-                    onChange={(e) =>
-                      setRobotConfig({ ...robotConfig, color: e.target.value })
-                    }
-                  />
-                  <input
-                    type="text"
-                    className="input input-bordered input-xs flex-1 font-mono uppercase text-xs"
-                    value={robotConfig.color}
-                    onChange={(e) =>
-                      setRobotConfig({ ...robotConfig, color: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-
-              {robotConfig.shape === "custom" && (
-                <div className="form-control">
-                  <span className="text-[9px] uppercase font-bold opacity-60 tracking-wider mb-1">
-                    String de Path SVG
-                  </span>
-                  <textarea
-                    value={robotConfig.customPath}
-                    onChange={(e) =>
-                      setRobotConfig({
-                        ...robotConfig,
-                        customPath: e.target.value,
-                      })
-                    }
-                    className="textarea textarea-bordered textarea-xs w-full font-mono text-[9px] leading-snug"
-                    placeholder="M 50 0 L..."
-                    rows={2.5}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Card 4: Simulation environment factors */}
-          <div className="card card-compact bg-base-100 border border-base-content/10 shadow-xs p-3.5 space-y-3">
-            <div className="flex items-center justify-between border-b border-base-content/5 pb-2">
-              <h2 className="text-xs font-black uppercase tracking-wider text-neutral-content/85">
-                Ambiente da Arena
-              </h2>
-              <span className="badge bg-neutral-content/10 text-neutral-content border-none badge-xs font-mono text-[9px]">
-                SPEED
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              <div className="form-control">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] font-bold opacity-60 uppercase tracking-wide">
-                    Multiplicador de Velocidade
-                  </span>
-                  <span className="badge badge-primary badge-xs font-mono text-[10px]">
-                    {speed.toFixed(1)}x
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={0.1}
-                  max={5.0}
-                  step={0.1}
-                  value={speed}
-                  onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                  className="range range-xs range-primary"
+            {robotConfig.shape === "custom" && (
+              <label className="form-control w-full">
+                <span className="text-[10px] font-medium text-base-content/50 mb-1">Path SVG</span>
+                <textarea
+                  value={robotConfig.customPath}
+                  onChange={(e) => setRobotConfig({ ...robotConfig, customPath: e.target.value })}
+                  className="textarea textarea-bordered textarea-xs w-full font-mono text-[10px]"
+                  placeholder="M 50 0 L..."
+                  rows={2}
                 />
-              </div>
-            </div>
-          </div>
+              </label>
+            )}
+          </Panel>
         </aside>
       </main>
     </div>

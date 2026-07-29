@@ -59,57 +59,87 @@ const VisualEditor: React.FC<VisualEditorProps> = ({ code, onChange }) => {
         {commands.map((cmd, idx) => (
           <div 
             key={idx} 
-            className="card card-compact bg-base-100 shadow-sm border border-base-content/5 group hover:border-primary/50 transition-colors"
+            className="card card-compact bg-base-100 shadow border border-base-content/10 hover:shadow-md hover:border-primary/40 transition-all group"
           >
-            <div className="card-body flex-row items-center p-3 gap-2">
-              {/* Minimal Icon */}
-              <div className={`
-                w-8 h-8 rounded-lg flex items-center justify-center shrink-0
-                ${cmd.type === 'reto' ? 'bg-success/10 text-success' : 'bg-info/10 text-info'}
-              `}>
-                {cmd.type === 'reto' ? <ArrowUp size={16} strokeWidth={2.5} /> : (cmd.val >= 0 ? <RotateCw size={16} strokeWidth={2.5} /> : <RotateCcw size={16} strokeWidth={2.5} />)}
-              </div>
-
-              {/* Inputs */}
-              <div className="flex-1 flex gap-2">
-                  <div className="join w-full">
-                     <input 
-                        type="number" 
-                        value={cmd.val}
-                        onChange={(e) => updateCommand(idx, 'val', parseFloat(e.target.value) || 0)}
-                        className="input input-xs input-bordered join-item w-full font-mono text-right"
-                     />
-                     <span className="join-item btn btn-xs btn-static text-[10px] w-12">{cmd.type === 'reto' ? 'CM' : 'deg'}</span>
+            <div className="card-body p-4 gap-3">
+              {/* Header with Icon and Type */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`
+                    w-10 h-10 rounded-lg flex items-center justify-center shrink-0
+                    ${cmd.type === 'reto' ? 'bg-success/20 text-success' : 'bg-info/20 text-info'}
+                  `}>
+                    {cmd.type === 'reto' ? <ArrowUp size={18} strokeWidth={2.5} /> : (cmd.val >= 0 ? <RotateCw size={18} strokeWidth={2.5} /> : <RotateCcw size={18} strokeWidth={2.5} />)}
                   </div>
-                  <div className="join w-24">
-                     <input 
-                        type="number" 
-                        value={cmd.speed}
-                        onChange={(e) => updateCommand(idx, 'speed', parseFloat(e.target.value) || 0)}
-                        className="input input-xs input-bordered join-item w-full font-mono text-right"
-                     />
-                     <span className="join-item btn btn-xs btn-static text-[9px]">VEL</span>
+                  <div>
+                    <p className="text-xs font-bold opacity-60 uppercase tracking-wider">{cmd.type === 'reto' ? 'Movimento' : 'Rotação'}</p>
+                    <p className="text-sm font-mono font-bold">{cmd.val} {cmd.type === 'reto' ? 'cm' : '°'}</p>
                   </div>
-              </div>
-
-              {/* Action */}
-              <button 
-                onClick={() => removeCommand(idx)}
-                className="btn btn-ghost btn-xs btn-square text-error opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-            
-            {/* Quick Angle Toggles (Only for Giro) */}
-            {cmd.type === 'giro' && (
-                <div className="absolute -bottom-3 right-12 opacity-0 group-hover:opacity-100 transition-all z-10 join shadow-lg">
-                    <button onClick={() => toggleSign(idx)} className="join-item btn btn-xs btn-neutral text-[9px]">INV</button>
-                    {PRESET_ANGLES.slice(1, 4).map(angle => (
-                         <button key={angle} onClick={() => updateCommand(idx, 'val', cmd.val >= 0 ? angle : -angle)} className="join-item btn btn-xs btn-primary text-primary-content text-[9px] font-mono">{angle}</button>
-                    ))}
                 </div>
-            )}
+                <button 
+                  onClick={() => removeCommand(idx)}
+                  className="btn btn-ghost btn-sm btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+
+              {/* Controls Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="form-control gap-1">
+                  <label className="label p-0">
+                    <span className="label-text text-xs font-semibold opacity-70">{cmd.type === 'reto' ? 'Distância' : 'Ângulo'}</span>
+                  </label>
+                  <div className="join w-full">
+                    <input 
+                      type="number" 
+                      value={cmd.val}
+                      onChange={(e) => updateCommand(idx, 'val', parseFloat(e.target.value) || 0)}
+                      className="input input-sm input-bordered join-item w-full font-mono text-center"
+                    />
+                    <span className="join-item btn btn-sm btn-static">{cmd.type === 'reto' ? 'cm' : '°'}</span>
+                  </div>
+                </div>
+                <div className="form-control gap-1">
+                  <label className="label p-0">
+                    <span className="label-text text-xs font-semibold opacity-70">Velocidade</span>
+                  </label>
+                  <div className="join w-full">
+                    <input 
+                      type="number" 
+                      value={cmd.speed}
+                      onChange={(e) => updateCommand(idx, 'speed', parseFloat(e.target.value) || 0)}
+                      className="input input-sm input-bordered join-item w-full font-mono text-center"
+                    />
+                    <span className="join-item btn btn-sm btn-static">%</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Quick Angle Toggles (Only for Giro) */}
+              {cmd.type === 'giro' && (
+                <div className="pt-2 border-t border-base-content/10">
+                  <p className="text-xs font-semibold opacity-70 mb-2">Atalhos</p>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => toggleSign(idx)} 
+                      className="btn btn-xs btn-outline btn-neutral flex-1"
+                    >
+                      Inverter
+                    </button>
+                    {PRESET_ANGLES.slice(1, 4).map(angle => (
+                      <button 
+                        key={angle} 
+                        onClick={() => updateCommand(idx, 'val', cmd.val >= 0 ? angle : -angle)} 
+                        className="btn btn-xs btn-primary text-primary-content font-mono flex-1"
+                      >
+                        {angle}°
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>

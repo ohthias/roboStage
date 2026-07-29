@@ -64,7 +64,7 @@ export default function HeatmapPage() {
       />
 
       <div className="flex justify-center mt-8 mb-16 h-[560px]">
-        <aside className="w-64 flex flex-col bg-base-200 border-r border-base-300 p-4 rounded-md gap-4">
+        <aside className="w-64 flex flex-col bg-base-200 border-r border-base-300 p-4 rounded-md gap-4 overflow-y-auto">
           <HeatmapControls
             config={config}
             mode={mode}

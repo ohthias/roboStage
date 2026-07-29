@@ -13,6 +13,7 @@ import FLLCountdownBanner from "./Components/FLLCountdownBanner";
 import UseCasesSection from "./Components/UseCasesSection";
 import Banner from "@/components/Banner";
 import NoiseImage from "@/components/UI/NoiseImage";
+import Link from "next/link";
 
 const modules = [
   {
@@ -244,12 +245,12 @@ export default function FLLHome() {
               temporada.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-              <button className="btn btn-primary rounded-2xl px-8">
+              <Link className="btn btn-primary rounded-2xl px-8" href="/sign-up">
                 Criar conta grátis
-              </button>
-              <button className="btn btn-ghost text-neutral-content rounded-2xl px-8">
+              </Link>
+              <Link className="btn btn-ghost text-neutral-content rounded-2xl px-8" href="/news">
                 Ver novidades da temporada
-              </button>
+              </Link>
             </div>
           </div>
         </section>

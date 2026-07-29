@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const users = [
   {
     title: "Equipes iniciantes",
@@ -71,9 +73,9 @@ export default function UseCasesSection() {
               ))}
             </div>
 
-            <button className="btn btn-primary mt-10 rounded-2xl px-8">
+            <Link className="btn btn-primary mt-10 rounded-2xl px-8" href="/sign-up">
               Comece a usar hoje
-            </button>
+            </Link>
           </div>
         </div>
       </div>

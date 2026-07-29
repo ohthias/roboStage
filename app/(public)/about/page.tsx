@@ -252,7 +252,7 @@ export default function AboutRoboStage() {
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
               <Link
                 className="btn btn-primary rounded-2xl px-8"
-                href="/auth/signup"
+                href="/sign-up"
               >
                 Comece agora gratuitamente
               </Link>

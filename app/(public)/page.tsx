@@ -24,7 +24,7 @@ export default function Page() {
               Competições. Equipes. Comunidade. Tudo conectado!
             </p>
             <div className="flex flex-wrap gap-4 mt-4">
-              <a href="/auth/signup" className="btn btn-primary btn-outline">
+              <a href="/sign-up" className="btn btn-primary btn-outline">
                 Criar conta gratuitamente
               </a>
               <a href="/fll" className="btn btn-secondary btn-outline">
@@ -243,7 +243,7 @@ export default function Page() {
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
               <Link
                 className="btn btn-primary rounded-2xl px-8"
-                href="/auth/signup"
+                href="/sign-up"
               >
                 Criar conta grátis
               </Link>

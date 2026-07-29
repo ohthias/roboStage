@@ -342,9 +342,6 @@ export function Navbar() {
 
             <div className="divider divider-horizontal mx-1" />
 
-            <Link href="/universe" className="btn btn-ghost btn-sm">
-              <Earth className="w-4 h-4 inline-block mr-2" /> Eventos
-            </Link>
             <Show when="signed-in">
               <Link href="/dashboard" className="btn btn-outline btn-sm">
                 <span className="hidden sm:inline-block">Dashboard</span>
@@ -597,14 +594,6 @@ export function Navbar() {
             )}
 
             <div className="divider" />
-
-            <div className="mt-6">
-              <p className="px-1 text-xs font-semibold uppercase tracking-[0.12em] opacity-60">
-                Acessos
-              </p>
-
-              <div className="mt-2 grid gap-2"></div>
-            </div>
           </div>
         </aside>
       </div>

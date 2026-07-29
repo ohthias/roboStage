@@ -1,6 +1,6 @@
 {
   "name": "robostage",
-  "version": "5.1.0",
+  "version": "2026.2",
   "author": "Robostage Developers",
   "license": "MIT",
   "private": true,
@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@clerk/localizations": "^4.13.5",
-    "@clerk/nextjs": "^7.5.20",
+    "@clerk/nextjs": "^7.6.2",
     "@flaticon/flaticon-uicons": "^3.3.1",
     "@heroicons/react": "^2.2.0",
     "@lucide/lab": "^0.1.2",

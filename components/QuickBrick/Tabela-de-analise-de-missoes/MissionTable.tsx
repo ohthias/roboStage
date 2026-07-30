@@ -16,6 +16,7 @@ import autoTable from "jspdf-autotable";
 import ModalConfirm, {
   ModalConfirmRef,
 } from "@/components/UI/Modal/ModalConfirm";
+import { useToast } from "@/app/context/ToastContext";
 
 interface MissionTableProps {
   missions: Mission[];
@@ -49,6 +50,8 @@ export const MissionTable: React.FC<MissionTableProps> = ({
   const [editLabel, setEditLabel] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
   const modalClearColl = useRef<ModalConfirmRef>(null);
+
+  const { addToast } = useToast();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -204,7 +207,8 @@ export const MissionTable: React.FC<MissionTableProps> = ({
       theme: "grid",
     });
 
-    doc.save("fll_missoes.pdf");
+    doc.save("fll_table.pdf");
+    addToast("Exportação concluída! Baixando arquivo PDF.", "success");
   };
 
   return (

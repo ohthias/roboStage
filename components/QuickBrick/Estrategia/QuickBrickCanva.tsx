@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Layer, ToolType, CanvasHandle } from "@/types/CanvasType";
 import { CanvasBoard } from "./CanvasBoard";
 import { Toolbar } from "./Toolbar";
+import { useToast } from "@/app/context/ToastContext";
 
 export default function QuickBrickCanvas() {
   const [tool, setTool] = useState<ToolType>("hand");
@@ -73,6 +74,7 @@ export default function QuickBrickCanvas() {
         setHistoryIndex((i) => i + 1);
         return newState;
       });
+      useToast().addToast("Camada limpa com sucesso!", "success");
     }
   };
 

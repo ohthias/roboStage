@@ -3,6 +3,7 @@ import { Layer, Line, Point, ToolType, Zone, FreePath, CanvasHandle, Robot } fro
 import { v4 as uuidv4 } from 'uuid';
 import JSZip from 'jszip';
 import saveAs from 'file-saver';
+import { useToast } from '@/app/context/ToastContext';
 
 interface CanvasBoardProps {
   tool: ToolType;
@@ -33,6 +34,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
   showZones,
   backgroundImage
 }, ref) => {
+    const { addToast } = useToast()
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
@@ -104,6 +106,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
         });
       }
       setActiveSelection(prevSelection);
+      addToast("Exportação concluída! Baixando arquivo PNG.", "success");
     },
     exportLayers: async () => {
         const zip = new JSZip();
@@ -152,6 +155,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(({
 
         const content = await zip.generateAsync({ type: 'blob' });
         saveAs(content, 'estrategia-camadas.zip');
+        addToast("Exportação concluída! Baixando arquivo ZIP.", "success");
     }
   }));
 

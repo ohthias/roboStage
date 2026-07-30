@@ -7,6 +7,7 @@ import {
   Cuboid,
   ChartPie,
   File,
+  CircleAlertIcon,
 } from "lucide-react";
 import FLLCountdownBanner from "./Components/FLLCountdownBanner";
 import UseCasesSection from "./Components/UseCasesSection";
@@ -190,6 +191,26 @@ export default function FLLHome() {
                   icon={module.icon}
                 />
               ))}
+            </div>
+          </div>
+          <div
+            className="alert alert-warning shadow-lg my-4 mx-auto max-w-6xl px-4"
+            role="status"
+            aria-live="polite"
+          >
+            <CircleAlertIcon className="stroke-current flex-shrink-0 w-6 h-6" />
+            <div>
+              <h6 className="font-bold">
+                Ferramentas LabTest e InnoLab temporariamente indisponíveis
+              </h6>
+              <p>
+                As ferramentas LabTest e InnoLab estão passando por manutenções, envovelndo correção de
+                bugs, performace, e melhorias na experiência do usuário.
+              </p>
+              <Link href="/news" className="font-bold underline">
+                Clique aqui
+              </Link>{" "}
+              para acompanhar as atualizações.
             </div>
           </div>
         </section>

@@ -1,8 +1,8 @@
 import Header from "@/components/UI/Header";
 import { MenuCard } from "@/components/Timers/MenuCard";
-
 import { Trophy, BookOpen, Clock } from "lucide-react";
 import Link from "next/link";
+import { Metadata } from "next";
 
 const timers = [
   {
@@ -30,6 +30,12 @@ const timers = [
     color: "success",
   },
 ];
+
+export const metadata : Metadata = {
+  title: "Timers | RoboStage",
+  description:
+    "Controle o tempo do treino à competição com timers pensados para a realidade das equipes.",
+};
 
 export default function TimersPage() {
   return (

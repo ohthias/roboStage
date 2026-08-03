@@ -162,6 +162,7 @@ export default function QuickBrickCanvas() {
       <CanvasBoard
         ref={canvasRef}
         tool={tool}
+        setTool={setTool}
         color={color}
         layers={layers}
         setLayers={setLayers}

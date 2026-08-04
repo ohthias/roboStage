@@ -117,7 +117,7 @@ export default function AboutRoboStage() {
           </RevealOnScroll>
         </section>
 
-        <section className="bg-base-100 py-4 my-16">
+        <section className="bg-base-100 pt-4 pb-10 my-16">
           <RevealOnScroll>
             <div className="max-w-6xl mx-auto px-6">
               <div className="grid lg:grid-cols-2 gap-16 items-center">

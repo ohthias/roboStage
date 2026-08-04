@@ -1,5 +1,48 @@
 {
-  "bioglow" : [],
+  "bioglow" : [
+    {
+      "title": "Livro de Regras - EN",
+      "description": "Contém todas as regras oficiais da temporada, incluindo pontuação e restrições dos robôs.",
+      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-rgr.pdf",
+      "category": "challenge"
+    },
+    {
+      "title": "Caderno de Engenharia - EN",
+      "description": "Guia para registrar todas as ideias, testes e protótipos da equipe.",
+      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-en.pdf",
+      "category": "challenge"
+    },
+    {
+      "title": "Guia de Reuniões - EN",
+      "description": "Orientações para organizar reuniões produtivas e gerenciar tarefas da equipe.",
+      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-tmg.pdf",
+      "category": "challenge"
+    },
+    {
+      "title": "Rubricas de Avaliação - EN",
+      "description": "Critérios detalhados para avaliação do robô, projeto de pesquisa e apresentação da equipe.",
+      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-rubrics-color.pdf",
+      "category": "challenge"
+    },
+    {
+      "title": "Fluxograma da Sessão de Avaliação",
+      "description": "Guia visual para ajudar as equipes a se prepararem para suas sessões de avaliação.",
+      "url": "https://static.portaldaindustria.com.br/media/filer_public/67/01/67019b00-36ea-40f9-82c4-6ceaa2b28308/fluxograma_da_sessao_de_avaliacao_-_equipes.pdf",
+      "category": "challenge"
+    },
+    {
+      "title": "Guia de Encontros de Equipe - EN",
+      "description": "Orientações para organizar reuniões produtivas e gerenciar tarefas da equipe.",
+      "url": "https://firstinspires.blob.core.windows.net/fll/explore/2026-27/fll-explore-bioglow-TMG.pdf",
+      "category": "explore"
+    },
+    {
+      "title": "Caderno de Engenharia - EN",
+      "description": "Guia para registrar todas as ideias, testes e protótipos da equipe.",
+      "url": "https://firstinspires.blob.core.windows.net/fll/explore/2026-27/fll-explore-bioglow-EN.pdf",
+      "category": "explore"
+    }
+  ],
   "unearthed": [
     {
       "title": "Livro de Regras",

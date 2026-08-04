@@ -1,7 +1,7 @@
 {
   "name": "robostage",
-  "version": "5.1.0",
-  "author": "Robostage Developers",
+  "version": "2026.1",
+  "author": "Matheus Gabriel",
   "license": "MIT",
   "private": true,
   "start": "react-scripts",

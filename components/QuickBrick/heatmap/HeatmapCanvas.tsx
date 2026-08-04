@@ -58,16 +58,6 @@ function computeCanvasSize(containerEl: HTMLElement): { w: number; h: number } {
   return { w: Math.floor(w), h: Math.floor(h) };
 }
 
-function loadImage(src: string) {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-}
-
 const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
   function HeatmapCanvas(
     { points, config, mode, season, onAddPoint, onRemoveNearest, imagePath },
@@ -80,11 +70,6 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
 
     const [size, setSize] = useState({ w: 800, h: 400 });
     const [ripples, setRipples] = useState<Ripple[]>([]);
-    const [tooltip, setTooltip] = useState<{
-      x: number;
-      y: number;
-      intensity: number;
-    } | null>(null);
 
     const applySize = useCallback(() => {
       if (!containerRef.current) return;
@@ -151,7 +136,7 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
 
         const localX = e.clientX - rect.left;
         const localY = e.clientY - rect.top;
-        const color = mode === "remove" ? "#ff4d6a" : "#00e5a0";
+        const color = mode === "remove" ? "#ff4d6a" : "#00e532";
 
         if (mode === "remove") {
           onRemoveNearest(nx, ny);
@@ -182,7 +167,6 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
         const ny = (e.clientY - rect.top) / rect.height;
 
         if (nx < 0 || nx > 1 || ny < 0 || ny > 1) {
-          setTooltip(null);
           return;
         }
 
@@ -195,13 +179,8 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
         );
 
         if (intensity > 0) {
-          setTooltip({
-            x: e.clientX,
-            y: e.clientY,
-            intensity: Math.round(intensity),
-          });
+          
         } else {
-          setTooltip(null);
         }
       },
       [mode, points, config.brushRadius, size.w],
@@ -218,10 +197,9 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
       <>
         <div
           ref={containerRef}
-          className={`relative flex-1 min-h-0 flex items-center justify-center bg-surface border border-white/7 rounded-2xl overflow-hidden ${cursor}`}
+          className={`relative flex-1 h-full flex items-center justify-center bg-surface border border-white/7 rounded-2xl overflow-hidden ${cursor}`}
           onClick={handleClick}
           onMouseMove={handleMouseMove}
-          onMouseLeave={() => setTooltip(null)}
         >
           <div
             ref={wrapperRef}
@@ -270,39 +248,7 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
               ))}
             </AnimatePresence>
           </div>
-
-          {points.length === 0 && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none">
-              <div
-                className="tooltip tooltip-bottom"
-                data-tip="clique para marcar ocorrências"
-              >
-                <div className="flex items-center gap-2 bg-base-200/30 border border-base-300 px-3 py-1 rounded-full backdrop-blur-sm">
-                  <span className="badge badge-accent badge-sm px-2 py-1 animate-pulse" />
-                  <span className="text-[10px] font-mono tracking-widest text-base-content whitespace-nowrap">
-                    clique para marcar ocorrências
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
-
-        <AnimatePresence>
-          {tooltip && (
-            <motion.div
-              className="fixed z-50 pointer-events-none px-3 py-1.5 rounded-lg bg-base-100/80 border border-white/12 text-[11px] font-mono text-white whitespace-nowrap shadow-lg"
-              style={{ left: tooltip.x + 14, top: tooltip.y - 32 }}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.12 }}
-            >
-              Intensidade:{" "}
-              <span className="text-accent">{tooltip.intensity}</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </>
     );
   },

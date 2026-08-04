@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { RobotGame } from "../views/RobotGame";
+import  RobotGame  from "../views/RobotGame";
 import { JudgingRoom } from "../views/JudgingRoom";
 import { CustomTimer } from "../views/CustomTimer";
 

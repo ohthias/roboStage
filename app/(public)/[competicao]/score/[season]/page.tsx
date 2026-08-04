@@ -3,10 +3,10 @@ import { useEffect, useState, useRef } from "react";
 import FormMission from "@/components/FormMission/FormMission";
 import Loader from "@/components/Loader";
 import { sumAllMissions } from "@/utils/scores";
-import { Footer } from "@/components/UI/Footer";
 import SubmergedLogo from "@/public/images/logos/fll/seasons/Submerged.webp";
 import MasterpieceLogo from "@/public/images/logos/fll/seasons/Masterpiece.png";
 import UnearthedLogo from "@/public/images/logos/fll/seasons/Unearthed.webp";
+import BioglowLogo from "@/public/images/logos/fll/seasons/bioglow_logo.png";
 import { useParams } from "next/navigation";
 import { Pause, Play, TimerReset, Trash } from "lucide-react";
 
@@ -140,6 +140,9 @@ export default function Page() {
         setResponses({});
 
         switch (params.season) {
+          case "bioglow":
+            setBackground(BioglowLogo.src);
+            break;
           case "unearthed":
             setBackground(UnearthedLogo.src);
             break;
@@ -334,7 +337,6 @@ export default function Page() {
           className="animate-fade-in-down"
         />
       </main>
-      <Footer />
     </>
   );
 }

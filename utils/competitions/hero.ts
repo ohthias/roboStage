@@ -13,7 +13,7 @@ export const HERO_CONFIG = {
     },
     ctaSecundario: {
       label: "Pontuar!",
-      href: "/fll/score/unearthed",
+      href: "/fll/score/bioglow",
     },
     accent: "#CF2A2A",
   },

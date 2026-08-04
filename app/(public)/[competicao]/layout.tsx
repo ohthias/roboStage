@@ -3,6 +3,7 @@ import { COMPETICOES } from "@/utils/competitions/competicoes";
 import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
+import { Footer } from "@/components/UI/Footer";
 
 interface PageProps {
   params: Promise<{
@@ -60,6 +61,7 @@ export default async function Layout({
     <div className="min-h-screen flex flex-col">
       <Navbar />
       {children}
+      <Footer />
     </div>
   );
 }

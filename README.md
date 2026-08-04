@@ -1,13 +1,6 @@
 <div align="center">
 
-<img src="https://www.robostage.com.br/images/logos/Icone.png" width="90" alt="RoboStage" />
-
-# RoboStage
-
-**O palco onde a robótica acontece.**
-Plataforma para gestão de competições de robótica — equipes, torneios, rankings, transmissões ao vivo e temporadas educacionais.
-
-[🌐 Acessar a plataforma](https://www.robostage.com.br/) • [📦 Releases](https://github.com/ohthias/roboStage/releases) • [🐞 Reportar problema](https://github.com/ohthias/roboStage/issues) • [📰 Changelog](https://www.robostage.com.br/changelog)
+<a href="https://robostage.com.br/"><strong>🌐 Acessar Plataforma</strong></a> • <a href="https://github.com/ohthias/roboStage/releases">📦 Releases</a> • <a href="https://github.com/ohthias/roboStage/issues">🐞 Issues</a> • <em>v2026.1</em></br>
 
 ![Status](https://img.shields.io/badge/status-active-brightgreen.svg)
 ![Version](https://img.shields.io/badge/version-v5.1.0-informational)

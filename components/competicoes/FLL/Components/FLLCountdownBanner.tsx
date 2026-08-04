@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-const TARGET_DATE = new Date("2026-08-04T00:00:00-03:00");
+const TARGET_DATE = new Date("2026-09-12T00:00:00-03:00");
 
 type TimeLeft = {
   days: number;
@@ -38,7 +38,7 @@ function CountdownBox({
   label: string;
 }) {
   return (
-    <div className="card bg-[#F2D9BB] text-[#0C1A1E] shadow-md">
+    <div className="card bg-[#EEE9A5] text-[#000000] shadow-md">
       <div className="card-body items-center p-3">
         <span className="text-3xl font-black md:text-5xl">
           {String(value).padStart(2, "0")}
@@ -66,18 +66,18 @@ export default function FLLCountdownBanner() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-[#024959] text-primary-content">
-      <div className="absolute -left-16 -top-16 h-48 w-48 rounded-full border-4 border-[#6FA61C75]" />
-      <div className="absolute -right-20 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full border-4 border-[#6FA61C75]" />
-      <div className="pointer-events-none absolute inset-0 hidden select-none items-center justify-center sm:flex">
-        <span className="whitespace-nowrap text-8xl font-black uppercase text-[#073B47]">
-          Próxima Temporada
+    <section className="relative overflow-hidden bg-[#BBA13E] text-primary-content">
+      <div className="absolute -left-16 -top-16 h-48 w-48 rounded-full border-4 border-[#f7e32676]" />
+      <div className="absolute -right-20 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full border-4 border-[#f7e32676]" />
+      <div className="pointer-events-none absolute inset-0 hidden select-none items-center justify-center sm:flex -bottom-1/2">
+        <span className="whitespace-nowrap text-9xl font-black uppercase text-[#EEE9A576]">
+          FTC no RoboStage
         </span>
       </div>
       <div className="relative z-10 flex flex-col items-center justify-between gap-6 px-6 py-6 lg:flex-row">
         <div className="flex items-center justify-center">
           <img
-            src="/images/logos/fll/seasons/bioglow_logo.png"
+            src="/images/logos/ftc/biobuzz_logo.png"
             alt="BIOGLOW"
             className="h-16 w-auto object-contain md:h-20"
           />

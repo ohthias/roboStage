@@ -1,10 +1,11 @@
 "use client";
 import { Navbar } from "@/components/UI/Navbar";
-import { ArrowRightFromLine, Radio } from "lucide-react";
+import { ArrowRightFromLine, CircleAlertIcon, Radio } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Features from "./Features";
 import DashboardPreview from "./Dashboard";
 import { Footer } from "@/components/UI/Footer";
+import Link from "next/link";
 
 export default function ShowLivePage() {
   const router = useRouter();
@@ -45,6 +46,18 @@ export default function ShowLivePage() {
         <Radio className="absolute right-4 -bottom-20 text-base-content/10 h-64 w-64 -rotate-45" />
       </header>
       <DashboardPreview />
+      <div
+        className="alert alert-warning shadow-lg my-4 mx-auto max-w-6xl px-4"
+        role="status"
+        aria-live="polite"
+      >
+        <CircleAlertIcon className="stroke-current flex-shrink-0 w-6 h-6" />
+        <div>
+          <h6 className="font-bold">Ferramenta temporarariamente indisponível</h6>
+          <p>O ShowLive está passando por manutenções, envovelndo correção de bugs, performace, e melhorias na experiência do usuário.</p>
+          <Link href="/news" className="font-bold underline">Clique aqui</Link> para acompanhar as atualizações.
+        </div>
+      </div>
       <Features />
       {/* Screenshots */}
       <section className="py-24 bg-base-100 px-8">

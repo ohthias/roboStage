@@ -31,7 +31,7 @@ export default function NewsPage() {
             <div className="mb-8 flex items-center justify-between">
               <h2 className="text-3xl font-bold text-primary">Últimas publicações</h2>
 
-              <div className="badge badge-outline">{news.length} notícias</div>
+              <div className="badge badge-outline w-max">{news.length} notícias</div>
             </div>
 
             <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">

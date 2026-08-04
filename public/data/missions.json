@@ -627,15 +627,15 @@
     },
     {
       "id": "M01",
-      "name": "Lorem",
-      "mission": "Lorem",
+      "name": "INSPEÇÃO POR DRONE",
+      "mission": "O drone não está mais em contato com o tapete",
       "points": 20,
       "equipaments" : true,
       "image": "/images/missions/bioglow/thumb-mission-01.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
-          "submission": "",
+          "submission": "Bônus: além disso, o mapa Lydar está completamente invertido, e o marcador de varredura está ao menos, parcialmente na área de inspeção",
           "points": 10,
           "type": ["switch", null, null]
         }
@@ -643,8 +643,8 @@
     },
     {
       "id": "M02",
-      "name": "Lorem",
-      "mission": "Lorem",
+      "name": "SEMENTES EXPLOSIVAS",
+      "mission": "Número de sementes que não estão mais tocando o caule",
       "points": [0, 10, 20, 30],
       "equipaments" : false,
       "image": "/images/missions/bioglow/thumb-mission-02.png",
@@ -652,15 +652,15 @@
     },
     {
       "id": "M03",
-      "name": "Lorem",
-      "mission": "Lorem",
+      "name": "VIRE A PEDRA",
+      "mission": "A bandeira de pesquisa está abaixada",
       "points": 20,
       "equipaments" : false,
       "image": "/images/missions/bioglow/thumb-mission-03.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
-          "submission": "",
+          "submission": "Bônus: e a pedra foi devolvida à sua posição inicial",
           "points": 10,
           "type": ["switch", null, null]
         }
@@ -668,58 +668,70 @@
     },
     {
       "id": "M04",
-      "name": "Lorem",
-      "mission": "Lorem",
+      "name": "FOLHAS DA SORTE",
+      "mission": "Número de folhas que não estão mais tocando o ninho",
       "points": 10,
       "equipaments" : true,
       "image": "/images/missions/bioglow/thumb-mission-04.png",
-      "type": ["switch", null, null],
+      "type": ["range", 0, 2],
       "sub-mission": [
         {
-          "submission": "",
-          "points": 20,
+          "submission": "A esperança está completamente no habitat de folhas",
+          "points": 0,
           "type": ["switch", null, null]
-        }
-      ]
-    },
-    {
-      "id": "M05",
-      "name": "Lorem",
-      "mission": "Lorem",
-      "points": [0, 10, 20],
-      "equipaments" : true,
-      "image": "/images/missions/bioglow/thumb-mission-05.png",
-      "type": ["switch", "Não Realizado", "Parcialmente", "Completamente"]
-    },
-    {
-      "id": "M06",
-      "name": "Lorem",
-      "mission": "Lorem",
-      "points": [0, 10, 20, 30, 40],
-      "equipaments" : false,
-      "image": "/images/missions/bioglow/thumb-mission-06.png",
-      "type": ["range", 0, 4]
-    },
-    {
-      "id": "M07",
-      "name": "Lorem",
-      "mission": "Lorem",
-      "points": 20,
-      "equipaments" : true,
-      "image": "/images/missions/bioglow/thumb-mission-07.png",
-      "type": ["switch", null, null],
-      "sub-mission": [
+        },
         {
-          "submission": "Lorem",
+          "submission": "Bônus: e esperança permaneceu em sua posição original durante toda a partida",
           "points": 10,
           "type": ["switch", null, null]
         }
       ]
     },
     {
+      "id": "M05",
+      "name": "RAÍZES COMPRIDAS",
+      "mission": "A raiz da planta está estendida",
+      "points": [0, 10, 20],
+      "equipaments" : true,
+      "image": "/images/missions/bioglow/thumb-mission-05.png",
+      "type": ["switch", "Não", "Parcialmente", "Completamente"]
+    },
+    {
+      "id": "M06",
+      "name": "FORMIGAS-CORTADEIRAS DELIRANTES",
+      "mission": "A formiga está tocando o ninho.",
+      "points": 0,
+      "equipaments" : false,
+      "image": "/images/missions/bioglow/thumb-mission-06.png",
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "Número de fragmentos de folhas contidos no ninho",
+          "points": 10,
+          "type": ["range", 0, 4]
+        }
+      ]
+    },
+    {
+      "id": "M07",
+      "name": "FUNGO ENORME",
+      "mission": "O micélio está completamente estendido",
+      "points": 20,
+      "equipaments" : true,
+      "image": "/images/missions/bioglow/thumb-mission-07.png",
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "Bônus: Número de conexões formadas entre o micélio estendido de um time e a raiz da planta completamente estendida do time adversário",
+          "points": 10,
+          "type": ["range", 0, 2]
+        }
+      ]
+    },
+    {
       "id": "M08",
-      "name": "Lorem",
-      "mission": "Lorem",
+      "name": "EMARANHADO",
+      "mission": "O cipó está tocando o tapete",
       "points": 30,
       "equipaments" : false,
       "image": "/images/missions/bioglow/thumb-mission-08.png",
@@ -727,20 +739,20 @@
     },
     {
       "id": "M09",
-      "name": "Lorem",
-      "mission": "Lorem",
+      "name": "PLATAFORMA DE PESQUISA",
+      "mission": "A plataforma de pesquisa está erguida",
       "points": 10,
       "equipaments" : true,
       "image": "/images/missions/bioglow/thumb-mission-09.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
-          "submission": "Lorem",
+          "submission": "A armadilha fotográfica está instalada",
           "points": 10,
           "type": ["switch", null, null]
         },
         {
-          "submission": "Lorem",
+          "submission": "A semente não está mais em contato com a árvore",
           "points": 10,
           "type": ["switch", null, null]
         }
@@ -748,15 +760,15 @@
     },
     {
       "id": "M10",
-      "name": "Lorem",
-      "mission": "Lorem",
+      "name": "MICROHABITATS FRÁGEIS",
+      "mission": "O habitat da aranha está em sua posição inicial original",
       "points": 10,
       "equipaments" : true,
       "image": "/images/missions/bioglow/thumb-mission-10.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
-          "submission": "Lorem",
+          "submission": "O habitat do caramujo está em sua posição inicial original",
           "points": 10,
           "type": ["switch", null, null]
         }
@@ -764,8 +776,8 @@
     },
     {
       "id": "M11",
-      "name": "Lorem",
-      "mission": "Lorem",
+      "name": "JANELA PARA O PASSADO",
+      "mission": "A cobertura da raiz está abaixada, tocando o tapete",
       "points": 20,
       "equipaments" : false,
       "image": "/images/missions/bioglow/thumb-mission-11.png",
@@ -773,15 +785,15 @@
     },
     {
       "id": "M12",
-      "name": "Lorem",
-      "mission": "Lorem",
+      "name": "ANCIÃO DA FLORESTA",
+      "mission": "A bengala está totalmente erguida e tocando a árvore",
       "points": 20,
       "equipaments" : true,
       "image": "/images/missions/bioglow/thumb-mission-12.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
-          "submission": "Lorem",
+          "submission": "A cinta de suporte está ao redor do poste",
           "points": 10,
           "type": ["switch", null, null]
         }
@@ -789,8 +801,8 @@
     },
     {
       "id": "M13",
-      "name": "Lorem",
-      "mission": "Lorem",
+      "name": "ESPÉCIE-CHAVE",
+      "mission": "Sua espécie-chave está na plataforma de restauração, e as mudas estão erguidas",
       "points": 30,
       "equipaments" : false,
       "image": "/images/missions/bioglow/thumb-mission-13.png",
@@ -798,15 +810,15 @@
     },
     {
       "id": "M14",
-      "name": "Lorem",
-      "mission": "Lorem",
+      "name": "SEMENTES DE RENOVAÇÃO",
+      "mission": "Número de sementes contidas na estação de replantio",
       "points": 5,
       "equipaments" : true,
       "image": "/images/missions/bioglow/thumb-mission-14.png",
       "type": ["range", 0, 4],
       "sub-mission": [
         {
-          "submission": "Lorem",
+          "submission": "Bônus: e tocando o tapete",
           "points": 5,
           "type": ["range", 0, 4]
         }
@@ -814,32 +826,27 @@
     },
     {
       "id": "M15",
-      "name": "Lorem",
-      "mission": "Lorem",
+      "name": "ARQUITETURA BIOCÊNTRICA",
+      "mission": "A cobertura de nidificação está erguida",
       "points": 10,
       "equipaments" : true,
       "image": "/images/missions/bioglow/thumb-mission-15.png",
       "type": ["switch", null, null],
       "sub-mission": [
         {
-          "submission": "Lorem",
+          "submission": "A claraboia do jardim está totalmente instalada",
           "points": 10,
           "type": ["switch", null, null]
         },
         {
-          "submission": "Lorem",
+          "submission": "A tampa da composteira está totalmente aberta e tocando o tapete",
           "points": 10,
           "type": ["switch", null, null]
         },
         {
-          "submission": "Lorem",
+          "submission": "Localização da Doca",
           "points": 10,
-          "type": ["switch", null, null]
-        },
-        {
-          "submission": "Lorem",
-          "points": 10,
-          "type": ["switch", null, null]
+          "type": ["switch", "Mina", "Cidade", "Fazenda"]
         }
       ]
     },

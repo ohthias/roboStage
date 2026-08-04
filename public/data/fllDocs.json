@@ -1,27 +1,27 @@
 {
   "bioglow" : [
     {
-      "title": "Livro de Regras",
+      "title": "Livro de Regras - EN",
       "description": "Contém todas as regras oficiais da temporada, incluindo pontuação e restrições dos robôs.",
-      "url": "",
+      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-rgr.pdf",
       "category": "challenge"
     },
     {
-      "title": "Caderno de Engenharia",
+      "title": "Caderno de Engenharia - EN",
       "description": "Guia para registrar todas as ideias, testes e protótipos da equipe.",
-      "url": "",
+      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-en.pdf",
       "category": "challenge"
     },
     {
-      "title": "Guia de Reuniões",
+      "title": "Guia de Reuniões - EN",
       "description": "Orientações para organizar reuniões produtivas e gerenciar tarefas da equipe.",
-      "url": "",
+      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-tmg.pdf",
       "category": "challenge"
     },
     {
-      "title": "Rubricas de Avaliação",
+      "title": "Rubricas de Avaliação - EN",
       "description": "Critérios detalhados para avaliação do robô, projeto de pesquisa e apresentação da equipe.",
-      "url": "",
+      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-rubrics-color.pdf",
       "category": "challenge"
     },
     {
@@ -31,28 +31,16 @@
       "category": "challenge"
     },
     {
-      "title": "Rubricas de Avaliação",
-      "description": "Critérios detalhados para avaliação do robô, projeto de pesquisa e apresentação da equipe.",
-      "url": "",
+      "title": "Guia de Encontros de Equipe - EN",
+      "description": "Orientações para organizar reuniões produtivas e gerenciar tarefas da equipe.",
+      "url": "https://firstinspires.blob.core.windows.net/fll/explore/2026-27/fll-explore-bioglow-TMG.pdf",
       "category": "explore"
     },
     {
-      "title": "Caderno de Engenharia",
+      "title": "Caderno de Engenharia - EN",
       "description": "Guia para registrar todas as ideias, testes e protótipos da equipe.",
-      "url": "",
+      "url": "https://firstinspires.blob.core.windows.net/fll/explore/2026-27/fll-explore-bioglow-EN.pdf",
       "category": "explore"
-    },
-    {
-      "title": "Rubricas de Avaliação",
-      "description": "Critérios detalhados para avaliação do robô, projeto de pesquisa e apresentação da equipe.",
-      "url": "",
-      "category": "future-edition"
-    },
-    {
-      "title": "Caderno de Engenharia",
-      "description": "Guia para registrar todas as ideias, testes e protótipos da equipe.",
-      "url": "",
-      "category": "future-edition"
     }
   ],
   "unearthed": [

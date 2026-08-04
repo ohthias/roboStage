@@ -3,6 +3,7 @@ import { Navbar } from "@/components/UI/Navbar";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
 import { Newspaper } from "lucide-react";
 import Link from "next/link";
+import FLLCountdownBanner from "@/components/competicoes/FLL/Components/FLLCountdownBanner";
 
 export default function Page() {
   return (
@@ -88,6 +89,8 @@ export default function Page() {
             style={{ boxShadow: "-10px 10px 0 #DE5017" }}
           />
         </section>
+
+        <FLLCountdownBanner />
 
         {/* Competições */}
         <section className="py-8 mb-16">

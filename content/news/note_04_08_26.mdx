@@ -1,0 +1,112 @@
+---
+
+title: "Andamento sobre o sistema de usuários"
+description: "Confira como está o desenvolvimento do novo sistema de usuários do RoboStage e conheça as novidades que estão chegando para a plataforma."
+date: "2026-08-04"
+category: "Desenvolvimento"
+author: "Matheus"
+tags:
+- Plataforma
+- Atualizações
+- Desenvolvimento
+- Infraestrutura
+featured: false
+draft: false
+
+---
+
+Olá, pessoal!
+
+Depois de algumas semanas de trabalho intenso nos bastidores, chegou a hora de compartilhar como está o desenvolvimento do novo sistema de usuários do RoboStage e mostrar um pouco do que estou preparando para as próximas atualizações da plataforma.
+
+Como muitos perceberam, o sistema de contas ficou temporariamente indisponível. Essa pausa foi necessária para que eu pudesse reestruturar toda a infraestrutura responsável pelos usuários. Em vez de apenas corrigir os problemas existentes, decidi reconstruir essa parte do RoboStage praticamente do zero, utilizando tecnologias mais modernas, seguras e escaláveis, preparando a plataforma para crescer nos próximos meses.
+
+Essa nova base servirá não apenas para trazer de volta o sistema de usuários, mas também para possibilitar diversas funcionalidades que antes eram inviáveis na arquitetura anterior.
+
+## Um novo sistema de autenticação
+
+O RoboStage passará a utilizar o **Clerk** como provedor oficial de autenticação.
+
+Com isso, o acesso à plataforma será mais simples e seguro, oferecendo suporte para:
+
+* Login com Google;
+* Login com GitHub;
+* Login utilizando e-mail e senha;
+* Recuperação de senha;
+* Verificação de e-mail;
+* Gerenciamento seguro de sessões.
+
+Além de oferecer uma experiência melhor para todos, essa mudança também simplifica bastante o desenvolvimento da plataforma, permitindo que eu possa focar mais tempo em criar novas funcionalidades em vez de manter toda a infraestrutura de autenticação.
+
+## Espaços para equipes
+
+Uma das funcionalidades que eu mais queria desenvolver finalmente está se tornando realidade: os **Espaços de Equipe**.
+
+Cada equipe poderá criar sua própria organização dentro do RoboStage, reunindo seus integrantes em um ambiente compartilhado para trabalhar de forma colaborativa.
+
+Entre os recursos previstos estão:
+
+* Convites de membros por e-mail;
+* Controle de permissões entre administradores e integrantes;
+* Organização de projetos;
+* Compartilhamento de documentos;
+* Estrutura de pastas;
+* Um ambiente colaborativo para que toda a equipe possa trabalhar em conjunto.
+
+Minha intenção é que o RoboStage deixe de ser apenas um conjunto de ferramentas e se transforme em um verdadeiro ambiente de organização para equipes de robótica.
+
+## O retorno do LabTest
+
+Outra novidade é o retorno do **LabTest**, que está sendo completamente reescrito.
+
+Além de uma interface renovada e diversas melhorias de desempenho, o laboratório ganhará novos recursos para tornar os testes muito mais completos e organizados.
+
+A nova versão será composta por três modos principais.
+
+### Runs
+
+O modo **Runs** permitirá registrar diferentes execuções da estratégia de mesa.
+
+Será possível acompanhar pontuações, comparar tentativas, identificar padrões de falhas e analisar a evolução da equipe durante toda a temporada.
+
+### CalibraBot
+
+O **CalibraBot** será um ambiente dedicado exclusivamente à calibração do robô.
+
+A ideia é oferecer ferramentas para testar sensores, motores, atuadores e sistemas de movimentação de forma rápida, facilitando os ajustes antes das partidas e durante os treinos.
+
+### Personalizado
+
+Para quem deseja realizar experimentos mais específicos, o modo **Personalizado** permitirá criar testes totalmente configuráveis.
+
+Será possível definir parâmetros, variáveis, métricas e objetivos próprios, tornando o LabTest útil não apenas para competições, mas também para projetos de pesquisa, desenvolvimento e aprendizado.
+
+## RoboStage para novas competições
+
+Outra etapa importante dessa reformulação é expandir o RoboStage para além da FIRST LEGO League.
+
+Desde o início, a maior parte das ferramentas foi pensada para atender equipes da FLL. Agora, com essa nova infraestrutura, estou preparando a plataforma para oferecer suporte a outras competições, cada uma com seus próprios recursos.
+
+A primeira delas será a **FIRST Tech Challenge (FTC)**.
+
+A introdução da FTC está prevista para começar **a partir de 12 de setembro**, marcando o início de uma nova fase do projeto.
+
+Inicialmente, serão disponibilizadas páginas dedicadas à competição, reunindo conteúdos, informações sobre a temporada, materiais de apoio e novas ferramentas desenvolvidas especificamente para equipes da FTC.
+
+Minha ideia é que, aos poucos, os Espaços de Equipe também passem a atender naturalmente as equipes da FTC, oferecendo um ambiente completo para organização de projetos, documentos e atividades.
+
+Esse será apenas o primeiro passo. A longo prazo, quero que o RoboStage consiga atender diferentes programas de robótica educacional em uma única plataforma, sempre respeitando as particularidades de cada competição.
+
+## O que vem pela frente
+
+Toda essa reformulação representa apenas o começo de uma nova fase do RoboStage.
+
+Nos próximos meses, diversas funcionalidades que já existiam voltarão gradualmente, acompanhadas de novos recursos que serão possíveis graças à nova arquitetura da plataforma.
+
+Ainda não consigo informar uma data para o retorno completo do sistema de usuários, mas o desenvolvimento está avançando. Meu foco é entregar uma plataforma estável, segura e preparada para continuar evoluindo sem as limitações que existiam anteriormente.
+
+Quero agradecer a todos que continuam acompanhando o RoboStage, enviando sugestões, relatando problemas e compartilhando ideias. Mesmo sendo um projeto desenvolvido de forma independente, todo esse feedback é fundamental para definir os próximos passos da plataforma.
+
+Ainda há muito trabalho pela frente, mas estou bastante animado com tudo o que está sendo construído. Espero compartilhar novas novidades em breve.
+
+Até a próxima atualização!

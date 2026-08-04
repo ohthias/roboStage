@@ -1,4 +1,4 @@
-import { TriangleAlert } from "lucide-react";
+import { File, TriangleAlert, Trophy } from "lucide-react";
 import Link from "next/link";
 
 export default function FutureEditionPage() {
@@ -34,7 +34,16 @@ export default function FutureEditionPage() {
 
           <div className="flex justify-center flex-1">
             <div className="shadow-[20px_20px_0_theme(colors.secondary)]">
-              <iframe width="560" height="315" src="https://www.youtube.com/embed/vHT9L_x9P_E?si=YCe6R02B70qVlMEZ" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
+              <iframe
+                width="560"
+                height="315"
+                src="https://www.youtube.com/embed/vHT9L_x9P_E?si=YCe6R02B70qVlMEZ"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              ></iframe>
             </div>
           </div>
         </div>
@@ -62,25 +71,28 @@ export default function FutureEditionPage() {
           </p>
         </div>
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-          <div className="card bg-base-200 border border-base-300 shadow-none hover:shadow-[10px_10px_0_theme(colors.secondary)] transition-shadow">
-            <div className="card-body">
-              <h3 className="card-title">Pontuador - Grades 3-8</h3>
-              <p>Simule partidas e calcule automaticamente sua pontuação.</p>
-              <div className="card-actions justify-end">
-                <Link className="btn btn-secondary" href="/fll/future-edition/score">Simular</Link>
-              </div>
+          <Link className="group relative overflow-hidden rounded-2xl bg-base-300 p-8 text-left transition-all hover:-translate-y-1 hover:shadow-2xl border border-base-200 hover:border-base-200 w-full max-w-sm h-full" href="/fll/future-edition/score">
+            <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity`}>
+              <Trophy size={120} />
             </div>
-          </div>
-
-          <div className="card bg-base-200 border border-base-300 shadow-none hover:shadow-[10px_10px_0_theme(colors.secondary)] transition-shadow">
-            <div className="card-body">
-              <h3 className="card-title">Recursos</h3>
-              <p>Acesse documentos, materiais e referências da temporada.</p>
-              <div className="card-actions justify-end">
-                <Link href="/fll/docs#future-edition" className="btn btn-secondary" >Explorar</Link>
-              </div>
+            <div className={`inline-flex p-3 rounded-lg bg-opacity-20 mb-4 bg-secondary text-white`}>
+              <Trophy size={32} />
             </div>
-          </div>
+            <h3 className={`text-2xl font-bold mb-2 text-secondary`}>Pontuador</h3>
+            <p className="text-base-content/75">Simule partidas e calcule automaticamente sua pontuação.</p>
+            <div className={`absolute bottom-0 left-0 h-1 w-0 bg-secondary group-hover:w-full transition-all duration-300`}/>
+          </Link>
+          <Link className="group relative overflow-hidden rounded-2xl bg-base-300 p-8 text-left transition-all hover:-translate-y-1 hover:shadow-2xl border border-base-200 hover:border-base-200 w-full max-w-sm h-full" href="/fll/docs">
+            <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity`}>
+              <File size={120} />
+            </div>
+            <div className={`inline-flex p-3 rounded-lg bg-opacity-20 mb-4 bg-secondary text-white`}>
+              <File size={32} />
+            </div>
+            <h3 className={`text-2xl font-bold mb-2 text-secondary`}>Documentação</h3>
+            <p className="text-base-content/75">Acesse a documentação oficial da Future Edition.</p>
+            <div className={`absolute bottom-0 left-0 h-1 w-0 bg-secondary group-hover:w-full transition-all duration-300`}/>
+          </Link>
         </div>
       </section>
     </div>

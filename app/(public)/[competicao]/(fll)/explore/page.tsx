@@ -5,7 +5,7 @@ import {
   CheckCircle2,
   Lightbulb,
   FolderKanban,
-  Gamepad2,
+  Blocks,
   Trophy,
   Link2,
   CalendarDays,
@@ -20,46 +20,43 @@ import {
   School2,
   Megaphone,
   MessageSquare,
-  Wrench,
+  Presentation,
+  NotebookPen,
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Iniciando na FIRST LEGO League Challenge | RoboStage",
+  title: "Iniciando na FLL Explore | RoboStage",
   description:
-    "Guia para equipes estreantes na FIRST LEGO League Challenge (FLLC): o que é o programa, como funciona a temporada, checklist inicial, vídeos recomendados, canais oficiais e FAQ.",
+    "Guia para equipes estreantes na FIRST LEGO League Explore: o que é o programa, como funciona a temporada, checklist inicial, vídeos recomendados, canais oficiais e FAQ.",
 };
 
 const checklist = [
-  "Montar a equipe (2 a 10 competidores, com pelo menos 2 técnicos adultos).",
-  "Adquirir o tapete e os materiais oficiais da temporada.",
-  "Ler os documentos e regras da temporada vigente.",
-  "Primeiros testes no tapete e nas missões do robô.",
-  "Registro contínuo do processo no Engineering Notebook.",
-  "Definir o problema real do Projeto de Inovação.",
-  "Treinar a apresentação de 5 minutos para os juízes.",
-  "Inscrever a equipe em um torneio regional.",
+  "Montar a equipe (até 6 alunos de 6 a 10 anos) e o adulto responsável.",
+  "Adquirir o conjunto LEGO® da temporada e o kit SPIKE Essential.",
+  "Ler o Guia de Encontro de Equipes com o professor/treinador.",
+  "Iniciar as 12 sessões do Caderno de Engenharia.",
+  "Construir e motorizar o Modelo de Exploração.",
+  "Montar o Show Me Poster com o registro da jornada.",
+  "Treinar a conversa com os avaliadores para o evento.",
+  "Inscrever a equipe em um evento de celebração.",
 ];
 
 const usefulLinks = [
   {
-    label: "FIRST LEGO League Challenge no Brasil (SESI)",
-    href: "https://www.sesi.portaldaindustria.com.br/para-voce/robotica/first-lego-league-challenge",
+    label: "FIRST LEGO League Explore no Brasil",
+    href: "https://www.firstlegoleague.com.br/first-lego-league-explore",
   },
   {
-    label: "Portal brasileiro da FLL",
-    href: "https://www.firstlegoleague.com.br/first-lego-league-challenge",
+    label: "Inscrições Explore",
+    href: "https://www.firstlegoleague.com.br/inscri%C3%A7%C3%B5es-explore",
   },
   {
-    label: "Programa oficial FIRST LEGO League (EUA)",
-    href: "https://www.firstinspires.org/programs/fll/",
+    label: "Materiais da temporada",
+    href: "https://www.firstlegoleague.com.br/materiais",
   },
   {
-    label: "Como começar uma equipe",
+    label: "Como começar (FIRST, em inglês)",
     href: "https://www.firstinspires.org/programs/fll/get-started",
-  },
-  {
-    label: "Jogo e temporada oficiais",
-    href: "https://www.firstinspires.org/programs/fll/game-and-season",
   },
 ];
 
@@ -67,23 +64,23 @@ const recommendedVideos = [
   {
     title: "Vídeo de abertura da temporada",
     description:
-      "Apresenta o tema do ano e ajuda a equipe a entender a proposta do desafio antes de começar a construir.",
+      "Apresenta o tema do ano para as crianças e ajuda a turma a entender por onde começar a explorar.",
     href: "https://www.firstinspires.org/programs/fll/game-and-season",
     icon: PlayCircle,
     badge: "Oficial",
   },
   {
-    title: "Vídeo de missões do Desafio do Robô",
+    title: "Como montar o Modelo de Exploração",
     description:
-      "Explica o tapete, as missões e a lógica de pontuação usada nos 3 rounds de 2 minutos e meio.",
-    href: "https://www.youtube.com/watch?v=ErDj8myI_Tg",
-    icon: Gamepad2,
+      "Boa referência para entender a lógica de construir e motorizar o modelo com o SPIKE Essential.",
+    href: "https://education.lego.com/en-us/products/lego-education-spike-essential-set/45345",
+    icon: Blocks,
     badge: "Vídeo",
   },
   {
-    title: "Preparação para o torneio",
+    title: "Como funciona um evento de celebração",
     description:
-      "Indicado para equipes que querem entender a rotina do dia de competição e as sessões com os juízes.",
+      "Mostra como é a conversa da equipe com os avaliadores — sem pontuação, sem eliminação, só compartilhar o que aprenderam.",
     href: "https://www.firstinspires.org/programs/fll/get-started",
     icon: BadgeInfo,
     badge: "Dica",
@@ -100,34 +97,34 @@ const recommendedVideos = [
 
 const faq = [
   {
-    question: "Quem pode participar da FIRST LEGO League Challenge?",
+    question: "Quem pode participar da FIRST LEGO League Explore?",
     answer:
-      "Equipes com estudantes de 9 a 15/16 anos (a faixa pode variar por país), formadas por 2 a 10 competidores — o recomendado é ter ao menos 4 — e lideradas por 2 técnicos adultos. Cada competidor só pode integrar uma equipe da FLLC por temporada.",
+      "Crianças de 6 a 10 anos, em equipes de até 6 integrantes, guiadas por um adulto responsável (professor, treinador ou familiar). A equipe pode nascer em uma escola, em atividades extracurriculares ou como um grupo independente de amigos.",
   },
   {
-    question: "Quais são as categorias avaliadas no torneio?",
+    question: "O Explore é uma competição?",
     answer:
-      "São quatro: Desafio do Robô (missões autônomas no tapete), Design do Robô (processo de engenharia por trás da construção e programação), Projeto de Inovação (solução para um problema real ligado ao tema) e Core Values (colaboração, inclusão e espírito esportivo em todos os momentos).",
+      "Não. O Explore é um programa não competitivo: não há pontuação, ranking ou eliminação. A temporada termina em um evento de celebração, onde avaliadores conversam com cada equipe sobre o modelo e o Show Me Poster — e todas as equipes são reconhecidas.",
   },
   {
-    question: "Qual é o primeiro passo para uma equipe iniciante?",
+    question: "O que a equipe precisa produzir na temporada?",
     answer:
-      "Montar a equipe, adquirir o tapete e os materiais da temporada e ler com atenção os documentos oficiais. Depois disso, partir para os primeiros testes do robô e para a escolha do tema do Projeto de Inovação.",
+      "Um Modelo de Exploração feito com peças LEGO® e motorizado com o kit SPIKE Essential, além de um Show Me Poster, cartaz onde a equipe registra o processo, as descobertas e o aprendizado ao longo da temporada.",
   },
   {
-    question: "A equipe precisa dominar tudo antes de competir?",
+    question: "Quanto tempo dura a temporada?",
     answer:
-      "Não. O programa foi pensado para equipes evoluírem ao longo da temporada. Times novos costumam crescer mais rápido quando começam simples, registram os aprendizados no notebook e melhoram por ciclos de teste.",
+      "O programa é organizado em 12 sessões guiadas pelo Caderno de Engenharia e pelo Guia de Encontro de Equipes. A maioria dos grupos se reúne uma vez por semana, mas o ritmo é flexível e definido pela própria equipe.",
   },
   {
-    question: "Como funciona a apresentação para os juízes?",
+    question: "Como funciona a conversa com os avaliadores?",
     answer:
-      "O Design do Robô e o Projeto de Inovação são apresentados em sessões de 5 minutos cada. Já o Desafio do Robô acontece em 3 rounds de 2 minutos e meio no tapete, valendo a melhor pontuação entre as tentativas.",
+      "É uma conversa, não uma apresentação formal: a equipe mostra o modelo, o Show Me Poster e conta o que pesquisou e aprendeu. O objetivo é celebrar o processo, não julgar quem foi melhor.",
   },
   {
-    question: "Como avançar para o nacional e o mundial?",
+    question: "Qual a diferença entre Explore e Challenge?",
     answer:
-      "A equipe se inscreve em um torneio regional. As melhores colocadas de cada regional avançam para a etapa nacional e, a partir dela, as melhores podem representar o país em competições internacionais.",
+      "O Explore (6 a 10 anos) é não competitivo e foca em construir um modelo e documentar o aprendizado. O Challenge (9 a 15/16 anos) é competitivo, com robôs autônomos programados para cumprir missões pontuadas em um tapete.",
   },
 ];
 
@@ -140,64 +137,65 @@ const aboutFirst = [
   },
   {
     icon: School2,
-    title: "O que é a FLL Challenge",
+    title: "O que é a FLL Explore",
     description:
-      "A FIRST LEGO League Challenge é a trilha voltada a estudantes de 9 a 15/16 anos dentro do programa FIRST LEGO League. As equipes constroem e programam robôs LEGO®, pesquisam um problema real e apresentam tudo a juízes seguindo os Core Values do programa.",
+      "A FIRST LEGO League Explore é a trilha de entrada da FLL, para crianças de 6 a 10 anos. As equipes constroem um modelo com peças LEGO®, aprendem noções básicas de engenharia e programação e compartilham o que aprenderam em um evento de celebração — sem competição.",
   },
   {
     icon: Megaphone,
     title: "O que são as temporadas",
     description:
-      "Cada temporada traz um tema novo, missões inéditas no tapete e um novo desafio de pesquisa para o Projeto de Inovação. No Brasil, os torneios regionais da temporada costumam acontecer entre outubro e fevereiro.",
+      "O Explore segue o mesmo tema anual do Challenge, mas em versão mais simples: a equipe explora uma parte do assunto e constrói um modelo que representa suas descobertas, em vez de missões pontuadas.",
   },
 ];
 
 const brazilChannels = [
   {
     icon: Globe2,
-    title: "SESI — operador da FLL Challenge no Brasil",
+    title: "Educacional — operador do Explore no Brasil",
     description:
-      "O SESI é responsável pela operação nacional da FIRST LEGO League Challenge, incluindo inscrições, torneios regionais e o Festival SESI de Robótica.",
-    href: "https://www.sesi.portaldaindustria.com.br/para-voce/robotica/first-lego-league-challenge",
+      "A Educacional (Positivo Tecnologia) é responsável pela operação nacional da FIRST LEGO League Explore e Discover, incluindo distribuição de materiais e inscrições.",
+    href: "https://www.firstlegoleague.com.br/first-lego-league-explore",
   },
   {
     icon: BookOpen,
     title: "Portal brasileiro da FLL",
     description:
       "Central com informações dos três programas da FLL no Brasil (Discover, Explore e Challenge), materiais e canais de contato.",
-    href: "https://www.firstlegoleague.com.br/first-lego-league-challenge",
+    href: "https://www.firstlegoleague.com.br",
   },
   {
     icon: CalendarDays,
     title: "Calendário de eventos",
     description:
-      "Página com datas dos torneios regionais, nacionais e demais eventos da operação brasileira.",
+      "Página com datas de eventos locais, regionais e nacionais da operação brasileira.",
     href: "https://www.firstlegoleague.com.br/calend%C3%A1rio",
   },
 ];
 
-export default function BeginsPage() {
+export default function ExploreBeginsPage() {
   return (
     <main className="p-8 max-w-6xl mx-auto w-full">
       <header className="mb-8 md:p-8">
         <div className="flex items-start gap-5">
           <div className="flex flex-col gap-2 items-start">
             <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary-content bg-primary w-max px-2">
-              Iniciando na FLL Challenge
+              Iniciando na FLL Explore
             </span>
 
             <h1 className="text-3xl font-extrabold leading-tight text-base-content md:text-5xl">
-              Guia para equipes{" "}
-              <span className="text-black bg-accent px-2">Estreantes</span>
+              Guia para {" "}
+              <span className="text-black bg-accent px-2">Exploradores</span>
             </h1>
 
             <p className="max-w-2xl text-base text-base-content/70 md:text-lg">
-              A FIRST® LEGO® League Challenge é o torneio de robótica
-              educacional da FIRST® para estudantes de 9 a 15/16 anos, com
-              robôs LEGO® e tecnologia LEGO® Education. No Brasil, o programa
-              é operado pelo SESI. Se a sua equipe está entrando agora na
-              competição, este guia reúne o essencial para começar a
-              temporada com organização e confiança.
+              A FIRST® LEGO® League Explore é o programa de robótica educacional
+              da FIRST® para crianças de 6 a 10 anos, com peças LEGO® e o kit
+              LEGO® Education SPIKE Essential. Diferente do Challenge, o Explore
+              é não competitivo: a temporada termina em um evento de celebração,
+              não em um ranking. No Brasil, é operado pela Educacional. Este
+              guia reúne o essencial para começar a temporada com organização e
+              confiança.
             </p>
           </div>
         </div>
@@ -210,9 +208,9 @@ export default function BeginsPage() {
             <h3 className="font-bold">Conteúdo não oficial</h3>
             <p>
               Esta página é um guia independente, produzido com base em
-              materiais públicos da FIRST, da FLL Brasil e do SESI. Consulte
-              sempre os documentos e regras da temporada vigente para
-              confirmar detalhes atualizados.
+              materiais públicos da FIRST e da FLL Brasil. Consulte sempre os
+              documentos e o Guia de Encontro de Equipes da temporada vigente
+              para confirmar detalhes atualizados.
             </p>
           </div>
         </div>
@@ -221,34 +219,34 @@ export default function BeginsPage() {
       <section className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <article className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-info/15">
-            <Gamepad2 className="h-6 w-6 text-info" />
+            <Blocks className="h-6 w-6 text-info" />
           </div>
-          <h2 className="text-xl font-bold">Desafio do Robô</h2>
+          <h2 className="text-xl font-bold">Modelo de Exploração</h2>
           <p className="mt-2 text-sm leading-6 text-base-content/70">
-            Executar missões autônomas em um tapete, em 3 rounds de 2 minutos
-            e meio, valendo a melhor pontuação.
+            Construir e motorizar um modelo com peças LEGO® e o kit SPIKE
+            Essential, inspirado no tema da temporada.
           </p>
         </article>
 
         <article className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15">
-            <Wrench className="h-6 w-6 text-primary" />
+            <NotebookPen className="h-6 w-6 text-primary" />
           </div>
-          <h2 className="text-xl font-bold">Design do Robô</h2>
+          <h2 className="text-xl font-bold">Caderno de Engenharia</h2>
           <p className="mt-2 text-sm leading-6 text-base-content/70">
-            Apresentar aos juízes, em 5 minutos, o processo de engenharia por
-            trás da construção e da programação do robô.
+            Registrar o processo em 12 sessões guiadas, do primeiro rascunho até
+            a versão final do modelo.
           </p>
         </article>
 
         <article className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/15">
-            <Lightbulb className="h-6 w-6 text-secondary" />
+            <Presentation className="h-6 w-6 text-secondary" />
           </div>
-          <h2 className="text-xl font-bold">Projeto de Inovação</h2>
+          <h2 className="text-xl font-bold">Show Me Poster</h2>
           <p className="mt-2 text-sm leading-6 text-base-content/70">
-            Pesquisar um problema real ligado ao tema da temporada e propor
-            uma solução bem documentada.
+            Montar um cartaz que conta a jornada da equipe para compartilhar no
+            evento de celebração.
           </p>
         </article>
 
@@ -258,8 +256,8 @@ export default function BeginsPage() {
           </div>
           <h2 className="text-xl font-bold">Core Values</h2>
           <p className="mt-2 text-sm leading-6 text-base-content/70">
-            Demonstrar descoberta, inovação, impacto, inclusão, trabalho em
-            equipe e diversão durante todo o torneio.
+            Praticar descoberta, inovação, impacto, inclusão, trabalho em equipe
+            e diversão em cada encontro.
           </p>
         </article>
       </section>
@@ -285,29 +283,29 @@ export default function BeginsPage() {
               <div className="rounded-2xl bg-base-200/60 p-5">
                 <h3 className="font-semibold">Time completo</h3>
                 <p className="mt-2 text-sm leading-6 text-base-content/70">
-                  De 2 a 10 competidores (o ideal é ter ao menos 4), liderados
-                  por 2 técnicos adultos.
+                  Até 6 crianças de 6 a 10 anos, guiadas por um adulto
+                  responsável — não precisam ter a mesma idade.
                 </p>
               </div>
               <div className="rounded-2xl bg-base-200/60 p-5">
                 <h3 className="font-semibold">Documentação</h3>
                 <p className="mt-2 text-sm leading-6 text-base-content/70">
-                  Engineering Notebook atualizado com testes, falhas, ideias e
-                  decisões da equipe.
+                  Caderno de Engenharia preenchido a cada sessão, com desenhos,
+                  ideias e o passo a passo do modelo.
                 </p>
               </div>
               <div className="rounded-2xl bg-base-200/60 p-5">
                 <h3 className="font-semibold">Materiais da temporada</h3>
                 <p className="mt-2 text-sm leading-6 text-base-content/70">
-                  Tapete oficial, kit de missões e o robô programável (SPIKE
-                  Prime, na temporada atual).
+                  Conjunto LEGO® Explore da temporada e o kit LEGO® Education
+                  SPIKE Essential para motorizar o modelo.
                 </p>
               </div>
               <div className="rounded-2xl bg-base-200/60 p-5">
-                <h3 className="font-semibold">Comunicação</h3>
+                <h3 className="font-semibold">Guia do adulto responsável</h3>
                 <p className="mt-2 text-sm leading-6 text-base-content/70">
-                  A equipe precisa saber explicar decisões com clareza nas
-                  sessões de 5 minutos com os juízes.
+                  O Guia de Encontro de Equipes traz o roteiro de cada uma das
+                  12 sessões, sem exigir experiência prévia em robótica.
                 </p>
               </div>
             </div>
@@ -356,41 +354,42 @@ export default function BeginsPage() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold">
-                  Como pensar para a competição
+                  Como se preparar para o evento de celebração
                 </h2>
                 <p className="text-sm text-base-content/60">
-                  O foco inicial deve ser consistência e evolução.
+                  Não é uma disputa: é uma conversa sobre o que a equipe
+                  aprendeu.
                 </p>
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-2xl border border-base-300 bg-base-200/40 p-5">
-                <h3 className="font-semibold">No tapete (Desafio do Robô)</h3>
+                <h3 className="font-semibold">No modelo</h3>
                 <p className="mt-2 text-sm leading-6 text-base-content/70">
-                  Treine repetição e priorização das missões mais viáveis: só
-                  a melhor pontuação entre os 3 rounds conta.
+                  Cada criança deve saber explicar uma parte do modelo — não
+                  precisa ser só o adulto falando.
                 </p>
               </div>
               <div className="rounded-2xl border border-base-300 bg-base-200/40 p-5">
-                <h3 className="font-semibold">Na entrevista</h3>
+                <h3 className="font-semibold">No Show Me Poster</h3>
                 <p className="mt-2 text-sm leading-6 text-base-content/70">
-                  Fale com objetividade, mostre o processo de engenharia e
-                  destaque o aprendizado da equipe em 5 minutos.
+                  Mostre o processo, não só o resultado: rascunhos, tentativas e
+                  o que mudou pelo caminho valem muito.
                 </p>
               </div>
               <div className="rounded-2xl border border-base-300 bg-base-200/40 p-5">
-                <h3 className="font-semibold">No Projeto de Inovação</h3>
+                <h3 className="font-semibold">Na conversa com avaliadores</h3>
                 <p className="mt-2 text-sm leading-6 text-base-content/70">
-                  Explique o problema real escolhido, a pesquisa feita e por
-                  que a solução proposta faz sentido.
+                  Treine respostas curtas e à vontade — o objetivo é
+                  compartilhar a experiência, não decorar um discurso.
                 </p>
               </div>
               <div className="rounded-2xl border border-base-300 bg-base-200/40 p-5">
                 <h3 className="font-semibold">Nos Core Values</h3>
                 <p className="mt-2 text-sm leading-6 text-base-content/70">
-                  Cooperação, inclusão e competição amigável são avaliadas em
-                  todos os momentos do torneio, não só na apresentação.
+                  Cooperação, respeito e diversão são celebrados durante todo o
+                  evento, do início ao fim.
                 </p>
               </div>
             </div>
@@ -445,12 +444,11 @@ export default function BeginsPage() {
             </div>
 
             <p className="mt-5 text-xs leading-6 text-base-content/50">
-              Os materiais em vídeo podem variar por temporada. A página
-              oficial "Game & Season" da FIRST concentra os conteúdos mais
-              recentes para equipes iniciantes.
+              Os materiais em vídeo podem variar por temporada. A página oficial
+              "Game & Season" da FIRST concentra os conteúdos mais recentes para
+              equipes iniciantes.
             </p>
           </article>
-
           <article className="rounded-[28px] border border-base-300 bg-gradient-to-br from-base-100 via-base-100 to-success/5 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl md:p-8 xl:col-span-2">
             <div className="mb-6 flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-info/15">

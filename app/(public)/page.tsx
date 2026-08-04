@@ -25,8 +25,8 @@ export default function Page() {
               Competições. Equipes. Comunidade. Tudo conectado!
             </p>
             <div className="flex flex-wrap gap-4 mt-4">
-              <a href="/auth/signup" className="btn btn-primary btn-outline">
-                Criar conta gratuitamente
+              <a href="/fll/score/bioglow" className="btn btn-primary btn-outline">
+                Pontue na BIOGLOW
               </a>
               <a href="/fll" className="btn btn-secondary btn-outline">
                 Explorar a Plataforma
@@ -244,12 +244,12 @@ export default function Page() {
               robótica, existe um lugar esperando por você.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-              <Link
+              {/*<Link
                 className="btn btn-primary rounded-2xl px-8"
                 href="/auth/signup"
               >
                 Criar conta grátis
-              </Link>
+              </Link>*/}
               <Link
                 className="btn btn-ghost text-neutral-content rounded-2xl px-8"
                 href="/fll"

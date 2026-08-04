@@ -10,7 +10,8 @@ import {
   Pickaxe,
   School,
   ToyBrick,
-  Telescope
+  Telescope,
+  File
 } from "lucide-react";
 
 export const NAVIGATION = {
@@ -26,6 +27,7 @@ export const NAVIGATION = {
     menu: [
       { nome: "Flash Q&A", path: "flash-qa", icon: MessageSquare, description: "Plataforma de perguntas e respostas" },
       { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para competições" },
+      { nome: "InnoLab", path: "innolab", icon: File, description: "Criação rápida de diagramas" },
       { nome: "Guias", path: "docs", icon: BookOpen, description: "Documentação das temporadas da liga" },
       { nome: "Iniciantes da Challenge", path: "begins", icon: School, description: "FLL para equipes iniciantes" },
     ],

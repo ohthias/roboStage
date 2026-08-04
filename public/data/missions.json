@@ -670,7 +670,7 @@
       "id": "M04",
       "name": "Lorem",
       "mission": "Lorem",
-      "points": 20,
+      "points": 10,
       "equipaments" : true,
       "image": "/images/missions/bioglow/thumb-mission-04.png",
       "type": ["switch", null, null],
@@ -689,7 +689,7 @@
       "points": [0, 10, 20],
       "equipaments" : true,
       "image": "/images/missions/bioglow/thumb-mission-05.png",
-      "type": ["range", "Parcialmente", "Completamente"]
+      "type": ["switch", "Não Realizado", "Parcialmente", "Completamente"]
     },
     {
       "id": "M06",

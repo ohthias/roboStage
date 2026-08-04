@@ -1,4 +1,5 @@
 import { TriangleAlert } from "lucide-react";
+import Link from "next/link";
 
 export default function FutureEditionPage() {
   return (
@@ -33,16 +34,7 @@ export default function FutureEditionPage() {
 
           <div className="flex justify-center flex-1">
             <div className="shadow-[20px_20px_0_theme(colors.secondary)]">
-              <iframe
-                width="560"
-                height="315"
-                src="https://www.youtube.com/embed/VS3-5l9XlwQ?si=e-Ayu1xJjxO5pJnF"
-                title="Future Edition"
-                className="max-w-full aspect-video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
+              <iframe width="560" height="315" src="https://www.youtube.com/embed/vHT9L_x9P_E?si=YCe6R02B70qVlMEZ" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
             </div>
           </div>
         </div>
@@ -72,10 +64,10 @@ export default function FutureEditionPage() {
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
           <div className="card bg-base-200 border border-base-300 shadow-none hover:shadow-[10px_10px_0_theme(colors.secondary)] transition-shadow">
             <div className="card-body">
-              <h3 className="card-title">Pontuação</h3>
+              <h3 className="card-title">Pontuador - Grades 3-8</h3>
               <p>Simule partidas e calcule automaticamente sua pontuação.</p>
               <div className="card-actions justify-end">
-                <button className="btn btn-secondary">Em breve</button>
+                <Link className="btn btn-secondary" href="/fll/future-edition/score">Simular</Link>
               </div>
             </div>
           </div>
@@ -85,7 +77,7 @@ export default function FutureEditionPage() {
               <h3 className="card-title">Recursos</h3>
               <p>Acesse documentos, materiais e referências da temporada.</p>
               <div className="card-actions justify-end">
-                <button className="btn btn-secondary" disabled>Explorar</button>
+                <Link href="/fll/docs#future-edition" className="btn btn-secondary" >Explorar</Link>
               </div>
             </div>
           </div>

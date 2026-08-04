@@ -19,7 +19,12 @@ export default function FLLHighlightSeason() {
             </h2>
 
             <p className="mt-8 text-lg leading-8 text-white/80 max-w-xl">
-                A temporada 2026/2027 da FIRST® LEGO® League Challenge, BIOGLOW, convida equipes a explorar o mundo microscópico e descobrir como os organismos vivos interagem com seu ambiente.
+              A biodiversidade mantém nosso planeta saudável. Na floresta
+              tropical, desde os menores insetos até as árvores imponentes,
+              existem inúmeras espécies de plantas e animais que dependem umas
+              das outras para sobreviver. Nesta temporada, identifique um
+              problema que coloque a biodiversidade em risco e crie uma solução
+              inovadora que possa ajudar. 
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4">

@@ -70,8 +70,8 @@ export function MissionCard({
 
         {gated && (
           <div className="alert alert-warning text-xs sm:text-sm mb-3 py-2">
-            Condição obrigatória não cumprida: esta missão e seus bônus
-            pontuam 0.
+            Condição obrigatória não cumprida: esta missão e seus bônus pontuam
+            0.
           </div>
         )}
 
@@ -118,7 +118,7 @@ export function MissionCard({
                           className="badge badge-warning badge-xs ml-2 align-middle"
                           title={sub.manual_tracking_note}
                         >
-                          Acompanhar ao vivo
+                          Acompanhamento manual
                         </span>
                       )}
                       {sub.bonus_exclusive && (
@@ -127,6 +127,14 @@ export function MissionCard({
                         </span>
                       )}
                     </span>
+                    {sub.zero_whole_mission_if_false && (
+                      <span
+                        className="badge badge-error rounded-md w-auto text-center badge-sm h-auto"
+                        title="Se esta condição não for cumprida, a missão inteira pontua 0."
+                      >
+                        Obrigatório
+                      </span>
+                    )}
                     {isBadgeEnabled && sub.points !== 0 && (
                       <span className="badge badge-outline rounded-md w-auto text-center badge-sm h-auto">
                         Pontos: {points}

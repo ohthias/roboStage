@@ -8,7 +8,7 @@
       "code": "M01",
       "title": "Microbiomas Poderosos",
       "description": "Espécies-chave posicionadas corretamente em cada microbioma.",
-      "image": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_0e3b5a7e6d0b4a9e8f3f1c5e6b1a2c3d.png",
+      "image": "/images/missions/bioglow-fe/thumb-mission-01.png",
       "objectives": [
         {
           "id": "m01-floresta-jovem",
@@ -47,7 +47,7 @@
       "code": "M02",
       "title": "Raízes da Renovação",
       "description": "Recursos entregues na base e na câmara da copa da árvore grande.",
-      "image": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_f3b5a7e6d0b4a9e8f3f1c5e6b1a2c3d.png",
+      "image": "/images/missions/bioglow-fe/thumb-mission-02.png",
       "objectives": [
         {
           "id": "m02-base-arvore-grande",
@@ -71,7 +71,7 @@
       "code": "M03",
       "title": "Cachoeira da Caverna",
       "description": "Espécies-chave cicladas pela cachoeira da caverna.",
-        "image": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_0e3b5a7e6d0b4a9e8f3f1c5e6b1a2c3d.png",
+        "image": "/images/missions/bioglow-fe/thumb-mission-03.png",
       "objectives": [
         {
           "id": "m03-especies-cicladas",
@@ -88,7 +88,7 @@
       "code": "M04",
       "title": "Despertar da Floresta Tropical",
       "description": "Liberação de espécies-chave e recursos.",
-      "image": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_0e3b5a7e6d0b4a9e8f3f1c5e6b1a2c3d.png",
+      "image": "/images/missions/bioglow-fe/thumb-mission-04.png",
       "objectives": [
         {
           "id": "m04-especies-liberadas-ninho",
@@ -109,7 +109,7 @@
       "code": "M05",
       "title": "Refúgio Central",
       "description": "Espécies-chave ou recursos totalmente parados no refúgio central.",
-      "image": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_0e3b5a7e6d0b4a9e8f3f1c5e6b1a2c3d.png",
+      "image": "/images/missions/bioglow-fe/thumb-mission-05.png",
       "objectives": [
         {
           "id": "m05-refugio-central",
@@ -125,7 +125,7 @@
       "code": "LEVEL UP",
       "title": "Desafio Level Up: Ataque Invasor",
       "description": "Espécies invasoras adicionadas e contidas na zona de contenção.",
-      "image": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_0e3b5a7e6d0b4a9e8f3f1c5e6b1a2c3d.png",
+      "image": "/images/missions/bioglow-fe/thumb-mission-level-up.png",
       "objectives": [
         {
           "id": "levelup-especies-adicionadas",

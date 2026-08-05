@@ -37,6 +37,12 @@ export default function FerramentasSection({
             </div>
           )}
 
+          {ferramenta.mobileSafe && (
+            <div className="absolute top-4 right-4 z-10 badge badge-success badge-sm block md:hidden">
+              Mobile
+            </div>
+          )}
+
           {/* Imagem */}
           {ferramenta.image && (
             <figure className="relative">

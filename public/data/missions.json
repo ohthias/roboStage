@@ -677,7 +677,7 @@
       "sub-mission": [
         {
           "id": "M04-gate",
-          "submission": "A esperança está completamente dentro do habitat de folhas (ninho + área marcada ao redor) ao final da partida",
+          "submission": "O grilo-esperança está completamente dentro do habitat de folhas (ninho + área marcada ao redor) ao final da partida",
           "points": 0,
           "type": ["switch", null, null],
           "zero_whole_mission_if_false": true,
@@ -685,7 +685,7 @@
         },
         {
           "id": "M04-2",
-          "submission": "Bônus: a segunda folha foi completamente removida, não tocando mais o ninho, com a esperança em sua posição inicial original",
+          "submission": "Bônus: e a segunda folha é completamente removida, sem tocar o ninho, com o grilo-esperança em sua posição inicial:",
           "points": 10,
           "type": ["switch", null, null],
           "requires": [

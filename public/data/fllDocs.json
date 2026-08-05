@@ -1,27 +1,27 @@
 {
   "bioglow" : [
     {
-      "title": "Livro de Regras - EN",
+      "title": "Livro de Regras",
       "description": "Contém todas as regras oficiais da temporada, incluindo pontuação e restrições dos robôs.",
-      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-rgr.pdf",
+      "url": "/data/_file/fll/bioglow/livro_de_regras_do_desafio_do_robô.pdf",
       "category": "challenge"
     },
     {
-      "title": "Caderno de Engenharia - EN",
+      "title": "Caderno de Engenharia",
       "description": "Guia para registrar todas as ideias, testes e protótipos da equipe.",
-      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-en.pdf",
+      "url": "/data/_file/fll/bioglow/caderno_de_engenharia.pdf",
       "category": "challenge"
     },
     {
-      "title": "Guia de Reuniões - EN",
+      "title": "Guia de Reuniões",
       "description": "Orientações para organizar reuniões produtivas e gerenciar tarefas da equipe.",
-      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-tmg.pdf",
+      "url": "/data/_file/fll/bioglow/guia_de_reuniao_de_equipes.pdf",
       "category": "challenge"
     },
     {
-      "title": "Rubricas de Avaliação - EN",
+      "title": "Rubricas de Avaliação",
       "description": "Critérios detalhados para avaliação do robô, projeto de pesquisa e apresentação da equipe.",
-      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-rubrics-color.pdf",
+      "url": "/data/_file/fll/bioglow/rubricas.pdf",
       "category": "challenge"
     },
     {
@@ -40,6 +40,12 @@
       "title": "Caderno de Engenharia - EN",
       "description": "Guia para registrar todas as ideias, testes e protótipos da equipe.",
       "url": "https://firstinspires.blob.core.windows.net/fll/explore/2026-27/fll-explore-bioglow-EN.pdf",
+      "category": "explore"
+    },
+    {
+      "title": "Rubricas de Avaliação",
+      "description": "Critérios detalhados para avaliação do robô, projeto de pesquisa e apresentação da equipe.",
+      "url": "https://www.firstlegoleague.com.br/_files/ugd/441e1d_e49ae2d4ed3a47998233ee75b3d6fdb4.pdf",
       "category": "explore"
     },
     {

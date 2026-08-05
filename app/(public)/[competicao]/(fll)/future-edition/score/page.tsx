@@ -12,14 +12,15 @@ const data = missionsData as MissionsData;
 export default function FutureEditionScorePage() {
   return (
     <div className="flex flex-col min-h-screen space-y-8">
-      <header className="max-w-6xl mx-auto w-full px-6">
+      <header className="max-w-6xl mx-auto w-full px-6 py-8">
         <Breadcrumbs start="fll" />
-        <div className="flex flex-col lg:flex-row items-center gap-16">
+        <div className="flex flex-col lg:flex-row items-center gap-16 mt-8">
+          <img src="/images/logos/fll/seasons/bioglow_logo_future_edition.webp" alt="Logo FLL Future Edition" className="w-48 lg:w-64" />
           <div className="flex-1">
-            <h1 className="inline-block bg-secondary text-secondary-content px-3 py-1 italic font-black text-5xl">
-              Future Edition
+            <h1 className="text-4xl lg:text-5xl font-bold text-secondary">
+              BIOGLOW
             </h1>
-            <p className="uppercase tracking-widest text-secondary mt-3 font-semibold">
+            <p className="mt-4 text-lg lg:text-xl text-base-content/70">
               Baseado nos kits LEGO® Education Computer Science & AI
             </p>
           </div>

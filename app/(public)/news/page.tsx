@@ -49,11 +49,14 @@ export default function NewsPage() {
                 Últimas publicações
               </h2>
 
-              <div className="badge badge-outline">{news.length} notícias</div>
+              <div className="badge badge-outline w-max">{news.length} notícias</div>
             </div>
 
             <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-              {news.map((article: any) => (
+              {news.map((article: any) => {
+                const safeSlug = encodeURIComponent(String(article.slug ?? ""));
+
+                return (
                 <Link
                   key={article.slug}
                   href={toSafeNewsHref(article.slug)}
@@ -118,7 +121,8 @@ export default function NewsPage() {
                     </div>
                   </article>
                 </Link>
-              ))}
+                );
+              })}
             </div>
           </section>
         </div>

@@ -1,6 +1,5 @@
 "use client";
 import HeatmapPage from "@/components/QuickBrick/heatmap/HeatmapPage";
-import { Footer } from "@/components/UI/Footer";
 import CardMobileNotUse from "@/components/MobileNotUse";
 import { useEffect, useState } from "react";
 
@@ -26,10 +25,5 @@ export default function Page() {
     return <CardMobileNotUse />;
   }
 
-  return (
-    <>
-      <HeatmapPage />
-      <Footer />
-    </>
-  );
+  return <HeatmapPage />;
 }

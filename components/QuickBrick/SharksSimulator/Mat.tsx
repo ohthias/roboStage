@@ -206,11 +206,11 @@ const Mat: React.FC<MatProps> = ({
   const gridPattern = (
     <>
       <pattern id="grid-small" width="10" height="10" patternUnits="userSpaceOnUse">
-        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
+        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(23, 23, 23, 0.03)" strokeWidth="0.5" />
       </pattern>
       <pattern id="grid-large" width="50" height="50" patternUnits="userSpaceOnUse">
         <rect width="50" height="50" fill="url(#grid-small)" />
-        <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+        <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(26, 25, 25, 0.08)" strokeWidth="1" />
       </pattern>
     </>
   );
@@ -266,47 +266,40 @@ const Mat: React.FC<MatProps> = ({
   };
 
   return (
-    <div className="relative group/mat overflow-hidden rounded-lg shadow-2xl bg-100 border border-white/10 select-none">
+    <div className="relative group/mat bg-base-100 border border-base-content/10 select-none">
        {/* Collapsible Info Overlay */}
-       <div className="absolute top-4 left-4 z-50 pointer-events-auto flex flex-col items-start gap-2">
-           <div className="bg-slate-950/80 backdrop-blur-md border border-white/10 rounded-lg shadow-2xl transition-all duration-300 overflow-hidden">
+       <div className="absolute -bottom-10 left-4 z-50 pointer-events-auto flex flex-col items-start gap-2">
+           <div className="bg-base-100/90 backdrop-blur-md border border-base-content/10 rounded-lg transition-all duration-300">
              {/* Header / Toggle */}
              <button 
                 onClick={() => setIsInfoCollapsed(!isInfoCollapsed)}
-                className="w-full flex items-center justify-between gap-4 p-2 hover:bg-white/5 transition-colors"
+                className="w-full flex items-center justify-between gap-4 p-2 hover:bg-base-200 transition-colors"
              >
                 <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
-                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Telemetry</span>
+                    <div className="w-2 h-2 rounded-full bg-info animate-pulse"></div>
+                    <span className="text-[10px] font-bold text-info uppercase tracking-wider">Dados</span>
                 </div>
-                {isInfoCollapsed ? <ChevronDown size={14} className="text-slate-500" /> : <ChevronUp size={14} className="text-slate-500" />}
+                {isInfoCollapsed ? <ChevronUp size={14} className="text-info" /> : <ChevronDown size={14} className="text-info" />}
              </button>
              
              {/* Content */}
-             <div className={`px-3 transition-all duration-300 ${isInfoCollapsed ? 'max-h-0 opacity-0 pb-0' : 'max-h-32 opacity-100 pb-3'}`}>
-                 <div className="flex items-center gap-4 text-xs font-mono pt-1">
-                    <div className="flex flex-col">
-                      <span className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">POS X/Y</span>
-                      <span className="text-cyan-400 font-bold tracking-tight">{robotState.x.toFixed(1)} / {robotState.y.toFixed(1)}</span>
+             <div className={`px-3 transition-all duration-300 ${isInfoCollapsed ? 'max-h-0 opacity-0 pb-0 overflow-hidden' : 'max-h-32 opacity-100 pb-3'}`}>
+                 <div className="stats stats-horizontal bg-base-200/40 border border-base-300/20 shadow-sm mt-1 w-full">
+                    <div className="stat py-2 px-3 min-w-0">
+                      <div className="stat-title text-[9px] uppercase tracking-wider text-base-content/50">POS X/Y</div>
+                      <div className="stat-value text-sm text-info font-mono leading-none break-words">{robotState.x.toFixed(1)} / {robotState.y.toFixed(1)}</div>
                     </div>
-                    <div className="w-px h-6 bg-white/10"></div>
-                    <div className="flex flex-col">
-                      <span className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">ANGLE</span>
-                      <span className="text-emerald-400 font-bold tracking-tight">{(robotState.angle % 360).toFixed(1)}°</span>
+                    <div className="stat py-2 px-3 min-w-0">
+                      <div className="stat-title text-[9px] uppercase tracking-wider text-base-content/50">ÂNGULO</div>
+                      <div className="stat-value text-sm text-success font-mono leading-none">{(robotState.angle % 360).toFixed(1)}°</div>
                     </div>
                  </div>
-                 {mousePos && (
-                    <div className="border-t border-white/5 mt-2 pt-2 flex justify-between items-center text-[10px] font-mono">
-                       <span className="text-slate-600 font-bold">CURSOR</span>
-                       <span className="text-slate-400">{mousePos.x.toFixed(1)}, {mousePos.y.toFixed(1)}</span>
-                    </div>
-                 )}
              </div>
            </div>
            
            {isSettingStart && (
-             <div className="text-[10px] font-bold text-amber-400 bg-amber-950/80 px-3 py-2 rounded-lg border border-amber-500/30 backdrop-blur-md shadow-lg animate-in fade-in slide-in-from-left-2">
-               📍 SET START POSITION
+             <div className="text-[10px] font-bold text-base-content bg-base-100/90 px-3 py-2 rounded-lg border border-base-content/20 backdrop-blur-md shadow-lg animate-in fade-in slide-in-from-left-2">
+               📍 POSIÇÃO INICIAL
             </div>
            )}
         </div>
@@ -334,7 +327,7 @@ const Mat: React.FC<MatProps> = ({
           className="relative mx-auto overflow-visible rounded-lg transition-transform duration-75 ease-out"
         >
           {/* Rulers (Inside scaled container to move with Pan) */}
-           <div className="absolute -top-6 left-0 w-full h-6 flex justify-between px-2 text-[9px] text-slate-600 font-mono select-none pointer-events-none">
+           <div className="absolute -top-6 left-0 w-full h-6 flex justify-between px-2 text-[9px] text-base-content/50 font-mono select-none pointer-events-none">
               {xTicks.map(tick => (
                  <div key={tick} style={{ left: `${(tick / TAPETE_WIDTH_CM) * 100}%` }} className="absolute transform -translate-x-1/2 flex flex-col items-center">
                     <span>{tick}</span>
@@ -342,7 +335,7 @@ const Mat: React.FC<MatProps> = ({
                  </div>
               ))}
            </div>
-           <div className="absolute -left-8 top-0 h-full w-8 flex flex-col justify-between py-2 text-[9px] text-slate-600 font-mono select-none pointer-events-none">
+           <div className="absolute -left-8 top-0 h-full w-8 flex flex-col justify-between py-2 text-[9px] text-base-content/50 font-mono select-none pointer-events-none">
               {yTicks.map(tick => (
                 <div key={tick} style={{ top: `${((TAPETE_HEIGHT_CM - tick) / TAPETE_HEIGHT_CM) * 100}%` }} className="absolute transform -translate-y-1/2 w-full flex items-center justify-end pr-1 gap-1">
                     <span>{tick}</span>
@@ -475,18 +468,18 @@ const Mat: React.FC<MatProps> = ({
                 top: `${cmToPct(trajectory[hoveredPointIdx].x, trajectory[hoveredPointIdx].y).y}%`,
               }}
             >
-               <div className="bg-slate-950/90 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl p-3 w-32 animate-in fade-in zoom-in-95 duration-200">
+               <div className="bg-base-100/90 backdrop-blur-xl border border-base-content/20 rounded-lg shadow-2xl p-3 w-32 animate-in fade-in zoom-in-95 duration-200">
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center pb-2 border-b border-white/5">
-                        <span className="text-[9px] font-bold text-slate-500 uppercase">{trajectory[hoveredPointIdx].type}</span>
-                        <span className="text-[10px] font-mono text-white">{trajectoryMetadata[hoveredPointIdx].totalTime.toFixed(2)}s</span>
+                    <div className="flex justify-between items-center pb-2 border-b border-base-content/10">
+                        <span className="text-[9px] font-bold text-info uppercase">{trajectory[hoveredPointIdx].type}</span>
+                        <span className="text-[10px] font-mono text-base-content/70">{trajectoryMetadata[hoveredPointIdx].totalTime.toFixed(2)}s</span>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-1 text-[9px] font-mono text-slate-400">
+                    <div className="grid grid-cols-2 gap-1 text-[9px] font-mono text-base-content/80">
                       <span>X: {trajectory[hoveredPointIdx].x.toFixed(0)}</span>
                       <span className="text-right">Y: {trajectory[hoveredPointIdx].y.toFixed(0)}</span>
                       {trajectory[hoveredPointIdx].velocity && (
-                        <span className="col-span-2 text-cyan-400">Speed: {trajectory[hoveredPointIdx].velocity}</span>
+                        <span className="col-span-2 text-info">Speed: {trajectory[hoveredPointIdx].velocity}</span>
                       )}
                     </div>
                   </div>

@@ -1,5 +1,41 @@
 [
   {
+    "name": "QuickBrick Studio",
+    "description": "Conjunto de ferramentas para criar, simular e documentar as estratégias do robô ao longo da temporada da FLL. Reúne editores visuais, matrizes de análise e simuladores de trajetória em um único ambiente, ajudando a equipe a planejar, testar e registrar decisões técnicas.",
+    "details": [
+      {
+        "title": "Quais ferramentas fazem parte do QuickBrick Studio?",
+        "content": "Estratégias: desenhe diretamente sobre a imagem do tapete e planeje cada movimento do robô.\nMatriz SWOT das Missões: organize as missões da temporada em Forças, Fraquezas, Oportunidades e Ameaças.\nMapa de Calor de Missões: visualize as regiões mais problemáticas do tapete de forma interativa.\nSharks Simulator: simule trajetórias definindo movimentos retos e giros sobre o tapete (desenvolvido pela equipe Sharks).\nMatriz de Risco: identifique e avalie riscos que podem comprometer o desempenho do robô.\nMatriz SWOT: analise o robô como um todo, indo além das missões.\nTabela de Análise de Missões: organize e analise as missões da temporada UNEARTHED de forma prática."
+      },
+      {
+        "title": "Para que serve?",
+        "content": "O QuickBrick Studio ajuda a equipe a transformar estratégia em documentação: do desenho de trajetórias no tapete até a análise de riscos e pontos fortes/fracos do robô, tudo fica registrado para consultas durante os treinos e antes das competições."
+      },
+      {
+        "title": "Preciso de algo especial para usar?",
+        "content": "Algumas funcionalidades funcionam apenas em telas maiores. Para a melhor experiência, acesse pelo notebook ou desktop em vez do celular."
+      }
+    ]
+  },
+  {
+    "name": "Flash Q&A",
+    "description": "Plataforma de perguntas e respostas para simular a sala de avaliação da FLL. Permite treinar a equipe com perguntas de Core Values, Projeto de Inovação e Design do Robô, com tempo cronometrado por pergunta, tornando o treino mais rápido, dinâmico e realista.",
+    "details": [
+      {
+        "title": "Como funciona?",
+        "content": "Você escolhe a área de avaliação (Todas, Core Values, Projeto de Inovação ou Design do Robô), define a quantidade de perguntas (10, 20 ou mais) e o tempo por pergunta (30s, 60s, 90s ou 120s) e clica em Iniciar para começar a sessão."
+      },
+      {
+        "title": "Para que serve?",
+        "content": "O Flash Q&A prepara a equipe para o momento de perguntas dos juízes, simulando a pressão do tempo e cobrindo os três pilares avaliados na FLL: Core Values, Projeto de Inovação e Design do Robô."
+      },
+      {
+        "title": "Posso personalizar o treino?",
+        "content": "Sim. É possível customizar a sessão escolhendo a área de avaliação específica, a quantidade de perguntas e o tempo de resposta antes de iniciar."
+      }
+    ]
+  },
+    {
     "name": "FLL Score/Pontuador",
     "description": "Ferramenta para registrar e acompanhar a pontuação da temporada da FLLC. Permite simulações rápidas de missões ou o acompanhamento completo de rounds com cronômetro integrado, auxiliando tanto em treinos quanto em competições oficiais de forma prática e confiável.",
     "details": [
@@ -10,111 +46,67 @@
       {
         "title": "Para que serve?",
         "content": "O FLL Score ajuda equipes a testar estratégias de mesa, avaliar desempenhos em treinos e cronometrar rounds completos, garantindo maior realismo nas simulações."
-      }
-    ]
-  },
-  {
-    "name": "QuickBrick Studio",
-    "description": "Estúdio virtual para criar estratégias de mesa com base no tapete oficial da FLLC, respeitando suas proporções reais. Ideal para planejar trajetórias de robô, comparar ideias da equipe e exportar estratégias de forma clara para treinos e reuniões.",
-    "details": [
-      {
-        "title": "Como criar estratégias?",
-        "content": "Escolha uma cor e desenhe linhas com medidas exatas para representar o trajeto que o robô deve seguir na mesa."
-      },
-      {
-        "title": "Posso gerenciar camadas?",
-        "content": "Sim! É possível criar, ocultar e apagar camadas personalizadas, permitindo organizar estratégias diferentes sem misturar trajetórias."
-      },
-      {
-        "title": "Como exportar minhas estratégias?",
-        "content": "Você pode exportar todas as camadas visíveis em PNG ou PDF, facilitando o compartilhamento com a equipe ou o uso em apresentações."
-      },
-      {
-        "title": "Existe modo livre?",
-        "content": "Sim. O modo livre permite desenhar trajetórias sem medidas automáticas, oferecendo liberdade para rascunhos ou ideias criativas."
-      },
-      {
-        "title": "Outras ferramentas disponíveis",
-        "content": "O QuickBrick Studio inclui ferramentas adicionais para criar diagramas, tabelas e simulações completas. Consulte a seção 'Ferramentas' na aba QuickBrick Studio para mais detalhes."
-      }
-    ]
-  },
-  {
-    "name": "ShowLive",
-    "description": "Plataforma para organizar e acompanhar eventos da FLL. Permite criar torneios personalizados, gerenciar equipes, rounds e pontuações em tempo real, facilitando a gestão de competições para voluntários, visitantes e equipes.",
-    "details": [
-      {
-        "title": "O que posso configurar?",
-        "content": "Defina nome do evento, escolha a temporada oficial e configure os rounds disponíveis. É necessário login para criar e gerenciar eventos."
-      },
-      {
-        "title": "Quantas equipes posso adicionar?",
-        "content": "Você pode cadastrar quantas equipes quiser, mas recomenda-se até 10 por evento para garantir fluidez na visualização das partidas."
-      },
-      {
-        "title": "Como os voluntários lançam pontuações?",
-        "content": "Cada evento gera um código exclusivo para voluntários, permitindo que selecionem a equipe e o round para registrar resultados diretamente na plataforma."
-      },
-      {
-        "title": "Como os visitantes acompanham?",
-        "content": "Visitantes recebem um código de acesso exclusivo, que permite acompanhar a classificação em tempo real e visualizar resultados à medida que os rounds são concluídos."
       },
       {
         "title": "Quais temporadas estão disponíveis?",
-        "content": "A plataforma suporta todas as temporadas oficiais da FLLC desde 2023, permitindo organizar eventos conforme regras e missões de cada ano."
-      },
-      {
-        "title": "Posso editar um evento depois de criado?",
-        "content": "Sim, você pode editar informações do evento, adicionar ou remover equipes e ajustar configurações, desde que esteja logado com a conta que criou o evento."
-      },
-      {
-        "title": "Posso personalizar o evento?",
-        "content": "Sim! É possível personalizar o nome, escolher a temporada, configurar rounds, adicionar fundos e paleta de cores, criando uma identidade visual única na seção StyleLab."
+        "content": "UNEARTHED (2025/2026), SUBMERGED (2024/2025) e MASTERPIECE (2023/2024) — cada temporada tem seu próprio conjunto de missões no pontuador."
       }
     ]
   },
   {
     "name": "Timers",
-    "description": "Conjunto de cronômetros online para eventos e treinamentos da FLL. Inclui temporizadores para rounds de robótica, sessões de avaliação e reuniões, com funcionalidades específicas para facilitar o controle do tempo.",
+    "description": "Conjunto de temporizadores pensados para a realidade das equipes de FLL, do treino à competição. Ajuda a controlar com precisão o tempo do Robot Game, das etapas da sala de avaliação e de qualquer outra atividade cronometrada.",
     "details": [
       {
-        "title": "Quais cronômetros estão disponíveis?",
-        "content": "Cronômetro de Round: 2 minutos e 30 segundos, simulando partidas oficiais.\nCronômetro de Avaliação: 30 minutos, ideal para sessões de avaliação de equipe.\nCronômetro de Reunião: totalmente personalizável, ajustando qualquer duração necessária."
+        "title": "Quais timers existem?",
+        "content": "Round do Robô: timer de rodada oficial para competições, com contagem regressiva de 2:30, alertas sonoros e visuais.\nSala de Avaliação: controle completo do tempo de Entrada, Apresentação, Perguntas e Feedback durante o judging.\nTimer Ajustável: cronômetro personalizável para treinos, apresentações ou qualquer outra necessidade da equipe."
       },
       {
-        "title": "Como usar os cronômetros?",
-        "content": "Selecione o cronômetro desejado, ajuste o tempo se necessário e clique em iniciar. É possível pausar, reiniciar ou redefinir durante o uso."
-      },
-      {
-        "title": "Posso usar os cronômetros em dispositivos móveis?",
-        "content": "Sim! Todos os cronômetros são responsivos e funcionam em smartphones, tablets e computadores, facilitando o uso em qualquer situação."
+        "title": "Para que serve?",
+        "content": "Os Timers garantem que treinos e simulações sigam os mesmos tempos oficiais da competição, ajudando a equipe a se acostumar com o ritmo do Robot Game e das etapas da sala de avaliação."
       }
     ]
   },
   {
-    "name": "Flash QA",
-    "description": "Treino rápido de perguntas e respostas para equipes da FLL. Ajuda a reforçar o conhecimento sobre regras, estratégias e conceitos da temporada, preparando membros da equipe para avaliações e competições.",
+    "name": "Timer: Round do Robô",
+    "description": "Temporizador oficial para a fase de Robot Game da FLL, com contagem regressiva de 2:30 (tempo padrão de uma rodada), alertas sonoros e visuais para manter a equipe atenta ao tempo restante durante treinos e competições.",
     "details": [
       {
         "title": "Como funciona?",
-        "content": "Apresenta perguntas de múltipla escolha sobre áreas da FLLC. As equipes selecionam respostas e recebem feedback imediato sobre desempenho."
+        "content": "O timer conta regressivamente os 2 minutos e 30 segundos de uma rodada oficial, disparando alertas sonoros e visuais em momentos-chave (como os segundos finais) para simular a pressão real de uma competição."
       },
       {
-        "title": "Quais áreas são cobertas?",
-        "content": "Inclui projeto de inovação, design de robô, core values e estratégias de equipe."
-      },
-      {
-        "title": "Posso personalizar as perguntas?",
-        "content": "Atualmente, o Flash QA oferece um banco de perguntas padronizado, mas futuras atualizações podem incluir personalização de conteúdo."
+        "title": "Para que serve?",
+        "content": "Ajuda a equipe a treinar o ritmo de execução das missões dentro do tempo oficial, evitando surpresas durante o Robot Game em competições."
       }
     ]
   },
   {
-    "name": "LabTest",
-    "description": "Ferramenta para simular testes de desempenho do robô em diferentes missões da FLL. Permite que equipes avaliem a eficácia de estratégias e ajustes de design antes de competições oficiais, reduzindo erros em treinos presenciais."
+    "name": "Timer: Sala de Avaliação",
+    "description": "Temporizador dividido em etapas para simular a dinâmica completa da sala de avaliação (judging) da FLL, controlando o tempo de Entrada, Apresentação, Perguntas e Feedback.",
+    "details": [
+      {
+        "title": "Quais etapas ele controla?",
+        "content": "Entrada, Apresentação, Perguntas e Feedback — as quatro fases que compõem a passagem da equipe pela sala de avaliação em uma competição oficial."
+      },
+      {
+        "title": "Para que serve?",
+        "content": "Permite treinar a apresentação e a interação com os juízes dentro dos tempos reais de cada etapa, ajudando a equipe a se organizar e não estourar o tempo disponível em nenhuma das fases."
+      }
+    ]
   },
   {
-    "name": "StyleLab",
-    "description": "Editor visual para personalizar a aparência das ferramentas e eventos da FLL. Permite ajustar cores, fundos e estilos, criando uma identidade visual única e consistente para cada evento."
+    "name": "Timer Ajustável",
+    "description": "Cronômetro totalmente personalizável, sem tempos fixos, para ser usado em treinos, apresentações ou qualquer outra atividade da equipe que precise de controle de tempo.",
+    "details": [
+      {
+        "title": "Como funciona?",
+        "content": "Basta definir o tempo desejado conforme a necessidade do momento — não segue um padrão fixo de competição, como os timers de Round do Robô ou Sala de Avaliação."
+      },
+      {
+        "title": "Para que serve?",
+        "content": "É ideal para situações que não se encaixam nos formatos oficiais, como ensaios de apresentação, dinâmicas de treino, reuniões cronometradas ou qualquer atividade da equipe que exija um cronômetro flexível."
+      }
+    ]
   }
 ]

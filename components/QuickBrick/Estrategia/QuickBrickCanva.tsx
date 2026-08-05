@@ -1,8 +1,9 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Layer, ToolType, CanvasHandle } from "@/types/CanvasType";
 import { CanvasBoard } from "./CanvasBoard";
 import { Toolbar } from "./Toolbar";
+import { useToast } from "@/app/context/ToastContext";
 
 export default function QuickBrickCanvas() {
   const [tool, setTool] = useState<ToolType>("hand");
@@ -60,7 +61,6 @@ export default function QuickBrickCanvas() {
   };
 
   // --- Actions ---
-
   const clearLayer = () => {
     if (window.confirm("Tem certeza que deseja limpar todos os desenhos e zonas nesta camada?")) {
       setLayers((prev) => {
@@ -73,11 +73,11 @@ export default function QuickBrickCanvas() {
         setHistoryIndex((i) => i + 1);
         return newState;
       });
+      useToast().addToast("Camada limpa com sucesso!", "success");
     }
   };
 
   // --- Layer Management ---
-
   const addLayer = () => {
     const newLayer: Layer = {
       id: uuidv4(),
@@ -114,8 +114,7 @@ export default function QuickBrickCanvas() {
 
   return (
     <div className="flex items-center justify-center">
-      {/* Unified Sidebar */}
-      <div className="flex-none z-20 h-full bg-base-200 border border-base-300 shadow-xl rounded-lg">
+      <div className="flex-none z-20 h-full bg-base-200 shadow-xl rounded-lg">
         <Toolbar
           tool={tool}
           setTool={setTool}
@@ -160,6 +159,7 @@ export default function QuickBrickCanvas() {
       <CanvasBoard
         ref={canvasRef}
         tool={tool}
+        setTool={setTool}
         color={color}
         layers={layers}
         setLayers={setLayers}

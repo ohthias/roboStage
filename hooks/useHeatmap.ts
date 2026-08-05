@@ -35,7 +35,7 @@ const INITIAL_STATE: State = {
   points:  [],
   mode:    'add',
   season:  'unearthed',
-  config: { brushRadius: 30, opacity: 0.7, clickIntensity: 3 },
+  config: { brushRadius: 50, opacity: 0.7, clickIntensity: 2 },
   stats:   INITIAL_STATS,
 };
 

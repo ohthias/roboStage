@@ -1,30 +1,43 @@
-import ComingSoon from "@/components/ComingSoon";
+"use client";
+import CardMobileNotUse from "@/components/MobileNotUse";
+import HeaderTool from "@/components/QuickBrick/HeaderTool";
 import ViewSection from "@/components/QuickBrick/SharksSimulator/ViewSection";
-import Breadcrumbs from "@/components/UI/Breadcrumbs";
-import { Footer } from "@/components/UI/Footer";
+import { Bot } from "lucide-react";
+import { useEffect, useState } from "react";
 
-export default function Page() {
+export default function SharksSimulatorPage() {
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 720px)");
+
+    const handleChange = () => {
+      setIsMobile(mediaQuery.matches);
+    };
+
+    handleChange(); // verifica no mount
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  if (isMobile === null) return null;
+
+  if (isMobile) {
+    return <CardMobileNotUse />;
+  }
+
   return (
-    <>
-      <div className="px-4 md:px-8">
-        <Breadcrumbs />
+    <div className="px-4 md:px-8">
+      <HeaderTool
+        NameTool="Sharks Simulator"
+        DescriptionTool="Simule visualmente as trajetórias para robôs da FLL. Defina movimentos retos e giros, visualizando a trajetória resultante sobre o tapete de competição."
+        IconTool={Bot}
+      />
 
-        <section className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary">
-            Sharks Simulator
-          </h1>
-          <p className="text-base md:text-lg text-base-content/80 max-w-3xl leading-relaxed">
-            Simule visualmente as trajetórias para robôs da FLL. Defina
-            movimentos retos e giros, visualizando a trajetória resultante sobre
-            o tapete de competição.
-          </p>
-        </section>
-
-        <div className="flex justify-center mt-8 mb-16">
-          <ViewSection />
-        </div>
+      <div className="flex justify-center mt-8 mb-16">
+        <ViewSection />
       </div>
-      <Footer />
-    </>
+    </div>
   );
 }

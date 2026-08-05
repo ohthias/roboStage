@@ -3,6 +3,7 @@ import { Navbar } from "@/components/UI/Navbar";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
 import { Newspaper } from "lucide-react";
 import Link from "next/link";
+import FLLCountdownBanner from "@/components/competicoes/FLL/Components/FLLCountdownBanner";
 
 export default function Page() {
   return (
@@ -24,8 +25,8 @@ export default function Page() {
               Competições. Equipes. Comunidade. Tudo conectado!
             </p>
             <div className="flex flex-wrap gap-4 mt-4">
-              <a href="/sign-up" className="btn btn-primary btn-outline">
-                Criar conta gratuitamente
+              <a href="/fll/score/bioglow" className="btn btn-primary btn-outline">
+                Pontue na BIOGLOW
               </a>
               <a href="/fll" className="btn btn-secondary btn-outline">
                 Explorar a Plataforma
@@ -88,6 +89,8 @@ export default function Page() {
             style={{ boxShadow: "-10px 10px 0 #DE5017" }}
           />
         </section>
+
+        <FLLCountdownBanner />
 
         {/* Competições */}
         <section className="py-8 mb-16">
@@ -241,12 +244,12 @@ export default function Page() {
               robótica, existe um lugar esperando por você.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-              <Link
+              {/*<Link
                 className="btn btn-primary rounded-2xl px-8"
                 href="/sign-up"
               >
                 Criar conta grátis
-              </Link>
+              </Link>*/}
               <Link
                 className="btn btn-ghost text-neutral-content rounded-2xl px-8"
                 href="/fll"

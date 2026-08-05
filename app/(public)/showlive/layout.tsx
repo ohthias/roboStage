@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "RoboStage Showlive",
+    title: "Showlive",
     description: "Transforme sua temporada em uma competição da FLL.",
     keywords: [
         "RoboStage",

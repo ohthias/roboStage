@@ -33,9 +33,8 @@ export const playSound = (type: "start" | "warning" | "end" | "tick") => {
     osc.stop(now + 2.5);
   } else if (type === "end") {
     // Buzzer
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(150, now);
-    osc.frequency.linearRampToValueAtTime(100, now + 1.5);
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(200, now);
 
     gain.gain.setValueAtTime(0.3, now);
     gain.gain.linearRampToValueAtTime(0.001, now + 1.5);

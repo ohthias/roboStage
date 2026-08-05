@@ -23,24 +23,6 @@ import { ThemeController } from "./themeController";
 import { NAVIGATION } from "@/utils/competitions/navigation";
 import { Show, UserAvatar } from "@clerk/nextjs";
 
-interface Season {
-  key: string;
-  name: string;
-  period: string;
-  icon: LucideIcon;
-}
-
-const seasons: Season[] = [
-  { key: "unearthed", name: "UNEARTHED", period: "2025/2026", icon: Pickaxe },
-  { key: "submerged", name: "SUBMERGED", period: "2024/2025", icon: Fish },
-  {
-    key: "masterpiece",
-    name: "MASTERPIECE",
-    period: "2023/2024",
-    icon: Palette,
-  },
-];
-
 const mainLinks = [
   { href: "/about", label: "Sobre" },
   { href: "/showlive", label: "ShowLive" },
@@ -171,12 +153,13 @@ export function Navbar() {
             )}
             <Link
               href={homeHref}
-              className={`hidden sm:inline-flex text-sm font-bold italic uppercase tracking-wide transition-colors duration-200 ${
+              className={`hidden sm:inline-flex text-sm font-bold italic uppercase tracking-wide transition-colors duration-200 cursor-pointer ${
                 isActive(homeHref)
                   ? "cursor-default text-base-content/55 hover:text-base-content"
                   : "text-primary"
               }`}
               aria-current={isActive(homeHref) ? "page" : undefined}
+              title="Ir para a página inicial da competição"
             >
               {competitionLabel}
             </Link>
@@ -204,11 +187,11 @@ export function Navbar() {
                     tabIndex={0}
                     className="menu dropdown-content z-[1] mt-4 w-60 rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl"
                   >
-                    <li className="menu-title px-3 pb-1 pt-2">
-                      <span>Temporadas</span>
+                    <li className="menu-title px-3 pb-1 pt-2 cursor-default select-none">
+                      Temporadas
                     </li>
 
-                    {seasons.map((season) => {
+                    {nav?.seasons?.map((season) => {
                       const Icon = season.icon;
                       const href = `/${competition}/${nav.scorePath}/${season.key}`;
                       const active = isActive(href);
@@ -247,18 +230,24 @@ export function Navbar() {
                   </ul>
                 </div>
 
-                {competition === "fll" && (
-                  <Link
-                    href="/fll/quickbrick"
-                    className={navItemClass(isActive("/fll/quickbrick"))}
-                    aria-current={
-                      isActive("/fll/quickbrick") ? "page" : undefined
-                    }
-                  >
-                    <Cuboid size={16} />
-                    <span>QuickBrick Studio</span>
-                  </Link>
-                )}
+                {competition === "fll" &&
+                  nav.options?.map((item) => {
+                    const Icon = item.icon;
+                    const href = `/${competition}/${item.path}`;
+                    const active = isActive(href);
+
+                    return (
+                      <Link
+                        key={item.path}
+                        href={href}
+                        className={navItemClass(active)}
+                        aria-current={active ? "page" : undefined}
+                      >
+                        <Icon size={16} />
+                        <span>{item.nome}</span>
+                      </Link>
+                    );
+                  })}
 
                 <div className="dropdown dropdown-end">
                   <button
@@ -436,7 +425,7 @@ export function Navbar() {
 
                       <div className="collapse-content px-2 pb-2">
                         <ul className="space-y-1">
-                          {seasons.map((season) => {
+                          {nav?.seasons?.map((season) => {
                             const Icon = season.icon;
                             const href = `/${competition}/${nav.scorePath}/${season.key}`;
                             const active = isActive(href);
@@ -474,27 +463,36 @@ export function Navbar() {
                     </details>
                   )}
 
-                  {competition === "fll" && (
-                    <Link
-                      href="/fll/quickbrick"
-                      onClick={closeDrawer}
-                      className={mobileItemClass(isActive("/fll/quickbrick"))}
-                      aria-current={
-                        isActive("/fll/quickbrick") ? "page" : undefined
-                      }
-                    >
-                      <Cuboid
-                        size={18}
-                        className="mt-0.5 shrink-0 opacity-60"
-                      />
-                      <span className="flex flex-col">
-                        <span className="font-medium">QuickBrick Studio</span>
-                        <span className="text-xs opacity-60">
-                          Editor e atalho da FLL
-                        </span>
-                      </span>
-                    </Link>
-                  )}
+                  {competition === "fll" &&
+                    nav?.options?.map((item) => {
+                      const Icon = item.icon;
+                      const href = `/${competition}/${item.path}`;
+                      const active = isActive(href);
+
+                      return (
+                        <Link
+                          key={item.path}
+                          href={href}
+                          onClick={closeDrawer}
+                          className={mobileItemClass(active)}
+                          aria-current={active ? "page" : undefined}
+                        >
+                          <Icon
+                            size={18}
+                            className="mt-0.5 shrink-0 opacity-60"
+                          />
+                          <span className="flex flex-col">
+                            <span
+                              className={`font-medium ${
+                                active ? "text-primary" : ""
+                              }`}
+                            >
+                              {item.nome}
+                            </span>
+                          </span>
+                        </Link>
+                      );
+                    })}
 
                   {nav.menu.length > 0 && (
                     <details

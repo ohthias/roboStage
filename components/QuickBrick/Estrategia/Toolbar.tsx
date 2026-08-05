@@ -17,6 +17,13 @@ import {
 } from "lucide-react";
 
 import { Layer, ToolType } from "@/types/CanvasType";
+import {
+  Section,
+  PanelCard,
+  IconToggle,
+  ActionButton,
+  ToggleRow,
+} from "@/components/UI/panel-kit";
 
 /* ------------------ Tipagens ------------------ */
 
@@ -51,10 +58,13 @@ export interface ToolbarProps {
   toggleZoneVisibility: (id: string) => void;
 }
 
-/* ícone: componente do lucide (aceita props SVG e size) */
-type IconComponent = React.ComponentType<
-  React.SVGProps<SVGSVGElement> & { size?: number }
->;
+const TOOLS: { key: ToolType; icon: typeof Hand; label: string }[] = [
+  { key: "hand", icon: Hand, label: "Mover" },
+  { key: "robot", icon: Bot, label: "Robô" },
+  { key: "line", icon: Ruler, label: "Linha" },
+  { key: "free", icon: Pencil, label: "Livre" },
+  { key: "zone", icon: SquareDashedMousePointer, label: "Zonas" },
+];
 
 /* ------------------ Componente Principal ------------------ */
 
@@ -89,57 +99,32 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         {/* FERRAMENTAS */}
         <Section title="Ferramentas">
           <div className="grid grid-cols-5 gap-2">
-            <ToolButton
-              active={tool === "hand"}
-              onClick={() => setTool("hand")}
-              Icon={Hand}
-              label="Mover"
-            />
-
-            <ToolButton
-              active={tool === "robot"}
-              onClick={() => setTool("robot")}
-              Icon={Bot}
-              label="Robô"
-            />
-
-            <ToolButton
-              active={tool === "line"}
-              onClick={() => setTool("line")}
-              Icon={Ruler}
-              label="Linha"
-            />
-
-            <ToolButton
-              active={tool === "free"}
-              onClick={() => setTool("free")}
-              Icon={Pencil}
-              label="Livre"
-            />
-
-            <ToolButton
-              active={tool === "zone"}
-              onClick={() => setTool("zone")}
-              Icon={SquareDashedMousePointer}
-              label="Zonas"
-            />
+            {TOOLS.map((t) => (
+              <IconToggle
+                key={t.key}
+                active={tool === t.key}
+                onClick={() => setTool(t.key)}
+                Icon={t.icon}
+                label={t.label}
+              />
+            ))}
           </div>
         </Section>
 
         {/* PROPRIEDADES */}
         <Section title="Propriedades">
-          <div className="p-4 bg-base-100 border border-base-300 rounded-xl shadow-sm flex items-center gap-4">
+          <PanelCard className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full overflow-hidden relative ring-1 ring-base-content/10 shadow-sm">
               <div
-              className="absolute inset-0 rounded-full pointer-events-none"
-              style={{ background: color }}
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{ background: color }}
               />
               <input
-              aria-label="Selecionar cor"
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="absolute inset-0 w-full h-full cursor-pointer opacity-0 z-10"
+                aria-label="Selecionar cor"
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="absolute inset-0 w-full h-full cursor-pointer opacity-0 z-10"
               />
             </div>
 
@@ -147,7 +132,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               <p className="text-[11px] opacity-60">Cor selecionada</p>
               <p className="text-sm font-mono">{color.toUpperCase()}</p>
             </div>
-          </div>
+          </PanelCard>
 
           <div className="mt-4 space-y-3">
             <ToggleRow
@@ -168,57 +153,49 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <div className="grid grid-cols-2 gap-2">
             {/* Undo/Redo */}
             <div className="col-span-2 flex gap-2">
-              <button
-                className="btn btn-sm flex-1 btn-neutral"
+              <ActionButton
                 onClick={undo}
                 disabled={!canUndo}
-                title="Desfazer"
-              >
-                <Undo2 size={16} />
-                <span className="ml-1 hidden md:inline">Desfazer</span>
-              </button>
-
-              <button
-                className="btn btn-sm flex-1 btn-neutral"
+                Icon={Undo2}
+                label="Desfazer"
+                className="flex-1"
+              />
+              <ActionButton
                 onClick={redo}
                 disabled={!canRedo}
-                title="Refazer"
-              >
-                <Redo2 size={16} />
-                <span className="ml-1 hidden md:inline">Refazer</span>
-              </button>
+                Icon={Redo2}
+                label="Refazer"
+                className="flex-1"
+              />
             </div>
 
-            <button
+            <ActionButton
               onClick={clearLayer}
-              className="btn btn-outline btn-error btn-sm col-span-2"
-            >
-              <Trash2 size={16} />
-              <span className="ml-2">Limpar Camada</span>
-            </button>
+              Icon={Trash2}
+              label="Limpar Camada"
+              variant="error"
+              outline
+              className="col-span-2"
+            />
 
-            <button
-              className="btn btn-sm btn-neutral w-full"
+            <ActionButton
               onClick={exportGeneral}
-              title="Exportar imagem geral"
-            >
-              <ImageIcon size={16} />
-              <span className="ml-1">PNG</span>
-            </button>
+              Icon={ImageIcon}
+              label="PNG"
+              className="w-full"
+            />
 
-            <button
-              className="btn btn-sm btn-neutral w-full"
+            <ActionButton
               onClick={exportLayers}
-              title="Exportar em camadas separadas"
-            >
-              <Archive size={16} />
-              <span className="ml-1">Camadas</span>
-            </button>
+              Icon={Archive}
+              label="Camadas"
+              className="w-full"
+            />
           </div>
         </Section>
 
         {/* CAMADAS */}
-        <Section title="Camadas" button={<AddLayerButton onClick={addLayer} />}>
+        <Section title="Camadas" action={<AddLayerButton onClick={addLayer} />}>
           <ul className="menu bg-base-100 border border-base-300 rounded-xl w-full p-0 shadow-sm">
             {layers.map((layer) => {
               const isActive = activeLayerId === layer.id;
@@ -305,94 +282,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   );
 };
 
-/* ------------------ Componentes Auxiliares com Tipagens ------------------ */
-
-type SectionProps = {
-  title: string;
-  children: React.ReactNode;
-  button?: React.ReactNode;
-};
-
-const Section: React.FC<SectionProps> = ({ title, children, button }) => (
-  <section className="space-y-3">
-    <div className="flex items-center justify-between">
-      <h3 className="text-[11px] font-semibold tracking-wide uppercase text-base-content/60">
-        {title}
-      </h3>
-      {button}
-    </div>
-    {children}
-  </section>
-);
-
-type ToolButtonProps = {
-  active: boolean;
-  onClick: () => void;
-  Icon: IconComponent;
-  label: string;
-};
-
-const ToolButton: React.FC<ToolButtonProps> = ({
-  active,
-  onClick,
-  Icon,
-  label,
-}) => (
-  <button
-    onClick={onClick}
-    aria-pressed={active}
-    aria-label={label}
-    title={label}
-    className={`
-      flex items-center justify-center h-9 w-full rounded-lg transition-all
-      border
-      ${active 
-        ? "bg-primary text-primary-content border-primary shadow-sm" 
-        : "bg-base-100 border-base-300 hover:bg-base-300/40"
-      }
-    `}
-  >
-    <Icon size={18} />
-  </button>
-);
-
-type ToggleRowProps = {
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-};
-
-const ToggleRow: React.FC<ToggleRowProps> = ({ label, checked, onChange }) => (
-  <label className="flex items-center justify-between py-1 cursor-pointer">
-    <span className="text-xs opacity-80">{label}</span>
-
-    <div
-      className={`
-        relative h-4 w-8 rounded-full transition-colors cursor-pointer
-        ${checked ? "bg-primary" : "bg-base-300"}
-      `}
-      onClick={() => onChange(!checked)}
-    >
-      <div
-        className={`
-          absolute top-[2px] h-3 w-3 rounded-full bg-white transition-all
-          ${checked ? "right-[2px]" : "left-[2px]"}
-        `}
-      />
-    </div>
-  </label>
-);
-
-type AddLayerButtonProps = {
-  onClick: () => void;
-};
-
-const AddLayerButton: React.FC<AddLayerButtonProps> = ({ onClick }) => (
+const AddLayerButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <button
     onClick={onClick}
     aria-label="Adicionar camada"
     className="
-      flex items-center justify-center h-6 w-6 rounded-md 
+      flex items-center justify-center h-6 w-6 rounded-md
       bg-primary/10 text-primary hover:bg-primary hover:text-primary-content
       transition-all border border-primary/20
     "

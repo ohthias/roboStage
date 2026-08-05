@@ -1,50 +1,50 @@
 {
   "masterpiece": [
-     {
+    {
       "id": "EL",
       "name": "INSPEÇÃO DE EQUIPAMENTOS",
       "mission": "O robô e todos os equipamentos cabem em sua totalidade na área de lançamento e respeitam o limite de altura",
       "points": 20,
-      "equipaments" : false,
+      "equipaments": false,
       "type": ["switch", null, null]
     },
-     {
+    {
       "id": "M01",
       "name": "CINEMA 3D",
       "mission": "Se a pequena viga vermelha do cinema 3D estiver completamente à direita da moldura preta",
       "points": 20,
-      "equipaments" : false,
+      "equipaments": false,
       "type": ["switch", null, null]
     },
-     {
+    {
       "id": "M02",
       "name": "Mudança de cena teatral",
       "mission": "A bandeira vermelha do seu teatro está baixa e a cor da cena ativa está?",
-      "points": [10,20,30],
-      "equipaments" : false,
+      "points": [10, 20, 30],
+      "equipaments": false,
       "type": ["switch", "Azul", "Rosa", "Laranja"],
       "sub-mission": [
         {
           "submission": "As cenas ativas de ambas as equipes correspondem?",
-          "points": [20,30,10],
+          "points": [20, 30, 10],
           "type": ["switch", "Azul", "Rosa", "Laranja"]
         }
       ]
     },
-     {
+    {
       "id": "M03",
       "name": "EXPERIÊNCIA IMERSIVA",
       "mission": "Se as três telas de experiência imersiva estiverem levantadas",
       "points": 20,
-      "equipaments" : true,
+      "equipaments": true,
       "type": ["switch", null, null]
     },
-     {
+    {
       "id": "M04",
       "name": "MASTERPIECE™",
       "mission": "Se a obra de arte LEGO da sua equipe estiver pelo menos parcialmente na área alvo do museu",
       "points": 10,
-      "equipaments" : true,
+      "equipaments": true,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -54,51 +54,51 @@
         }
       ]
     },
-     {
+    {
       "id": "M05",
       "name": "ESTÁTUA DE REALIDADE AUMENTADA",
       "mission": "Se a alavanca laranja da estátua de realidade aumentada estiver virada completamente para a direita",
       "points": 30,
-      "equipaments" : false,
+      "equipaments": false,
       "type": ["switch", null, null]
     },
     {
-     "id": "M06",
-     "name": "LUZES E SONS DO SHOW DE MÚSICA",
-     "mission": "Se a alavanca laranja das luzes estiver virada completamente para baixo",
-     "points": 10,
-     "equipaments" : false,
-     "type": ["switch", null, null],
-     "sub-mission": [
-       {
-         "submission": "Se a alavanca laranja dos alto-falantes estiver virada completamente para a esquerda",
-         "points": 10,
-         "type": ["switch", null, null]
-       }
-     ]
-   },
-     {
+      "id": "M06",
+      "name": "LUZES E SONS DO SHOW DE MÚSICA",
+      "mission": "Se a alavanca laranja das luzes estiver virada completamente para baixo",
+      "points": 10,
+      "equipaments": false,
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "Se a alavanca laranja dos alto-falantes estiver virada completamente para a esquerda",
+          "points": 10,
+          "type": ["switch", null, null]
+        }
+      ]
+    },
+    {
       "id": "M07",
       "name": "PERFORMANCE HOLOGRÁFICA",
       "mission": "Se o acionador laranja do artista holográfico tiver ultrapassado completamente a linha preta do cenário do palco",
       "points": 20,
-      "equipaments" : false,
+      "equipaments": false,
       "type": ["switch", null, null]
     },
-     {
+    {
       "id": "M08",
       "name": "CÂMERA DESLIZANTE",
       "mission": "Se o ponteiro branco da câmera deslizante estiver",
-      "points": [10,20,30],
-      "equipaments" : false,
+      "points": [10, 20, 30],
+      "equipaments": false,
       "type": ["switch", "Azul Escuro", "Azul Médio", "Azul Claro"]
     },
-     {
+    {
       "id": "M09",
       "name": "SET DE FILMAGENS",
       "mission": "Se o barco estiver tocando no tapete e tiver ultrapassado completamente a linha preta da cena",
       "points": 10,
-      "equipaments" : false,
+      "equipaments": false,
       "type": ["switch", null, null],
       "sub-mission": [
         {
@@ -113,25 +113,25 @@
       "name": "MESA DE SOM",
       "mission": "Se um dos controles deslizantes da mesa de som for movido para cima",
       "points": 10,
-      "equipaments" : true,
-      "type": ["range", 0,3]
+      "equipaments": true,
+      "type": ["range", 0, 3]
     },
     {
-      "id":"M11",
-      "name":"SHOW DE LUZES",
+      "id": "M11",
+      "name": "SHOW DE LUZES",
       "mission": "Se o ponteiro branco do show de luzes estiver dentro da zona",
-      "points": [10,20,30],
-      "equipaments":false,
+      "points": [10, 20, 30],
+      "equipaments": false,
       "type": ["switch", "Amarela", "Verde", "Azul"]
     },
     {
-      "id":"M12",
-      "name":"ARTISTA DE REALIDADE VIRTUAL",
+      "id": "M12",
+      "name": "ARTISTA DE REALIDADE VIRTUAL",
       "mission": "Se a galinha estiver intacta e tiver saído da sua posição inicial",
       "points": 10,
-      "equipaments":false,
+      "equipaments": false,
       "type": ["switch", null, null],
-      "sub-mission":[
+      "sub-mission": [
         {
           "submission": "Bônus: E se estiver acima ou tiver ultrapassado completamente o ponto cor lilás",
           "points": 20,
@@ -140,13 +140,13 @@
       ]
     },
     {
-      "id":"M13",
-      "name":"CRIADOR DE ARTESANATO",
+      "id": "M13",
+      "name": "CRIADOR DE ARTESANATO",
       "mission": "Se a tampa laranja e branca da máquina de artesanato estiver completamente aberta",
       "points": 10,
-      "equipaments":false,
+      "equipaments": false,
       "type": ["switch", null, null],
-      "sub-mission":[
+      "sub-mission": [
         {
           "submission": "Se a trava rosa claro da máquina estiver apontando para baixo",
           "points": 20,
@@ -155,13 +155,13 @@
       ]
     },
     {
-      "id":"M14",
-      "name":"ENTREGA DO PÚBLICO",
+      "id": "M14",
+      "name": "ENTREGA DO PÚBLICO",
       "mission": "Se um membro do público estiver completamente dentro de um destino-alvo",
       "points": 5,
-      "equipaments":false,
+      "equipaments": false,
       "type": ["range", 0, 7],
-      "sub-mission":[
+      "sub-mission": [
         {
           "submission": "Se um destino-alvo tiver pelo menos um membro do público completamente dentro dele",
           "points": 5,
@@ -170,11 +170,11 @@
       ]
     },
     {
-      "id":"M15",
-      "name":"ENTREGA DE ESPECIALISTAS",
+      "id": "M15",
+      "name": "ENTREGA DE ESPECIALISTAS",
       "mission": "Se os seguintes especialistas estiverem, pelo menos parcialmente, em seus destinos-alvo (Sam, o gerente de palco, no Set de Filmagens, Anna, a curadora, no Museu, Noah, o engenheiro de som, no Show de Música, Izzy, a skatista, na Pista de Skate, Emily, a diretora de efeitos visuais, no Cinema)",
       "points": 10,
-      "equipaments":false,
+      "equipaments": false,
       "type": ["range", 0, 5]
     },
     {
@@ -191,7 +191,7 @@
       "name": "INSPEÇÃO DE EQUIPAMENTOS",
       "mission": "O robô e todos os equipamentos cabem em sua totalidade na área de lançamento e respeitam o limite de altura",
       "points": 20,
-      "equipaments" : false,
+      "equipaments": false,
       "type": ["switch", null, null]
     },
     {
@@ -199,7 +199,7 @@
       "name": "BERÇÁRIO DE CORAIS",
       "mission": "A árvore de coral está pendurada no suporte apropriado",
       "points": 20,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/submerged/thumb-mission-01.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -220,7 +220,7 @@
       "name": "TUBARÃO",
       "mission": "O tubarão não está tocando a caverna",
       "points": 20,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/submerged/thumb-mission-02.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -236,7 +236,7 @@
       "name": "RECIFE DE CORAIS",
       "mission": "O recife de corais está virado para cima e não está tocando o tapete",
       "points": 20,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/submerged/thumb-mission-03.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -252,7 +252,7 @@
       "name": "MERGULHADOR",
       "mission": "O mergulhador não está mais tocando o berçário de corais",
       "points": 20,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/submerged/thumb-mission-04.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -268,7 +268,7 @@
       "name": "PEIXE PESCADOR",
       "mission": "O peixe-pescador está preso ao navio naufragado",
       "points": 30,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/submerged/thumb-mission-05.png",
       "type": ["switch", null, null]
     },
@@ -277,7 +277,7 @@
       "name": "SUBA O MASTRO",
       "mission": "O mastro do navio naufragado está totalmente de pé",
       "points": 30,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/submerged/thumb-mission-06.png",
       "type": ["switch", null, null]
     },
@@ -286,7 +286,7 @@
       "name": "TESOURO DO KRAKEN",
       "mission": "O baú do tesouro está completamente fora do ninho do kraken",
       "points": 20,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/submerged/thumb-mission-07.png",
       "type": ["switch", null, null]
     },
@@ -295,7 +295,7 @@
       "name": "HABITAT ARTIFICIAL",
       "mission": "Número de segmentos do habitat artificial empilhados, totalmente planificados e verticais",
       "points": 10,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/submerged/thumb-mission-08.png",
       "type": ["range", 0, 4]
     },
@@ -304,7 +304,7 @@
       "name": "UM ENCONTRO INESPERADO",
       "mission": "A criatura desconhecida foi libertada",
       "points": 20,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/submerged/thumb-mission-09.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -320,7 +320,7 @@
       "name": "ENVIE O NAVIO",
       "mission": "A bandeira amarela da sua equipe não está hasteada",
       "points": 30,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/submerged/thumb-mission-10.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -336,7 +336,7 @@
       "name": "DESCOBERTA DO SONAR",
       "mission": "Número de baleias revelado",
       "points": [0, 20, 30],
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/submerged/thumb-mission-11.png",
       "type": ["range", 0, 2]
     },
@@ -345,7 +345,7 @@
       "name": "ALIMENTE A BALEIA",
       "mission": "Número de krills que estão ao menos parcialmente na boca da baleia",
       "points": 10,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/submerged/thumb-mission-12.png",
       "type": ["range", 0, 5]
     },
@@ -354,7 +354,7 @@
       "name": "MUDE O NAVIO DE ROTA",
       "mission": "O navio está na nova rota, tocando o tapete",
       "points": 20,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/submerged/thumb-mission-13.png",
       "type": ["switch", null, null]
     },
@@ -363,7 +363,7 @@
       "name": "COLETA DE AMOSTRAS",
       "mission": "A amostra de água está completamente fora da área de amostras",
       "points": 5,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/submerged/thumb-mission-14.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -389,7 +389,7 @@
       "name": "EMBARCAÇÃO DE PESQUISA",
       "mission": "Número de amostras, partes do tridente ou baús de tesouro que estão ao menos em parte na área de carga da embarcação",
       "points": 5,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/submerged/thumb-mission-15.png",
       "type": ["range", 0, 6],
       "sub-mission": [
@@ -414,7 +414,7 @@
       "name": "INSPEÇÃO DE EQUIPAMENTOS",
       "mission": "O robô e todos os equipamentos cabem em sua totalidade na área de lançamento e respeitam o limite de altura",
       "points": 20,
-      "equipaments" : false,
+      "equipaments": false,
       "type": ["switch", null, null]
     },
     {
@@ -422,7 +422,7 @@
       "name": "LIMPEZA DA SUPERFÍCIE",
       "mission": "Ausência total de resíduos de solo, tocando o tapete",
       "points": 10,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/unearthed/thumb-mission-01.png",
       "type": ["range", 0, 2],
       "sub-mission": [
@@ -438,7 +438,7 @@
       "name": "REVELAÇÃO DO MAPA",
       "mission": "Seções superiores do solo totalmente limpas",
       "points": 10,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/unearthed/thumb-mission-02.png",
       "type": ["range", 0, 3]
     },
@@ -447,7 +447,7 @@
       "name": "EXPLORADOR DO POÇO DE MINA",
       "mission": "O carrinho da sua equipe está no campo da equipe adversária",
       "points": 30,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/unearthed/thumb-mission-03.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -463,7 +463,7 @@
       "name": "RECUPERAÇÃO CUIDADOSA",
       "mission": "O artefato precioso não está tocando a mina",
       "points": 30,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/unearthed/thumb-mission-04.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -479,7 +479,7 @@
       "name": "QUEM MORAVA AQUI?",
       "mission": "O piso da estrutura está completamente na vertical",
       "points": 30,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/unearthed/thumb-mission-05.png",
       "type": ["switch", null, null]
     },
@@ -488,7 +488,7 @@
       "name": "FORJA",
       "mission": "Os blocos de minério não estão tocando a forja",
       "points": 10,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/unearthed/thumb-mission-06.png",
       "type": ["range", 0, 3]
     },
@@ -497,7 +497,7 @@
       "name": "LEVANTAMENTO DE PESO",
       "mission": "A mó não está mais tocando a base",
       "points": 30,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/unearthed/thumb-mission-07.png",
       "type": ["switch", null, null]
     },
@@ -506,7 +506,7 @@
       "name": "SILO",
       "mission": "Peças preservadas fora do silo",
       "points": 10,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/unearthed/thumb-mission-08.png",
       "type": ["range", 0, 3]
     },
@@ -515,7 +515,7 @@
       "name": "O QUE ESTÁ À VENDA?",
       "mission": "O telhado foi totalmente levantado",
       "points": 20,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/unearthed/thumb-mission-09.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -531,7 +531,7 @@
       "name": "INCLINE AS BALANÇAS",
       "mission": "Número de peças do solo que foram escavadas",
       "points": 20,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/unearthed/thumb-mission-10.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -547,7 +547,7 @@
       "name": "ARTEFATOS DO PESCADOR",
       "mission": "Os artefatos foram levantados acima da camada do solo",
       "points": 20,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/unearthed/thumb-mission-11.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -563,7 +563,7 @@
       "name": "OPERAÇÃO DE SALVAMENTO",
       "mission": "A areia foi totalmente limpa",
       "points": 20,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/unearthed/thumb-mission-12.png",
       "type": ["switch", null, null],
       "sub-mission": [
@@ -579,7 +579,7 @@
       "name": "RECONSTRUÇÃO DA ESTÁTUA",
       "mission": "A estátua foi completamente levantada",
       "points": 30,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/unearthed/thumb-mission-13.png",
       "type": ["switch", null, null]
     },
@@ -588,7 +588,7 @@
       "name": "FÓRUM",
       "mission": "Os artefatos estão tocando o tapete e ao menos parcialmente o fórum (Artefatos: pincel, solo, artefato precioso, carrinho de mineração da equipe adversária, minério com artefato fossilizado, mó e prato da balança)",
       "points": 5,
-      "equipaments" : true,
+      "equipaments": true,
       "image": "/images/missions/unearthed/thumb-mission-14.png",
       "type": ["range", 0, 7]
     },
@@ -597,7 +597,7 @@
       "name": "MARCAÇÃO DO SÍTIO",
       "mission": "As bandeiras estão ao menos parcialmente dentro do sítio e tocando o tapete",
       "points": 10,
-      "equipaments" : false,
+      "equipaments": false,
       "image": "/images/missions/unearthed/thumb-mission-15.png",
       "type": ["range", 0, 3]
     },
@@ -612,7 +612,294 @@
       "id": "GP",
       "name": "Gracious Professionalism®",
       "mission": "Gracious Professionalism® demonstrados durante o round:",
-      "points": [2,3,4],
+      "points": [2, 3, 4],
+      "type": ["switch", "Em desenvolvimento", "Cumprido", "Excedido"]
+    }
+  ],
+  "bioglow": [
+    {
+      "id": "EL",
+      "name": "INSPEÇÃO DE EQUIPAMENTOS",
+      "mission": "O robô e todos os equipamentos cabem em sua totalidade na área de lançamento e respeitam o limite de altura",
+      "points": 20,
+      "equipaments": false,
+      "type": ["switch", null, null]
+    },
+    {
+      "id": "M01",
+      "name": "INSPEÇÃO POR DRONE",
+      "mission": "O drone não está mais em contato com o tapete",
+      "points": 20,
+      "equipaments": true,
+      "image": "/images/missions/bioglow/thumb-mission-01.png",
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "Bônus: além disso, o mapa Lydar está completamente invertido, e o marcador de varredura está ao menos, parcialmente na área de inspeção",
+          "points": 10,
+          "type": ["switch", null, null]
+        }
+      ]
+    },
+    {
+      "id": "M02",
+      "name": "SEMENTES EXPLOSIVAS",
+      "mission": "Número de sementes que não estão mais tocando o caule",
+      "points": [0, 10, 20, 30],
+      "equipaments": false,
+      "image": "/images/missions/bioglow/thumb-mission-02.png",
+      "type": ["range", 0, 3]
+    },
+    {
+      "id": "M03",
+      "name": "VIRE A PEDRA",
+      "mission": "A bandeira de pesquisa está abaixada",
+      "points": 20,
+      "equipaments": false,
+      "image": "/images/missions/bioglow/thumb-mission-03.png",
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "Bônus: e a pedra foi devolvida à sua posição inicial",
+          "points": 10,
+          "type": ["switch", null, null]
+        }
+      ]
+    },
+    {
+      "id": "M04",
+      "name": "FOLHAS DA SORTE",
+      "mission": "Número de folhas que não estão mais tocando o ninho",
+      "points": 10,
+      "image": "/images/missions/bioglow/thumb-mission-04.png",
+      "equipaments": true,
+      "type": ["range", 0, 2],
+      "sub-mission": [
+        {
+          "id": "M04-gate",
+          "submission": "O grilo-esperança está completamente dentro do habitat de folhas (ninho + área marcada ao redor) ao final da partida",
+          "points": 0,
+          "type": ["switch", null, null],
+          "zero_whole_mission_if_false": true,
+          "note": "Habitat de folhas = ninho + área marcada no tapete ao redor dele. Se falso, M04 e todas as suas sub-missões pontuam 0, independente das folhas removidas."
+        },
+        {
+          "id": "M04-2",
+          "submission": "Bônus: e a segunda folha é completamente removida, sem tocar o ninho, com o grilo-esperança em sua posição inicial:",
+          "points": 10,
+          "type": ["switch", null, null],
+          "requires": [
+            { "condition": ["if", true], "mission": "M04", "value": [2, 2] },
+            { "condition": ["if", true], "mission": "M04-gate", "value": true }
+          ],
+          "manual_tracking_required": true,
+          "manual_tracking_note": "O bônus fica indisponível se a esperança sair completamente do ninho a QUALQUER momento da partida — não só no estado final. O árbitro precisa acompanhar isso ao vivo; não é derivável olhando o tapete no fim."
+        }
+      ]
+    },
+    {
+      "id": "M05",
+      "name": "RAÍZES COMPRIDAS",
+      "mission": "A raiz da planta está estendida",
+      "points": [0, 10, 20],
+      "equipaments": true,
+      "image": "/images/missions/bioglow/thumb-mission-05.png",
+      "type": ["switch", "Não", "Parcialmente", "Completamente"]
+    },
+    {
+      "id": "M06",
+      "name": "FORMIGAS-CORTADEIRAS DELIRANTES",
+      "mission": "A formiga está tocando o ninho",
+      "points": 0,
+      "image": "/images/missions/bioglow/thumb-mission-06.png",
+      "equipaments": false,
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "id": "M06-1",
+          "submission": "Número de fragmentos de folhas contidos no ninho",
+          "points": 10,
+          "type": ["range", 0, 4],
+          "requires": [
+            { "condition": ["if", true], "mission": "M06", "value": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M07",
+      "name": "FUNGO ENORME",
+      "mission": "O micélio está completamente estendido",
+      "points": 20,
+      "equipaments": true,
+      "image": "/images/missions/bioglow/thumb-mission-07.png",
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "Bônus: Número de conexões formadas entre o micélio estendido de um time e a raiz da planta completamente estendida do time adversário",
+          "points": 10,
+          "type": ["range", 0, 2]
+        }
+      ]
+    },
+    {
+      "id": "M08",
+      "name": "EMARANHADO",
+      "mission": "O cipó está tocando o tapete",
+      "points": 30,
+      "equipaments": false,
+      "image": "/images/missions/bioglow/thumb-mission-08.png",
+      "type": ["switch", null, null]
+    },
+    {
+      "id": "M09",
+      "name": "PLATAFORMA DE PESQUISA",
+      "mission": "A plataforma de pesquisa está erguida",
+      "points": 10,
+      "equipaments": true,
+      "image": "/images/missions/bioglow/thumb-mission-09.png",
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "A armadilha fotográfica está instalada",
+          "points": 10,
+          "type": ["switch", null, null]
+        },
+        {
+          "submission": "A semente não está mais em contato com a árvore",
+          "points": 10,
+          "type": ["switch", null, null]
+        }
+      ]
+    },
+    {
+      "id": "M10",
+      "name": "MICROHABITATS FRÁGEIS",
+      "mission": "O habitat da aranha está em sua posição inicial original",
+      "points": 10,
+      "equipaments": true,
+      "image": "/images/missions/bioglow/thumb-mission-10.png",
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "O habitat do caramujo está em sua posição inicial original",
+          "points": 10,
+          "type": ["switch", null, null]
+        }
+      ]
+    },
+    {
+      "id": "M11",
+      "name": "JANELA PARA O PASSADO",
+      "mission": "A cobertura da raiz está abaixada, tocando o tapete",
+      "points": 20,
+      "equipaments": false,
+      "image": "/images/missions/bioglow/thumb-mission-11.png",
+      "type": ["switch", null, null]
+    },
+    {
+      "id": "M12",
+      "name": "ANCIÃO DA FLORESTA",
+      "mission": "A bengala está totalmente erguida e tocando a árvore",
+      "points": 20,
+      "equipaments": true,
+      "image": "/images/missions/bioglow/thumb-mission-12.png",
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "submission": "A cinta de suporte está ao redor do poste",
+          "points": 10,
+          "type": ["switch", null, null]
+        }
+      ]
+    },
+    {
+      "id": "M13",
+      "name": "ESPÉCIE-CHAVE",
+      "mission": "Sua espécie-chave está na plataforma de restauração, e as mudas estão erguidas",
+      "points": 30,
+      "equipaments": false,
+      "image": "/images/missions/bioglow/thumb-mission-13.png",
+      "type": ["switch", null, null]
+    },
+    {
+      "id": "M14",
+      "name": "SEMENTES DE RENOVAÇÃO",
+      "mission": "Número de sementes contidas na estação de replantio",
+      "points": 5,
+      "equipaments": true,
+      "image": "/images/missions/bioglow/thumb-mission-14.png",
+      "type": ["range", 0, 4],
+      "sub-mission": [
+        {
+          "submission": "Bônus: e tocando o tapete",
+          "points": 5,
+          "type": ["range", 0, 4]
+        }
+      ]
+    },
+    {
+      "id": "M15",
+      "name": "ARQUITETURA BIOCÊNTRICA",
+      "mission": "A cobertura de nidificação está erguida",
+      "points": 10,
+      "image": "/images/missions/bioglow/thumb-mission-15.png",
+      "equipaments": true,
+      "type": ["switch", null, null],
+      "sub-mission": [
+        {
+          "id": "M15-1",
+          "submission": "A claraboia do jardim está totalmente instalada",
+          "points": 10,
+          "type": ["switch", null, null]
+        },
+        {
+          "id": "M15-2",
+          "submission": "A tampa da composteira está totalmente aberta e tocando o tapete",
+          "points": 10,
+          "type": ["switch", null, null]
+        },
+        {
+          "id": "M15-3",
+          "submission": "Localização da Doca",
+          "points": 10,
+          "type": ["switch", "Mina", "Cidade", "Fazenda"],
+          "bonus_exclusive": true,
+          "requires": [
+            {
+              "condition": ["if", true],
+              "when_self": "Mina",
+              "mission": "M15",
+              "value": true
+            },
+            {
+              "condition": ["if", true],
+              "when_self": "Cidade",
+              "mission": "M15-1",
+              "value": true
+            },
+            {
+              "condition": ["if", true],
+              "when_self": "Fazenda",
+              "mission": "M15-2",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PT",
+      "name": "TOKENS DE PRECISÃO",
+      "mission": "Número de tokens de precisão restantes",
+      "points": [0, 10, 15, 25, 35, 50, 50],
+      "type": ["range", 0, 6]
+    },
+    {
+      "id": "GP",
+      "name": "Gracious Professionalism®",
+      "mission": "Gracious Professionalism® demonstrados durante o round:",
+      "points": [2, 3, 4],
       "type": ["switch", "Em desenvolvimento", "Cumprido", "Excedido"]
     }
   ]

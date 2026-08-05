@@ -1,14 +1,14 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import FormMission from "@/components/FormMission/FormMission";
 import Loader from "@/components/Loader";
 import { sumAllMissions } from "@/utils/scores";
-import { Footer } from "@/components/UI/Footer";
 import SubmergedLogo from "@/public/images/logos/fll/seasons/Submerged.webp";
 import MasterpieceLogo from "@/public/images/logos/fll/seasons/Masterpiece.png";
 import UnearthedLogo from "@/public/images/logos/fll/seasons/Unearthed.webp";
+import BioglowLogo from "@/public/images/logos/fll/seasons/bioglow_logo.png";
 import { useParams } from "next/navigation";
-import { Pause, Play, TimerReset, Trash } from "lucide-react";
+import Timer from "@/components/FormMission/Timer";
 
 interface SubMission {
   submission: string;
@@ -27,9 +27,10 @@ interface MissionType {
   ["sub-mission"]?: SubMission[];
 }
 
+/** Cada resposta é sempre o ÍNDICE da opção escolhida (0, 1, 2...). */
 type ResponseType = {
   [missionId: string]: {
-    [index: number]: string | number;
+    [questionIndex: number]: number;
   };
 };
 
@@ -40,84 +41,13 @@ export default function Page() {
   const params = useParams();
   const [background, setBackground] = useState<string>("#ffffff");
 
-  // Timer states
-  const totalTime = 150; // 2 min 30 seg
-  const [timeLeft, setTimeLeft] = useState(totalTime);
-  const [timerRunning, setTimerRunning] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Sons
-  const startSound = useRef<HTMLAudioElement | null>(null);
-  const endSound = useRef<HTMLAudioElement | null>(null);
-
   const totalPoints = sumAllMissions(
     missions.filter((m) => m.id !== "GP"),
     responses,
   );
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      startSound.current = new Audio("/sounds/start.mp3");
-      endSound.current = new Audio("/sounds/end.mp3");
-    }
-  }, []);
-
-  const progress = (timeLeft / totalTime) * 100;
-  const progressColor =
-    timeLeft <= 10
-      ? "bg-red-500"
-      : timeLeft <= 30
-        ? "bg-yellow-500"
-        : "bg-primary";
-
-  const startTimer = () => {
-    if (timeLeft === 0) {
-      setTimeLeft(totalTime);
-      setHasStarted(false);
-    }
-
-    if (!timerRunning) {
-      setTimerRunning(true);
-
-      if (!hasStarted) {
-        if (startSound.current) startSound.current.play();
-        setHasStarted(true);
-      }
-    }
-  };
-
-  const pauseTimer = () => {
-    setTimerRunning(false);
-  };
-
-  const resetTimer = () => {
-    setTimerRunning(false);
-    setTimeLeft(totalTime);
-    setHasStarted(false);
-  };
   const resetScores = () => {
     setResponses({});
-  };
-
-  useEffect(() => {
-    if (timerRunning && timeLeft > 0) {
-      timerRef.current = setTimeout(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      setTimerRunning(false);
-      if (endSound.current) endSound.current.play();
-    }
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [timerRunning, timeLeft]);
-
-  const formatTime = (seconds: number) => {
-    const m = String(Math.floor(seconds / 60)).padStart(2, "0");
-    const s = String(seconds % 60).padStart(2, "0");
-    return `${m}:${s}`;
   };
 
   useEffect(() => {
@@ -140,6 +70,9 @@ export default function Page() {
         setResponses({});
 
         switch (params.season) {
+          case "bioglow":
+            setBackground(BioglowLogo.src);
+            break;
           case "unearthed":
             setBackground(UnearthedLogo.src);
             break;
@@ -164,7 +97,7 @@ export default function Page() {
   const handleSelect = (
     missionId: string,
     questionIndex: number,
-    value: string | number,
+    value: number,
   ) => {
     setResponses((prev) => ({
       ...prev,
@@ -185,18 +118,6 @@ export default function Page() {
 
   return (
     <>
-      {/* Barra de progresso */}
-      <div className="h-3 w-full bg-neutral sticky top-0 z-30">
-        <div
-          className={`h-full transition-all duration-300 ${progressColor}`}
-          style={{ width: `${progress}%` }}
-          role="progressbar"
-          aria-valuenow={progress}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        ></div>
-      </div>
-
       <main className="flex flex-col items-center justify-center px-4 pb-16 pt-8 sm:px-6 lg:px-8 space-y-6 min-h-screen">
         <header className="sticky top-4 z-30 w-full max-w-4xl mx-auto animate-fade-in-down">
           <section className="flex flex-row items-center justify-between gap-4 bg-base-100/80 backdrop-blur px-8 py-4 rounded-box shadow-md border border-base-300">
@@ -235,66 +156,17 @@ export default function Page() {
           </section>
         </header>
 
-        <nav className="animate-fade-in-down w-full max-w-4xl flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 px-4 py-3">
-          {/* TIMER */}
-          <div className="flex items-center gap-3">
-            <span
-              id="timer"
-              className="
-                font-mono text-2xl sm:text-3xl
-                px-4 py-2
-                bg-base-100
-                text-base-content
-                shadow-[4px_4px_0_theme(colors.base-content)] 
-              "
-            >
-              {formatTime(timeLeft)}
-            </span>
-          </div>
-
-          {/* CONTROLES */}
-          <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-            <button
-              className="btn btn-success btn-sm sm:btn-md gap-2"
-              onClick={startTimer}
-              disabled={timerRunning}
-              title="Iniciar o timer"
-            >
-              <Play size={18} />
-              <span className="hidden sm:inline">Iniciar</span>
-            </button>
-
-            <button
-              className="btn btn-warning btn-sm sm:btn-md gap-2"
-              onClick={pauseTimer}
-              disabled={!timerRunning}
-              title="Pausar o timer"
-            >
-              <Pause size={18} />
-              <span className="hidden sm:inline">Pausar</span>
-            </button>
-
-            <button
-              className="btn btn-outline btn-sm sm:btn-md gap-2"
-              onClick={resetTimer}
-              title="Resetar o tempo"
-            >
-              <TimerReset size={18} />
-              <span className="hidden sm:inline">Tempo</span>
-            </button>
-
-            <div className="divider divider-horizontal mx-1 hidden sm:flex" />
-
-            <button
-              className="btn btn-error btn-outline btn-sm sm:btn-md gap-2"
-              onClick={resetScores}
-              title="Resetar os pontos"
-            >
-              <Trash size={18} />
-              <span className="hidden sm:inline">Pontos</span>
-            </button>
-          </div>
-        </nav>
+        <Timer
+          duration={150}
+          endSound="/sounds/end.mp3"
+          startSound="/sounds/start.mp3"
+          showResetScore={true}
+          onResetScore={resetScores}
+          onFinish={() => {
+            console.log("Tempo encerrado!");
+          }}
+          className="animate-fade-in-down max-w-4xl w-full"
+        />
 
         <section
           aria-labelledby="info-no-equipment"
@@ -329,12 +201,12 @@ export default function Page() {
         {/* Lista de Missões */}
         <FormMission
           missions={missions}
-          responses={responses}
+          imagesEnabled
           onSelect={handleSelect}
+          responses={responses}
           className="animate-fade-in-down"
         />
       </main>
-      <Footer />
     </>
   );
 }

@@ -671,6 +671,7 @@
       "name": "FOLHAS DA SORTE",
       "mission": "Número de folhas que não estão mais tocando o ninho",
       "points": 10,
+      "image": "/images/missions/bioglow/thumb-mission-04.png",
       "equipaments": true,
       "type": ["range", 0, 2],
       "sub-mission": [
@@ -685,7 +686,7 @@
         {
           "id": "M04-2",
           "submission": "Bônus: a segunda folha foi completamente removida, não tocando mais o ninho, com a esperança em sua posição inicial original",
-          "points": 20,
+          "points": 10,
           "type": ["switch", null, null],
           "requires": [
             { "condition": ["if", true], "mission": "M04", "value": [2, 2] },
@@ -710,6 +711,7 @@
       "name": "FORMIGAS-CORTADEIRAS DELIRANTES",
       "mission": "A formiga está tocando o ninho",
       "points": 0,
+      "image": "/images/missions/bioglow/thumb-mission-06.png",
       "equipaments": false,
       "type": ["switch", null, null],
       "sub-mission": [
@@ -841,6 +843,7 @@
       "name": "ARQUITETURA BIOCÊNTRICA",
       "mission": "A cobertura de nidificação está erguida",
       "points": 10,
+      "image": "/images/missions/bioglow/thumb-mission-15.png",
       "equipaments": true,
       "type": ["switch", null, null],
       "sub-mission": [

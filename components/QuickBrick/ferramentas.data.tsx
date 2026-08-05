@@ -16,6 +16,7 @@ export interface Ferramenta {
   image?: string;
   link?: string;
   badge?: string;
+  mobileSafe?: boolean;
   feitoPor?: [string, string];
   customContent?:
     | null
@@ -138,6 +139,7 @@ export const ferramentas: Ferramenta[] = [
     link: "/fll/quickbrick/matriz-swot",
     image: "/images/QuickBrick/MatrizSWOT.png",
     customContent: null,
+    mobileSafe: true,
   },
   {
     id: 7,
@@ -153,5 +155,6 @@ export const ferramentas: Ferramenta[] = [
         router,
         "/fll/quickbrick/tabela-de-missoes",
       ),
+    mobileSafe: true,
   },
 ];

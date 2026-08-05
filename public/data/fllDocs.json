@@ -1,27 +1,27 @@
 {
   "bioglow" : [
     {
-      "title": "Livro de Regras - EN",
+      "title": "Livro de Regras",
       "description": "Contém todas as regras oficiais da temporada, incluindo pontuação e restrições dos robôs.",
-      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-rgr.pdf",
+      "url": "/data/_file/fll/bioglow/livro_de_regras_do_desafio_do_robô.pdf",
       "category": "challenge"
     },
     {
-      "title": "Caderno de Engenharia - EN",
+      "title": "Caderno de Engenharia",
       "description": "Guia para registrar todas as ideias, testes e protótipos da equipe.",
-      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-en.pdf",
+      "url": "/data/_file/fll/bioglow/caderno_de_engenharia.pdf",
       "category": "challenge"
     },
     {
-      "title": "Guia de Reuniões - EN",
+      "title": "Guia de Reuniões",
       "description": "Orientações para organizar reuniões produtivas e gerenciar tarefas da equipe.",
-      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-tmg.pdf",
+      "url": "/data/_file/fll/bioglow/guia_de_reuniao_de_equipes.pdf",
       "category": "challenge"
     },
     {
-      "title": "Rubricas de Avaliação - EN",
+      "title": "Rubricas de Avaliação",
       "description": "Critérios detalhados para avaliação do robô, projeto de pesquisa e apresentação da equipe.",
-      "url": "https://firstinspires.blob.core.windows.net/fll/challenge/2026-27/fll-challenge-bioglow-rubrics-color.pdf",
+      "url": "/data/_file/fll/bioglow/rubricas.pdf",
       "category": "challenge"
     },
     {
@@ -41,6 +41,78 @@
       "description": "Guia para registrar todas as ideias, testes e protótipos da equipe.",
       "url": "https://firstinspires.blob.core.windows.net/fll/explore/2026-27/fll-explore-bioglow-EN.pdf",
       "category": "explore"
+    },
+    {
+      "title": "Rubricas de Avaliação",
+      "description": "Critérios detalhados para avaliação do robô, projeto de pesquisa e apresentação da equipe.",
+      "url": "https://www.firstlegoleague.com.br/_files/ugd/441e1d_e49ae2d4ed3a47998233ee75b3d6fdb4.pdf",
+      "category": "explore"
+    },
+    {
+      "title": "Caderno de Engenharia",
+      "description": "Guia para registrar todas as ideias, testes e protótipos da equipe.",
+      "url": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_8b2e9940de2b4c77a84da9dd7d2b3664.pdf",
+      "category": "future-edition"
+    },
+    {
+      "title": "Mapa da Arena",
+      "description": "Visualização do layout da arena, incluindo posições de missões e obstáculos.",
+      "url": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_29efc4c634364846bc45331a2a9911ef.pdf",
+      "category": "future-edition"
+    },
+    {
+      "title": "Livro de Regras",
+      "description": "Contém todas as regras oficiais da temporada, incluindo pontuação e restrições dos robôs.",
+      "url": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_8ee638cc34d349c4a2c8444449996f60.pdf",
+      "category": "future-edition"
+    },
+    {
+      "title": "Missões do Jogo",
+      "description": "Funcionamento do jogo, regras e pontuação das missões.",
+      "url": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_05e6dd9f09ca4fa2814ca1c3521711ee.pdf",
+      "category": "future-edition"
+    },
+    {
+      "title": "Carta Função: Operador",
+      "description": "Para o competidor. Contém as instruções de operação do robô durante a partida.",
+      "url": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_b3c66d1764ba4a9e9347e900c3a96a68.pdf",
+      "category": "future-edition"
+    },
+    {
+      "title": "Carta Função: Especialista",
+      "description": "Para o competidor. Contém as instruções de operação do robô durante a partida.",
+      "url": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_3b7d67b9fbc14a009694046c91ff314c.pdf",
+      "category": "future-edition"
+    },
+    {
+      "title": "Carta Função: Técnico",
+      "description": "Para o competidor. Contém as instruções de operação do robô durante a partida.",
+      "url": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_4a5f6a7074f24d79ae24a72512e15639.pdf",
+      "category": "future-edition"
+    },
+    {
+      "title": "Carta Função: Piloto",
+      "description": "Para o competidor. Contém as instruções de operação do robô durante a partida.",
+      "url": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_eb4e89023a2d43909092e1752eb6ad2b.pdf",
+      "category": "future-edition"
+    },
+    {
+      "title": "Projeto: Especialista",
+      "description": "Para o competidor. Contém informações sobre o processo de pesquisa e desenvolvimento do projeto.",
+      "url": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_02d98eec56ef4b4ca6c8905406c42046.pdf",
+      "category": "future-edition"
+    },
+    {
+      "title": "Projeto: Técnico",
+      "description": "Para o competidor. Contém informações sobre o processo de pesquisa e desenvolvimento do projeto.",
+      "url": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_2061a9e026ad4875988e1e81a3b731b8.pdf",
+      "category": "future-edition"
+    },
+    {
+      "title": "Projeto: Piloto",
+      "description": "Para o competidor. Contém informações sobre o processo de pesquisa e desenvolvimento do projeto.",
+      "url": "https://1ea2c46d-8db4-4894-9f31-4c122cbf7582.filesusr.com/ugd/ba462c_7305b88206364371b8bc8cf03a04af34.pdf",
+      "category": "future-edition"
     }
   ],
   "unearthed": [

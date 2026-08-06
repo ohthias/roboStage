@@ -1,22 +1,27 @@
-import { OrganizationProfile } from "@clerk/nextjs";
+import { clerkClient } from "@clerk/nextjs/server";
+import { SettingsForm } from "./settings-form";
 
-export default function SettingsPage() {
+export default async function SettingsPage({
+  params,
+}: {
+  params: Promise<{ organizationId: string }>;
+}) {
+  const { organizationId } = await params;
+  const client = await clerkClient();
+  const organization = await client.organizations.getOrganization({
+    organizationId,
+  });
+
   return (
-    <div className="card border border-base-300 bg-base-100">
-      <div className="card-body">
-        <h1 className="card-title mb-6">Configurações</h1>
-
-        <OrganizationProfile
-          routing="hash"
-          appearance={{
-            elements: {
-              navbar: "hidden",
-              pageScrollBox: "p-0",
-              card: "shadow-none border-none",
-            },
-          }}
-        />
-      </div>
-    </div>
+    <SettingsForm
+      organizationId={organizationId}
+      name={organization.name}
+      slug={organization.slug ?? ""}
+      imageUrl={
+        organization.imageUrl && !organization.imageUrl.includes("default")
+          ? organization.imageUrl
+          : undefined
+      }
+    />
   );
 }

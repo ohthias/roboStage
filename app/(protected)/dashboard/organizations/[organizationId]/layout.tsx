@@ -1,54 +1,87 @@
-import Link from "next/link";
-import { Building2, Users, Settings } from "lucide-react";
+import { notFound, redirect } from "next/navigation";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import type { ReactNode } from "react";
+import { OrganizationTabs } from "./organization-tabs";
 
 export default async function OrganizationLayout({
   children,
   params,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   params: Promise<{ organizationId: string }>;
 }) {
   const { organizationId } = await params;
-  const tabs = [
-    {
-      name: "Visão Geral",
-      href: `/dashboard/organizations/${organizationId}`,
-      icon: Building2,
-    },
-    {
-      name: "Membros",
-      href: `/dashboard/organizations/${organizationId}/members`,
-      icon: Users,
-    },
-    {
-      name: "Configurações",
-      href: `/dashboard/organizations/${organizationId}/settings`,
-      icon: Settings,
-    },
-  ];
+  const { userId, isAuthenticated, redirectToSignIn } = await auth();
+
+  if (!isAuthenticated || !userId) {
+    return redirectToSignIn();
+  }
+
+  const client = await clerkClient();
+
+  const [organization, membershipList, membershipRecord] = await Promise.all(
+    [
+      client.organizations
+        .getOrganization({ organizationId })
+        .catch(() => null),
+      client.organizations
+        .getOrganizationMembershipList({ organizationId, limit: 1 })
+        .catch(() => null),
+      client.users
+        .getOrganizationMembershipList({ userId, limit: 100 })
+        .then(({ data }) =>
+          data.find((m) => m.organization.id === organizationId)
+        ),
+    ]
+  );
+
+  if (!organization) {
+    notFound();
+  }
+
+  if (!membershipRecord) {
+    // Usuário autenticado, mas não é membro desta organização.
+    redirect("/dashboard/organizations");
+  }
+
+  const role = membershipRecord.role === "org:admin" ? "Administrador" : "Membro";
+  const membersCount = membershipList?.totalCount ?? 0;
 
   return (
-    <div className="space-y-8">
-      <div className="border-b border-base-300">
-        <div className="flex gap-2">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className="flex items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-medium transition hover:border-primary hover:text-primary"
-              >
-                <Icon size={17} />
-                {tab.name}
-              </Link>
-            );
-          })}
+    <div className="mx-auto flex w-full flex-col gap-6">
+      <header className="flex items-center gap-4">
+        <img
+          src={organization.hasImage ? organization.imageUrl : undefined}
+          alt={organization.name}
+          className="flex h-16 w-16 items-center justify-center rounded-box bg-base-300 text-lg font-semibold text-base-content shadow-[2px_2px_0_0_theme(colors.primary)]"
+        />
+        <div className="flex flex-col">
+          <h1 className="text-lg font-semibold text-primary">{organization.name}</h1>
+          <p className="text-sm text-base-content">
+            {role} • {membersCount}{" "}{membersCount === 1 ? "membro" : "membros"}
+          </p>
         </div>
-      </div>
+      </header>
+      <OrganizationTabs organizationId={organizationId} />
 
-      {children}
+      <div>{children}</div>
     </div>
   );
 }
+
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] ?? "";
+  const second = parts[1]?.[0] ?? parts[0]?.[1] ?? "";
+  return `${first}${second}`.toUpperCase();
+}
+
+function formatDate(timestamp?: number | null) {
+  if (!timestamp) return "data não informada";
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(timestamp));
+} 

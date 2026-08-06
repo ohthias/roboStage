@@ -1,187 +1,192 @@
+import Link from "next/link";
+import { clerkClient } from "@clerk/nextjs/server";
 import {
-  Activity,
+  ArrowRight,
   CalendarDays,
-  FolderKanban,
+  Mail,
+  NotebookPen,
+  Shield,
   Users,
-  Trophy,
-  ArrowUpRight,
-  Clock3,
 } from "lucide-react";
 
-export default function OrganizationOverviewPage() {
-  const stats = [
-    {
-      title: "Projetos",
-      value: 12,
-      icon: FolderKanban,
-      color: "text-primary",
-    },
-    {
-      title: "Membros",
-      value: 18,
-      icon: Users,
-      color: "text-info",
-    },
-    {
-      title: "Competições",
-      value: 4,
-      icon: Trophy,
-      color: "text-warning",
-    },
-    {
-      title: "Atividades",
-      value: 137,
-      icon: Activity,
-      color: "text-success",
-    },
-  ];
+export default async function OrganizationOverviewPage({
+  params,
+}: {
+  params: Promise<{ organizationId: string }>;
+}) {
+  const { organizationId } = await params;
+  const client = await clerkClient();
 
-  const recentActivities = [
+  const [organization, membershipList, invitationList] = await Promise.all([
+    client.organizations.getOrganization({ organizationId }),
+    client.organizations.getOrganizationMembershipList({
+      organizationId,
+      limit: 6,
+    }),
+    client.organizations
+      .getOrganizationInvitationList({
+        organizationId,
+        status: ["pending"],
+        limit: 100,
+      })
+      .catch(() => ({ data: [], totalCount: 0 })),
+  ]);
+
+  const stats = [
+    { label: "Membros", value: String(membershipList.totalCount), icon: Users },
     {
-      title: "Projeto 'Future Edition' criado",
-      description: "Matheus criou um novo projeto.",
-      time: "há 15 minutos",
+      label: "Convites pendentes",
+      value: String(invitationList.totalCount ?? 0),
+      icon: Mail,
     },
     {
-      title: "Novo membro entrou",
-      description: "Ana Beatriz entrou na organização.",
-      time: "há 2 horas",
+      label: "Criada em",
+      value: formatDate(organization.createdAt),
+      icon: CalendarDays,
     },
-    {
-      title: "QuickBrick Studio atualizado",
-      description: "Mapa da arena foi modificado.",
-      time: "Ontem",
-    },
-    {
-      title: "LabTest executado",
-      description: "34 testes foram realizados.",
-      time: "2 dias atrás",
-    },
+    { label: "Plano", value: "Padrão", icon: Shield },
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Hero */}
-      <section className="rounded-3xl border border-base-300 bg-base-100 p-8 shadow-sm">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">RoboStage Team</h1>
-
-            <p className="mt-2 max-w-2xl text-base-content/70">
-              Bem-vindo ao painel da organização. Gerencie membros, projetos e
-              acompanhe toda a atividade da equipe em um único lugar.
-            </p>
-          </div>
-
-          <button className="btn btn-primary">
-            Abrir projetos
-            <ArrowUpRight size={18} />
-          </button>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        {stats.map((item) => {
-          const Icon = item.icon;
-
-          return (
-            <div
-              key={item.title}
-              className="rounded-2xl border border-base-300 bg-base-100 p-5 transition-all hover:-translate-y-1 hover:shadow-md"
-            >
-              <div className="flex items-center justify-between">
-                <div className={`rounded-xl bg-base-200 p-3 ${item.color}`}>
-                  <Icon size={22} />
-                </div>
-
-                <span className="text-3xl font-bold">{item.value}</span>
-              </div>
-
-              <p className="mt-5 text-sm text-base-content/60">{item.title}</p>
+    <div className="flex flex-col gap-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-2xl border border-base-300 bg-base-100 p-5"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium uppercase tracking-wide text-base-content/50">
+                {stat.label}
+              </span>
+              <stat.icon size={16} className="text-primary" />
             </div>
-          );
-        })}
-      </section>
+            <p className="mt-2 text-2xl font-bold">{stat.value}</p>
+          </div>
+        ))}
+      </div>
 
-      <section className="grid gap-6 xl:grid-cols-3">
-        {/* Atividades */}
-        <div className="xl:col-span-2 rounded-2xl border border-base-300 bg-base-100">
-          <div className="border-b border-base-300 px-6 py-5">
-            <h2 className="text-lg font-semibold">Atividades recentes</h2>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="rounded-2xl border border-base-300 bg-base-100 p-5 lg:col-span-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Membros recentes</h2>
+            <Link
+              href={`/dashboard/organizations/${organizationId}/members`}
+              className="link link-primary flex items-center gap-1 text-sm"
+            >
+              Ver todos <ArrowRight size={14} />
+            </Link>
           </div>
 
-          <div className="divide-y divide-base-300">
-            {recentActivities.map((activity, index) => (
-              <div key={index} className="flex gap-4 px-6 py-5">
-                <div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary" />
-
-                <div className="flex-1">
-                  <h3 className="font-medium">{activity.title}</h3>
-
-                  <p className="mt-1 text-sm text-base-content/60">
-                    {activity.description}
-                  </p>
-
-                  <div className="mt-3 flex items-center gap-2 text-xs text-base-content/50">
-                    <Clock3 size={14} />
-                    {activity.time}
+          <ul className="mt-4 divide-y divide-base-200">
+            {membershipList.data.map((member) => (
+              <li
+                key={member.id}
+                className="flex items-center justify-between py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-base-200 text-sm font-semibold">
+                    {member.publicUserData?.imageUrl &&
+                    !member.publicUserData.imageUrl.includes("default") ? (
+                      <img
+                        src={member.publicUserData.imageUrl}
+                        alt={getMemberName(member)}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      getMemberInitials(member)
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {getMemberName(member)}
+                    </p>
+                    <p className="text-xs text-base-content/50">
+                      {member.publicUserData?.identifier}
+                    </p>
                   </div>
                 </div>
-              </div>
+                <span className="badge badge-ghost badge-sm">
+                  {member.role === "org:admin" ? "Admin" : "Membro"}
+                </span>
+              </li>
             ))}
-          </div>
+
+            {membershipList.data.length === 0 && (
+              <li className="py-6 text-center text-sm text-base-content/50">
+                Nenhum membro encontrado.
+              </li>
+            )}
+          </ul>
         </div>
 
-        {/* Painel lateral */}
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-base-300 bg-base-100 p-6">
-            <div className="flex items-center gap-3">
-              <CalendarDays className="text-primary" size={22} />
+        <div className="flex flex-col gap-4">
+          <Link
+            href={`/dashboard/organizations/${organizationId}/members`}
+            className="group rounded-2xl border border-base-300 bg-base-100 p-5 transition hover:border-primary/40 hover:shadow-md"
+          >
+            <Users size={18} className="text-primary" />
+            <p className="mt-3 font-semibold">Gerenciar membros</p>
+            <p className="text-sm text-base-content/60">
+              Convide pessoas, altere papéis ou remova acessos.
+            </p>
+          </Link>
 
-              <h2 className="font-semibold">Próximo evento</h2>
-            </div>
+          <Link
+            href={`/dashboard/organizations/${organizationId}/documents`}
+            className="group rounded-2xl border border-base-300 bg-base-100 p-5 transition hover:border-primary/40 hover:shadow-md"
+          >
+            <NotebookPen size={18} className="text-primary" />
+            <p className="mt-3 font-semibold">Caderno da equipe</p>
+            <p className="text-sm text-base-content/60">
+              Crie documentos e anotações compartilhadas da organização.
+            </p>
+          </Link>
 
-            <div className="mt-5">
-              <h3 className="font-medium">Regional FLL 2026</h3>
-
-              <p className="mt-1 text-sm text-base-content/60">
-                14 de Setembro de 2026
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-base-300 bg-base-100 p-6">
-            <h2 className="font-semibold">Resumo</h2>
-
-            <div className="mt-5 space-y-4 text-sm">
-              <div className="flex justify-between">
-                <span className="text-base-content/60">Organização criada</span>
-
-                <span>Jan 2026</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-base-content/60">Projetos ativos</span>
-
-                <span>8</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-base-content/60">Membros online</span>
-
-                <span>6</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-base-content/60">Última atividade</span>
-
-                <span>15 min</span>
-              </div>
-            </div>
-          </div>
+          <Link
+            href={`/dashboard/organizations/${organizationId}/settings`}
+            className="group rounded-2xl border border-base-300 bg-base-100 p-5 transition hover:border-primary/40 hover:shadow-md"
+          >
+            <Shield size={18} className="text-primary" />
+            <p className="mt-3 font-semibold">Configurações</p>
+            <p className="text-sm text-base-content/60">
+              Atualize nome, identificador e logotipo da organização.
+            </p>
+          </Link>
         </div>
-      </section>
+      </div>
     </div>
   );
+}
+
+type MemberPublicData = {
+  publicUserData?: {
+    firstName?: string | null;
+    lastName?: string | null;
+    identifier?: string;
+  } | null;
+};
+
+function getMemberName(member: MemberPublicData) {
+  const first = member.publicUserData?.firstName ?? "";
+  const last = member.publicUserData?.lastName ?? "";
+  const full = `${first} ${last}`.trim();
+  return full || member.publicUserData?.identifier || "Usuário";
+}
+
+function getMemberInitials(member: MemberPublicData) {
+  const name = getMemberName(member);
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] ?? "";
+  const second = parts[1]?.[0] ?? "";
+  return `${first}${second}`.toUpperCase() || "??";
+}
+
+function formatDate(timestamp?: number | null) {
+  if (!timestamp) return "—";
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(timestamp));
 }

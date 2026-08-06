@@ -1,5 +1,7 @@
 import { sanitizeNewsSlug } from "@/app/(public)/news/page";
 import DashboardBanner from "@/components/dashboard/banner";
+import OrganizationsQuickAccess from "@/components/dashboard/organizations-quick-access";
+import RecentProjects from "@/components/dashboard/recent-projects";
 import { getAllNews } from "@/utils/institutional/news";
 import { currentUser } from "@clerk/nextjs/server";
 import {
@@ -54,6 +56,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <DashboardBanner nomeUsuario={user?.firstName || "Usuário"} />
+
       {/* Acesso Rápido */}
       <section className="space-y-6">
         <div className="flex items-end justify-between">
@@ -103,6 +106,12 @@ export default async function DashboardPage() {
           })}
         </div>
       </section>
+
+      {/* Organizações (Clerk) */}
+      <OrganizationsQuickAccess />
+
+      {/* Projetos recentes + criação */}
+      <RecentProjects />
 
       {/* Últimas Notícias */}
       <LastNews />

@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import {
-  ArrowRight,
-  ChevronRight,
-  Sparkles,
-} from "lucide-react";
-import type { ReactNode } from "react";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { CreateOrganizationModal } from "./create-organization-modal";
 
 type MembershipWithOrganization = {
   role?: string | null;
@@ -25,11 +21,12 @@ export default async function OrganizationsPage() {
     return redirectToSignIn();
   }
 
-  const { data: memberships, totalCount } =
-    await (await clerkClient()).users.getOrganizationMembershipList({
-      userId,
-      limit: 100,
-    });
+  const { data: memberships } = await (
+    await clerkClient()
+  ).users.getOrganizationMembershipList({
+    userId,
+    limit: 100,
+  });
 
   const organizations = (memberships as MembershipWithOrganization[]).map(
     (membership) => ({
@@ -46,13 +43,15 @@ export default async function OrganizationsPage() {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
       <section className="space-y-4">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold">Suas organizações</h2>
             <p className="text-sm text-base-content/60">
               Clique em uma organização para abrir sua página individual.
             </p>
           </div>
+
+          <CreateOrganizationModal />
         </div>
 
         {organizations.length > 0 ? (
@@ -98,8 +97,14 @@ export default async function OrganizationsPage() {
                           </span>
                         )}
                       </div>
+                      <p className="text-xs text-base-content/50">
+                        {organization.role === "org:admin"
+                          ? "Administrador"
+                          : "Membro"}
+                      </p>
                     </div>
                   </div>
+
                   <div className="mt-auto flex items-center justify-between pt-2">
                     <span className="text-sm font-medium text-primary">
                       Abrir organização
@@ -136,15 +141,12 @@ export default async function OrganizationsPage() {
                 </h3>
 
                 <p className="max-w-2xl text-sm text-base-content/65">
-                  Quando uma organização for criada ou compartilhada com você,
-                  ela aparecerá aqui como um card clicável.
+                  Crie sua primeira organização para começar a convidar
+                  pessoas e organizar seu trabalho em equipe.
                 </p>
               </div>
 
-              <div className="rounded-2xl bg-base-200 p-4 text-sm text-base-content/70">
-                Você ainda pode usar o seletor do Clerk para criar ou alternar
-                organizações.
-              </div>
+              <CreateOrganizationModal />
             </div>
           </div>
         )}

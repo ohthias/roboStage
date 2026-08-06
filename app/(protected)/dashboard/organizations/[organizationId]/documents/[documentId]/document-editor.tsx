@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, type FormEvent } from "react";
+import { useCallback, useMemo, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
@@ -16,31 +16,76 @@ import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPl
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { TRANSFORMERS } from "@lexical/markdown";
 import type { EditorState, SerializedEditorState } from "lexical";
-import { Check, Loader2, Trash2 } from "lucide-react";
+import { Check, FileText, Loader2, Trash2 } from "lucide-react";
 import { editorNodes } from "@/components/editor/nodes";
 import { editorTheme } from "@/components/editor/theme";
 import { ToolbarPlugin } from "@/components/editor/plugins/toolbar-plugin";
 import { AutoSavePlugin } from "@/components/editor/plugins/auto-save-plugin";
+import { IconPickerButton } from "@/components/icons/icon-picker-button";
 import "@/components/editor/editor.css";
 import { deleteDocumentAction, updateDocumentAction } from "../actions";
+import { moveDocumentAction } from "../folder-actions";
 
 const TITLE_AUTOSAVE_DELAY = 800;
+
+type FolderOption = {
+  id: string;
+  name: string;
+  icon: string | null;
+  parentId: string | null;
+};
+
+function buildFolderOptions(folders: FolderOption[]) {
+  const byParent = new Map<string | null, FolderOption[]>();
+  folders.forEach((folder) => {
+    const list = byParent.get(folder.parentId) ?? [];
+    list.push(folder);
+    byParent.set(folder.parentId, list);
+  });
+
+  const options: Array<{ id: string; label: string }> = [];
+
+  function walk(parentId: string | null, depth: number) {
+    const children = (byParent.get(parentId) ?? []).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    for (const folder of children) {
+      const prefix = depth > 0 ? "—  ".repeat(depth) : "";
+      options.push({
+        id: folder.id,
+        label: `${prefix}${folder.icon ?? "📁"} ${folder.name}`,
+      });
+      walk(folder.id, depth + 1);
+    }
+  }
+
+  walk(null, 0);
+  return options;
+}
 
 export function DocumentEditor({
   organizationId,
   documentId,
   initialTitle,
+  initialIcon,
+  initialFolderId,
   initialContent,
+  folders,
   updatedAt,
 }: {
   organizationId: string;
   documentId: string;
   initialTitle: string;
+  initialIcon: string | null;
+  initialFolderId: string | null;
   initialContent: SerializedEditorState | null;
+  folders: FolderOption[];
   updatedAt: Date;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(initialTitle);
+  const [icon, setIcon] = useState(initialIcon);
+  const [folderId, setFolderId] = useState(initialFolderId);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">(
     "idle"
   );
@@ -48,6 +93,8 @@ export function DocumentEditor({
   const [isDeleting, setIsDeleting] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const folderOptions = useMemo(() => buildFolderOptions(folders), [folders]);
 
   const initialConfig = {
     namespace: `document-${documentId}`,
@@ -105,6 +152,32 @@ export function DocumentEditor({
     persistTitle(value);
   }
 
+  function handleIconChange(nextIcon: string | null) {
+    setIcon(nextIcon);
+    setStatus("saving");
+    updateDocumentAction(organizationId, documentId, { icon: nextIcon }).then(
+      (result) => {
+        setStatus(result.success ? "saved" : "error");
+        if (!result.success) {
+          setErrorMessage(result.message ?? "Erro ao atualizar o ícone.");
+        }
+      }
+    );
+  }
+
+  function handleMove(nextFolderId: string) {
+    const value = nextFolderId || null;
+    setFolderId(value);
+    setStatus("saving");
+    moveDocumentAction(organizationId, documentId, value).then((result) => {
+      setStatus(result.success ? "saved" : "error");
+      if (!result.success) {
+        setErrorMessage(result.message ?? "Erro ao mover o documento.");
+      }
+      router.refresh();
+    });
+  }
+
   function handleDelete() {
     setIsDeleting(true);
     deleteDocumentAction(organizationId, documentId).then((result) => {
@@ -122,16 +195,33 @@ export function DocumentEditor({
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between gap-3 border-b border-base-200 px-6 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-base-200 px-6 py-3">
           <SaveIndicator status={status} updatedAt={updatedAt} />
-          <button
-            type="button"
-            onClick={() => dialogRef.current?.showModal()}
-            className="btn btn-ghost btn-sm gap-2 text-error"
-          >
-            <Trash2 size={14} />
-            Excluir
-          </button>
+
+          <div className="flex items-center gap-2">
+            <select
+              value={folderId ?? ""}
+              onChange={(event) => handleMove(event.target.value)}
+              className="select select-bordered select-xs max-w-[220px]"
+              title="Mover para pasta"
+            >
+              <option value="">📂 Sem pasta</option>
+              {folderOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={() => dialogRef.current?.showModal()}
+              className="btn btn-ghost btn-sm gap-2 text-error"
+            >
+              <Trash2 size={14} />
+              Excluir
+            </button>
+          </div>
         </div>
 
         {errorMessage && (
@@ -143,18 +233,29 @@ export function DocumentEditor({
         <ToolbarPlugin />
 
         <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-6">
-          <textarea
-            value={title}
-            onChange={handleTitleChange}
-            rows={1}
-            placeholder="Sem título"
-            className="mb-4 w-full resize-none overflow-hidden border-none bg-transparent text-3xl font-bold outline-none placeholder:text-base-content/30"
-            onInput={(event) => {
-              const el = event.currentTarget;
-              el.style.height = "auto";
-              el.style.height = `${el.scrollHeight}px`;
-            }}
-          />
+          <div className="mb-4 flex items-start gap-3">
+            <IconPickerButton
+              icon={icon}
+              fallback={<FileText size={26} className="text-base-content/30" />}
+              onChange={handleIconChange}
+              className="mt-1 h-12 w-12 shrink-0"
+              emojiClassName="text-4xl"
+              title="Escolher ícone do documento"
+            />
+
+            <textarea
+              value={title}
+              onChange={handleTitleChange}
+              rows={1}
+              placeholder="Sem título"
+              className="w-full resize-none overflow-hidden border-none bg-transparent text-3xl font-bold outline-none placeholder:text-base-content/30"
+              onInput={(event) => {
+                const el = event.currentTarget;
+                el.style.height = "auto";
+                el.style.height = `${el.scrollHeight}px`;
+              }}
+            />
+          </div>
 
           <div className="relative">
             <RichTextPlugin

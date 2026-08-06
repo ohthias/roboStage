@@ -32,7 +32,8 @@ async function assertMembership(organizationId: string) {
 }
 
 export async function createDocumentAction(
-  organizationId: string
+  organizationId: string,
+  folderId: string | null = null
 ): Promise<MutationResult<{ id: string }>> {
   try {
     const { userId } = await assertMembership(organizationId);
@@ -41,7 +42,9 @@ export async function createDocumentAction(
       .insert(documents)
       .values({
         organizationId,
+        folderId,
         title: "Sem título",
+        icon: null,
         content: null,
         createdBy: userId,
         updatedBy: userId,
@@ -61,7 +64,11 @@ export async function createDocumentAction(
 export async function updateDocumentAction(
   organizationId: string,
   documentId: string,
-  data: { title?: string; content?: SerializedEditorState }
+  data: {
+    title?: string;
+    icon?: string | null;
+    content?: SerializedEditorState;
+  }
 ): Promise<MutationResult> {
   try {
     const { userId } = await assertMembership(organizationId);
@@ -72,6 +79,7 @@ export async function updateDocumentAction(
         ...(data.title !== undefined
           ? { title: data.title.trim() || "Sem título" }
           : {}),
+        ...(data.icon !== undefined ? { icon: data.icon } : {}),
         ...(data.content !== undefined
           ? { content: data.content as unknown as Record<string, unknown> }
           : {}),

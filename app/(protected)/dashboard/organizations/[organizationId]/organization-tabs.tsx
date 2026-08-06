@@ -30,7 +30,7 @@ export function OrganizationTabs({
   ];
 
   return (
-    <div role="tablist" className="tabs tabs-boxed w-fit bg-base-200">
+    <div role="tablist" className="tabs tabs-border w-fit bg-base-200">
       {tabs.map((tab) => {
         const isActive = tab.exact
           ? pathname === tab.href

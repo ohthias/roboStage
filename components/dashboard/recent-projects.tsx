@@ -2,30 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Clock, FolderKanban } from "lucide-react";
 import CreateProjectModal from "@/components/dashboard/create-project-modal";
 
-// TODO: substituir por dados reais (últimos projetos acessados pelo usuário).
-const recentProjects = [
-  {
-    id: "1",
-    name: "Plataforma de testes",
-    organization: "Acme Labs",
-    updatedAt: "2026-08-03",
-    status: "Em andamento",
-  },
-  {
-    id: "2",
-    name: "Portal institucional",
-    organization: "Acme Labs",
-    updatedAt: "2026-08-01",
-    status: "Em revisão",
-  },
-  {
-    id: "3",
-    name: "Sistema de laudos",
-    organization: "Delta Diagnósticos",
-    updatedAt: "2026-07-28",
-    status: "Concluído",
-  },
-];
+const recentProjects: any[] = [];
 
 const statusStyles: Record<string, string> = {
   "Em andamento": "badge-primary",
@@ -95,7 +72,14 @@ export default function RecentProjects() {
                 />
               </div>
             </Link>
-          ))}
+          )) || (
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-base-300 bg-base-100 p-10 text-center">
+              <FolderKanban className="size-8 text-base-content/40" />
+              <p className="text-sm text-base-content/60">
+                Nenhum projeto acessado recentemente.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </section>

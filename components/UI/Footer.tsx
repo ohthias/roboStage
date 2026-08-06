@@ -41,7 +41,7 @@ export function Footer() {
               </a>
             </div>
             <div className="pt-2">
-              <Link href="/auth/signup" className="btn btn-primary btn-sm">
+              <Link href="/sign-up" className="btn btn-primary btn-sm">
                 Criar conta gratuita
               </Link>
             </div>
@@ -115,7 +115,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/auth/login" className="link link-hover">
+                <Link href="/sign-in" className="link link-hover">
                   Login
                 </Link>
               </li>

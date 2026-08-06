@@ -1,11 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-export async function proxy(request: NextRequest) {
+export default clerkMiddleware(async (auth, req) => {
+  if (req.nextUrl.pathname.startsWith("/dashboard")) {
+    await auth.protect();
+  }
+
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next|.*\\..*).*)",
+    "/(api|trpc)(.*)",
+    "/__clerk/(.*)",
   ],
 };

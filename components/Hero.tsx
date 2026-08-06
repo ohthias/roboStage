@@ -15,7 +15,6 @@ export default function Hero() {
 
   return (
     <section className="w-full mx-auto px-3 sm:px-4 relative">
-      <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
       <div
         className="absolute inset-0 opacity-10"
         style={{ background: `linear-gradient(to top, transparent, ${hero.accent}, transparent)` }}

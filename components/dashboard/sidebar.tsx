@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserButton, useUser } from "@clerk/nextjs";
-import { ChevronLeft, Home, LayoutGrid, Users } from "lucide-react";
+import { UserAvatar, useUser } from "@clerk/nextjs";
+import { ChevronLeft, Home, LayoutGrid, Users, Globe } from "lucide-react";
 import Logo from "../UI/Logo";
 
 const items = [
@@ -23,6 +23,11 @@ const items = [
     href: "/dashboard/projects",
     icon: LayoutGrid,
   },
+  {
+    title: "Retornar ao site",
+    href: "/",
+    icon: Globe,
+  }
 ];
 
 export function DashboardSidebar() {
@@ -92,14 +97,8 @@ export function DashboardSidebar() {
         })}
       </nav>
       <div className="border-t border-base-300 bg-base-100 px-3 py-3">
-        <div className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`}>
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: "w-12 h-12",
-              },
-            }}
-          />
+        <Link href="/dashboard/settings" className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`}>
+          <UserAvatar />
 
           {!collapsed && (
             <div className="min-w-0">
@@ -112,7 +111,7 @@ export function DashboardSidebar() {
               </p>
             </div>
           )}
-        </div>
+        </Link>
       </div>
     </aside>
   );

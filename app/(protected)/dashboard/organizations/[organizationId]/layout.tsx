@@ -70,26 +70,9 @@ export default async function OrganizationLayout({
           Voltar
         </Link>
       </header>
-      <OrganizationTabs organizationId={organizationId} />
+      <OrganizationTabs organizationId={organizationId} isAdmin={role === "Administrador"} />
 
       <div>{children}</div>
     </div>
   );
-}
-
-function getInitials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  const first = parts[0]?.[0] ?? "";
-  const second = parts[1]?.[0] ?? parts[0]?.[1] ?? "";
-  return `${first}${second}`.toUpperCase();
-}
-
-function formatDate(timestamp?: number | null) {
-  if (!timestamp) return "data não informada";
-
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(timestamp));
 }

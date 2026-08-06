@@ -6,8 +6,10 @@ import { LayoutGrid, NotebookPen, Settings, Users } from "lucide-react";
 
 export function OrganizationTabs({
   organizationId,
+  isAdmin = false,
 }: {
   organizationId: string;
+  isAdmin?: boolean;
 }) {
   const pathname = usePathname();
   const base = `/dashboard/organizations/${organizationId}`;
@@ -21,12 +23,16 @@ export function OrganizationTabs({
       icon: NotebookPen,
       exact: false,
     },
-    {
-      href: `${base}/settings`,
-      label: "Configurações",
-      icon: Settings,
-      exact: false,
-    },
+    ...(isAdmin
+      ? [
+          {
+            href: `${base}/settings`,
+            label: "Configurações",
+            icon: Settings,
+            exact: false,
+          },
+        ]
+      : []),
   ];
 
   return (

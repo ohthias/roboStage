@@ -1300,18 +1300,22 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                       </label>
                       <input
                         type="number"
-                        min="1"
+                        min="0"
                         className="input input-sm input-bordered w-full join-item"
-                        value={Math.round(
-                          (selectedItem as Robot).width * CM_PER_PIXEL,
-                        )}
-                        onChange={(e) =>
-                          handleUpdateItem({
-                            width:
-                              Math.max(1, Number(e.target.value)) /
-                              CM_PER_PIXEL,
-                          })
+                        value={
+                          Number.isFinite((selectedItem as Robot).width * CM_PER_PIXEL)
+                            ? Math.round((selectedItem as Robot).width * CM_PER_PIXEL)
+                            : ""
                         }
+                        onChange={(e) => {
+                          const sanitizedValue = e.target.value.replace(/[^\d]/g, "");
+                          const nextValue =
+                            sanitizedValue === "" ? 0 : Number(sanitizedValue);
+
+                          handleUpdateItem({
+                            width: Math.max(0, nextValue) / CM_PER_PIXEL,
+                          });
+                        }}
                         onBlur={registerAction}
                         onKeyDown={(e) => e.key === "Enter" && registerAction()}
                       />
@@ -1322,18 +1326,22 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                       </label>
                       <input
                         type="number"
-                        min="1"
+                        min="0"
                         className="input input-sm input-bordered w-full join-item"
-                        value={Math.round(
-                          (selectedItem as Robot).height * CM_PER_PIXEL,
-                        )}
-                        onChange={(e) =>
-                          handleUpdateItem({
-                            height:
-                              Math.max(1, Number(e.target.value)) /
-                              CM_PER_PIXEL,
-                          })
+                        value={
+                          Number.isFinite((selectedItem as Robot).height * CM_PER_PIXEL)
+                            ? Math.round((selectedItem as Robot).height * CM_PER_PIXEL)
+                            : ""
                         }
+                        onChange={(e) => {
+                          const sanitizedValue = e.target.value.replace(/[^\d]/g, "");
+                          const nextValue =
+                            sanitizedValue === "" ? 0 : Number(sanitizedValue);
+
+                          handleUpdateItem({
+                            height: Math.max(0, nextValue) / CM_PER_PIXEL,
+                          });
+                        }}                       
                         onBlur={registerAction}
                         onKeyDown={(e) => e.key === "Enter" && registerAction()}
                       />

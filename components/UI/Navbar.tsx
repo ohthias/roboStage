@@ -29,22 +29,15 @@ const mainLinks = [
   { href: "/help", label: "Ajuda" },
 ];
 
-const accessLinks: any[] = [
-  /*{
-    href: "/universe",
-    label: "Eventos",
-    icon: Earth,
-    variant: "outline" as const,
-  },
-  { href: "/auth/login", label: "Login", variant: "ghost" as const },
-  { href: "/auth/signup", label: "Cadastrar", variant: "primary" as const },*/
-];
-
 export function Navbar() {
   const params = useParams();
   const pathname = usePathname();
   const [scoreOpen, setScoreOpen] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(false);
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
+
+  const toggleMenu = useCallback((key: string, open: boolean) => {
+    setOpenMenus((prev) => ({ ...prev, [key]: open }));
+  }, []);
 
   const competition =
     typeof params?.competicao === "string" ? params.competicao : undefined;
@@ -83,8 +76,14 @@ export function Navbar() {
     [pathname],
   );
 
+  const isMenuGroupActive = useCallback(
+    (group: { items: { path: string }[] }) =>
+      group.items.some((item) => isActive(`/${competition}/${item.path}`)),
+    [competition, isActive],
+  );
+
   const baseLink =
-    "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-out hover:bg-primary/10 hover:text-primary";
+    "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-out hover:bg-primary/10 hover:text-primary relative";
   const mutedLink =
     "text-base-content/70 hover:bg-primary/10 hover:text-primary";
   const activeLink = "bg-primary/10 text-primary shadow-sm";
@@ -99,7 +98,7 @@ export function Navbar() {
     `${baseLink} ${active ? activeLink : mutedLink}`;
 
   const mobileItemClass = (active: boolean) =>
-    `flex w-full items-start gap-3 rounded-xl px-3 py-2 transition-all duration-200 ${
+    `flex w-full items-start gap-3 rounded-xl px-3 py-2 transition-all duration-200 relative ${
       active
         ? "bg-primary/10 text-base-content shadow-[4px_4px_0_theme(colors.base-300))]"
         : "hover:bg-base-200/80 hover:shadow-[4px_4px_0_theme(colors.primary))]"
@@ -112,8 +111,7 @@ export function Navbar() {
   const showMainNav = !isCompetitionRoute;
 
   const activeCompetitionTools =
-    nav?.menu?.some((item) => isActive(`/${competition}/${item.path}`)) ??
-    false;
+    nav?.menus?.some((group) => isMenuGroupActive(group)) ?? false;
 
   return (
     <div className="drawer drawer-start z-50">
@@ -255,65 +253,77 @@ export function Navbar() {
                       >
                         <Icon size={16} />
                         <span>{item.nome}</span>
+                        {item.new && (
+                          <span className="badge badge-xs badge-primary ml-auto absolute top-0 right-2 -translate-y-1/2 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
+                            Novo
+                          </span>
+                        )}
                       </Link>
                     );
                   })}
 
-                <div className="dropdown dropdown-end">
-                  <button
-                    type="button"
-                    tabIndex={0}
-                    aria-haspopup="menu"
-                    aria-label="Abrir menu de ferramentas"
-                    className={navItemClass(activeCompetitionTools)}
-                  >
-                    <ToolCase size={16} />
-                    <span>Ferramentas</span>
-                    <ChevronDown size={14} className="opacity-60" />
-                  </button>
+                {nav.menus?.map((group) => {
+                  const GroupIcon = group.icon;
+                  const groupActive = isMenuGroupActive(group);
 
-                  <ul
-                    tabIndex={0}
-                    className="menu dropdown-content z-[1] mt-4 w-72 rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl"
-                  >
-                    {nav.menu.map((item) => {
-                      const Icon = item.icon;
-                      const href = `/${competition}/${item.path}`;
-                      const active = isActive(href);
+                  return (
+                    <div className="dropdown dropdown-end" key={group.key}>
+                      <button
+                        type="button"
+                        tabIndex={0}
+                        aria-haspopup="menu"
+                        aria-label={`Abrir menu de ${group.label.toLowerCase()}`}
+                        className={navItemClass(groupActive)}
+                      >
+                        <GroupIcon size={16} />
+                        <span>{group.label}</span>
+                        <ChevronDown size={14} className="opacity-60" />
+                      </button>
 
-                      return (
-                        <li key={item.path}>
-                          <Link
-                            href={href}
-                            className={`flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-200 ${
-                              active ? "bg-base-200" : "hover:bg-base-200/80"
-                            }`}
-                            aria-current={active ? "page" : undefined}
-                          >
-                            <Icon
-                              size={18}
-                              className={`mt-0.5 transition-opacity duration-200 ${
-                                active ? "opacity-100" : "opacity-60"
-                              }`}
-                            />
-                            <span className="flex flex-col">
-                              <span
-                                className={`font-medium ${
-                                  active ? "text-primary" : ""
+                      <ul
+                        tabIndex={0}
+                        className="menu dropdown-content z-[1] mt-4 w-72 rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl"
+                      >
+                        {group.items.map((item) => {
+                          const Icon = item.icon;
+                          const href = `/${competition}/${item.path}`;
+                          const active = isActive(href);
+
+                          return (
+                            <li key={item.path}>
+                              <Link
+                                href={href}
+                                className={`flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-200 ${
+                                  active
+                                    ? "bg-base-200"
+                                    : "hover:bg-base-200/80"
                                 }`}
+                                aria-current={active ? "page" : undefined}
                               >
-                                {item.nome}
-                              </span>
-                              <span className="text-xs opacity-60">
-                                {item.description || "Ferramenta"}
-                              </span>
-                            </span>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
+                                <Icon
+                                  size={18}
+                                  className={`mt-0.5 transition-opacity duration-200 ${
+                                    active ? "opacity-100" : "opacity-60"
+                                  }`}
+                                />
+                                <span className="flex flex-col">
+                                  <span
+                                    className={`font-medium ${active ? "text-primary" : ""}`}
+                                  >
+                                    {item.nome}
+                                  </span>
+                                  <span className="text-xs opacity-60">
+                                    {item.description || "Ferramenta"}
+                                  </span>
+                                </span>
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  );
+                })}
               </>
             ) : null}
 
@@ -338,50 +348,6 @@ export function Navbar() {
 
           <div className="hidden items-center gap-2 lg:flex">
             <ThemeController />
-
-            <div className="divider divider-horizontal mx-1" />
-
-            {accessLinks?.map((item) => {
-              const active = isActive(item.href);
-
-              if (item.variant === "primary") {
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="btn btn-primary btn-sm rounded-lg shadow-sm transition-transform duration-200 hover:scale-[1.01]"
-                  >
-                    {item.label}
-                  </Link>
-                );
-              }
-
-              if (item.variant === "outline") {
-                const Icon = item.icon ?? Earth;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={navItemClass(active)}
-                    aria-current={active ? "page" : undefined}
-                  >
-                    <Icon size={16} />
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              }
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={navItemClass(active)}
-                  aria-current={active ? "page" : undefined}
-                >
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
           </div>
 
           <div className="flex items-center gap-2 lg:hidden">
@@ -527,78 +493,87 @@ export function Navbar() {
                               {item.nome}
                             </span>
                           </span>
+                          {item.new && (
+                            <span className="badge badge-xs badge-primary ml-auto absolute top-0 right-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
+                              Novo
+                            </span>
+                          )}
                         </Link>
                       );
                     })}
 
-                  {nav.menu.length > 0 && (
-                    <details
-                      className="collapse rounded-2xl hover:shadow-[4px_4px_0_theme(colors.primary))] transition hover:bg-base-200"
-                      open={toolsOpen}
-                      onToggle={(event) =>
-                        setToolsOpen(event.currentTarget.open)
-                      }
-                    >
-                      <summary className="collapse-title min-h-0 rounded-2xl px-4 py-3 text-base font-semibold">
-                        <span className="flex items-center gap-2">
-                          <ToolCase
-                            size={16}
-                            className="shrink-0 text-base-content/70"
-                          />
-                          Ferramentas
-                          {toolsOpen ? (
-                            <ChevronUp
-                              size={14}
-                              className="ml-auto opacity-60"
-                            />
-                          ) : (
-                            <ChevronDown
-                              size={14}
-                              className="ml-auto opacity-60"
-                            />
-                          )}
-                        </span>
-                      </summary>
+                  {nav.menus?.map((group) => {
+                    const GroupIcon = group.icon;
+                    const isOpen = openMenus[group.key] ?? false;
 
-                      <div className="collapse-content px-2 pb-2">
-                        <ul className="space-y-1">
-                          {nav.menu.map((item) => {
-                            const Icon = item.icon;
-                            const href = `/${competition}/${item.path}`;
-                            const active = isActive(href);
+                    return (
+                      <details
+                        key={group.key}
+                        className="collapse rounded-2xl hover:shadow-[4px_4px_0_theme(colors.primary))] transition hover:bg-base-200"
+                        open={isOpen}
+                        onToggle={(event) =>
+                          toggleMenu(group.key, event.currentTarget.open)
+                        }
+                      >
+                        <summary className="collapse-title min-h-0 rounded-2xl px-4 py-3 text-base font-semibold">
+                          <span className="flex items-center gap-2">
+                            <GroupIcon
+                              size={16}
+                              className="shrink-0 text-base-content/70"
+                            />
+                            {group.label}
+                            {isOpen ? (
+                              <ChevronUp
+                                size={14}
+                                className="ml-auto opacity-60"
+                              />
+                            ) : (
+                              <ChevronDown
+                                size={14}
+                                className="ml-auto opacity-60"
+                              />
+                            )}
+                          </span>
+                        </summary>
 
-                            return (
-                              <li key={item.path}>
-                                <Link
-                                  href={href}
-                                  onClick={closeDrawer}
-                                  className={mobileItemClass(active)}
-                                  aria-current={active ? "page" : undefined}
-                                >
-                                  <Icon
-                                    size={18}
-                                    className="mt-0.5 shrink-0 opacity-60"
-                                  />
-                                  <span className="flex flex-col">
-                                    <span
-                                      className={`font-medium ${
-                                        active ? "text-primary" : ""
-                                      }`}
-                                    >
-                                      {item.nome}
+                        <div className="collapse-content px-2 pb-2">
+                          <ul className="space-y-1">
+                            {group.items.map((item) => {
+                              const Icon = item.icon;
+                              const href = `/${competition}/${item.path}`;
+                              const active = isActive(href);
+
+                              return (
+                                <li key={item.path}>
+                                  <Link
+                                    href={href}
+                                    onClick={closeDrawer}
+                                    className={mobileItemClass(active)}
+                                    aria-current={active ? "page" : undefined}
+                                  >
+                                    <Icon
+                                      size={18}
+                                      className="mt-0.5 shrink-0 opacity-60"
+                                    />
+                                    <span className="flex flex-col">
+                                      <span
+                                        className={`font-medium ${active ? "text-primary" : ""}`}
+                                      >
+                                        {item.nome}
+                                      </span>
+                                      <span className="text-xs opacity-60">
+                                        {item.description || "Ferramenta"}
+                                      </span>
                                     </span>
-                                    <span className="text-xs opacity-60">
-                                      {item.description || "Ferramenta"}
-                                    </span>
-                                  </span>
-                                </Link>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </div>
-                    </details>
-                  )}
+                                  </Link>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      </details>
+                    );
+                  })}
                 </div>
               </div>
             ) : (
@@ -627,65 +602,6 @@ export function Navbar() {
                 })}
               </div>
             )}
-
-            <div className="divider" />
-
-            <div className="mt-6">
-              <p className="px-1 text-xs font-semibold uppercase tracking-[0.12em] opacity-60">
-                Acessos
-              </p>
-
-              <div className="mt-2 grid gap-2">
-                {accessLinks.map((item) => {
-                  const active = isActive(item.href);
-
-                  if (item.variant === "outline") {
-                    const Icon = item.icon ?? Earth;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={closeDrawer}
-                        className={`btn btn-outline btn-md justify-start rounded-xl transition-all duration-200 ${
-                          active ? "btn-active" : ""
-                        }`}
-                        aria-current={active ? "page" : undefined}
-                      >
-                        <Icon size={16} />
-                        {item.label}
-                      </Link>
-                    );
-                  }
-
-                  if (item.variant === "primary") {
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={closeDrawer}
-                        className="btn btn-primary btn-md justify-start rounded-xl shadow-sm"
-                      >
-                        {item.label}
-                      </Link>
-                    );
-                  }
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={closeDrawer}
-                      className={`btn btn-ghost btn-md justify-start rounded-xl transition-all duration-200 ${
-                        active ? "btn-active" : ""
-                      }`}
-                      aria-current={active ? "page" : undefined}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
           </div>
         </aside>
       </div>

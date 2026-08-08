@@ -11,7 +11,8 @@ import {
   School,
   ToyBrick,
   Telescope,
-  File
+  File,
+  NotepadText
 } from "lucide-react";
 
 export const NAVIGATION = {
@@ -21,6 +22,7 @@ export const NAVIGATION = {
     scorePath: "score",
     options: [
       { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid },
+      { nome: "Rúbrica de Avaliação", path: "rubric", icon: NotepadText, new: true },
       { nome: "Future Edition", path: "future-edition", icon: Gamepad2 },
       { nome: "FLL Explore", path: "explore", icon: Telescope },
     ],

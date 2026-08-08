@@ -24,7 +24,7 @@ export default function TitleBlock({
   return (
     <div className="relative paper-sheet rounded-box border border-base-content/15 p-4 sm:p-5">
       <p className="font-bold text-base-content/80">Informações da Equipe</p>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 w-full">
         <div>
           <label className={labelCls}>Equipe #</label>
           <input

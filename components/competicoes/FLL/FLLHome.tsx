@@ -59,7 +59,7 @@ export default function FLLHome() {
     <div className="min-h-screen bg-base-200 text-base-content">
       <main className="mt-16">
         <Hero />
-        <section className="py-12 md:py-16 max-w-7xl mx-auto px-4 sm:px-6">
+        <section className="py-12 md:py-16 max-w-7xl mx-auto px-6 sm:px-8">
           <Banner />
           <div className="mt-8">
             <div className="flex flex-col xl:flex-row gap-10 xl:gap-16 items-start">

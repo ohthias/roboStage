@@ -74,7 +74,7 @@ export function Navbar() {
   );
 
   const baseLink =
-    "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-out hover:bg-primary/10 hover:text-primary";
+    "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-out hover:bg-primary/10 hover:text-primary relative";
   const mutedLink =
     "text-base-content/70 hover:bg-primary/10 hover:text-primary";
   const activeLink = "bg-primary/10 text-primary shadow-sm";
@@ -89,7 +89,7 @@ export function Navbar() {
     `${baseLink} ${active ? activeLink : mutedLink}`;
 
   const mobileItemClass = (active: boolean) =>
-    `flex w-full items-start gap-3 rounded-xl px-3 py-2 transition-all duration-200 ${
+    `flex w-full items-start gap-3 rounded-xl px-3 py-2 transition-all duration-200 relative ${
       active
         ? "bg-primary/10 text-base-content shadow-[4px_4px_0_theme(colors.base-300))]"
         : "hover:bg-base-200/80 hover:shadow-[4px_4px_0_theme(colors.primary))]"
@@ -245,6 +245,11 @@ export function Navbar() {
                       >
                         <Icon size={16} />
                         <span>{item.nome}</span>
+                        {item.new && (
+                          <span className="badge badge-xs badge-primary ml-auto absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
+                            Novo
+                          </span>
+                        )}
                       </Link>
                     );
                   })}
@@ -490,6 +495,11 @@ export function Navbar() {
                               {item.nome}
                             </span>
                           </span>
+                          {item.new && (
+                            <span className="badge badge-xs badge-primary ml-auto absolute top-0 right-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
+                              Novo
+                            </span>
+                          )}
                         </Link>
                       );
                     })}

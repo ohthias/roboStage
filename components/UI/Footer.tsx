@@ -1,6 +1,7 @@
 import Link from "next/link";
 import pkg from "@/package.json";
 import Logo from "./Logo";
+import { Bug } from "lucide-react";
 
 export function Footer() {
   return (
@@ -115,8 +116,9 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/sign-in" className="link link-hover">
-                  Login
+                <Link href="https://github.com/ohthias/roboStage/issues" className="link link-hover" target="_blank">
+                  <Bug className="inline-block mr-1" size={16} />
+                  Reportar bug
                 </Link>
               </li>
             </ul>

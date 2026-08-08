@@ -59,8 +59,9 @@ export default function FLLHome() {
     <div className="min-h-screen bg-base-200 text-base-content">
       <main className="mt-16">
         <Hero />
-        <section className="py-12 md:py-16 max-w-7xl mx-auto my-8">
-          <div className="px-4 sm:px-6">
+        <section className="py-12 md:py-16 max-w-7xl mx-auto px-4 sm:px-6">
+          <Banner />
+          <div className="mt-8">
             <div className="flex flex-col xl:flex-row gap-10 xl:gap-16 items-start">
               <div className="w-full xl:max-w-md flex-shrink-0">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-base-content leading-tight">
@@ -165,7 +166,7 @@ export default function FLLHome() {
           </div>
         </section>
         <FLLHighlightSeason />
-        <section className="w-full py-24 bg-base-200">
+        <section className="w-full py-16 bg-base-200">
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex flex-col items-center text-center mb-16">
               <h2 className="text-4xl md:text-6xl font-black max-w-5xl leading-tight">
@@ -204,8 +205,9 @@ export default function FLLHome() {
                 Ferramentas LabTest e InnoLab temporariamente indisponíveis
               </h6>
               <p>
-                As ferramentas LabTest e InnoLab estão passando por manutenções, envovelndo correção de
-                bugs, performace, e melhorias na experiência do usuário.
+                As ferramentas LabTest e InnoLab estão passando por manutenções,
+                envovelndo correção de bugs, performace, e melhorias na
+                experiência do usuário.
               </p>
               <Link href="/news" className="font-bold underline">
                 Clique aqui
@@ -214,7 +216,6 @@ export default function FLLHome() {
             </div>
           </div>
         </section>
-        <UseCasesSection />
         {/* FLL Future Edition */}
         <NoiseImage variant="animated" noiseOpacity={0.2} className="relative">
           <section className="py-16">
@@ -234,13 +235,13 @@ export default function FLLHome() {
                         className="max-w-[150px] h-auto mb-4"
                       />
 
-                      <h2 className="text-3xl md:text-5xl font-black leading-tight">
+                      <h2 className="text-3xl md:text-5xl font-black leading-tight text-white">
                         Conheça a próxima geração da
                         <br />
                         FIRST LEGO League
                       </h2>
 
-                      <p className="mt-4 text-lg opacity-90">
+                      <p className="mt-4 text-lg opacity-90 text-white">
                         BIOGLOW™ Future Edition introduz novos kits LEGO®
                         Education Computer Science & AI, hardware sem fio e uma
                         experiência colaborativa baseada em alianças.

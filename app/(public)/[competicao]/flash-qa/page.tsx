@@ -8,25 +8,15 @@ import { FLL_MODE } from "./modes/FLL";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
 
 export default function FlashQA() {
-  const {
-    gameState,
-    settings,
-    startGame,
-    finishGame,
-    restartGame,
-    goHome,
-  } = useFlashQA(FLL_MODE);
+  const { gameState, settings, startGame, finishGame, restartGame, goHome } =
+    useFlashQA(FLL_MODE);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="ml-8">
-        <Breadcrumbs start="fll" />
-      </div>
-      <main className="px-8 py-4 flex items-center justify-center">
+    <div className="px-8 md:px-16 py-4 md:py-12">
+      <Breadcrumbs start="fll" />
+      <main className="flex items-center justify-center">
         <div className="w-full">
-          {gameState.status === "setup" && (
-            <SetupScreen onStart={startGame} />
-          )}
+          {gameState.status === "setup" && <SetupScreen onStart={startGame} />}
 
           {gameState.status === "playing" &&
             gameState.selectedQuestions.length > 0 && (
@@ -53,9 +43,7 @@ export default function FlashQA() {
           {gameState.status === "finished" && (
             <ResultScreen
               totalQuestions={gameState.selectedQuestions.length}
-              flaggedCount={
-                gameState.answers.filter((a) => a.flagged).length
-              }
+              flaggedCount={gameState.answers.filter((a) => a.flagged).length}
               onRestart={restartGame}
               onHome={goHome}
             />

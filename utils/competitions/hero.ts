@@ -1,20 +1,20 @@
 export const HERO_CONFIG = {
   fll: {
     badge: "3... 2... 1... LEGO®!",
-    titulo: "FIRST® LEGO® League Challenge",
+    titulo: "FIRST® LEGO® League",
     abr: "FLL",
     descricao:
-      "Planeje missões, analise pontuações e evolua sua estratégia na mesa.",
+      "Planeje missões, analise pontuações e evolua sua estratégiam seja na Challenge, Future Edition ou na Explore.",
     imagem:
-      "https://fspartner.no/cdn/shop/collections/FLL-3.jpg?v=1741335945",
+      "/images/fll/FLL_hero.svg",
     ctaPrimario: {
       label: "Explorar QuickBrick",
       href: "/fll/quickbrick",
     },
     ctaSecundario: {
-      label: "Pontuar!",
+      label: "Pontuar na FLLc!",
       href: "/fll/score/bioglow",
     },
-    accent: "#CF2A2A",
+    accent: "#d70e0e",
   },
 };

@@ -8,7 +8,11 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@clerk/localizations": "^4.13.5",
@@ -47,6 +51,7 @@
     "react-markdown": "^10.1.0",
     "recharts": "^3.9.1",
     "remark-gfm": "^4.0.1",
+    "svix": "^1.99.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

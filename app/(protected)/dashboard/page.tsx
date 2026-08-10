@@ -48,6 +48,7 @@ function formatDate(value: string | Date | null) {
 
 export default async function DashboardPage() {
   const { userId } = await auth();
+
   if (!userId) redirect("/sign-in");
 
   const currentUser = await db.query.users.findFirst({ where: eq(users.id, userId) });

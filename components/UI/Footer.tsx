@@ -159,6 +159,11 @@ export function Footer() {
                     Política de Privacidade
                   </Link>
                 </li>
+                <li>
+                  <Link href="/licences" className="link link-hover">
+                    Licenças
+                  </Link>
+                </li>
               </ul>
             </div>
             <div className="mt-6">

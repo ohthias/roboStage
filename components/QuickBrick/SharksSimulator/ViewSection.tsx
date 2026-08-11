@@ -351,7 +351,7 @@ const ViewSection: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden max-h-[calc(100vh-4rem)]">
             {editorMode === "code" ? (
               <CodeEditor code={code} onChange={updateCode} />
             ) : (

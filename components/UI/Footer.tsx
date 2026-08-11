@@ -1,6 +1,7 @@
 import Link from "next/link";
 import pkg from "@/package.json";
 import Logo from "./Logo";
+import { communities } from "@/utils/institutional/community";
 
 export function Footer() {
   return (
@@ -141,8 +142,18 @@ export function Footer() {
           <div>
             <h3 className="footer-title">Comunidade</h3>
             <ul className="space-y-2 text-sm">
-              <li className="opacity-70">VMRT</li>
-              <li className="opacity-70">Sharks FLL</li>
+              {communities.map((community) => (
+                <li key={community.name}>
+                  <a
+                    href={community.urlSocial}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="link link-hover"
+                  >
+                    {community.name}
+                  </a>
+                </li>
+              ))}
             </ul>
             <div className="mt-6">
               <h3 className="footer-title">Legal</h3>

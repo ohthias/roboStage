@@ -49,7 +49,7 @@ export default function NewsPage() {
                 Últimas publicações
               </h2>
 
-              <div className="badge badge-outline w-max">{news.length} notícias</div>
+              <div className="badge badge-outline w-max h-full">{news.length} notícias</div>
             </div>
 
             <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">

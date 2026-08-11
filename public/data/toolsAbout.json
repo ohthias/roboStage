@@ -35,7 +35,7 @@
       }
     ]
   },
-    {
+  {
     "name": "FLL Score/Pontuador",
     "description": "Ferramenta para registrar e acompanhar a pontuação da temporada da FLLC. Permite simulações rápidas de missões ou o acompanhamento completo de rounds com cronômetro integrado, auxiliando tanto em treinos quanto em competições oficiais de forma prática e confiável.",
     "details": [
@@ -49,7 +49,7 @@
       },
       {
         "title": "Quais temporadas estão disponíveis?",
-        "content": "UNEARTHED (2025/2026), SUBMERGED (2024/2025) e MASTERPIECE (2023/2024) — cada temporada tem seu próprio conjunto de missões no pontuador."
+        "content": "BIOGLOW (2026/2027), UNEARTHED (2025/2026), SUBMERGED (2024/2025) e MASTERPIECE (2023/2024) — cada temporada tem seu próprio conjunto de missões no pontuador."
       }
     ]
   },
@@ -106,6 +106,64 @@
       {
         "title": "Para que serve?",
         "content": "É ideal para situações que não se encaixam nos formatos oficiais, como ensaios de apresentação, dinâmicas de treino, reuniões cronometradas ou qualquer atividade da equipe que exija um cronômetro flexível."
+      }
+    ]
+  },
+  {
+    "name": "Rúbrica de Avaliação",
+    "description": "Ferramenta interativa que reproduz a rubrica oficial de avaliação da FLL, permitindo que juízes ou a própria equipe registrem identificação, feedback da sessão e o nível (1 a 4) de cada indicador do Projeto de Inovação e do Design do Robô, com pontuação calculada automaticamente.",
+    "details": [
+      {
+        "title": "Como funciona?",
+        "content": "Preencha a identificação da equipe (número e nome), registre o feedback escrito da sessão de avaliação e marque, em cada indicador das rubricas de Projeto de Inovação e Design do Robô, o nível observado: Fase Inicial (1), Em Desenvolvimento (2), Finalizado (3) ou Excedente (4). A pontuação é somada automaticamente no painel lateral."
+      },
+      {
+        "title": "O que é avaliado?",
+        "content": "Projeto de Inovação: Identificação, Design, Criação, Iteração e Comunicação, avaliando como a equipe pesquisou, desenvolveu e apresentou sua solução para um problema.\nDesign do Robô: Identificação, Design, Criação, Iteração e Comunicação, avaliando a estratégia de missões, construção, codificação e testes do robô.\nCore Values: alguns indicadores contam em dobro para a classificação de Core Values, que representa 25% da pontuação do Champion's Award."
+      },
+      {
+        "title": "É possível indicar prêmios opcionais?",
+        "content": "Sim. É possível assinalar se a equipe é candidata ao Prêmio Revelação, Prêmio Estrela em Ascensão ou Prêmio Motivação, conforme definido pelo organizador do evento."
+      },
+      {
+        "title": "Dá para exportar ou imprimir a rubrica preenchida?",
+        "content": "Sim, a ferramenta conta com uma opção de Imprimir/PDF para gerar um registro da avaliação, além de um botão para limpar e reiniciar o preenchimento."
+      }
+    ]
+  },
+  {
+    "name": "Future Edition",
+    "description": "Seção dedicada à FIRST LEGO League Future Edition (BIOGLOW), uma experiência baseada em biodiversidade que utiliza os kits LEGO® Education Computer Science & AI, com hardware sem fio e um formato de jogo cooperativo baseado em alianças.",
+    "details": [
+      {
+        "title": "O que é a Future Edition?",
+        "content": "Na BIOGLOW Future Edition, as equipes constroem e programam hardware sem fio para resolver desafios em um novo formato de jogo cooperativo baseado em alianças, usando os kits LEGO Education Computer Science & AI. Além das missões do robô, o Projeto de Inovação incentiva a investigação sobre biodiversidade e sobre a relação entre natureza e sociedade."
+      },
+      {
+        "title": "É um conteúdo oficial da FIRST LEGO League?",
+        "content": "Sim! A Future Edition possui suporte oficial da FIRST LEGO League no Brasil pela Educacional, mas não será operada pelo SESI igual a Challenge. As ferramentas da RoboStage para essa temporada têm caráter educacional e experimental, criadas para ajudar equipes, técnicos e estudantes a conhecerem o formato da competição."
+      },
+      {
+        "title": "Quais ferramentas estão disponíveis?",
+        "content": "Pontuador: simule partidas da BIOGLOW Future Edition e calcule automaticamente a pontuação.\nDocumentação: acesse a documentação oficial da Future Edition na seção de Documentações do site."
+      }
+    ]
+  },
+  {
+    "name": "Pontuador Future Edition (BIOGLOW)",
+    "description": "Pontuador dedicado à temporada BIOGLOW da FIRST LEGO League Future Edition, com cronômetro de 2:30 e cálculo automático da pontuação das missões baseadas nos kits LEGO® Education Computer Science & AI.",
+    "details": [
+      {
+        "title": "Quais missões o pontuador cobre?",
+        "content": "M01 Microbiomas Poderosos, M02 Raízes da Renovação, M03 Cachoeira da Caverna, M04 Despertar da Floresta Tropical, M05 Refúgio Central e o Desafio Level Up: Ataque Invasor, além do registro de penalidades."
+      },
+      {
+        "title": "Como funciona o cronômetro?",
+        "content": "O pontuador inclui um cronômetro de partida de 2:30, com botões para Iniciar e Pausar, reproduzindo o tempo oficial de uma rodada."
+      },
+      {
+        "title": "Como a pontuação é calculada?",
+        "content": "Cada missão tem seus próprios critérios (quantidade de espécies-chave, recursos entregues, bônus e penalidades) e a pontuação total é somada automaticamente conforme os valores são preenchidos. É possível reiniciar o pontuador a qualquer momento."
       }
     ]
   }

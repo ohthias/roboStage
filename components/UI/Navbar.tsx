@@ -21,6 +21,7 @@ import {
 import Logo from "./Logo";
 import { ThemeController } from "./themeController";
 import { NAVIGATION } from "@/utils/competitions/navigation";
+import { Show, UserAvatar } from "@clerk/nextjs";
 
 const mainLinks = [
   { href: "/about", label: "Sobre" },
@@ -348,6 +349,23 @@ export function Navbar() {
 
           <div className="hidden items-center gap-2 lg:flex">
             <ThemeController />
+
+            <div className="divider divider-horizontal mx-1" />
+
+            <Show when="signed-in">
+              <Link href="/dashboard" className="btn btn-outline btn-sm">
+                <span className="hidden sm:inline-block">Dashboard</span>
+              </Link>
+              <UserAvatar />
+            </Show>
+            <Show when="signed-out">
+              <Link href="/sign-in" className="btn btn-ghost btn-sm">
+                Entrar
+              </Link>
+              <Link href="/sign-up" className="btn btn-primary btn-sm">
+                Criar conta
+              </Link>
+            </Show>
           </div>
 
           <div className="flex items-center gap-2 lg:hidden">

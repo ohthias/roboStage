@@ -1,7 +1,7 @@
 import Link from "next/link";
 import pkg from "@/package.json";
 import Logo from "./Logo";
-import { Bug } from "lucide-react";
+import { communities } from "@/utils/institutional/community";
 
 export function Footer() {
   return (
@@ -42,7 +42,7 @@ export function Footer() {
               </a>
             </div>
             <div className="pt-2">
-              <Link href="/auth/signup" className="btn btn-primary btn-sm">
+              <Link href="/sign-up" className="btn btn-primary btn-sm">
                 Criar conta gratuita
               </Link>
             </div>
@@ -116,9 +116,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="https://github.com/ohthias/roboStage/issues" className="link link-hover" target="_blank">
-                  <Bug className="inline-block mr-1" size={16} />
-                  Reportar bug
+                <Link href="/sign-in" className="link link-hover">
+                  Login
                 </Link>
               </li>
             </ul>
@@ -143,8 +142,18 @@ export function Footer() {
           <div>
             <h3 className="footer-title">Comunidade</h3>
             <ul className="space-y-2 text-sm">
-              <li className="opacity-70">VMRT</li>
-              <li className="opacity-70">Sharks FLL</li>
+              {communities.map((community) => (
+                <li key={community.name}>
+                  <a
+                    href={community.urlSocial}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="link link-hover"
+                  >
+                    {community.name}
+                  </a>
+                </li>
+              ))}
             </ul>
             <div className="mt-6">
               <h3 className="footer-title">Legal</h3>

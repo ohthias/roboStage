@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     "Licenças e atribuições das bibliotecas e projetos de código aberto utilizados pelo RoboStage.",
 };
 
-function LicenseIcon({ license }: { license: string }) {
+function LicenseIcon({ license }: {license: string}) {
   if (license.includes("MIT")) {
     return <Scale className="size-5" />;
   }

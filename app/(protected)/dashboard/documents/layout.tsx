@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { asc, desc, eq } from "drizzle-orm";
-import { db } from "@/db";
+import { db } from "@/db/client";
 import { documents, folders } from "@/db/schema";
 import { DocumentsSidebar } from "./documents-sidebar";
 
@@ -9,9 +9,9 @@ export default async function DocumentsLayout({
   params,
 }: {
   children: ReactNode;
-  params: Promise<{ organizationId: string }>;
+  params: any;
 }) {
-  const { organizationId } = await params;
+  const { organizationId } = params as { organizationId: string };
 
   const [docs, allFolders] = await Promise.all([
     db
@@ -23,7 +23,7 @@ export default async function DocumentsLayout({
         updatedAt: documents.updatedAt,
       })
       .from(documents)
-      .where(eq(documents.organizationId, organizationId))
+      .where(eq(documents.teamId, organizationId))
       .orderBy(desc(documents.updatedAt)),
     db
       .select({
@@ -33,7 +33,7 @@ export default async function DocumentsLayout({
         parentId: folders.parentId,
       })
       .from(folders)
-      .where(eq(folders.organizationId, organizationId))
+      .where(eq(folders.teamId, organizationId))
       .orderBy(asc(folders.name)),
   ]);
 

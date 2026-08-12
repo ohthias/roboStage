@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { and, asc, eq } from "drizzle-orm";
 import type { SerializedEditorState } from "lexical";
-import { db } from "@/db";
 import { documents, folders } from "@/db/schema";
 import { DocumentEditor } from "./document-editor";
+import { db } from "@/db/client";
 
 export default async function DocumentPage({
   params,
@@ -19,7 +19,7 @@ export default async function DocumentPage({
       .where(
         and(
           eq(documents.id, documentId),
-          eq(documents.organizationId, organizationId)
+          eq(documents.teamId, organizationId)
         )
       ),
     db
@@ -30,7 +30,7 @@ export default async function DocumentPage({
         parentId: folders.parentId,
       })
       .from(folders)
-      .where(eq(folders.organizationId, organizationId))
+      .where(eq(folders.teamId, organizationId))
       .orderBy(asc(folders.name)),
   ]);
 

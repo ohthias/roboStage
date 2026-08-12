@@ -4,7 +4,7 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { and, eq } from "drizzle-orm";
 import type { SerializedEditorState } from "lexical";
-import { db } from "@/db";
+import { db } from "@/db/client";
 import { documents } from "@/db/schema";
 
 export type MutationResult<T = undefined> = {
@@ -41,7 +41,7 @@ export async function createDocumentAction(
     const [document] = await db
       .insert(documents)
       .values({
-        organizationId,
+        userId: organizationId,
         folderId,
         title: "Sem título",
         icon: null,
@@ -89,7 +89,7 @@ export async function updateDocumentAction(
       .where(
         and(
           eq(documents.id, documentId),
-          eq(documents.organizationId, organizationId)
+          eq(documents.teamId, organizationId)
         )
       );
 
@@ -116,7 +116,7 @@ export async function deleteDocumentAction(
       .where(
         and(
           eq(documents.id, documentId),
-          eq(documents.organizationId, organizationId)
+          eq(documents.teamId, organizationId)
         )
       );
 
@@ -137,7 +137,7 @@ export async function deleteDocumentAction(
       .where(
         and(
           eq(documents.id, documentId),
-          eq(documents.organizationId, organizationId)
+          eq(documents.teamId, organizationId)
         )
       );
 

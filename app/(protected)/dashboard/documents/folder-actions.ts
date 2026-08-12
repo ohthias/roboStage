@@ -3,7 +3,7 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { and, eq } from "drizzle-orm";
-import { db } from "@/db";
+import { db } from "@/db/client";
 import { documents, folders } from "@/db/schema";
 
 export type MutationResult<T = undefined> = {
@@ -51,7 +51,7 @@ export async function createFolderAction(
     const [folder] = await db
       .insert(folders)
       .values({
-        organizationId,
+        userId: userId,
         parentId,
         name: "Nova pasta",
         icon: "📁",
@@ -118,7 +118,7 @@ export async function updateFolderAction(
         updatedAt: new Date(),
       })
       .where(
-        and(eq(folders.id, folderId), eq(folders.organizationId, organizationId))
+        and(eq(folders.id, folderId), eq(folders.userId, organizationId))
       );
 
     revalidateDocuments(organizationId);
@@ -142,7 +142,7 @@ export async function deleteFolderAction(
       .select({ createdBy: folders.createdBy })
       .from(folders)
       .where(
-        and(eq(folders.id, folderId), eq(folders.organizationId, organizationId))
+        and(eq(folders.id, folderId), eq(folders.userId, userId))
       );
 
     if (!existing) {
@@ -161,7 +161,7 @@ export async function deleteFolderAction(
     await db
       .delete(folders)
       .where(
-        and(eq(folders.id, folderId), eq(folders.organizationId, organizationId))
+        and(eq(folders.id, folderId), eq(folders.userId, userId))
       );
 
     revalidateDocuments(organizationId);
@@ -198,7 +198,7 @@ export async function moveDocumentAction(
       .where(
         and(
           eq(documents.id, documentId),
-          eq(documents.organizationId, organizationId)
+          eq(documents.teamId, organizationId)
         )
       );
 
@@ -220,7 +220,7 @@ async function folderBelongsToOrganization(
     .select({ id: folders.id })
     .from(folders)
     .where(
-      and(eq(folders.id, folderId), eq(folders.organizationId, organizationId))
+      and(eq(folders.id, folderId), eq(folders.userId, organizationId))
     );
   return Boolean(folder);
 }
@@ -233,7 +233,7 @@ async function wouldCreateCycle(
   const allFolders = await db
     .select({ id: folders.id, parentId: folders.parentId })
     .from(folders)
-    .where(eq(folders.organizationId, organizationId));
+    .where(eq(folders.userId, organizationId));
 
   const parentById = new Map(allFolders.map((f) => [f.id, f.parentId]));
 

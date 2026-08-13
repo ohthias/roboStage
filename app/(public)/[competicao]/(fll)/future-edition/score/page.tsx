@@ -29,6 +29,8 @@ export default function FutureEditionScorePage() {
 
       <Timer
         duration={150}
+        startSound="/sounds/start.mp3"
+        endSound="/sounds/end.mp3"
         onFinish={() => {
           console.log("Tempo encerrado!");
         }}

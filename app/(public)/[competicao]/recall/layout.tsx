@@ -3,8 +3,8 @@ import { Metadata } from "next";
 import "./style.css";
 
 export const metadata: Metadata = {
-  title: "Flash QA",
-  description: "Sistema de perguntas e respostas para sala de avaliação.",
+  title: "RECALL FLL | RoboStage",
+  description: "Reavalie você e sua equipe com o RECALL, o jogo de perguntas e respostas da RoboStage, estilo flashcards. Escolha uma categoria, responda às perguntas e veja como você se saiu!",
   keywords: [
     "RoboStage",
     "Flash QA",

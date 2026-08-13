@@ -7,13 +7,12 @@ import { useFlashQA } from "./useFlashQA";
 import { FLL_MODE } from "./modes/FLL";
 import Breadcrumbs from "@/components/UI/Breadcrumbs";
 
-export default function FlashQA() {
+export default function RecallPage() {
   const { gameState, settings, startGame, finishGame, restartGame, goHome } =
     useFlashQA(FLL_MODE);
 
   return (
-    <div className="px-8 md:px-16 py-4 md:py-12">
-      <Breadcrumbs start="fll" />
+    <div className="px-8 md:px-16 py-4 pb-12">
       <main className="flex items-center justify-center">
         <div className="w-full">
           {gameState.status === "setup" && <SetupScreen onStart={startGame} />}

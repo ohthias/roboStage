@@ -18,14 +18,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </label>
           </div>
 
-          <div className="flex-1">
-            <span className="flex items-center gap-2 font-mono text-sm tracking-widest text-base-content/60">
-              <span className="h-1.5 w-1.5 rounded-full bg-warning shadow-[0_0_8px_1px_theme(colors.warning)]" />
-              LABTEST
-            </span>
-          </div>
-
-          <div className="flex-none">
+          <div className="ml-auto">
             <UserButton />
           </div>
         </div>

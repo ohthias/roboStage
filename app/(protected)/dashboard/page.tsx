@@ -12,17 +12,13 @@ import {
   documents,
 } from "@/db/schema";
 
-const PERSONA_LABEL: Record<string, string> = {
-  competidor: "Competidor",
-  mentor_tecnico: "Mentor / Técnico",
-  entusiasta: "Entusiasta",
-  organizador: "Organizador",
-};
-
 const TYPE_BADGE: Record<string, { label: string; className: string }> = {
-  run: { label: "Run", className: "badge-warning" },
+  run: { label: "Run", className: "badge-primary" },
   calibrabot: { label: "CalibraBot", className: "badge-info" },
-  personalizado: { label: "Personalizado", className: "badge-secondary badge-outline" },
+  personalizado: {
+    label: "Personalizado",
+    className: "badge-secondary badge-outline",
+  },
 };
 
 const STATUS_BADGE: Record<string, { label: string; className: string }> = {
@@ -51,7 +47,9 @@ export default async function DashboardPage() {
 
   if (!userId) redirect("/sign-in");
 
-  const currentUser = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  const currentUser = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+  });
   if (!currentUser?.onboardingCompletedAt) redirect("/onboarding");
 
   const [
@@ -80,11 +78,16 @@ export default async function DashboardPage() {
       .select({
         id: labTests.id,
         name: labTests.name,
+        description: labTests.description,
         type: labTests.type,
         status: labTests.status,
         updatedAt: labTests.updatedAt,
-        executionCount: sql<number>`count(${labTestExecutions.id})`.mapWith(Number),
-        lastExecutedAt: sql<string | null>`max(${labTestExecutions.executedAt})`,
+        executionCount: sql<number>`count(${labTestExecutions.id})`.mapWith(
+          Number,
+        ),
+        lastExecutedAt: sql<
+          string | null
+        >`max(${labTestExecutions.executedAt})`,
       })
       .from(labTests)
       .leftJoin(labTestExecutions, eq(labTestExecutions.testId, labTests.id))
@@ -111,7 +114,10 @@ export default async function DashboardPage() {
       .from(labTestExecutions)
       .innerJoin(labTests, eq(labTests.id, labTestExecutions.testId))
       .where(
-        and(eq(labTests.userId, userId), gte(labTestExecutions.executedAt, startOfWeek()))
+        and(
+          eq(labTests.userId, userId),
+          gte(labTestExecutions.executedAt, startOfWeek()),
+        ),
       )
       .then((r) => r[0]?.count ?? 0),
 
@@ -129,190 +135,372 @@ export default async function DashboardPage() {
   ]);
 
   const firstName = currentUser.name?.split(" ")[0] || "por aqui";
-  const personaLabel = currentUser.personaType ? PERSONA_LABEL[currentUser.personaType] : null;
 
   return (
-    <div className="flex flex-col gap-8 p-6">
-      {/* Cabeçalho */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <span className="font-mono text-xs tracking-widest text-base-content/50">
-            VISÃO GERAL
-          </span>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">Bom trabalho, {firstName}</h1>
-            {personaLabel && <span className="badge badge-outline badge-warning">{personaLabel}</span>}
-          </div>
-        </div>
-        <Link href="/dashboard/labtest/new" className="btn btn-warning">
-          + Novo teste
-        </Link>
-      </div>
+    <div className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
+      {/* Hero */}
+      <section className="relative overflow-hidden rounded-2xl border border-base-300 bg-base-200">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-info/5" />
 
-      {/* Stats */}
-      <div className="stats stats-vertical w-full border border-base-300 bg-base-200 shadow sm:stats-horizontal">
-        <div className="stat">
-          <div className="stat-title">Testes ativos</div>
-          <div className="stat-value text-warning">{activeTestsCount}</div>
-          <div className="stat-desc">Runs, CalibraBot e Personalizados</div>
-        </div>
-        <div className="stat">
-          <div className="stat-title">Execuções totais</div>
-          <div className="stat-value">{totalExecutionsCount}</div>
-          <div className="stat-desc">Histórico completo, nunca sobrescrito</div>
-        </div>
-        <div className="stat">
-          <div className="stat-title">Essa semana</div>
-          <div className="stat-value text-info">{executionsThisWeek}</div>
-          <div className="stat-desc">Execuções desde segunda-feira</div>
-        </div>
-        <div className="stat">
-          <div className="stat-title">Ligas</div>
-          <div className="stat-value text-secondary">{leagueInterests.length}</div>
-          <div className="stat-desc">Participando ou de olho</div>
-        </div>
-      </div>
+        <div className="relative flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-3">
+              <span className="font-mono text-[11px] font-medium tracking-[0.2em] text-base-content/45">
+                VISÃO GERAL
+              </span>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Testes recentes */}
-        <div className="card border border-base-300 bg-base-200 lg:col-span-2">
-          <div className="card-body">
-            <div className="flex items-center justify-between">
-              <h2 className="card-title text-base">Testes recentes</h2>
-              <Link href="/dashboard/labtest" className="link link-hover text-sm text-base-content/60">
-                Ver todos
-              </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                Bom trabalho, {firstName}
+              </h1>
             </div>
 
-            {recentTests.length === 0 ? (
-              <div className="py-10 text-center text-base-content/60">
-                <p>Nenhum teste registrado ainda.</p>
-                <Link href="/dashboard/labtest/new" className="btn btn-warning btn-sm mt-4">
-                  Criar primeiro teste
-                </Link>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Teste</th>
-                      <th>Tipo</th>
-                      <th>Status</th>
-                      <th>Execuções</th>
-                      <th>Última</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentTests.map((test) => {
-                      const type = TYPE_BADGE[test.type];
-                      const status = STATUS_BADGE[test.status];
-                      return (
-                        <tr key={test.id} className="hover">
-                          <td>
-                            <Link
-                              href={`/dashboard/labtest/${test.id}`}
-                              className="link link-hover font-medium"
-                            >
-                              {test.name}
-                            </Link>
-                          </td>
-                          <td>
-                            <span className={`badge badge-sm ${type.className}`}>{type.label}</span>
-                          </td>
-                          <td>
-                            <span className={`badge badge-sm ${status.className}`}>{status.label}</span>
-                          </td>
-                          <td className="text-sm text-base-content/70">{test.executionCount}</td>
-                          <td className="text-sm text-base-content/60">
-                            {formatDate(test.lastExecutedAt ?? test.updatedAt)}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <p className="max-w-2xl text-sm leading-6 text-base-content/60">
+              Acompanhe seus testes, execuções, ligas e anotações em um único
+              lugar.
+            </p>
           </div>
         </div>
+      </section>
+
+      {/* KPIs */}
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="group rounded-2xl border border-base-300 bg-base-200 p-5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-base-content/45">
+                Testes ativos
+              </p>
+              <p className="mt-3 text-3xl font-bold tracking-tight text-primary">
+                {activeTestsCount}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
+              <span className="text-lg">◉</span>
+            </div>
+          </div>
+
+          <p className="mt-3 text-xs text-base-content/50">
+            Runs, CalibraBot e personalizados
+          </p>
+        </div>
+
+        <div className="group rounded-2xl border border-base-300 bg-base-200 p-5 transition-all hover:-translate-y-0.5 hover:border-info/30 hover:shadow-lg">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-base-content/45">
+                Execuções totais
+              </p>
+              <p className="mt-3 text-3xl font-bold tracking-tight">
+                {totalExecutionsCount}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-info/10 p-2.5 text-info">
+              <span className="text-lg">↗</span>
+            </div>
+          </div>
+
+          <p className="mt-3 text-xs text-base-content/50">
+            Histórico completo, nunca sobrescrito
+          </p>
+        </div>
+
+        <div className="group rounded-2xl border border-base-300 bg-base-200 p-5 transition-all hover:-translate-y-0.5 hover:border-success/30 hover:shadow-lg">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-base-content/45">
+                Esta semana
+              </p>
+              <p className="mt-3 text-3xl font-bold tracking-tight text-success">
+                {executionsThisWeek}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-success/10 p-2.5 text-success">
+              <span className="text-lg">✓</span>
+            </div>
+          </div>
+
+          <p className="mt-3 text-xs text-base-content/50">
+            Execuções desde segunda-feira
+          </p>
+        </div>
+
+        <div className="group rounded-2xl border border-base-300 bg-base-200 p-5 transition-all hover:-translate-y-0.5 hover:border-secondary/30 hover:shadow-lg">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-base-content/45">
+                Ligas
+              </p>
+              <p className="mt-3 text-3xl font-bold tracking-tight text-secondary">
+                {leagueInterests.length}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-secondary/10 p-2.5 text-secondary">
+              <span className="text-lg">◈</span>
+            </div>
+          </div>
+
+          <p className="mt-3 text-xs text-base-content/50">
+            Participando ou de olho
+          </p>
+        </div>
+      </section>
+
+      {/* Conteúdo principal */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        {/* Testes recentes */}
+        <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-200 xl:col-span-2">
+          <div className="flex items-center justify-between border-b border-base-300 px-5 py-4 sm:px-6">
+            <div>
+              <h2 className="font-semibold">Testes recentes</h2>
+              <p className="mt-0.5 text-xs text-base-content/50">
+                Últimas atividades no LabTest
+              </p>
+            </div>
+
+            <Link
+              href="/dashboard/labtest"
+              className="link link-hover text-xs font-medium text-base-content/60"
+            >
+              Ver todos
+            </Link>
+          </div>
+
+          {recentTests.length === 0 ? (
+            <div className="flex min-h-64 flex-col items-center justify-center px-6 py-12 text-center">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-base-300/60 text-xl">
+                ◌
+              </div>
+
+              <p className="font-medium">Nenhum teste registrado</p>
+
+              <p className="mt-1 max-w-sm text-sm text-base-content/50">
+                Crie seu primeiro teste para começar a acompanhar suas
+                execuções.
+              </p>
+
+              <Link
+                href="/dashboard/labtest/new"
+                className="btn btn-primary btn-sm mt-5"
+              >
+                Criar primeiro teste
+              </Link>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="table">
+                <thead>
+                  <tr className="border-b border-base-300">
+                    <th className="bg-transparent text-[11px] uppercase tracking-wider text-base-content/40">
+                      Teste
+                    </th>
+                    <th className="bg-transparent text-[11px] uppercase tracking-wider text-base-content/40">
+                      Tipo
+                    </th>
+                    <th className="bg-transparent text-[11px] uppercase tracking-wider text-base-content/40">
+                      Status
+                    </th>
+                    <th className="bg-transparent text-[11px] uppercase tracking-wider text-base-content/40">
+                      Execuções
+                    </th>
+                    <th className="bg-transparent text-[11px] uppercase tracking-wider text-base-content/40">
+                      Última
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {recentTests.map((test) => {
+                    const type = TYPE_BADGE[test.type];
+                    const status = STATUS_BADGE[test.status];
+
+                    return (
+                      <tr
+                        key={test.id}
+                        className="group border-b border-base-300/70 last:border-b-0 hover:bg-base-300/20"
+                      >
+                        <td>
+                          <Link
+                            href={`/dashboard/labtest/${test.id}`}
+                            className="flex flex-col gap-0.5"
+                          >
+                            <p className="font-medium transition-colors group-hover:text-primary">
+                              {test.name}
+                            </p>
+                            <p className="text-[11px] text-base-content/40">
+                              {test.description ? test.description : "—"}
+                            </p>
+                          </Link>
+                        </td>
+
+                        <td>
+                          <span className={`badge badge-sm ${type.className}`}>
+                            {type.label}
+                          </span>
+                        </td>
+
+                        <td>
+                          <span
+                            className={`badge badge-sm ${status.className}`}
+                          >
+                            {status.label}
+                          </span>
+                        </td>
+
+                        <td>
+                          <span className="font-mono text-sm text-base-content/70">
+                            {test.executionCount}
+                          </span>
+                        </td>
+
+                        <td>
+                          <span className="text-xs text-base-content/50">
+                            {formatDate(test.lastExecutedAt ?? test.updatedAt)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
 
         {/* Ligas */}
-        <div className="card border border-base-300 bg-base-200">
-          <div className="card-body">
-            <div className="flex items-center justify-between">
-              <h2 className="card-title text-base">Suas ligas</h2>
-              <Link href="/dashboard/leagues" className="link link-hover text-sm text-base-content/60">
-                Editar
-              </Link>
+        <section className="rounded-2xl border border-base-300 bg-base-200">
+          <div className="flex items-center justify-between border-b border-base-300 px-5 py-4">
+            <div>
+              <h2 className="font-semibold">Suas ligas</h2>
+              <p className="mt-0.5 text-xs text-base-content/50">
+                Competições acompanhadas
+              </p>
             </div>
 
-            {leagueInterests.length === 0 ? (
-              <p className="py-4 text-sm text-base-content/60">
-                Você ainda não marcou nenhuma liga.
+            <Link href="/dashboard/leagues" className="btn btn-ghost btn-xs">
+              Editar
+            </Link>
+          </div>
+
+          {leagueInterests.length === 0 ? (
+            <div className="flex min-h-64 flex-col items-center justify-center px-6 text-center">
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+                ◈
+              </div>
+
+              <p className="text-sm font-medium">Nenhuma liga adicionada</p>
+
+              <p className="mt-1 text-xs leading-5 text-base-content/50">
+                Adicione competições que você participa ou deseja acompanhar.
               </p>
-            ) : (
-              <ul className="mt-2 flex flex-col gap-2">
-                {leagueInterests.map((interest) => (
-                  <li
-                    key={interest.id}
-                    className="flex items-center justify-between rounded bg-base-300/40 px-3 py-2"
-                  >
-                    <div>
-                      <div className="text-sm font-medium">{interest.leagueName}</div>
-                      {interest.teamName && (
-                        <div className="text-xs text-base-content/50">
+
+              <Link
+                href="/dashboard/leagues"
+                className="btn btn-outline btn-xs mt-4"
+              >
+                Configurar ligas
+              </Link>
+            </div>
+          ) : (
+            <ul className="divide-y divide-base-300/70">
+              {leagueInterests.map((interest) => (
+                <li
+                  key={interest.id}
+                  className="px-5 py-4 transition-colors hover:bg-base-300/20"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium">
+                        {interest.leagueName}
+                      </div>
+
+                      {(interest.teamName || interest.season) && (
+                        <div className="mt-1 text-xs text-base-content/45">
                           {interest.teamName}
-                          {interest.season ? ` · ${interest.season}` : ""}
+                          {interest.teamName && interest.season ? " · " : ""}
+                          {interest.season}
                         </div>
                       )}
                     </div>
+
                     <span
-                      className={`badge badge-sm ${
+                      className={`badge badge-sm shrink-0 ${
                         interest.relationType === "participante"
-                          ? "badge-warning"
+                          ? "badge-primary"
                           : "badge-outline badge-info"
                       }`}
                     >
-                      {interest.relationType === "participante" ? "Participo" : "Quero conhecer"}
+                      {interest.relationType === "participante"
+                        ? "Participo"
+                        : "Quero conhecer"}
                     </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         {/* Caderno */}
-        <div className="card border border-base-300 bg-base-200 lg:col-span-3">
-          <div className="card-body">
-            <div className="flex items-center justify-between">
-              <h2 className="card-title text-base">Caderno</h2>
-              <Link href="/dashboard/notebook" className="link link-hover text-sm text-base-content/60">
-                Abrir
-              </Link>
+        <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-200 xl:col-span-3">
+          <div className="flex items-center justify-between border-b border-base-300 px-5 py-4 sm:px-6">
+            <div>
+              <h2 className="font-semibold">Caderno</h2>
+              <p className="mt-0.5 text-xs text-base-content/50">
+                Anotações atualizadas recentemente
+              </p>
             </div>
 
-            {recentDocuments.length === 0 ? (
-              <p className="py-4 text-sm text-base-content/60">Nenhuma anotação ainda.</p>
-            ) : (
-              <ul className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                {recentDocuments.map((doc) => (
-                  <li key={doc.id}>
-                    <Link
-                      href={`/dashboard/notebook/${doc.id}`}
-                      className="flex items-center gap-2 rounded bg-base-300/40 px-3 py-2 hover:bg-base-300/70"
-                    >
-                      <span className="text-lg leading-none">{doc.icon ?? "📝"}</span>
-                      <span className="flex-1 truncate text-sm">{doc.title}</span>
-                      <span className="text-xs text-base-content/50">{formatDate(doc.updatedAt)}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <Link href="/dashboard/documents" className="btn btn-ghost btn-xs">
+              Abrir caderno
+            </Link>
           </div>
-        </div>
+
+          {recentDocuments.length === 0 ? (
+            <div className="flex min-h-40 items-center justify-center px-6 py-10">
+              <div className="text-center">
+                <p className="text-sm font-medium">Seu caderno está vazio</p>
+
+                <p className="mt-1 text-xs text-base-content/50">
+                  Crie uma anotação para ela aparecer aqui.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
+              {recentDocuments.map((doc) => (
+                <Link
+                  key={doc.id}
+                  href={`/dashboard/documents/${doc.id}`}
+                  className="group rounded-xl border border-base-300 bg-base-300/20 p-4 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-base-300/40 hover:shadow-md"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-base-100 text-lg">
+                      {doc.icon ?? "📝"}
+                    </span>
+
+                    <span className="text-[10px] uppercase tracking-wider text-base-content/35">
+                      {formatDate(doc.updatedAt)}
+                    </span>
+                  </div>
+
+                  <div className="mt-4">
+                    <p className="truncate text-sm font-medium transition-colors group-hover:text-primary">
+                      {doc.title}
+                    </p>
+
+                    <span className="mt-1 inline-flex items-center text-xs text-base-content/40">
+                      Abrir anotação →
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

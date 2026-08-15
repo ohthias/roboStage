@@ -105,7 +105,6 @@ export function NewTestModal({
         className="btn btn-primary gap-2"
         onClick={() => dialogRef.current?.showModal()}
       >
-        <FlaskConical size={17} />
         {triggerLabel}
       </button>
 

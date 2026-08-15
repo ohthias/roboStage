@@ -1,60 +1,151 @@
 "use client";
 
+import {
+  Camera,
+  Check,
+  ChevronRight,
+  KeyRound,
+  Mail,
+  MonitorSmartphone,
+  ShieldCheck,
+  Trash2,
+  UserRound,
+} from "lucide-react";
 import { useState, useRef } from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
 
-/**
- * Página de Configurações do Usuário
- * Stack: Next.js (App Router) + Clerk + daisyUI
- *
- * Requisitos:
- *  - <ClerkProvider> já envolvendo o app em app/layout.tsx
- *  - daisyUI configurado no tailwind.config.js (ver README)
- *  - Rota protegida por middleware do Clerk (ver README)
- */
 export default function SettingsPage() {
   const { isLoaded, user } = useUser();
 
   if (!isLoaded) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <span className="loading loading-spinner loading-lg" />
+        <span className="loading loading-spinner loading-lg text-primary" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-base-content/60">
-          Você precisa estar logado para acessar essa página.
-        </p>
+      <div className="flex min-h-[60vh] items-center justify-center px-6">
+        <div className="text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-error/10 text-error">
+            <ShieldCheck size={22} />
+          </div>
+
+          <h1 className="mt-4 font-semibold">Acesso necessário</h1>
+
+          <p className="mt-1 text-sm text-base-content/50">
+            Você precisa estar logado para acessar as configurações.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className=" w-full">
-      <header className="mb-8">
-        <h1 className="text-2xl font-semibold">Configurações</h1>
-        <p className="mt-1 text-sm text-base-content/60">
-          Gerencie suas informações pessoais, e-mail e segurança da conta.
-        </p>
-      </header>
+    <div className="flex w-full flex-col gap-8 p-4 sm:p-6 lg:p-8">
+      <section className="relative overflow-hidden rounded-2xl border border-base-300 bg-base-200">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-info/5" />
 
+        <div className="relative flex flex-col gap-3 p-6 sm:p-8">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            Configurações
+          </h1>
+
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-base-content/55">
+            Gerencie seu perfil, métodos de acesso e segurança da sua conta.
+          </p>
+        </div>
+      </section>
+
+      <nav className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <a
+          href="#perfil"
+          className="group flex items-center gap-3 rounded-xl border border-base-300 bg-base-200 p-3 transition hover:border-primary/30 hover:bg-base-300/40"
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <UserRound size={17} />
+          </div>
+
+          <div className="min-w-0">
+            <p className="truncate text-xs font-medium">Perfil</p>
+            <p className="truncate text-[10px] text-base-content/40">
+              Informações pessoais
+            </p>
+          </div>
+        </a>
+
+        <a
+          href="#email"
+          className="group flex items-center gap-3 rounded-xl border border-base-300 bg-base-200 p-3 transition hover:border-info/30 hover:bg-base-300/40"
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-info/10 text-info">
+            <Mail size={17} />
+          </div>
+
+          <div className="min-w-0">
+            <p className="truncate text-xs font-medium">E-mail</p>
+            <p className="truncate text-[10px] text-base-content/40">
+              Endereços vinculados
+            </p>
+          </div>
+        </a>
+
+        <a
+          href="#seguranca"
+          className="group flex items-center gap-3 rounded-xl border border-base-300 bg-base-200 p-3 transition hover:border-success/30 hover:bg-base-300/40"
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-success/10 text-success">
+            <ShieldCheck size={17} />
+          </div>
+
+          <div className="min-w-0">
+            <p className="truncate text-xs font-medium">Segurança</p>
+            <p className="truncate text-[10px] text-base-content/40">
+              Acesso e sessões
+            </p>
+          </div>
+        </a>
+
+        <a
+          href="#zona-de-risco"
+          className="group flex items-center gap-3 rounded-xl border border-base-300 bg-base-200 p-3 transition hover:border-error/30 hover:bg-base-300/40"
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-error/10 text-error">
+            <Trash2 size={17} />
+          </div>
+
+          <div className="min-w-0">
+            <p className="truncate text-xs font-medium">Conta</p>
+            <p className="truncate text-[10px] text-base-content/40">
+              Ações permanentes
+            </p>
+          </div>
+        </a>
+      </nav>
+
+      {/* Configurações */}
       <div className="flex flex-col gap-6">
-        <ProfileSection />
-        <EmailSection />
-        <SecuritySection />
-        <DangerZone />
+        <div id="perfil">
+          <ProfileSection />
+        </div>
+
+        <div id="email">
+          <EmailSection />
+        </div>
+
+        <div id="seguranca">
+          <SecuritySection />
+        </div>
+
+        <div id="zona-de-risco">
+          <DangerZone />
+        </div>
       </div>
     </div>
   );
 }
-
-/* ---------------------------------------------------------------- */
-/* Perfil (nome e foto)                                              */
-/* ---------------------------------------------------------------- */
 
 function ProfileSection() {
   const { user } = useUser();
@@ -67,19 +158,26 @@ function ProfileSection() {
   const [feedback, setFeedback] = useState<string | null>(null);
 
   if (!user) return null;
+
   const currentUser = user;
 
   const hasChanges =
-    firstName !== (currentUser.firstName ?? "") || lastName !== (currentUser.lastName ?? "");
+    firstName !== (currentUser.firstName ?? "") ||
+    lastName !== (currentUser.lastName ?? "");
 
   async function handleSave() {
     setSaving(true);
     setFeedback(null);
+
     try {
-      await currentUser.update({ firstName, lastName });
-      setFeedback("Perfil atualizado.");
-    } catch (err) {
-      setFeedback("Não foi possível salvar. Tente novamente.");
+      await currentUser.update({
+        firstName,
+        lastName,
+      });
+
+      setFeedback("Perfil atualizado com sucesso.");
+    } catch {
+      setFeedback("Não foi possível salvar as alterações.");
     } finally {
       setSaving(false);
     }
@@ -87,13 +185,16 @@ function ProfileSection() {
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+
     if (!file) return;
 
     setUploading(true);
     setFeedback(null);
+
     try {
       await currentUser.setProfileImage({ file });
-    } catch (err) {
+      setFeedback("Foto atualizada.");
+    } catch {
       setFeedback("Não foi possível atualizar a foto.");
     } finally {
       setUploading(false);
@@ -101,85 +202,111 @@ function ProfileSection() {
   }
 
   return (
-    <section className="card bg-base-100 border border-base-300">
-      <div className="card-body gap-5">
-        <h2 className="card-title text-base">Perfil</h2>
+    <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-200">
+      <SectionHeader
+        icon={UserRound}
+        title="Perfil"
+        description="Suas informações pessoais e identificação."
+      />
 
-        <div className="flex items-center gap-4">
-          <div className="avatar">
-            <div className="w-16 rounded-full ring ring-base-300 ring-offset-2 ring-offset-base-100">
-              <img src={user.imageUrl} alt="Foto de perfil" />
+      <div className="p-5 sm:p-6">
+        <div className="flex flex-col gap-6">
+          {/* Avatar */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="avatar">
+              <div className="w-20 rounded-2xl ring-1 ring-base-300 ring-offset-2 ring-offset-base-200">
+                <img src={user.imageUrl} alt="Foto de perfil" />
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium">Foto de perfil</p>
+
+              <p className="mt-1 text-xs text-base-content/45">
+                JPG, PNG ou GIF. Escolha uma imagem para identificar sua conta.
+              </p>
+
+              <button
+                type="button"
+                className="btn btn-outline btn-xs mt-3 gap-2"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <span className="loading loading-spinner loading-xs" />
+                ) : (
+                  <Camera size={13} />
+                )}
+
+                {uploading ? "Enviando..." : "Alterar foto"}
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
             </div>
           </div>
-          <div>
+
+          <div className="h-px bg-base-300" />
+
+          {/* Nome */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="flex flex-col gap-2">
+              <span className="text-xs font-medium text-base-content/70">
+                Nome
+              </span>
+
+              <input
+                type="text"
+                className="input input-bordered w-full bg-base-100"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-xs font-medium text-base-content/70">
+                Sobrenome
+              </span>
+
+              <input
+                type="text"
+                className="input input-bordered w-full bg-base-100"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </label>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-base-300 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-h-5">
+              {feedback && (
+                <span className="text-xs text-base-content/55">{feedback}</span>
+              )}
+            </div>
+
             <button
               type="button"
-              className="btn btn-sm btn-outline"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
+              className="btn btn-primary btn-sm"
+              onClick={handleSave}
+              disabled={!hasChanges || saving}
             >
-              {uploading ? (
+              {saving ? (
                 <span className="loading loading-spinner loading-xs" />
               ) : (
-                "Alterar foto"
+                "Salvar alterações"
               )}
             </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleAvatarChange}
-            />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <label className="form-control w-full">
-            <span className="label-text mb-1 text-sm">Nome</span>
-            <input
-              type="text"
-              className="input input-bordered w-full"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-            />
-          </label>
-          <label className="form-control w-full">
-            <span className="label-text mb-1 text-sm">Sobrenome</span>
-            <input
-              type="text"
-              className="input input-bordered w-full"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-            />
-          </label>
-        </div>
-
-        <div className="flex items-center justify-between">
-          {feedback && (
-            <span className="text-sm text-base-content/60">{feedback}</span>
-          )}
-          <button
-            type="button"
-            className="btn btn-primary btn-sm ml-auto"
-            onClick={handleSave}
-            disabled={!hasChanges || saving}
-          >
-            {saving ? (
-              <span className="loading loading-spinner loading-xs" />
-            ) : (
-              "Salvar alterações"
-            )}
-          </button>
         </div>
       </div>
     </section>
   );
 }
-
-/* ---------------------------------------------------------------- */
-/* E-mail                                                            */
-/* ---------------------------------------------------------------- */
 
 function EmailSection() {
   const { user } = useUser();
@@ -190,90 +317,102 @@ function EmailSection() {
   const primaryEmail = user.primaryEmailAddress?.emailAddress;
 
   return (
-    <section className="card bg-base-100 border border-base-300">
-      <div className="card-body gap-4">
-        <h2 className="card-title text-base">E-mail</h2>
+    <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-200">
+      <SectionHeader
+        icon={Mail}
+        title="E-mail"
+        description="Gerencie os endereços associados à sua conta."
+      />
 
-        <div className="flex items-center justify-between rounded-lg border border-base-300 px-4 py-3">
-          <div>
-            <p className="text-sm font-medium">{primaryEmail}</p>
-            <p className="text-xs text-base-content/50">E-mail principal</p>
+      <div className="p-5 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-base-300 bg-base-300/20 p-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-info/10 text-info">
+              <Mail size={17} />
+            </div>
+
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">{primaryEmail}</p>
+
+              <div className="mt-1 flex items-center gap-1.5 text-xs text-success">
+                <Check size={12} />
+                <span>E-mail verificado</span>
+              </div>
+            </div>
           </div>
-          <div className="badge badge-success badge-outline gap-1">
-            Verificado
-          </div>
+
+          <button
+            type="button"
+            className="btn btn-outline btn-sm gap-2"
+            onClick={() => openUserProfile()}
+          >
+            Gerenciar
+            <ChevronRight size={14} />
+          </button>
         </div>
 
-        <button
-          type="button"
-          className="btn btn-sm btn-ghost self-start"
-          onClick={() => openUserProfile()}
-        >
-          Adicionar ou remover e-mails
-        </button>
+        <p className="mt-3 text-xs text-base-content/40">
+          Você pode adicionar outros endereços de e-mail através do
+          gerenciamento da conta.
+        </p>
       </div>
     </section>
   );
 }
-
-/* ---------------------------------------------------------------- */
-/* Segurança (senha, 2FA, sessões)                                   */
-/* ---------------------------------------------------------------- */
 
 function SecuritySection() {
   const { openUserProfile, signOut } = useClerk();
 
   return (
-    <section className="card bg-base-100 border border-base-300">
-      <div className="card-body gap-4">
-        <h2 className="card-title text-base">Segurança</h2>
+    <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-200">
+      <SectionHeader
+        icon={ShieldCheck}
+        title="Segurança"
+        description="Controle como sua conta é protegida e acessada."
+      />
 
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium">Senha e verificação em duas etapas</p>
-            <p className="text-xs text-base-content/50">
-              Altere sua senha ou gerencie a autenticação de dois fatores.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="btn btn-sm btn-outline"
-            onClick={() => openUserProfile()}
-          >
-            Gerenciar
-          </button>
-        </div>
+      <div className="divide-y divide-base-300">
+        <SettingRow
+          icon={KeyRound}
+          title="Senha e autenticação"
+          description="Altere sua senha ou gerencie a autenticação em duas etapas."
+          action={
+            <button
+              type="button"
+              className="btn btn-outline btn-sm gap-2"
+              onClick={() => openUserProfile()}
+            >
+              Gerenciar
+              <ChevronRight size={14} />
+            </button>
+          }
+        />
 
-        <div className="divider my-0" />
-
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium">Sessões ativas</p>
-            <p className="text-xs text-base-content/50">
-              Encerre o acesso em outros dispositivos.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="btn btn-sm btn-ghost"
-            onClick={() => signOut()}
-          >
-            Sair de todos os dispositivos
-          </button>
-        </div>
+        <SettingRow
+          icon={MonitorSmartphone}
+          title="Sessões ativas"
+          description="Encerre o acesso da sua conta em outros dispositivos."
+          action={
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm text-base-content/60 hover:text-base-content"
+              onClick={() => signOut()}
+            >
+              Sair de todos
+            </button>
+          }
+        />
       </div>
     </section>
   );
 }
 
-/* ---------------------------------------------------------------- */
-/* Zona de risco (excluir conta)                                     */
-/* ---------------------------------------------------------------- */
-
 function DangerZone() {
   const { user } = useUser();
+
   const [confirmText, setConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
+
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   if (!user) return null;
@@ -282,52 +421,95 @@ function DangerZone() {
 
   async function handleDelete() {
     setDeleting(true);
+
     try {
       await currentUser.delete();
-    } catch (err) {
+    } catch {
       setDeleting(false);
     }
   }
 
   return (
-    <section className="card border border-error/30 bg-error/5">
-      <div className="card-body gap-3">
-        <h2 className="card-title text-base text-error">Zona de risco</h2>
-        <div className="flex items-center justify-between">
+    <section className="overflow-hidden rounded-2xl border border-error/30 bg-error/5">
+      <div className="border-b border-error/20 px-5 py-4 sm:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-error/10 text-error">
+            <Trash2 size={17} />
+          </div>
+
           <div>
-            <p className="text-sm font-medium">Excluir conta</p>
-            <p className="text-xs text-base-content/50">
-              Essa ação é permanente e não pode ser desfeita.
+            <h2 className="text-sm font-semibold text-error">Zona de risco</h2>
+
+            <p className="mt-0.5 text-xs text-base-content/45">
+              Ações permanentes que afetam sua conta.
             </p>
           </div>
-          <button
-            type="button"
-            className="btn btn-sm btn-error btn-outline"
-            onClick={() => dialogRef.current?.showModal()}
-          >
-            Excluir conta
-          </button>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div>
+          <p className="text-sm font-medium">Excluir conta</p>
+
+          <p className="mt-1 max-w-xl text-xs leading-5 text-base-content/50">
+            Essa ação remove permanentemente sua conta e não pode ser desfeita.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="btn btn-error btn-outline btn-sm shrink-0 gap-2"
+          onClick={() => dialogRef.current?.showModal()}
+        >
+          <Trash2 size={14} />
+          Excluir conta
+        </button>
       </div>
 
       <dialog ref={dialogRef} className="modal">
         <div className="modal-box">
-          <h3 className="text-lg font-semibold">Excluir sua conta</h3>
-          <p className="py-2 text-sm text-base-content/60">
-            Digite <span className="font-mono font-semibold">excluir</span> para
-            confirmar. Todos os seus dados serão removidos permanentemente.
-          </p>
-          <input
-            type="text"
-            className="input input-bordered w-full"
-            value={confirmText}
-            onChange={(e) => setConfirmText(e.target.value)}
-            placeholder="excluir"
-          />
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-error/10 text-error">
+              <Trash2 size={18} />
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold">Excluir sua conta</h3>
+
+              <p className="text-xs text-base-content/45">
+                Essa ação não pode ser desfeita.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-xl border border-error/20 bg-error/5 p-4">
+            <p className="text-sm leading-6 text-base-content/70">
+              Todos os dados associados à sua conta serão removidos
+              permanentemente.
+            </p>
+          </div>
+
+          <label className="mt-5 flex flex-col gap-2">
+            <span className="text-xs font-medium">
+              Digite <span className="font-mono text-error">excluir</span> para
+              confirmar
+            </span>
+
+            <input
+              type="text"
+              className="input input-bordered w-full"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="excluir"
+              autoComplete="off"
+            />
+          </label>
+
           <div className="modal-action">
-            <form method="dialog" className="flex gap-2">
+            <form method="dialog">
               <button className="btn btn-ghost">Cancelar</button>
             </form>
+
             <button
               type="button"
               className="btn btn-error"
@@ -342,10 +524,67 @@ function DangerZone() {
             </button>
           </div>
         </div>
+
         <form method="dialog" className="modal-backdrop">
           <button>fechar</button>
         </form>
       </dialog>
     </section>
+  );
+}
+
+function SectionHeader({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: typeof UserRound;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 border-b border-base-300 px-5 py-4 sm:px-6">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-base-300/60 text-base-content/60">
+        <Icon size={17} />
+      </div>
+
+      <div>
+        <h2 className="text-sm font-semibold">{title}</h2>
+
+        <p className="mt-0.5 text-xs text-base-content/45">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+function SettingRow({
+  icon: Icon,
+  title,
+  description,
+  action,
+}: {
+  icon: typeof KeyRound;
+  title: string;
+  description: string;
+  action: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+      <div className="flex min-w-0 items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-base-300/60 text-base-content/50">
+          <Icon size={16} />
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-sm font-medium">{title}</p>
+
+          <p className="mt-1 max-w-xl text-xs leading-5 text-base-content/45">
+            {description}
+          </p>
+        </div>
+      </div>
+
+      <div className="shrink-0">{action}</div>
+    </div>
   );
 }

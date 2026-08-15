@@ -80,20 +80,12 @@ export default async function NotebookLayout({
   const tree = buildTree(null, allFolders, allDocuments);
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] w-full">
-      <aside className="hidden w-60 shrink-0 border-r border-base-300/70 bg-base-200/40 md:block">
-        <div className="sticky top-16 flex h-[calc(100vh-4rem)] flex-col">
-          <div className="min-h-0 flex-1 overflow-y-auto px-2 py-3">
-            <NotebookTree tree={tree} />
-          </div>
-        </div>
+    <div className="flex h-full flex-col gap-6 lg:flex-row">
+      <aside className="flex w-full max-w-[250px] flex-col gap-2 lg:w-[250px] lg:flex-shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-base-300/50 bg-base-100/90 px-2 py-3 backdrop-blur-md">
+        <NotebookTree tree={tree} />
       </aside>
 
-      <main className="min-w-0 flex-1">
-        <div className="mx-auto w-full px-6 py-80">
-          {children}
-        </div>
-      </main>
+      <main className="flex-1">{children}</main>
     </div>
   );
 }

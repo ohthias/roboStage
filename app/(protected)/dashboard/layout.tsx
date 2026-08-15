@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 p-6">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1">{children}</main>
       </div>
 
       {/* Sidebar */}

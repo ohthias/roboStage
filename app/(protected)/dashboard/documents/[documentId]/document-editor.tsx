@@ -46,23 +46,20 @@ const editorTheme = {
     h2: "mt-7 mb-2 text-2xl font-semibold tracking-tight",
     h3: "mt-5 mb-2 text-xl font-semibold",
   },
-
   quote:
     "my-4 border-l-2 border-base-content/20 pl-4 italic text-base-content/60",
-
   list: {
     ul: "my-2 flex list-disc flex-col gap-1 pl-6",
     ol: "my-2 flex list-decimal flex-col gap-1 pl-6",
   },
-
   text: {
     bold: "font-semibold",
     italic: "italic",
     underline: "underline",
     strikethrough: "line-through",
   },
-
   paragraph: "my-2 leading-7",
+  code: "my-2 rounded-md bg-base-200/50 px-2 py-1 font-mono text-sm text-base-content/80",
 };
 
 export function NotebookEditor({
@@ -123,7 +120,7 @@ export function NotebookEditor({
   }
 
   return (
-    <div className="min-h-[calc(100vh-5rem)]">
+    <div className="min-h-[calc(100vh-5rem)] pt-8">
       <LexicalComposer initialConfig={initialConfig}>
         <div className="w-full px-6 pb-32">
           <nav className="mb-8 flex items-center gap-1 text-xs text-base-content/40">
@@ -270,7 +267,7 @@ export function NotebookEditor({
 
           {/* Editor */}
           <div className="relative">
-            <div className="sticky top-16 z-20 mb-4">
+            <div className="sticky top-20 z-20 mb-4">
               <div className="w-fit max-w-full rounded-lg border border-base-300/70 bg-base-100/90 shadow-sm backdrop-blur-md w-full">
                 <ToolbarPlugin />
               </div>

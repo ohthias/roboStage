@@ -246,14 +246,14 @@ function TreeItem({ node, depth }: { node: TreeNode; depth: number }) {
         ) : node.type === "document" ? (
           <Link
             href={`/dashboard/documents/${node.id}`}
-            className="min-w-0 flex-1 truncate py-1 text-[13px]"
+            className="flex-1 py-1 text-[13px] max-w-[100px] truncate"
           >
             {node.title}
           </Link>
         ) : (
           <button
             type="button"
-            className="min-w-0 flex-1 truncate py-1 text-left text-[13px]"
+            className="min-w-0 flex-1 truncate py-1 text-left text-[13px] max-w-[100px]"
             onDoubleClick={() => setEditing(true)}
             onClick={() => setExpanded((v) => !v)}
           >
@@ -261,7 +261,7 @@ function TreeItem({ node, depth }: { node: TreeNode; depth: number }) {
           </button>
         )}
 
-        <div className="dropdown dropdown-end shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+        <div className="dropdown dropdown-end shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 ml-auto">
           <button
             type="button"
             tabIndex={0}

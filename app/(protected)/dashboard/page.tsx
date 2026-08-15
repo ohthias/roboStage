@@ -132,7 +132,7 @@ export default async function DashboardPage() {
   const personaLabel = currentUser.personaType ? PERSONA_LABEL[currentUser.personaType] : null;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 p-6">
       {/* Cabeçalho */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-col gap-1">

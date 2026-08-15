@@ -12,6 +12,7 @@ const TYPE_LABELS: Record<ParameterType, string> = {
   text: "Texto",
   number: "Número",
   boolean: "Sim/Não",
+  select: "Seleção",
 };
 
 function emptyParameter(): CustomParameterInput {

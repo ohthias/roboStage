@@ -9,6 +9,7 @@ import type { Mission, SeasonMissions } from "./types";
 interface SelectedMission {
   mission: Mission;
   fullAttempt: boolean;
+  image: string | null;
   notes: string;
 }
 
@@ -42,7 +43,7 @@ export function RunSetup({ testId }: { testId: string }) {
     setSelected((prev) => {
       const exists = prev.find((s) => s.mission.id === mission.id);
       if (exists) return prev.filter((s) => s.mission.id !== mission.id);
-      return [...prev, { mission, fullAttempt: true, notes: "" }];
+      return [...prev, { mission, fullAttempt: true, notes: "", image: null }];
     });
   }
 

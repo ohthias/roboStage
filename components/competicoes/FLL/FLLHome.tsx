@@ -193,7 +193,6 @@ export default function FLLHome() {
                 />
               ))}
             </div>
-          </div>
           <div
             className="alert alert-warning shadow-lg my-4 mx-auto max-w-6xl px-4"
             role="status"
@@ -214,6 +213,7 @@ export default function FLLHome() {
               </Link>{" "}
               para acompanhar as atualizações.
             </div>
+          </div>
           </div>
         </section>
         {/* FLL Future Edition */}

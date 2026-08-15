@@ -3,14 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { createCalibrationExecution } from "./actions";
+import { createCalibrationExecution } from "../../actions";
 import type { CalibrationResult } from "./types";
-import type {
-  AtuadoresConfig,
-  ProgramacaoConfig,
-  SensoresConfig,
-  CalibrationSubtype,
-} from "../setup/types";
+import { AtuadoresConfig, CalibrationSubtype, GiroscopioConfig } from "../setup/types";
 
 const RESULT_OPTIONS: { value: CalibrationResult; label: string }[] = [
   { value: "aprovado", label: "Aprovado" },
@@ -46,13 +41,14 @@ export function CalibraBotExecuteForm({
   const [configurationUsed, setConfigurationUsed] = useState("");
   const [result, setResult] = useState<CalibrationResult>("necessita_ajuste");
   const [finalNotes, setFinalNotes] = useState("");
+  const isActuatorCalibration = calibrationType === "motor" || calibrationType === "servo";
 
   function handleSubmit() {
     if (!operatorId.trim()) {
       setError("Informe quem operou o robô nessa execução.");
       return;
     }
-    if (calibrationType === "atuadores" && !selectedCombo) {
+    if (isActuatorCalibration && !selectedCombo) {
       setError("Escolha qual combinação de atuadores foi testada.");
       return;
     }
@@ -118,13 +114,10 @@ export function CalibraBotExecuteForm({
         </label>
       </div>
 
-      {calibrationType === "atuadores" && (
+      {isActuatorCalibration && (
         <AtuadoresFields config={config as AtuadoresConfig} selected={selectedCombo} onSelect={setSelectedCombo} />
       )}
-      {calibrationType === "programacao" && (
-        <ProgramacaoFields config={config as ProgramacaoConfig} />
-      )}
-      {calibrationType === "sensores" && <SensoresFields config={config as SensoresConfig} />}
+      {calibrationType === "giroscopio" && <GiroscopioFields config={config as GiroscopioConfig} />}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="form-control">
@@ -145,7 +138,7 @@ export function CalibraBotExecuteForm({
           </div>
           <input className="input input-bordered" value={batteryUsed} onChange={(e) => setBatteryUsed(e.target.value)} />
         </label>
-        {calibrationType !== "atuadores" && (
+        {!isActuatorCalibration && (
           <label className="form-control">
             <div className="label">
               <span className="label-text">Motor usado (opcional)</span>
@@ -271,21 +264,10 @@ function AtuadoresFields({
   );
 }
 
-function ProgramacaoFields({ config }: { config: ProgramacaoConfig }) {
+function GiroscopioFields({ config }: { config: GiroscopioConfig }) {
   return (
     <div className="alert alert-info text-sm">
-      Configurado para testar: <span className="font-semibold capitalize">{config.subject}</span>
-      {config.axes && config.axes.length > 0 && (
-        <span> ({config.axes.join(", ")})</span>
-      )}
-    </div>
-  );
-}
-
-function SensoresFields({ config }: { config: SensoresConfig }) {
-  return (
-    <div className="alert alert-info text-sm">
-      Sensores configurados: <span className="font-semibold">{config.sensors.join(", ")}</span>
+      Eixos configurados: <span className="font-semibold capitalize">{config.axes.join(", ")}</span>
     </div>
   );
 }

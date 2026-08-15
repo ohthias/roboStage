@@ -3,14 +3,13 @@ import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { labTestRunPlan, fllMissions, labTestCalibrationPlan, labTestParameters } from "@/db/schema";
-import { getLabTestForExecute } from "./actions";
+import { getLabTestForExecute } from "../../actions";
 import { RunExecuteForm } from "./RunExecuteForm";
 import { CalibraBotExecuteForm } from "./CalibraBotExecuteForm";
 import { PersonalizadoExecuteForm } from "./PersonalizadoExecuteForm";
 
 export default async function ExecuteTestPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-
   const test = await getLabTestForExecute(id).catch((err) => {
     if (err instanceof Error && err.message.includes("Configure o teste")) {
       redirect(`/dashboard/labtest/${id}/setup`);
@@ -58,6 +57,9 @@ async function RunExecuteContainer({ testId }: { testId: string }) {
     return (
       <div className="alert alert-warning text-sm">
         Este teste não tem missões configuradas. Volte ao setup antes de registrar uma execução.
+        <a href={`/dashboard/labtest/${testId}/setup`} className="ml-1 font-semibold underline">
+          Configurar teste
+        </a>
       </div>
     );
   }
@@ -78,26 +80,14 @@ async function CalibraBotExecuteContainer({ testId }: { testId: string }) {
       <div className="alert alert-warning text-sm">
         Este teste não tem uma configuração de calibração salva. Volte ao setup antes de registrar
         uma execução.
+        <a href={`/dashboard/labtest/${testId}/setup`} className="ml-1 font-semibold underline">
+          Configurar teste
+        </a>
       </div>
     );
   }
 
-  if (!plan.calibrationType) {
-    return (
-      <div className="alert alert-warning text-sm">
-        Este teste tem uma configuração de calibração inválida. Volte ao setup e selecione o tipo
-        de calibração antes de registrar uma execução.
-      </div>
-    );
-  }
-
-  return (
-    <CalibraBotExecuteForm
-      testId={testId}
-      calibrationType={plan.calibrationType as React.ComponentProps<typeof CalibraBotExecuteForm>["calibrationType"]}
-      config={plan.config}
-    />
-  );
+  return <CalibraBotExecuteForm testId={testId} calibrationType={plan.calibrationType} config={plan.config} />;
 }
 
 async function PersonalizadoExecuteContainer({ testId }: { testId: string }) {
@@ -106,28 +96,16 @@ async function PersonalizadoExecuteContainer({ testId }: { testId: string }) {
     .from(labTestParameters)
     .where(eq(labTestParameters.testId, testId));
 
-  type ExecuteParameter = React.ComponentProps<typeof PersonalizadoExecuteForm>["parameters"][number];
-
   if (parameters.length === 0) {
     return (
       <div className="alert alert-warning text-sm">
         Este teste não tem parâmetros configurados. Volte ao setup antes de registrar uma execução.
+        <a href={`/dashboard/labtest/${testId}/setup`} className="ml-1 font-semibold underline">
+          Configurar teste
+        </a>
       </div>
     );
   }
 
-  const executeParameters = parameters.filter(
-    (parameter) => parameter.type !== "select",
-  ) as ExecuteParameter[];
-
-  if (executeParameters.length !== parameters.length) {
-    return (
-      <div className="alert alert-warning text-sm">
-        Este teste possui parâmetros do tipo seleção, que não são suportados na execução. Volte ao
-        setup e ajuste os parâmetros antes de registrar uma execução.
-      </div>
-    );
-  }
-
-  return <PersonalizadoExecuteForm testId={testId} parameters={executeParameters} />;
+  return <PersonalizadoExecuteForm testId={testId} parameters={parameters} />;
 }

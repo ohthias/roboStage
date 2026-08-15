@@ -40,7 +40,17 @@ export interface RunPlanMissionInput {
   notes?: string;
 }
 
-export type CalibrationSubtype = "atuadores" | "programacao" | "sensores";
+export type CalibrationSubtype =
+  | "sensor"
+  | "motor"
+  | "servo"
+  | "pid"
+  | "giroscopio"
+  | "sensor_cor"
+  | "sensor_distancia"
+  | "linha"
+  | "curvas"
+  | "outro";
 
 export interface AtuadoresConfig {
   actuators: string[];
@@ -48,20 +58,20 @@ export interface AtuadoresConfig {
   combinations: string[][];
 }
 
-export interface ProgramacaoConfig {
-  subject: "pid" | "giroscopio" | "andar";
-  axes?: Array<"arfagem" | "guinada" | "rotacao">;
+export interface GiroscopioConfig {
+  axes: Array<"arfagem" | "guinada" | "rotacao">;
 }
 
-export interface SensoresConfig {
-  sensors: Array<"luz" | "ultrassonico">;
+// Usado por todo o resto (pid, linha, curvas, sensor, sensor_cor,
+// sensor_distancia, outro): esses não têm formato próprio, só uma nota livre.
+export interface GenericCalibrationConfig {
+  notes?: string;
 }
 
-export type CalibrationConfig = AtuadoresConfig | ProgramacaoConfig | SensoresConfig;
+export type CalibrationConfig = AtuadoresConfig | GiroscopioConfig | GenericCalibrationConfig;
 
-// Assumido a partir do default 'text' da coluna `type` em lab_test_parameters.
-// Confirmar os valores reais do enum `parameter_type` antes de integrar.
-export type ParameterType = "text" | "number" | "boolean";
+// Enum real de `parameter_type`: "number" | "boolean" | "text" | "select".
+export type ParameterType = "text" | "number" | "boolean" | "select";
 
 export interface CustomParameterInput {
   name: string;
@@ -69,4 +79,9 @@ export interface CustomParameterInput {
   unit?: string;
   description?: string;
   isRequired: boolean;
+  // Só usado quando type === "select": lista de opções separada por vírgula.
+  // Reaproveita a coluna `default_value` (não existe uma coluna `options`
+  // dedicada no schema atual) — funcional, mas vale considerar uma migration
+  // pra uma coluna própria se isso crescer.
+  defaultValue?: string;
 }

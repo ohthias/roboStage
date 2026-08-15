@@ -6,6 +6,11 @@ import {
   labTestRunPlan,
   labTestCalibrationPlan,
   labTestParameters,
+  labTestExecutions,
+  labTestMissionResults,
+  labTestRunDetails,
+  labTestCalibrationDetails,
+  labTestParameterValues,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -15,11 +20,24 @@ import type {
   CustomParameterInput,
   CalibrationSubtype,
 } from "./[id]/setup/types";
+import type {
+  RunExecutionInput,
+  CalibrationExecutionInput,
+  PersonalizadoExecutionInput,
+} from "./[id]/execute/types";
 import { auth } from "@clerk/nextjs/server";
 
 type DbCalibrationType = (typeof labTestCalibrationPlan.$inferInsert)["calibrationType"];
 
 const MAX_CUSTOM_PARAMETERS = 10;
+// Antes, saveRunPlan/saveCalibrationPlan/saveCustomParameters revalidavam
+// "/labtest/..." (sem o prefixo "/dashboard"), enquanto updateLabTestInfo já
+// usava "/dashboard/labtest/...". Como a rota real é /dashboard/labtest (ver
+// page.tsx da listagem), o revalidatePath daquelas três funções não batia em
+// nada — o Next simplesmente invalidava um path que não existe, então a
+// listagem/detalhe não atualizavam sozinhos depois de salvar o plano.
+// Centralizando num único BASE_PATH pra não reintroduzir essa divergência.
+const BASE_PATH = "/dashboard/labtest";
 
 interface CreateLabTestInput {
   name: string;
@@ -41,6 +59,12 @@ export async function createLabTest(input: CreateLabTestInput) {
       userId: session.userId,
       teamId: input.teamId ?? null,
       createdBy: session.userId,
+      // Reintroduzido: sem isso, todo teste nasce direto com o status
+      // default do schema ('ativo'), e o guard de "configure antes de
+      // executar" em getLabTestForExecute nunca dispara porque nunca existe
+      // um teste em rascunho. Se isso foi removido de propósito no seu
+      // merge, é só apagar esta linha — o resto do arquivo não depende dela.
+      status: "rascunho",
     })
     .returning();
 
@@ -68,6 +92,10 @@ export async function getLabTestForSetup(testId: string) {
   return test;
 }
 
+async function markTestConfigured(testId: string) {
+  await db.update(labTests).set({ status: "ativo" }).where(eq(labTests.id, testId));
+}
+
 export async function saveRunPlan(testId: string, missions: RunPlanMissionInput[]) {
   const session = await auth();
   if (!session?.userId) throw new Error("Não autenticado.");
@@ -86,8 +114,9 @@ export async function saveRunPlan(testId: string, missions: RunPlanMissionInput[
     );
   });
 
-  revalidatePath(`/labtest/${testId}`);
-  revalidatePath("/labtest");
+  await markTestConfigured(testId);
+  revalidatePath(`${BASE_PATH}/${testId}`);
+  revalidatePath(BASE_PATH);
 }
 
 export async function saveCalibrationPlan(
@@ -104,8 +133,9 @@ export async function saveCalibrationPlan(
     config,
   });
 
-  revalidatePath(`/labtest/${testId}`);
-  revalidatePath("/labtest");
+  await markTestConfigured(testId);
+  revalidatePath(`${BASE_PATH}/${testId}`);
+  revalidatePath(BASE_PATH);
 }
 
 export async function saveCustomParameters(testId: string, parameters: CustomParameterInput[]) {
@@ -146,8 +176,9 @@ export async function saveCustomParameters(testId: string, parameters: CustomPar
     );
   });
 
-  revalidatePath(`/labtest/${testId}`);
-  revalidatePath("/labtest");
+  await markTestConfigured(testId);
+  revalidatePath(`${BASE_PATH}/${testId}`);
+  revalidatePath(BASE_PATH);
 }
 
 interface UpdateLabTestInfoInput {
@@ -184,6 +215,166 @@ export async function updateLabTestInfo(testId: string, input: UpdateLabTestInfo
     })
     .where(eq(labTests.id, testId));
 
-  revalidatePath(`/dashboard/labtest/${testId}`);
-  revalidatePath("/dashboard/labtest");
+  revalidatePath(`${BASE_PATH}/${testId}`);
+  revalidatePath(BASE_PATH);
+}
+
+// ---------------------------------------------------------------------------
+// Execução (/[id]/execute)
+// ---------------------------------------------------------------------------
+
+export async function getLabTestForExecute(testId: string) {
+  const session = await auth();
+  if (!session?.userId) throw new Error("Não autenticado.");
+
+  const test = await db.query.labTests.findFirst({ where: eq(labTests.id, testId) });
+  if (!test) throw new Error("Teste não encontrado.");
+  if (test.userId !== session.userId) throw new Error("Você não tem acesso a este teste.");
+  if (test.status === "rascunho") {
+    throw new Error("Configure o teste antes de registrar uma execução.");
+  }
+
+  return test;
+}
+
+interface BaseExecutionInput {
+  testId: string;
+  operatorId: string;
+  durationSeconds?: number;
+  notes?: string;
+  resultSummary?: string;
+}
+
+// drizzle-orm tipa colunas `numeric(...)` como `string` no insert (pra não
+// perder precisão convertendo por float), mesmo que o valor "pareça" um
+// número. `duration_seconds` e `final_time_seconds` são numeric(10,2), então
+// precisam ser convertidos aqui antes de entrar no `.values()`.
+function toNumeric(value: number | undefined): string | undefined {
+  return value === undefined ? undefined : value.toString();
+}
+
+async function nextAttemptNumber(testId: string) {
+  const rows = await db
+    .select({ attemptNumber: labTestExecutions.attemptNumber })
+    .from(labTestExecutions)
+    .where(eq(labTestExecutions.testId, testId));
+  return rows.reduce((max, r) => Math.max(max, r.attemptNumber), 0) + 1;
+}
+
+export async function createRunExecution(base: BaseExecutionInput, input: RunExecutionInput) {
+  const session = await auth();
+  if (!session?.userId) throw new Error("Não autenticado.");
+  if (input.missions.length === 0) throw new Error("Registre o resultado de ao menos uma missão.");
+
+  await db.transaction(async (tx) => {
+    const attemptNumber = await nextAttemptNumber(base.testId);
+    const [execution] = await tx
+      .insert(labTestExecutions)
+      .values({
+        testId: base.testId,
+        attemptNumber,
+        operatorId: base.operatorId,
+        durationSeconds: toNumeric(base.durationSeconds),
+        notes: base.notes,
+        resultSummary: base.resultSummary,
+      })
+      .returning();
+
+    await tx.insert(labTestMissionResults).values(
+      input.missions.map((m) => ({
+        executionId: execution.id,
+        missionId: m.missionId,
+        scoreObtained: m.scoreObtained,
+        completed: m.completed,
+        notes: m.notes,
+      }))
+    );
+
+    await tx.insert(labTestRunDetails).values({
+      executionId: execution.id,
+      strategyVersionId: input.strategyVersionId ?? null,
+      season: input.season,
+      arena: input.arena,
+      totalScore: input.totalScore,
+      finalTimeSeconds: toNumeric(input.finalTimeSeconds),
+      penalties: input.penalties,
+      finalResult: input.finalResult,
+    });
+  });
+
+  revalidatePath(`${BASE_PATH}/${base.testId}`);
+}
+
+export async function createCalibrationExecution(
+  base: BaseExecutionInput,
+  input: CalibrationExecutionInput
+) {
+  const session = await auth();
+  if (!session?.userId) throw new Error("Não autenticado.");
+
+  await db.transaction(async (tx) => {
+    const attemptNumber = await nextAttemptNumber(base.testId);
+    const [execution] = await tx
+      .insert(labTestExecutions)
+      .values({
+        testId: base.testId,
+        attemptNumber,
+        operatorId: base.operatorId,
+        durationSeconds: toNumeric(base.durationSeconds),
+        notes: base.notes,
+        resultSummary: base.resultSummary,
+      })
+      .returning();
+
+    await tx.insert(labTestCalibrationDetails).values({
+      executionId: execution.id,
+      calibrationType: input.calibrationType as DbCalibrationType,
+      robotModel: input.robotModel,
+      firmware: input.firmware,
+      batteryUsed: input.batteryUsed,
+      sensorUsed: input.sensorUsed,
+      motorUsed: input.motorUsed,
+      portUsed: input.portUsed,
+      idealValueFound: input.idealValueFound,
+      configurationUsed: input.configurationUsed,
+      result: input.result,
+      finalNotes: input.finalNotes,
+    });
+  });
+
+  revalidatePath(`${BASE_PATH}/${base.testId}`);
+}
+
+export async function createPersonalizadoExecution(
+  base: BaseExecutionInput,
+  input: PersonalizadoExecutionInput
+) {
+  const session = await auth();
+  if (!session?.userId) throw new Error("Não autenticado.");
+  if (input.values.length === 0) throw new Error("Preencha ao menos um parâmetro.");
+
+  await db.transaction(async (tx) => {
+    const attemptNumber = await nextAttemptNumber(base.testId);
+    const [execution] = await tx
+      .insert(labTestExecutions)
+      .values({
+        testId: base.testId,
+        attemptNumber,
+        operatorId: base.operatorId,
+        durationSeconds: toNumeric(base.durationSeconds),
+        notes: base.notes,
+        resultSummary: base.resultSummary,
+      })
+      .returning();
+
+    await tx.insert(labTestParameterValues).values(
+      input.values.map((v) => ({
+        executionId: execution.id,
+        parameterId: v.parameterId,
+        value: v.value,
+      }))
+    );
+  });
+
+  revalidatePath(`${BASE_PATH}/${base.testId}`);
 }

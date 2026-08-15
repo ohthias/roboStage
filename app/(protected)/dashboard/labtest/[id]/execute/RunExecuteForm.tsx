@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { createRunExecution } from "./actions";
+import { createRunExecution } from "../../actions";
 import type { ExecuteMission } from "./types";
 
 interface MissionEntry {

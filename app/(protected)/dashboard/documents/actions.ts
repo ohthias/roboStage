@@ -1,157 +1,90 @@
 "use server";
 
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { and, eq } from "drizzle-orm";
-import type { SerializedEditorState } from "lexical";
 import { db } from "@/db/client";
-import { documents } from "@/db/schema";
+import { folders, documents } from "@/db/schema";
 
-export type MutationResult<T = undefined> = {
-  success: boolean;
-  message?: string;
-  data?: T;
-};
-
-async function assertMembership(organizationId: string) {
+async function requireUserId() {
   const { userId } = await auth();
-  if (!userId) throw new Error("Não autenticado.");
-
-  const client = await clerkClient();
-  const { data } = await client.users.getOrganizationMembershipList({
-    userId,
-    limit: 100,
-  });
-  const membership = data.find((m) => m.organization.id === organizationId);
-
-  if (!membership) {
-    throw new Error("Você não faz parte desta organização.");
-  }
-
-  return { userId, role: membership.role };
+  if (!userId) throw new Error("Usuário não autenticado.");
+  return userId;
 }
 
-export async function createDocumentAction(
-  organizationId: string,
-  folderId: string | null = null
-): Promise<MutationResult<{ id: string }>> {
-  try {
-    const { userId } = await assertMembership(organizationId);
-
-    const [document] = await db
-      .insert(documents)
-      .values({
-        userId: organizationId,
-        folderId,
-        title: "Sem título",
-        icon: null,
-        content: null,
-        createdBy: userId,
-        updatedBy: userId,
-      })
-      .returning({ id: documents.id });
-
-    revalidatePath(`/dashboard/organizations/${organizationId}/documents`);
-    return { success: true, data: { id: document.id } };
-  } catch (error) {
-    return {
-      success: false,
-      message: toMessage(error, "Não foi possível criar o documento."),
-    };
-  }
+export async function createFolder(parentId: string | null = null) {
+  const userId = await requireUserId();
+  const [created] = await db
+    .insert(folders)
+    .values({ userId, parentId, name: "Nova pasta", createdBy: userId })
+    .returning({ id: folders.id });
+  revalidatePath("/dashboard/documents", "layout");
+  return created;
 }
 
-export async function updateDocumentAction(
-  organizationId: string,
-  documentId: string,
-  data: {
-    title?: string;
-    icon?: string | null;
-    content?: SerializedEditorState;
-  }
-): Promise<MutationResult> {
-  try {
-    const { userId } = await assertMembership(organizationId);
-
-    await db
-      .update(documents)
-      .set({
-        ...(data.title !== undefined
-          ? { title: data.title.trim() || "Sem título" }
-          : {}),
-        ...(data.icon !== undefined ? { icon: data.icon } : {}),
-        ...(data.content !== undefined
-          ? { content: data.content as unknown as Record<string, unknown> }
-          : {}),
-        updatedBy: userId,
-        updatedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(documents.id, documentId),
-          eq(documents.teamId, organizationId)
-        )
-      );
-
-    revalidatePath(`/dashboard/organizations/${organizationId}/documents`);
-    return { success: true };
-  } catch (error) {
-    return {
-      success: false,
-      message: toMessage(error, "Não foi possível salvar o documento."),
-    };
-  }
+export async function createDocument(folderId: string | null = null) {
+  const userId = await requireUserId();
+  const [created] = await db
+    .insert(documents)
+    .values({ userId, folderId, title: "Sem título", createdBy: userId })
+    .returning({ id: documents.id });
+  revalidatePath("/dashboard/documents", "layout");
+  return created;
 }
 
-export async function deleteDocumentAction(
-  organizationId: string,
-  documentId: string
-): Promise<MutationResult> {
-  try {
-    const { userId, role } = await assertMembership(organizationId);
-
-    const [existing] = await db
-      .select({ createdBy: documents.createdBy })
-      .from(documents)
-      .where(
-        and(
-          eq(documents.id, documentId),
-          eq(documents.teamId, organizationId)
-        )
-      );
-
-    if (!existing) {
-      return { success: false, message: "Documento não encontrado." };
-    }
-
-    if (role !== "org:admin" && existing.createdBy !== userId) {
-      return {
-        success: false,
-        message:
-          "Apenas o autor do documento ou um administrador pode excluí-lo.",
-      };
-    }
-
-    await db
-      .delete(documents)
-      .where(
-        and(
-          eq(documents.id, documentId),
-          eq(documents.teamId, organizationId)
-        )
-      );
-
-    revalidatePath(`/dashboard/organizations/${organizationId}/documents`);
-    return { success: true };
-  } catch (error) {
-    return {
-      success: false,
-      message: toMessage(error, "Não foi possível excluir o documento."),
-    };
-  }
+export async function renameFolder(id: string, name: string) {
+  const userId = await requireUserId();
+  const clean = name.trim() || "Nova pasta";
+  await db
+    .update(folders)
+    .set({ name: clean, updatedAt: new Date() })
+    .where(and(eq(folders.id, id), eq(folders.userId, userId)));
+  revalidatePath("/dashboard/documents", "layout");
 }
 
-function toMessage(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) return error.message;
-  return fallback;
+export async function renameDocument(id: string, title: string) {
+  const userId = await requireUserId();
+  const clean = title.trim() || "Sem título";
+  await db
+    .update(documents)
+    .set({ title: clean, updatedBy: userId, updatedAt: new Date() })
+    .where(and(eq(documents.id, id), eq(documents.userId, userId)));
+  revalidatePath("/dashboard/documents", "layout");
+}
+
+export async function updateDocumentIcon(id: string, icon: string | null) {
+  const userId = await requireUserId();
+  await db
+    .update(documents)
+    .set({ icon, updatedBy: userId, updatedAt: new Date() })
+    .where(and(eq(documents.id, id), eq(documents.userId, userId)));
+  revalidatePath("/dashboard/documents", "layout");
+}
+
+// Chamada a cada autosave do editor — não revalida a árvore da sidebar
+// (título/ícone não mudam aqui), só grava o conteúdo.
+export async function updateDocumentContent(id: string, content: unknown) {
+  const userId = await requireUserId();
+  await db
+    .update(documents)
+    .set({
+      content: content as Record<string, unknown>,
+      updatedBy: userId,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(documents.id, id), eq(documents.userId, userId)));
+}
+
+export async function deleteFolder(id: string) {
+  const userId = await requireUserId();
+  // Documentos dentro da pasta não são apagados: a FK folder_id tem
+  // onDelete "set null", então eles voltam pra raiz do caderno.
+  await db.delete(folders).where(and(eq(folders.id, id), eq(folders.userId, userId)));
+  revalidatePath("/dashboard/documents", "layout");
+}
+
+export async function deleteDocument(id: string) {
+  const userId = await requireUserId();
+  await db.delete(documents).where(and(eq(documents.id, id), eq(documents.userId, userId)));
+  revalidatePath("/dashboard/documents", "layout");
 }

@@ -1,55 +1,31 @@
-import { notFound } from "next/navigation";
-import { and, asc, eq } from "drizzle-orm";
-import type { SerializedEditorState } from "lexical";
-import { documents, folders } from "@/db/schema";
-import { DocumentEditor } from "./document-editor";
+import { auth } from "@clerk/nextjs/server";
+import { redirect, notFound } from "next/navigation";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
+import { documents } from "@/db/schema";
+import { NotebookEditor } from "./document-editor";
 
-export default async function DocumentPage({
+export default async function NotebookDocumentPage({
   params,
 }: {
-  params: Promise<{ organizationId: string; documentId: string }>;
+  params: Promise<{ documentId: string }>;
 }) {
-  const { organizationId, documentId } = await params;
+  const { documentId } = await params;
+  const { userId } = await auth();
+  if (!userId) redirect("/sign-in");
 
-  const [documentRows, allFolders] = await Promise.all([
-    db
-      .select()
-      .from(documents)
-      .where(
-        and(
-          eq(documents.id, documentId),
-          eq(documents.teamId, organizationId)
-        )
-      ),
-    db
-      .select({
-        id: folders.id,
-        name: folders.name,
-        icon: folders.icon,
-        parentId: folders.parentId,
-      })
-      .from(folders)
-      .where(eq(folders.teamId, organizationId))
-      .orderBy(asc(folders.name)),
-  ]);
+  const document = await db.query.documents.findFirst({
+    where: and(eq(documents.id, documentId), eq(documents.userId, userId)),
+  });
 
-  const document = documentRows[0];
-
-  if (!document) {
-    notFound();
-  }
+  if (!document) notFound();
 
   return (
-    <DocumentEditor
-      organizationId={organizationId}
+    <NotebookEditor
       documentId={document.id}
       initialTitle={document.title}
       initialIcon={document.icon}
-      initialFolderId={document.folderId}
-      initialContent={document.content as SerializedEditorState | null}
-      folders={allFolders}
-      updatedAt={document.updatedAt}
+      initialContent={document.content}
     />
   );
 }

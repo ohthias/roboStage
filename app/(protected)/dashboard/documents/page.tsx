@@ -1,18 +1,14 @@
 import { NotebookPen } from "lucide-react";
 
-export default function DocumentsIndexPage() {
+export default function NotebookIndexPage() {
   return (
-    <div className="flex h-full min-h-[560px] flex-col items-center justify-center gap-3 p-10 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-        <NotebookPen size={24} />
-      </div>
-      <div>
-        <h3 className="font-semibold">Selecione ou crie um documento</h3>
-        <p className="max-w-sm text-sm text-base-content/60">
-          Use o caderno da equipe para registrar decisões, atas de reunião e
-          anotações — tudo salvo automaticamente.
-        </p>
-      </div>
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
+      <NotebookPen size={40} className="text-base-content/30" />
+      <h1 className="text-lg font-semibold">Selecione ou crie uma página</h1>
+      <p className="max-w-sm text-sm text-base-content/60">
+        Use o menu à esquerda para abrir uma anotação existente, ou crie uma pasta e uma página
+        novas pelos botões no topo da árvore.
+      </p>
     </div>
   );
 }

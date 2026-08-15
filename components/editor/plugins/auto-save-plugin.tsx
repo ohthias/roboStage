@@ -1,32 +1,42 @@
 "use client";
 
-import { useRef } from "react";
-import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
-import type { EditorState } from "lexical";
+import { useEffect, useRef } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { updateDocumentContent } from "@/app/(protected)/dashboard/documents/actions";
 
-const AUTOSAVE_DELAY = 800;
+const DEBOUNCE_MS = 800;
 
-export function AutoSavePlugin({
-  onSave,
+export function AutosavePlugin({
+  documentId,
+  onStatusChange,
 }: {
-  onSave: (editorState: EditorState) => void;
+  documentId: string;
+  onStatusChange: (status: "idle" | "saving" | "saved") => void;
 }) {
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isFirstRender = useRef(true);
+  const [editor] = useLexicalComposerContext();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFirstUpdate = useRef(true);
 
-  return (
-    <OnChangePlugin
-      onChange={(editorState) => {
-        // Ignora o primeiro disparo (ocorre ao montar o editor com o
-        // conteúdo inicial, não é uma edição do usuário).
-        if (isFirstRender.current) {
-          isFirstRender.current = false;
-          return;
-        }
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }) => {
+      // A primeira atualização é o carregamento do conteúdo inicial, não uma edição.
+      if (isFirstUpdate.current) {
+        isFirstUpdate.current = false;
+        return;
+      }
+      if (dirtyElements.size === 0 && dirtyLeaves.size === 0) return;
 
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = setTimeout(() => onSave(editorState), AUTOSAVE_DELAY);
-      }}
-    />
-  );
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      onStatusChange("saving");
+
+      timeoutRef.current = setTimeout(() => {
+        const json = editorState.toJSON();
+        updateDocumentContent(documentId, json)
+          .then(() => onStatusChange("saved"))
+          .catch(() => onStatusChange("idle"));
+      }, DEBOUNCE_MS);
+    });
+  }, [editor, documentId, onStatusChange]);
+
+  return null;
 }

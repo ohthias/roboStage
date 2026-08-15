@@ -9,6 +9,7 @@ import {
   index,
   foreignKey,
   unique,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { labTests, labTestExecutions } from "./lab-test-core";
 import { failureSeverityEnum } from "./enums";
@@ -22,6 +23,7 @@ export const fllMissions = pgTable(
     name: text("name").notNull(),
     season: text("season").notNull(),
     category: text("category"),
+    definition: jsonb("definition"),
     maxScore: integer("max_score").notNull(),
   },
   (table) => ({
@@ -147,6 +149,35 @@ export const labTestMissionResults = pgTable(
   })
 );
 
+// Plano base de missões para um teste do tipo Run.
+export const labTestRunPlan = pgTable(
+  "lab_test_run_plan",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    testId: uuid("test_id").notNull(),
+    missionId: uuid("mission_id").notNull(),
+    orderIndex: integer("order_index").notNull(),
+    fullAttempt: boolean("full_attempt").notNull().default(true),
+    notes: text("notes"),
+  },
+  (table) => ({
+    testMissionUnique: unique("lab_test_run_plan_unique").on(
+      table.testId,
+      table.missionId
+    ),
+    testFk: foreignKey({
+      columns: [table.testId],
+      foreignColumns: [labTests.id],
+      name: "lab_test_run_plan_test_id_fkey",
+    }).onDelete("cascade"),
+    missionFk: foreignKey({
+      columns: [table.missionId],
+      foreignColumns: [fllMissions.id],
+      name: "lab_test_run_plan_mission_id_fkey",
+    }).onDelete("restrict"),
+  })
+);
+
 // Falhas ocorridas durante uma execução — base para as análises de padrões.
 export const labTestFailures = pgTable(
   "lab_test_failures",
@@ -187,3 +218,4 @@ export type StrategyVersionRow = typeof strategyVersions.$inferSelect;
 export type LabTestRunDetailsRow = typeof labTestRunDetails.$inferSelect;
 export type LabTestMissionResultRow = typeof labTestMissionResults.$inferSelect;
 export type LabTestFailureRow = typeof labTestFailures.$inferSelect;
+export type LabTestRunPlanRow = typeof labTestRunPlan.$inferSelect;

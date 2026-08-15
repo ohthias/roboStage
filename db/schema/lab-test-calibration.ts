@@ -3,11 +3,12 @@ import {
   uuid,
   text,
   timestamp,
+  jsonb,
   index,
   foreignKey,
   unique,
 } from "drizzle-orm/pg-core";
-import { labTestExecutions } from "./lab-test-core";
+import { labTestExecutions, labTests } from "./lab-test-core";
 import { calibrationTypeEnum, calibrationResultEnum } from "./enums";
 
 // Detalhe de uma calibração — relação 1:1 com lab_test_executions.
@@ -73,6 +74,29 @@ export const labTestReadings = pgTable(
   })
 );
 
+// Plano de calibração persistido para testes do tipo CalibraBot.
+export const labTestCalibrationPlan = pgTable(
+  "lab_test_calibration_plan",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    testId: uuid("test_id").notNull(),
+    calibrationType: calibrationTypeEnum("calibration_type").notNull(),
+    config: jsonb("config").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    testIdIdx: index("lab_test_calibration_plan_test_id_idx").on(table.testId),
+    testFk: foreignKey({
+      columns: [table.testId],
+      foreignColumns: [labTests.id],
+      name: "lab_test_calibration_plan_test_id_fkey",
+    }).onDelete("cascade"),
+  })
+);
+
 export type LabTestCalibrationDetailsRow =
   typeof labTestCalibrationDetails.$inferSelect;
 export type LabTestReadingRow = typeof labTestReadings.$inferSelect;
+export type LabTestCalibrationPlanRow = typeof labTestCalibrationPlan.$inferSelect;

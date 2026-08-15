@@ -145,6 +145,7 @@ export const labTestParameters = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     testId: uuid("test_id").notNull(),
     name: text("name").notNull(),
+    description: text("description"),
     type: parameterTypeEnum("type").notNull().default("text"),
     unit: text("unit"),
     defaultValue: text("default_value"),

@@ -20,10 +20,12 @@ import {
   labTestRunDetails,
   labTestMissionResults,
   labTestFailures,
+  labTestRunPlan,
 } from "./lab-test-runs";
 import {
   labTestCalibrationDetails,
   labTestReadings,
+  labTestCalibrationPlan,
 } from "./lab-test-calibration";
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -78,6 +80,8 @@ export const labTestsRelations = relations(labTests, ({ one, many }) => ({
   attachments: many(labTestAttachments),
   tagAssignments: many(labTestTagAssignments),
   strategies: many(strategies),
+  runPlan: many(labTestRunPlan),
+  calibrationPlan: many(labTestCalibrationPlan),
 }));
 
 export const labTestExecutionsRelations = relations(
@@ -190,6 +194,27 @@ export const labTestFailuresRelations = relations(
     mission: one(fllMissions, {
       fields: [labTestFailures.missionId],
       references: [fllMissions.id],
+    }),
+  })
+);
+
+export const labTestRunPlanRelations = relations(labTestRunPlan, ({ one }) => ({
+  test: one(labTests, {
+    fields: [labTestRunPlan.testId],
+    references: [labTests.id],
+  }),
+  mission: one(fllMissions, {
+    fields: [labTestRunPlan.missionId],
+    references: [fllMissions.id],
+  }),
+}));
+
+export const labTestCalibrationPlanRelations = relations(
+  labTestCalibrationPlan,
+  ({ one }) => ({
+    test: one(labTests, {
+      fields: [labTestCalibrationPlan.testId],
+      references: [labTests.id],
     }),
   })
 );

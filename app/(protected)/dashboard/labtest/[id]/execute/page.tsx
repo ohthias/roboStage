@@ -8,10 +8,12 @@ import { RunExecuteForm } from "./RunExecuteForm";
 import { CalibraBotExecuteForm } from "./CalibraBotExecuteForm";
 import { PersonalizadoExecuteForm } from "./PersonalizadoExecuteForm";
 
-export default async function ExecuteTestPage({ params }: { params: { id: string } }) {
-  const test = await getLabTestForExecute(params.id).catch((err) => {
+export default async function ExecuteTestPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+
+  const test = await getLabTestForExecute(id).catch((err) => {
     if (err instanceof Error && err.message.includes("Configure o teste")) {
-      redirect(`/dashboard/labtest/${params.id}/setup`);
+      redirect(`/dashboard/labtest/${id}/setup`);
     }
     return null;
   });

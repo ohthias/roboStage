@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import { getLabTestForSetup } from "../../actions";
 import { TestSetupWizard } from "./TestSetupWizard";
 
-export default async function TestSetupPage({ params }: { params: { id: string } }) {
-  const test = await getLabTestForSetup(params.id).catch(() => null);
+export default async function TestSetupPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const test = await getLabTestForSetup(id).catch(() => null);
   if (!test) notFound();
 
   return (

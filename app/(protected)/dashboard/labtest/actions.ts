@@ -1,10 +1,5 @@
 "use server";
 
-// ATENÇÃO: este arquivo assume os caminhos de import do seu projeto
-// (`@/db`, `@/db/schema`) e o formato dos tipos definidos em
-// `[id]/setup/types.ts`. Ajuste os imports para o caminho real do seu
-// drizzle client e do schema antes de integrar.
-
 import { db } from "@/db/client";
 import {
   labTests,
@@ -153,4 +148,42 @@ export async function saveCustomParameters(testId: string, parameters: CustomPar
 
   revalidatePath(`/labtest/${testId}`);
   revalidatePath("/labtest");
+}
+
+interface UpdateLabTestInfoInput {
+  name: string;
+  description?: string;
+  teamId?: string;
+}
+
+export async function updateLabTestInfo(testId: string, input: UpdateLabTestInfoInput) {
+  const session = await auth();
+  if (!session?.userId) throw new Error("Não autenticado.");
+
+  // Verificar se o teste existe e se o usuário tem acesso
+  const test = await db.query.labTests.findFirst({
+    where: eq(labTests.id, testId),
+  });
+
+  if (!test) throw new Error("Teste não encontrado.");
+  if (test.userId !== session.userId) {
+    throw new Error("Você não tem acesso a este teste.");
+  }
+
+  if (!input.name.trim()) {
+    throw new Error("Dá um nome pro teste.");
+  }
+
+  // Atualizar apenas as informações básicas
+  await db
+    .update(labTests)
+    .set({
+      name: input.name.trim(),
+      description: input.description?.trim() || null,
+      teamId: input.teamId || null,
+    })
+    .where(eq(labTests.id, testId));
+
+  revalidatePath(`/dashboard/labtest/${testId}`);
+  revalidatePath("/dashboard/labtest");
 }

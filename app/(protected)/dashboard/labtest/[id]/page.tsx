@@ -12,6 +12,8 @@ import {
   labTestCalibrationPlan,
   labTestParameters,
 } from "@/db/schema";
+import { LabTestDetailActions } from "./labtest-detail-actions";
+import { ArrowLeft, ClipboardCheck, Users, Play } from "lucide-react";
 
 const TYPE_LABEL: Record<string, string> = {
   run: "Run",
@@ -28,14 +30,25 @@ const STATUS_BADGE: Record<string, { label: string; className: string }> = {
 function formatDate(value: string | Date | null) {
   if (!value) return "—";
   const date = typeof value === "string" ? new Date(value) : value;
-  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
-export default async function LabTestDetailPage({ params }: { params: { id: string } }) {
+export default async function LabTestDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const test = await db.query.labTests.findFirst({ where: eq(labTests.id, params.id) });
+  const test = await db.query.labTests.findFirst({
+    where: eq(labTests.id, id),
+  });
   if (!test) notFound();
   // Placeholder: mesma checagem simplificada usada em getLabTestForSetup —
   // troque pela regra real de membership de equipe quando ela existir.
@@ -47,9 +60,13 @@ export default async function LabTestDetailPage({ params }: { params: { id: stri
     redirect(`/dashboard/labtest/${test.id}/setup`);
   }
 
-  const [team, executions] = await Promise.all([
+  const [team, executions, userTeams] = await Promise.all([
     test.teamId
-      ? db.select({ name: teams.name }).from(teams).where(eq(teams.id, test.teamId)).then((r) => r[0])
+      ? db
+          .select({ name: teams.name })
+          .from(teams)
+          .where(eq(teams.id, test.teamId))
+          .then((r) => r[0])
       : Promise.resolve(null),
     db
       .select()
@@ -57,36 +74,82 @@ export default async function LabTestDetailPage({ params }: { params: { id: stri
       .where(eq(labTestExecutions.testId, test.id))
       .orderBy(desc(labTestExecutions.attemptNumber))
       .limit(20),
+    // Buscar as equipes do usuário para o modal de edição
+    db
+      .select({ id: teams.id, name: teams.name })
+      .from(teams)
+      .where(eq(teams.createdBy, userId)),
   ]);
 
   const status = STATUS_BADGE[test.status];
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-8 pb-16">
-      <div className="flex flex-col gap-3">
-        <Link href="/dashboard/labtest" className="text-xs text-base-content/50 hover:underline">
-          ← Testes
+    <div className="mx-auto flex flex-col gap-8 pb-16">
+      <div className="space-y-5">
+        <Link
+          href="/dashboard/labtest"
+          className="group inline-flex items-center gap-1.5 text-sm text-base-content/50 transition-colors hover:text-base-content"
+        >
+          <ArrowLeft
+            size={15}
+            className="transition-transform group-hover:-translate-x-0.5"
+          />
+          Testes
         </Link>
+        <div className="rounded-2xl border border-base-300 bg-base-100 shadow-sm">
+          <div className="flex flex-col gap-6 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <span className="badge badge-sm gap-1.5">
+                  <ClipboardCheck size={13} />
+                  {TYPE_LABEL[test.type]}
+                </span>
+                <span className={`badge badge-sm ${status.className}`}>
+                  {status.label}
+                </span>
+                {team && (
+                  <span className="badge badge-sm badge-ghost gap-1.5">
+                    <Users size={13} />
+                    {team.name}
+                  </span>
+                )}
+              </div>
 
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="badge badge-sm">{TYPE_LABEL[test.type]}</span>
-              <span className={`badge badge-sm ${status.className}`}>{status.label}</span>
-              {team && <span className="badge badge-sm badge-ghost">{team.name}</span>}
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                {test.name}
+              </h1>
+
+              {test.description ? (
+                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-base-content/60">
+                  {test.description}
+                </p>
+              ) : (
+                <p className="mt-2 text-sm italic text-base-content/40">
+                  Este teste não possui uma descrição.
+                </p>
+              )}
             </div>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight">{test.name}</h1>
-            {test.description && (
-              <p className="mt-1 max-w-2xl text-sm text-base-content/60">{test.description}</p>
-            )}
-          </div>
 
-          <Link href={`/dashboard/labtest/${test.id}/execute`} className="btn btn-warning">
-            + Nova execução
-          </Link>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
+              <Link
+                href={`/dashboard/labtest/${test.id}/execute`}
+                className="btn btn-warning gap-2 shadow-sm"
+              >
+                <Play size={16} fill="currentColor" />
+                Nova execução
+              </Link>
+
+              <LabTestDetailActions
+                testId={test.id}
+                testName={test.name}
+                testDescription={test.description || undefined}
+                teamId={test.teamId || undefined}
+                teams={userTeams}
+              />
+            </div>
+          </div>
         </div>
       </div>
-
       {test.type === "run" && <RunPlanSummary testId={test.id} />}
       {test.type === "calibrabot" && <CalibrationPlanSummary testId={test.id} />}
       {test.type === "personalizado" && <ParametersSummary testId={test.id} />}
@@ -159,7 +222,9 @@ async function RunPlanSummary({ testId }: { testId: string }) {
         Plano de missões
       </h2>
       {plan.length === 0 ? (
-        <p className="text-sm text-base-content/50">Nenhuma missão configurada.</p>
+        <p className="text-sm text-base-content/50">
+          Nenhuma missão configurada.
+        </p>
       ) : (
         <ol className="flex flex-col gap-2">
           {plan.map((m) => (
@@ -169,10 +234,14 @@ async function RunPlanSummary({ testId }: { testId: string }) {
             >
               <div className="flex items-center gap-3">
                 <span className="badge badge-neutral">{m.orderIndex + 1}</span>
-                <span className="font-mono text-xs text-base-content/50">{m.missionCode}</span>
+                <span className="font-mono text-xs text-base-content/50">
+                  {m.missionCode}
+                </span>
                 <span className="text-sm font-medium">{m.missionName}</span>
               </div>
-              <span className={`badge badge-sm ${m.fullAttempt ? "badge-warning" : "badge-ghost"}`}>
+              <span
+                className={`badge badge-sm ${m.fullAttempt ? "badge-warning" : "badge-ghost"}`}
+              >
                 {m.fullAttempt ? "Completa" : "Parcial"}
               </span>
             </li>
@@ -204,7 +273,9 @@ async function CalibrationPlanSummary({ testId }: { testId: string }) {
         Configuração de calibração
       </h2>
       {!plan ? (
-        <p className="text-sm text-base-content/50">Nenhuma configuração salva.</p>
+        <p className="text-sm text-base-content/50">
+          Nenhuma configuração salva.
+        </p>
       ) : (
         <div className="card border border-base-300 bg-base-200">
           <div className="card-body gap-2">
@@ -239,7 +310,9 @@ async function ParametersSummary({ testId }: { testId: string }) {
         Parâmetros ({parameters.length}/10)
       </h2>
       {parameters.length === 0 ? (
-        <p className="text-sm text-base-content/50">Nenhum parâmetro configurado.</p>
+        <p className="text-sm text-base-content/50">
+          Nenhum parâmetro configurado.
+        </p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-base-300">
           <table className="table">
@@ -256,7 +329,9 @@ async function ParametersSummary({ testId }: { testId: string }) {
               {parameters.map((p) => (
                 <tr key={p.id}>
                   <td className="text-sm font-medium">{p.name}</td>
-                  <td className="text-sm">{TYPE_LABEL_LOCAL[p.type] ?? p.type}</td>
+                  <td className="text-sm">
+                    {TYPE_LABEL_LOCAL[p.type] ?? p.type}
+                  </td>
                   <td className="text-sm">{p.unit ?? "—"}</td>
                   <td className="text-sm">{p.isRequired ? "Sim" : "Não"}</td>
                   <td className="max-w-xs truncate text-sm text-base-content/60">

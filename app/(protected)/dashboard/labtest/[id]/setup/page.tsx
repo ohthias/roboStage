@@ -4,8 +4,7 @@ import { TestSetupWizard } from "./TestSetupWizard";
 
 export default async function TestSetupPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const test = await getLabTestForSetup(id).catch(() => null);
-  if (!test) notFound();
+  const test = await getLabTestForSetup(id).catch(() => null) || notFound();
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">

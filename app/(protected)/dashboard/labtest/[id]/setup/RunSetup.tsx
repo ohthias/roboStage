@@ -68,12 +68,17 @@ export function RunSetup({ testId }: { testId: string }) {
       setSubmitError("Selecione ao menos uma missão.");
       return;
     }
+    if (!season) {
+      setSubmitError("Selecione uma temporada.");
+      return;
+    }
     setSubmitError(null);
 
     startTransition(async () => {
       try {
         await saveRunPlan(
           testId,
+          season,
           selected.map((s, index) => ({
             missionId: s.mission.id,
             orderIndex: index,

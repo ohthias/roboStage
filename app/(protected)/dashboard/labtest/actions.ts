@@ -11,9 +11,11 @@ import {
   labTestRunDetails,
   labTestCalibrationDetails,
   labTestParameterValues,
+  fllMissions,
 } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { randomUUID } from "crypto";
 import type {
   RunPlanMissionInput,
   CalibrationConfig,
@@ -96,23 +98,64 @@ async function markTestConfigured(testId: string) {
   await db.update(labTests).set({ status: "ativo" }).where(eq(labTests.id, testId));
 }
 
-export async function saveRunPlan(testId: string, missions: RunPlanMissionInput[]) {
+export async function saveRunPlan(
+  testId: string,
+  season: string,
+  missions: RunPlanMissionInput[]
+) {
   const session = await auth();
   if (!session?.userId) throw new Error("Não autenticado.");
   if (missions.length === 0) throw new Error("Selecione ao menos uma missão.");
 
-  await db.transaction(async (tx) => {
-    await tx.delete(labTestRunPlan).where(eq(labTestRunPlan.testId, testId));
-    await tx.insert(labTestRunPlan).values(
-      missions.map((m) => ({
+  // Look up mission UUIDs by code and season
+  const missionCodes = missions.map((m) => m.missionId);
+  const missionRecords = await db
+    .select({
+      code: fllMissions.code,
+      id: fllMissions.id,
+    })
+    .from(fllMissions)
+    .where(
+      and(
+        inArray(fllMissions.code, missionCodes),
+        eq(fllMissions.season, season)
+      )
+    );
+
+  const codeToId = new Map(missionRecords.map((m) => [m.code, m.id]));
+
+  // Generate UUIDs for missing missions and insert them
+  const missingCodes = missionCodes.filter((code) => !codeToId.has(code));
+  if (missingCodes.length > 0) {
+    for (const code of missingCodes) {
+      const newId = randomUUID();
+      await db.insert(fllMissions).values({
+        id: newId,
+        code,
+        name: code, // Use code as name for auto-generated missions
+        season,
+        maxScore: 0, // Default value, can be updated later
+      });
+      codeToId.set(code, newId);
+    }
+  }
+
+  await db.delete(labTestRunPlan).where(eq(labTestRunPlan.testId, testId));
+  await db.insert(labTestRunPlan).values(
+    missions.map((m) => {
+      const missionUuid = codeToId.get(m.missionId);
+      if (!missionUuid) {
+        throw new Error(`Missão não encontrada: ${m.missionId}`);
+      }
+      return {
         testId,
-        missionId: m.missionId,
+        missionId: missionUuid,
         orderIndex: m.orderIndex,
         fullAttempt: m.fullAttempt,
         notes: m.notes,
-      }))
-    );
-  });
+      };
+    })
+  );
 
   await markTestConfigured(testId);
   revalidatePath(`${BASE_PATH}/${testId}`);
@@ -153,28 +196,26 @@ export async function saveCustomParameters(testId: string, parameters: CustomPar
     throw new Error("Os nomes dos parâmetros precisam ser únicos.");
   }
 
-  await db.transaction(async (tx) => {
-    // Checagem defensiva contra parâmetros já existentes (retomando um rascunho).
-    const existing = await tx
-      .select({ id: labTestParameters.id })
-      .from(labTestParameters)
-      .where(eq(labTestParameters.testId, testId));
+  // Checagem defensiva contra parâmetros já existentes (retomando um rascunho).
+  const existing = await db
+    .select({ id: labTestParameters.id })
+    .from(labTestParameters)
+    .where(eq(labTestParameters.testId, testId));
 
-    if (existing.length + parameters.length > MAX_CUSTOM_PARAMETERS) {
-      throw new Error(`No máximo ${MAX_CUSTOM_PARAMETERS} parâmetros por teste.`);
-    }
+  if (existing.length + parameters.length > MAX_CUSTOM_PARAMETERS) {
+    throw new Error(`No máximo ${MAX_CUSTOM_PARAMETERS} parâmetros por teste.`);
+  }
 
-    await tx.insert(labTestParameters).values(
-      parameters.map((p) => ({
-        testId,
-        name: p.name.trim(),
-        type: p.type,
-        unit: p.unit || null,
-        description: p.description || null,
-        isRequired: p.isRequired,
-      }))
-    );
-  });
+  await db.insert(labTestParameters).values(
+    parameters.map((p) => ({
+      testId,
+      name: p.name.trim(),
+      type: p.type,
+      unit: p.unit || null,
+      description: p.description || null,
+      isRequired: p.isRequired,
+    }))
+  );
 
   await markTestConfigured(testId);
   revalidatePath(`${BASE_PATH}/${testId}`);

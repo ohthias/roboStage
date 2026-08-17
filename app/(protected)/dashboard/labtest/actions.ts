@@ -307,40 +307,38 @@ export async function createRunExecution(base: BaseExecutionInput, input: RunExe
   if (!session?.userId) throw new Error("Não autenticado.");
   if (input.missions.length === 0) throw new Error("Registre o resultado de ao menos uma missão.");
 
-  await db.transaction(async (tx) => {
-    const attemptNumber = await nextAttemptNumber(base.testId);
-    const [execution] = await tx
-      .insert(labTestExecutions)
-      .values({
-        testId: base.testId,
-        attemptNumber,
-        operatorId: base.operatorId,
-        durationSeconds: toNumeric(base.durationSeconds),
-        notes: base.notes,
-        resultSummary: base.resultSummary,
-      })
-      .returning();
+  const attemptNumber = await nextAttemptNumber(base.testId);
+  const [execution] = await db
+    .insert(labTestExecutions)
+    .values({
+      testId: base.testId,
+      attemptNumber,
+      operatorId: base.operatorId,
+      durationSeconds: toNumeric(base.durationSeconds),
+      notes: base.notes,
+      resultSummary: base.resultSummary,
+    })
+    .returning();
 
-    await tx.insert(labTestMissionResults).values(
-      input.missions.map((m) => ({
-        executionId: execution.id,
-        missionId: m.missionId,
-        scoreObtained: m.scoreObtained,
-        completed: m.completed,
-        notes: m.notes,
-      }))
-    );
-
-    await tx.insert(labTestRunDetails).values({
+  await db.insert(labTestMissionResults).values(
+    input.missions.map((m) => ({
       executionId: execution.id,
-      strategyVersionId: input.strategyVersionId ?? null,
-      season: input.season,
-      arena: input.arena,
-      totalScore: input.totalScore,
-      finalTimeSeconds: toNumeric(input.finalTimeSeconds),
-      penalties: input.penalties,
-      finalResult: input.finalResult,
-    });
+      missionId: m.missionId,
+      scoreObtained: m.scoreObtained,
+      completed: m.completed,
+      notes: m.notes,
+    }))
+  );
+
+  await db.insert(labTestRunDetails).values({
+    executionId: execution.id,
+    strategyVersionId: input.strategyVersionId ?? null,
+    season: input.season,
+    arena: input.arena,
+    totalScore: input.totalScore,
+    finalTimeSeconds: toNumeric(input.finalTimeSeconds),
+    penalties: input.penalties,
+    finalResult: input.finalResult,
   });
 
   revalidatePath(`${BASE_PATH}/${base.testId}`);
@@ -353,34 +351,32 @@ export async function createCalibrationExecution(
   const session = await auth();
   if (!session?.userId) throw new Error("Não autenticado.");
 
-  await db.transaction(async (tx) => {
-    const attemptNumber = await nextAttemptNumber(base.testId);
-    const [execution] = await tx
-      .insert(labTestExecutions)
-      .values({
-        testId: base.testId,
-        attemptNumber,
-        operatorId: base.operatorId,
-        durationSeconds: toNumeric(base.durationSeconds),
-        notes: base.notes,
-        resultSummary: base.resultSummary,
-      })
-      .returning();
+  const attemptNumber = await nextAttemptNumber(base.testId);
+  const [execution] = await db
+    .insert(labTestExecutions)
+    .values({
+      testId: base.testId,
+      attemptNumber,
+      operatorId: base.operatorId,
+      durationSeconds: toNumeric(base.durationSeconds),
+      notes: base.notes,
+      resultSummary: base.resultSummary,
+    })
+    .returning();
 
-    await tx.insert(labTestCalibrationDetails).values({
-      executionId: execution.id,
-      calibrationType: input.calibrationType as DbCalibrationType,
-      robotModel: input.robotModel,
-      firmware: input.firmware,
-      batteryUsed: input.batteryUsed,
-      sensorUsed: input.sensorUsed,
-      motorUsed: input.motorUsed,
-      portUsed: input.portUsed,
-      idealValueFound: input.idealValueFound,
-      configurationUsed: input.configurationUsed,
-      result: input.result,
-      finalNotes: input.finalNotes,
-    });
+  await db.insert(labTestCalibrationDetails).values({
+    executionId: execution.id,
+    calibrationType: input.calibrationType as DbCalibrationType,
+    robotModel: input.robotModel,
+    firmware: input.firmware,
+    batteryUsed: input.batteryUsed,
+    sensorUsed: input.sensorUsed,
+    motorUsed: input.motorUsed,
+    portUsed: input.portUsed,
+    idealValueFound: input.idealValueFound,
+    configurationUsed: input.configurationUsed,
+    result: input.result,
+    finalNotes: input.finalNotes,
   });
 
   revalidatePath(`${BASE_PATH}/${base.testId}`);
@@ -394,28 +390,26 @@ export async function createPersonalizadoExecution(
   if (!session?.userId) throw new Error("Não autenticado.");
   if (input.values.length === 0) throw new Error("Preencha ao menos um parâmetro.");
 
-  await db.transaction(async (tx) => {
-    const attemptNumber = await nextAttemptNumber(base.testId);
-    const [execution] = await tx
-      .insert(labTestExecutions)
-      .values({
-        testId: base.testId,
-        attemptNumber,
-        operatorId: base.operatorId,
-        durationSeconds: toNumeric(base.durationSeconds),
-        notes: base.notes,
-        resultSummary: base.resultSummary,
-      })
-      .returning();
+  const attemptNumber = await nextAttemptNumber(base.testId);
+  const [execution] = await db
+    .insert(labTestExecutions)
+    .values({
+      testId: base.testId,
+      attemptNumber,
+      operatorId: base.operatorId,
+      durationSeconds: toNumeric(base.durationSeconds),
+      notes: base.notes,
+      resultSummary: base.resultSummary,
+    })
+    .returning();
 
-    await tx.insert(labTestParameterValues).values(
-      input.values.map((v) => ({
-        executionId: execution.id,
-        parameterId: v.parameterId,
-        value: v.value,
-      }))
-    );
-  });
+  await db.insert(labTestParameterValues).values(
+    input.values.map((v) => ({
+      executionId: execution.id,
+      parameterId: v.parameterId,
+      value: v.value,
+    }))
+  );
 
   revalidatePath(`${BASE_PATH}/${base.testId}`);
 }

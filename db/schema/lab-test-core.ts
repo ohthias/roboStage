@@ -125,11 +125,6 @@ export const labTestExecutions = pgTable(
       foreignColumns: [labTests.id],
       name: "lab_test_executions_test_id_fkey",
     }).onDelete("cascade"),
-    operatorFk: foreignKey({
-      columns: [table.operatorId],
-      foreignColumns: [users.id],
-      name: "lab_test_executions_operator_id_fkey",
-    }).onDelete("restrict"),
   })
 );
 

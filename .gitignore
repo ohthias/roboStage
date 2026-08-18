@@ -45,5 +45,6 @@ cache/
 drizzle/
 *.db
 *.sql
-# clerk configuration (can include secrets)
+
+# clerk configuration
 /.clerk/

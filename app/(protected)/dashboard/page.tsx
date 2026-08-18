@@ -7,8 +7,8 @@ import {
   users,
   leagues,
   userLeagueInterests,
-  labTests,
-  labTestExecutions,
+  testExecutions,
+  tests,
   documents,
 } from "@/db/schema";
 
@@ -76,50 +76,43 @@ export default async function DashboardPage() {
 
     db
       .select({
-        id: labTests.id,
-        name: labTests.name,
-        description: labTests.description,
-        type: labTests.type,
-        status: labTests.status,
-        updatedAt: labTests.updatedAt,
-        executionCount: sql<number>`count(${labTestExecutions.id})`.mapWith(
-          Number,
-        ),
-        lastExecutedAt: sql<
-          string | null
-        >`max(${labTestExecutions.executedAt})`,
+        id: tests.id,
+        name: tests.name,
+        description: tests.description,
+        type: tests.mode,
+        status: tests.status,
+        executionCount: sql<number>`count(${testExecutions.id})`.mapWith(Number),
+        lastExecutedAt: tests.lastAccessAt,
+        updatedAt: tests.updatedAt,
       })
-      .from(labTests)
-      .leftJoin(labTestExecutions, eq(labTestExecutions.testId, labTests.id))
-      .where(eq(labTests.userId, userId))
-      .groupBy(labTests.id)
-      .orderBy(desc(labTests.updatedAt))
-      .limit(6),
+      .from(tests)
+      .leftJoin(testExecutions, eq(testExecutions.testId, tests.id))
+      .where(eq(tests.userId, userId))
+      .groupBy(tests.id)
+      .orderBy(desc(tests.updatedAt))
+      .limit(5),
 
     db
       .select({ count: sql<number>`count(*)`.mapWith(Number) })
-      .from(labTests)
-      .where(and(eq(labTests.userId, userId), eq(labTests.status, "ativo")))
-      .then((r) => r[0]?.count ?? 0),
+      .from(tests)
+      .where(and(eq(tests.userId, userId), eq(tests.status, "ativo"))),
 
     db
       .select({ count: sql<number>`count(*)`.mapWith(Number) })
-      .from(labTestExecutions)
-      .innerJoin(labTests, eq(labTests.id, labTestExecutions.testId))
-      .where(eq(labTests.userId, userId))
-      .then((r) => r[0]?.count ?? 0),
+      .from(testExecutions)
+      .innerJoin(tests, eq(tests.id, testExecutions.testId))
+      .where(eq(tests.userId, userId)),
 
     db
       .select({ count: sql<number>`count(*)`.mapWith(Number) })
-      .from(labTestExecutions)
-      .innerJoin(labTests, eq(labTests.id, labTestExecutions.testId))
+      .from(testExecutions)
+      .innerJoin(tests, eq(tests.id, testExecutions.testId))
       .where(
         and(
-          eq(labTests.userId, userId),
-          gte(labTestExecutions.executedAt, startOfWeek()),
+          eq(tests.userId, userId),
+          gte(testExecutions.createdAt, startOfWeek()),
         ),
-      )
-      .then((r) => r[0]?.count ?? 0),
+      ),
 
     db
       .select({
@@ -133,6 +126,10 @@ export default async function DashboardPage() {
       .orderBy(desc(documents.updatedAt))
       .limit(4),
   ]);
+
+  const activeTests = activeTestsCount[0]?.count ?? 0;
+  const totalExecutions = totalExecutionsCount[0]?.count ?? 0;
+  const weeklyExecutions = executionsThisWeek[0]?.count ?? 0;
 
   const firstName = currentUser.name?.split(" ")[0] || "por aqui";
 
@@ -171,7 +168,7 @@ export default async function DashboardPage() {
                 Testes ativos
               </p>
               <p className="mt-3 text-3xl font-bold tracking-tight text-primary">
-                {activeTestsCount}
+                {activeTests}
               </p>
             </div>
 
@@ -192,7 +189,7 @@ export default async function DashboardPage() {
                 Execuções totais
               </p>
               <p className="mt-3 text-3xl font-bold tracking-tight">
-                {totalExecutionsCount}
+                {totalExecutions}
               </p>
             </div>
 
@@ -213,7 +210,7 @@ export default async function DashboardPage() {
                 Esta semana
               </p>
               <p className="mt-3 text-3xl font-bold tracking-tight text-success">
-                {executionsThisWeek}
+                {weeklyExecutions}
               </p>
             </div>
 

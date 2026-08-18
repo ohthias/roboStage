@@ -4,7 +4,5 @@ export * from "./leagues";
 export * from "./teams";
 export * from "./notebook";
 export * from "./tags";
-export * from "./lab-test-core";
-export * from "./lab-test-runs";
-export * from "./lab-test-calibration";
+export * from "./labtest";
 export * from "./relations";

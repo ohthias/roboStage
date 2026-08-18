@@ -3,37 +3,14 @@ import { users } from "./users";
 import { leagues, userLeagueInterests } from "./leagues";
 import { teams, teamMembers } from "./teams";
 import { folders, documents } from "./notebook";
-import {
-  labTests,
-  labTestTagAssignments,
-  labTestExecutions,
-  labTestParameters,
-  labTestParameterValues,
-  labTestMetrics,
-  labTestResults,
-  labTestAttachments,
-} from "./lab-test-core";
-import {
-  fllMissions,
-  strategies,
-  strategyVersions,
-  labTestRunDetails,
-  labTestMissionResults,
-  labTestFailures,
-  labTestRunPlan,
-} from "./lab-test-runs";
-import {
-  labTestCalibrationDetails,
-  labTestReadings,
-  labTestCalibrationPlan,
-} from "./lab-test-calibration";
+import { tests, testFields, testExecutions, testFieldValues } from "./labtest";
 
 export const usersRelations = relations(users, ({ many }) => ({
   leagueInterests: many(userLeagueInterests),
   teamMemberships: many(teamMembers),
   folders: many(folders),
   documents: many(documents),
-  labTests: many(labTests),
+  tests: many(tests),
 }));
 
 export const leaguesRelations = relations(leagues, ({ many }) => ({
@@ -61,163 +38,15 @@ export const teamsRelations = relations(teams, ({ many, one }) => ({
     fields: [teams.leagueId],
     references: [leagues.id],
   }),
-  labTests: many(labTests),
   folders: many(folders),
   documents: many(documents),
+  tests: many(tests),
 }));
 
 export const teamMembersRelations = relations(teamMembers, ({ one }) => ({
   team: one(teams, { fields: [teamMembers.teamId], references: [teams.id] }),
   user: one(users, { fields: [teamMembers.userId], references: [users.id] }),
 }));
-
-export const labTestsRelations = relations(labTests, ({ one, many }) => ({
-  owner: one(users, { fields: [labTests.userId], references: [users.id] }),
-  team: one(teams, { fields: [labTests.teamId], references: [teams.id] }),
-  executions: many(labTestExecutions),
-  parameters: many(labTestParameters),
-  metrics: many(labTestMetrics),
-  attachments: many(labTestAttachments),
-  tagAssignments: many(labTestTagAssignments),
-  strategies: many(strategies),
-  runPlan: many(labTestRunPlan),
-  calibrationPlan: many(labTestCalibrationPlan),
-}));
-
-export const labTestExecutionsRelations = relations(
-  labTestExecutions,
-  ({ one, many }) => ({
-    test: one(labTests, {
-      fields: [labTestExecutions.testId],
-      references: [labTests.id],
-    }),
-    operator: one(users, {
-      fields: [labTestExecutions.operatorId],
-      references: [users.id],
-    }),
-    parameterValues: many(labTestParameterValues),
-    results: many(labTestResults),
-    attachments: many(labTestAttachments),
-    runDetails: one(labTestRunDetails, {
-      fields: [labTestExecutions.id],
-      references: [labTestRunDetails.executionId],
-    }),
-    calibrationDetails: one(labTestCalibrationDetails, {
-      fields: [labTestExecutions.id],
-      references: [labTestCalibrationDetails.executionId],
-    }),
-    missionResults: many(labTestMissionResults),
-    failures: many(labTestFailures),
-    readings: many(labTestReadings),
-  })
-);
-
-export const labTestParametersRelations = relations(
-  labTestParameters,
-  ({ one, many }) => ({
-    test: one(labTests, {
-      fields: [labTestParameters.testId],
-      references: [labTests.id],
-    }),
-    values: many(labTestParameterValues),
-  })
-);
-
-export const labTestMetricsRelations = relations(
-  labTestMetrics,
-  ({ one, many }) => ({
-    test: one(labTests, {
-      fields: [labTestMetrics.testId],
-      references: [labTests.id],
-    }),
-    results: many(labTestResults),
-  })
-);
-
-export const strategiesRelations = relations(
-  strategies,
-  ({ one, many }) => ({
-    test: one(labTests, {
-      fields: [strategies.testId],
-      references: [labTests.id],
-    }),
-    versions: many(strategyVersions),
-  })
-);
-
-export const strategyVersionsRelations = relations(
-  strategyVersions,
-  ({ one, many }) => ({
-    strategy: one(strategies, {
-      fields: [strategyVersions.strategyId],
-      references: [strategies.id],
-    }),
-    runDetails: many(labTestRunDetails),
-  })
-);
-
-export const labTestRunDetailsRelations = relations(
-  labTestRunDetails,
-  ({ one }) => ({
-    execution: one(labTestExecutions, {
-      fields: [labTestRunDetails.executionId],
-      references: [labTestExecutions.id],
-    }),
-    strategyVersion: one(strategyVersions, {
-      fields: [labTestRunDetails.strategyVersionId],
-      references: [strategyVersions.id],
-    }),
-  })
-);
-
-export const labTestMissionResultsRelations = relations(
-  labTestMissionResults,
-  ({ one }) => ({
-    execution: one(labTestExecutions, {
-      fields: [labTestMissionResults.executionId],
-      references: [labTestExecutions.id],
-    }),
-    mission: one(fllMissions, {
-      fields: [labTestMissionResults.missionId],
-      references: [fllMissions.id],
-    }),
-  })
-);
-
-export const labTestFailuresRelations = relations(
-  labTestFailures,
-  ({ one }) => ({
-    execution: one(labTestExecutions, {
-      fields: [labTestFailures.executionId],
-      references: [labTestExecutions.id],
-    }),
-    mission: one(fllMissions, {
-      fields: [labTestFailures.missionId],
-      references: [fllMissions.id],
-    }),
-  })
-);
-
-export const labTestRunPlanRelations = relations(labTestRunPlan, ({ one }) => ({
-  test: one(labTests, {
-    fields: [labTestRunPlan.testId],
-    references: [labTests.id],
-  }),
-  mission: one(fllMissions, {
-    fields: [labTestRunPlan.missionId],
-    references: [fllMissions.id],
-  }),
-}));
-
-export const labTestCalibrationPlanRelations = relations(
-  labTestCalibrationPlan,
-  ({ one }) => ({
-    test: one(labTests, {
-      fields: [labTestCalibrationPlan.testId],
-      references: [labTests.id],
-    }),
-  })
-);
 
 export const foldersRelations = relations(folders, ({ one, many }) => ({
   owner: one(users, { fields: [folders.userId], references: [users.id] }),
@@ -227,6 +56,7 @@ export const foldersRelations = relations(folders, ({ one, many }) => ({
     references: [folders.id],
   }),
   documents: many(documents),
+  tests: many(tests),
 }));
 
 export const documentsRelations = relations(documents, ({ one }) => ({
@@ -237,3 +67,40 @@ export const documentsRelations = relations(documents, ({ one }) => ({
     references: [folders.id],
   }),
 }));
+
+// ---------------------------------------------------------------------------
+// LabTest
+// ---------------------------------------------------------------------------
+
+export const testsRelations = relations(tests, ({ one, many }) => ({
+  owner: one(users, { fields: [tests.userId], references: [users.id] }),
+  team: one(teams, { fields: [tests.teamId], references: [teams.id] }),
+  folder: one(folders, { fields: [tests.folderId], references: [folders.id] }),
+  fields: many(testFields),
+  executions: many(testExecutions),
+}));
+
+export const testFieldsRelations = relations(testFields, ({ one }) => ({
+  test: one(tests, { fields: [testFields.testId], references: [tests.id] }),
+}));
+
+export const testExecutionsRelations = relations(
+  testExecutions,
+  ({ one, many }) => ({
+    test: one(tests, {
+      fields: [testExecutions.testId],
+      references: [tests.id],
+    }),
+    fieldValues: many(testFieldValues),
+  }),
+);
+
+export const testFieldValuesRelations = relations(
+  testFieldValues,
+  ({ one }) => ({
+    execution: one(testExecutions, {
+      fields: [testFieldValues.executionId],
+      references: [testExecutions.id],
+    }),
+  }),
+);

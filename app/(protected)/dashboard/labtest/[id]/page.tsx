@@ -9,7 +9,7 @@
 // ---------------------------------------------------------------------------
 
 import { useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   Award,
   Activity,
@@ -50,6 +50,7 @@ import {
   fmtDate,
 } from "@/components/labtest/shared";
 import type { FieldDefinition, TestEntry } from "@/types/labtest.types";
+import LabTestResponseForm from "@/components/labtest/ResultForm";
 
 // ---------------------------------------------------------------------------
 // Bloco de estatísticas gerais — funciona para qualquer modo
@@ -370,6 +371,7 @@ function EntryHistory({
 
 export default function LabTestView() {
   const params = useParams();
+  const router = useRouter();
   const testId = params.id as string;
   const { test, fields, entries, loading, error } = useTest(testId);
 
@@ -427,6 +429,7 @@ export default function LabTestView() {
                     {test.season}
                   </span>
                 )}
+                <LabTestResponseForm testName={test.name} fields={fields} mode={test.mode} />
               </div>
               <h1 className="text-2xl font-bold tracking-tight">{test.name}</h1>
               <p className="mt-1 flex items-center gap-1.5 text-xs text-base-content/40">

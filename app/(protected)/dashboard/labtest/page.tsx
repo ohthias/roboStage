@@ -37,7 +37,7 @@ function TestCard({ test }: { test: TestListItem }) {
 
   return (
     <Link
-      href={`/lab-test/${test.id}`}
+      href={`/dashboard/labtest/${test.id}`}
       className="group flex flex-col gap-4 rounded-2xl border border-base-content/10 bg-base-100 p-5 transition-all hover:border-primary/25 hover:shadow-sm"
     >
       <div className="flex items-start justify-between gap-3">

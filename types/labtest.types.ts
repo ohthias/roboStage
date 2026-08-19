@@ -7,7 +7,7 @@
 // (catálogo fixo vs. usuário digita) e como a UI de resposta/visualização se
 // organiza — os dados em si seguem o mesmo formato.
 
-export type ModeId = "runs" | "calibrabot" | "individual" | "custom";
+export type ModeId = "runs" | "custom";
 
 export type FieldType = "number" | "boolean" | "text" | "select" | "duration";
 

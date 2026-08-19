@@ -44,13 +44,13 @@ export const fieldSourceEnum = pgEnum("field_source", ["manual", "device"]);
 
 export const tests = pgTable("tests", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
+  userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  teamId: integer("team_id").references(() => teams.id, {
+  teamId: uuid("team_id").references(() => teams.id, {
     onDelete: "set null",
   }),
-  folderId: integer("folder_id").references(() => folders.id, {
+  folderId: uuid("folder_id").references(() => folders.id, {
     onDelete: "set null",
   }),
   name: text("name").notNull(),

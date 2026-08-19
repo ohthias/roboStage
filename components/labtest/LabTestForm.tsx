@@ -14,11 +14,12 @@ import {
 import { InfoBox, SectionDivider } from "./shared";
 import type { FieldDefinition, ModeId } from "@/types/labtest.types";
 
-type Season = "submerged" | "unearthed" | "";
+type Season = "submerged" | "unearthed" | "bioglow" | "";
 
 const SEASONS: { id: Season; label: string; emoji: string }[] = [
   { id: "submerged", label: "Submerged", emoji: "🌊" },
   { id: "unearthed", label: "Unearthed", emoji: "🌍" },
+  { id: "bioglow", label: "Bioglow", emoji: "💡" },
 ];
 
 interface LabTestFormProps {
@@ -212,7 +213,7 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
     try {
       await createTest({
         name: cleanName,
-        description: mode === "individual" ? notes.trim() || null : null,
+        description: notes.trim() || null,
         mode,
         season: modeDef.requiresSeason ? season : null,
         fields,
@@ -359,22 +360,6 @@ export default function LabTestForm({ onSuccess, onCancel }: LabTestFormProps) {
                 ? "Cada parâmetro vira uma coluna nos lançamentos e um gráfico próprio na visualização — defina exatamente o que quer acompanhar."
                 : "As variáveis definidas aqui serão registradas em cada combinação testada."}
             </InfoBox>
-          </div>
-        )}
-
-        {mode === "individual" && (
-          <div className="form-control gap-1.5">
-            <label className="label py-0">
-              <span className="label-text font-medium">Observações iniciais</span>
-              <span className="label-text-alt text-base-content/40">opcional</span>
-            </label>
-            <textarea
-              rows={3}
-              placeholder="Hipótese ou contexto do teste..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="textarea textarea-bordered w-full resize-none text-sm leading-relaxed focus:textarea-primary"
-            />
           </div>
         )}
 

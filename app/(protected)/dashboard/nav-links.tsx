@@ -24,19 +24,9 @@ const MAIN_LINKS: NavItem[] = [
     Icon: Home,
   },
   {
-    href: "/dashboard/labtest",
-    label: "LabTest",
-    Icon: FlaskConical,
-  },
-  {
     href: "/dashboard/documents",
     label: "Caderno",
     Icon: Book,
-  },
-  {
-    href: "/dashboard/projects",
-    label: "Projetos",
-    Icon: Grid2X2,
   },
 ];
 

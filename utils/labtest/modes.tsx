@@ -1,120 +1,97 @@
-"use client";
-
 // ---------------------------------------------------------------------------
-// Registro de modos do LabTest
+// Fonte única de verdade sobre os 4 modos do LabTest.
+// Qualquer tela nova que precisar de ícone/cor/rótulo de um modo usa este
+// arquivo — inclusive o modo "Personalizado", sem precisar tocar em telas
+// existentes (Dashboard, View, Form).
 // ---------------------------------------------------------------------------
-// Para adicionar um modo novo no futuro, basta acrescentar uma entrada aqui.
-// Formulário de criação, formulário de resposta e a tela de visualização lêem
-// esse registro em vez de terem `if (mode === "...")` espalhado pelo código.
-//
-// `fieldSource`:
-//   - "catalog": os campos vêm de um catálogo fixo (ex: missões da temporada).
-//   - "user-defined": o usuário desenha os próprios campos na hora de criar o
-//     teste (CalibraBot e Personalizado).
-//
-// Modos com `fieldSource: "user-defined"` reaproveitam automaticamente o
-// mesmo editor de campos e o mesmo motor de lançamento/gráfico — é assim que
-// o modo "Personalizado" nasce praticamente de graça a partir do CalibraBot.
 
-import {
-  ListOrdered,
-  SlidersHorizontal,
-  Target,
-  Sparkles,
-  type LucideIcon,
-} from "lucide-react";
-import type { FieldDefinition, ModeId } from "@/types/labtest.types";
+import { FlaskConical, Gauge, Target, Sparkles, type LucideIcon } from "lucide-react";
+import type { ModeId } from "@/types/labtest.types";
 
-export type AccentKey = "primary" | "secondary" | "accent" | "info";
+export type AccentColor = "primary" | "secondary" | "accent" | "info";
 
-export interface LabTestModeDefinition {
+export interface ModeDefinition {
   id: ModeId;
   label: string;
-  sublabel: string;
+  description: string;
   icon: LucideIcon;
-  accent: AccentKey;
-  fieldSource: "catalog" | "user-defined";
-  /** Se true, a ordem dos campos importa e é definida por drag-and-drop na criação. */
-  orderedFields: boolean;
-  /** Tipos de campo permitidos quando o usuário desenha os próprios campos. */
-  allowedFieldTypes: FieldDefinition["type"][];
-  /** Requer seleção de temporada na criação (para buscar catálogo de missões). */
-  requiresSeason: boolean;
+  accent: AccentColor;
 }
 
-export const LAB_TEST_MODES: Record<ModeId, LabTestModeDefinition> = {
+export const LAB_TEST_MODES: Record<ModeId, ModeDefinition> = {
   runs: {
     id: "runs",
-    label: "Criação de Runs",
-    sublabel: "Crie sequências de missões para gerar runs personalizadas",
-    icon: ListOrdered,
+    label: "Runs",
+    description: "Pontuação de missões por round de competição",
+    icon: Target,
     accent: "primary",
-    fieldSource: "catalog",
-    orderedFields: true,
-    allowedFieldTypes: ["number"],
-    requiresSeason: true,
+  },
+  calibrabot: {
+    id: "calibrabot",
+    label: "CalibraBot",
+    description: "Calibragem de variáveis técnicas do robô",
+    icon: Gauge,
+    accent: "info",
+  },
+  individual: {
+    id: "individual",
+    label: "Individual",
+    description: "Missões isoladas, treino de precisão",
+    icon: FlaskConical,
+    accent: "secondary",
   },
   custom: {
     id: "custom",
     label: "Personalizado",
-    sublabel: "Defina os próprios parâmetros e analise o que quiser",
+    description: "Parâmetros definidos livremente pela equipe",
     icon: Sparkles,
-    accent: "info",
-    fieldSource: "user-defined",
-    orderedFields: false,
-    allowedFieldTypes: ["number", "boolean", "text", "select", "duration"],
-    requiresSeason: false,
+    accent: "accent",
   },
 };
 
-export const LAB_TEST_MODE_LIST = Object.values(LAB_TEST_MODES);
+export const LAB_TEST_MODE_LIST: ModeDefinition[] = Object.values(LAB_TEST_MODES);
 
-export function getModeDefinition(mode: ModeId): LabTestModeDefinition {
-  return LAB_TEST_MODES[mode];
+export function getModeDefinition(mode: ModeId): ModeDefinition {
+  return LAB_TEST_MODES[mode] ?? LAB_TEST_MODES.custom;
 }
 
+// Classes utilitárias por cor de destaque — usadas por StatCard, badges, etc.
 export const ACCENT_STYLES: Record<
-  AccentKey,
+  AccentColor,
   {
-    text: string;
     bgSoft: string;
-    /** versão mais sutil do bgSoft, usada em cards expandidos (evita gerar classes dinamicamente) */
     bgSoft3: string;
+    text: string;
     borderSoft: string;
-    btn: string;
     badgeBorder: string;
   }
 > = {
   primary: {
+    bgSoft: "bg-primary/10",
+    bgSoft3: "bg-primary/5",
     text: "text-primary",
-    bgSoft: "bg-primary/12",
-    bgSoft3: "bg-primary/3",
-    borderSoft: "border-primary/25",
-    btn: "btn-primary",
-    badgeBorder: "border-primary/30",
+    borderSoft: "border-primary/20",
+    badgeBorder: "badge-primary",
   },
   secondary: {
+    bgSoft: "bg-secondary/10",
+    bgSoft3: "bg-secondary/5",
     text: "text-secondary",
-    bgSoft: "bg-secondary/12",
-    bgSoft3: "bg-secondary/3",
-    borderSoft: "border-secondary/25",
-    btn: "btn-secondary",
-    badgeBorder: "border-secondary/30",
+    borderSoft: "border-secondary/20",
+    badgeBorder: "badge-secondary",
   },
   accent: {
+    bgSoft: "bg-accent/10",
+    bgSoft3: "bg-accent/5",
     text: "text-accent",
-    bgSoft: "bg-accent/12",
-    bgSoft3: "bg-accent/3",
-    borderSoft: "border-accent/25",
-    btn: "btn-accent",
-    badgeBorder: "border-accent/30",
+    borderSoft: "border-accent/20",
+    badgeBorder: "badge-accent",
   },
   info: {
+    bgSoft: "bg-info/10",
+    bgSoft3: "bg-info/5",
     text: "text-info",
-    bgSoft: "bg-info/12",
-    bgSoft3: "bg-info/3",
-    borderSoft: "border-info/25",
-    btn: "btn-info",
-    badgeBorder: "border-info/30",
+    borderSoft: "border-info/20",
+    badgeBorder: "badge-info",
   },
 };

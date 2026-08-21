@@ -10,7 +10,7 @@ import type {
 } from "@/types/labtest.types";
 
 // ---------------------------------------------------------------------------
-// useTests — lista de testes do usuário (equivalente ao hook original)
+// useTests — lista de testes do usuário
 // ---------------------------------------------------------------------------
 
 export interface TestListItem extends TestRecord {
@@ -30,9 +30,7 @@ export function useTests() {
       const response = await fetch("/api/labtest");
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Erro ao carregar testes");
-      setTests(
-        data as TestListItem[],
-      );
+      setTests(data as TestListItem[]);
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : "Erro ao carregar testes");
@@ -82,7 +80,13 @@ export function useTest(testId: string | undefined) {
     load();
   }, [load]);
 
-  return { test, fields, entries, loading, error, refresh: load };
+  // próximo número de execução — usado pelo ResultForm ao gravar um lote novo
+  const nextExecutionNumber = useMemo(
+    () => (entries.length ? Math.max(...entries.map((e) => e.executionNumber)) + 1 : 1),
+    [entries],
+  );
+
+  return { test, fields, entries, nextExecutionNumber, loading, error, refresh: load };
 }
 
 // ---------------------------------------------------------------------------
@@ -115,9 +119,7 @@ export function useCreateTest() {
       if (!response.ok) throw new Error(data.error ?? "Não foi possível salvar o teste.");
       return data.id as string;
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Não foi possível salvar o teste.",
-      );
+      setError(err instanceof Error ? err.message : "Não foi possível salvar o teste.");
       throw err;
     } finally {
       setSubmitting(false);
@@ -160,9 +162,7 @@ export function useSaveEntries(testId: string | undefined) {
         if (!response.ok) throw new Error(data.error ?? "Não foi possível salvar os resultados.");
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : "Não foi possível salvar os resultados.",
+          err instanceof Error ? err.message : "Não foi possível salvar os resultados.",
         );
         throw err;
       } finally {
@@ -200,11 +200,14 @@ export function useMissionCatalog(season: string | null) {
           fieldKey: m.id,
           label: m.name,
           type: "number" as const,
-          targetValue: m.maxValue ?? null,
+          targetValue: Array.isArray(m.points) ? Math.max(...m.points) : (m.points ?? null),
           order: index,
           source: "manual" as const,
         }));
       setMissions(filtered);
+    } catch (err) {
+      console.error(err);
+      setMissions([]);
     } finally {
       setLoading(false);
     }

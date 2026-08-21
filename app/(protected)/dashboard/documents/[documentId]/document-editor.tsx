@@ -23,7 +23,13 @@ import {
 
 import { ToolbarPlugin } from "@/components/editor/plugins/toolbar-plugin";
 import { AutosavePlugin } from "@/components/editor/plugins/auto-save-plugin";
-import { renameDocument, updateDocumentIcon } from "../actions";
+import {
+  deleteDocument,
+  duplicateDocument,
+  moveNotebookItem,
+  renameDocument,
+  updateDocumentIcon,
+} from "../actions";
 
 const EMOJI_OPTIONS = [
   "📝",
@@ -67,11 +73,15 @@ export function NotebookEditor({
   initialTitle,
   initialIcon,
   initialContent,
+  currentFolderId,
+  folders,
 }: {
   documentId: string;
   initialTitle: string;
   initialIcon: string | null;
   initialContent: Record<string, unknown> | null;
+  currentFolderId: string | null;
+  folders: { id: string; name: string; parentId: string | null }[];
 }) {
   const router = useRouter();
 
@@ -80,6 +90,10 @@ export function NotebookEditor({
   const [saveState, setSaveState] = useState<
     "idle" | "saving" | "saved"
   >("idle");
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [targetFolderId, setTargetFolderId] = useState<string | null>(
+    currentFolderId,
+  );
 
   const [, startTransition] = useTransition();
 
@@ -116,6 +130,29 @@ export function NotebookEditor({
     startTransition(async () => {
       await updateDocumentIcon(documentId, next);
       router.refresh();
+    });
+  }
+
+  function handleDuplicate() {
+    startTransition(async () => {
+      const duplicated = await duplicateDocument(documentId);
+      if (duplicated) router.push(`/dashboard/documents/${duplicated.id}`);
+    });
+  }
+
+  function handleMove() {
+    startTransition(async () => {
+      await moveNotebookItem("document", documentId, targetFolderId);
+      setShowMoveDialog(false);
+      router.refresh();
+    });
+  }
+
+  function handleDelete() {
+    if (!window.confirm("Excluir esta página? Isso não pode ser desfeito.")) return;
+    startTransition(async () => {
+      await deleteDocument(documentId);
+      router.push("/dashboard/documents");
     });
   }
 
@@ -228,6 +265,7 @@ export function NotebookEditor({
                 <button
                   type="button"
                   tabIndex={0}
+                  aria-label="Ações da página"
                   className="btn btn-ghost btn-sm btn-square text-base-content/40"
                 >
                   <MoreHorizontal size={18} />
@@ -238,13 +276,19 @@ export function NotebookEditor({
                   className="menu dropdown-content z-50 mt-1 w-48 rounded-xl border border-base-300 bg-base-100 p-1 shadow-xl"
                 >
                   <li>
-                    <button type="button">
+                    <button type="button" onClick={handleDuplicate}>
                       Duplicar página
                     </button>
                   </li>
 
                   <li>
-                    <button type="button">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTargetFolderId(currentFolderId);
+                        setShowMoveDialog(true);
+                      }}
+                    >
                       Mover para...
                     </button>
                   </li>
@@ -255,6 +299,7 @@ export function NotebookEditor({
                     <button
                       type="button"
                       className="text-error"
+                      onClick={handleDelete}
                     >
                       <Trash2 size={14} />
                       Excluir página
@@ -264,6 +309,42 @@ export function NotebookEditor({
               </div>
             </div>
           </header>
+
+          {showMoveDialog && (
+            <div className="modal modal-open" role="dialog" aria-modal="true">
+              <div className="modal-box max-w-sm">
+                <h2 className="text-lg font-semibold">Mover página</h2>
+                <select
+                  className="select select-bordered mt-4 w-full"
+                  value={targetFolderId ?? "root"}
+                  onChange={(event) =>
+                    setTargetFolderId(event.target.value === "root" ? null : event.target.value)
+                  }
+                >
+                  <option value="root">Caderno (raiz)</option>
+                  {folders.map((folder) => (
+                    <option key={folder.id} value={folder.id}>
+                      {folder.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="modal-action">
+                  <button type="button" className="btn" onClick={() => setShowMoveDialog(false)}>
+                    Cancelar
+                  </button>
+                  <button type="button" className="btn btn-primary" onClick={handleMove}>
+                    Mover
+                  </button>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="modal-backdrop"
+                aria-label="Fechar"
+                onClick={() => setShowMoveDialog(false)}
+              />
+            </div>
+          )}
 
           {/* Editor */}
           <div className="relative">

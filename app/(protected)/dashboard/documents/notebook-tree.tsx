@@ -21,6 +21,7 @@ import {
   renameDocument,
   deleteFolder,
   deleteDocument,
+  moveNotebookItem,
 } from "./actions";
 
 export type TreeNode =
@@ -36,6 +37,28 @@ export type TreeNode =
 export function NotebookTree({ tree }: { tree: TreeNode[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [draggedItem, setDraggedItem] = useState<{
+    type: "folder" | "document";
+    id: string;
+  } | null>(null);
+  const [dragOverRoot, setDragOverRoot] = useState(false);
+
+  function moveItem(
+    type: "folder" | "document",
+    id: string,
+    targetFolderId: string | null,
+  ) {
+    setDraggedItem(null);
+    setDragOverRoot(false);
+    startTransition(async () => {
+      try {
+        await moveNotebookItem(type, id, targetFolderId);
+        router.refresh();
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : "Não foi possível mover o item.");
+      }
+    });
+  }
 
   function handleNewFolder() {
     startTransition(async () => {
@@ -54,7 +77,20 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex h-8 items-center justify-between px-2">
+      <div
+        className={`flex h-8 items-center justify-between rounded-md px-2 transition-colors ${
+          dragOverRoot ? "bg-primary/15" : ""
+        }`}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setDragOverRoot(true);
+        }}
+        onDragLeave={() => setDragOverRoot(false)}
+        onDrop={(event) => {
+          event.preventDefault();
+          if (draggedItem) moveItem(draggedItem.type, draggedItem.id, null);
+        }}
+      >
         <span className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
           Caderno
         </span>
@@ -99,7 +135,14 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
       ) : (
         <ul className="menu menu-sm w-full gap-0.5 p-0">
           {tree.map((node) => (
-            <TreeItem key={node.id} node={node} depth={0} />
+            <TreeItem
+              key={node.id}
+              node={node}
+              depth={0}
+              draggedItem={draggedItem}
+              setDraggedItem={setDraggedItem}
+              moveItem={moveItem}
+            />
           ))}
         </ul>
       )}
@@ -107,7 +150,25 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
   );
 }
 
-function TreeItem({ node, depth }: { node: TreeNode; depth: number }) {
+function TreeItem({
+  node,
+  depth,
+  draggedItem,
+  setDraggedItem,
+  moveItem,
+}: {
+  node: TreeNode;
+  depth: number;
+  draggedItem: { type: "folder" | "document"; id: string } | null;
+  setDraggedItem: (
+    item: { type: "folder" | "document"; id: string } | null,
+  ) => void;
+  moveItem: (
+    type: "folder" | "document",
+    id: string,
+    targetFolderId: string | null,
+  ) => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [expanded, setExpanded] = useState(true);
@@ -116,6 +177,7 @@ function TreeItem({ node, depth }: { node: TreeNode; depth: number }) {
     node.type === "folder" ? node.name : node.title,
   );
   const [, startTransition] = useTransition();
+  const [dragOver, setDragOver] = useState(false);
 
   const isActive =
     node.type === "document" && pathname === `/dashboard/documents/${node.id}`;
@@ -185,8 +247,31 @@ function TreeItem({ node, depth }: { node: TreeNode; depth: number }) {
             ? "bg-base-300 text-base-content"
             : "text-base-content/70 hover:bg-base-300/60 hover:text-base-content",
         ].join(" ")}
+        draggable
+        onDragStart={(event) => {
+          event.dataTransfer.effectAllowed = "move";
+          event.dataTransfer.setData("text/plain", node.id);
+          setDraggedItem({ type: node.type, id: node.id });
+        }}
+        onDragEnd={() => setDraggedItem(null)}
+        onDragOver={(event) => {
+          if (node.type !== "folder" || draggedItem?.id === node.id) return;
+          event.preventDefault();
+          event.stopPropagation();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setDragOver(false);
+          if (node.type === "folder" && draggedItem) {
+            moveItem(draggedItem.type, draggedItem.id, node.id);
+          }
+        }}
         style={{
           paddingLeft: 4 + depth * 16,
+          outline: dragOver ? "2px solid hsl(var(--p) / 0.45)" : undefined,
         }}
       >
         {node.type === "folder" ? (
@@ -261,10 +346,15 @@ function TreeItem({ node, depth }: { node: TreeNode; depth: number }) {
           </button>
         )}
 
-        <div className="dropdown dropdown-end shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 ml-auto">
+        <div
+          className="dropdown dropdown-end ml-auto shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+        >
           <button
             type="button"
             tabIndex={0}
+            aria-label={`Ações para ${currentLabel()}`}
             className="btn btn-ghost btn-xs btn-square h-6 w-6 min-h-0 text-base-content/40 hover:bg-base-300 hover:text-base-content"
           >
             <MoreHorizontal size={14} />
@@ -277,14 +367,22 @@ function TreeItem({ node, depth }: { node: TreeNode; depth: number }) {
             {node.type === "folder" && (
               <>
                 <li>
-                  <button type="button" onClick={handleNewChildDocument}>
+                  <button
+                    type="button"
+                    onClick={handleNewChildDocument}
+                    onPointerDown={(event) => event.stopPropagation()}
+                  >
                     <FilePlus size={14} />
                     Nova página
                   </button>
                 </li>
 
                 <li>
-                  <button type="button" onClick={handleNewSubfolder}>
+                  <button
+                    type="button"
+                    onClick={handleNewSubfolder}
+                    onPointerDown={(event) => event.stopPropagation()}
+                  >
                     <FolderPlus size={14} />
                     Nova subpasta
                   </button>
@@ -295,7 +393,11 @@ function TreeItem({ node, depth }: { node: TreeNode; depth: number }) {
             )}
 
             <li>
-              <button type="button" onClick={() => setEditing(true)}>
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                onPointerDown={(event) => event.stopPropagation()}
+              >
                 <Pencil size={14} />
                 Renomear
               </button>
@@ -306,6 +408,7 @@ function TreeItem({ node, depth }: { node: TreeNode; depth: number }) {
                 type="button"
                 className="text-error"
                 onClick={handleDelete}
+                onPointerDown={(event) => event.stopPropagation()}
               >
                 <Trash2 size={14} />
                 Excluir
@@ -318,7 +421,14 @@ function TreeItem({ node, depth }: { node: TreeNode; depth: number }) {
       {node.type === "folder" && expanded && node.children.length > 0 && (
         <ul className="relative">
           {node.children.map((child) => (
-            <TreeItem key={child.id} node={child} depth={depth + 1} />
+            <TreeItem
+              key={child.id}
+              node={child}
+              depth={depth + 1}
+              draggedItem={draggedItem}
+              setDraggedItem={setDraggedItem}
+              moveItem={moveItem}
+            />
           ))}
         </ul>
       )}

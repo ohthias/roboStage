@@ -87,9 +87,7 @@ export function FieldValueInput({
             }
             className="input input-bordered input-sm w-24 focus:input-primary"
           />
-          <span className="text-xs text-base-content/40">
-            {field.unit ?? "s"}
-          </span>
+          <span className="text-xs text-base-content/40">{field.unit ?? "s"}</span>
         </div>
       );
 
@@ -112,9 +110,7 @@ export function FieldValueInput({
             <span className="text-xs text-base-content/40">{field.unit}</span>
           )}
           {field.targetValue != null && (
-            <span className="text-xs text-base-content/40">
-              / {field.targetValue}
-            </span>
+            <span className="text-xs text-base-content/40">/ {field.targetValue}</span>
           )}
         </div>
       );

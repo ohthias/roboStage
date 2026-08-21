@@ -53,9 +53,7 @@ function TestCard({ test }: { test: TestListItem }) {
         <p className={`mb-1 text-xs font-medium uppercase tracking-widest ${style.text}`}>
           {modeDef.label}
         </p>
-        <h3 className="truncate text-base font-semibold leading-tight">
-          {test.name}
-        </h3>
+        <h3 className="truncate text-base font-semibold leading-tight">{test.name}</h3>
         {test.description && (
           <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-base-content/50">
             {test.description}
@@ -86,9 +84,7 @@ export default function LabTestDashboard() {
   const filtered = useMemo(() => {
     return tests.filter((t) => {
       const matchesMode = modeFilter === "all" || t.mode === modeFilter;
-      const matchesSearch = t.name
-        .toLowerCase()
-        .includes(search.trim().toLowerCase());
+      const matchesSearch = t.name.toLowerCase().includes(search.trim().toLowerCase());
       return matchesMode && matchesSearch;
     });
   }, [tests, search, modeFilter]);
@@ -147,9 +143,7 @@ export default function LabTestDashboard() {
                 type="button"
                 onClick={() => setModeFilter(id)}
                 className={`btn btn-xs gap-1.5 rounded-lg ${
-                  modeFilter === id
-                    ? "btn-neutral"
-                    : "btn-ghost text-base-content/50"
+                  modeFilter === id ? "btn-neutral" : "btn-ghost text-base-content/50"
                 }`}
               >
                 <Icon className="h-3 w-3" />

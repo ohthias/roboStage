@@ -2,14 +2,13 @@
 
 // ---------------------------------------------------------------------------
 // Visualização do teste — um único motor para os 4 modos.
-// Antes existiam RunsView / CalibrabotView / IndividualView, cada um com seus
-// próprios cálculos e gráficos. Agora a página lê `fields` + `entries`
-// (genéricos, vindos de useTest) e monta estatísticas/gráficos a partir disso
-// — funciona automaticamente para o modo Personalizado, sem código extra.
+// A página lê `fields` + `entries` (genéricos, vindos de useTest) e monta
+// estatísticas/gráficos a partir disso — funciona automaticamente para o
+// modo Personalizado, sem código extra.
 // ---------------------------------------------------------------------------
 
 import { useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   Award,
   Activity,
@@ -37,18 +36,9 @@ import {
 
 import { useTest } from "@/hooks/useLabTests";
 import { getModeDefinition, ACCENT_STYLES } from "@/utils/labtest/modes";
-import {
-  computeFieldStats,
-  entryTotal,
-  maxPossibleTotal,
-} from "@/utils/labtest/stats";
+import { computeFieldStats, entryTotal, maxPossibleTotal } from "@/utils/labtest/stats";
 import { getFieldValue } from "@/types/labtest.types";
-import {
-  StatCard,
-  SectionHeader,
-  CustomTooltip,
-  fmtDate,
-} from "@/components/labtest/shared";
+import { StatCard, SectionHeader, CustomTooltip, fmtDate } from "@/components/labtest/shared";
 import type { FieldDefinition, TestEntry } from "@/types/labtest.types";
 import LabTestResponseForm from "@/components/labtest/ResultForm";
 
@@ -77,23 +67,16 @@ function OverviewStats({
 
   const overallCompletion = booleanFields.length
     ? Math.round(
-        (booleanFields.reduce(
-          (sum, f) => sum + computeFieldStats(f, entries).completionRate!,
+        booleanFields.reduce(
+          (sum, f) => sum + (computeFieldStats(f, entries).completionRate ?? 0),
           0,
-        ) /
-          booleanFields.length) *
-          1,
+        ) / booleanFields.length,
       )
     : null;
 
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <StatCard
-        label="Lançamentos"
-        value={entries.length}
-        icon={ListOrdered}
-        accent={accent}
-      />
+      <StatCard label="Lançamentos" value={entries.length} icon={ListOrdered} accent={accent} />
       {numericFields.length > 0 && (
         <>
           <StatCard
@@ -103,13 +86,7 @@ function OverviewStats({
             icon={Award}
             accent={accent}
           />
-          <StatCard
-            label="Média"
-            value={`${avg} pts`}
-            sub="por lançamento"
-            icon={BarChart2}
-            accent={accent}
-          />
+          <StatCard label="Média" value={`${avg} pts`} sub="por lançamento" icon={BarChart2} accent={accent} />
         </>
       )}
       {overallCompletion !== null && (
@@ -129,18 +106,9 @@ function OverviewStats({
 // Gráfico: evolução do total (para modos com campos numéricos, ex. runs)
 // ---------------------------------------------------------------------------
 
-function TotalEvolutionChart({
-  fields,
-  entries,
-}: {
-  fields: FieldDefinition[];
-  entries: TestEntry[];
-}) {
+function TotalEvolutionChart({ fields, entries }: { fields: FieldDefinition[]; entries: TestEntry[] }) {
   const maxTotal = maxPossibleTotal(fields);
-  const data = entries.map((e, i) => ({
-    name: `#${i + 1}`,
-    total: entryTotal(e, fields),
-  }));
+  const data = entries.map((e, i) => ({ name: `#${i + 1}`, total: entryTotal(e, fields) }));
 
   return (
     <div className="rounded-2xl border border-base-content/10 bg-base-100 p-5 lg:col-span-2">
@@ -149,11 +117,7 @@ function TotalEvolutionChart({
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="oklch(var(--bc)/0.07)" />
           <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="oklch(var(--bc)/0.2)" />
-          <YAxis
-            tick={{ fontSize: 11 }}
-            stroke="oklch(var(--bc)/0.2)"
-            domain={[0, (maxTotal || 10) + 10]}
-          />
+          <YAxis tick={{ fontSize: 11 }} stroke="oklch(var(--bc)/0.2)" domain={[0, (maxTotal || 10) + 10]} />
           <Tooltip content={<CustomTooltip />} />
           {maxTotal > 0 && (
             <ReferenceLine
@@ -179,17 +143,10 @@ function TotalEvolutionChart({
 }
 
 // ---------------------------------------------------------------------------
-// Gráfico: comparação por campo selecionado (generaliza o antigo CalibrabotView)
-// Funciona tanto para CalibraBot quanto para o modo Personalizado.
+// Gráfico: comparação por campo selecionado
 // ---------------------------------------------------------------------------
 
-function FieldComparisonChart({
-  fields,
-  entries,
-}: {
-  fields: FieldDefinition[];
-  entries: TestEntry[];
-}) {
+function FieldComparisonChart({ fields, entries }: { fields: FieldDefinition[]; entries: TestEntry[] }) {
   const numericFields = fields.filter((f) => f.type === "number");
   const [activeKey, setActiveKey] = useState(numericFields[0]?.fieldKey ?? "");
   const activeField = numericFields.find((f) => f.fieldKey === activeKey);
@@ -214,9 +171,7 @@ function FieldComparisonChart({
               type="button"
               onClick={() => setActiveKey(f.fieldKey)}
               className={`btn btn-xs rounded-lg ${
-                activeKey === f.fieldKey
-                  ? "btn-secondary"
-                  : "btn-ghost text-base-content/50"
+                activeKey === f.fieldKey ? "btn-secondary" : "btn-ghost text-base-content/50"
               }`}
             >
               {f.label}
@@ -227,20 +182,11 @@ function FieldComparisonChart({
 
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data}>
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="oklch(var(--bc)/0.07)"
-            vertical={false}
-          />
+          <CartesianGrid strokeDasharray="3 3" stroke="oklch(var(--bc)/0.07)" vertical={false} />
           <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="oklch(var(--bc)/0.2)" />
           <YAxis tick={{ fontSize: 11 }} stroke="oklch(var(--bc)/0.2)" />
           <Tooltip content={<CustomTooltip />} />
-          <Bar
-            dataKey="value"
-            radius={[6, 6, 0, 0]}
-            fill="oklch(var(--s))"
-            name={activeField.label}
-          />
+          <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="oklch(var(--s))" name={activeField.label} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -248,7 +194,7 @@ function FieldComparisonChart({
 }
 
 // ---------------------------------------------------------------------------
-// Histórico de lançamentos — genérico, formata cada campo pelo seu tipo
+// Histórico de lançamentos
 // ---------------------------------------------------------------------------
 
 function formatFieldValue(field: FieldDefinition, raw: unknown) {
@@ -274,6 +220,17 @@ function EntryHistory({
   const maxTotal = maxPossibleTotal(fields);
   const hasNumericFields = fields.some((f) => f.type === "number");
 
+  if (entries.length === 0) {
+    return (
+      <div>
+        <SectionHeader label="Histórico de lançamentos" />
+        <div className="rounded-2xl border border-dashed border-base-content/15 bg-base-100 py-10 text-center text-sm text-base-content/45">
+          Nenhum lançamento ainda. Use "Registrar resultado" para começar.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <SectionHeader label="Histórico de lançamentos" />
@@ -285,10 +242,7 @@ function EntryHistory({
           const num = entries.length - ri;
 
           return (
-            <div
-              key={entry.id}
-              className="overflow-hidden rounded-2xl border border-base-content/10 bg-base-100"
-            >
+            <div key={entry.id} className="overflow-hidden rounded-2xl border border-base-content/10 bg-base-100">
               <button
                 type="button"
                 onClick={() => setExpanded(isOpen ? null : entry.id)}
@@ -309,9 +263,7 @@ function EntryHistory({
                 {hasNumericFields && (
                   <div className="shrink-0 text-right">
                     <p className={`text-base font-bold ${style.text}`}>{total} pts</p>
-                    {maxTotal > 0 && (
-                      <p className="text-xs text-base-content/40">{pct}% do máx</p>
-                    )}
+                    {maxTotal > 0 && <p className="text-xs text-base-content/40">{pct}% do máx</p>}
                   </div>
                 )}
                 {isOpen ? (
@@ -325,8 +277,7 @@ function EntryHistory({
                 <div className="grid grid-cols-1 gap-2 border-t border-base-content/8 px-5 py-4 sm:grid-cols-2">
                   {fields.map((field) => {
                     const raw = getFieldValue(entry.values, field.fieldKey);
-                    const completed =
-                      field.type === "boolean" ? raw === true : raw !== null;
+                    const completed = field.type === "boolean" ? raw === true : raw !== null;
                     return (
                       <div
                         key={field.fieldKey}
@@ -344,9 +295,7 @@ function EntryHistory({
                           )
                         ) : null}
                         <span className="flex-1 font-medium">{field.label}</span>
-                        <span className={`font-bold ${style.text}`}>
-                          {formatFieldValue(field, raw)}
-                        </span>
+                        <span className={`font-bold ${style.text}`}>{formatFieldValue(field, raw)}</span>
                       </div>
                     );
                   })}
@@ -371,14 +320,10 @@ function EntryHistory({
 
 export default function LabTestView() {
   const params = useParams();
-  const router = useRouter();
   const testId = params.id as string;
-  const { test, fields, entries, loading, error } = useTest(testId);
+  const { test, fields, entries, nextExecutionNumber, loading, error, refresh } = useTest(testId);
 
-  const modeDef = useMemo(
-    () => (test ? getModeDefinition(test.mode) : null),
-    [test],
-  );
+  const modeDef = useMemo(() => (test ? getModeDefinition(test.mode) : null), [test]);
 
   if (loading) {
     return (
@@ -395,9 +340,7 @@ export default function LabTestView() {
       <div className="min-h-screen bg-base-200/40 px-4 py-8">
         <div className="mx-auto max-w-5xl rounded-3xl border border-error/20 bg-base-100 p-6">
           <p className="font-semibold text-error">Não foi possível carregar o teste.</p>
-          <p className="mt-2 text-sm text-base-content/60">
-            {error ?? "Teste não encontrado."}
-          </p>
+          <p className="mt-2 text-sm text-base-content/60">{error ?? "Teste não encontrado."}</p>
         </div>
       </div>
     );
@@ -418,18 +361,21 @@ export default function LabTestView() {
             </div>
             <div>
               <div className="mb-1 flex flex-wrap items-center gap-2">
-                <span
-                  className={`badge badge-sm badge-outline gap-1.5 py-2.5 ${style.text} ${style.badgeBorder}`}
-                >
+                <span className={`badge badge-sm badge-outline gap-1.5 py-2.5 ${style.text} ${style.badgeBorder}`}>
                   <Icon className="h-3 w-3" />
                   {modeDef.label}
                 </span>
                 {test.season && (
-                  <span className="badge badge-sm badge-ghost text-base-content/40">
-                    {test.season}
-                  </span>
+                  <span className="badge badge-sm badge-ghost text-base-content/40">{test.season}</span>
                 )}
-                <LabTestResponseForm testName={test.name} fields={fields} mode={test.mode} />
+                <LabTestResponseForm
+                  testId={test.id}
+                  testName={test.name}
+                  fields={fields}
+                  mode={test.mode}
+                  nextExecutionNumber={nextExecutionNumber}
+                  onSaved={refresh}
+                />
               </div>
               <h1 className="text-2xl font-bold tracking-tight">{test.name}</h1>
               <p className="mt-1 flex items-center gap-1.5 text-xs text-base-content/40">
@@ -437,9 +383,7 @@ export default function LabTestView() {
                 Criado em {test.createdAt ? fmtDate(test.createdAt) : "—"}
               </p>
               {test.description && (
-                <p className="mt-2 max-w-3xl text-sm text-base-content/60">
-                  {test.description}
-                </p>
+                <p className="mt-2 max-w-3xl text-sm text-base-content/60">{test.description}</p>
               )}
             </div>
           </div>
@@ -449,12 +393,8 @@ export default function LabTestView() {
 
         {(hasNumericFields || numericFieldCount > 1) && (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {hasNumericFields && (
-              <TotalEvolutionChart fields={fields} entries={entries} />
-            )}
-            {numericFieldCount > 1 && (
-              <FieldComparisonChart fields={fields} entries={entries} />
-            )}
+            {hasNumericFields && <TotalEvolutionChart fields={fields} entries={entries} />}
+            {numericFieldCount > 1 && <FieldComparisonChart fields={fields} entries={entries} />}
           </div>
         )}
 

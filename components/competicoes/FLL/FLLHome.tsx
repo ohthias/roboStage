@@ -193,7 +193,6 @@ export default function FLLHome() {
                 />
               ))}
             </div>
-          </div>
           <div
             className="alert alert-warning shadow-lg my-4 mx-auto max-w-6xl px-4"
             role="status"
@@ -214,6 +213,7 @@ export default function FLLHome() {
               </Link>{" "}
               para acompanhar as atualizações.
             </div>
+          </div>
           </div>
         </section>
         {/* FLL Future Edition */}
@@ -270,12 +270,12 @@ export default function FLLHome() {
               temporada.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-              <button className="btn btn-primary rounded-2xl px-8">
+              <Link className="btn btn-primary rounded-2xl px-8" href="/sign-up">
                 Criar conta grátis
-              </button>
-              <button className="btn btn-ghost text-neutral-content rounded-2xl px-8">
+              </Link>
+              <Link className="btn btn-ghost text-neutral-content rounded-2xl px-8" href="/news">
                 Ver novidades da temporada
-              </button>
+              </Link>
             </div>
           </div>
         </section>

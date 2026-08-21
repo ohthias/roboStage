@@ -3,6 +3,7 @@ export enum Category {
   CORE_VALUES = 'Core Values',
   INNOVATION_PROJECT = 'Projeto de Inovação',
   ROBOT_DESIGN = 'Design do Robô',
+  BIOGLOW = 'BIOGLOW',
 }
 
 export interface Question {

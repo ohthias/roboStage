@@ -10,6 +10,15 @@ export const metadata = {
 
 const seasons = [
   {
+    slug: "bioglow",
+    title: "BIOGLOW",
+    description:
+      "Descubra a vibração dos ecossistemas do mundo natural e como a ciência pode ajudar a preservá-los.",
+    image: "/images/logos/fll/seasons/bioglow_logo_founders_edition.webp",
+    badge: "2026–2027",
+    accent: "secondary",
+  },
+  {
     slug: "unearthed",
     title: "UNEARTHED",
     description:

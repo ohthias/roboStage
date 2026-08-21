@@ -68,7 +68,7 @@ const recommendedVideos = [
     title: "Vídeo de abertura da temporada",
     description:
       "Apresenta o tema do ano e ajuda a equipe a entender a proposta do desafio antes de começar a construir.",
-    href: "https://www.firstinspires.org/programs/fll/game-and-season",
+    href: "https://youtu.be/MPKxFy3qV2M?si=juq26un0qs3NUJiq",
     icon: PlayCircle,
     badge: "Oficial",
   },
@@ -76,7 +76,7 @@ const recommendedVideos = [
     title: "Vídeo de missões do Desafio do Robô",
     description:
       "Explica o tapete, as missões e a lógica de pontuação usada nos 3 rounds de 2 minutos e meio.",
-    href: "https://www.youtube.com/watch?v=ErDj8myI_Tg",
+    href: "https://youtu.be/uhZZ8O1StiQ?si=rcSIQigmdcpuArnp",
     icon: Gamepad2,
     badge: "Vídeo",
   },
@@ -84,9 +84,9 @@ const recommendedVideos = [
     title: "Preparação para o torneio",
     description:
       "Indicado para equipes que querem entender a rotina do dia de competição e as sessões com os juízes.",
-    href: "https://www.firstinspires.org/programs/fll/get-started",
-    icon: BadgeInfo,
-    badge: "Dica",
+    href: "https://youtu.be/9TMFtLKYT6o?si=ItD8kVLK4X-Pjrhs",
+    icon: Youtube,
+    badge: "Vídeo",
   },
   {
     title: "Canal oficial da FIRST LEGO League",

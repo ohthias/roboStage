@@ -152,7 +152,25 @@ export const FLL_QUESTIONS: Question[] = [
     text: 'Como aplicaram os Core Values fora dos treinos?',
     hint: 'Escola, casa, comunidade.'
   },
-  
+  {
+    id: 'cv-26',
+    category: Category.CORE_VALUES,
+    text: 'Como a equipe pratica o "Discovery" (descoberta) no dia a dia?',
+    hint: 'Explorar novas ideias juntos, sem medo de errar.'
+  },
+  {
+    id: 'cv-27',
+    category: Category.CORE_VALUES,
+    text: 'De que forma vocês agradeceram ou reconheceram quem ajudou a equipe (mentores, patrocinadores, familiares)?',
+    hint: 'Fale sobre gratidão e reconhecimento.'
+  },
+  {
+    id: 'cv-28',
+    category: Category.CORE_VALUES,
+    text: 'Como a equipe equilibra a diversão com o trabalho sério da temporada?',
+    hint: 'Fun (diversão) também é um Core Value da FLL.'
+  },
+
   // Innovation Project
   {
     id: 'ip-1',
@@ -303,6 +321,24 @@ export const FLL_QUESTIONS: Question[] = [
     category: Category.INNOVATION_PROJECT,
     text: 'Qual é o maior diferencial da solução de vocês?',
     hint: 'Mostrem inovação real.'
+  },
+  {
+    id: 'ip-26',
+    category: Category.INNOVATION_PROJECT,
+    text: 'Como o problema escolhido se conecta com o tema da temporada, BIOGLOW?',
+    hint: 'Relacionem o problema à biodiversidade ou aos ecossistemas.'
+  },
+  {
+    id: 'ip-27',
+    category: Category.INNOVATION_PROJECT,
+    text: 'Quais fontes de dados científicos vocês usaram para embasar o projeto?',
+    hint: 'Artigos, órgãos ambientais, universidades.'
+  },
+  {
+    id: 'ip-28',
+    category: Category.INNOVATION_PROJECT,
+    text: 'Como vocês validaram que a solução não causa novos problemas ambientais?',
+    hint: 'Pensem em efeitos colaterais e sustentabilidade.'
   },
 
   // Robot Design
@@ -455,7 +491,147 @@ export const FLL_QUESTIONS: Question[] = [
     category: Category.ROBOT_DESIGN,
     text: 'Se tivessem mais tempo, o que poderiam melhorar no robô?',
     hint: 'Mostrem visão futura.'
-  }
+  },
+  {
+    id: 'rd-26',
+    category: Category.ROBOT_DESIGN,
+    text: 'Como o design do robô reflete o tema BIOGLOW da temporada?',
+    hint: 'Pode ser inspiração visual, funcional ou de missões relacionadas a ecossistemas.'
+  },
+  {
+    id: 'rd-27',
+    category: Category.ROBOT_DESIGN,
+    text: 'Como vocês documentam o histórico de versões do robô no engineering notebook?',
+    hint: 'Fale sobre registros, fotos e datas.'
+  },
+
+  // BioGlow
+  {
+    id: 'bg-1',
+    category: Category.BIOGLOW,
+    text: 'Como a equipe aplicou conceitos de ecossistemas em seu projeto?',
+    hint: 'Explique a relação entre os elementos do ecossistema.'
+  },
+  {
+    id: 'bg-2',
+    category: Category.BIOGLOW,
+    text: 'O que é biodiversidade e por que ela é importante para o tema BIOGLOW?',
+    hint: 'Fale sobre variedade de espécies e equilíbrio ambiental.'
+  },
+  {
+    id: 'bg-3',
+    category: Category.BIOGLOW,
+    text: 'Qual ecossistema específico o projeto da equipe estuda ou tenta proteger?',
+    hint: 'Pode ser floresta, recife de coral, rio, manguezal, etc.'
+  },
+  {
+    id: 'bg-4',
+    category: Category.BIOGLOW,
+    text: 'Que ameaças à biodiversidade a equipe identificou durante a pesquisa?',
+    hint: 'Desmatamento, poluição, espécies invasoras, mudanças climáticas.'
+  },
+  {
+    id: 'bg-5',
+    category: Category.BIOGLOW,
+    text: 'Como a tecnologia pode ajudar a entender melhor os ecossistemas naturais?',
+    hint: 'Sensores, monitoramento remoto, dados e inteligência artificial.'
+  },
+  {
+    id: 'bg-6',
+    category: Category.BIOGLOW,
+    text: 'De que forma o projeto da equipe conecta natureza, tecnologia e inovação, como propõe o tema BIOGLOW?',
+    hint: 'Explique como cada elemento aparece na solução.'
+  },
+  {
+    id: 'bg-7',
+    category: Category.BIOGLOW,
+    text: 'Vocês se inspiraram em algum organismo ou processo da natureza para criar a solução (biomimética)?',
+    hint: 'Pense em como plantas, animais ou fungos resolvem problemas parecidos.'
+  },
+  {
+    id: 'bg-8',
+    category: Category.BIOGLOW,
+    text: 'Como uma espécie específica (planta, animal, fungo ou microrganismo) foi importante para a pesquisa de vocês?',
+    hint: 'Descreva o papel dela no ecossistema estudado.'
+  },
+  {
+    id: 'bg-9',
+    category: Category.BIOGLOW,
+    text: 'Como as atividades humanas afetam o ecossistema que vocês pesquisaram?',
+    hint: 'Cite impactos positivos e negativos.'
+  },
+  {
+    id: 'bg-10',
+    category: Category.BIOGLOW,
+    text: 'Qual especialista em biologia, ecologia ou meio ambiente vocês consultaram?',
+    hint: 'Biólogos, engenheiros ambientais, ONGs, universidades.'
+  },
+  {
+    id: 'bg-11',
+    category: Category.BIOGLOW,
+    text: 'Como a equipe explica a relação entre produtores, consumidores e decompositores no ecossistema escolhido?',
+    hint: 'Use a cadeia ou teia alimentar como exemplo.'
+  },
+  {
+    id: 'bg-12',
+    category: Category.BIOGLOW,
+    text: 'Que dados ou evidências científicas comprovam que o problema ambiental escolhido é real e relevante?',
+    hint: 'Estatísticas, estudos, relatórios ambientais.'
+  },
+  {
+    id: 'bg-13',
+    category: Category.BIOGLOW,
+    text: 'Como a solução da equipe ajuda a restaurar ou preservar o equilíbrio de um habitat?',
+    hint: 'Explique o mecanismo de ação da solução.'
+  },
+  {
+    id: 'bg-14',
+    category: Category.BIOGLOW,
+    text: 'A solução de vocês poderia ser aplicada em outros ecossistemas além do estudado? Como?',
+    hint: 'Pense em adaptação e escalabilidade.'
+  },
+  {
+    id: 'bg-15',
+    category: Category.BIOGLOW,
+    text: 'Como vocês garantem que a solução proposta é sustentável a longo prazo?',
+    hint: 'Considerem custos, manutenção e impacto contínuo.'
+  },
+  {
+    id: 'bg-16',
+    category: Category.BIOGLOW,
+    text: 'O que a equipe aprendeu sobre a importância da conservação ambiental durante a temporada BIOGLOW?',
+    hint: 'Fale sobre mudanças de atitude pessoal ou coletiva.'
+  },
+  {
+    id: 'bg-17',
+    category: Category.BIOGLOW,
+    text: 'Como vocês explicariam o conceito de "serviços ecossistêmicos" para alguém que nunca ouviu falar disso?',
+    hint: 'Benefícios que a natureza oferece, como polinização, água limpa e ar puro.'
+  },
+  {
+    id: 'bg-18',
+    category: Category.BIOGLOW,
+    text: 'Que missões do jogo de robô se relacionam com o tema de ecossistemas e biodiversidade da temporada?',
+    hint: 'Relacione elementos da mesa com o tema BIOGLOW.'
+  },
+  {
+    id: 'bg-19',
+    category: Category.BIOGLOW,
+    text: 'Como mudanças climáticas foram consideradas na pesquisa da equipe?',
+    hint: 'Temperatura, secas, enchentes, migração de espécies.'
+  },
+  {
+    id: 'bg-20',
+    category: Category.BIOGLOW,
+    text: 'Se a equipe pudesse implementar a solução em escala real amanhã, qual seria o primeiro passo?',
+    hint: 'Pensem em um plano de ação realista.'
+  },
+  {
+    id: 'bg-21',
+    category: Category.BIOGLOW,
+    text: 'Como a comunidade local pode se envolver na proteção do ecossistema estudado pela equipe?',
+    hint: 'Educação ambiental, mutirões, políticas públicas.'
+  },
 ];
 
 export const FLL_MODE: FlashQAMode = {
@@ -466,6 +642,7 @@ export const FLL_MODE: FlashQAMode = {
     Category.CORE_VALUES,
     Category.INNOVATION_PROJECT,
     Category.ROBOT_DESIGN,
+    Category.BIOGLOW
   ],
 
   defaultSettings: {

@@ -6,7 +6,8 @@ A tabela abaixo informa quais versões do projeto recebem atualmente atualizaç�
 
 | Versão | Suportada |
 | ------- | :--------: |
-| 5.1.x   | ✅ |
+| 2026.x   | ✅ |
+| 5.1.x   | ❌ |
 | 5.0.x   | ❌ |
 | 4.0.x   | ❌ |
 | < 4.0   | ❌ |

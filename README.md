@@ -1,6 +1,6 @@
 <div align="center">
 
-<a href="https://robostage.com.br/"><strong>🌐 Acessar Plataforma</strong></a> • <a href="https://github.com/ohthias/roboStage/releases">📦 Releases</a> • <a href="https://github.com/ohthias/roboStage/issues">🐞 Issues</a> • <em>v2026.1</em></br>
+<a href="https://robostage.com.br/"><strong>🌐 Acessar Plataforma</strong></a> • <a href="https://github.com/ohthias/roboStage/releases">📦 Releases</a> • <a href="https://github.com/ohthias/roboStage/issues">🐞 Issues</a> • <em>v2026.2</em></br>
 
 ![Status](https://img.shields.io/badge/status-active-brightgreen.svg)
 ![Version](https://img.shields.io/badge/version-v5.1.0-informational)
@@ -42,24 +42,21 @@ Workspace estratégico para análise de missões, criação de matrizes táticas
 ### 🧪 LabTest
 Ambiente de testes e validação de estratégias, com registro de tentativas de missão, análise de desempenho, feedback visual e acompanhamento da evolução da equipe nos treinos.
 
-### 💡 InnoLab
+### 💡 ThinkLab
 Hub colaborativo para o Projeto de Inovação: brainstorming, pesquisa, diagramas (5W2H, Ishikawa, fluxogramas), organização de evidências e preparação de apresentações.
 
 ### 🎥 ShowLive
 Central de gerenciamento de torneios e festivais: controle de rodadas, rankings em tempo real, chamada de equipes e experiências visuais inspiradas em grandes eventos de robótica.
 
-### 🎨 styleLab
-Laboratório criativo para identidades visuais, interfaces e painéis personalizados para equipes, torneios e projetos dentro da RoboStage.
-
 ### ⏱️ Timers
 Cronômetros inteligentes para treinos, apresentações e desafios, com modos dedicados para mesa, pit, inovação e dinâmicas de equipe.
 
-### 🎓 Flash Q&A
+### 🎓 Recall
 Sistema gamificado de flashcards e perguntas estratégicas para treinar entrevistas técnicas e fortalecer o domínio do conteúdo da temporada.
 
 ## Temporadas FIRST® LEGO® League suportadas
 
-- BIOGLOW (26/27) - Em breve
+- BIOGLOW (26/27)
 - UNEARTHED (25/26)
 - SUBMERGED (24/25)
 - MASTERPIECE (23/24)
@@ -82,6 +79,8 @@ Não é necessário instalar nada — o RoboStage é 100% web.
 - **Framer Motion** para animações de interface
 - **Vercel Analytics** e **Speed Insights** para monitoramento
 
+[Veja mais em LICENCES](.github/LICENSES.md)
+
 ## Perguntas frequentes
 
 **O RoboStage é gratuito?**
@@ -93,8 +92,8 @@ Hoje o foco é a FLL, mas a expansão para outras competições de robótica (co
 **Como funciona o LabTest?**
 Você cria testes personalizados para avaliar o robô nas missões da temporada, lança os resultados em tempo real e acompanha progresso, taxa de sucesso e missões mais realizadas.
 
-**O InnoLab serve só para diagramas?**
-Não. Além de diagramas (5W2H, Ishikawa, fluxogramas), o InnoLab organiza ideias, pesquisas e estratégias para toda a fase de Projeto de Inovação.
+**O ThinkLab serve só para diagramas?**
+Não. Além de diagramas (5W2H, Ishikawa, fluxogramas), o ThinkLab organiza ideias, pesquisas e estratégias para toda a fase de Projeto de Inovação.
 
 Mais dúvidas? Veja o [FAQ completo](https://www.robostage.com.br/fll/help).
 

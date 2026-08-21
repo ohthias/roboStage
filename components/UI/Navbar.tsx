@@ -3,24 +3,18 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import type { LucideIcon } from "lucide-react";
 import {
   ChevronDown,
-  Earth,
-  Fish,
   Menu,
-  Palette,
-  Pickaxe,
-  ToolCase,
   Trophy,
   X,
-  Cuboid,
   ChevronUp,
 } from "lucide-react";
 
 import Logo from "./Logo";
 import { ThemeController } from "./themeController";
 import { NAVIGATION } from "@/utils/competitions/navigation";
+import { Show, UserAvatar } from "@clerk/nextjs";
 
 const mainLinks = [
   { href: "/about", label: "Sobre" },
@@ -253,11 +247,6 @@ export function Navbar() {
                       >
                         <Icon size={16} />
                         <span>{item.nome}</span>
-                        {item.new && (
-                          <span className="badge badge-xs badge-primary ml-auto absolute top-0 right-2 -translate-y-1/2 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
-                            Novo
-                          </span>
-                        )}
                       </Link>
                     );
                   })}
@@ -348,6 +337,23 @@ export function Navbar() {
 
           <div className="hidden items-center gap-2 lg:flex">
             <ThemeController />
+
+            <div className="divider divider-horizontal mx-1" />
+
+            <Show when="signed-in">
+              <Link href="/dashboard" className="btn btn-outline btn-sm">
+                <span className="hidden sm:inline-block">Dashboard</span>
+              </Link>
+              <UserAvatar />
+            </Show>
+            <Show when="signed-out">
+              <Link href="/sign-in" className="btn btn-ghost btn-sm">
+                Entrar
+              </Link>
+              <Link href="/sign-up" className="btn btn-primary btn-sm">
+                Criar conta
+              </Link>
+            </Show>
           </div>
 
           <div className="flex items-center gap-2 lg:hidden">
@@ -493,11 +499,6 @@ export function Navbar() {
                               {item.nome}
                             </span>
                           </span>
-                          {item.new && (
-                            <span className="badge badge-xs badge-primary ml-auto absolute top-0 right-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
-                              Novo
-                            </span>
-                          )}
                         </Link>
                       );
                     })}

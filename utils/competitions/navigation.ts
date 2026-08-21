@@ -13,6 +13,7 @@ export type NavMenuGroup = {
   key: string;
   label: string;
   icon: LucideIcon;
+  new?: boolean;
   items: NavMenuItem[];
 };
 
@@ -24,7 +25,7 @@ export const NAVIGATION = {
     options: [
       { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid },
       { nome: "Future Edition", path: "future-edition", icon: Gamepad2 },
-      { nome: "Rúbrica de Avaliação", path: "rubric", icon: NotepadText, new: true },
+      { nome: "Rúbrica de Avaliação", path: "rubric", icon: NotepadText },
     ],
     menus: [
       {
@@ -32,7 +33,7 @@ export const NAVIGATION = {
         label: "Ferramentas",
         icon: ToolCase,
         items: [
-          { nome: "Flash Q&A", path: "flash-qa", icon: MessageSquare, description: "Plataforma de perguntas e respostas" },
+          { nome: "Recall", path: "recall", icon: MessageSquare, description: "Reavaliação de conceitos por meio de flashcards" },
           { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para competições" },
           { nome: "InnoLab", path: "innolab", icon: File, description: "Criação rápida de diagramas" },
         ],

@@ -2,8 +2,8 @@
 
 import {
   Book,
+  Earth,
   FlaskConical,
-  Grid2X2,
   Home,
   Settings,
   type LucideIcon,
@@ -28,6 +28,11 @@ const MAIN_LINKS: NavItem[] = [
     label: "Caderno",
     Icon: Book,
   },
+  {
+    href: "/dashboard/labtest",
+    label: "LabTest",
+    Icon: FlaskConical,
+  }
 ];
 
 const SYSTEM_LINKS: NavItem[] = [
@@ -36,6 +41,11 @@ const SYSTEM_LINKS: NavItem[] = [
     label: "Configurações",
     Icon: Settings,
   },
+  {
+    href: "/",
+    label: "Voltar ao site",
+    Icon: Earth,
+  }
 ];
 
 function NavItem({
@@ -54,13 +64,17 @@ function NavItem({
   const Icon = item.Icon;
 
   return (
-    <li>
+    <li
+      data-tip={item.label}
+      className="is-drawer-close:tooltip is-drawer-close:tooltip-right is-drawer-close:relative is-drawer-close:z-50"
+    >
       <Link
         href={item.href}
         aria-current={active ? "page" : undefined}
         className={`
           group relative flex h-10 items-center gap-3 rounded-lg
           px-3 text-sm font-medium
+          is-drawer-close:justify-center
           transition-all duration-150
           focus-visible:outline-none
           focus-visible:ring-2
@@ -100,11 +114,11 @@ function NavItem({
           strokeWidth={active ? 2.2 : 1.8}
         />
 
-        <span className="truncate">{item.label}</span>
+        <span className="truncate is-drawer-close:hidden">{item.label}</span>
 
         {/* Indicador visual sutil */}
         {active && (
-          <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+          <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary is-drawer-close:hidden" />
         )}
       </Link>
     </li>
@@ -122,7 +136,7 @@ export function NavLinks() {
       {/* Principal */}
       <section>
         <div className="mb-2 px-3">
-          <span className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-base-content/35">
+          <span className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-base-content/35 is-drawer-close:hidden">
             Principal
           </span>
         </div>
@@ -141,7 +155,7 @@ export function NavLinks() {
       {/* Sistema */}
       <section>
         <div className="mb-2 px-3">
-          <span className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-base-content/35">
+          <span className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-base-content/35 is-drawer-close:hidden">
             Sistema
           </span>
         </div>

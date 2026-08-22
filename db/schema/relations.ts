@@ -3,7 +3,7 @@ import { users } from "./users";
 import { leagues, userLeagueInterests } from "./leagues";
 import { teams, teamMembers } from "./teams";
 import { folders, documents } from "./notebook";
-import { tests, testFields, testExecutions, testFieldValues } from "./labtest";
+import { tests, testExecutions } from "./labtest";
 
 export const usersRelations = relations(users, ({ many }) => ({
   leagueInterests: many(userLeagueInterests),
@@ -76,13 +76,9 @@ export const testsRelations = relations(tests, ({ one, many }) => ({
   owner: one(users, { fields: [tests.userId], references: [users.id] }),
   team: one(teams, { fields: [tests.teamId], references: [teams.id] }),
   folder: one(folders, { fields: [tests.folderId], references: [folders.id] }),
-  fields: many(testFields),
   executions: many(testExecutions),
 }));
 
-export const testFieldsRelations = relations(testFields, ({ one }) => ({
-  test: one(tests, { fields: [testFields.testId], references: [tests.id] }),
-}));
 
 export const testExecutionsRelations = relations(
   testExecutions,
@@ -90,17 +86,6 @@ export const testExecutionsRelations = relations(
     test: one(tests, {
       fields: [testExecutions.testId],
       references: [tests.id],
-    }),
-    fieldValues: many(testFieldValues),
-  }),
-);
-
-export const testFieldValuesRelations = relations(
-  testFieldValues,
-  ({ one }) => ({
-    execution: one(testExecutions, {
-      fields: [testFieldValues.executionId],
-      references: [testExecutions.id],
     }),
   }),
 );

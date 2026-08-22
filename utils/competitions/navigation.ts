@@ -35,7 +35,7 @@ export const NAVIGATION = {
         items: [
           { nome: "Recall", path: "recall", icon: MessageSquare, description: "Reavaliação de conceitos por meio de flashcards" },
           { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para competições" },
-          { nome: "InnoLab", path: "innolab", icon: File, description: "Criação rápida de diagramas" },
+          { nome: "ThinkLab", path: "thinklab", icon: File, description: "Criação rápida de diagramas" },
         ],
       },
       {

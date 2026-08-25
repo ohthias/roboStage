@@ -1,13 +1,12 @@
 "use client";
 
 // ---------------------------------------------------------------------------
-// Visualização do teste — um único motor para os 4 modos.
-// A página lê `fields` + `entries` (genéricos, vindos de useTest) e monta
-// estatísticas/gráficos a partir disso — funciona automaticamente para o
-// modo Personalizado, sem código extra.
+// Visualização do teste em modo de leitura.
+// A página usa a Server Action diretamente no cliente, sem depender do hook
+// customizado de carregamento.
 // ---------------------------------------------------------------------------
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import {
   Award,
@@ -34,13 +33,12 @@ import {
   ReferenceLine,
 } from "recharts";
 
-import { useTest } from "@/hooks/useLabTests";
 import { getModeDefinition, ACCENT_STYLES } from "@/utils/labtest/modes";
 import { computeFieldStats, entryTotal, maxPossibleTotal } from "@/utils/labtest/stats";
 import { getFieldValue } from "@/types/labtest.types";
 import { StatCard, SectionHeader, CustomTooltip, fmtDate } from "@/components/labtest/shared";
 import type { FieldDefinition, TestEntry } from "@/types/labtest.types";
-import LabTestResponseForm from "@/components/labtest/ResultForm";
+import { getLabTestViewData } from "../actions";
 
 // ---------------------------------------------------------------------------
 // Bloco de estatísticas gerais — funciona para qualquer modo
@@ -320,8 +318,39 @@ function EntryHistory({
 
 export default function LabTestView() {
   const params = useParams();
-  const testId = params.id as string;
-  const { test, fields, entries, nextExecutionNumber, loading, error, refresh } = useTest(testId);
+  const testId = String(params.id ?? "");
+  const [test, setTest] = useState<any>(null);
+  const [fields, setFields] = useState<FieldDefinition[]>([]);
+  const [entries, setEntries] = useState<TestEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!testId) return;
+
+    let active = true;
+    setLoading(true);
+    setError(null);
+
+    getLabTestViewData(testId)
+      .then((data) => {
+        if (!active) return;
+        setTest(data.test);
+        setFields(data.fields);
+        setEntries(data.entries);
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : "Erro ao carregar o teste.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [testId]);
 
   const modeDef = useMemo(() => (test ? getModeDefinition(test.mode) : null), [test]);
 
@@ -368,14 +397,6 @@ export default function LabTestView() {
                 {test.season && (
                   <span className="badge badge-sm badge-ghost text-base-content/40">{test.season}</span>
                 )}
-                <LabTestResponseForm
-                  testId={test.id}
-                  testName={test.name}
-                  fields={fields}
-                  mode={test.mode}
-                  nextExecutionNumber={nextExecutionNumber}
-                  onSaved={refresh}
-                />
               </div>
               <h1 className="text-2xl font-bold tracking-tight">{test.name}</h1>
               <p className="mt-1 flex items-center gap-1.5 text-xs text-base-content/40">

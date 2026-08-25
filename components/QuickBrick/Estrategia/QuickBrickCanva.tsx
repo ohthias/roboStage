@@ -1,13 +1,15 @@
 import { useState, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Layer, ToolType, CanvasHandle } from "@/types/CanvasType";
+import { ExportSummary, Layer, ToolType, CanvasHandle } from "@/types/CanvasType";
 import { CanvasBoard } from "./CanvasBoard";
 import { Toolbar } from "./Toolbar";
+import { ExportPreviewModal } from "./ExportPreviewModal";
 import { useToast } from "@/app/context/ToastContext";
 
 export default function QuickBrickCanvas() {
   const [tool, setTool] = useState<ToolType>("hand");
   const [color, setColor] = useState("#ef4444"); // Default red
+  const [eraserSize, setEraserSize] = useState(24);
   const [layers, setLayers] = useState<Layer[]>([
     {
       id: uuidv4(),
@@ -33,6 +35,38 @@ export default function QuickBrickCanvas() {
   // --- History Management ---
   const [history, setHistory] = useState<Layer[][]>([layers]);
   const [historyIndex, setHistoryIndex] = useState(0);
+
+  // --- Export Preview Modal ---
+  const [exportPreview, setExportPreview] = useState<{
+    type: "general" | "layers";
+    summary: ExportSummary;
+  } | null>(null);
+  const { addToast } = useToast();
+
+  const openExportPreview = (type: "general" | "layers") => {
+    const summary = canvasRef.current?.getExportSummary(type);
+    if (!summary) return;
+    if (summary.isEmpty && summary.layers.every((l) => !l.included)) {
+      addToast(
+        type === "general"
+          ? "Nenhuma camada visível para exportar."
+          : "Nenhuma camada com conteúdo para exportar.",
+        "error",
+      );
+      return;
+    }
+    setExportPreview({ type, summary });
+  };
+
+  const confirmExport = () => {
+    if (!exportPreview) return;
+    if (exportPreview.type === "general") {
+      canvasRef.current?.exportGeneral();
+    } else {
+      canvasRef.current?.exportLayers();
+    }
+    setExportPreview(null);
+  };
 
   // Helper to commit current state to history
   const registerAction = () => {
@@ -120,13 +154,15 @@ export default function QuickBrickCanvas() {
           setTool={setTool}
           color={color}
           setColor={setColor}
+          eraserSize={eraserSize}
+          setEraserSize={setEraserSize}
           undo={undo}
           redo={redo}
           canUndo={historyIndex > 0}
           canRedo={historyIndex < history.length - 1}
           clearLayer={clearLayer}
-          exportGeneral={() => canvasRef.current?.exportGeneral()}
-          exportLayers={() => canvasRef.current?.exportLayers()}
+          exportGeneral={() => openExportPreview("general")}
+          exportLayers={() => openExportPreview("layers")}
           // View Props
           showLabels={showLabels}
           setShowLabels={setShowLabels}
@@ -168,7 +204,16 @@ export default function QuickBrickCanvas() {
         showLabels={showLabels}
         showZones={showZones}
         backgroundImage={backgroundImage}
+        eraserSize={eraserSize}
       />
+
+      {exportPreview && (
+        <ExportPreviewModal
+          summary={exportPreview.summary}
+          onCancel={() => setExportPreview(null)}
+          onConfirm={confirmExport}
+        />
+      )}
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
   FreePath,
   CanvasHandle,
   Robot,
+  ExportLayerSummary,
 } from "@/types/CanvasType";
 import { v4 as uuidv4 } from "uuid";
 import JSZip from "jszip";
@@ -23,9 +24,6 @@ import { Bot, SquareDashedIcon, Trash, X } from "lucide-react";
 
 interface CanvasBoardProps {
   tool: ToolType;
-  // NOVO: necessário para que o componente possa devolver o controle para a
-  // ferramenta "hand" assim que uma Zona/Robô é criado. O componente pai deve
-  // passar o mesmo setter usado para controlar `tool` (ex: setTool do useState).
   setTool: React.Dispatch<React.SetStateAction<ToolType>>;
   color: string;
   layers: Layer[];
@@ -35,6 +33,7 @@ interface CanvasBoardProps {
   showLabels: boolean;
   showZones: boolean;
   backgroundImage: string | null;
+  eraserSize: number;
 }
 
 // Standard FLL Table internal dimensions
@@ -44,15 +43,12 @@ const TABLE_WIDTH_CM = 200; // ~200cm
 const CM_PER_PIXEL = TABLE_WIDTH_CM / CANVAS_WIDTH;
 
 // --- Resize handle constants/helpers -----------------------------------
-// Extraídos como funções puras (fora do componente) para que a lógica de
-// hit-testing e a lógica de cálculo do novo retângulo fiquem testáveis de
-// forma isolada e não dependam de closures/estado do componente.
 
 type ResizeHandle = "n" | "s" | "e" | "w" | "nw" | "ne" | "sw" | "se" | null;
 
-const ZONE_HANDLE_SIZE = 8; // tamanho visual do quadrado do handle
-const ZONE_HANDLE_HIT = 10; // raio de tolerância de clique/toque no handle
-const ZONE_MIN_SIZE = 15; // tamanho mínimo (px) permitido ao redimensionar
+const ZONE_HANDLE_SIZE = 8;
+const ZONE_HANDLE_HIT = 10;
+const ZONE_MIN_SIZE = 15;
 
 const RESIZE_CURSORS: Record<Exclude<ResizeHandle, null>, string> = {
   n: "ns-resize",
@@ -127,13 +123,11 @@ const computeResizedZoneRect = (
   if (handle?.includes("s")) y2 = pointerY;
   if (handle?.includes("n")) y1 = pointerY;
 
-  // Mantém o retângulo dentro dos limites do canvas
   x1 = Math.max(0, Math.min(x1, cWidth));
   x2 = Math.max(0, Math.min(x2, cWidth));
   y1 = Math.max(0, Math.min(y1, cHeight));
   y2 = Math.max(0, Math.min(y2, cHeight));
 
-  // Garante um tamanho mínimo, preservando a borda oposta à que está sendo arrastada
   if (x2 - x1 < ZONE_MIN_SIZE) {
     if (handle?.includes("w")) x1 = x2 - ZONE_MIN_SIZE;
     else x2 = x1 + ZONE_MIN_SIZE;
@@ -145,6 +139,76 @@ const computeResizedZoneRect = (
 
   return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
 };
+// -------------------------------------------------------------------------
+
+// --- Eraser helpers --------------------------------------------------------
+
+const distToSegment = (
+  px: number,
+  py: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): number => {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const lengthSq = dx * dx + dy * dy;
+
+  if (lengthSq === 0) {
+    return Math.hypot(px - x1, py - y1);
+  }
+
+  let t = ((px - x1) * dx + (py - y1) * dy) / lengthSq;
+  t = Math.max(0, Math.min(1, t));
+
+  const closestX = x1 + t * dx;
+  const closestY = y1 + t * dy;
+
+  return Math.hypot(px - closestX, py - closestY);
+};
+
+const distToPath = (px: number, py: number, points: Point[]): number => {
+  if (points.length === 0) return Infinity;
+  if (points.length === 1) {
+    return Math.hypot(px - points[0].x, py - points[0].y);
+  }
+
+  let min = Infinity;
+  for (let i = 0; i < points.length - 1; i++) {
+    const d = distToSegment(
+      px,
+      py,
+      points[i].x,
+      points[i].y,
+      points[i + 1].x,
+      points[i + 1].y,
+    );
+    if (d < min) min = d;
+  }
+  return min;
+};
+// -------------------------------------------------------------------------
+
+// --- Export helpers ---------------------------------------------------------
+// Funções puras usadas tanto para exportar de fato quanto para calcular o
+// resumo (getExportSummary) exibido no modal de pré-visualização — assim as
+// duas fontes de verdade nunca ficam dessincronizadas.
+
+const countLayerElements = (layer: Layer) => ({
+  lines: layer.lines.length,
+  freePaths: layer.freePaths.length,
+  zones: layer.zones.length,
+  robots: layer.robots.length,
+});
+
+const hasLayerContent = (layer: Layer) => {
+  const c = countLayerElements(layer);
+  return c.lines > 0 || c.freePaths > 0 || c.zones > 0 || c.robots > 0;
+};
+
+const sanitizeFileName = (name: string) =>
+  name.trim().replace(/\s+/g, "_").replace(/[^\w\-]/g, "") || "camada";
 // -------------------------------------------------------------------------
 
 export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
@@ -160,6 +224,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       showLabels,
       showZones,
       backgroundImage,
+      eraserSize,
     },
     ref,
   ) => {
@@ -173,8 +238,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
     const [currentPath, setCurrentPath] = useState<Point[]>([]);
     const [currentZone, setCurrentZone] = useState<Zone | null>(null);
 
-    // Interaction State
-    // Selection can be a Zone or a Robot
     const [activeSelection, setActiveSelection] = useState<{
       id: string;
       layerId: string;
@@ -188,7 +251,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
     } | null>(null);
     const [hasMoved, setHasMoved] = useState(false);
 
-    // Resize state (apenas Zonas suportam resize via handles)
     const [resizeHandle, setResizeHandle] = useState<ResizeHandle>(null);
     const [resizeStart, setResizeStart] = useState<{
       x: number;
@@ -203,6 +265,14 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       left: number;
     } | null>(null);
     const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
+
+    const [eraserPos, setEraserPos] = useState<Point | null>(null);
+    const [eraserHoverTarget, setEraserHoverTarget] = useState<{
+      type: "line" | "path";
+      id: string;
+    } | null>(null);
+    const [isErasing, setIsErasing] = useState(false);
+    const erasedRef = useRef(false);
 
     // Load Image
     useEffect(() => {
@@ -224,14 +294,25 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       setResizeHandle(null);
       setResizeStart(null);
       setHoveredHandle(null);
+      setEraserPos(null);
+      setEraserHoverTarget(null);
+      setIsErasing(false);
+      erasedRef.current = false;
     }, [tool]);
 
-    // --- Export Logic ---
+    // --- Export / Summary Logic ---
 
     useImperativeHandle(ref, () => ({
       exportGeneral: () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
+
+        const visibleLayers = layers.filter((l) => l.visible);
+
+        if (visibleLayers.length === 0) {
+          addToast("Nenhuma camada visível para exportar.", "error");
+          return;
+        }
 
         const tempCanvas = document.createElement("canvas");
         tempCanvas.width = CANVAS_WIDTH;
@@ -245,28 +326,35 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
             ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
           }
 
-          // isMainRender = false => seleção nunca é desenhada, então não há
-          // necessidade de tocar em activeSelection para "limpar" a exportação.
-          layers.forEach((layer) => {
-            if (layer.visible)
-              drawLayerContent(ctx, layer, CM_PER_PIXEL, false);
-            if (showZones && layer.zonesVisible) {
-              layer.zones.forEach((zone) => drawZone(ctx, zone, false));
-            }
-            if (showLabels) {
-              layer.lines.forEach((line) =>
-                drawLine(ctx, line, CM_PER_PIXEL, true),
-              );
-            }
+          // Somente camadas visíveis entram na imagem geral — espelhando
+          // exatamente o que o usuário vê no canvas principal. Cada camada
+          // é desenhada uma única vez, respeitando os toggles atuais de
+          // zonas/medidas, evitando duplicidade e "rótulos órfãos".
+          visibleLayers.forEach((layer) => {
+            drawLayerContent(ctx, layer, CM_PER_PIXEL, {
+              renderZones: showZones,
+              renderLabels: showLabels,
+              highlightSelection: false,
+            });
           });
 
           tempCanvas.toBlob((blob) => {
             if (blob) saveAs(blob, `quickbrick-estrategia-completa.png`);
           });
         }
-        addToast("Exportação concluída! Baixando arquivo PNG.", "success");
+        addToast(
+          `Exportação concluída! ${visibleLayers.length} camada(s) visível(is) exportada(s) em PNG.`,
+          "success",
+        );
       },
       exportLayers: async () => {
+        const layersWithContent = layers.filter(hasLayerContent);
+
+        if (layersWithContent.length === 0) {
+          addToast("Nenhuma camada com conteúdo para exportar.", "error");
+          return;
+        }
+
         const zip = new JSZip();
 
         // 1. Export Background
@@ -285,24 +373,19 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
           zip.file("00_background.png", bgData, { base64: true });
         }
 
-        // 2. Export Each Layer with Background
-        layers.forEach((layer, index) => {
-          if (
-            !layer.visible &&
-            layer.lines.length === 0 &&
-            layer.freePaths.length === 0 &&
-            layer.zones.length === 0 &&
-            layer.robots.length === 0
-          )
-            return;
-
+        // 2. Export Each Layer with content (mesmo ocultas no canvas — o
+        // objetivo deste modo é justamente inspecionar cada camada
+        // isoladamente, incluindo as que estão com o "olho" desativado).
+        // Todos os tipos de elemento (linhas, traços, zonas, robôs) são
+        // desenhados de forma consistente, respeitando os toggles atuais
+        // de zonas/medidas.
+        layersWithContent.forEach((layer, index) => {
           const tempCanvas = document.createElement("canvas");
           tempCanvas.width = CANVAS_WIDTH;
           tempCanvas.height = CANVAS_HEIGHT;
           const ctx = tempCanvas.getContext("2d");
 
           if (ctx) {
-            // Draw Background first
             if (imgRef.current) {
               ctx.drawImage(imgRef.current, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             } else {
@@ -310,12 +393,15 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
               ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             }
 
-            // Draw Layer content on top
-            drawLayerContent(ctx, layer, CM_PER_PIXEL, false);
+            drawLayerContent(ctx, layer, CM_PER_PIXEL, {
+              renderZones: showZones,
+              renderLabels: showLabels,
+              highlightSelection: false,
+            });
 
             const data = tempCanvas.toDataURL("image/png").split(",")[1];
             zip.file(
-              `layer_${index + 1}_${layer.name.replace(/\s+/g, "_")}.png`,
+              `layer_${index + 1}_${sanitizeFileName(layer.name)}.png`,
               data,
               { base64: true },
             );
@@ -324,45 +410,98 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
 
         const content = await zip.generateAsync({ type: "blob" });
         saveAs(content, "estrategia-camadas.zip");
-        addToast("Exportação concluída! Baixando arquivo ZIP.", "success");
+        addToast(
+          `Exportação concluída! ${layersWithContent.length} camada(s) exportada(s) em ZIP.`,
+          "success",
+        );
+      },
+      getExportSummary: (type) => {
+        const summaryLayers: ExportLayerSummary[] = layers.map((layer) => {
+          const included =
+            type === "general" ? layer.visible : hasLayerContent(layer);
+          const reason = included
+            ? undefined
+            : type === "general"
+              ? "Camada oculta (ícone de olho desativado)"
+              : "Camada vazia (sem elementos)";
+
+          return {
+            id: layer.id,
+            name: layer.name,
+            included,
+            reason,
+            counts: countLayerElements(layer),
+          };
+        });
+
+        const includedLayers = summaryLayers.filter((l) => l.included);
+        const totalElements = includedLayers.reduce(
+          (sum, l) =>
+            sum +
+            l.counts.lines +
+            l.counts.freePaths +
+            l.counts.zones +
+            l.counts.robots,
+          0,
+        );
+
+        return {
+          type,
+          layers: summaryLayers,
+          showZones,
+          showLabels,
+          totalElements,
+          isEmpty: includedLayers.length === 0,
+          fileName:
+            type === "general"
+              ? "quickbrick-estrategia-completa.png"
+              : "estrategia-camadas.zip",
+        };
       },
     }));
 
     // --- Drawing Helpers ---
 
-    // Refactored to be reusable for both main render and export
+    // Desenha todo o conteúdo de uma camada (zonas, robôs, linhas, traços).
+    // As flags são explícitas e vêm sempre do chamador — nada aqui infere
+    // "é exportação ou é o canvas principal", evitando os bugs de desenho
+    // duplicado / condicional inconsistente que existiam antes.
     const drawLayerContent = (
       ctx: CanvasRenderingContext2D,
       layer: Layer,
       scale: number,
-      isMainRender: boolean,
+      options: {
+        renderZones: boolean;
+        renderLabels: boolean;
+        highlightSelection: boolean;
+      },
     ) => {
+      const { renderZones, renderLabels, highlightSelection } = options;
+
       // Zones
-      if ((showZones || !isMainRender) && layer.zonesVisible) {
+      if (renderZones && layer.zonesVisible) {
         layer.zones.forEach((zone) => {
           const isSelected =
-            isMainRender &&
+            highlightSelection &&
             activeSelection?.id === zone.id &&
             activeSelection.type === "zone";
           drawZone(ctx, zone, isSelected);
         });
       }
 
-      // Robots
-      if (layer.visible) {
-        layer.robots.forEach((robot) => {
-          const isSelected =
-            isMainRender &&
-            activeSelection?.id === robot.id &&
-            activeSelection.type === "robot";
-          drawRobot(ctx, robot, isSelected);
-        });
-      }
+      // Robots — desenhados junto com o resto do conteúdo da camada; a
+      // decisão de incluir a camada inteira (por estar oculta) é do
+      // chamador, não desta função.
+      layer.robots.forEach((robot) => {
+        const isSelected =
+          highlightSelection &&
+          activeSelection?.id === robot.id &&
+          activeSelection.type === "robot";
+        drawRobot(ctx, robot, isSelected);
+      });
 
       // Lines
-      layer.lines.forEach((line) =>
-        drawLine(ctx, line, scale, showLabels && isMainRender),
-      );
+      layer.lines.forEach((line) => drawLine(ctx, line, scale, renderLabels));
 
       // Paths
       layer.freePaths.forEach((path) => drawPath(ctx, path));
@@ -375,15 +514,12 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      // Reset Canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw Background
       if (imgRef.current) {
         ctx.drawImage(imgRef.current, 0, 0, canvas.width, canvas.height);
       } else {
-        // Fallback grid
-        ctx.fillStyle = "#d7d8d8"; // slate-800
+        ctx.fillStyle = "#d7d8d8";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 1;
@@ -401,22 +537,22 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
 
       const scale = CM_PER_PIXEL;
 
-      // Draw Layers
       layers.forEach((layer) => {
         if (!layer.visible) return;
-        drawLayerContent(ctx, layer, scale, true);
+        drawLayerContent(ctx, layer, scale, {
+          renderZones: showZones,
+          renderLabels: showLabels,
+          highlightSelection: true,
+        });
       });
 
-      // Draw Current Actions
       if (currentLine) drawLine(ctx, currentLine, scale, showLabels);
       if (currentPath.length > 0)
         drawPath(ctx, { id: "temp", points: currentPath, color });
 
-      // Draw Current Zone being created
       if (currentZone && showZones) {
         drawZone(ctx, currentZone, true);
 
-        // Show Dimensions while drawing
         const widthCm = Math.abs(currentZone.width) * scale;
         const heightCm = Math.abs(currentZone.height) * scale;
 
@@ -435,6 +571,44 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         ctx.fillStyle = "white";
         ctx.fillText(label, labelX, labelY);
         ctx.restore();
+      }
+
+      // --- Eraser Preview ---
+      if (tool === "eraser") {
+        if (eraserHoverTarget) {
+          const layer = layers.find((l) => l.id === activeLayerId);
+          if (layer) {
+            if (eraserHoverTarget.type === "line") {
+              const line = layer.lines.find(
+                (l) => l.id === eraserHoverTarget.id,
+              );
+              if (line) {
+                drawEraseHighlight(ctx, [
+                  { x: line.x1, y: line.y1 },
+                  { x: line.x2, y: line.y2 },
+                ]);
+              }
+            } else {
+              const path = layer.freePaths.find(
+                (p) => p.id === eraserHoverTarget.id,
+              );
+              if (path) drawEraseHighlight(ctx, path.points);
+            }
+          }
+        }
+
+        if (eraserPos) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(eraserPos.x, eraserPos.y, eraserSize / 2, 0, Math.PI * 2);
+          ctx.strokeStyle = eraserHoverTarget
+            ? "#ef4444"
+            : "rgba(15, 23, 42, 0.55)";
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 3]);
+          ctx.stroke();
+          ctx.restore();
+        }
       }
     };
 
@@ -508,6 +682,26 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       ctx.stroke();
     };
 
+    const drawEraseHighlight = (
+      ctx: CanvasRenderingContext2D,
+      points: Point[],
+    ) => {
+      if (points.length < 2) return;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+      ctx.strokeStyle = "rgba(239, 68, 68, 0.85)";
+      ctx.lineWidth = 9;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.setLineDash([]);
+      ctx.stroke();
+      ctx.restore();
+    };
+
     const drawZone = (
       ctx: CanvasRenderingContext2D,
       zone: Zone,
@@ -515,12 +709,10 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
     ) => {
       ctx.save();
 
-      // Fill
       ctx.fillStyle = isActive ? zone.color + "60" : zone.color + "40";
       ctx.fillRect(zone.x, zone.y, zone.width, zone.height);
 
       if (isActive) {
-        // High Contrast Active Border Style
         ctx.shadowColor = "rgba(0, 0, 0, 0.95)";
         ctx.shadowBlur = 10;
 
@@ -534,7 +726,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         ctx.setLineDash([8, 6]);
         ctx.strokeRect(zone.x, zone.y, zone.width, zone.height);
 
-        // Resize Handles (4 cantos + 4 pontos médios das arestas)
         ctx.fillStyle = "#ffffff";
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 1;
@@ -560,7 +751,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         ctx.strokeRect(zone.x, zone.y, zone.width, zone.height);
       }
 
-      // Label
       ctx.fillStyle = "#fff";
       ctx.font = isActive ? "bold 16px sans-serif" : "bold 14px sans-serif";
 
@@ -595,41 +785,33 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       isActive: boolean,
     ) => {
       ctx.save();
-      // Translate to robot center
       ctx.translate(robot.x, robot.y);
       ctx.rotate((robot.rotation * Math.PI) / 180);
 
       const w = robot.width;
       const h = robot.height;
 
-      // Base Glow if selected
       if (isActive) {
         ctx.shadowColor = "#fbbe2474";
         ctx.shadowBlur = 15;
       }
 
-      // Draw Chassis
       ctx.fillStyle = robot.color;
       ctx.fillRect(-w / 2, -h / 2, w, h);
       ctx.lineWidth = 2;
       ctx.strokeStyle = "white";
       ctx.strokeRect(-w / 2, -h / 2, w, h);
 
-      // Remove Shadow for details
       ctx.shadowBlur = 0;
 
-      // Draw Details based on Type
       ctx.fillStyle = "rgba(0,0,0,0.3)";
       if (robot.type === "base") {
-        // Simple Wheels indication
-        ctx.fillRect(-w / 2 - 4, -h / 4, 4, h / 2); // Left Wheel
-        ctx.fillRect(w / 2, -h / 4, 4, h / 2); // Right Wheel
+        ctx.fillRect(-w / 2 - 4, -h / 4, 4, h / 2);
+        ctx.fillRect(w / 2, -h / 4, 4, h / 2);
       } else if (robot.type === "forklift") {
-        // Forks at front (assuming Right is front)
         ctx.fillRect(w / 2, -h / 4, 15, 5);
         ctx.fillRect(w / 2, h / 4 - 5, 15, 5);
       } else if (robot.type === "dozer") {
-        // Blade at front
         ctx.beginPath();
         ctx.moveTo(w / 2 + 5, -h / 2);
         ctx.quadraticCurveTo(w / 2 + 15, 0, w / 2 + 5, h / 2);
@@ -639,7 +821,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         ctx.stroke();
       }
 
-      // Draw Heading Arrow (Triangle)
       ctx.beginPath();
       ctx.moveTo(w / 4, -h / 4);
       ctx.lineTo(w / 2 - 5, 0);
@@ -647,7 +828,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       ctx.fillStyle = "white";
       ctx.fill();
 
-      // Selection Ring
       if (isActive) {
         ctx.strokeStyle = "#fbbf24";
         ctx.lineWidth = 2;
@@ -673,15 +853,14 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       activeSelection,
       dragOffset,
       resizeHandle,
+      tool,
+      eraserPos,
+      eraserHoverTarget,
+      eraserSize,
     ]);
 
     // --- Interaction Logic ---
 
-    // Recebe a "borda de referência" (aresta direita para Zonas, centro para
-    // Robôs) e o centro vertical do item, e posiciona o modal ancorado a ela.
-    // Antes, a função recebia (x, y, width, height) e fazia `x + width` para
-    // ambos os tipos — o que estava correto para Zonas (x = canto superior
-    // esquerdo) mas incorreto para Robôs (x = centro), deslocando o modal.
     const updateEditModalPosition = (
       anchorRightX: number,
       anchorCenterY: number,
@@ -729,11 +908,9 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       for (let i = layers.length - 1; i >= 0; i--) {
         if (!layers[i].visible) continue;
 
-        // Check Robots First (Draw order usually puts robots on top of zones if they share layer z-index concept, or just preference)
         const robots = layers[i].robots || [];
         for (let r = robots.length - 1; r >= 0; r--) {
           const robot = robots[r];
-          // Simple circular hit detection for rotated robots for UX smoothness
           const dx = x - robot.x;
           const dy = y - robot.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
@@ -743,7 +920,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
           }
         }
 
-        // Check Zones (respeita tanto a visibilidade da camada quanto o toggle global)
         if (!showZones || !layers[i].zonesVisible) continue;
         const zone = layers[i].zones
           .slice()
@@ -757,23 +933,74 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       return null;
     };
 
+    const getEraseTargetAt = (
+      x: number,
+      y: number,
+      radius: number,
+    ): { type: "line" | "path"; id: string } | null => {
+      const layer = layers.find((l) => l.id === activeLayerId);
+      if (!layer || !layer.visible) return null;
+
+      let closest: { type: "line" | "path"; id: string; dist: number } | null =
+        null;
+
+      for (const line of layer.lines) {
+        const d = distToSegment(x, y, line.x1, line.y1, line.x2, line.y2);
+        if (d <= radius && (!closest || d < closest.dist)) {
+          closest = { type: "line", id: line.id, dist: d };
+        }
+      }
+
+      for (const path of layer.freePaths) {
+        const d = distToPath(x, y, path.points);
+        if (d <= radius && (!closest || d < closest.dist)) {
+          closest = { type: "path", id: path.id, dist: d };
+        }
+      }
+
+      return closest ? { type: closest.type, id: closest.id } : null;
+    };
+
+    const eraseTarget = (target: { type: "line" | "path"; id: string }) => {
+      setLayers((prev) =>
+        prev.map((l) => {
+          if (l.id !== activeLayerId) return l;
+          if (target.type === "line") {
+            return { ...l, lines: l.lines.filter((ln) => ln.id !== target.id) };
+          }
+          return {
+            ...l,
+            freePaths: l.freePaths.filter((p) => p.id !== target.id),
+          };
+        }),
+      );
+      erasedRef.current = true;
+      setEraserHoverTarget(null);
+    };
+
     const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
       const { x, y } = getPos(e);
 
-      // Robot Placement Tool
+      if (tool === "eraser") {
+        setIsErasing(true);
+        erasedRef.current = false;
+        const target = getEraseTargetAt(x, y, eraserSize / 2);
+        if (target) eraseTarget(target);
+        return;
+      }
+
       if (tool === "robot") {
         const newRobot: Robot = {
           id: uuidv4(),
           x,
           y,
-          width: 50, // ~10cm
+          width: 50,
           height: 50,
           rotation: 0,
           color: color,
           type: "base",
         };
 
-        // Basic boundary check for new robot
         if (newRobot.x < newRobot.width / 2) newRobot.x = newRobot.width / 2;
         if (newRobot.x > CANVAS_WIDTH - newRobot.width / 2)
           newRobot.x = CANVAS_WIDTH - newRobot.width / 2;
@@ -789,7 +1016,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
           ),
         );
 
-        // Auto-select the new robot
         setActiveSelection({
           id: newRobot.id,
           layerId: activeLayerId,
@@ -798,14 +1024,11 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         updateEditModalPosition(newRobot.x + newRobot.width / 2, newRobot.y);
         registerAction();
 
-        // Volta para a ferramenta de seleção assim que o robô é criado
         setTool("hand");
         return;
       }
 
       if (tool === "hand") {
-        // Se já existe uma Zona selecionada, primeiro verifica se o clique
-        // começou em cima de um handle de redimensionamento dela.
         if (activeSelection?.type === "zone") {
           const layer = layers.find((l) => l.id === activeSelection.layerId);
           const zone = layer?.zones.find((z) => z.id === activeSelection.id);
@@ -828,14 +1051,12 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         const result = getHoveredItem(x, y);
 
         if (result) {
-          // Select it AND prepare for dragging
           setActiveSelection({
             id: result.item.id,
             layerId: result.layerId,
             type: result.type,
           });
 
-          // For zones, x/y is top-left. For robots, x/y is center.
           const startX =
             result.type === "zone"
               ? (result.item as Zone).x
@@ -848,7 +1069,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
           setDragOffset({ x: x - startX, y: y - startY, startX: x, startY: y });
           setHasMoved(false);
 
-          // Initial modal position
           if (result.type === "zone") {
             const z = result.item as Zone;
             updateEditModalPosition(z.x + z.width, z.y + z.height / 2);
@@ -857,7 +1077,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
             updateEditModalPosition(r.x + r.width / 2, r.y);
           }
         } else {
-          // Deselect only if clicking background
           setActiveSelection(null);
           setEditModalPos(null);
           setDragOffset(null);
@@ -892,7 +1111,16 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
     const drawMove = (e: React.MouseEvent | React.TouchEvent) => {
       const { x, y } = getPos(e);
 
-      // Resize de Zona em andamento
+      if (tool === "eraser") {
+        setEraserPos({ x, y });
+        const target = getEraseTargetAt(x, y, eraserSize / 2);
+        setEraserHoverTarget(target);
+        if (isErasing && target) {
+          eraseTarget(target);
+        }
+        return;
+      }
+
       if (
         tool === "hand" &&
         activeSelection?.type === "zone" &&
@@ -933,9 +1161,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         return;
       }
 
-      // Cursor interaction logic (Hover effect)
       if (tool === "hand" && !dragOffset && !resizeHandle) {
-        // Prioriza a detecção de handles sobre a Zona atualmente selecionada
         let handle: ResizeHandle = null;
         if (activeSelection?.type === "zone") {
           const layer = layers.find((l) => l.id === activeSelection.layerId);
@@ -956,9 +1182,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         }
       }
 
-      // Drag Logic - Only if dragOffset exists (meaning mouse is down on zone/robot)
       if (tool === "hand" && activeSelection && dragOffset) {
-        // Drag Threshold Check (5px)
         if (!hasMoved) {
           const dist = Math.sqrt(
             Math.pow(x - dragOffset.startX, 2) +
@@ -973,7 +1197,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         let width = 0;
         let height = 0;
 
-        // Apply Constraints based on type
         const canvas = canvasRef.current;
         const cWidth = canvas ? canvas.width : CANVAS_WIDTH;
         const cHeight = canvas ? canvas.height : CANVAS_HEIGHT;
@@ -984,7 +1207,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
           if (zone) {
             width = zone.width;
             height = zone.height;
-            // Zone Constraints (Top-Left)
             if (newX < 0) newX = 0;
             if (newY < 0) newY = 0;
             if (newX + width > cWidth) newX = cWidth - width;
@@ -996,7 +1218,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
           if (robot) {
             width = robot.width;
             height = robot.height;
-            // Robot Constraints (Center)
             const halfW = width / 2;
             const halfH = height / 2;
 
@@ -1054,8 +1275,16 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
     };
 
     const endDrawing = () => {
+      if (tool === "eraser") {
+        setIsErasing(false);
+        if (erasedRef.current) {
+          registerAction();
+        }
+        erasedRef.current = false;
+        return;
+      }
+
       if (tool === "hand") {
-        // Finaliza um resize de Zona
         if (resizeHandle) {
           if (hasMoved) registerAction();
           setResizeHandle(null);
@@ -1063,9 +1292,8 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
           setHasMoved(false);
           return;
         }
-        // Stop dragging
         if (hasMoved) {
-          registerAction(); // Save history only if we actually moved the item
+          registerAction();
         }
         setDragOffset(null);
         setHasMoved(false);
@@ -1135,7 +1363,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
           );
           changed = true;
 
-          // Volta para a ferramenta de seleção assim que a zona é criada
           setTool("hand");
         }
         setCurrentZone(null);
@@ -1144,6 +1371,12 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       if (changed) {
         setTimeout(registerAction, 0);
       }
+    };
+
+    const handleCanvasLeave = () => {
+      endDrawing();
+      setEraserPos(null);
+      setEraserHoverTarget(null);
     };
 
     const handleUpdateItem = (updates: any) => {
@@ -1164,13 +1397,11 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
 
                 let updated = { ...z, ...updates };
 
-                // Impede que largura/altura fiquem zero ou negativas via input manual
                 if (updated.width !== undefined)
                   updated.width = Math.max(1, updated.width);
                 if (updated.height !== undefined)
                   updated.height = Math.max(1, updated.height);
 
-                // Zone Constraints (Top-Left based)
                 if (updated.x < 0) updated.x = 0;
                 if (updated.y < 0) updated.y = 0;
                 if (updated.x + updated.width > cWidth)
@@ -1178,7 +1409,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                 if (updated.y + updated.height > cHeight)
                   updated.y = cHeight - updated.height;
 
-                // Prevent size from exceeding canvas
                 if (updated.width > cWidth) updated.width = cWidth;
                 if (updated.height > cHeight) updated.height = cHeight;
                 return updated;
@@ -1191,15 +1421,12 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                 if (r.id !== activeSelection.id) return r;
                 let updated = { ...r, ...updates };
 
-                // Robot Constraints (Center based)
                 const halfW = updated.width / 2;
                 const halfH = updated.height / 2;
 
-                // 1. Constrain Size
                 if (updated.width > cWidth) updated.width = cWidth;
                 if (updated.height > cHeight) updated.height = cHeight;
 
-                // 2. Constrain Position
                 if (updated.x < halfW) updated.x = halfW;
                 if (updated.x > cWidth - halfW) updated.x = cWidth - halfW;
 
@@ -1225,11 +1452,11 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
     };
     const selectedItem = getSelectedItem();
 
-    // Determine Cursor Style
     let cursorStyle = "default";
     if (tool === "zone") cursorStyle = "crosshair";
     if (tool === "robot") cursorStyle = "cell";
     if (tool === "line" || tool === "free") cursorStyle = "crosshair";
+    if (tool === "eraser") cursorStyle = "none";
     if (tool === "hand") {
       if (resizeHandle) cursorStyle = RESIZE_CURSORS[resizeHandle];
       else if (dragOffset) cursorStyle = "grabbing";
@@ -1251,7 +1478,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
             onMouseDown={startDrawing}
             onMouseMove={drawMove}
             onMouseUp={endDrawing}
-            onMouseLeave={endDrawing}
+            onMouseLeave={handleCanvasLeave}
             onTouchStart={startDrawing}
             onTouchMove={drawMove}
             onTouchEnd={endDrawing}
@@ -1260,7 +1487,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
           />
         </div>
 
-        {/* Contextual Editor */}
         {selectedItem && editModalPos && (
           <div
             className="card fixed bg-base-300 shadow-lg w-xs z-40 animate-fade-in-up transition-all duration-75"
@@ -1290,9 +1516,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
               </div>
 
               {activeSelection?.type === "robot" ? (
-                // --- ROBOT PROPERTIES ---
                 <div className="space-y-4">
-                  {/* Dimensões agrupadas em um único "join" horizontal */}
                   <div className="join w-full">
                     <div className="join-item flex-1">
                       <label className="text-[10px] font-semibold uppercase tracking-wide opacity-50 px-1">
@@ -1341,14 +1565,13 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                           handleUpdateItem({
                             height: Math.max(0, nextValue) / CM_PER_PIXEL,
                           });
-                        }}                       
+                        }}
                         onBlur={registerAction}
                         onKeyDown={(e) => e.key === "Enter" && registerAction()}
                       />
                     </div>
                   </div>
 
-                  {/* Rotação — label com valor embutido, sem "chrome" extra */}
                   <div>
                     <div className="flex justify-between items-center px-1 mb-1">
                       <span className="text-[10px] font-semibold uppercase tracking-wide opacity-50">
@@ -1372,7 +1595,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                     />
                   </div>
 
-                  {/* Tipo */}
                   <div>
                     <label className="text-[10px] font-semibold uppercase tracking-wide opacity-50 px-1">
                       Tipo
@@ -1391,7 +1613,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                     </select>
                   </div>
 
-                  {/* Cor — swatch compacto, sem card extra */}
                   <div className="flex items-center justify-between px-1 pt-1 border-t border-base-300">
                     <span className="text-[10px] font-semibold uppercase tracking-wide opacity-50">
                       Chassi
@@ -1408,9 +1629,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                   </div>
                 </div>
               ) : (
-                // --- ZONE PROPERTIES ---
                 <div className="space-y-4">
-                  {/* Nome */}
                   <div>
                     <label
                       className="text-[10px] font-semibold uppercase tracking-wide opacity-50 px-1"
@@ -1431,7 +1650,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                     />
                   </div>
 
-                  {/* Dimensões + cor na mesma linha */}
                   <div className="flex items-end gap-2">
                     <div className="flex-1">
                       <label className="text-[10px] font-semibold uppercase tracking-wide opacity-50 px-1">

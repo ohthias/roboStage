@@ -61,27 +61,6 @@ async function buildMergedCanvas(
   ctx.drawImage(tableCanvas, 0, 0);
   ctx.drawImage(heatmapCanvas, 0, 0);
 
-  // Watermark bar
-  ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.65)";
-  ctx.fillRect(0, 0, w, 30);
-
-  ctx.fillStyle = seasonData.accentColor;
-  ctx.font = 'bold 11px "JetBrains Mono", monospace';
-  ctx.textAlign = "left";
-  ctx.textBaseline = "middle";
-  ctx.fillText("QUICKBRICK – HEATMAP DA MESA", 12, 15);
-
-  ctx.fillStyle = "rgba(255,255,255,0.4)";
-  ctx.textAlign = "right";
-  const dateStr = new Date().toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-  ctx.fillText(`${seasonData.name} | ${dateStr}`, w - 12, 15);
-  ctx.restore();
-
   return out;
 }
 
@@ -111,7 +90,7 @@ export async function exportCanvasPNG(
 
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  link.download = `heatmap-mesa-${season}-${Date.now()}.png`;
+  link.download = `heatmap-${season}-${Date.now()}.png`;
   link.href = url;
   link.click();
 

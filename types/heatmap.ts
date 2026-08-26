@@ -8,7 +8,7 @@ export type HeatPoint = {
 
 export type HeatmapMode = 'add' | 'remove' | 'view';
 
-export type SeasonKey = 'unearthed';
+export type SeasonKey = 'bioglow';
 
 export type Season = {
   key: SeasonKey;

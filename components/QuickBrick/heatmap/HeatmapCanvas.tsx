@@ -67,8 +67,10 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
     const wrapperRef = useRef<HTMLDivElement>(null);
     const tableRef = useRef<HTMLCanvasElement>(null);
     const heatRef = useRef<HTMLCanvasElement>(null);
+    const isDrawingRef = useRef(false);
+    const lastStampRef = useRef<{ x: number; y: number } | null>(null);
 
-    const [size, setSize] = useState({ w: 800, h: 400 });
+    const [size, setSize] = useState({ w: 800, h: 550 });
     const [ripples, setRipples] = useState<Ripple[]>([]);
 
     const applySize = useCallback(() => {
@@ -123,44 +125,99 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
       heatmapCanvas: heatRef.current,
     }));
 
-    const handleClick = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!wrapperRef.current) return;
+    const applyBrushAt = useCallback(
+      (clientX: number, clientY: number, showRipple: boolean) => {
+        if (!wrapperRef.current || mode === "view") return;
 
         const rect = wrapperRef.current.getBoundingClientRect();
-        const nx = (e.clientX - rect.left) / rect.width;
-        const ny = (e.clientY - rect.top) / rect.height;
+        const localX = clientX - rect.left;
+        const localY = clientY - rect.top;
+        const nx = localX / rect.width;
+        const ny = localY / rect.height;
 
         if (nx < 0 || nx > 1 || ny < 0 || ny > 1) return;
-        if (mode === "view") return;
 
-        const localX = e.clientX - rect.left;
-        const localY = e.clientY - rect.top;
-        const color = mode === "remove" ? "#ff4d6a" : "#00e532";
+        const stampStepPx = Math.max(6, config.brushRadius * 0.35);
+        const last = lastStampRef.current;
 
-        if (mode === "remove") {
-          onRemoveNearest(nx, ny);
+        if (!last) {
+          if (mode === "remove") {
+            onRemoveNearest(nx, ny);
+          } else {
+            onAddPoint(nx, ny);
+          }
+          lastStampRef.current = { x: localX, y: localY };
         } else {
-          onAddPoint(nx, ny);
+          const dx = localX - last.x;
+          const dy = localY - last.y;
+          const dist = Math.hypot(dx, dy);
+
+          if (dist >= stampStepPx) {
+            const steps = Math.floor(dist / stampStepPx);
+            for (let i = 1; i <= steps; i++) {
+              const t = i / steps;
+              const ix = last.x + dx * t;
+              const iy = last.y + dy * t;
+              const inx = ix / rect.width;
+              const iny = iy / rect.height;
+
+              if (mode === "remove") {
+                onRemoveNearest(inx, iny);
+              } else {
+                onAddPoint(inx, iny);
+              }
+            }
+            lastStampRef.current = { x: localX, y: localY };
+          }
         }
 
-        const rippleId = `${Date.now()}-${Math.random()}`;
-        setRipples((prev) => [
-          ...prev,
-          { id: rippleId, x: localX, y: localY, color },
-        ]);
+        if (showRipple) {
+          const color = mode === "remove" ? "#ff4d6a" : "#00e532";
+          const rippleId = `${Date.now()}-${Math.random()}`;
+          setRipples((prev) => [
+            ...prev,
+            { id: rippleId, x: localX, y: localY, color },
+          ]);
 
-        setTimeout(
-          () => setRipples((prev) => prev.filter((r) => r.id !== rippleId)),
-          520,
-        );
+          setTimeout(
+            () => setRipples((prev) => prev.filter((r) => r.id !== rippleId)),
+            520,
+          );
+        }
       },
-      [mode, onAddPoint, onRemoveNearest],
+      [mode, config.brushRadius, onAddPoint, onRemoveNearest],
+    );
+
+    const stopDrawing = useCallback(() => {
+      isDrawingRef.current = false;
+      lastStampRef.current = null;
+    }, []);
+
+    useEffect(() => {
+      const handleWindowMouseUp = () => stopDrawing();
+      window.addEventListener("mouseup", handleWindowMouseUp);
+      return () => window.removeEventListener("mouseup", handleWindowMouseUp);
+    }, [stopDrawing]);
+
+    const handleMouseDown = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        if (mode === "view") return;
+        isDrawingRef.current = true;
+        applyBrushAt(e.clientX, e.clientY, true);
+      },
+      [mode, applyBrushAt],
     );
 
     const handleMouseMove = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
-        if (mode !== "view" || !wrapperRef.current) return;
+        if (!wrapperRef.current) return;
+
+        if (mode !== "view" && isDrawingRef.current) {
+          applyBrushAt(e.clientX, e.clientY, false);
+          return;
+        }
+
+        if (mode !== "view") return;
 
         const rect = wrapperRef.current.getBoundingClientRect();
         const nx = (e.clientX - rect.left) / rect.width;
@@ -183,7 +240,7 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
         } else {
         }
       },
-      [mode, points, config.brushRadius, size.w],
+      [mode, points, config.brushRadius, size.w, applyBrushAt],
     );
 
     const cursor =
@@ -198,7 +255,9 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
         <div
           ref={containerRef}
           className={`relative flex-1 h-full flex items-center justify-center bg-surface border border-white/7 rounded-2xl overflow-hidden ${cursor}`}
-          onClick={handleClick}
+          onMouseDown={handleMouseDown}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
           onMouseMove={handleMouseMove}
         >
           <div

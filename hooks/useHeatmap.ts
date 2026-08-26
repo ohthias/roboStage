@@ -34,7 +34,7 @@ const INITIAL_STATS: HeatmapStats = {
 const INITIAL_STATE: State = {
   points:  [],
   mode:    'add',
-  season:  'unearthed',
+  season:  'bioglow',
   config: { brushRadius: 50, opacity: 0.7, clickIntensity: 2 },
   stats:   INITIAL_STATS,
 };
@@ -138,9 +138,9 @@ export function useHeatmap() {
     dispatch({ type: 'SET_CONFIG', patch });
   }, []);
 
-  const imagePath = state.season === 'unearthed'
+  const imagePath = state.season === 'bioglow'
     ? '/images/QuickBrick/Estrategia_fundo.png'
-    : state.season === 'bioglow'
+    : state.season === 'unearthed'
       ? '/assets/bioglow-table.png'
       : null;
 

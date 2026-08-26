@@ -18,6 +18,7 @@ import { Show, UserAvatar } from "@clerk/nextjs";
 
 const mainLinks = [
   { href: "/about", label: "Sobre" },
+  { href: "/labtest", label: "LabTest" },
   { href: "/showlive", label: "ShowLive" },
   { href: "/news", label: "Notícias" },
   { href: "/help", label: "Ajuda" },

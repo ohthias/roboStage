@@ -175,6 +175,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 onChange={(e) => setEraserSize(Number(e.target.value))}
                 className="range range-xs range-primary"
               />
+              <p className="text-[10px] opacity-50 mt-1 px-1">
+                Passe sobre um traço para apagar só a parte tocada. Segure{" "}
+                <kbd className="kbd kbd-xs">Ctrl</kbd> para apagar o traço
+                inteiro.
+              </p>
             </div>
           )}
         </Section>
@@ -212,15 +217,15 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <ActionButton
               onClick={exportGeneral}
               Icon={ImageIcon}
-              label="PNG"
-              className="w-full"
+              label="Exportar PNG"
+              className="w-full text-left text-[10px]"
             />
 
             <ActionButton
               onClick={exportLayers}
               Icon={Archive}
-              label="Camadas"
-              className="w-full"
+              label="Exportar Camadas"
+              className="w-full text-left text-[10px]"
             />
           </div>
         </Section>
@@ -235,7 +240,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 <li
                   key={layer.id}
                   className={`transition-all ${
-                    isActive ? "bg-base-200/70 border-l-4 border-primary" : ""
+                    isActive ? "bg-base-200/70 border-l-4 border-primary rounded-r-lg" : ""
                   }`}
                 >
                   <div

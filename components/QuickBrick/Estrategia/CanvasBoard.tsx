@@ -141,7 +141,9 @@ const computeResizedZoneRect = (
 };
 // -------------------------------------------------------------------------
 
-// --- Eraser helpers --------------------------------------------------------
+// --- Eraser helpers ---------------------------------------------------------
+// distToSegment/distToPath: usados para localizar o traço mais próximo do
+// cursor (modo Ctrl = apagar o traço inteiro, e também para o hover-preview).
 
 const distToSegment = (
   px: number,
@@ -188,12 +190,152 @@ const distToPath = (px: number, py: number, points: Point[]): number => {
   }
   return min;
 };
+
+// Interseção de um segmento (p1->p2, parametrizado por t em [0,1]) com um
+// círculo (cx, cy, r). Como a distância ao longo do segmento em relação ao
+// centro do círculo é uma função quadrática convexa de t, a região onde o
+// segmento está DENTRO do círculo é um único intervalo [tStart, tEnd].
+// Retorna null se o segmento não cruza o círculo dentro de [0,1].
+const segmentCircleIntersection = (
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  cx: number,
+  cy: number,
+  r: number,
+): { tStart: number; tEnd: number } | null => {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const fx = x1 - cx;
+  const fy = y1 - cy;
+
+  const a = dx * dx + dy * dy;
+  if (a === 0) {
+    // Segmento degenerado (ponto único)
+    return Math.hypot(fx, fy) <= r ? { tStart: 0, tEnd: 1 } : null;
+  }
+
+  const b = 2 * (fx * dx + fy * dy);
+  const c = fx * fx + fy * fy - r * r;
+  const disc = b * b - 4 * a * c;
+  if (disc < 0) return null;
+
+  const sqrtDisc = Math.sqrt(disc);
+  let t1 = (-b - sqrtDisc) / (2 * a);
+  let t2 = (-b + sqrtDisc) / (2 * a);
+  if (t1 > t2) [t1, t2] = [t2, t1];
+
+  const tStart = Math.max(0, t1);
+  const tEnd = Math.min(1, t2);
+  if (tStart > tEnd) return null;
+
+  return { tStart, tEnd };
+};
+
+// Limiar mínimo (em fração do comprimento do segmento) para manter um
+// pedaço restante — evita gerar fragmentos microscópicos ao apagar.
+const ERASE_MIN_T = 0.03;
+
+// Corta UMA linha reta (régua) que cruza o círculo do apagador, retornando
+// 0, 1 ou 2 pedaços restantes (os trechos fora do círculo).
+const trimSegmentByCircle = (
+  line: { x1: number; y1: number; x2: number; y2: number },
+  cx: number,
+  cy: number,
+  r: number,
+): {
+  changed: boolean;
+  pieces: { x1: number; y1: number; x2: number; y2: number }[];
+} => {
+  const { x1, y1, x2, y2 } = line;
+  const intersection = segmentCircleIntersection(x1, y1, x2, y2, cx, cy, r);
+  if (!intersection) {
+    return { changed: false, pieces: [line] };
+  }
+
+  const { tStart, tEnd } = intersection;
+  const lerp = (t: number) => ({ x: x1 + (x2 - x1) * t, y: y1 + (y2 - y1) * t });
+  const pieces: { x1: number; y1: number; x2: number; y2: number }[] = [];
+
+  if (tStart > ERASE_MIN_T) {
+    const p = lerp(tStart);
+    pieces.push({ x1, y1, x2: p.x, y2: p.y });
+  }
+  if (tEnd < 1 - ERASE_MIN_T) {
+    const p = lerp(tEnd);
+    pieces.push({ x1: p.x, y1: p.y, x2, y2 });
+  }
+
+  return { changed: true, pieces };
+};
+
+// Corta um caminho livre (polilinha) removendo a porção que cruza o círculo
+// do apagador, retornando os trechos restantes como múltiplos "runs" de
+// pontos (cada run vira um novo FreePath independente).
+const trimPolylineByCircle = (
+  points: Point[],
+  cx: number,
+  cy: number,
+  r: number,
+): { changed: boolean; runs: Point[][] } => {
+  if (points.length < 2) return { changed: false, runs: [points] };
+
+  const runs: Point[][] = [];
+  let current: Point[] = [points[0]];
+  let changed = false;
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const intersection = segmentCircleIntersection(
+      p1.x,
+      p1.y,
+      p2.x,
+      p2.y,
+      cx,
+      cy,
+      r,
+    );
+
+    if (!intersection) {
+      current.push(p2);
+      continue;
+    }
+
+    changed = true;
+    const { tStart, tEnd } = intersection;
+    const lerp = (t: number) => ({
+      x: p1.x + (p2.x - p1.x) * t,
+      y: p1.y + (p2.y - p1.y) * t,
+    });
+
+    if (tStart > ERASE_MIN_T) {
+      current.push(lerp(tStart));
+    }
+    if (current.length >= 2) runs.push(current);
+    current = [];
+
+    if (tEnd < 1 - ERASE_MIN_T) {
+      current = [lerp(tEnd), p2];
+    } else {
+      current = [p2];
+    }
+  }
+
+  if (current.length >= 2) runs.push(current);
+
+  if (!changed) return { changed: false, runs: [points] };
+  return { changed: true, runs };
+};
+
+// Extrai o ctrlKey de forma segura tanto de eventos de mouse quanto de touch
+// (touch não possui essa propriedade — assume-se false nesse caso).
+const getCtrlKey = (e: React.MouseEvent | React.TouchEvent): boolean =>
+  "ctrlKey" in e ? (e as React.MouseEvent).ctrlKey : false;
 // -------------------------------------------------------------------------
 
 // --- Export helpers ---------------------------------------------------------
-// Funções puras usadas tanto para exportar de fato quanto para calcular o
-// resumo (getExportSummary) exibido no modal de pré-visualização — assim as
-// duas fontes de verdade nunca ficam dessincronizadas.
 
 const countLayerElements = (layer: Layer) => ({
   lines: layer.lines.length,
@@ -266,11 +408,15 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
     } | null>(null);
     const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
 
+    // --- Eraser state ---
     const [eraserPos, setEraserPos] = useState<Point | null>(null);
+    // Alvo completo (linha/traço inteiro) sob o cursor — só é preenchido
+    // quando Ctrl está pressionado, para indicar "isto será apagado inteiro".
     const [eraserHoverTarget, setEraserHoverTarget] = useState<{
       type: "line" | "path";
       id: string;
     } | null>(null);
+    const [eraserCtrlActive, setEraserCtrlActive] = useState(false);
     const [isErasing, setIsErasing] = useState(false);
     const erasedRef = useRef(false);
 
@@ -296,6 +442,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       setHoveredHandle(null);
       setEraserPos(null);
       setEraserHoverTarget(null);
+      setEraserCtrlActive(false);
       setIsErasing(false);
       erasedRef.current = false;
     }, [tool]);
@@ -307,6 +454,8 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         const canvas = canvasRef.current;
         if (!canvas) return;
 
+        // Apenas camadas visíveis entram na imagem geral — espelha
+        // exatamente o que o usuário vê no canvas principal.
         const visibleLayers = layers.filter((l) => l.visible);
 
         if (visibleLayers.length === 0) {
@@ -326,10 +475,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
             ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
           }
 
-          // Somente camadas visíveis entram na imagem geral — espelhando
-          // exatamente o que o usuário vê no canvas principal. Cada camada
-          // é desenhada uma única vez, respeitando os toggles atuais de
-          // zonas/medidas, evitando duplicidade e "rótulos órfãos".
           visibleLayers.forEach((layer) => {
             drawLayerContent(ctx, layer, CM_PER_PIXEL, {
               renderZones: showZones,
@@ -348,10 +493,18 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         );
       },
       exportLayers: async () => {
-        const layersWithContent = layers.filter(hasLayerContent);
+        // Apenas camadas visíveis E com conteúdo entram no zip — uma
+        // camada oculta não é exportada, e uma visível-mas-vazia não gera
+        // um PNG em branco desnecessário.
+        const exportableLayers = layers.filter(
+          (l) => l.visible && hasLayerContent(l),
+        );
 
-        if (layersWithContent.length === 0) {
-          addToast("Nenhuma camada com conteúdo para exportar.", "error");
+        if (exportableLayers.length === 0) {
+          addToast(
+            "Nenhuma camada visível com conteúdo para exportar.",
+            "error",
+          );
           return;
         }
 
@@ -373,13 +526,8 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
           zip.file("00_background.png", bgData, { base64: true });
         }
 
-        // 2. Export Each Layer with content (mesmo ocultas no canvas — o
-        // objetivo deste modo é justamente inspecionar cada camada
-        // isoladamente, incluindo as que estão com o "olho" desativado).
-        // Todos os tipos de elemento (linhas, traços, zonas, robôs) são
-        // desenhados de forma consistente, respeitando os toggles atuais
-        // de zonas/medidas.
-        layersWithContent.forEach((layer, index) => {
+        // 2. Export Each visible layer with content
+        exportableLayers.forEach((layer, index) => {
           const tempCanvas = document.createElement("canvas");
           tempCanvas.width = CANVAS_WIDTH;
           tempCanvas.height = CANVAS_HEIGHT;
@@ -411,19 +559,26 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         const content = await zip.generateAsync({ type: "blob" });
         saveAs(content, "estrategia-camadas.zip");
         addToast(
-          `Exportação concluída! ${layersWithContent.length} camada(s) exportada(s) em ZIP.`,
+          `Exportação concluída! ${exportableLayers.length} camada(s) visível(is) exportada(s) em ZIP.`,
           "success",
         );
       },
       getExportSummary: (type) => {
         const summaryLayers: ExportLayerSummary[] = layers.map((layer) => {
-          const included =
-            type === "general" ? layer.visible : hasLayerContent(layer);
-          const reason = included
-            ? undefined
-            : type === "general"
-              ? "Camada oculta (ícone de olho desativado)"
-              : "Camada vazia (sem elementos)";
+          let included: boolean;
+          let reason: string | undefined;
+
+          if (type === "general") {
+            included = layer.visible;
+            reason = included ? undefined : "Camada oculta (ícone de olho desativado)";
+          } else {
+            included = layer.visible && hasLayerContent(layer);
+            if (!included) {
+              reason = !layer.visible
+                ? "Camada oculta (ícone de olho desativado)"
+                : "Camada vazia (sem elementos)";
+            }
+          }
 
           return {
             id: layer.id,
@@ -462,10 +617,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
 
     // --- Drawing Helpers ---
 
-    // Desenha todo o conteúdo de uma camada (zonas, robôs, linhas, traços).
-    // As flags são explícitas e vêm sempre do chamador — nada aqui infere
-    // "é exportação ou é o canvas principal", evitando os bugs de desenho
-    // duplicado / condicional inconsistente que existiam antes.
     const drawLayerContent = (
       ctx: CanvasRenderingContext2D,
       layer: Layer,
@@ -478,7 +629,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
     ) => {
       const { renderZones, renderLabels, highlightSelection } = options;
 
-      // Zones
       if (renderZones && layer.zonesVisible) {
         layer.zones.forEach((zone) => {
           const isSelected =
@@ -489,9 +639,6 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         });
       }
 
-      // Robots — desenhados junto com o resto do conteúdo da camada; a
-      // decisão de incluir a camada inteira (por estar oculta) é do
-      // chamador, não desta função.
       layer.robots.forEach((robot) => {
         const isSelected =
           highlightSelection &&
@@ -500,10 +647,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
         drawRobot(ctx, robot, isSelected);
       });
 
-      // Lines
       layer.lines.forEach((line) => drawLine(ctx, line, scale, renderLabels));
-
-      // Paths
       layer.freePaths.forEach((path) => drawPath(ctx, path));
     };
 
@@ -575,7 +719,8 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
 
       // --- Eraser Preview ---
       if (tool === "eraser") {
-        if (eraserHoverTarget) {
+        // Destaque de traço inteiro só é mostrado no modo Ctrl (apagar tudo)
+        if (eraserCtrlActive && eraserHoverTarget) {
           const layer = layers.find((l) => l.id === activeLayerId);
           if (layer) {
             if (eraserHoverTarget.type === "line") {
@@ -601,7 +746,9 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
           ctx.save();
           ctx.beginPath();
           ctx.arc(eraserPos.x, eraserPos.y, eraserSize / 2, 0, Math.PI * 2);
-          ctx.strokeStyle = eraserHoverTarget
+          // Vermelho = modo Ctrl (apaga o traço inteiro). Cinza = modo
+          // normal (corta apenas a porção sob o círculo).
+          ctx.strokeStyle = eraserCtrlActive
             ? "#ef4444"
             : "rgba(15, 23, 42, 0.55)";
           ctx.lineWidth = 1.5;
@@ -856,6 +1003,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       tool,
       eraserPos,
       eraserHoverTarget,
+      eraserCtrlActive,
       eraserSize,
     ]);
 
@@ -933,6 +1081,9 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       return null;
     };
 
+    // Encontra o traço (linha ou caminho) mais próximo do ponto informado,
+    // dentro do raio do apagador, restrito à camada ativa. Usado no modo
+    // Ctrl (apagar traço inteiro) e no hover-preview desse modo.
     const getEraseTargetAt = (
       x: number,
       y: number,
@@ -978,14 +1129,83 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       setEraserHoverTarget(null);
     };
 
+    // Ponto central da lógica do apagador.
+    // - ctrlKey=true: apaga o traço inteiro mais próximo (comportamento
+    //   antigo, agora exclusivo do modo Ctrl).
+    // - ctrlKey=false: apaga apenas a porção de CADA linha/traço da camada
+    //   ativa que estiver sob o círculo do apagador, cortando-os em
+    //   pedaços restantes (permite apagar vários traços numa arrastada só).
+    const eraseAtPosition = (
+      cx: number,
+      cy: number,
+      radius: number,
+      ctrlKey: boolean,
+    ) => {
+      if (ctrlKey) {
+        const target = getEraseTargetAt(cx, cy, radius);
+        if (target) eraseTarget(target);
+        return;
+      }
+
+      let changed = false;
+
+      setLayers((prev) =>
+        prev.map((l) => {
+          if (l.id !== activeLayerId) return l;
+
+          const newLines: Line[] = [];
+          l.lines.forEach((line) => {
+            const { changed: lineChanged, pieces } = trimSegmentByCircle(
+              line,
+              cx,
+              cy,
+              radius,
+            );
+            if (!lineChanged) {
+              newLines.push(line);
+              return;
+            }
+            changed = true;
+            pieces.forEach((seg) =>
+              newLines.push({ ...seg, id: uuidv4(), color: line.color }),
+            );
+          });
+
+          const newPaths: FreePath[] = [];
+          l.freePaths.forEach((path) => {
+            const { changed: pathChanged, runs } = trimPolylineByCircle(
+              path.points,
+              cx,
+              cy,
+              radius,
+            );
+            if (!pathChanged) {
+              newPaths.push(path);
+              return;
+            }
+            changed = true;
+            runs.forEach((pts) => {
+              if (pts.length >= 2)
+                newPaths.push({ id: uuidv4(), points: pts, color: path.color });
+            });
+          });
+
+          return { ...l, lines: newLines, freePaths: newPaths };
+        }),
+      );
+
+      if (changed) erasedRef.current = true;
+    };
+
     const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
       const { x, y } = getPos(e);
 
       if (tool === "eraser") {
+        const ctrlKey = getCtrlKey(e);
         setIsErasing(true);
+        setEraserCtrlActive(ctrlKey);
         erasedRef.current = false;
-        const target = getEraseTargetAt(x, y, eraserSize / 2);
-        if (target) eraseTarget(target);
+        eraseAtPosition(x, y, eraserSize / 2, ctrlKey);
         return;
       }
 
@@ -1112,11 +1332,17 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
       const { x, y } = getPos(e);
 
       if (tool === "eraser") {
+        const ctrlKey = getCtrlKey(e);
         setEraserPos({ x, y });
-        const target = getEraseTargetAt(x, y, eraserSize / 2);
-        setEraserHoverTarget(target);
-        if (isErasing && target) {
-          eraseTarget(target);
+        setEraserCtrlActive(ctrlKey);
+
+        // O destaque de traço inteiro só faz sentido no modo Ctrl.
+        setEraserHoverTarget(
+          ctrlKey ? getEraseTargetAt(x, y, eraserSize / 2) : null,
+        );
+
+        if (isErasing) {
+          eraseAtPosition(x, y, eraserSize / 2, ctrlKey);
         }
         return;
       }
@@ -1565,7 +1791,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                           handleUpdateItem({
                             height: Math.max(0, nextValue) / CM_PER_PIXEL,
                           });
-                        }}
+                        }}                       
                         onBlur={registerAction}
                         onKeyDown={(e) => e.key === "Enter" && registerAction()}
                       />

@@ -115,7 +115,7 @@ export default function QuickBrickCanvas() {
   const addLayer = () => {
     const newLayer: Layer = {
       id: uuidv4(),
-      name: `Layer ${layers.length + 1}`,
+      name: `Camada ${layers.length + 1}`,
       visible: true,
       zonesVisible: true,
       lines: [],

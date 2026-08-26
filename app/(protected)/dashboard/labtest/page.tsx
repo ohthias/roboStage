@@ -1,203 +1,230 @@
-"use client";
-
-// ---------------------------------------------------------------------------
-// Dashboard do LabTest — lista os testes do usuário.
-// Antes esse tipo de tela tinha que saber sobre os 3 modos manualmente
-// (ícone, cor, rótulo) espalhado pelo JSX. Agora tudo isso vem do
-// LAB_TEST_MODES — inclusive o modo "Personalizado", sem tocar neste arquivo.
-// ---------------------------------------------------------------------------
-
-import { useMemo, useState } from "react";
+import { Filter, Plus, ListChecks, Gauge, SlidersHorizontal, Calendar, Layers } from "lucide-react";
 import Link from "next/link";
-import {
-  FlaskConical,
-  Plus,
-  Search,
-  ListOrdered,
-  Calendar,
-  ChevronRight,
-} from "lucide-react";
+import { listTests } from "./new/actions";
 
-import { useTests, type TestListItem } from "@/hooks/useLabTests";
-import {
-  LAB_TEST_MODE_LIST,
-  getModeDefinition,
-  ACCENT_STYLES,
-} from "@/utils/labtest/modes";
-import { fmtDate } from "@/components/labtest/shared";
-import type { ModeId } from "@/types/labtest.types";
-import LabTestForm from "@/components/labtest/LabTestForm";
+// ---------------------------------------------------------------------------
+// Metadados visuais por modo/status. Ajuste labels/cores como preferir.
+// ---------------------------------------------------------------------------
 
-type ModeFilter = ModeId | "all";
+const MODE_META: Record<
+  string,
+  { label: string; icon: typeof ListChecks; badgeClass: string }
+> = {
+  runs: { label: "Runs", icon: ListChecks, badgeClass: "badge-primary" },
+  calibrabot: { label: "Calibrabot", icon: Gauge, badgeClass: "badge-info" },
+  individual: {
+    label: "Calibrabot · Motores",
+    icon: Gauge,
+    badgeClass: "badge-info",
+  },
+  custom: {
+    label: "Customizado",
+    icon: SlidersHorizontal,
+    badgeClass: "badge-secondary",
+  },
+};
 
-function TestCard({ test }: { test: TestListItem }) {
-  const modeDef = getModeDefinition(test.mode);
-  const style = ACCENT_STYLES[modeDef.accent];
-  const Icon = modeDef.icon;
+const STATUS_META: Record<string, { label: string; badgeClass: string }> = {
+  planejamento: { label: "Planejamento", badgeClass: "badge-ghost" },
+  em_andamento: { label: "Em andamento", badgeClass: "badge-warning" },
+  concluido: { label: "Concluído", badgeClass: "badge-success" },
+  cancelado: { label: "Cancelado", badgeClass: "badge-error" },
+};
 
-  return (
-    <Link
-      href={`/dashboard/labtest/${test.id}`}
-      className="group flex flex-col gap-4 rounded-2xl border border-base-content/10 bg-base-100 p-5 transition-all hover:border-primary/25 hover:shadow-sm"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${style.bgSoft}`}
-        >
-          <Icon className={`h-5 w-5 ${style.text}`} />
-        </div>
-        <ChevronRight className="h-4 w-4 shrink-0 text-base-content/20 transition-transform group-hover:translate-x-0.5 group-hover:text-primary/60" />
-      </div>
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
 
-      <div className="min-w-0 flex-1">
-        <p className={`mb-1 text-xs font-medium uppercase tracking-widest ${style.text}`}>
-          {modeDef.label}
-        </p>
-        <h3 className="truncate text-base font-semibold leading-tight">{test.name}</h3>
-        {test.description && (
-          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-base-content/50">
-            {test.description}
-          </p>
-        )}
-      </div>
+// ---------------------------------------------------------------------------
+// Resume o jsonb `config` em uma linha curta, de acordo com o modo do teste.
+// ---------------------------------------------------------------------------
 
-      <div className="flex items-center justify-between border-t border-base-content/8 pt-3 text-xs text-base-content/40">
-        <span className="flex items-center gap-1.5">
-          <ListOrdered className="h-3 w-3" />
-          {test.executionsCount} lançamento{test.executionsCount === 1 ? "" : "s"}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Calendar className="h-3 w-3" />
-          {fmtDate(test.updatedAt)}
-        </span>
-      </div>
-    </Link>
-  );
+function summarizeConfig(mode: string, config: unknown): string {
+  if (!config || typeof config !== "object") return "Sem configuração";
+  const c = config as Record<string, unknown>;
+
+  if (mode === "runs") {
+    const missions = Array.isArray(c.missions) ? c.missions.length : 0;
+    return `${missions} ${missions === 1 ? "missão" : "missões"}`;
+  }
+
+  if (mode === "individual" || (mode === "calibrabot" && c.tipo === "motores")) {
+    const motores = Array.isArray(c.motores) ? c.motores.length : 0;
+    const modo = typeof c.modo === "string" ? c.modo : "individual";
+    return `${motores} ${motores === 1 ? "motor" : "motores"} · ${modo}`;
+  }
+
+  if (mode === "calibrabot" && c.tipo === "giroscopio") {
+    const indicadores = Array.isArray(c.indicadores) ? c.indicadores.length : 0;
+    return `Alvo ${c.anguloAlvo ?? "?"}° · ${indicadores} indicador(es)`;
+  }
+
+  if (mode === "calibrabot" && c.tipo === "pid") {
+    const parametros = Array.isArray(c.parametros) ? c.parametros.length : 0;
+    return `Distância ${c.distanciaAlvo ?? "?"}cm · ${parametros} parâmetro(s)`;
+  }
+
+  if (mode === "custom") {
+    const parametros = Array.isArray(c.parametros) ? c.parametros.length : 0;
+    return `${parametros} ${parametros === 1 ? "parâmetro" : "parâmetros"}`;
+  }
+
+  return "Configuração personalizada";
 }
 
-export default function LabTestDashboard() {
-  const { tests, loading, error, refresh } = useTests();
-  const [search, setSearch] = useState("");
-  const [modeFilter, setModeFilter] = useState<ModeFilter>("all");
-  const [showCreate, setShowCreate] = useState(false);
-
-  const filtered = useMemo(() => {
-    return tests.filter((t) => {
-      const matchesMode = modeFilter === "all" || t.mode === modeFilter;
-      const matchesSearch = t.name.toLowerCase().includes(search.trim().toLowerCase());
-      return matchesMode && matchesSearch;
-    });
-  }, [tests, search, modeFilter]);
+export default async function LabTestPage() {
+  const tests = await listTests();
 
   return (
-    <div className="min-h-screen bg-base-200/40 px-4 py-8">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-base-content/10 bg-base-100">
-              <FlaskConical className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">LabTest</h1>
-              <p className="text-xs text-base-content/45">
-                {tests.length} teste{tests.length === 1 ? "" : "s"} no total
-              </p>
-            </div>
+    <div className="w-full">
+      <nav className="flex w-full items-center justify-between border-b border-base-content/10 bg-base-100 px-5">
+        <div className="flex items-center gap-6">
+          <div className="flex h-full items-center gap-1">
+            <Link
+              href="/dashboard/labtest"
+              className="relative px-3 py-3 text-sm font-medium text-base-content transition-colors hover:text-primary"
+            >
+              Geral
+              <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" />
+            </Link>
+            <Link
+              href="/dashboard/labtest/analytics"
+              className="px-3 py-3 text-sm font-medium text-base-content/50 transition-colors hover:text-base-content"
+            >
+              Analytics
+            </Link>
           </div>
-
+        </div>
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setShowCreate(true)}
-            className="btn btn-primary gap-2 self-start sm:self-auto"
+            className="btn btn-ghost btn-sm btn-square text-base-content/50 hover:text-base-content"
+            aria-label="Filtrar testes"
           >
-            <Plus className="h-4 w-4" />
-            Novo teste
+            <Filter size={16} />
           </button>
+          <div className="h-5 w-px bg-base-content/10" />
+          <Link
+            href="/dashboard/labtest/new"
+            className="btn btn-primary btn-sm gap-2 px-3 font-medium shadow-sm"
+          >
+            <Plus size={16} />
+            Novo teste
+          </Link>
         </div>
+      </nav>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="input input-bordered flex w-full items-center gap-2 sm:max-w-xs">
-            <Search className="h-4 w-4 text-base-content/30" />
-            <input
-              type="text"
-              placeholder="Buscar teste..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="grow bg-transparent text-sm outline-none"
-            />
-          </label>
-
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              onClick={() => setModeFilter("all")}
-              className={`btn btn-xs rounded-lg ${
-                modeFilter === "all" ? "btn-neutral" : "btn-ghost text-base-content/50"
-              }`}
-            >
-              Todos
-            </button>
-            {LAB_TEST_MODE_LIST.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setModeFilter(id)}
-                className={`btn btn-xs gap-1.5 rounded-lg ${
-                  modeFilter === id ? "btn-neutral" : "btn-ghost text-base-content/50"
-                }`}
-              >
-                <Icon className="h-3 w-3" />
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center py-16">
-            <span className="loading loading-spinner loading-lg" />
-          </div>
-        ) : error ? (
-          <div className="rounded-2xl border border-error/20 bg-error/5 p-6 text-center text-sm text-error">
-            {error}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-base-content/15 bg-base-100 py-16 text-center">
-            <FlaskConical className="h-8 w-8 text-base-content/20" />
-            <p className="text-sm text-base-content/50">
-              {tests.length === 0
-                ? "Nenhum teste criado ainda."
-                : "Nenhum teste corresponde à busca."}
+      <main className="flex-1 px-5 py-6">
+        <div className="flex items-end justify-between border-l border-base-content/10 bg-base-100 px-6 py-5">
+          <div>
+            <p className="mb-1 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-base-content/35">
+              LabTest
             </p>
-            {tests.length === 0 && (
-              <button
-                type="button"
-                onClick={() => setShowCreate(true)}
-                className="btn btn-primary btn-sm gap-2"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Criar o primeiro teste
-              </button>
-            )}
+            <h2 className="text-xl font-semibold tracking-tight text-base-content">
+              Testes
+            </h2>
+            <p className="mt-1 text-sm text-base-content/50">
+              Gerencie e acompanhe os seus testes realizados.
+            </p>
+          </div>
+
+          <span className="badge badge-neutral badge-lg">
+            {tests.length} {tests.length === 1 ? "teste" : "testes"}
+          </span>
+        </div>
+
+        {/* ================================================================= */}
+        {/* Grid de testes */}
+        {/* ================================================================= */}
+        {tests.length === 0 ? (
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-base-300 bg-base-200/20 px-6 py-16 text-center">
+            <Layers className="size-9 text-base-content/20" />
+            <p className="text-sm font-medium text-base-content">
+              Nenhum teste criado ainda
+            </p>
+            <p className="max-w-xs text-xs text-base-content/50">
+              Crie seu primeiro teste para começar a acompanhar seus
+              resultados.
+            </p>
+            <Link
+              href="/dashboard/labtest/new"
+              className="btn btn-primary btn-sm mt-2 gap-2"
+            >
+              <Plus size={16} />
+              Novo teste
+            </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((test) => (
-              <TestCard key={test.id} test={test} />
-            ))}
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {tests.map((test) => {
+              const modeMeta = MODE_META[test.mode] ?? {
+                label: test.mode,
+                icon: Layers,
+                badgeClass: "badge-neutral",
+              };
+              const statusMeta = STATUS_META[test.status] ?? {
+                label: test.status,
+                badgeClass: "badge-ghost",
+              };
+              const ModeIcon = modeMeta.icon;
+
+              return (
+                <Link
+                  key={test.id}
+                  href={`/dashboard/labtest/${test.id}`}
+                  className="group flex flex-col gap-4 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <ModeIcon className="size-5" />
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-base-content group-hover:text-primary">
+                          {test.name}
+                        </p>
+                        <p className="text-xs text-base-content/50">
+                          {modeMeta.label}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span className={`badge badge-sm shrink-0 ${statusMeta.badgeClass}`}>
+                      {statusMeta.label}
+                    </span>
+                  </div>
+
+                  {test.description && (
+                    <p className="line-clamp-2 text-xs leading-relaxed text-base-content/60">
+                      {test.description}
+                    </p>
+                  )}
+
+                  <div className="mt-auto flex items-center justify-between gap-3 border-t border-base-300 pt-3 text-xs text-base-content/50">
+                    <span className="truncate">
+                      {summarizeConfig(test.mode, test.config)}
+                    </span>
+
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      <Calendar className="size-3.5" />
+                      {dateFormatter.format(new Date(test.createdAt))}
+                    </span>
+                  </div>
+
+                  {test.season && (
+                    <span className="badge badge-outline badge-xs w-fit font-mono uppercase">
+                      {test.season}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         )}
-      </div>
-
-      {showCreate && (
-        <LabTestForm
-          onCancel={() => setShowCreate(false)}
-          onSuccess={() => {
-            setShowCreate(false);
-            refresh();
-          }}
-        />
-      )}
+      </main>
     </div>
   );
 }

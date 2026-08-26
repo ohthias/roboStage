@@ -79,6 +79,7 @@ export const ferramentas: Ferramenta[] = [
     image: "/images/QuickBrick/Estrategia.png",
     link: "/fll/quickbrick/estrategia",
     customContent: null,
+    badge: "Atualizado!"
   },
   {
     id: 2,
@@ -105,6 +106,7 @@ export const ferramentas: Ferramenta[] = [
     image: "/images/QuickBrick/Heatmap.png",
     link: "/fll/quickbrick/heatmap",
     customContent: null,
+    badge: "Atualizado!"
   },
   {
     id: 4,
@@ -156,5 +158,6 @@ export const ferramentas: Ferramenta[] = [
         "/fll/quickbrick/tabela-de-missoes",
       ),
     mobileSafe: true,
+    badge: "Atualizado!"
   },
 ];

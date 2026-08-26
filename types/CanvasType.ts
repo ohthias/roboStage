@@ -52,16 +52,46 @@ export interface Layer {
   robots: Robot[];
 }
 
-export type ToolType = "hand" | "line" | "free" | "zone" | "robot";
+export type ToolType = "hand" | "line" | "free" | "zone" | "robot" | "eraser";
 
 export interface ProjectState {
   layers: Layer[];
   activeLayerId: string;
 }
 
+// --- Export ---------------------------------------------------------------
+
+export interface ExportElementCounts {
+  lines: number;
+  freePaths: number;
+  zones: number;
+  robots: number;
+}
+
+export interface ExportLayerSummary {
+  id: string;
+  name: string;
+  included: boolean;
+  /** Motivo de exclusão, presente apenas quando included=false. */
+  reason?: string;
+  counts: ExportElementCounts;
+}
+
+export interface ExportSummary {
+  type: "general" | "layers";
+  layers: ExportLayerSummary[];
+  showZones: boolean;
+  showLabels: boolean;
+  totalElements: number;
+  isEmpty: boolean;
+  fileName: string;
+}
+
 export interface CanvasHandle {
   exportGeneral: () => void;
   exportLayers: () => Promise<void>;
+  /** Calcula, sem exportar nada ainda, o que cada tipo de exportação incluirá. */
+  getExportSummary: (type: "general" | "layers") => ExportSummary;
 }
 
 export interface ChatMessage {

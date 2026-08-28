@@ -4,6 +4,7 @@ import {
   Hand,
   Pencil,
   Ruler,
+  Eraser,
   SquareDashedMousePointer,
   Undo2,
   Redo2,
@@ -34,6 +35,10 @@ export interface ToolbarProps {
   color: string;
   setColor: (c: string) => void;
 
+  // NOVO: controle de tamanho do apagador
+  eraserSize: number;
+  setEraserSize: (v: number) => void;
+
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -63,6 +68,7 @@ const TOOLS: { key: ToolType; icon: typeof Hand; label: string }[] = [
   { key: "robot", icon: Bot, label: "Robô" },
   { key: "line", icon: Ruler, label: "Linha" },
   { key: "free", icon: Pencil, label: "Livre" },
+  { key: "eraser", icon: Eraser, label: "Borracha" },
   { key: "zone", icon: SquareDashedMousePointer, label: "Zonas" },
 ];
 
@@ -73,6 +79,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   setTool,
   color,
   setColor,
+  eraserSize,
+  setEraserSize,
   undo,
   redo,
   canUndo,
@@ -146,6 +154,34 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               onChange={setShowZones}
             />
           </div>
+
+          {/* Tamanho do apagador — só aparece com a ferramenta selecionada */}
+          {tool === "eraser" && (
+            <div className="mt-4">
+              <div className="flex justify-between items-center px-1 mb-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wide opacity-50">
+                  Tamanho do Apagador
+                </span>
+                <span className="text-xs font-mono opacity-70">
+                  {eraserSize}px
+                </span>
+              </div>
+              <input
+                type="range"
+                min={10}
+                max={80}
+                step={2}
+                value={eraserSize}
+                onChange={(e) => setEraserSize(Number(e.target.value))}
+                className="range range-xs range-primary"
+              />
+              <p className="text-[10px] opacity-50 mt-1 px-1">
+                Passe sobre um traço para apagar só a parte tocada. Segure{" "}
+                <kbd className="kbd kbd-xs">Ctrl</kbd> para apagar o traço
+                inteiro.
+              </p>
+            </div>
+          )}
         </Section>
 
         {/* AÇÕES */}
@@ -181,15 +217,15 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <ActionButton
               onClick={exportGeneral}
               Icon={ImageIcon}
-              label="PNG"
-              className="w-full"
+              label="Exportar PNG"
+              className="w-full text-left text-[10px]"
             />
 
             <ActionButton
               onClick={exportLayers}
               Icon={Archive}
-              label="Camadas"
-              className="w-full"
+              label="Exportar Camadas"
+              className="w-full text-left text-[10px]"
             />
           </div>
         </Section>
@@ -204,7 +240,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 <li
                   key={layer.id}
                   className={`transition-all ${
-                    isActive ? "bg-base-200/70 border-l-4 border-primary" : ""
+                    isActive ? "bg-base-200/70 border-l-4 border-primary rounded-r-lg" : ""
                   }`}
                 >
                   <div

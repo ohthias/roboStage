@@ -11,6 +11,9 @@ import ModalConfirm, {
   ModalConfirmRef,
 } from "@/components/UI/Modal/ModalConfirm";
 import HeaderTool from "@/components/QuickBrick/HeaderTool";
+import { missionsFromRaw, RawMission } from "@/utils/quickbrick/scoring";
+
+const MISSIONS_ENDPOINT = "/api/data/missions";
 
 function MissionTablePage() {
   const params = useParams();
@@ -28,51 +31,81 @@ function MissionTablePage() {
 
   const { addToast } = useToast();
 
+  // Loads missions for the current season, preferring anything the user
+  // already edited (localStorage) over the pristine season dataset.
   useEffect(() => {
+    let cancelled = false;
+
+    // Reset to the loading state immediately so we never flash the
+    // previous season's table while the new one is being fetched.
+    setMissions(null);
+
     async function load() {
-      const saved = localStorage.getItem(`fll_missions_${season}`);
-      if (saved) {
-        setMissions(JSON.parse(saved));
-        return;
+      try {
+        const saved = localStorage.getItem(`fll_missions_${season}`);
+        if (saved) {
+          const parsed = JSON.parse(saved) as Mission[];
+          if (!cancelled) setMissions(parsed);
+          return;
+        }
+
+        const res = await fetch(MISSIONS_ENDPOINT);
+        if (!res.ok) throw new Error(`Falha ao buscar missões (${res.status})`);
+        const data = await res.json();
+        const seasonData: RawMission[] = (data?.[season] || []).filter(
+          (mission: RawMission) => mission.id?.includes("M")
+        );
+
+        const built =
+          seasonData.length > 0 ? missionsFromRaw(seasonData) : INITIAL_MISSIONS;
+
+        if (!cancelled) setMissions(built);
+      } catch (err) {
+        console.error("Erro ao carregar missões:", err);
+        if (!cancelled) {
+          setMissions(INITIAL_MISSIONS);
+          addToast("Não foi possível carregar as missões dessa temporada.", "error");
+        }
       }
-
-      const res = await fetch(`/api/data/missions`);
-      const data = await res.json();
-      const seasonData = data?.[season] || INITIAL_MISSIONS;
-
-      const filteredMissions = seasonData.filter((mission: any) => {
-        return mission.id && mission.id !== "GP" && mission.id !== "PT";
-      });
-
-      setMissions(filteredMissions);
-
-      console.log("Missões carregadas da API para a season:", filteredMissions);
     }
 
     load();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [season]);
 
+  // Persist whenever missions actually change (but not on the initial null state)
   useEffect(() => {
     if (missions) {
       localStorage.setItem(`fll_missions_${season}`, JSON.stringify(missions));
     }
   }, [missions, season]);
 
-  const handleReset = async () => {
+  const handleReset = () => {
     modalClearAll.current?.open(
       "Tem certeza que deseja restaurar os dados da tabela? Isso irá apagar todas as suas alterações.",
       async () => {
-        const res = await fetch(`/api/data/missions/`);
-        const data = await res.json();
-        const seasonData = data?.[season] || INITIAL_MISSIONS;
+        try {
+          const res = await fetch(MISSIONS_ENDPOINT);
+          if (!res.ok) throw new Error(`Falha ao buscar missões (${res.status})`);
+          const data = await res.json();
+          const seasonData: RawMission[] = (data?.[season] || []).filter(
+            (mission: RawMission) => mission.id?.includes("M")
+          );
 
-        const filteredMissions = seasonData.filter((mission: any) => {
-          return mission.id && mission.id !== "GP" && mission.id !== "PT";
-        });
-        setMissions(filteredMissions);
-        setColumns(INITIAL_COLUMNS);
-        localStorage.removeItem(`fll_missions_${season}`);
-        addToast("Dados restaurados!", "success");
+          const built =
+            seasonData.length > 0 ? missionsFromRaw(seasonData) : INITIAL_MISSIONS;
+
+          setMissions(built);
+          setColumns(INITIAL_COLUMNS);
+          localStorage.removeItem(`fll_missions_${season}`);
+          addToast("Dados restaurados!", "success");
+        } catch (err) {
+          console.error("Erro ao restaurar missões:", err);
+          addToast("Não foi possível restaurar os dados. Tente novamente.", "error");
+        }
       }
     );
   };
@@ -90,7 +123,7 @@ function MissionTablePage() {
       <div className="px-4 md:px-8 space-y-4">
         <HeaderTool
           NameTool="Tabela de Missões"
-          DescriptionTool="Documente e analise as missões da temporada. Utilize a tabela para registrar detalhes, pontuações e estratégias. Ou crie novas colunas e análises personalizadas para atender às suas necessidades."
+          DescriptionTool="Documente e analise as missões da temporada. Preencha a pontuação obtida em cada missão (incluindo sub-missões e bônus) e crie colunas personalizadas para acompanhar sua estratégia."
           IconTool={Table}
         />
 

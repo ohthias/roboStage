@@ -10,6 +10,7 @@ import {
   FlaskConical,
   Trophy,
   Bug,
+  Heart,
 } from "lucide-react";
 
 const tools = [
@@ -251,11 +252,23 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/assets" className="link link-hover">
+                    <Heart
+                      className="mr-1.5 inline-block text-base-content/50"
+                      size={16}
+                    />
+                    Apoie o projeto
+                  </Link>
+                </li>
+                <li>
                   <Link
                     href="https://github.com/ohthias/roboStage/issues"
                     className="link link-hover"
                   >
-                    <Bug className="mr-1.5 inline-block text-base-content/50" size={16} />
+                    <Bug
+                      className="mr-1.5 inline-block text-base-content/50"
+                      size={16}
+                    />
                     Reportar um bug
                   </Link>
                 </li>

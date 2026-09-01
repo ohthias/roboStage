@@ -143,7 +143,7 @@ export const licenses: Record<string, License[]> = {
       author: "Titus Wormer and contributors",
       description:
         "Suporte à sintaxe GitHub Flavored Markdown.",
-      repository: "https://github.com/remarkjs/remark-gfm",
+      repository: "https://github.com/recharts/recharts",
     },
     {
       name: "uuid",
@@ -206,13 +206,47 @@ export const licenses: Record<string, License[]> = {
   ],
 };
 
+/**
+ * Recursos visuais de terceiros
+ */
+
 export const flaticon: License = {
   name: "@flaticon/flaticon-uicons",
   license: "Flaticon License",
   author: "Flaticon / Freepik Company",
   description:
-    "Biblioteca de UIcons utilizada em partes da interface do RoboStage. A utilização está sujeita aos termos e condições da Flaticon.",
+    "Biblioteca de UIcons utilizada em partes da interface do RoboStage. A utilização está sujeita aos termos e condições da Flaticon e aos requisitos de atribuição aplicáveis.",
   repository:
     "https://github.com/freepik-company/flaticon-uicons",
   official: "https://www.flaticon.com/uicons",
 };
+
+export const storyset: License = {
+  name: "Storyset",
+  license: "Storyset / Freepik License",
+  author: "Storyset / Freepik Company",
+  description:
+    "Ilustrações utilizadas em partes da interface e dos materiais visuais do RoboStage. O uso das ilustrações está sujeito à licença, aos termos de uso e aos requisitos de atribuição aplicáveis da Storyset / Freepik.",
+  official: "https://storyset.com/",
+};
+
+export const magnific: License = {
+  name: "Magnific",
+  license: "Third-Party Creative Tool",
+  author: "Magnific",
+  description:
+    "Ferramenta de terceiros utilizada no processo de geração, aprimoramento, transformação e processamento de determinadas ilustrações e recursos visuais do RoboStage. O uso do Magnific não implica, por si só, transferência de propriedade ou concessão de licença sobre todos os resultados produzidos. Os direitos aplicáveis a cada recurso podem depender dos termos do Magnific, dos materiais de origem ou referência utilizados e dos direitos de terceiros eventualmente envolvidos.",
+  official: "https://magnific.ai/",
+};
+
+/**
+ * Recursos visuais utilizados pelo RoboStage.
+ *
+ * Estes recursos não fazem parte das licenças de software open-source
+ * acima e estão sujeitos aos seus próprios termos, licenças e direitos.
+ */
+export const visualAssets: License[] = [
+  flaticon,
+  storyset,
+  magnific,
+];

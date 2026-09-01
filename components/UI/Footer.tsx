@@ -252,7 +252,7 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/assets" className="link link-hover">
+                  <Link href="/sponsors" className="link link-hover">
                     <Heart
                       className="mr-1.5 inline-block text-base-content/50"
                       size={16}

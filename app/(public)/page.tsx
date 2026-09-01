@@ -9,7 +9,7 @@ export default function Page() {
   return (
     <>
       <Navbar />
-      <header className="relative min-h-screen w-full overflow-hidden">
+      <header className="relative h-screen w-full overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
 
         <div className="flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto h-full px-6 md:px-12 py-24 gap-16 mt-10">

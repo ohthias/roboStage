@@ -594,22 +594,18 @@ export function Navbar() {
                 })}
               </div>
             )}
-            <div className="border-t border-base-300 p-4">
-              <div className="flex items-center gap-2">
-                <ThemeController />
+            <div className="border-t border-base-300 p-4 mt-4">
+              <div className="flex items-center gap-2 flex-col">
                 <Show when="signed-in">
-                  <Link
-                    href="/dashboard"
-                    className="border rounded-full hover:shadow-[0_0_0_2px_theme(colors.primary)] transition-shadow duration-200 hover:scale-110"
-                  >
-                    <UserAvatar component="button" />
+                  <Link href="/dashboard" className="btn btn-ghost btn-wide">
+                    Acessar seu dashboard
                   </Link>
                 </Show>
                 <Show when="signed-out">
-                  <Link href="/sign-in" className="btn btn-ghost btn-sm">
+                  <Link href="/sign-in" className="btn btn-ghost btn-sm btn-wide">
                     Entrar
                   </Link>
-                  <Link href="/sign-up" className="btn btn-primary btn-sm">
+                  <Link href="/sign-up" className="btn btn-primary btn-sm btn-wide">
                     Criar conta
                   </Link>
                 </Show>

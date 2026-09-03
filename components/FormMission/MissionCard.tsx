@@ -69,7 +69,7 @@ export function MissionCard({
         </div>
 
         {gated && (
-          <div className="alert alert-warning text-xs sm:text-sm mb-3 py-2">
+          <div className="alert alert-soft alert-warning text-xs sm:text-sm mb-3 py-2">
             Condição obrigatória não cumprida: esta missão e seus bônus pontuam
             0.
           </div>

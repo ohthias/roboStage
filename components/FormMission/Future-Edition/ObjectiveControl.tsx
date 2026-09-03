@@ -20,7 +20,7 @@ export default function ObjectiveControl({ objective, value, score, onChange }: 
           <label className="flex items-center gap-2 mt-1 cursor-pointer w-fit">
             <input
               type="checkbox"
-              className="toggle toggle-secondary toggle-sm"
+              className="toggle toggle-primary toggle-sm"
               checked={value === true}
               onChange={(e) => onChange(e.target.checked)}
             />
@@ -32,7 +32,7 @@ export default function ObjectiveControl({ objective, value, score, onChange }: 
           <div className="flex items-center gap-2 mt-1">
             <button
               type="button"
-              className="btn btn-xs btn-circle btn-outline"
+              className="btn btn-xs btn-circle btn-outline rounded-full"
               onClick={() => onChange(Math.max(counterValue - 1, objective.min ?? 0))}
             >
               -
@@ -40,7 +40,7 @@ export default function ObjectiveControl({ objective, value, score, onChange }: 
             <span className="w-8 text-center font-bold">{counterValue}</span>
             <button
               type="button"
-              className="btn btn-xs btn-circle btn-outline"
+              className="btn btn-xs btn-circle btn-outline rounded-full"
               onClick={() => onChange(Math.min(counterValue + 1, objective.max ?? Infinity))}
             >
               +
@@ -61,8 +61,8 @@ export default function ObjectiveControl({ objective, value, score, onChange }: 
                 onClick={() => onChange(opt.id)}
                 className={`px-2 py-1 rounded-md border text-xs font-semibold transition ${
                   value === opt.id
-                    ? "bg-secondary text-secondary-content border-secondary"
-                    : "border-base-300 hover:border-secondary"
+                    ? "bg-primary text-primary-content border-primary"
+                    : "border-base-300 hover:border-primary"
                 }`}
               >
                 {opt.label} · {opt.points} pts
@@ -72,7 +72,7 @@ export default function ObjectiveControl({ objective, value, score, onChange }: 
         )}
       </div>
 
-      <span className="text-lg font-black text-secondary shrink-0">{score}</span>
+      <span className="text-lg font-black text-primary/70 shrink-0">{score}</span>
     </div>
   );
 }

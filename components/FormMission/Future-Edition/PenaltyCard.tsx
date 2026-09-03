@@ -15,8 +15,8 @@ export default function PenaltyCard({ penalties, count, tier, onChange }: Penalt
     <div className="border border-error/40 bg-error/5 rounded-2xl p-5">
       <div className="flex items-start justify-between gap-4 mb-2">
         <div>
-          <span className="text-xs font-bold text-error">{penalties.code}</span>
-          <h3 className="font-bold text-lg leading-tight">{penalties.title}</h3>
+          <span className="text-xs font-bold text-error/70">{penalties.code}</span>
+          <h3 className="font-bold text-lg leading-tight text-error">{penalties.title}</h3>
         </div>
         <span className="text-2xl font-black text-error shrink-0">
           {tier.zeroesTotal ? "ZERA" : tier.points}

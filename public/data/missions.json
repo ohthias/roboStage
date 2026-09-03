@@ -670,14 +670,14 @@
       "id": "M04",
       "name": "FOLHAS DA SORTE",
       "mission": "Número de folhas que não estão mais tocando o ninho",
-      "points": 10,
+      "points": [0, 10, 10],
       "image": "/images/missions/bioglow/thumb-mission-04.png",
       "equipaments": true,
       "type": ["range", 0, 2],
       "sub-mission": [
         {
           "id": "M04-gate",
-          "submission": "O grilo-esperança está completamente dentro do habitat de folhas (ninho + área marcada ao redor) ao final da partida",
+          "submission": "A esperança está completamente no habitat de folhas",
           "points": 0,
           "type": ["switch", null, null],
           "zero_whole_mission_if_false": true,
@@ -685,13 +685,14 @@
         },
         {
           "id": "M04-2",
-          "submission": "Bônus: e a segunda folha é completamente removida, sem tocar o ninho, com o grilo-esperança em sua posição inicial:",
-          "points": 10,
+          "submission": "Bônus: e esperança permaneceu em sua posição original durante toda a partida",
+          "points": 20,
           "type": ["switch", null, null],
           "requires": [
             { "condition": ["if", true], "mission": "M04", "value": [2, 2] },
             { "condition": ["if", true], "mission": "M04-gate", "value": true }
           ],
+          "note": "(O bônus ficará indisponível se a esperança for totalmente removida do ninho a qualquer momento.)",
           "manual_tracking_required": true,
           "manual_tracking_note": "O bônus fica indisponível se a esperança sair completamente do ninho a QUALQUER momento da partida — não só no estado final. O árbitro precisa acompanhar isso ao vivo; não é derivável olhando o tapete no fim."
         }
@@ -738,7 +739,8 @@
         {
           "submission": "Bônus: Número de conexões formadas entre o micélio estendido de um time e a raiz da planta completamente estendida do time adversário",
           "points": 10,
-          "type": ["range", 0, 2]
+          "type": ["range", 0, 2],
+          "note": "(O micélio e a raiz da planta não precisam entrar em contato para formar uma conexão. Se ambos estiverem totalmente estendidos, as duas equipes receberão o bônus.)"
         }
       ]
     },

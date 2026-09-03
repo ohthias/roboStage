@@ -119,14 +119,7 @@ export default function Timer({
       >
         <div className="flex items-center gap-3">
           <span
-            className="
-              font-mono text-2xl sm:text-3xl
-              px-4 py-2
-              bg-base-100
-              text-base-content
-              shadow-[4px_4px_0_theme(colors.base-content)]
-            "
-          >
+            className="font-mono font-tight uppercase tracking-[0.18em] text-2xl">
             {formatTime(timeLeft)}
           </span>
         </div>
@@ -177,7 +170,7 @@ export default function Timer({
       {/* Barra de progresso fixa */}
       <div className={`sticky inset-x-0 top-0 z-10 h-2 bg-neutral mx-auto rounded-full ${className}`}>
         <div
-          className={`h-full transition-all duration-500 ${progressColor}`}
+          className={`h-full transition-all duration-500 ${progressColor} rounded-full`}
           style={{ width: `${progress}%` }}
           role="progressbar"
           aria-valuenow={progress}

@@ -1,15 +1,15 @@
+import UseCasesSection from "@/components/competicoes/FLL/Components/UseCasesSection";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
 import { Newspaper } from "lucide-react";
 import Link from "next/link";
-import FLLCountdownBanner from "@/components/competicoes/FLL/Components/FLLCountdownBanner";
 
 export default function Page() {
   return (
     <>
       <Navbar />
-      <header className="relative min-h-screen w-full overflow-hidden">
+      <header className="relative h-screen w-full overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
 
         <div className="flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto h-full px-6 md:px-12 py-24 gap-16 mt-10">
@@ -25,10 +25,10 @@ export default function Page() {
               Competições. Equipes. Comunidade. Tudo conectado!
             </p>
             <div className="flex flex-wrap gap-4 mt-4">
-              <a href="/fll/score/bioglow" className="btn btn-primary btn-outline">
-                Pontue na BIOGLOW
+              <a href="/fll" className="btn btn-primary btn-outline">
+                Explore a FLL
               </a>
-              <a href="/fll" className="btn btn-secondary btn-outline">
+              <a href="/sign-up" className="btn btn-secondary btn-outline">
                 Explorar a Plataforma
               </a>
             </div>
@@ -89,8 +89,6 @@ export default function Page() {
             style={{ boxShadow: "-10px 10px 0 #DE5017" }}
           />
         </section>
-
-        <FLLCountdownBanner />
 
         {/* Competições */}
         <section className="py-8 mb-16">
@@ -164,6 +162,8 @@ export default function Page() {
             </div>
           </RevealOnScroll>
         </section>
+
+        <UseCasesSection />
 
         <section className="bg-[#091A07] w-full flex flex-col md:flex-row gap-8">
           <div className="max-w-2xl md:ml-16 px-6 md:px-4 text-white flex flex-col justify-center items-start gap-4 py-16">
@@ -244,12 +244,12 @@ export default function Page() {
               robótica, existe um lugar esperando por você.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-              {/*<Link
+              <Link
                 className="btn btn-primary rounded-2xl px-8"
                 href="/sign-up"
               >
                 Criar conta grátis
-              </Link>*/}
+              </Link>
               <Link
                 className="btn btn-ghost text-neutral-content rounded-2xl px-8"
                 href="/fll"

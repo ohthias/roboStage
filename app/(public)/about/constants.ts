@@ -8,6 +8,8 @@ import {
   Timer,
   MessageSquare,
   Trophy,
+  NotepadText,
+  Book,
 } from "lucide-react";
 
 export const PLATFORM_FEATURES: FeatureCardProps[] = [
@@ -26,7 +28,7 @@ export const PLATFORM_FEATURES: FeatureCardProps[] = [
     colorClass: "text-yellow-600 bg-yellow-50",
   },
   {
-    title: "InnoLab",
+    title: "Think",
     description:
       "Hub colaborativo voltado ao Projeto de Inovação, reunindo brainstorming, design thinking, pesquisa, organização de ideias e prototipagem em um único ambiente.",
     icon: FlaskConical,
@@ -35,9 +37,16 @@ export const PLATFORM_FEATURES: FeatureCardProps[] = [
   {
     title: "FLL Score",
     description:
-      "Sistema digital de pontuação inspirado nos torneios oficiais da FIRST LEGO League, com simulação de rounds, cálculo automático de missões e acompanhamento competitivo em tempo real.",
+      "Sistema digital de pontuação inspirado nos torneios oficiais da FIRST LEGO League Challenge e Future Edition, com simulação de rounds, cálculo automático de missões e acompanhamento competitivo em tempo real.",
     icon: Trophy,
     colorClass: "text-red-600 bg-red-50",
+  },
+  {
+    title: "Rubricas de Avaliação",
+    description:
+      "Ferramenta de avaliação baseada em rubricas, permitindo que juízes e avaliadores registrem notas, comentários e feedbacks estruturados para cada missão ou critério de desempenho.",
+    icon: NotepadText,
+    colorClass: "text-fuchsia-600 bg-fuchsia-50",
   },
   {
     title: "Timers",
@@ -47,11 +56,18 @@ export const PLATFORM_FEATURES: FeatureCardProps[] = [
     colorClass: "text-teal-600 bg-teal-50",
   },
   {
-    title: "Flask QA",
+    title: "Recall",
     description:
       "Sistema de revisão gamificada com flashcards e perguntas estratégicas para fortalecer conhecimentos técnicos, preparar avaliações e consolidar o domínio da temporada.",
     icon: MessageSquare,
     colorClass: "text-cyan-600 bg-cyan-50",
+  },
+  {
+    title: "Caderno de Anotações",
+    description:
+      "Espaço digital para registro de ideias, estratégias, observações e aprendizados, permitindo que equipes e mentores documentem seu progresso e compartilhem insights.",
+    icon: Book,
+    colorClass: "text-indigo-600 bg-indigo-50",
   },
   {
     title: "ShowLive",

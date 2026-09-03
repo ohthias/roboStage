@@ -3,13 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import {
-  ChevronDown,
-  Menu,
-  Trophy,
-  X,
-  ChevronUp,
-} from "lucide-react";
+import { ChevronDown, Menu, Trophy, X, ChevronUp } from "lucide-react";
 
 import Logo from "./Logo";
 import { ThemeController } from "./themeController";
@@ -18,6 +12,7 @@ import { Show, UserAvatar } from "@clerk/nextjs";
 
 const mainLinks = [
   { href: "/about", label: "Sobre" },
+  { href: "/labtest", label: "LabTest" },
   { href: "/showlive", label: "ShowLive" },
   { href: "/news", label: "Notícias" },
   { href: "/help", label: "Ajuda" },
@@ -103,9 +98,6 @@ export function Navbar() {
 
   const showCompetitionNav = Boolean(competition && nav);
   const showMainNav = !isCompetitionRoute;
-
-  const activeCompetitionTools =
-    nav?.menus?.some((group) => isMenuGroupActive(group)) ?? false;
 
   return (
     <div className="drawer drawer-start z-50">
@@ -341,10 +333,9 @@ export function Navbar() {
             <div className="divider divider-horizontal mx-1" />
 
             <Show when="signed-in">
-              <Link href="/dashboard" className="btn btn-outline btn-sm">
-                <span className="hidden sm:inline-block">Dashboard</span>
+              <Link href="/dashboard" className="border rounded-full hover:shadow-[0_0_0_2px_theme(colors.primary)] transition-shadow duration-200 hover:scale-110">
+                <UserAvatar component="button" />
               </Link>
-              <UserAvatar />
             </Show>
             <Show when="signed-out">
               <Link href="/sign-in" className="btn btn-ghost btn-sm">
@@ -603,6 +594,23 @@ export function Navbar() {
                 })}
               </div>
             )}
+            <div className="border-t border-base-300 p-4 mt-4">
+              <div className="flex items-center gap-2 flex-col">
+                <Show when="signed-in">
+                  <Link href="/dashboard" className="btn btn-ghost btn-wide">
+                    Acessar seu dashboard
+                  </Link>
+                </Show>
+                <Show when="signed-out">
+                  <Link href="/sign-in" className="btn btn-ghost btn-sm btn-wide">
+                    Entrar
+                  </Link>
+                  <Link href="/sign-up" className="btn btn-primary btn-sm btn-wide">
+                    Criar conta
+                  </Link>
+                </Show>
+              </div>
+            </div>
           </div>
         </aside>
       </div>

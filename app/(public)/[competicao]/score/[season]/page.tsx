@@ -145,7 +145,7 @@ export default function Page() {
               aria-label="Pontuação total"
               className="flex flex-col items-center justify-center rounded-xl bg-base-200 px-6 py-3 min-w-[140px] shadow-inner"
             >
-              <span className="text-xs uppercase font-bold tracking-wide opacity-70">
+              <span className="text-xs uppercase font-bold tracking-wide opacity-70 font-mono">
                 Pontos
               </span>
 
@@ -194,6 +194,11 @@ export default function Page() {
                 “Um modelo de missão não pode ganhar pontos se estiver tocando
                 no equipamento no final da partida.”
               </em>
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-start gap-4 bg-warning/10 backdrop-blur px-6 py-4 rounded-2xl border border-warning/30 shadow-sm mt-4">
+            <p className="text-sm text-base-content leading-relaxed">
+              Esta regra se aplica somente à missão específica em que a restrição aparece. Se o mesmo modelo for usado em outra missão em que não se aplica a restrição, ele poderá ganhar pontos como de costume. Cada modelo de missão é avaliado separadamente dentro de sua respectiva missão.
             </p>
           </div>
         </section>

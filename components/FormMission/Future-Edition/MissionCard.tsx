@@ -27,16 +27,16 @@ export default function MissionCard({
   );
 
   return (
-    <div className="border border-base-300 rounded-2xl p-5">
+    <div className="border bg-base-100 border-base-content/10 rounded-2xl p-5">
       <div className="flex items-start gap-4 mb-4">
         <img
           src={mission.image}
           alt={mission.title}
-          className="w-[100px] h-[100px] rounded-lg bg-base-300"
+          className="w-[100px] h-[100px] rounded-lg bg-base-content/5 object-contain"
         />
         <div className="flex items-start justify-between gap-4 mb-2 w-full">
           <div>
-            <span className="text-xs font-bold text-secondary">
+            <span className="text-xs font-bold text-primary/70 tracking-widest block mb-1">
               {mission.code}
             </span>
             <h3 className="font-bold text-lg leading-tight">{mission.title}</h3>
@@ -51,7 +51,7 @@ export default function MissionCard({
               </p>
             )}
           </div>
-          <span className="text-2xl font-black text-secondary shrink-0">
+          <span className="text-2xl font-black text-primary/70 shrink-0">
             {missionScore}
           </span>
         </div>

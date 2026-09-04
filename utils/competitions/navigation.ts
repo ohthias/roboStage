@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, File, NotepadText, ToolCase } from "lucide-react";
+import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, File, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy } from "lucide-react";
 
 export type NavMenuItem = {
   nome: string;
@@ -23,7 +23,7 @@ export const NAVIGATION = {
     icon: ToyBrick,
     scorePath: "score",
     options: [
-      { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid },
+      { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false },
       { nome: "Future Edition", path: "future-edition", icon: Gamepad2 },
       { nome: "Rúbrica de Avaliação", path: "rubric", icon: NotepadText },
     ],
@@ -35,6 +35,8 @@ export const NAVIGATION = {
         items: [
           { nome: "Recall", path: "recall", icon: MessageSquare, description: "Reavaliação de conceitos por meio de flashcards" },
           { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para competições" },
+          { nome: "Partiu Mesa!", path: "partiu-mesa", icon: MonitorDot, description: "Simulador de simples para teste de saídas. Para análise de desempenho do robô durante um teste de saída.", new: true },
+          { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento.", new: true },
         ],
       },
       {
@@ -43,6 +45,7 @@ export const NAVIGATION = {
         icon: BookOpen,
         items: [
           { nome: "Documentações", path: "docs", icon: BookOpen, description: "Documentação das temporadas da liga" },
+          { nome: "Guia de Missões", path: "docs/missions-guide", icon: BookCopy, description: "Guia de missões da FLL Challenge", new: true },
           { nome: "Iniciantes da Challenge", path: "begins", icon: School, description: "FLL para equipes iniciantes" },
           { nome: "Iniciantes da Explore", path: "explore", icon: Telescope },
         ],

@@ -237,8 +237,13 @@ export function Navbar() {
                         className={navItemClass(active)}
                         aria-current={active ? "page" : undefined}
                       >
-                        <Icon size={16} />
+                        <Icon size={16} className="flex-shrink-0" />
                         <span>{item.nome}</span>
+                        {item.new && (
+                          <span className="badge badge-sm badge-primary absolute right-2 top-2 text-[0.55rem] font-bold">
+                            Novo
+                          </span>
+                        )}
                       </Link>
                     );
                   })}
@@ -263,7 +268,7 @@ export function Navbar() {
 
                       <ul
                         tabIndex={0}
-                        className="menu dropdown-content z-[1] mt-4 w-72 rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl"
+                        className="menu dropdown-content z-[1] mt-4 w-72 rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl space-y-1"
                       >
                         {group.items.map((item) => {
                           const Icon = item.icon;
@@ -283,7 +288,7 @@ export function Navbar() {
                               >
                                 <Icon
                                   size={18}
-                                  className={`mt-0.5 transition-opacity duration-200 ${
+                                  className={`mt-0.5 transition-opacity duration-200 flex-shrink-0 ${
                                     active ? "opacity-100" : "opacity-60"
                                   }`}
                                 />
@@ -297,6 +302,11 @@ export function Navbar() {
                                     {item.description || "Ferramenta"}
                                   </span>
                                 </span>
+                                {item.new && (
+                                  <span className="badge badge-sm badge-primary absolute right-2 top-2 text-[0.55rem] font-bold">
+                                    Novo
+                                  </span>
+                                )}
                               </Link>
                             </li>
                           );

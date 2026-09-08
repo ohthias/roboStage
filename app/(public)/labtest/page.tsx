@@ -153,10 +153,21 @@ export default function LabTestPage() {
               className="grid items-center gap-16 lg:grid-cols-[1fr_0.9fr]"
               initial="hidden"
               animate="show"
-              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12 } } }}
+              variants={{
+                hidden: {},
+                show: { transition: { staggerChildren: 0.12 } },
+              }}
             >
-              <motion.div variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12 } } }}>
-                <motion.h1 variants={heroItem} className="max-w-4xl text-3xl font-black sm:text-5xl lg:text-6xl">
+              <motion.div
+                variants={{
+                  hidden: {},
+                  show: { transition: { staggerChildren: 0.12 } },
+                }}
+              >
+                <motion.h1
+                  variants={heroItem}
+                  className="max-w-4xl text-3xl font-black sm:text-5xl lg:text-6xl"
+                >
                   Seu robô.
                   <br />
                   Seus testes.
@@ -165,22 +176,38 @@ export default function LabTestPage() {
                     className="inline-block bg-primary text-primary-content"
                     initial={{ scaleX: 0, transformOrigin: "left" }}
                     animate={{ scaleX: 1 }}
-                    transition={{ delay: reduceMotion ? 0 : 0.65, duration: 0.5, ease }}
+                    transition={{
+                      delay: reduceMotion ? 0 : 0.65,
+                      duration: 0.5,
+                      ease,
+                    }}
                   >
                     Seus dados.
                   </motion.span>
                 </motion.h1>
 
-                <motion.p variants={heroItem} className="mt-7 max-w-2xl text-lg leading-8 text-base-content/65 sm:text-xl">
+                <motion.p
+                  variants={heroItem}
+                  className="mt-7 max-w-2xl text-lg leading-8 text-base-content/65 sm:text-xl"
+                >
                   O <strong className="text-base-content">LabTest</strong> é o
                   laboratório de análise do RoboStage. Teste seu robô, suas
                   estratégias e seus componentes — e transforme cada execução em
                   dados para tomar decisões melhores.
                 </motion.p>
 
-                <motion.div variants={heroItem} className="mt-9 flex flex-wrap gap-4">
-                  <motion.div whileHover={reduceMotion ? undefined : { y: -3 }} whileTap={reduceMotion ? undefined : { scale: 0.97 }}>
-                    <Link href="/sign-up" className="btn btn-primary rounded-2xl px-8 shadow-lg shadow-primary/20">
+                <motion.div
+                  variants={heroItem}
+                  className="mt-9 flex flex-wrap gap-4"
+                >
+                  <motion.div
+                    whileHover={reduceMotion ? undefined : { y: -3 }}
+                    whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+                  >
+                    <Link
+                      href="/sign-up"
+                      className="btn btn-primary rounded-2xl px-8 shadow-lg shadow-primary/20"
+                    >
                       Abrir LabTest
                       <ArrowRight size={18} />
                     </Link>
@@ -202,7 +229,24 @@ export default function LabTestPage() {
           </div>
           <div className="absolute bottom-0 w-full h-30 bg-gradient-to-t from-base-100 to-transparent" />
         </header>
+        {/* Aviso */}
+        <section className="mx-auto max-w-5xl px-6 py-24 lg:px-8">
+          <div className="rounded-3xl bg-primary p-8 text-primary-content sm:p-12">
+            <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-3xl font-black">
+                  Função em desenvolvimento.
+                </h2>
 
+                <p className="mt-2 text-base leading-7 text-primary-content/80">
+                  O LabTest ainda está em fase de desenvolvimento. Em breve
+                  estará disponível para todas as equipes, com mais recursos e
+                  funcionalidades.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
         <main>
           <section
             id="como-funciona"
@@ -609,7 +653,9 @@ export default function LabTestPage() {
                       <motion.div
                         key={metric.label}
                         className="stat rounded-box border border-base-content/10 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
-                        whileHover={reduceMotion ? undefined : { y: -5, scale: 1.02 }}
+                        whileHover={
+                          reduceMotion ? undefined : { y: -5, scale: 1.02 }
+                        }
                         transition={{ duration: 0.2 }}
                       >
                         <p className="text-sm font-medium text-base-content/45">

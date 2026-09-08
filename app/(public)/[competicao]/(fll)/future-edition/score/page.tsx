@@ -3,8 +3,6 @@ import Breadcrumbs from "@/components/UI/Breadcrumbs";
 import missionsData from "@/public/data/fll/future-edition.json";
 import { MissionsData } from "@/app/(public)/[competicao]/(fll)/future-edition/score/scoring.type";
 import ScoreCalculator from "@/components/FormMission/Future-Edition/ScoreCalculator";
-import { useState, useRef, useEffect } from "react";
-import { Play, Pause, TimerReset, Trash } from "lucide-react";
 import Timer from "@/components/FormMission/Timer";
 
 const data = missionsData as MissionsData;
@@ -37,7 +35,7 @@ export default function FutureEditionScorePage() {
         className="animate-fade-in-down max-w-6xl w-full mx-auto"
       />
 
-      <main className="max-w-6xl mx-auto w-full px-6">
+      <main className="max-w-6xl mx-auto w-full px-6 pb-16 space-y-8 animate-fade-in-down">
         <ScoreCalculator data={data} />
       </main>
     </div>

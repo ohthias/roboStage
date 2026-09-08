@@ -1,7 +1,7 @@
 "use client";
 
 import { Star, X } from "lucide-react";
-import { EffectiveItem } from "@/utils/competitions/confere-ai/utils";
+import { EffectiveItem } from "@/utils/competitions/fll/confere-ai/utils";
 
 interface ChecklistItemProps {
   item: EffectiveItem;

@@ -1,7 +1,7 @@
 "use client";
 
 import { Calendar, ClipboardCheck, Trophy, ListChecks, LucideIcon } from "lucide-react";
-import { ConfereAIMode, ConfereAIModeId } from "@/utils/competitions/confere-ai/types";
+import { ConfereAIMode, ConfereAIModeId } from "@/utils/competitions/fll/confere-ai/types";
 
 const ICONS: Record<string, LucideIcon> = {
   calendar: Calendar,

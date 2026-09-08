@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { ConfereAIChecklist, ConfereAICustomItem } from "@/utils/competitions/confere-ai/types";
-import { calculateProgress, mergeChecklistItems } from "@/utils/competitions/confere-ai/utils";
+import { ConfereAIChecklist, ConfereAICustomItem } from "@/utils/competitions/fll/confere-ai/types";
+import { calculateProgress, mergeChecklistItems } from "@/utils/competitions/fll/confere-ai/utils";
 import ChecklistItem from "./ChecklistItem";
 import ProgressSummary from "./ProgressSummary";
 import AddItemModal from "./AddItemModal";

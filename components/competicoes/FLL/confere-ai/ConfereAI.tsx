@@ -2,13 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { Plus, RotateCcw, ShieldCheck } from "lucide-react";
-import { useConfereAI } from "@/utils/competitions/confere-ai/useConfereAI";
+import { useConfereAI } from "@/utils/competitions/fll/confere-ai/useConfereAI";
 import {
   calculateProgress,
   findNextPendingItem,
   getChecklistsForMode,
   mergeChecklistItems,
-} from "@/utils/competitions/confere-ai/utils";
+} from "@/utils/competitions/fll/confere-ai/utils";
 import ModeSelector from "./ModeSelector";
 import ChecklistCard from "./ChecklistCard";
 import AddChecklistModal from "./AddChecklistModal";

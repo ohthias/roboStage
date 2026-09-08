@@ -1,22 +1,36 @@
-import Header from "@/components/UI/Header";
+// app/(public)/fll/confere-ai/page.tsx
+//
+// Rota pública, sem autenticação e sem dependência do Dashboard.
+// Server Component: apenas metadata + composição. Toda a interatividade
+// (estado, cookies, JSON via fetch) fica isolada no ConfereAI (client component).
 
-export default function CheklistPage() {
+import type { Metadata } from "next";
+import ConfereAI from "@/components/competicoes/FLL/confere-ai/ConfereAI";
+
+const TITLE = "Confia, mas Confira! FLL | RoboStage";
+const DESCRIPTION =
+  "Organize sua equipe para os treinos e campeonatos da FLL com o ConfereAí, uma checklist gratuita que funciona sem login.";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: "/fll/confere-ai",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+};
+
+export default function ConfereAiPage() {
   return (
-    <div className="bg-base-200">
-      <div className="mx-auto max-w-6xl px-4 space-y-8 pb-8 pt-4">
-        <Header
-          type="Checklist"
-          name="Confia,"
-          highlight="mas Confira!"
-          description="Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento."
-        />
-        <div className="max-w-4xl mx-auto">
-          <p className="mt-4 text-lg text-center">
-            Esta é uma lista de verificação para ajudar você a acompanhar o
-            progresso do seu projeto.
-          </p>
-        </div>
-      </div>
-    </div>
+    <main className="min-h-screen bg-base-200/40">
+      <ConfereAI />
+    </main>
   );
 }

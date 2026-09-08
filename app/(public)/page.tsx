@@ -38,25 +38,25 @@ export default function Page() {
           <div className="relative w-full max-w-sm h-[380px] shrink-0 mr-0 md:mr-16">
             <div className="absolute bottom-6 right-0 w-72 h-72 hover:scale-105 transition-transform duration-300">
               <img
-                src="/images/index/rectangle.svg"
+                src="https://www.first-lego-league.org/files/Dateiverwaltung%20NEU/Fotos/f%C3%BCr%20Presse%20%26%20Download/%28C%29%20HANDS%20on%20TECHNOLOGY%20e.V.%20-%20FIRST%20LEGO%20League%20-%20Challenge%2003.jpg"
                 alt="Equipe de robótica em competição"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover mask mask-squircle"
               />
             </div>
 
             <div className="absolute -bottom-5 left-0 w-50 h-50 z-5 hover:scale-110 transition-transform duration-300">
               <img
-                src="/images/index/triangle.svg"
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdq11Zclmz-Hrxdc_Si6M7x1y9mE4QHmvdTs4dLiRFE0Nr7ggLx12BRdg&s=10"
                 alt="Crianças montando robô"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover mask mask-triangle"
               />
             </div>
 
             <div className="absolute top-0 -right-6 w-32 h-32 z-5 hover:scale-107 transition-transform duration-300">
               <img
-                src="/images/index/circle.svg"
+                src="https://www.firstinspires.org/hs-fs/hubfs/20230420_bm_0312.jpg?width=630&height=420&name=20230420_bm_0312.jpg"
                 alt="Cena de competição de robótica"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover mask mask-circle"
               />
             </div>
           </div>

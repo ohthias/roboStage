@@ -31,7 +31,7 @@ export default function FutureEditionScorePage() {
         className="animate-fade-in-down max-w-5xl w-full mx-auto"
       />
 
-      <main className="max-w-5xl mx-auto w-full px-6 pb-8 space-y-8 animate-fade-in-down">
+      <main className="max-w-6xl mx-auto w-full px-6 pb-16 space-y-8 animate-fade-in-down">
         <ScoreCalculator data={data} />
       </main>
     </div>

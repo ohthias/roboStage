@@ -28,11 +28,11 @@ const MAIN_LINKS: NavItem[] = [
     label: "Caderno",
     Icon: Book,
   },
-  {
+  /*{
     href: "/dashboard/labtest",
     label: "LabTest",
     Icon: FlaskConical,
-  }
+  }*/
 ];
 
 const SYSTEM_LINKS: NavItem[] = [

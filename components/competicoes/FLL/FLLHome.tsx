@@ -8,13 +8,13 @@ import {
   ChartPie,
   File,
   CircleAlertIcon,
+  NotepadText,
 } from "lucide-react";
-import FLLCountdownBanner from "./Components/FLLCountdownBanner";
-import UseCasesSection from "./Components/UseCasesSection";
 import Banner from "@/components/Banner";
 import NoiseImage from "@/components/UI/NoiseImage";
 import Link from "next/link";
 import FLLHighlightSeason from "./Components/FLLHighlightSeason";
+import RevealOnScroll from "@/components/UI/RevealOnScroll";
 
 const modules = [
   {
@@ -25,10 +25,10 @@ const modules = [
     icon: <ChartPie size={96} strokeWidth={1.5} />,
   },
   {
-    title: "InnoLab",
+    title: "ThinkLab",
     description:
       "Estruture projetos de inovação, organize pesquisas, registre evidências, acompanhe o progresso e desenvolva apresentações impactantes.",
-    color: "bg-primary",
+    color: "bg-secondary",
     icon: <File size={96} strokeWidth={1.5} />,
   },
   {
@@ -46,11 +46,18 @@ const modules = [
     icon: <Trophy size={96} strokeWidth={1.5} />,
   },
   {
-    title: "Perguntas & Respostas",
+    title: "Recall",
     description:
       "Realize treinos de sessões de perguntas e respostas, prepare-se para entrevistas e desenvolva habilidades de comunicação para apresentações e avaliações.",
     color: "bg-lime-600",
     icon: <MessageCircleQuestion size={96} strokeWidth={1.5} />,
+  },
+  {
+    title: "Rubricas de Avaliação",
+    description:
+      "Crie e gerencie rubricas para avaliar o desempenho da sua equipe em diferentes categorias.",
+    color: "bg-emerald-500",
+    icon: <NotepadText size={96} strokeWidth={1.5} />,
   },
 ];
 
@@ -79,186 +86,204 @@ export default function FLLHome() {
               </div>
 
               <div className="grid w-full gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
-                <div className="bg-primary text-primary-content rounded-3xl p-6 lg:p-8 border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                  <span className="text-5xl font-black opacity-20">01</span>
+                <RevealOnScroll>
+                  <div className="bg-primary text-primary-content rounded-3xl p-6 lg:p-8 border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    <span className="text-5xl font-black opacity-20">01</span>
 
-                  <h3 className="mt-4 text-lg lg:text-xl font-bold">
-                    Treine e desenvolva sua equipe
-                  </h3>
+                    <h3 className="mt-4 text-lg lg:text-xl font-bold">
+                      Treine e desenvolva sua equipe
+                    </h3>
 
-                  <p className="mt-3 text-sm lg:text-base opacity-80 leading-relaxed">
-                    Gerencie integrantes, aplique testes, acompanhe evolução e
-                    registre resultados durante toda a temporada.
-                  </p>
-                </div>
-                <div className="bg-secondary text-secondary-content rounded-3xl p-6 lg:p-8 border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                  <span className="text-5xl font-black opacity-20">02</span>
-                  <h3 className="mt-4 text-lg lg:text-xl font-bold">
-                    Planeje sua temporada
-                  </h3>
-                  <p className="mt-3 text-sm lg:text-base opacity-80 leading-relaxed">
-                    Organize missões, projetos de inovação, apresentações e
-                    estratégias em um único ambiente.
-                  </p>
-                </div>
-                <div className="bg-warning text-warning-content rounded-3xl p-6 lg:p-8 border border-black/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                  <span className="text-5xl font-black opacity-20">03</span>
-                  <h3 className="mt-4 text-lg lg:text-xl font-bold">
-                    Gerencie torneios
-                  </h3>
-                  <p className="mt-3 text-sm lg:text-base opacity-80 leading-relaxed">
-                    Rankings, dashboards, transmissões e todas as informações
-                    necessárias para seus eventos.
-                  </p>
-                </div>
+                    <p className="mt-3 text-sm lg:text-base opacity-80 leading-relaxed">
+                      Gerencie integrantes, aplique testes, acompanhe evolução e
+                      registre resultados durante toda a temporada.
+                    </p>
+                  </div>
+                </RevealOnScroll>
+                <RevealOnScroll>
+                  <div className="bg-secondary text-secondary-content rounded-3xl p-6 lg:p-8 border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    <span className="text-5xl font-black opacity-20">02</span>
+                    <h3 className="mt-4 text-lg lg:text-xl font-bold">
+                      Planeje sua temporada
+                    </h3>
+                    <p className="mt-3 text-sm lg:text-base opacity-80 leading-relaxed">
+                      Organize missões, projetos de inovação, apresentações e
+                      estratégias em um único ambiente.
+                    </p>
+                  </div>
+                </RevealOnScroll>
+                <RevealOnScroll>
+                  <div className="bg-warning text-warning-content rounded-3xl p-6 lg:p-8 border border-black/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    <span className="text-5xl font-black opacity-20">03</span>
+                    <h3 className="mt-4 text-lg lg:text-xl font-bold">
+                      Gerencie torneios
+                    </h3>
+                    <p className="mt-3 text-sm lg:text-base opacity-80 leading-relaxed">
+                      Rankings, dashboards, transmissões e todas as informações
+                      necessárias para seus eventos.
+                    </p>
+                  </div>
+                </RevealOnScroll>
               </div>
             </div>
           </div>
         </section>
         <section className="bg-neutral text-neutral-content w-full py-16 mt-8">
-          <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-stretch gap-8 md:gap-12">
-            <div className="flex-1 w-full">
-              <img
-                src="/images/fll/fll_about.jpg"
-                alt="Equipe participando da FIRST LEGO League"
-                className="w-full h-full max-h-[400px] object-cover"
-                style={{ boxShadow: "-10px -10px 0 #fabd32" }}
-              />
-
-              <p className="text-xs text-neutral-content/60 mt-2">
-                Foto: LEGO® Education / FIRST® LEGO® League
-              </p>
-            </div>
-
-            <div className="flex-1">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Sobre a FLL
-              </h2>
-
-              <p className="text-base md:text-lg leading-relaxed opacity-90">
-                A FIRST LEGO League (FLL) é uma competição internacional de
-                robótica educacional para crianças e adolescentes. O objetivo da
-                FLL é inspirar jovens a se interessarem por ciência, tecnologia,
-                engenharia e matemática (STEM) por meio de desafios práticos e
-                criativos.
-              </p>
-
-              <p className="text-base md:text-lg leading-relaxed opacity-90 mt-4">
-                Os participantes formam equipes para projetar, construir e
-                programar robôs usando peças LEGO, além de desenvolver soluções
-                inovadoras para problemas do mundo real.
-              </p>
-
-              <div className="mt-6">
-                <button
-                  className="btn btn-outline"
-                  onClick={() =>
-                    window.open(
-                      "https://www.firstinspires.org/robotics/fll",
-                      "_blank",
-                    )
-                  }
-                >
-                  Conhecer a Competição
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-        <FLLHighlightSeason />
-        <section className="w-full py-16 bg-base-200">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="flex flex-col items-center text-center mb-16">
-              <h2 className="text-4xl md:text-6xl font-black max-w-5xl leading-tight">
-                Tudo que uma equipe FLL precisa{" "}
-                <span className="bg-primary text-white px-1">
-                  Em um único lugar
-                </span>
-              </h2>
-              <p className="mt-6 text-base-content/70 max-w-2xl text-lg">
-                Planeje missões, acompanhe pontuações, desenvolva projetos de
-                inovação, organize torneios e gerencie sua equipe sem precisar
-                alternar entre várias ferramentas.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {modules.map((module) => (
-                <ModuleCard
-                  key={module.title}
-                  title={module.title}
-                  description={module.description}
-                  color={module.color}
-                  icon={module.icon}
+          <RevealOnScroll>
+            <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-stretch gap-8 md:gap-12">
+              <div className="flex-1 w-full">
+                <img
+                  src="/images/fll/fll_about.jpg"
+                  alt="Equipe participando da FIRST LEGO League"
+                  className="w-full h-full max-h-[400px] object-cover"
+                  style={{ boxShadow: "-10px -10px 0 #fabd32" }}
                 />
-              ))}
-            </div>
-          <div
-            className="alert alert-warning shadow-lg my-4 mx-auto max-w-6xl px-4"
-            role="status"
-            aria-live="polite"
-          >
-            <CircleAlertIcon className="stroke-current flex-shrink-0 w-6 h-6" />
-            <div>
-              <h6 className="font-bold">
-                Ferramentas LabTest e InnoLab temporariamente indisponíveis
-              </h6>
-              <p>
-                As ferramentas LabTest e InnoLab estão passando por manutenções,
-                envovelndo correção de bugs, performace, e melhorias na
-                experiência do usuário.
-              </p>
-              <Link href="/news" className="font-bold underline">
-                Clique aqui
-              </Link>{" "}
-              para acompanhar as atualizações.
-            </div>
-          </div>
-          </div>
-        </section>
-        {/* FLL Future Edition */}
-        <NoiseImage variant="animated" noiseOpacity={0.2} className="relative">
-          <section className="py-16">
-            <div className="max-w-6xl mx-auto px-4">
-              <div className="relative overflow-hidden rounded-3xl bg-[url(https://www.bischoff-ag.ch/thumbnail/0f/a0/d5/1782169686/45834_Lifestyle_Cons_19_7d6229d67aa1ee63977a4f49a9682fb43b5dfc10_800x800.png?ts=1782173521&nocache=1)] bg-cover bg-bottom bg-no-repeat bg-[#6FA61C] text-primary-content">
-                <div className="absolute inset-0 bg-black/50 w-full h-full" />
-                {/* Glow */}
-                <div className="absolute -left-24 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
-                <div className="absolute -right-24 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
 
-                <div className="relative p-8 md:p-12">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
-                    <div className="max-w-3xl">
-                      <img
-                        src="https://www.firstinspires.org/hs-fs/hubfs/web/brand/season/2027/first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png?width=1436&height=484&name=first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png"
-                        alt="BIOGLOW Future Edition"
-                        className="max-w-[150px] h-auto mb-4"
-                      />
+                <p className="text-xs text-neutral-content/60 mt-2">
+                  Foto: LEGO® Education / FIRST® LEGO® League
+                </p>
+              </div>
 
-                      <h2 className="text-3xl md:text-5xl font-black leading-tight text-white">
-                        Conheça a próxima geração da
-                        <br />
-                        FIRST LEGO League
-                      </h2>
+              <div className="flex-1">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  Sobre a FLL
+                </h2>
 
-                      <p className="mt-4 text-lg opacity-90 text-white">
-                        BIOGLOW™ Future Edition introduz novos kits LEGO®
-                        Education Computer Science & AI, hardware sem fio e uma
-                        experiência colaborativa baseada em alianças.
-                      </p>
-                      <Link
-                        href="/fll/future-edition"
-                        className="btn px-8 mt-6"
-                      >
-                        Saiba mais
-                      </Link>
-                    </div>
-                  </div>
+                <p className="text-base md:text-lg leading-relaxed opacity-90">
+                  A FIRST LEGO League (FLL) é uma competição internacional de
+                  robótica educacional para crianças e adolescentes. O objetivo
+                  da FLL é inspirar jovens a se interessarem por ciência,
+                  tecnologia, engenharia e matemática (STEM) por meio de
+                  desafios práticos e criativos.
+                </p>
+
+                <p className="text-base md:text-lg leading-relaxed opacity-90 mt-4">
+                  Os participantes formam equipes para projetar, construir e
+                  programar robôs usando peças LEGO, além de desenvolver
+                  soluções inovadoras para problemas do mundo real.
+                </p>
+
+                <div className="mt-6">
+                  <button
+                    className="btn btn-outline"
+                    onClick={() =>
+                      window.open(
+                        "https://www.firstinspires.org/robotics/fll",
+                        "_blank",
+                      )
+                    }
+                  >
+                    Conhecer a Competição
+                  </button>
                 </div>
               </div>
             </div>
-          </section>
-        </NoiseImage>
+          </RevealOnScroll>
+        </section>
+        <FLLHighlightSeason />
+        <section className="w-full py-16 bg-base-200">
+          <RevealOnScroll>
+            <div className="max-w-6xl mx-auto px-4">
+              <div className="flex flex-col items-center text-center mb-16">
+                <h2 className="text-4xl md:text-6xl font-black max-w-5xl leading-tight">
+                  Tudo que uma equipe FLL precisa{" "}
+                  <span className="inline-block bg-primary text-primary-content px-3 py-1 italic -rotate-1">
+                    Em um único lugar
+                  </span>
+                </h2>
+                <p className="mt-6 text-base-content/70 max-w-2xl text-lg">
+                  Planeje missões, acompanhe pontuações, desenvolva projetos de
+                  inovação, organize torneios e gerencie sua equipe sem precisar
+                  alternar entre várias ferramentas.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {modules.map((module) => (
+                  <ModuleCard
+                    key={module.title}
+                    title={module.title}
+                    description={module.description}
+                    color={module.color}
+                    icon={module.icon}
+                  />
+                ))}
+              </div>
+              <div
+                className="alert alert-warning shadow-lg my-4 mx-auto max-w-6xl px-4 mt-12"
+                role="status"
+                aria-live="polite"
+              >
+                <CircleAlertIcon className="stroke-current flex-shrink-0 w-6 h-6" />
+                <div>
+                  <h6 className="font-bold">
+                    Ferramentas LabTest e InnoLab temporariamente indisponíveis
+                  </h6>
+                  <p>
+                    As ferramentas LabTest e InnoLab estão passando por
+                    manutenções, envovelndo correção de bugs, performace, e
+                    melhorias na experiência do usuário.
+                  </p>
+                  <Link href="/news" className="font-bold underline">
+                    Clique aqui
+                  </Link>{" "}
+                  para acompanhar as atualizações.
+                </div>
+              </div>
+            </div>
+          </RevealOnScroll>
+        </section>
+        <RevealOnScroll>
+          <div className="bg-base-300">
+            <NoiseImage
+              variant="animated"
+              noiseOpacity={0.2}
+              className="relative"
+            >
+              <section className="py-16">
+                <div className="max-w-6xl mx-auto px-4">
+                  <div className="relative overflow-hidden rounded-3xl bg-[url(https://www.bischoff-ag.ch/thumbnail/0f/a0/d5/1782169686/45834_Lifestyle_Cons_19_7d6229d67aa1ee63977a4f49a9682fb43b5dfc10_800x800.png?ts=1782173521&nocache=1)] bg-cover bg-bottom bg-no-repeat bg-[#6FA61C] text-primary-content">
+                    <div className="absolute inset-0 bg-black/50 w-full h-full" />
+                    {/* Glow */}
+                    <div className="absolute -left-24 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
+                    <div className="absolute -right-24 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
+
+                    <div className="relative p-8 md:p-12">
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+                        <div className="max-w-3xl">
+                          <img
+                            src="https://www.firstinspires.org/hs-fs/hubfs/web/brand/season/2027/first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png?width=1436&height=484&name=first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png"
+                            alt="BIOGLOW Future Edition"
+                            className="max-w-[150px] h-auto mb-4"
+                          />
+
+                          <h2 className="text-3xl md:text-5xl font-black leading-tight text-white">
+                            Conheça a próxima geração da
+                            <br />
+                            FIRST LEGO League
+                          </h2>
+
+                          <p className="mt-4 text-lg opacity-90 text-white">
+                            BIOGLOW™ Future Edition introduz novos kits LEGO®
+                            Education Computer Science & AI, hardware sem fio e
+                            uma experiência colaborativa baseada em alianças.
+                          </p>
+                          <Link
+                            href="/fll/future-edition"
+                            className="btn btn-sm btn-primary mt-6"
+                          >
+                            Conheça a Future Edition
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </NoiseImage>
+          </div>
+        </RevealOnScroll>
+        <div className="w-full h-10 bg-gradient-to-t from-neutral to-transparent " />
         <section className="w-full bg-neutral text-neutral-content py-24 px-4">
           <div className="max-w-5xl mx-auto text-center">
             <h2 className="text-4xl md:text-6xl font-black leading-tight">
@@ -270,10 +295,16 @@ export default function FLLHome() {
               temporada.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-              <Link className="btn btn-primary rounded-2xl px-8" href="/sign-up">
+              <Link
+                className="btn btn-primary rounded-2xl px-8"
+                href="/sign-up"
+              >
                 Criar conta grátis
               </Link>
-              <Link className="btn btn-ghost text-neutral-content rounded-2xl px-8" href="/news">
+              <Link
+                className="btn btn-ghost text-neutral-content rounded-2xl px-8"
+                href="/news"
+              >
                 Ver novidades da temporada
               </Link>
             </div>

@@ -6,7 +6,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { licenses, flaticon } from "./licenses";
+import { licenses, visualAssets } from "./licenses";
 import { Navbar } from "@/components/UI/Navbar";
 import { Footer } from "@/components/UI/Footer";
 
@@ -151,7 +151,7 @@ export default function LicensesPage() {
               </section>
             ))}
 
-            {/* Flaticon */}
+            {/* Visual Assets */}
             <section>
               <div className="mb-5 flex items-center gap-3">
                 <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-content">
@@ -159,7 +159,7 @@ export default function LicensesPage() {
                 </div>
 
                 <div>
-                  <h2 className="text-2xl font-bold">Flaticon License</h2>
+                  <h2 className="text-2xl font-bold">Recursos visuais</h2>
 
                   <p className="text-sm text-base-content/60">
                     Atribuição específica
@@ -167,64 +167,48 @@ export default function LicensesPage() {
                 </div>
               </div>
 
-              <article className="card border border-base-300 bg-base-100 shadow-sm">
-                <div className="card-body">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <h3 className="font-mono text-base font-bold">
-                        {flaticon.name}
-                      </h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                {visualAssets.map((asset) => (
+                  <article
+                    key={asset.name}
+                    className="card border border-base-300 bg-base-100 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <div className="card-body flex flex-col gap-4">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h3 className="font-mono text-base font-bold">
+                            {asset.name}
+                          </h3>
 
-                      <p className="mt-1 text-sm text-base-content/60">
-                        {flaticon.author}
+                          <p className="mt-1 text-sm text-base-content/60">
+                            {asset.author}
+                          </p>
+                        </div>
+
+                        <span className="badge badge-warning">
+                          {asset.license}
+                        </span>
+                      </div>
+
+                      <p className="mt-3 max-w-3xl text-sm leading-6 text-base-content/70">
+                        {asset.description}
                       </p>
+
+                      <div className="card-actions mt-4">
+                        <a
+                          href={asset.official}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-sm btn-primary"
+                        >
+                          Site oficial
+                          <ExternalLink className="size-4" />
+                        </a>
+                      </div>
                     </div>
-
-                    <span className="badge badge-warning">
-                      {flaticon.license}
-                    </span>
-                  </div>
-
-                  <p className="mt-3 max-w-3xl text-sm leading-6 text-base-content/70">
-                    {flaticon.description}
-                  </p>
-
-                  <div className="alert mt-5 border border-base-300 bg-base-200">
-                    <Sparkles className="size-5 shrink-0" />
-
-                    <div>
-                      <p className="font-semibold">Uicons by Flaticon</p>
-
-                      <p className="text-sm text-base-content/70">
-                        A atribuição deve ser mantida de acordo com os termos de
-                        utilização da Flaticon.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="card-actions mt-4">
-                    <a
-                      href={flaticon.official}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-sm btn-primary"
-                    >
-                      Flaticon UIcons
-                      <ExternalLink className="size-4" />
-                    </a>
-
-                    <a
-                      href={flaticon.repository}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-sm btn-ghost"
-                    >
-                      Repositório
-                      <ExternalLink className="size-4" />
-                    </a>
-                  </div>
-                </div>
-              </article>
+                  </article>
+                ))}
+              </div>
             </section>
 
             {/* Notice */}
@@ -247,7 +231,7 @@ export default function LicensesPage() {
             {/* Footer information */}
             <footer className="border-t border-base-300 pt-8">
               <div className="flex flex-col gap-3 text-sm text-base-content/60 sm:flex-row sm:items-center sm:justify-between">
-                <p>Última revisão: agosto de 2026.</p>
+                <p>Última revisão: setembro de 2026.</p>
 
                 <p>RoboStage © {new Date().getFullYear()}</p>
               </div>

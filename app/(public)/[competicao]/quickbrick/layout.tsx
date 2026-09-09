@@ -17,5 +17,5 @@ export default function QuickBrickLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <>{children}</>;
+  return <div className="bg-base-200/40">{children}</div>;
 }

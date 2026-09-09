@@ -1,65 +1,104 @@
+import UseCasesSection from "@/components/competicoes/FLL/Components/UseCasesSection";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
+import NoiseImage from "@/components/UI/NoiseImage";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
 import { Newspaper } from "lucide-react";
 import Link from "next/link";
-import FLLCountdownBanner from "@/components/competicoes/FLL/Components/FLLCountdownBanner";
 
 export default function Page() {
   return (
     <>
       <Navbar />
-      <header className="relative min-h-screen w-full overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
-
-        <div className="flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto h-full px-6 md:px-12 py-24 gap-16 mt-10">
-          {/* Texto */}
-          <div className="flex flex-col justify-center max-w-xl z-10 gap-4 select-none">
-            <h1 className="text-4xl md:text-4xl lg:text-6xl font-bold leading-tight">
-              O palco onde a<br />
-              <span className="text-primary-content bg-primary px-2 inline-block">
-                robótica acontece
-              </span>
+      <header className="relative min-h-screen w-full overflow-hidden bg-base-100">
+        <div
+          aria-hidden="true"
+          className="
+            absolute inset-0
+            opacity-[0.035]
+            bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)]
+            bg-[size:32px_32px]
+            mask-[linear-gradient(to_bottom,black_0%,transparent_85%)]
+          "
+        />
+        <div
+          aria-hidden="true"
+          className="absolute -top-32 right-[-10%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-3xl pointer-events-none"
+        />
+        <div className="relative z-10 max-w-7xl min-h-screen mx-auto px-6 md:px-12 py-28 lg:py-24 flex flex-col lg:flex-row items-center justify-between gap-16">
+          <div className="w-full max-w-2xl flex flex-col items-start">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95] z-10">
+              O palco onde a
             </h1>
-            <p className="font-semibold text-lg md:text-xl italic text-base-content/80">
-              Competições. Equipes. Comunidade. Tudo conectado!
+            <p className="inline-block bg-primary text-primary-content px-3 py-1 italic -rotate-1 text-2xl sm:text-3xl lg:text-6xl mt-1 z-8 font-black tracking-tight leading-[0.95]">
+              robótica acontece.
             </p>
-            <div className="flex flex-wrap gap-4 mt-4">
-              <a href="/fll/score/bioglow" className="btn btn-primary btn-outline">
-                Pontue na BIOGLOW
+            <p className="mt-7 max-w-xl text-lg md:text-xl leading-relaxed text-base-content/65">
+              Uma plataforma para acompanhar competições, descobrir equipes,
+              explorar projetos e conectar a comunidade da robótica.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 mt-9">
+              <a href="/fll" className="btn btn-primary px-6">
+                Explorar a FLL
               </a>
-              <a href="/fll" className="btn btn-secondary btn-outline">
-                Explorar a Plataforma
+
+              <a href="/sign-up" className="btn btn-ghost px-6">
+                Conhecer a plataforma
+                <span aria-hidden="true">→</span>
               </a>
+            </div>
+
+            <div className="flex flex-wrap gap-x-8 gap-y-3 mt-12 pt-6 border-t border-base-content/10 text-sm text-base-content/50">
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                Competições
+              </span>
+
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
+                Ferramentas
+              </span>
+
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                Comunidade
+              </span>
             </div>
           </div>
 
-          {/* Colagem de imagens */}
-          <div className="relative w-full max-w-sm h-[380px] shrink-0 mr-0 md:mr-16">
-            <div className="absolute bottom-6 right-0 w-72 h-72 hover:scale-105 transition-transform duration-300">
+          <div className="relative w-full max-w-lg h-[430px] lg:h-[500px] shrink-0">
+            <div className="absolute right-0 top-8 w-[75%] h-[78%] overflow-hidden transition-transform duration-500 hover:rotate-1 hover:scale-[1.02]" style={{ boxShadow: "-10px 10px 0 #CF2A2A" }}>
               <img
-                src="/images/index/rectangle.svg"
-                alt="Equipe de robótica em competição"
-                className="w-full h-full object-contain"
+                src="https://www.first-lego-league.org/files/Dateiverwaltung%20NEU/Fotos/f%C3%BCr%20Presse%20%26%20Download/%28C%29%20HANDS%20on%20TECHNOLOGY%20e.V.%20-%20FIRST%20LEGO%20League%20-%20Challenge%2003.jpg"
+                alt="Equipe de robótica durante uma competição"
+                className="w-full h-full object-cover"
               />
+              <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
             </div>
 
-            <div className="absolute -bottom-5 left-0 w-50 h-50 z-5 hover:scale-110 transition-transform duration-300">
+            <div className="absolute bottom-0 left-0 w-44 h-44 overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] shadow-xl rotate-[-5deg] transition-transform duration-500 hover:rotate-0 hover:scale-105" style={{ boxShadow: "5px -5px 0 #1E459F"}}>
               <img
-                src="/images/index/triangle.svg"
-                alt="Crianças montando robô"
-                className="w-full h-full object-contain"
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdq11Zclmz-Hrxdc_Si6M7x1y9mE4QHmvdTs4dLiRFE0Nr7ggLx12BRdg&s=10"
+                alt="Crianças construindo um robô"
+                className="w-full h-full object-cover"
               />
             </div>
-
-            <div className="absolute top-0 -right-6 w-32 h-32 z-5 hover:scale-107 transition-transform duration-300">
+            <div className="absolute top-0 right-[-1rem] w-32 h-32 overflow-hidden rounded-full shadow-xl rotate-[6deg] transition-transform duration-500 hover:rotate-0 hover:scale-110" style={{ boxShadow: "5px 5px 0 #FABD32"}}>
               <img
-                src="/images/index/circle.svg"
-                alt="Cena de competição de robótica"
-                className="w-full h-full object-contain"
+                src="https://www.firstinspires.org/hs-fs/hubfs/20230420_bm_0312.jpg?width=630&height=420&name=20230420_bm_0312.jpg"
+                alt="Competição de robótica"
+                className="w-full h-full object-cover"
               />
             </div>
+            <div className="absolute bottom-8 right-[-2rem] z-[-1] w-32 h-32 border border-primary/30 rounded-full" />
+            <div className="absolute bottom-20 right-8 z-[-1] w-3 h-3 rounded-full bg-primary" />
           </div>
+        </div>
+
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-2 text-xs uppercase tracking-widest 'text-base-content/30">
+          <span>Explore</span>
+          <span className="text-lg">↓</span>
         </div>
       </header>
       <main className="bg-base-100">
@@ -89,8 +128,6 @@ export default function Page() {
             style={{ boxShadow: "-10px 10px 0 #DE5017" }}
           />
         </section>
-
-        <FLLCountdownBanner />
 
         {/* Competições */}
         <section className="py-8 mb-16">
@@ -165,6 +202,22 @@ export default function Page() {
           </RevealOnScroll>
         </section>
 
+        <NoiseImage variant="animated" noiseOpacity={0.8} className="relative shadow-2xl">
+          <section className="bg-neutral text-neutral-content py-16 px-4 md:px-12">
+            <h3 className="text-xl md:text-2xl font-bold">
+              Plataforma passando por transformação
+            </h3>
+            <p className="text-base-content/80">
+              O RoboStage está em constante evolução, e novas funcionalidades
+              estão sendo adicionadas regularmente. Algumas features ainda estão
+              em desenvolvimento e estão chegando em breve.
+            </p>
+          </section>
+          <div className="absolute top-0 -translate-y-1/2 left-0 -translate-x-1/2 w-100 h-100 border border-primary/30 rounded-full" />
+          <div className="absolute bottom-0 translate-y-1/2 right-0 translate-x-1/2 w-50 h-50 border border-primary/30 rounded-full" />
+        </NoiseImage>
+        <UseCasesSection />
+
         <section className="bg-[#091A07] w-full flex flex-col md:flex-row gap-8">
           <div className="max-w-2xl md:ml-16 px-6 md:px-4 text-white flex flex-col justify-center items-start gap-4 py-16">
             <h3 className="text-2xl md:text-3xl font-bold">FIRST® CANOPY™</h3>
@@ -228,7 +281,7 @@ export default function Page() {
             </p>
           </div>
           <Link href="/news" className="mt-8 btn bnt-outline">
-          <Newspaper className="inline-block mr-2"/>
+            <Newspaper className="inline-block mr-2" />
             Ver notícias
           </Link>
         </section>
@@ -244,12 +297,12 @@ export default function Page() {
               robótica, existe um lugar esperando por você.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-              {/*<Link
+              <Link
                 className="btn btn-primary rounded-2xl px-8"
                 href="/sign-up"
               >
                 Criar conta grátis
-              </Link>*/}
+              </Link>
               <Link
                 className="btn btn-ghost text-neutral-content rounded-2xl px-8"
                 href="/fll"

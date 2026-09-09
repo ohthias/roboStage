@@ -323,13 +323,13 @@ export default function MissionTimer() {
   if (session && session.status === "result") {
     const result = buildMissionTimerResult(session, Array.from(missionsById.values()));
     return (
-      <div className="max-w-6xl mx-auto space-y-10">
+      <div className="max-w-6xl mx-auto space-y-10 bg-base-100 border border-base-content/10 rounded-2xl shadow-md p-6">
         <ResultsSummary result={result} />
         <MissionResults result={result} missionsById={missionsById} />
         <LaunchHistory attempts={result.attempts} />
         <ExportResults result={result} missionsById={missionsById} />
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-base-300">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-base-300 justify-center">
           <button className="btn btn-outline gap-2" onClick={resetToSetup}>
             <RotateCcw className="w-4 h-4" />
             Nova sessão
@@ -413,7 +413,7 @@ export default function MissionTimer() {
 
   // ---- SETUP ----
   return (
-    <div className="max-w-3xl mx-auto space-y-10">
+    <div className="space-y-10 bg-base-100 border border-base-content/10 rounded-2xl shadow-md p-6 max-w-6xl mx-auto">
       <SeasonSelector
         seasons={seasons}
         selectedSeasonId={selectedSeasonId}
@@ -507,7 +507,7 @@ export default function MissionTimer() {
         </>
       )}
 
-      <div className="pt-6 border-t border-base-300">
+      <div className="pt-6 border-t border-base-300 ml-auto">
         <button className="btn btn-ghost btn-sm gap-2 text-error" onClick={clearAll}>
           <Trash2 className="w-4 h-4" />
           Limpar sessão

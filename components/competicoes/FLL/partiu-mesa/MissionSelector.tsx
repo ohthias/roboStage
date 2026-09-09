@@ -33,7 +33,7 @@ export default function MissionSelector({ missions, selectedIds, onToggle }: Mis
             <li key={mission.id}>
               <label
                 className={`card card-compact border cursor-pointer transition-colors ${
-                  checked ? "border-primary bg-primary/5" : "border-base-300"
+                  checked ? "border-primary bg-primary/5" : "border-base-300 bg-base-200/20"
                 }`}
               >
                 <div className="card-body flex-row items-center gap-3 py-3">

@@ -15,8 +15,10 @@ export interface Mission {
   /** Descrição opcional, quando disponível no JSON de origem. */
   description?: string;
   /**
-   * Pontuação máxima da missão, quando disponível no JSON de origem.
-   * `undefined` quando o dado não existe — nunca inventado.
+   * Pontuação potencial da missão (melhor caso do campo `points` da missão,
+   * somado ao melhor caso de cada `sub-mission`, quando existirem).
+   * Calculada em `normalize.ts` a partir dos números já presentes no JSON —
+   * nunca inventada. `undefined` quando nenhum valor de pontos existe.
    */
   points?: number;
   /** Id da temporada à qual a missão pertence. */

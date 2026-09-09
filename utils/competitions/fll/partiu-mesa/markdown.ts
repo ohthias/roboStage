@@ -52,7 +52,7 @@ export function generateMissionTimerMarkdown(
 ): string {
   const lines: string[] = [];
 
-  lines.push("# RoboStage — Partiu Mesa!");
+  lines.push("# RoboStage FLL | Partiu Mesa — Resultado da sessão");
   lines.push("");
   lines.push("## Sessão");
   lines.push("");

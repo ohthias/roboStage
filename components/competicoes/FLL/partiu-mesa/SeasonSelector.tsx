@@ -26,7 +26,7 @@ export default function SeasonSelector({ seasons, selectedSeasonId, onSelect }: 
         </option>
         {seasons.map((season) => (
           <option key={season.id} value={season.id}>
-            {season.name.toUpperCase()}
+            {season.name}
           </option>
         ))}
       </select>

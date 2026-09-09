@@ -567,6 +567,11 @@ export function Navbar() {
                                         {item.description || "Ferramenta"}
                                       </span>
                                     </span>
+                                    {item.new && (
+                                      <span className="badge badge-sm badge-primary absolute right-2 top-2 text-[0.55rem] font-bold">
+                                        Novo
+                                      </span>
+                                    )}
                                   </Link>
                                 </li>
                               );

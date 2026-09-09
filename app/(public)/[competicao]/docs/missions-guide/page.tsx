@@ -1,23 +1,16 @@
-import Header from "@/components/UI/Header";
+import type { Metadata } from "next";
+import { MissionGuide } from "@/components/competicoes/FLL/mission-guide/MissionGuide";
 
-export default function MissionsGuidePage() {
+export const metadata: Metadata = {
+  title: "Guia de Missões — BIOGLOW™ | RoboStage",
+  description:
+    "Explore as missões da BIOGLOW™ Founders Edition da FIRST LEGO League. Veja objetivos, mecanismos, pontuação e informações de cada missão.",
+};
+
+export default function MissionGuidePage() {
   return (
-    <div className="py-8 px-4 bg-base-200">
-      <div className="mx-auto max-w-6xl px-4 space-y-8 pb-8 pt-4">
-        <Header
-          name="Guia de Missões"
-          highlight="FLL Challenge"
-          type="Documentação"
-          description="Guia de missões da FLL Challenge"
-        />
-        <div className="max-w-4xl mx-auto">
-          <p className="mt-4 text-lg text-center">
-            Este guia fornece informações detalhadas sobre as missões da FLL
-            Challenge, incluindo regras, objetivos e dicas para equipes
-            participantes.
-          </p>
-        </div>
-      </div>
+    <div className="bg-base-200/40">
+      <MissionGuide />
     </div>
   );
 }

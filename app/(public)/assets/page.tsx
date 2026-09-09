@@ -11,6 +11,7 @@ import {
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
 import ColorCard from "./ColorCard";
+import Image from "next/image";
 
 export const metadata = {
   title: "Assets",
@@ -52,20 +53,20 @@ const assets = [
   {
     name: "Logo principal",
     description: "Símbolo + wordmark do RoboStage.",
-    format: "SVG",
-    href: "/assets/logo/robostage.svg",
+    format: "PNG",
+    href: "/assets/logo/full_logo_primary.png",
   },
   {
-    name: "Logo monocromática",
-    description: "Versão para aplicações de uma única cor.",
-    format: "SVG",
-    href: "/assets/logo/robostage-mono.svg",
+    name: "Logo outline",
+    description: "Wordmark do RoboStage em versão outline.",
+    format: "PNG",
+    href: "/assets/logo/logo_outline_colorido.png",
   },
   {
-    name: "Ícone",
+    name: "Kit de Ícone",
     description: "Símbolo do RoboStage sem o wordmark.",
-    format: "SVG",
-    href: "/assets/logo/robostage-icon.svg",
+    format: "ZIP",
+    href: "/assets/logo/robostage-icones.zip",
   },
   {
     name: "Kit de logos",
@@ -159,28 +160,28 @@ export default function BrandPage() {
                   <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:20px_20px]" />
 
                   <div className="relative flex items-center gap-4">
-                    <div className="w-24 h-24 bg-primary rounded-2xl flex items-center justify-center text-primary-content text-4xl font-black rotate-3">
-                      R
-                    </div>
-
-                    <span className="text-5xl font-black tracking-tight">
-                      RoboStage
-                    </span>
+                    <Image
+                      src="/images/logos/full_logo_primary.png"
+                      alt="Logo do RoboStage"
+                      className="relative z-10 object-contain"
+                      width={500}
+                      height={100}
+                    />
                   </div>
                 </div>
 
                 <div className="card-actions justify-between items-center mt-5">
                   <span className="text-sm font-mono text-base-content/50">
-                    robostage.svg
+                    robostage.png
                   </span>
 
                   <a
-                    href="/assets/logo/robostage.svg"
+                    href="/assets/logo/full_logo_primary.png"
                     download
                     className="btn btn-sm btn-primary"
                   >
                     <Download size={16} />
-                    SVG
+                    PNG
                   </a>
                 </div>
               </div>
@@ -192,13 +193,13 @@ export default function BrandPage() {
                 title="Versão clara"
                 description="Para fundos escuros."
                 dark
-                href="/assets/logo/robostage-light.svg"
+                href="/assets/logo/full_logo_secondary.png"
               />
 
               <LogoVariation
-                title="Versão escura"
-                description="Para fundos claros."
-                href="/assets/logo/robostage-dark.svg"
+                title="Versão Alternativa"
+                description="Uma versão alternativa do logo."
+                href="/assets/logo/logo_outline_colorido.png"
               />
             </div>
           </div>
@@ -416,10 +417,6 @@ export default function BrandPage() {
             <div className="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-secondary/10 blur-3xl" />
 
             <div className="relative max-w-3xl">
-              <span className="badge badge-primary badge-outline">
-                RoboStage
-              </span>
-
               <h2 className="mt-5 text-4xl md:text-6xl font-black tracking-tight">
                 Construindo experiências
                 <span className="text-primary"> para a robótica.</span>
@@ -499,12 +496,13 @@ function LogoVariation({
       </div>
 
       <div className="h-28 flex items-center justify-center">
-        <div className="flex items-center gap-2 font-black text-2xl">
-          <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-primary-content">
-            R
-          </div>
-          RoboStage
-        </div>
+        <Image
+          src={href.replace("/assets/logo/", "/images/logos/")}
+          alt={title}
+          className="object-contain"
+          width={300}
+          height={100}
+        />
       </div>
 
       <a href={href} download className="btn btn-sm btn-outline w-full">
@@ -576,7 +574,7 @@ function AssetCard({
           </div>
         </div>
 
-        <span className="badge badge-outline">{format}</span>
+        <span className="badge badge-outline h-full text-center">{format}</span>
       </div>
 
       <div className="flex justify-end mt-6">

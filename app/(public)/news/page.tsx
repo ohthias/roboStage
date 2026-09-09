@@ -54,12 +54,12 @@ export default function NewsPage() {
 
             <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
               {news.map((article: any) => {
-                const safeSlug = encodeURIComponent(String(article.slug ?? ""));
+                const safeHref = toSafeNewsHref(article.slug);
 
                 return (
                 <Link
-                  key={article.slug}
-                  href={toSafeNewsHref(article.slug)}
+                  key={safeHref}
+                  href={safeHref}
                   className="group"
                 >
                   <article className="card h-full overflow-hidden border border-base-300 bg-base-200 transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-xl">

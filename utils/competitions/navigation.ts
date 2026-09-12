@@ -47,7 +47,7 @@ export const NAVIGATION = {
           { nome: "Documentações", path: "docs", icon: BookOpen, description: "Documentação das temporadas da liga" },
           { nome: "Guia de Missões", path: "docs/missions-guide", icon: BookCopy, description: "Guia de missões da FLL Challenge", new: true },
           { nome: "Iniciantes da Challenge", path: "begins", icon: School, description: "FLL para equipes iniciantes" },
-          { nome: "Iniciantes da Explore", path: "explore", icon: Telescope },
+          { nome: "Iniciantes da Explore", path: "explore", icon: Telescope, description: "FLL Explore para equipes iniciantes" },
         ],
       },
     ] satisfies NavMenuGroup[],

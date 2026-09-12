@@ -1,10 +1,24 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { users, leagues, userLeagueInterests, testExecutions, tests, documents } from "@/db/schema";
+import {
+  users,
+  leagues,
+  userLeagueInterests,
+  testExecutions,
+  tests,
+  documents,
+  calendarEvents,
+  boardCards,
+  boardColumns,
+  boards,
+} from "@/db/schema";
 import ComingSoon from "@/components/ComingSoon";
+import { resolveStagebookScope } from "@/lib/stagebook/scope";
+import { scopeWhere } from "@/lib/stagebook/permissions";
+import { CalendarDays, KanbanSquare } from "lucide-react";
 
 // CORREÇÃO: as chaves precisam bater com os valores reais do enum test_mode
 // ("runs" | "calibrabot" | "individual" | "custom") — antes usavam "run" e
@@ -47,6 +61,14 @@ export default async function DashboardPage() {
   });
   if (!currentUser?.onboardingCompletedAt) redirect("/onboarding");
 
+  // Etapa 9 — widgets do Stagebook agregam dados do scope ATUAL (pessoal ou
+  // equipe selecionada), nunca só do userId cru — mesma regra de qualquer
+  // outra query do Stagebook (seção 31).
+  const scope = await resolveStagebookScope();
+  const documentScope = scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId });
+  const eventScope = scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId });
+  const boardScope = scopeWhere(scope, { userId: boards.userId, teamId: boards.teamId });
+
   const [
     leagueInterests,
     recentTests,
@@ -54,6 +76,8 @@ export default async function DashboardPage() {
     totalExecutionsCount,
     executionsThisWeek,
     recentDocuments,
+    upcomingEvents,
+    pendingCards,
   ] = await Promise.all([
     db
       .select({
@@ -112,8 +136,37 @@ export default async function DashboardPage() {
         updatedAt: documents.updatedAt,
       })
       .from(documents)
-      .where(eq(documents.userId, userId))
+      .where(documentScope)
       .orderBy(desc(documents.updatedAt))
+      .limit(4),
+
+    db
+      .select({
+        id: calendarEvents.id,
+        title: calendarEvents.title,
+        startAt: calendarEvents.startAt,
+        type: calendarEvents.type,
+      })
+      .from(calendarEvents)
+      .where(and(eventScope, gte(calendarEvents.startAt, new Date())))
+      .orderBy(asc(calendarEvents.startAt))
+      .limit(4),
+
+    db
+      .select({
+        id: boardCards.id,
+        title: boardCards.title,
+        dueAt: boardCards.dueAt,
+        priority: boardCards.priority,
+        boardId: boardCards.boardId,
+        boardName: boards.name,
+        columnName: boardColumns.name,
+      })
+      .from(boardCards)
+      .innerJoin(boards, eq(boards.id, boardCards.boardId))
+      .innerJoin(boardColumns, eq(boardColumns.id, boardCards.columnId))
+      .where(and(boardScope, isNotNull(boardCards.dueAt)))
+      .orderBy(asc(boardCards.dueAt))
       .limit(4),
   ]);
 
@@ -212,23 +265,89 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        {/* Caderno */}
+        {/* Próximos eventos (Calendar) */}
+        <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-200">
+          <div className="flex items-center justify-between border-b border-base-300 px-5 py-4">
+            <div>
+              <h2 className="font-semibold">Próximos eventos</h2>
+              <p className="mt-0.5 text-xs text-base-content/50">Calendário do Stagebook</p>
+            </div>
+            <Link href="/dashboard/calendar" className="btn btn-ghost btn-xs">
+              Ver tudo
+            </Link>
+          </div>
+
+          {upcomingEvents.length === 0 ? (
+            <div className="flex min-h-40 flex-col items-center justify-center px-6 text-center">
+              <CalendarDays size={26} className="mb-3 text-base-content/25" />
+              <p className="text-sm font-medium">Nada agendado</p>
+              <p className="mt-1 text-xs text-base-content/50">Crie um evento no calendário.</p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-base-300/70">
+              {upcomingEvents.map((event) => (
+                <li key={event.id} className="px-5 py-3">
+                  <p className="truncate text-sm font-medium">{event.title}</p>
+                  <p className="mt-0.5 text-xs text-base-content/45">
+                    {formatDate(event.startAt)} · {event.type}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* Cards com prazo (Kanban) */}
+        <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-200">
+          <div className="flex items-center justify-between border-b border-base-300 px-5 py-4">
+            <div>
+              <h2 className="font-semibold">Com prazo próximo</h2>
+              <p className="mt-0.5 text-xs text-base-content/50">Cards do Kanban</p>
+            </div>
+            <Link href="/dashboard/kanban" className="btn btn-ghost btn-xs">
+              Ver boards
+            </Link>
+          </div>
+
+          {pendingCards.length === 0 ? (
+            <div className="flex min-h-40 flex-col items-center justify-center px-6 text-center">
+              <KanbanSquare size={26} className="mb-3 text-base-content/25" />
+              <p className="text-sm font-medium">Nenhum card com prazo</p>
+              <p className="mt-1 text-xs text-base-content/50">Defina um prazo em um card do Kanban.</p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-base-300/70">
+              {pendingCards.map((card) => (
+                <li key={card.id} className="px-5 py-3">
+                  <Link href={`/dashboard/kanban/${card.boardId}`} className="block hover:text-primary">
+                    <p className="truncate text-sm font-medium">{card.title}</p>
+                    <p className="mt-0.5 text-xs text-base-content/45">
+                      {formatDate(card.dueAt)} · {card.boardName} / {card.columnName}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* Páginas */}
         <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-200 xl:col-span-3">
           <div className="flex items-center justify-between border-b border-base-300 px-5 py-4 sm:px-6">
             <div>
-              <h2 className="font-semibold">Caderno</h2>
-              <p className="mt-0.5 text-xs text-base-content/50">Anotações atualizadas recentemente</p>
+              <h2 className="font-semibold">Páginas</h2>
+              <p className="mt-0.5 text-xs text-base-content/50">Atualizadas recentemente</p>
             </div>
             <Link href="/dashboard/documents" className="btn btn-ghost btn-xs">
-              Abrir caderno
+              Abrir páginas
             </Link>
           </div>
 
           {recentDocuments.length === 0 ? (
             <div className="flex min-h-40 items-center justify-center px-6 py-10">
               <div className="text-center">
-                <p className="text-sm font-medium">Seu caderno está vazio</p>
-                <p className="mt-1 text-xs text-base-content/50">Crie uma anotação para ela aparecer aqui.</p>
+                <p className="text-sm font-medium">Nenhuma página ainda</p>
+                <p className="mt-1 text-xs text-base-content/50">Crie uma página para ela aparecer aqui.</p>
               </div>
             </div>
           ) : (
@@ -252,7 +371,7 @@ export default async function DashboardPage() {
                       {doc.title}
                     </p>
                     <span className="mt-1 inline-flex items-center text-xs text-base-content/40">
-                      Abrir anotação →
+                      Abrir página →
                     </span>
                   </div>
                 </Link>

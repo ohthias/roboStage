@@ -1,31 +1,57 @@
 import type { ReactNode } from "react";
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { folders, documents } from "@/db/schema";
+import { resolveStagebookScope } from "@/lib/stagebook/scope";
+import { scopeWhere } from "@/lib/stagebook/permissions";
 import { NotebookTree, type TreeNode } from "./notebook-tree";
+import { StagebookAuthError } from "@/lib/stagebook/scope";
 
 type FolderRow = {
   id: string;
   parentId: string | null;
   name: string;
   icon: string | null;
+  position: number;
 };
 type DocumentRow = {
   id: string;
   folderId: string | null;
+  parentId: string | null;
   title: string;
   icon: string | null;
+  position: number;
 };
 
+function byPosition<T extends { position: number }>(a: T, b: T) {
+  return a.position - b.position;
+}
+
+function buildDocumentChildren(
+  parentId: string,
+  allDocuments: DocumentRow[]
+): TreeNode[] {
+  return allDocuments
+    .filter((d) => d.parentId === parentId)
+    .sort(byPosition)
+    .map((d) => ({
+      type: "document" as const,
+      id: d.id,
+      title: d.title,
+      icon: d.icon,
+      children: buildDocumentChildren(d.id, allDocuments),
+    }));
+}
+
 function buildTree(
-  parentId: string | null,
+  parentFolderId: string | null,
   allFolders: FolderRow[],
-  allDocuments: DocumentRow[],
+  allDocuments: DocumentRow[]
 ): TreeNode[] {
   const childFolders: TreeNode[] = allFolders
-    .filter((f) => f.parentId === parentId)
+    .filter((f) => f.parentId === parentFolderId)
+    .sort(byPosition)
     .map((f) => ({
       type: "folder" as const,
       id: f.id,
@@ -34,16 +60,18 @@ function buildTree(
       children: buildTree(f.id, allFolders, allDocuments),
     }));
 
-  const childDocuments: TreeNode[] = allDocuments
-    .filter((d) => d.folderId === parentId)
+  const rootDocuments: TreeNode[] = allDocuments
+    .filter((d) => d.folderId === parentFolderId && d.parentId === null)
+    .sort(byPosition)
     .map((d) => ({
       type: "document" as const,
       id: d.id,
       title: d.title,
       icon: d.icon,
+      children: buildDocumentChildren(d.id, allDocuments),
     }));
 
-  return [...childFolders, ...childDocuments];
+  return [...childFolders, ...rootDocuments];
 }
 
 export default async function NotebookLayout({
@@ -51,8 +79,22 @@ export default async function NotebookLayout({
 }: {
   children: ReactNode;
 }) {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
+  let scope;
+  try {
+    scope = await resolveStagebookScope();
+  } catch (error) {
+    if (error instanceof StagebookAuthError) redirect("/sign-in");
+    throw error;
+  }
+
+  const folderScope = scopeWhere(scope, {
+    userId: folders.userId,
+    teamId: folders.teamId,
+  });
+  const documentScope = scopeWhere(scope, {
+    userId: documents.userId,
+    teamId: documents.teamId,
+  });
 
   const [allFolders, allDocuments] = await Promise.all([
     db
@@ -61,20 +103,21 @@ export default async function NotebookLayout({
         parentId: folders.parentId,
         name: folders.name,
         icon: folders.icon,
+        position: folders.position,
       })
       .from(folders)
-      .where(eq(folders.userId, userId))
-      .orderBy(folders.name),
+      .where(folderScope),
     db
       .select({
         id: documents.id,
         folderId: documents.folderId,
+        parentId: documents.parentId,
         title: documents.title,
         icon: documents.icon,
+        position: documents.position,
       })
       .from(documents)
-      .where(eq(documents.userId, userId))
-      .orderBy(documents.title),
+      .where(documentScope),
   ]);
 
   const tree = buildTree(null, allFolders, allDocuments);

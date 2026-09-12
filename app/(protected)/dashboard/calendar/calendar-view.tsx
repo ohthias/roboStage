@@ -36,7 +36,11 @@ function toDateKey(iso: string) {
 }
 
 function formatMonthLabel(date: Date) {
-  return date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  return new Intl.DateTimeFormat("pt-BR", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
 }
 
 export function CalendarView({
@@ -76,8 +80,8 @@ export function CalendarView({
   }, [events]);
 
   function navigate(offset: number) {
-    const next = new Date(month.getFullYear(), month.getMonth() + offset, 1);
-    const param = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`;
+    const next = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + offset, 1));
+    const param = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}`;
     router.push(`/dashboard/calendar?month=${param}`);
   }
 

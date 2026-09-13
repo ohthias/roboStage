@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { ChevronDown, Menu, Trophy, X, ChevronUp } from "lucide-react";
@@ -99,6 +99,10 @@ export function Navbar() {
   const showCompetitionNav = Boolean(competition && nav);
   const showMainNav = !isCompetitionRoute;
 
+  // IDs estáveis por competição, exigidos pela Popover API do megamenu do daisyUI
+  const megamenuId = `megamenu-${competition ?? "root"}`;
+  const scorePopoverId = `${megamenuId}-pontuador`;
+
   return (
     <div className="drawer drawer-start z-50">
       <input id="navbar-drawer" type="checkbox" className="drawer-toggle" />
@@ -159,71 +163,88 @@ export function Navbar() {
             </Link>
           </div>
 
+          {/*
+            Navegação desktop.
+            Para rotas de competição, os grupos de menu (Pontuador + nav.menus)
+            agora usam o componente Megamenu do daisyUI (baseado na Popover API
+            nativa do navegador), em vez dos antigos "dropdown dropdown-end"
+            manuais. O daisyUI recomenda um único container `.megamenu` por
+            página/seção — por isso ele engloba todos os gatilhos e popovers
+            desta navbar.
+          */}
           <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">
             {showCompetitionNav && nav ? (
-              <>
-                <div className="dropdown dropdown-end">
-                  <button
-                    type="button"
-                    tabIndex={0}
-                    aria-haspopup="menu"
-                    aria-label="Abrir menu de pontuador"
-                    className={navItemClass(
-                      isActive(`/${competition}/${nav.scorePath}`),
-                    )}
-                  >
-                    <Trophy size={16} />
-                    <span>Pontuador</span>
-                    <ChevronDown size={14} className="opacity-60" />
-                  </button>
+              <div id={megamenuId} className="megamenu megamenu-md contents">
+                {/* Indicador visual que desliza entre os itens ativos do megamenu */}
+                <span className="megamenu-active" />
 
-                  <ul
-                    tabIndex={0}
-                    className="menu dropdown-content z-[1] mt-4 w-60 rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl"
-                  >
-                    <li className="menu-title px-3 pb-1 pt-2 cursor-default select-none">
-                      Temporadas
-                    </li>
+                {/* Pontuador */}
+                {nav.scorePath && (
+                  <>
+                    <button
+                      type="button"
+                      popoverTarget={scorePopoverId}
+                      aria-label="Abrir menu de pontuador"
+                      className={navItemClass(
+                        isActive(`/${competition}/${nav.scorePath}`),
+                      )}
+                    >
+                      <Trophy size={16} />
+                      <span>Pontuador</span>
+                    </button>
 
-                    {nav?.seasons?.map((season) => {
-                      const Icon = season.icon;
-                      const href = `/${competition}/${nav.scorePath}/${season.key}`;
-                      const active = isActive(href);
-
-                      return (
-                        <li key={season.key}>
-                          <Link
-                            href={href}
-                            className={`flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-200 ${
-                              active ? "bg-base-200" : "hover:bg-base-200/80"
-                            }`}
-                            aria-current={active ? "page" : undefined}
-                          >
-                            <Icon
-                              size={18}
-                              className={`mt-0.5 transition-opacity duration-200 ${
-                                active ? "opacity-100" : "opacity-60"
-                              }`}
-                            />
-                            <span className="flex flex-col">
-                              <span
-                                className={`font-medium ${
-                                  active ? "text-primary" : ""
-                                }`}
-                              >
-                                {season.name}
-                              </span>
-                              <span className="text-xs opacity-60">
-                                {season.period}
-                              </span>
-                            </span>
-                          </Link>
+                    <div
+                      id={scorePopoverId}
+                      popover="auto"
+                      className="rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl"
+                    >
+                      <ul className="menu menu-sm w-60">
+                        <li className="menu-title px-3 pb-1 pt-2 cursor-default select-none">
+                          Temporadas
                         </li>
-                      );
-                    })}
-                  </ul>
-                </div>
 
+                        {nav?.seasons?.map((season) => {
+                          const Icon = season.icon;
+                          const href = `/${competition}/${nav.scorePath}/${season.key}`;
+                          const active = isActive(href);
+
+                          return (
+                            <li key={season.key}>
+                              <Link
+                                href={href}
+                                className={`flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-200 ${
+                                  active ? "bg-base-200" : "hover:bg-base-200/80"
+                                }`}
+                                aria-current={active ? "page" : undefined}
+                              >
+                                <Icon
+                                  size={18}
+                                  className={`mt-0.5 transition-opacity duration-200 ${
+                                    active ? "opacity-100" : "opacity-60"
+                                  }`}
+                                />
+                                <span className="flex flex-col">
+                                  <span
+                                    className={`font-medium ${
+                                      active ? "text-primary" : ""
+                                    }`}
+                                  >
+                                    {season.name}
+                                  </span>
+                                  <span className="text-xs opacity-60">
+                                    {season.period}
+                                  </span>
+                                </span>
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  </>
+                )}
+
+                {/* Itens diretos (apenas FLL) — links simples, sem popover */}
                 {competition === "fll" &&
                   nav.options?.map((item) => {
                     const Icon = item.icon;
@@ -248,74 +269,77 @@ export function Navbar() {
                     );
                   })}
 
+                {/* Grupos de menu — cada grupo vira um gatilho + popover do megamenu */}
                 {nav.menus?.map((group) => {
                   const GroupIcon = group.icon;
                   const groupActive = isMenuGroupActive(group);
+                  const groupPopoverId = `${megamenuId}-${group.key}`;
 
                   return (
-                    <div className="dropdown dropdown-end" key={group.key}>
+                    <Fragment key={group.key}>
                       <button
                         type="button"
-                        tabIndex={0}
-                        aria-haspopup="menu"
+                        popoverTarget={groupPopoverId}
                         aria-label={`Abrir menu de ${group.label.toLowerCase()}`}
                         className={navItemClass(groupActive)}
                       >
                         <GroupIcon size={16} />
                         <span>{group.label}</span>
-                        <ChevronDown size={14} className="opacity-60" />
                       </button>
 
-                      <ul
-                        tabIndex={0}
-                        className="menu dropdown-content z-[1] mt-4 w-72 rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl space-y-1"
+                      <div
+                        id={groupPopoverId}
+                        popover="auto"
+                        className="w-72 rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl"
                       >
-                        {group.items.map((item) => {
-                          const Icon = item.icon;
-                          const href = `/${competition}/${item.path}`;
-                          const active = isActive(href);
+                        <ul className="menu menu-sm space-y-1">
+                          {group.items.map((item) => {
+                            const Icon = item.icon;
+                            const href = `/${competition}/${item.path}`;
+                            const active = isActive(href);
 
-                          return (
-                            <li key={item.path}>
-                              <Link
-                                href={href}
-                                className={`flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-200 ${
-                                  active
-                                    ? "bg-base-200"
-                                    : "hover:bg-base-200/80"
-                                }`}
-                                aria-current={active ? "page" : undefined}
-                              >
-                                <Icon
-                                  size={18}
-                                  className={`mt-0.5 transition-opacity duration-200 flex-shrink-0 ${
-                                    active ? "opacity-100" : "opacity-60"
+                            return (
+                              <li key={item.path}>
+                                <Link
+                                  href={href}
+                                  className={`flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-200 ${
+                                    active
+                                      ? "bg-base-200"
+                                      : "hover:bg-base-200/80"
                                   }`}
-                                />
-                                <span className="flex flex-col">
-                                  <span
-                                    className={`font-medium ${active ? "text-primary" : ""}`}
-                                  >
-                                    {item.nome}
+                                  aria-current={active ? "page" : undefined}
+                                >
+                                  <Icon
+                                    size={18}
+                                    className={`mt-0.5 transition-opacity duration-200 flex-shrink-0 ${
+                                      active ? "opacity-100" : "opacity-60"
+                                    }`}
+                                  />
+                                  <span className="flex flex-col">
+                                    <span
+                                      className={`font-medium ${active ? "text-primary" : ""}`}
+                                    >
+                                      {item.nome}
+                                    </span>
+                                    <span className="text-xs opacity-60">
+                                      {item.description || "Ferramenta"}
+                                    </span>
                                   </span>
-                                  <span className="text-xs opacity-60">
-                                    {item.description || "Ferramenta"}
-                                  </span>
-                                </span>
-                                {item.new && (
-                                  <span className="badge badge-sm badge-primary absolute right-2 top-2 text-[0.55rem] font-bold">
-                                    Novo
-                                  </span>
-                                )}
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
+                                  {item.new && (
+                                    <span className="badge badge-sm badge-primary absolute right-2 top-2 text-[0.55rem] font-bold">
+                                      Novo
+                                    </span>
+                                  )}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    </Fragment>
                   );
                 })}
-              </>
+              </div>
             ) : null}
 
             {showMainNav && (
@@ -371,6 +395,12 @@ export function Navbar() {
         </header>
       </div>
 
+      {/*
+        Menu mobile: mantido como drawer + accordions (collapse), pois já
+        oferece descrições, badges "Novo" e navegação vertical mais rica do
+        que o modo `megamenu-vertical` padrão do daisyUI ofereceria fora da
+        caixa. O megamenu acima cobre apenas o breakpoint `lg:` (desktop).
+      */}
       <div className="drawer-side z-50">
         <label
           htmlFor="navbar-drawer"
@@ -406,7 +436,7 @@ export function Navbar() {
                 <div className="mt-2 space-y-3">
                   {nav.scorePath && (
                     <details
-                      className="collapse rounded-2xl hover:shadow-[4px_4px_0_theme(colors.primary))] transition hover:bg-base-200"
+                      className="collapse rounded-2xl hover:shadow-[4px_4px_0_theme(colors.primary))] transition hover:bg-base-200/40"
                       open={scoreOpen}
                       onToggle={(event) =>
                         setScoreOpen(event.currentTarget.open)
@@ -511,7 +541,7 @@ export function Navbar() {
                     return (
                       <details
                         key={group.key}
-                        className="collapse rounded-2xl hover:shadow-[4px_4px_0_theme(colors.primary))] transition hover:bg-base-200"
+                        className="collapse rounded-2xl hover:shadow-[4px_4px_0_theme(colors.primary))] transition hover:bg-base-200/40"
                         open={isOpen}
                         onToggle={(event) =>
                           toggleMenu(group.key, event.currentTarget.open)

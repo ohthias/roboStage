@@ -120,7 +120,7 @@ export default function Page() {
     <>
       <main className="flex flex-col items-center justify-center px-4 pb-16 pt-8 sm:px-6 lg:px-8 space-y-6 min-h-screen">
         <header className="sticky top-4 z-30 w-full max-w-4xl mx-auto animate-fade-in-down">
-          <section className="flex flex-row items-center justify-between gap-4 bg-base-100/80 backdrop-blur px-8 py-4 rounded-box shadow-md border border-base-300">
+          <section className="flex flex-row items-center justify-between gap-4 bg-base-100/80 backdrop-blur-md px-8 py-4 rounded-box shadow-md border border-base-300">
             {/* IDENTIDADE */}
             <div className="flex flex-1 items-center gap-4 text-left">
               <img
@@ -131,7 +131,7 @@ export default function Page() {
 
               <div className="flex flex-col">
                 <h1 className="text-sm font-semibold text-base-content opacity-70">
-                  FLL Score
+                  Pontuador FLL
                 </h1>
 
                 <span className="uppercase font-extrabold text-primary text-xl sm:text-3xl lg:text-4xl leading-tight">

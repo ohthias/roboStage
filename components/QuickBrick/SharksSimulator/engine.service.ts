@@ -141,6 +141,122 @@ export const generateSegments = (trajectory: PathPoint[], speedFactor: number = 
   return segments;
 };
 
+/**
+ * ---------------------------------------------------------------------------
+ * MOBILE "TAP TO DRIVE" HELPERS
+ * ---------------------------------------------------------------------------
+ * These helpers power the mobile experience, where the user builds a
+ * trajectory purely by tapping points on the mat — no code, no block editor.
+ * Each tap is converted into a small set of relative commands (an optional
+ * turn followed by an optional straight move) that reach the tapped point
+ * from wherever the robot currently ends up.
+ */
+
+/**
+ * Given the last known point of the trajectory (position + heading) and a
+ * newly tapped target (in cm), returns the "reto"/"giro" commands needed to
+ * reach that target. Mirrors the desktop Visual Editor's click-to-drive
+ * logic so both experiences stay perfectly consistent.
+ */
+export const pointToCommands = (
+  lastPoint: { x: number; y: number; angle: number },
+  targetX: number,
+  targetY: number,
+  turnSpeed: number = 60,
+  moveSpeed: number = 50,
+): Command[] => {
+  const dx = targetX - lastPoint.x;
+  const dy = targetY - lastPoint.y;
+  const dist = Math.hypot(dx, dy);
+  const targetAngleDeg = (Math.atan2(dx, dy) * 180) / Math.PI;
+  let angleDiff = targetAngleDeg - (lastPoint.angle % 360);
+  if (angleDiff > 180) angleDiff -= 360;
+  if (angleDiff < -180) angleDiff += 360;
+
+  const newCommands: Command[] = [];
+  if (Math.abs(angleDiff) > 1.0)
+    newCommands.push({ type: "giro", val: parseFloat(angleDiff.toFixed(1)), speed: turnSpeed });
+  if (dist > 0.5)
+    newCommands.push({ type: "reto", val: parseFloat(dist.toFixed(1)), speed: moveSpeed });
+
+  return newCommands;
+};
+
+/** One tap = one "waypoint" made of an optional turn command + an optional move command. */
+export interface Waypoint {
+  index: number; // position of this waypoint within the waypoints array
+  turnIdx?: number; // index of the 'giro' command inside the flat commands array
+  moveIdx?: number; // index of the 'reto' command inside the flat commands array
+  x: number;
+  y: number;
+  angle: number;
+  moveSpeed?: number;
+  turnSpeed?: number;
+}
+
+/**
+ * Groups a flat command list (as produced by pointToCommands) back into
+ * per-tap waypoints, and attaches the resulting x/y/angle from the
+ * trajectory so the UI can render friendly point cards.
+ */
+export const commandsToWaypoints = (commands: Command[], trajectory: PathPoint[]): Waypoint[] => {
+  const waypoints: Waypoint[] = [];
+  let i = 0;
+  while (i < commands.length) {
+    const wp: Waypoint = { index: waypoints.length, x: 0, y: 0, angle: 0 };
+    if (commands[i]?.type === "giro") {
+      wp.turnIdx = i;
+      i += 1;
+    }
+    if (commands[i]?.type === "reto") {
+      wp.moveIdx = i;
+      i += 1;
+    }
+    // Defensive fallback: never loop forever on unexpected orderings
+    if (wp.turnIdx === undefined && wp.moveIdx === undefined) {
+      i += 1;
+      continue;
+    }
+    const lastCmdIdx = wp.moveIdx ?? wp.turnIdx!;
+    const trajPoint = trajectory[lastCmdIdx + 1];
+    if (trajPoint) {
+      wp.x = trajPoint.x;
+      wp.y = trajPoint.y;
+      wp.angle = trajPoint.angle;
+    }
+    if (wp.moveIdx !== undefined) wp.moveSpeed = commands[wp.moveIdx].speed;
+    if (wp.turnIdx !== undefined) wp.turnSpeed = commands[wp.turnIdx].speed;
+    waypoints.push(wp);
+  }
+  return waypoints;
+};
+
+/** Removes every command belonging to one waypoint (its turn + its move). */
+export const removeWaypoint = (commands: Command[], waypoint: Waypoint): Command[] => {
+  const drop = new Set([waypoint.turnIdx, waypoint.moveIdx].filter((v) => v !== undefined) as number[]);
+  return commands.filter((_, idx) => !drop.has(idx));
+};
+
+/** Updates the move distance and/or turn angle of a single waypoint in place. */
+export const updateWaypoint = (
+  commands: Command[],
+  waypoint: Waypoint,
+  updates: { moveVal?: number; moveSpeed?: number; turnSpeed?: number },
+): Command[] => {
+  const next = [...commands];
+  if (waypoint.moveIdx !== undefined && next[waypoint.moveIdx]) {
+    next[waypoint.moveIdx] = {
+      ...next[waypoint.moveIdx],
+      ...(updates.moveVal !== undefined ? { val: updates.moveVal } : {}),
+      ...(updates.moveSpeed !== undefined ? { speed: updates.moveSpeed } : {}),
+    };
+  }
+  if (waypoint.turnIdx !== undefined && next[waypoint.turnIdx] && updates.turnSpeed !== undefined) {
+    next[waypoint.turnIdx] = { ...next[waypoint.turnIdx], speed: updates.turnSpeed };
+  }
+  return next;
+};
+
 export const interpolateState = (segments: AnimationSegment[], time: number): RobotState | null => {
   // 1. Find the active segment
   const segment = segments.find(s => time >= s.startTime && time <= s.endTime);

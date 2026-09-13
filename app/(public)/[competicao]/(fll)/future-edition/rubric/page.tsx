@@ -3,15 +3,14 @@
 import { useMemo, useState } from "react";
 import { RUBRIC, LevelKey } from "./rubric";
 import RubricSheet from "@/components/Rubric/RubricSheet";
-import FeedbackSheet from "@/components/Rubric/FeedbackSheet";
 import ScorePanel from "@/components/Rubric/ScorePanel";
 import TitleBlock from "@/components/Rubric/TitleBlock";
 import Header from "@/components/UI/Header";
 
-type TabId = "feedback" | (typeof RUBRIC)[number]["id"];
+type TabId = "projeto" | (typeof RUBRIC)[number]["id"];
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<TabId>("feedback");
+  const [activeTab, setActiveTab] = useState<TabId>("projeto");
 
   const [teamNumber, setTeamNumber] = useState("");
   const [teamName, setTeamName] = useState("");
@@ -22,21 +21,16 @@ export default function Home() {
   );
   const [comments, setComments] = useState<Record<string, string>>({});
 
-  const [feedback, setFeedback] = useState<
-    Record<string, { good: string; reflect: string }>
-  >({});
-  const [awards, setAwards] = useState<Record<string, boolean>>({});
-
   const tabs = useMemo(
     () => [
-      { id: "feedback" as TabId, code: "FB", label: "Feedback da Sessão" },
       ...RUBRIC.map((cat) => ({
         id: cat.id as TabId,
         code: cat.code,
         label: cat.name,
       })),
-    ],
-    [],
+    ], [
+      RUBRIC
+    ]
   );
 
   function handleSelect(indicatorId: string, level: LevelKey) {
@@ -47,24 +41,6 @@ export default function Home() {
     setComments((prev) => ({ ...prev, [indicatorId]: value }));
   }
 
-  function handleFeedbackChange(
-    sectionId: string,
-    field: "good" | "reflect",
-    value: string,
-  ) {
-    setFeedback((prev) => ({
-      ...prev,
-      [sectionId]: { ...prev[sectionId], [field]: value } as {
-        good: string;
-        reflect: string;
-      },
-    }));
-  }
-
-  function handleToggleAward(awardId: string) {
-    setAwards((prev) => ({ ...prev, [awardId]: !prev[awardId] }));
-  }
-
   function handleReset() {
     if (
       confirm(
@@ -73,8 +49,6 @@ export default function Home() {
     ) {
       setScores({});
       setComments({});
-      setFeedback({});
-      setAwards({});
     }
   }
 
@@ -83,12 +57,11 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+    <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pb-8 pt-4">
       <Header
         type="Avaliação"
         name="Rubricas"
-        highlight="Inovação & Robô"
+        highlight="Projeto & Engenharia"
         description="Preencha a identificação da equipe, registre o feedback da sessão e marque o nível de cada indicador (1 a 4) observado na apresentação. A pontuação é calculada automaticamente no painel ao lado."
       />
 
@@ -122,19 +95,6 @@ export default function Home() {
               </a>
             ))}
           </div>
-
-          <section
-            className={
-              activeTab === "feedback" ? "block" : "hidden print:block"
-            }
-          >
-            <FeedbackSheet
-              feedback={feedback}
-              onChange={handleFeedbackChange}
-              awards={awards}
-              onToggleAward={handleToggleAward}
-            />
-          </section>
 
           {RUBRIC.map((cat) => (
             <section

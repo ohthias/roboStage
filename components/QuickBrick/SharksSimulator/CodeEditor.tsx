@@ -10,7 +10,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange }) => {
     <div className="flex flex-col h-full bg-transparent">
       <div className="flex-1 relative">
         <textarea
-            className="w-full h-full bg-transparent text-slate-300 p-4 font-mono text-xs resize-none focus:outline-none leading-relaxed selection:bg-cyan-500/30 placeholder-slate-700"
+            className="w-full h-full bg-transparent text-base-content/70 p-4 font-mono text-xs resize-none focus:outline-none leading-relaxed selection:bg-base-200 placeholder-base-content/50"
             value={code}
             onChange={(e) => onChange(e.target.value)}
             spellCheck={false}

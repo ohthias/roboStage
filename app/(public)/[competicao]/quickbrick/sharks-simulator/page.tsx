@@ -1,7 +1,7 @@
 "use client";
-import CardMobileNotUse from "@/components/MobileNotUse";
 import HeaderTool from "@/components/QuickBrick/HeaderTool";
 import ViewSection from "@/components/QuickBrick/SharksSimulator/ViewSection";
+import ViewSectionMobile from "@/components/QuickBrick/SharksSimulator/ViewSectionMobile";
 import { Bot } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -24,7 +24,10 @@ export default function SharksSimulatorPage() {
   if (isMobile === null) return null;
 
   if (isMobile) {
-    return <CardMobileNotUse />;
+    // Experiência dedicada para mobile: tapete em tela cheia, criação de
+    // trajetória por toque e ajustes rápidos em bottom sheets — sem precisar
+    // programar por blocos ou por linhas de código.
+    return <ViewSectionMobile />;
   }
 
   return (

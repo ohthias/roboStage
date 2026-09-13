@@ -25,7 +25,6 @@ export const NAVIGATION = {
     options: [
       { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false },
       { nome: "Future Edition", path: "future-edition", icon: Gamepad2 },
-      { nome: "Rúbrica de Avaliação", path: "rubric", icon: NotepadText },
     ],
     menus: [
       {
@@ -34,9 +33,10 @@ export const NAVIGATION = {
         icon: ToolCase,
         items: [
           { nome: "Recall", path: "recall", icon: MessageSquare, description: "Reavaliação de conceitos por meio de flashcards" },
+          { nome: "Rúbrica de Avaliação", path: "rubric", icon: NotepadText, description: "Ferramenta de avaliação interativa para competições de robótica" },
           { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para competições" },
-          { nome: "Partiu Mesa!", path: "partiu-mesa", icon: MonitorDot, description: "Simulador de simples para teste de saídas. Para análise de desempenho do robô durante um teste de saída.", new: true },
-          { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento.", new: true },
+          { nome: "Partiu Mesa!", path: "partiu-mesa", icon: MonitorDot, description: "Simulador de simples para teste de saídas. Para análise de desempenho do robô durante um teste de saída." },
+          { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento." },
         ],
       },
       {
@@ -45,7 +45,7 @@ export const NAVIGATION = {
         icon: BookOpen,
         items: [
           { nome: "Documentações", path: "docs", icon: BookOpen, description: "Documentação das temporadas da liga" },
-          { nome: "Guia de Missões", path: "docs/missions-guide", icon: BookCopy, description: "Guia de missões da FLL Challenge", new: true },
+          { nome: "Guia de Missões", path: "docs/missions-guide", icon: BookCopy, description: "Guia de missões da FLL Challenge" },
           { nome: "Iniciantes da Challenge", path: "begins", icon: School, description: "FLL para equipes iniciantes" },
           { nome: "Iniciantes da Explore", path: "explore", icon: Telescope, description: "FLL Explore para equipes iniciantes" },
         ],

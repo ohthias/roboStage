@@ -32,27 +32,29 @@ export type TreeNode =
       icon: string | null;
       children: TreeNode[];
     }
-  | { type: "document"; id: string; title: string; icon: string | null };
+  | {
+      type: "document";
+      id: string;
+      title: string;
+      icon: string | null;
+      children: TreeNode[];
+    };
+
+type DraggedItem = { type: "folder" | "document"; id: string };
+type MoveTarget = { folderId?: string | null; parentPageId?: string | null };
 
 export function NotebookTree({ tree }: { tree: TreeNode[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [draggedItem, setDraggedItem] = useState<{
-    type: "folder" | "document";
-    id: string;
-  } | null>(null);
+  const [draggedItem, setDraggedItem] = useState<DraggedItem | null>(null);
   const [dragOverRoot, setDragOverRoot] = useState(false);
 
-  function moveItem(
-    type: "folder" | "document",
-    id: string,
-    targetFolderId: string | null,
-  ) {
+  function moveItem(type: "folder" | "document", id: string, target: MoveTarget) {
     setDraggedItem(null);
     setDragOverRoot(false);
     startTransition(async () => {
       try {
-        await moveNotebookItem(type, id, targetFolderId);
+        await moveNotebookItem(type, id, target);
         router.refresh();
       } catch (error) {
         window.alert(error instanceof Error ? error.message : "Não foi possível mover o item.");
@@ -69,7 +71,7 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
 
   function handleNewDocument() {
     startTransition(async () => {
-      const created = await createDocument(null);
+      const created = await createDocument(null, null);
       router.refresh();
       if (created) router.push(`/dashboard/documents/${created.id}`);
     });
@@ -88,11 +90,11 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
         onDragLeave={() => setDragOverRoot(false)}
         onDrop={(event) => {
           event.preventDefault();
-          if (draggedItem) moveItem(draggedItem.type, draggedItem.id, null);
+          if (draggedItem) moveItem(draggedItem.type, draggedItem.id, { folderId: null, parentPageId: null });
         }}
       >
         <span className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
-          Caderno
+          Páginas
         </span>
 
         <div className="flex items-center gap-0.5">
@@ -122,7 +124,7 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
         <div className="px-3 py-8 text-center">
           <FileText size={22} className="mx-auto mb-2 text-base-content/20" />
 
-          <p className="text-xs text-base-content/40">Seu caderno está vazio</p>
+          <p className="text-xs text-base-content/40">Nenhuma página por aqui ainda</p>
 
           <button
             type="button"
@@ -159,22 +161,16 @@ function TreeItem({
 }: {
   node: TreeNode;
   depth: number;
-  draggedItem: { type: "folder" | "document"; id: string } | null;
-  setDraggedItem: (
-    item: { type: "folder" | "document"; id: string } | null,
-  ) => void;
-  moveItem: (
-    type: "folder" | "document",
-    id: string,
-    targetFolderId: string | null,
-  ) => void;
+  draggedItem: DraggedItem | null;
+  setDraggedItem: (item: DraggedItem | null) => void;
+  moveItem: (type: "folder" | "document", id: string, target: MoveTarget) => void;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const [expanded, setExpanded] = useState(true);
   const [editing, setEditing] = useState(false);
   const [draftName, setDraftName] = useState(
-    node.type === "folder" ? node.name : node.title,
+    node.type === "folder" ? node.name : node.title
   );
   const [, startTransition] = useTransition();
   const [dragOver, setDragOver] = useState(false);
@@ -205,8 +201,11 @@ function TreeItem({
 
   function handleDelete() {
     const label = node.type === "folder" ? "esta pasta" : "esta página";
-    if (!window.confirm(`Excluir ${label}? Isso não pode ser desfeito.`))
-      return;
+    const extra =
+      node.type === "folder"
+        ? "As páginas dentro dela voltam para a raiz."
+        : "Subpages dentro dela sobem um nível.";
+    if (!window.confirm(`Excluir ${label}? ${extra} Isso não pode ser desfeito.`)) return;
     startTransition(async () => {
       if (node.type === "folder") {
         await deleteFolder(node.id);
@@ -228,10 +227,12 @@ function TreeItem({
   }
 
   function handleNewChildDocument() {
-    if (node.type !== "folder") return;
     setExpanded(true);
     startTransition(async () => {
-      const created = await createDocument(node.id);
+      const created =
+        node.type === "folder"
+          ? await createDocument(node.id, null)
+          : await createDocument(null, node.id);
       router.refresh();
       if (created) router.push(`/dashboard/documents/${created.id}`);
     });
@@ -255,7 +256,9 @@ function TreeItem({
         }}
         onDragEnd={() => setDraggedItem(null)}
         onDragOver={(event) => {
-          if (node.type !== "folder" || draggedItem?.id === node.id) return;
+          if (draggedItem?.id === node.id) return;
+          // Pastas aceitam pastas e páginas; páginas só aceitam páginas (como subpage).
+          if (node.type === "document" && draggedItem?.type === "folder") return;
           event.preventDefault();
           event.stopPropagation();
           setDragOver(true);
@@ -265,8 +268,11 @@ function TreeItem({
           event.preventDefault();
           event.stopPropagation();
           setDragOver(false);
-          if (node.type === "folder" && draggedItem) {
-            moveItem(draggedItem.type, draggedItem.id, node.id);
+          if (!draggedItem) return;
+          if (node.type === "folder") {
+            moveItem(draggedItem.type, draggedItem.id, { folderId: node.id, parentPageId: null });
+          } else if (draggedItem.type === "document") {
+            moveItem("document", draggedItem.id, { parentPageId: node.id });
           }
         }}
         style={{
@@ -274,31 +280,24 @@ function TreeItem({
           outline: dragOver ? "2px solid hsl(var(--p) / 0.45)" : undefined,
         }}
       >
-        {node.type === "folder" ? (
+        {node.children.length > 0 ? (
           <button
             type="button"
-            aria-label={expanded ? "Recolher pasta" : "Expandir pasta"}
+            aria-label={expanded ? "Recolher" : "Expandir"}
             className="btn btn-ghost btn-xs btn-square h-6 w-6 min-h-0 shrink-0 p-0 text-base-content/40 hover:bg-transparent hover:text-base-content"
             onClick={() => setExpanded((v) => !v)}
           >
             <ChevronRight
               size={13}
               strokeWidth={2}
-              className={`transition-transform duration-150 ${
-                expanded ? "rotate-90" : ""
-              }`}
+              className={`transition-transform duration-150 ${expanded ? "rotate-90" : ""}`}
             />
           </button>
         ) : (
           <span className="w-6 shrink-0" />
         )}
 
-        <span
-          className={[
-            "mr-1.5 flex h-5 w-5 shrink-0 items-center justify-center",
-            "text-base-content/50",
-          ].join(" ")}
-        >
+        <span className="mr-1.5 flex h-5 w-5 shrink-0 items-center justify-center text-base-content/50">
           {node.icon ? (
             <span className="text-sm leading-none">{node.icon}</span>
           ) : node.type === "folder" ? (
@@ -321,7 +320,6 @@ function TreeItem({
             onBlur={commitRename}
             onKeyDown={(e) => {
               if (e.key === "Enter") commitRename();
-
               if (e.key === "Escape") {
                 setEditing(false);
                 setDraftName(currentLabel());
@@ -364,33 +362,31 @@ function TreeItem({
             tabIndex={0}
             className="menu dropdown-content z-50 mt-1 w-48 rounded-lg border border-base-300 bg-base-100 p-1 shadow-xl"
           >
+            <li>
+              <button
+                type="button"
+                onClick={handleNewChildDocument}
+                onPointerDown={(event) => event.stopPropagation()}
+              >
+                <FilePlus size={14} />
+                {node.type === "folder" ? "Nova página" : "Nova subpage"}
+              </button>
+            </li>
+
             {node.type === "folder" && (
-              <>
-                <li>
-                  <button
-                    type="button"
-                    onClick={handleNewChildDocument}
-                    onPointerDown={(event) => event.stopPropagation()}
-                  >
-                    <FilePlus size={14} />
-                    Nova página
-                  </button>
-                </li>
-
-                <li>
-                  <button
-                    type="button"
-                    onClick={handleNewSubfolder}
-                    onPointerDown={(event) => event.stopPropagation()}
-                  >
-                    <FolderPlus size={14} />
-                    Nova subpasta
-                  </button>
-                </li>
-
-                <div className="my-1 border-t border-base-300" />
-              </>
+              <li>
+                <button
+                  type="button"
+                  onClick={handleNewSubfolder}
+                  onPointerDown={(event) => event.stopPropagation()}
+                >
+                  <FolderPlus size={14} />
+                  Nova subpasta
+                </button>
+              </li>
             )}
+
+            <div className="my-1 border-t border-base-300" />
 
             <li>
               <button
@@ -418,7 +414,7 @@ function TreeItem({
         </div>
       </div>
 
-      {node.type === "folder" && expanded && node.children.length > 0 && (
+      {expanded && node.children.length > 0 && (
         <ul className="relative">
           {node.children.map((child) => (
             <TreeItem

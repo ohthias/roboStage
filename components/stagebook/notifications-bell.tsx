@@ -6,7 +6,7 @@ import { Bell, CheckCheck } from "lucide-react";
 import {
   markAllNotificationsRead,
   markNotificationRead,
-} from "@/lib/stagebook/actions/notifications";
+} from "@/utils/stagebook/actions/notifications";
 import type { NotificationRow } from "@/db/schema";
 
 function formatRelative(date: Date) {

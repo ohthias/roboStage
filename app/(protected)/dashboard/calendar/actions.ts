@@ -4,9 +4,9 @@ import { revalidatePath } from "next/cache";
 import { and, eq, gte, lte } from "drizzle-orm";
 import { db } from "@/db/client";
 import { calendarEvents, calendarEventDocuments, documents } from "@/db/schema";
-import { resolveStagebookScope, scopeOwnership } from "@/lib/stagebook/scope";
-import { scopeWhere, assertSameScope } from "@/lib/stagebook/permissions";
-import { cleanText, optionalText, requireDate, optionalDate, requireUuid } from "@/lib/stagebook/validation";
+import { resolveStagebookScope, scopeOwnership } from "@/utils/stagebook/scope";
+import { scopeWhere, assertSameScope } from "@/utils/stagebook/permissions";
+import { cleanText, optionalText, requireDate, optionalDate, requireUuid } from "@/utils/stagebook/validation";
 
 const PATH = "/dashboard/calendar";
 

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getBoardDetail, listTeamMembersForAssignment } from "./actions";
-import { resolveStagebookScope } from "@/lib/stagebook/scope";
+import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { BoardView } from "./board-view";
 
 export default async function BoardPage({

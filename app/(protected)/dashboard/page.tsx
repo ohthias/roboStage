@@ -16,8 +16,8 @@ import {
   boards,
 } from "@/db/schema";
 import ComingSoon from "@/components/ComingSoon";
-import { resolveStagebookScope } from "@/lib/stagebook/scope";
-import { scopeWhere } from "@/lib/stagebook/permissions";
+import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { scopeWhere } from "@/utils/stagebook/permissions";
 import { CalendarDays, Dumbbell, KanbanSquare, Target, Trophy } from "lucide-react";
 
 // CORREÇÃO: as chaves precisam bater com os valores reais do enum test_mode

@@ -4,10 +4,10 @@ import { revalidatePath } from "next/cache";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { boards, boardColumns } from "@/db/schema";
-import { resolveStagebookScope, scopeOwnership } from "@/lib/stagebook/scope";
-import { scopeWhere } from "@/lib/stagebook/permissions";
-import { nextPosition } from "@/lib/stagebook/position";
-import { cleanText } from "@/lib/stagebook/validation";
+import { resolveStagebookScope, scopeOwnership } from "@/utils/stagebook/scope";
+import { scopeWhere } from "@/utils/stagebook/permissions";
+import { nextPosition } from "@/utils/stagebook/position";
+import { cleanText } from "@/utils/stagebook/validation";
 
 const DEFAULT_COLUMNS = ["A fazer", "Em andamento", "Concluído"];
 

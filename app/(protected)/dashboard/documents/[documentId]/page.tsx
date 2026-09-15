@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db/client";
 import { documents, folders } from "@/db/schema";
-import { resolveStagebookScope } from "@/lib/stagebook/scope";
-import { scopeWhere } from "@/lib/stagebook/permissions";
+import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { scopeWhere } from "@/utils/stagebook/permissions";
 import { NotebookEditor } from "./document-editor";
 import { getDocumentTags } from "../actions";
 

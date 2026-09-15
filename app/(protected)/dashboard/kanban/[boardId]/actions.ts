@@ -17,11 +17,11 @@ import {
   documents,
   calendarEvents,
 } from "@/db/schema";
-import { resolveStagebookScope } from "@/lib/stagebook/scope";
-import { scopeWhere, assertSameScope } from "@/lib/stagebook/permissions";
-import { nextPosition, positionBetween } from "@/lib/stagebook/position";
-import { cleanText, optionalText, optionalDate, requireUuid } from "@/lib/stagebook/validation";
-import { notifyUser } from "@/lib/stagebook/actions/notifications";
+import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { scopeWhere, assertSameScope } from "@/utils/stagebook/permissions";
+import { nextPosition, positionBetween } from "@/utils/stagebook/position";
+import { cleanText, optionalText, optionalDate, requireUuid } from "@/utils/stagebook/validation";
+import { notifyUser } from "@/utils/stagebook/actions/notifications";
 
 function boardPath(boardId: string) {
   return `/dashboard/kanban/${boardId}`;

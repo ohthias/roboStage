@@ -1,18 +1,21 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Plus, User, Users } from "lucide-react";
-import { createTeam, switchStagebookScope } from "@/lib/stagebook/actions/teams";
+import { ChevronDown, Lock, Plus, User, Users } from "lucide-react";
+import { createTeam, switchStagebookScope } from "@/utils/stagebook/actions/teams";
 
-type TeamOption = { id: string; name: string; role: string };
+type TeamOption = { id: string; name: string; role: string; clerkOrgId: string | null };
 
 export function ScopeSwitcher({
   teams,
   activeTeamId,
+  canCreateTeam,
 }: {
   teams: TeamOption[];
   activeTeamId: string | null;
+  canCreateTeam: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -33,11 +36,18 @@ export function ScopeSwitcher({
     const name = newTeamName.trim();
     if (!name) return;
     startTransition(async () => {
-      const team = await createTeam(name);
-      setNewTeamName("");
-      setCreating(false);
-      await switchStagebookScope(team.id);
-      router.refresh();
+      try {
+        const team = await createTeam(name);
+        setNewTeamName("");
+        setCreating(false);
+        await switchStagebookScope(team.id);
+        router.push("/dashboard/team");
+        router.refresh();
+      } catch (error) {
+        window.alert(
+          error instanceof Error ? error.message : "Não foi possível criar a equipe."
+        );
+      }
     });
   }
 
@@ -73,9 +83,7 @@ export function ScopeSwitcher({
           Espaço pessoal
         </button>
 
-        {teams.length > 0 && (
-          <div className="my-1 border-t border-base-300" />
-        )}
+        {teams.length > 0 && <div className="my-1 border-t border-base-300" />}
 
         {teams.map((team) => (
           <button
@@ -90,15 +98,29 @@ export function ScopeSwitcher({
               <Users size={15} className="text-base-content/50" />
               <span className="truncate">{team.name}</span>
             </span>
-            <span className="badge badge-ghost badge-sm capitalize">
-              {team.role}
-            </span>
+            <span className="badge badge-ghost badge-sm capitalize">{team.role}</span>
           </button>
         ))}
 
+        {activeTeam && (
+          <Link
+            href="/dashboard/team"
+            className="mt-1 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-primary transition-colors hover:bg-base-200"
+          >
+            <Users size={15} />
+            Ver espaço de {activeTeam.name}
+          </Link>
+        )}
+
         <div className="my-1 border-t border-base-300" />
 
-        {creating ? (
+        {!canCreateTeam ? (
+          <div className="flex items-start gap-2 rounded-lg px-2 py-2 text-xs text-base-content/40">
+            <Lock size={13} className="mt-0.5 shrink-0" />
+            Criar um espaço de equipe é permitido só para perfis de mentor técnico,
+            entusiasta ou organizador.
+          </div>
+        ) : creating ? (
           <div className="flex items-center gap-1 px-1 py-1">
             <input
               autoFocus

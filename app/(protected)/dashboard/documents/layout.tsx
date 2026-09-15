@@ -3,10 +3,10 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { folders, documents } from "@/db/schema";
-import { resolveStagebookScope } from "@/lib/stagebook/scope";
-import { scopeWhere } from "@/lib/stagebook/permissions";
+import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { scopeWhere } from "@/utils/stagebook/permissions";
 import { NotebookTree, type TreeNode } from "./notebook-tree";
-import { StagebookAuthError } from "@/lib/stagebook/scope";
+import { StagebookAuthError } from "@/utils/stagebook/scope";
 
 type FolderRow = {
   id: string;

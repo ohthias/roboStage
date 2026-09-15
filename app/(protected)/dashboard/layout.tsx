@@ -6,9 +6,9 @@ import { Menu, PanelLeft } from "lucide-react";
 import { ThemeController } from "@/components/UI/themeController";
 import { ScopeSwitcher } from "@/components/stagebook/scope-switcher";
 import { NotificationsBell } from "@/components/stagebook/notifications-bell";
-import { resolveStagebookScope } from "@/lib/stagebook/scope";
-import { listMyTeams } from "@/lib/stagebook/actions/teams";
-import { listUnreadNotifications } from "@/lib/stagebook/actions/notifications";
+import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { listMyTeams } from "@/utils/stagebook/actions/teams";
+import { listUnreadNotifications } from "@/utils/stagebook/actions/notifications";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const [scope, teams, notifications] = await Promise.all([

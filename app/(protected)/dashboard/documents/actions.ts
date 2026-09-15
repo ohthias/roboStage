@@ -8,10 +8,10 @@ import {
   resolveStagebookScope,
   scopeOwnership,
   type StagebookScope,
-} from "@/lib/stagebook/scope";
-import { scopeWhere } from "@/lib/stagebook/permissions";
-import { nextPosition } from "@/lib/stagebook/position";
-import { cleanText, optionalText, optionalUuid } from "@/lib/stagebook/validation";
+} from "@/utils/stagebook/scope";
+import { scopeWhere } from "@/utils/stagebook/permissions";
+import { nextPosition } from "@/utils/stagebook/position";
+import { cleanText, optionalText, optionalUuid } from "@/utils/stagebook/validation";
 
 const PATH = "/dashboard/documents";
 

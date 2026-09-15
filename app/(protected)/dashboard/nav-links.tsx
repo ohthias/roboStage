@@ -9,6 +9,7 @@ import {
   Home,
   KanbanSquare,
   Settings,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -25,6 +26,11 @@ const MAIN_LINKS: NavItem[] = [
     href: "/dashboard",
     label: "Visão geral",
     Icon: Home,
+  },
+  {
+    href: "/dashboard/team",
+    label: "Equipe",
+    Icon: Users,
   },
   {
     href: "/dashboard/documents",

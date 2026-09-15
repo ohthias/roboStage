@@ -7,14 +7,15 @@ import { ThemeController } from "@/components/UI/themeController";
 import { ScopeSwitcher } from "@/components/stagebook/scope-switcher";
 import { NotificationsBell } from "@/components/stagebook/notifications-bell";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { listMyTeams } from "@/utils/stagebook/actions/teams";
+import { listMyTeams, canCurrentUserCreateTeam } from "@/utils/stagebook/actions/teams";
 import { listUnreadNotifications } from "@/utils/stagebook/actions/notifications";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const [scope, teams, notifications] = await Promise.all([
+  const [scope, teams, notifications, canCreateTeam] = await Promise.all([
     resolveStagebookScope(),
     listMyTeams(),
     listUnreadNotifications(),
+    canCurrentUserCreateTeam(),
   ]);
   const activeTeamId = scope.type === "team" ? scope.teamId : null;
 
@@ -40,7 +41,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           </div>
 
           <div className="ml-auto flex items-center gap-2">
-            <ScopeSwitcher teams={teams} activeTeamId={activeTeamId} />
+            <ScopeSwitcher teams={teams} activeTeamId={activeTeamId} canCreateTeam={canCreateTeam} />
             <NotificationsBell initialNotifications={notifications} />
             <ThemeController />
             <UserButton />

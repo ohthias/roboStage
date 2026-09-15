@@ -14,11 +14,12 @@ import {
   boardCards,
   boardColumns,
   boards,
+  teams,
 } from "@/db/schema";
 import ComingSoon from "@/components/ComingSoon";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { scopeWhere } from "@/utils/stagebook/permissions";
-import { CalendarDays, Dumbbell, KanbanSquare, Target, Trophy } from "lucide-react";
+import { CalendarDays, KanbanSquare, Users } from "lucide-react";
 
 // CORREÇÃO: as chaves precisam bater com os valores reais do enum test_mode
 // ("runs" | "calibrabot" | "individual" | "custom") — antes usavam "run" e
@@ -34,16 +35,6 @@ const STATUS_BADGE: Record<string, { label: string; className: string }> = {
   ativo: { label: "Ativo", className: "badge-success badge-outline" },
   rascunho: { label: "Rascunho", className: "badge-ghost" },
   arquivado: { label: "Arquivado", className: "badge-neutral" },
-};
-
-const EVENT_TYPE_BADGE: Record<string, { icon: React.ReactNode }> = {
-  "Treino": { icon: <Dumbbell size={14} /> },
-  "Reunião": { icon: <CalendarDays size={14} /> },
-  "Competição": { icon: <Trophy size={14} /> },
-  "Prazo": { icon: <Target size={14} /> },
-  "Projeto": { icon: <KanbanSquare size={14} /> },
-  "Evento": { icon: <CalendarDays size={14} /> },
-  "Outro": { icon: <CalendarDays size={14} /> },
 };
 
 function startOfWeek() {
@@ -75,6 +66,11 @@ export default async function DashboardPage() {
   // equipe selecionada), nunca só do userId cru — mesma regra de qualquer
   // outra query do Stagebook (seção 31).
   const scope = await resolveStagebookScope();
+  const activeTeamName =
+    scope.type === "team"
+      ? (await db.select({ name: teams.name }).from(teams).where(eq(teams.id, scope.teamId)).limit(1))[0]
+          ?.name ?? null
+      : null;
   const documentScope = scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId });
   const eventScope = scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId });
   const boardScope = scopeWhere(scope, { userId: boards.userId, teamId: boards.teamId });
@@ -208,6 +204,14 @@ export default async function DashboardPage() {
               Acompanhe seus testes, execuções, ligas e anotações em um único lugar.
             </p>
           </div>
+
+          <Link
+            href="/dashboard/team"
+            className="btn btn-sm gap-2 self-start border-base-300 bg-base-100 normal-case hover:border-primary/40 lg:self-auto"
+          >
+            <Users size={15} />
+            {scope.type === "team" ? `Espaço de ${activeTeamName ?? "equipe"}` : "Ver equipes"}
+          </Link>
         </div>
       </section>
 
@@ -297,15 +301,9 @@ export default async function DashboardPage() {
             <ul className="divide-y divide-base-300/70">
               {upcomingEvents.map((event) => (
                 <li key={event.id} className="px-5 py-3">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-base-100 text-base-content/50">
-                      {EVENT_TYPE_BADGE[event.type]?.icon ?? <CalendarDays size={14} />}
-                    </span>
-                    <span className="text-xs text-base-content/45">{formatDate(event.startAt)}</span>
-                  </div>
                   <p className="truncate text-sm font-medium">{event.title}</p>
                   <p className="mt-0.5 text-xs text-base-content/45">
-                    {event.type ? event.type.at(0)?.toUpperCase() + event.type.slice(1) : "Outro"}
+                    {formatDate(event.startAt)} · {event.type}
                   </p>
                 </li>
               ))}

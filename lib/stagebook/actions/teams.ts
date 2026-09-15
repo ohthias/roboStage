@@ -1,5 +1,6 @@
 "use server";
 
+import { clerkClient } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
@@ -35,6 +36,12 @@ export async function createTeam(name: string) {
     .insert(teams)
     .values({ name: clean, createdBy: userId })
     .returning({ id: teams.id, name: teams.name });
+
+  const clerk = await clerkClient();
+  await clerk.organizations.createOrganization({
+    name: clean,
+    createdBy: userId,
+  });
 
   await db.insert(teamMembers).values({
     teamId: team.id,

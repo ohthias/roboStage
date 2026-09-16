@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq, gte, isNull, lte, or } from "drizzle-orm";
 import { db } from "@/db/client";
 import { calendarEvents, calendarEventDocuments, documents } from "@/db/schema";
 import { resolveStagebookScope, scopeOwnership } from "@/utils/stagebook/scope";
@@ -18,8 +18,8 @@ export async function listEventsInRange(rangeStart: Date, rangeEnd: Date) {
     .where(
       and(
         scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId }),
-        gte(calendarEvents.startAt, rangeStart),
-        lte(calendarEvents.startAt, rangeEnd)
+        lte(calendarEvents.startAt, rangeEnd),
+        or(isNull(calendarEvents.endAt), gte(calendarEvents.endAt, rangeStart))
       )
     )
     .orderBy(calendarEvents.startAt);

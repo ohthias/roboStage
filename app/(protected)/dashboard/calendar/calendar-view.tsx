@@ -72,12 +72,17 @@ export function CalendarView({
   const eventsByDay = useMemo(() => {
     const map = new Map<string, CalendarEventClient[]>();
     for (const event of events) {
-      const key = toDateKey(event.startAt);
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(event);
+      const startKey = toDateKey(event.startAt);
+      const endKey = event.endAt ? toDateKey(event.endAt) : startKey;
+      for (const day of days) {
+        const key = day.toISOString().slice(0, 10);
+        if (key < startKey || key > endKey) continue;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key)!.push(event);
+      }
     }
     return map;
-  }, [events]);
+  }, [days, events]);
 
   function navigate(offset: number) {
     const next = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + offset, 1));
@@ -153,19 +158,32 @@ export function CalendarView({
 
               <div className="flex flex-col gap-0.5">
                 {dayEvents.slice(0, 3).map((event) => (
-                  <button
-                    key={event.id}
-                    type="button"
-                    className="truncate rounded px-1.5 py-0.5 text-left text-[11px] font-medium text-white"
-                    style={{ backgroundColor: event.color || TYPE_COLOR[event.type] || TYPE_COLOR.outro }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setModalState({ mode: "edit", event });
-                    }}
-                  >
-                    {event.allDay ? "" : `${new Date(event.startAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} `}
-                    {event.title}
-                  </button>
+                  (() => {
+                    const eventStartKey = toDateKey(event.startAt);
+                    const eventEndKey = event.endAt ? toDateKey(event.endAt) : eventStartKey;
+                    const isFirstSegment = key === eventStartKey || key === days[0].toISOString().slice(0, 10);
+                    const isLastSegment = key >= eventEndKey;
+
+                    return (
+                      <button
+                        key={event.id}
+                        type="button"
+                        className={`-mx-1.5 w-[calc(100%+0.75rem)] truncate px-1.5 py-0.5 text-left text-[11px] font-medium text-white ${
+                          isFirstSegment ? "rounded-l" : "rounded-l-none"
+                        } ${isLastSegment ? "rounded-r" : "rounded-r-none"}`}
+                        style={{ backgroundColor: event.color || TYPE_COLOR[event.type] || TYPE_COLOR.outro }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModalState({ mode: "edit", event });
+                        }}
+                      >
+                        {isFirstSegment && !event.allDay
+                          ? `${new Date(event.startAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} `
+                          : ""}
+                        {event.title}
+                      </button>
+                    );
+                  })()
                 ))}
                 {dayEvents.length > 3 && (
                   <span className="px-1.5 text-[10px] text-base-content/40">

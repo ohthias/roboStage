@@ -31,7 +31,7 @@ const timers = [
   },
 ];
 
-export const metadata : Metadata = {
+export const metadata: Metadata = {
   title: "Timers | RoboStage",
   description:
     "Controle o tempo do treino à competição com timers pensados para a realidade das equipes.",
@@ -39,8 +39,9 @@ export const metadata : Metadata = {
 
 export default function TimersPage() {
   return (
-    <>
-      <main className="mx-auto min-h-screen max-w-6xl px-4 py-12">
+    <div className="bg-base-200/40 min-h-screen">
+      <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
         <Header
           type="Timers"
           name="Controle o tempo"
@@ -63,6 +64,6 @@ export default function TimersPage() {
           </div>
         </section>
       </main>
-    </>
+    </div>
   );
 }

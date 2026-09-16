@@ -169,7 +169,7 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/recall" className="link link-hover">
+                  <Link href="/fll/recall" className="link link-hover">
                     Recall
                   </Link>
                 </li>

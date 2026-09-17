@@ -223,14 +223,6 @@ export default async function DashboardPage() {
 
           <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end lg:p-10">
             <div className="max-w-3xl">
-              <div className="mb-5 flex items-center gap-3">
-                <span className="h-2 w-2 rounded-full bg-primary" />
-
-                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-base-content/45">
-                  Visão geral
-                </span>
-              </div>
-
               <h1 className="text-4xl font-black tracking-[-0.04em] text-base-content sm:text-5xl lg:text-6xl">
                 Bom trabalho,{" "}
                 <span className="relative inline-block">

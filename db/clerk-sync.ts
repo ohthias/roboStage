@@ -6,9 +6,17 @@ import { users, teams, teamMembers } from "./schema";
 import type { TeamRole } from "@/utils/stagebook/scope";
 
 /** Roles padrão do Clerk (org:admin / org:member) mapeados pro nosso enum. Se
- * no futuro forem criadas Roles customizadas no Clerk, caem em "colaborador". */
-function mapClerkOrgRole(role: string): TeamRole {
+ * no futuro forem criadas Roles customizadas no Clerk, caem em "colaborador".
+ * `stagebookRole` (metadata pública que a gente manda no convite — ver
+ * app/(protected)/dashboard/team/actions.ts) tem prioridade quando presente,
+ * porque é o papel que o "técnico" (owner) realmente escolheu pra pessoa
+ * (mentor/competidor/colaborador), mais granular do que admin/member.
+ */
+function mapClerkOrgRole(role: string, stagebookRole?: unknown): TeamRole {
   if (role === "org:admin") return "owner";
+  if (stagebookRole === "mentor" || stagebookRole === "competidor" || stagebookRole === "colaborador") {
+    return stagebookRole;
+  }
   return "colaborador";
 }
 
@@ -107,7 +115,7 @@ export async function handleClerkWebhook(req: Request) {
     }
 
     case "organizationMembership.created": {
-      const { organization, public_user_data, role } = event.data;
+      const { organization, public_user_data, role, public_metadata } = event.data;
       const team = await db.query.teams.findFirst({
         where: eq(teams.clerkOrgId, organization?.id),
         columns: { id: true },
@@ -118,7 +126,7 @@ export async function handleClerkWebhook(req: Request) {
           .values({
             teamId: team.id,
             userId: public_user_data.user_id,
-            role: mapClerkOrgRole(role),
+            role: mapClerkOrgRole(role, public_metadata?.stagebookRole),
           })
           .onConflictDoNothing({
             target: [teamMembers.teamId, teamMembers.userId],

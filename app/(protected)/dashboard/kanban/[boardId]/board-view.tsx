@@ -11,6 +11,7 @@ import {
   renameColumn,
 } from "./actions";
 import { CardModal } from "./card-modal";
+import { LiveRefresh } from "@/components/stagebook/live-refresh";
 
 type Column = { id: string; name: string; position: number; color: string | null };
 type Card = {
@@ -163,6 +164,7 @@ export function BoardView({
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col">
+      <LiveRefresh />
       <div className="border-b border-base-300 px-6 py-4">
         <h1 className="text-xl font-bold">{boardName}</h1>
       </div>

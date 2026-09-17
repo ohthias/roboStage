@@ -69,7 +69,7 @@ export function ScopeSwitcher({
         className="dropdown-content z-50 mt-2 w-72 rounded-xl border border-base-300 bg-base-100 p-2 shadow-xl"
       >
         <p className="px-2 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-wider text-base-content/40">
-          Contexto do Stagebook
+          Espaços de trabalho
         </p>
 
         <button

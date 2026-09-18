@@ -48,7 +48,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           </div>
         </div>
 
-        <main className="mx-auto w-full flex-1">{children}</main>
+        <main className="mx-auto w-full flex-1 bg-base-300/25">{children}</main>
       </div>
 
       {/* Sidebar */}

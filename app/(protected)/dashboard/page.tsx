@@ -215,7 +215,7 @@ export default async function DashboardPage() {
   const firstName = currentUser.name?.split(" ")[0] || "por aqui";
 
   return (
-    <div className="min-h-full bg-base-300">
+    <div className="min-h-full">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-8 p-4 sm:p-6 lg:gap-10 lg:p-8">
         <section className="relative overflow-hidden rounded-[30px] border border-base-300 bg-base-100">
           <div className="absolute -right-24 -top-32 h-80 w-80 rounded-full bg-primary/8 blur-3xl" />

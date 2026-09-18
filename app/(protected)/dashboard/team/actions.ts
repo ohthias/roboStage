@@ -7,6 +7,7 @@ import { db } from "@/db/client";
 import { teams, teamMembers, users } from "@/db/schema";
 import { requireStagebookAccess, StagebookAuthError, type TeamRole } from "@/utils/stagebook/scope";
 import { cleanText } from "@/utils/stagebook/validation";
+import { switchStagebookScope } from "@/utils/stagebook/actions/teams";
 
 const PATH = "/dashboard/team";
 
@@ -208,4 +209,66 @@ export async function removeTeamMember(teamId: string, userId: string) {
     .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)));
 
   revalidatePath(PATH, "layout");
+}
+
+// ---------------------------------------------------------------------------
+// Configurações da equipe (nome, foto, exclusão) — painel personalizado
+// ---------------------------------------------------------------------------
+
+/** Dados da equipe usados na página de configurações personalizada. */
+export async function getTeamSettingsInfo(teamId: string) {
+  const { team } = await requireTeamOwner(teamId);
+  const client = await clerkClient();
+  const organization = await client.organizations.getOrganization({ organizationId: team.clerkOrgId! });
+
+  return {
+    id: team.id,
+    name: team.name,
+    clerkOrgId: team.clerkOrgId!,
+    logoUrl: organization.imageUrl ?? null,
+    hasCustomLogo: organization.hasImage,
+  };
+}
+
+export async function updateTeamName(teamId: string, name: string) {
+  const { team } = await requireTeamOwner(teamId);
+  const clean = cleanText(name, { maxLength: 120 });
+  if (!clean) {
+    throw new StagebookAuthError("O nome da equipe não pode ficar vazio.");
+  }
+
+  const client = await clerkClient();
+  // Clerk é a fonte de verdade — atualiza lá primeiro. O webhook
+  // organization.updated também sincroniza `teams.name`, mas atualizamos
+  // aqui também pra UI não esperar o round-trip.
+  await client.organizations.updateOrganization(team.clerkOrgId!, { name: clean });
+  await db.update(teams).set({ name: clean }).where(eq(teams.id, teamId));
+
+  revalidatePath(PATH, "layout");
+  return { name: clean };
+}
+
+/**
+ * Exclui a equipe de vez: apaga a Organization no Clerk (fonte de verdade)
+ * e a linha local — a cascata das FKs cuida de páginas, boards, eventos e
+ * tags associadas. Se a equipe excluída for o espaço ativo de quem está
+ * chamando, o scope volta pro pessoal, senão o próximo acesso a qualquer
+ * página do Stagebook quebraria com um teamId que não existe mais.
+ */
+export async function deleteTeamOrganization(teamId: string, confirmedName: string) {
+  const { scope, team } = await requireTeamOwner(teamId);
+
+  if (confirmedName.trim() !== team.name) {
+    throw new StagebookAuthError("O nome digitado não confere com o nome da equipe.");
+  }
+
+  const client = await clerkClient();
+  await client.organizations.deleteOrganization(team.clerkOrgId!);
+  await db.delete(teams).where(eq(teams.id, teamId));
+
+  if (scope.type === "team" && scope.teamId === teamId) {
+    await switchStagebookScope(null);
+  }
+
+  revalidatePath("/dashboard", "layout");
 }

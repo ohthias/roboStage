@@ -198,32 +198,10 @@ export async function TeamContent({
               </span>
             )}
             {scope.role === "owner" && (
-              <>
-                <button
-                  type="button"
-                  popoverTarget="organization-profile-modal"
-                  className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-base-100 px-3 py-1.5 text-xs text-base-content/70 transition hover:bg-base-300"
-                >
-                  <Settings size={13} />
-                  Configurações da organização
-                </button>
-                <div
-                  id="organization-profile-modal"
-                  popover="auto"
-                  className="relative flex h-full w-full items-center justify-center bg-base-100/50 backdrop-blur-sm [&:not(:popover-open)]:hidden"
-                >
-                  <button
-                    type="button"
-                    popoverTarget="organization-profile-modal"
-                    popoverTargetAction="hide"
-                    aria-label="Fechar configurações da organização"
-                    className="absolute inset-0 cursor-default"
-                  />
-                  <div className="relative z-10">
-                    <OrganizationSettings organizationId={team.clerkOrgId!} />
-                  </div>
-                </div>
-              </>
+             <Link href={`/dashboard/team/${scope.teamId}/settings`} className="btn btn-ghost btn-sm gap-2">
+                <Settings size={16} />
+                Configurações
+              </Link>
             )}
           </div>
         </div>

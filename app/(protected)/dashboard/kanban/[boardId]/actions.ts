@@ -17,7 +17,7 @@ import {
   documents,
   calendarEvents,
 } from "@/db/schema";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { resolveStagebookScope, StagebookAuthError } from "@/utils/stagebook/scope";
 import { scopeWhere, assertSameScope } from "@/utils/stagebook/permissions";
 import { nextPosition, positionBetween } from "@/utils/stagebook/position";
 import { cleanText, optionalText, optionalDate, requireUuid } from "@/utils/stagebook/validation";
@@ -184,6 +184,19 @@ export async function moveCard(
 
 export async function toggleCardAssignee(boardId: string, cardId: string, userId: string) {
   const { scope } = await requireBoardInScope(boardId);
+  const canAssign =
+    scope.type === "personal"
+      ? userId === scope.userId
+      : Boolean(
+          await db.query.teamMembers.findFirst({
+            where: and(eq(teamMembers.teamId, scope.teamId), eq(teamMembers.userId, userId)),
+            columns: { id: true },
+          })
+        );
+  if (!canAssign) {
+    throw new StagebookAuthError("Este usuário não pertence ao espaço atual.");
+  }
+
   const existing = await db
     .select()
     .from(boardCardAssignees)

@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { and, asc, desc, eq, gte, isNotNull, sql } from "drizzle-orm";
@@ -17,7 +16,7 @@ import {
   teams,
 } from "@/db/schema";
 import ComingSoon from "@/components/ComingSoon";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { requireAuthenticatedUser, resolveStagebookScope } from "@/utils/stagebook/scope";
 import { scopeWhere } from "@/utils/stagebook/permissions";
 import {
   ArrowRight,
@@ -64,9 +63,7 @@ function formatDate(value: string | Date | null) {
 }
 
 export default async function DashboardPage() {
-  const { userId } = await auth();
-
-  if (!userId) redirect("/sign-in");
+  const userId = await requireAuthenticatedUser();
 
   const currentUser = await db.query.users.findFirst({
     where: eq(users.id, userId),

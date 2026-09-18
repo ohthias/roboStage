@@ -37,16 +37,13 @@ type Invitation = {
 };
 
 const ROLE_LABEL: Record<string, string> = {
-  owner: "Técnico (owner)",
-  mentor: "Mentor",
+  owner: "Técnico",
   competidor: "Competidor",
-  colaborador: "Colaborador",
 };
 
 const ASSIGNABLE_ROLES: { value: AssignableRole; label: string }[] = [
-  { value: "mentor", label: "Mentor" },
+  { value: "tecnico", label: "Técnico" },
   { value: "competidor", label: "Competidor" },
-  { value: "colaborador", label: "Colaborador" },
 ];
 
 function initials(name: string | null) {

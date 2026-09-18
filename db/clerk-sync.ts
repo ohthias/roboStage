@@ -20,6 +20,26 @@ function mapClerkOrgRole(role: string, stagebookRole?: unknown): TeamRole {
   return "colaborador";
 }
 
+async function ensureMembershipUser(userData: {
+  user_id?: string;
+  identifier?: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  image_url?: string | null;
+}) {
+  if (!userData.user_id) return;
+
+  await db
+    .insert(users)
+    .values({
+      id: userData.user_id,
+      email: userData.identifier ?? "",
+      name: [userData.first_name, userData.last_name].filter(Boolean).join(" ") || null,
+      avatarUrl: userData.image_url ?? null,
+    })
+    .onConflictDoNothing({ target: users.id });
+}
+
 /**
  * Handler para app/api/webhooks/clerk/route.ts (POST).
  * Configure no painel do Clerk os eventos: user.created, user.updated,
@@ -121,6 +141,9 @@ export async function handleClerkWebhook(req: Request) {
         columns: { id: true },
       });
       if (team && public_user_data?.user_id) {
+        // Membership events can arrive before user.created/user.updated.
+        // Satisfy the FK without depending on webhook delivery order.
+        await ensureMembershipUser(public_user_data);
         await db
           .insert(teamMembers)
           .values({

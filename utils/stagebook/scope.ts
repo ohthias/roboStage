@@ -54,7 +54,9 @@ async function ensureUserSynced(userId: string) {
   if (existing) return;
 
   const clerkUser = await currentUser();
-  if (!clerkUser) return; // sessão inválida — deixa auth() lidar com isso normalmente
+  if (!clerkUser) {
+    throw new StagebookAuthError("Não foi possível validar a sessão do Clerk.");
+  }
 
   const email = clerkUser.emailAddresses[0]?.emailAddress ?? "";
   const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") || null;

@@ -1,12 +1,10 @@
 import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { folders, documents } from "@/db/schema";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { scopeWhere } from "@/utils/stagebook/permissions";
 import { NotebookTree, type TreeNode } from "./notebook-tree";
-import { StagebookAuthError } from "@/utils/stagebook/scope";
 
 type FolderRow = {
   id: string;
@@ -79,13 +77,7 @@ export default async function NotebookLayout({
 }: {
   children: ReactNode;
 }) {
-  let scope;
-  try {
-    scope = await resolveStagebookScope();
-  } catch (error) {
-    if (error instanceof StagebookAuthError) redirect("/sign-in");
-    throw error;
-  }
+  const scope = await resolveStagebookScope();
 
   const folderScope = scopeWhere(scope, {
     userId: folders.userId,

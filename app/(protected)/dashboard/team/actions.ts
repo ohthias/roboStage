@@ -13,8 +13,8 @@ const PATH = "/dashboard/team";
 
 // Papel atribuível via convite/edição nesta tela — não inclui "owner", que só
 // existe um por equipe e é definido na criação (lib/stagebook/actions/teams.ts).
-export type AssignableRole = "mentor" | "competidor" | "colaborador";
-const ASSIGNABLE_ROLES: AssignableRole[] = ["mentor", "competidor", "colaborador"];
+export type AssignableRole = "tecnico" | "competidor";
+const ASSIGNABLE_ROLES: AssignableRole[] = ["tecnico", "competidor"];
 
 async function requireTeamOwner(teamId: string) {
   const scope = await requireStagebookAccess(teamId);
@@ -174,7 +174,7 @@ export async function updateTeamMemberRole(teamId: string, userId: string, role:
   // no Clerk permanece com esse usuário como "member" (org:member).
   await db
     .update(teamMembers)
-    .set({ role })
+    .set({ role: role === "tecnico" ? "mentor" : role })
     .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)));
 
   revalidatePath(PATH, "layout");

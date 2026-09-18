@@ -23,6 +23,7 @@ import {
   deleteDocument,
   moveNotebookItem,
 } from "./actions";
+import { useToast } from "@/app/context/ToastContext";
 
 export type TreeNode =
   | {
@@ -45,6 +46,7 @@ type MoveTarget = { folderId?: string | null; parentPageId?: string | null };
 
 export function NotebookTree({ tree }: { tree: TreeNode[] }) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [draggedItem, setDraggedItem] = useState<DraggedItem | null>(null);
   const [dragOverRoot, setDragOverRoot] = useState(false);
@@ -55,25 +57,36 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
     startTransition(async () => {
       try {
         await moveNotebookItem(type, id, target);
-        router.refresh();
+          addToast("Item movido com sucesso.", "success");
+          router.refresh();
       } catch (error) {
-        window.alert(error instanceof Error ? error.message : "Não foi possível mover o item.");
+        addToast(error instanceof Error ? error.message : "Não foi possível mover o item.", "error");
       }
     });
   }
 
   function handleNewFolder() {
     startTransition(async () => {
-      await createFolder(null);
-      router.refresh();
+        try {
+          await createFolder(null);
+          addToast("Pasta criada com sucesso.", "success");
+          router.refresh();
+        } catch (error) {
+          addToast(error instanceof Error ? error.message : "Não foi possível criar a pasta.", "error");
+        }
     });
   }
 
   function handleNewDocument() {
     startTransition(async () => {
-      const created = await createDocument(null, null);
-      router.refresh();
-      if (created) router.push(`/dashboard/documents/${created.id}`);
+        try {
+          const created = await createDocument(null, null);
+          addToast("Página criada com sucesso.", "success");
+          router.refresh();
+          if (created) router.push(`/dashboard/documents/${created.id}`);
+        } catch (error) {
+          addToast(error instanceof Error ? error.message : "Não foi possível criar a página.", "error");
+        }
     });
   }
 

@@ -21,6 +21,7 @@ import {
   updateTeamMemberRole,
   type AssignableRole,
 } from "./actions";
+import { useToast } from "@/app/context/ToastContext";
 
 type Member = {
   userId: string;
@@ -65,6 +66,7 @@ export function MemberManagement({
   invitations: Invitation[];
 }) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<AssignableRole>("competidor");
@@ -110,12 +112,14 @@ export function MemberManagement({
         await inviteTeamMember(teamId, clean, role);
         setEmail("");
         setEmailCheck(null);
+        addToast("Convite enviado com sucesso.", "success");
         router.refresh();
       } catch (error) {
-        window.alert(
+        addToast(
           error instanceof Error
             ? error.message
             : "Não foi possível enviar o convite.",
+          "error",
         );
       }
     });
@@ -123,8 +127,13 @@ export function MemberManagement({
 
   function handleRevoke(invitationId: string) {
     startTransition(async () => {
-      await revokeInvitation(teamId, invitationId);
-      router.refresh();
+      try {
+        await revokeInvitation(teamId, invitationId);
+        addToast("Convite cancelado.", "success");
+        router.refresh();
+      } catch (error) {
+        addToast(error instanceof Error ? error.message : "Não foi possível cancelar o convite.", "error");
+      }
     });
   }
 
@@ -132,12 +141,14 @@ export function MemberManagement({
     startTransition(async () => {
       try {
         await updateTeamMemberRole(teamId, userId, nextRole);
+        addToast("Papel atualizado com sucesso.", "success");
         router.refresh();
       } catch (error) {
-        window.alert(
+        addToast(
           error instanceof Error
             ? error.message
             : "Não foi possível alterar o papel.",
+          "error",
         );
       }
     });
@@ -148,12 +159,14 @@ export function MemberManagement({
     startTransition(async () => {
       try {
         await removeTeamMember(teamId, userId);
+        addToast("Membro removido da equipe.", "success");
         router.refresh();
       } catch (error) {
-        window.alert(
+        addToast(
           error instanceof Error
             ? error.message
             : "Não foi possível remover o membro.",
+          "error",
         );
       }
     });

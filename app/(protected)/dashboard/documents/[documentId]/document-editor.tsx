@@ -23,6 +23,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useToast } from "@/app/context/ToastContext";
 
 import { ToolbarPlugin } from "@/components/editor/plugins/toolbar-plugin";
 import { AutosavePlugin } from "@/components/editor/plugins/auto-save-plugin";
@@ -111,6 +112,7 @@ export function NotebookEditor({
   pages: { id: string; title: string }[];
 }) {
   const router = useRouter();
+  const { addToast } = useToast();
 
   const [title, setTitle] = useState(initialTitle);
   const [icon, setIcon] = useState(initialIcon);
@@ -253,12 +255,14 @@ export function NotebookEditor({
           });
         }
         setShowMoveDialog(false);
-        router.refresh();
+          addToast("Página movida com sucesso.", "success");
+          router.refresh();
       } catch (error) {
-        window.alert(
+          addToast(
           error instanceof Error
             ? error.message
             : "Não foi possível mover a página.",
+            "error",
         );
       }
     });

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Lock, Plus, User, Users } from "lucide-react";
 import { createTeam, switchStagebookScope } from "@/utils/stagebook/actions/teams";
+import { useToast } from "@/app/context/ToastContext";
 
 type TeamOption = { id: string; name: string; role: string; clerkOrgId: string | null };
 
@@ -18,6 +19,7 @@ export function ScopeSwitcher({
   canCreateTeam: boolean;
 }) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [creating, setCreating] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
@@ -27,8 +29,13 @@ export function ScopeSwitcher({
 
   function switchTo(teamId: string | null) {
     startTransition(async () => {
-      await switchStagebookScope(teamId);
-      router.refresh();
+      try {
+        await switchStagebookScope(teamId);
+        addToast(teamId ? "Equipe selecionada." : "Espaço pessoal selecionado.", "success");
+        router.refresh();
+      } catch (error) {
+        addToast(error instanceof Error ? error.message : "Não foi possível trocar de espaço.", "error");
+      }
     });
   }
 
@@ -41,12 +48,11 @@ export function ScopeSwitcher({
         setNewTeamName("");
         setCreating(false);
         await switchStagebookScope(team.id);
+        addToast("Equipe criada com sucesso.", "success");
         router.push("/dashboard/team");
         router.refresh();
       } catch (error) {
-        window.alert(
-          error instanceof Error ? error.message : "Não foi possível criar a equipe."
-        );
+        addToast(error instanceof Error ? error.message : "Não foi possível criar a equipe.", "error");
       }
     });
   }

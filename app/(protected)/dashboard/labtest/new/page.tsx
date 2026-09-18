@@ -12,6 +12,7 @@ import {
   type LegacyMission,
 } from "./Usecreatetest";
 import { createTest, type CreateTestInput } from "./actions"; // ajuste o caminho para onde ficou testActions.ts
+import { useToast } from "@/app/context/ToastContext";
 import {
   ChevronDown, ChevronUp, Copy, Gauge, GitBranch, Info, ListChecks, Play, Plus, Save, Settings2, SlidersHorizontal, Trash2, X, Zap, ListTree, Target, CheckCircle2, CircleDot, Loader2,} from "lucide-react";
 
@@ -19,6 +20,7 @@ type CustomParamMeta = { required: boolean; description: string };
 
 export default function CreateTest() {
   const t = useCreateTest();
+  const { addToast } = useToast();
 
   // ---------------------------------------------------------------------
   // Campos do teste (name/description) — não existiam no form original,
@@ -164,7 +166,9 @@ export default function CreateTest() {
       try {
         const created = await createTest(payload);
         setSaveSuccess(`Teste "${created.name}" salvo com sucesso.`);
+        addToast(`Teste "${created.name}" salvo com sucesso.`, "success");
       } catch (err) {
+        addToast(err instanceof Error ? err.message : "Erro ao salvar o teste.", "error");
         setSaveError(
           err instanceof Error ? err.message : "Erro ao salvar o teste.",
         );

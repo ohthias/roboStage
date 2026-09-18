@@ -4,9 +4,11 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { createTeam, switchStagebookScope } from "@/utils/stagebook/actions/teams";
+import { useToast } from "@/app/context/ToastContext";
 
 export function TeamCreateForm() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [name, setName] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -17,10 +19,11 @@ export function TeamCreateForm() {
       try {
         const team = await createTeam(clean);
         await switchStagebookScope(team.id);
+        addToast("Equipe criada com sucesso.", "success");
         router.push("/dashboard/team");
         router.refresh();
       } catch (error) {
-        window.alert(error instanceof Error ? error.message : "Não foi possível criar a equipe.");
+        addToast(error instanceof Error ? error.message : "Não foi possível criar a equipe.", "error");
       }
     });
   }

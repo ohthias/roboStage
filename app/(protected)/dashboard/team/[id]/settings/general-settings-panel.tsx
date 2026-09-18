@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Camera, Loader2, Trash2, Upload } from "lucide-react";
 import { useEnsureActiveOrganization } from "@/components/stagebook/use-ensure-active-org";
 import { deleteTeamOrganization, updateTeamName } from "../../actions";
+import { useToast } from "@/app/context/ToastContext";
 
 export function GeneralSettingsPanel({
   teamId,
@@ -55,6 +56,7 @@ function PhotoSection({
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { addToast } = useToast();
 
   const logoUrl = organization?.hasImage ? organization.imageUrl : initialLogoUrl;
 
@@ -79,9 +81,11 @@ function PhotoSection({
       // (organization.setLogo), não pelo backend — evita contar pro rate
       // limit da API e já cuida do upload/redimensionamento.
       await organization.setLogo({ file });
+      addToast("Imagem da equipe atualizada.", "success");
       onChanged();
     } catch {
       setError("Não foi possível enviar a imagem. Tente novamente.");
+      addToast("Não foi possível enviar a imagem.", "error");
     } finally {
       setIsUploading(false);
     }
@@ -93,9 +97,11 @@ function PhotoSection({
     setIsUploading(true);
     try {
       await organization.setLogo({ file: null });
+      addToast("Imagem da equipe removida.", "success");
       onChanged();
     } catch {
       setError("Não foi possível remover a imagem.");
+      addToast("Não foi possível remover a imagem.", "error");
     } finally {
       setIsUploading(false);
     }
@@ -181,6 +187,7 @@ function NameSection({
   const [name, setName] = useState(initialName);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const { addToast } = useToast();
 
   const dirty = name.trim() !== initialName && name.trim().length > 0;
 
@@ -189,9 +196,11 @@ function NameSection({
     startTransition(async () => {
       try {
         await updateTeamName(teamId, name.trim());
+        addToast("Nome da equipe atualizado.", "success");
         onChanged();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Não foi possível salvar o nome.");
+        addToast(err instanceof Error ? err.message : "Não foi possível salvar o nome.", "error");
       }
     });
   }
@@ -235,6 +244,7 @@ function DangerZone({ teamId, teamName }: { teamId: string; teamName: string }) 
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const { addToast } = useToast();
 
   const canDelete = confirmText.trim() === teamName;
 
@@ -243,10 +253,12 @@ function DangerZone({ teamId, teamName }: { teamId: string; teamName: string }) 
     startTransition(async () => {
       try {
         await deleteTeamOrganization(teamId, confirmText.trim());
+        addToast("Equipe excluída com sucesso.", "success");
         router.push("/dashboard/team");
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Não foi possível excluir a equipe.");
+        addToast(err instanceof Error ? err.message : "Não foi possível excluir a equipe.", "error");
       }
     });
   }

@@ -75,6 +75,7 @@ export default function CreateTest() {
         ...base,
         mode: "runs",
         competitionId: t.competition,
+        competitionName: t.selectedCompetition?.name ?? null,
         season: t.season || null,
         missionOrder: t.orderedSelected.map((m) => m.id),
         answers: t.answers,

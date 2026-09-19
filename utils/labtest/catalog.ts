@@ -116,14 +116,13 @@ export function getTestImage(test: {
   config: unknown;
 }): TestImage {
   if (test.mode === "runs") return getRunImages(test.season, test.config);
-  if (test.mode === "custom") return "/images/labTest/labtest_custom.png";
 
   if ((test.mode === "calibrabot" || test.mode === "individual") && test.config && typeof test.config === "object") {
     const values = test.config as Record<string, unknown>;
 
     if (values.tipo === "motores") {
       return values.modo === "duplas"
-        ? "/images/labTest/calibrabot_motor_duplas.png"
+        ? "/images/labTest/calibrabot_motores_duplas.png"
         : "/images/labTest/calibrabot_motores_individual.png";
     }
 

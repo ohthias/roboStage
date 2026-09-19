@@ -1,12 +1,10 @@
-import {
-  Layers,
-  Plus,
-} from "lucide-react";
+import { Layers, Plus } from "lucide-react";
 import Link from "next/link";
 import { LabTestCard } from "@/components/labtest/LabTestCard";
 import { LabTestToolbar } from "@/components/labtest/LabTestToolbar";
 import { MODE_META, type ModeKey } from "@/utils/labtest/catalog";
 import { listTests } from "./new/actions";
+import { LabTestModels } from "@/components/labtest/LabTestModels";
 
 export default async function LabTestPage({
   searchParams,
@@ -17,9 +15,10 @@ export default async function LabTestPage({
   const params = await searchParams;
   const selectedMode = params?.modo;
   const viewMode = params?.visualizacao === "grid" ? "grid" : "list";
-  const validMode = selectedMode && selectedMode in MODE_META
-    ? selectedMode as ModeKey
-    : null;
+  const validMode =
+    selectedMode && selectedMode in MODE_META
+      ? (selectedMode as ModeKey)
+      : null;
   const filteredTests = validMode
     ? tests.filter((test) => test.mode === validMode)
     : tests;
@@ -39,11 +38,12 @@ export default async function LabTestPage({
 
         <div className="flex items-center gap-3">
           <span className="badge badge-neutral badge-sm h-7 rounded-lg px-3">
-            {filteredTests.length} {filteredTests.length === 1 ? "teste" : "testes"}
+            {filteredTests.length}{" "}
+            {filteredTests.length === 1 ? "teste" : "testes"}
           </span>
         </div>
       </header>
-      
+
       {/* Navigation */}
       <nav className="flex w-full items-center justify-between border-b border-base-content/10 px-5">
         <div className="flex items-center gap-6">
@@ -75,7 +75,9 @@ export default async function LabTestPage({
             <Layers className="size-9 text-base-content/20" />
 
             <p className="text-sm font-medium text-base-content">
-              {validMode ? "Nenhum teste encontrado neste modo" : "Nenhum teste criado ainda"}
+              {validMode
+                ? "Nenhum teste encontrado neste modo"
+                : "Nenhum teste criado ainda"}
             </p>
 
             <p className="max-w-xs text-xs text-base-content/50">
@@ -85,7 +87,10 @@ export default async function LabTestPage({
             </p>
 
             {validMode ? (
-              <Link href="/dashboard/labtest" className="btn btn-ghost btn-sm mt-2">
+              <Link
+                href="/dashboard/labtest"
+                className="btn btn-ghost btn-sm mt-2"
+              >
                 Remover filtro
               </Link>
             ) : (
@@ -99,7 +104,13 @@ export default async function LabTestPage({
             )}
           </div>
         ) : (
-          <div className={viewMode === "grid" ? "mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" : "mt-6 flex flex-col gap-3"}>
+          <div
+            className={
+              viewMode === "grid"
+                ? "mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+                : "mt-6 flex flex-col gap-3"
+            }
+          >
             {filteredTests.map((test) => (
               <LabTestCard key={test.id} test={test} viewMode={viewMode} />
             ))}

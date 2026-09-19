@@ -79,7 +79,6 @@ export const ferramentas: Ferramenta[] = [
     image: "/images/QuickBrick/Estrategia.png",
     link: "/fll/quickbrick/estrategia",
     customContent: null,
-    badge: "Atualizado!"
   },
   {
     id: 2,
@@ -95,6 +94,8 @@ export const ferramentas: Ferramenta[] = [
         router,
         "/fll/quickbrick/matriz-swot",
       ),
+    mobileSafe: true,
+    badge: "Atualizado!"
   },
   {
     id: 3,
@@ -106,7 +107,6 @@ export const ferramentas: Ferramenta[] = [
     image: "/images/QuickBrick/Heatmap.png",
     link: "/fll/quickbrick/heatmap",
     customContent: null,
-    badge: "Atualizado!"
   },
   {
     id: 4,
@@ -118,6 +118,8 @@ export const ferramentas: Ferramenta[] = [
     image: "/images/QuickBrick/SharksSimulator.png",
     link: "/fll/quickbrick/sharks-simulator",
     customContent: null,
+    badge: "Atualizado!",
+    mobileSafe: true,
     feitoPor: ["Sharks", "https://www.instagram.com/sharksfll_12476/"],
   },
   {
@@ -158,6 +160,5 @@ export const ferramentas: Ferramenta[] = [
         "/fll/quickbrick/tabela-de-missoes",
       ),
     mobileSafe: true,
-    badge: "Atualizado!"
   },
 ];

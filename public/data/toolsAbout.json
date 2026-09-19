@@ -166,5 +166,59 @@
         "content": "Cada missão tem seus próprios critérios (quantidade de espécies-chave, recursos entregues, bônus e penalidades) e a pontuação total é somada automaticamente conforme os valores são preenchidos. É possível reiniciar o pontuador a qualquer momento."
       }
     ]
+  },
+  {
+    "name": "Partiu Mesa!",
+    "description": "Simulador de saídas (runs) para teste de mesa, permitindo à equipe registrar e analisar o desempenho do robô a cada tentativa realizada durante os treinos.",
+    "details": [
+      {
+        "title": "Para que serve?",
+        "content": "O Partiu Mesa! ajuda a equipe a acompanhar o desempenho do robô ao longo de várias saídas de treino, permitindo comparar tentativas e identificar padrões de erro ou de sucesso antes da competição."
+      },
+      {
+        "title": "Como funciona?",
+        "content": "A cada saída realizada na mesa de treino, a equipe registra o resultado obtido (missões cumpridas, falhas, tempo, etc.). O histórico das saídas fica disponível para consulta, ajudando a analisar a evolução do robô entre um teste e outro."
+      },
+      {
+        "title": "Quando devo usar essa ferramenta?",
+        "content": "É indicada para as sessões de treino na mesa, quando a equipe quer ter um controle mais preciso de quantas saídas já foram feitas, quais funcionaram e onde é preciso ajustar a estratégia ou o robô."
+      }
+    ]
+  },
+  {
+    "name": "Confia, mas confira! (Checklist)",
+    "description": "Checklist digital para verificação de itens antes e depois das competições de FLL, útil tanto na preparação da equipe para o evento quanto na avaliação pós-torneio.",
+    "details": [
+      {
+        "title": "Para que serve?",
+        "content": "Ajuda a equipe a não esquecer itens importantes na hora de ir para a competição (como robô, peças de reposição, materiais de apresentação, documentos) e também serve como checklist de avaliação pós-evento, para revisar o que funcionou bem e o que pode melhorar."
+      },
+      {
+        "title": "Quando devo usar?",
+        "content": "Antes da competição, para conferir se tudo o que a equipe precisa está pronto e separado; e depois da competição, como um checklist de avaliação para registrar aprendizados e pontos de melhoria para o próximo evento."
+      },
+      {
+        "title": "Como funciona?",
+        "content": "A equipe percorre a lista de itens de verificação e marca o que já foi conferido ou concluído, garantindo que nenhuma etapa importante da preparação (ou da revisão pós-torneio) seja esquecida."
+      }
+    ]
+  },
+  {
+    "name": "Guia de Missões",
+    "description": "Guia interativo com as missões da temporada da FLL Challenge (atualmente BIOGLOW™ Founders Edition), trazendo dicas, estratégias e mecanismos de cada missão para apoiar o planejamento da equipe.",
+    "details": [
+      {
+        "title": "O que encontro no Guia de Missões?",
+        "content": "Para cada missão da temporada, o guia traz explicações sobre o objetivo, o mecanismo do modelo de missão e a forma como a pontuação é obtida, além de dicas e estratégias de execução."
+      },
+      {
+        "title": "É possível filtrar as missões?",
+        "content": "Sim. É possível filtrar por: Todas, Com equipamento (missões que exigem o uso de peças/modelos específicos), Sem equipamento e Com bônus (missões que oferecem pontuação bônus adicional)."
+      },
+      {
+        "title": "Para que serve?",
+        "content": "O Guia de Missões ajuda a equipe a entender rapidamente cada missão da temporada antes de definir as estratégias no QuickBrick Studio ou simular saídas no Partiu Mesa!, servindo como material de consulta e estudo durante os treinos."
+      }
+    ]
   }
 ]

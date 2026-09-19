@@ -52,7 +52,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" data-scroll-behavior="smooth" className="scroll-smooth">
       <body className={`${roboto.variable} antialiased`}>
         <ClerkProvider localization={ptBR}>
           <Analytics />

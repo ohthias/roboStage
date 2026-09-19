@@ -25,8 +25,12 @@ export default clerkMiddleware(async (auth, req) => {
 
   if (isPublicRoute(req.nextUrl.pathname)) return NextResponse.next();
 
-  // Sem sessão: deixa o Clerk cuidar do redirect para sign-in normalmente.
-  if (!userId) return NextResponse.next();
+  // Sem sessão: redireciona para o sign-in antes de acessar rotas protegidas.
+  if (!userId) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/sign-in";
+    return NextResponse.redirect(url);
+  }
 
   // Só bloqueia quando a flag existir e estiver explicitamente desativada.
   // Se o claim não vier no token ou estiver desatualizado, evita loop de redirect.

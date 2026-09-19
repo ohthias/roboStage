@@ -159,6 +159,11 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/stagebook" className="link link-hover">
+                    Stagebook
+                  </Link>
+                </li>
+                <li>
                   <Link href="/labtest" className="link link-hover">
                     LabTest
                   </Link>
@@ -169,7 +174,7 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/recall" className="link link-hover">
+                  <Link href="/fll/recall" className="link link-hover">
                     Recall
                   </Link>
                 </li>

@@ -21,6 +21,7 @@ type MissionAnswer = {
 type RunsPayload = {
   mode: "runs";
   competitionId: string;
+  competitionName?: string | null;
   season?: string | null;
   missionOrder: string[]; // t.orderedSelected.map(m => m.id) — ordem definida pelo usuário
   answers: Record<string, MissionAnswer>; // t.answers
@@ -100,6 +101,8 @@ function buildConfig(input: CreateTestInput) {
       return {
         missions: input.missionOrder,
         answers: input.answers,
+        ...(input.competitionId ? { competitionId: input.competitionId } : {}),
+        ...(input.competitionName ? { competitionName: input.competitionName } : {}),
       };
     }
 

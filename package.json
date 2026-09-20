@@ -42,6 +42,7 @@
     "jspdf-autotable": "^5.0.2",
     "jszip": "^3.10.1",
     "lexical": "^0.49.0",
+    "locomotive-scroll": "^5.0.1",
     "lucide-react": "^0.539.0",
     "nanoid": "^5.1.11",
     "next": "^16.3.3",

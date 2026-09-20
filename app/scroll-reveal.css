@@ -1,0 +1,37 @@
+/*
+  Add this to globals.css (or import it once in the root layout), alongside:
+    import "locomotive-scroll/dist/locomotive-scroll.css";
+
+  Elements marked [data-scroll] start hidden/offset and fade+rise into place
+  once Locomotive Scroll adds the "is-inview" class. If JavaScript never
+  runs (slow connection, blocked script, reduced motion path that skips
+  initialization), the fallback rule below keeps them visible so content
+  is never permanently hidden.
+*/
+
+[data-scroll] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 700ms cubic-bezier(0.25, 0.1, 0.25, 1),
+    transform 700ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+[data-scroll].is-inview {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Never hide content permanently if JS/Locomotive didn't run */
+.no-js [data-scroll],
+[data-scroll-container="false"] [data-scroll] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-scroll] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

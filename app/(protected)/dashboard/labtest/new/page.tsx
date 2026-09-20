@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import {
   Gauge,
   ListChecks,
+  Plus,
   Settings2,
   SlidersHorizontal,
   type LucideIcon,
@@ -175,124 +176,94 @@ export default function CreateTest() {
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
-      {/* Cabeçalho */}
-      <header className="flex items-start gap-4">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Settings2 className="size-5" />
-        </div>
-
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-base-content">
-              Criar teste
-            </h1>
-
-            <span className="badge badge-ghost badge-sm">
-              Nova configuração
-            </span>
-          </div>
-
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-base-content/55">
-            Configure os parâmetros do teste e gere uma nova rotina de execução.
-          </p>
-        </div>
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-8">
+      <header className="flex flex-col gap-4 items-center sm:items-start sm:justify-between">
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary-content uppercase tracking-wide -rotate-1 bg-primary w-fit inline-block px-2 py-1 shadow-sm">
+          Criar teste
+        </h1>
+        <p className="mt-1 ml-2 max-w-2xl text-md leading-relaxed text-base-content/55 text-center sm:text-left">
+          Escolha o tipo de teste, configure os parâmetros e gere a rotina para
+          execução de acordo com a sua necessidade.
+        </p>
       </header>
 
       {/* Informações básicas */}
-      <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-100">
-        <div className="border-b border-base-300 bg-base-200/30 px-5 py-4">
+      <section className="overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-100 hover:shadow-lg transition-shadow duration-200 hover:border-base-content/20">
+        <div className="border-b border-base-content/10 bg-base-200/30 px-5 py-4">
           <div>
-            <h2 className="text-sm font-semibold text-base-content">
+            <h2 className="text-md font-semibold text-base-content">
               Informações do teste
             </h2>
-            <p className="mt-0.5 text-xs text-base-content/45">
+            <p className="mt-0.5 text-sm text-base-content/45">
               Defina um nome e uma descrição para identificar este teste.
             </p>
           </div>
         </div>
-
-        <div className="p-5">
-          <TestDetailsSection
-            testName={testName}
-            testDescription={testDescription}
-            setTestName={setTestName}
-            setTestDescription={setTestDescription}
-          />
-        </div>
+        <TestDetailsSection
+          testName={testName}
+          testDescription={testDescription}
+          setTestName={setTestName}
+          setTestDescription={setTestDescription}
+        />
       </section>
 
       {/* Tipo de teste */}
-      <section className="rounded-2xl border border-base-300 bg-base-100">
-        <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-base-content">
-              Tipo de teste
-            </h2>
-            <p className="mt-0.5 text-xs text-base-content/45">
-              Escolha o tipo de rotina que deseja configurar.
-            </p>
-          </div>
-
-          <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-base-content/30">
-            Etapa 2
-          </span>
+      <section className="overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-100 hover:shadow-lg transition-shadow duration-200 hover:border-base-content/20">
+        <div className="border-b border-base-content/10 bg-base-200/30 px-5 py-4">
+          <h2 className="text-md font-semibold text-base-content">
+            Tipo de teste
+          </h2>
+          <p className="mt-0.5 text-sm text-base-content/45">
+            Escolha o tipo de rotina que deseja configurar.
+          </p>
         </div>
 
-        <div className="border-t border-base-300 p-3">
-          <div
-            role="tablist"
-            aria-label="Tipo de teste"
-            className="grid w-full grid-cols-1 gap-1 rounded-xl bg-base-200/60 p-1 sm:grid-cols-3"
-          >
-            {tabs.map(({ value, label, icon: Icon }) => {
-              const active = t.mode === value;
+        <div
+          role="tablist"
+          aria-label="Tipo de teste"
+          className="grid w-full grid-cols-1 gap-4 rounded-xl p-1 sm:grid-cols-3 px-2 sm:px-3 py-2 sm:py-3"
+        >
+          {tabs.map(({ value, label, icon: Icon }) => {
+            const active = t.mode === value;
 
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  className={`
+            return (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                className={`
                   flex min-h-10 items-center justify-center gap-2 rounded-lg px-4
-                  text-sm font-medium transition-all duration-200
+                  text-sm font-medium transition-all duration-200 cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-base-100 hover:shadow-sm hover:bg-base-200/60 hover:text-base-content/75
                   ${
                     active
-                      ? "bg-base-100 text-base-content shadow-sm"
-                      : "text-base-content/50 hover:bg-base-100/60 hover:text-base-content/75"
+                      ? "bg-primary/20 text-primary shadow-sm hover:bg-primary/30 hover:text-primary-content"
+                      : "text-base-content/50 hover:bg-base-200/60 hover:text-base-content/75"
                   }
                 `}
-                  onClick={() => t.setMode(value)}
-                >
-                  <Icon
-                    className={`size-4 ${
-                      active ? "text-primary" : "text-base-content/40"
-                    }`}
-                  />
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+                onClick={() => t.setMode(value)}
+              >
+                <Icon
+                  className={`size-4 ${
+                    active ? "text-primary" : "text-base-content/40"
+                  }`}
+                />
+                {label}
+              </button>
+            );
+          })}
         </div>
       </section>
 
       {/* Configuração específica */}
-      <section>
-        <div className="mb-3 flex items-center justify-between px-1">
-          <div>
-            <h2 className="text-sm font-semibold text-base-content">
-              Configuração
-            </h2>
-            <p className="mt-0.5 text-xs text-base-content/45">
-              Ajuste os parâmetros específicos deste tipo de teste.
-            </p>
-          </div>
-
-          <span className="hidden text-[10px] font-medium uppercase tracking-[0.14em] text-base-content/30 sm:block">
-            Etapa 3
-          </span>
+      <section className="overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-100 hover:shadow-lg transition-shadow duration-200 hover:border-base-content/20">
+        <div className="border-b border-base-content/10 bg-base-200/30 px-5 py-4">
+          <h2 className="text-md font-semibold text-base-content">
+            Configuração
+          </h2>
+          <p className="mt-0.5 text-sm text-base-content/45">
+            Ajuste os parâmetros específicos deste tipo de teste.
+          </p>
         </div>
 
         {t.mode === "runs" && (

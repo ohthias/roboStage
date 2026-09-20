@@ -12,21 +12,8 @@ export function TestDetailsSection({
   setTestDescription: (value: string) => void;
 }) {
   return (
-    <section className="card border border-base-300 bg-base-100 shadow-sm">
-      <div className="card-body gap-4 p-5">
-        <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Info className="size-4" />
-          </div>
-
-          <div>
-            <h2 className="font-semibold">Detalhes do teste</h2>
-            <p className="text-sm text-base-content/60">
-              Nome e descrição que identificam este teste.
-            </p>
-          </div>
-        </div>
-
+    <section className="card">
+      <div className="card-body gap-4">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="form-control w-full">
             <div className="label py-1.5">
@@ -40,11 +27,21 @@ export function TestDetailsSection({
               className="input input-bordered w-full"
               placeholder="ex: Run completa - qualificatória"
               value={testName}
+              maxLength={100}
+              aria-describedby="test-name-limit"
               onChange={(e) => setTestName(e.target.value)}
             />
+            <span
+              id="test-name-limit"
+              className={`label-text-alt mt-2 ml-auto block w-full text-right relative text-xs font-semibold uppercase tracking-wide ${testName.length >= 100 ? "text-error" : testName.length >= 75 ? "text-warning" : "text-base-content/60"}`}
+            >
+              {testName.length >= 100
+                ? "Você atingiu o limite máximo de 100 caracteres."
+                : `${testName.length}/100 caracteres`}
+            </span>
           </label>
 
-          <label className="form-control w-full">
+          <label className="form-control w-full relative">
             <div className="label py-1.5">
               <span className="label-text text-xs font-semibold uppercase tracking-wide">
                 Descrição (opcional)
@@ -56,8 +53,18 @@ export function TestDetailsSection({
               className="input input-bordered w-full"
               placeholder="ex: Testes antes da competição regional"
               value={testDescription}
+              maxLength={200}
+              aria-describedby="test-description-limit"
               onChange={(e) => setTestDescription(e.target.value)}
             />
+            <span
+              id="test-description-limit"
+              className={`label-text-alt mt-2 ml-auto block w-full text-right relative text-xs font-semibold uppercase tracking-wide ${testDescription.length >= 200 ? "text-error" : testDescription.length >= 150 ? "text-warning" : "text-base-content/60"}`}
+            >
+              {testDescription.length >= 200
+                ? "Você atingiu o limite máximo de 200 caracteres."
+                : `${testDescription.length}/200 caracteres`}
+            </span>
           </label>
         </div>
       </div>

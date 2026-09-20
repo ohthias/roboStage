@@ -10,22 +10,33 @@ export function CustomSection({
   customMeta,
   updateCustomMeta,
 }: {
-  customParams: Array<{ id: string; name: string; type: string; min?: number; max?: number }>;
+  customParams: Array<{
+    id: string;
+    name: string;
+    type: string;
+    min?: number;
+    max?: number;
+  }>;
   addCustomParam: () => void;
-  updateCustomParam: (id: string, patch: Partial<{ name: string; type: string; min?: number; max?: number }>) => void;
+  updateCustomParam: (
+    id: string,
+    patch: Partial<{ name: string; type: string; min?: number; max?: number }>,
+  ) => void;
   removeCustomParam: (id: string) => void;
   customMeta: Record<string, { required: boolean; description: string }>;
-  updateCustomMeta: (id: string, patch: Partial<{ required: boolean; description: string }>) => void;
+  updateCustomMeta: (
+    id: string,
+    patch: Partial<{ required: boolean; description: string }>,
+  ) => void;
 }) {
   return (
-    <section className="card border border-base-300 bg-base-100 shadow-sm">
-      <div className="card-body p-5 md:p-6">
-        <div className="flex items-start justify-between gap-4">
+    <section className="card">
+      <div className="card-body p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <SlidersHorizontal className="size-5" />
             </div>
-
             <div>
               <h2 className="font-semibold">Teste customizado</h2>
               <p className="text-sm text-base-content/60">
@@ -33,163 +44,215 @@ export function CustomSection({
               </p>
             </div>
           </div>
-
-          <span className="badge badge-neutral">{customParams.length} parâmetros</span>
+          <span className="badge badge-neutral self-start sm:self-auto">
+            {customParams.length}/10 parâmetros
+          </span>
         </div>
 
-        <div className="alert mt-4 bg-base-200/60">
-          <Info className="size-4 shrink-0" />
-
-          <p className="text-xs text-base-content/70">
-            Cada parâmetro pode possuir um tipo diferente. Parâmetros numéricos permitem definir limites mínimo e máximo.
-          </p>
+        <div className="alert alert-info alert-soft mt-4 items-start">
+          <Info className="size-4 inline-block" />
+          Cada parâmetro pode possuir um tipo diferente. Parâmetros numéricos
+          permitem definir limites mínimo e máximo.
         </div>
 
         <div className="mt-5 flex flex-col gap-3">
-          {customParams.map((p, index) => (
+          {customParams.length === 0 ? (
             <div
-              key={p.id}
-              className="rounded-xl border border-base-300 bg-base-100 p-4 transition hover:border-base-content/20"
+              className="cursor-pointer rounded-xl border border-dashed border-base-300 bg-base-100 p-6 text-center transition hover:border-primary/50"
+              role="button"
+              tabIndex={0}
+              onClick={addCustomParam}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  addCustomParam();
+                }
+              }}
             >
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="badge badge-primary badge-sm">{index + 1}</span>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-base-content/50">
-                    Parâmetro
-                  </span>
+              <p className="font-medium">Nenhum parâmetro adicionado</p>
+              <p className="mt-1 text-sm text-base-content/60">
+                Clique aqui para adicionar um parâmetro e configurar o teste
+                customizado.
+              </p>
+            </div>
+          ) : (
+            customParams.map((p, index) => (
+              <div
+                key={p.id}
+                className="rounded-xl border border-base-300 bg-base-200/30 p-4 transition hover:border-base-content/20"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 text-center h-6 flex items-center justify-center rounded-sm bg-primary/10 text-primary text-xs font-medium">
+                      {index + 1}
+                    </span>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-base-content/50">
+                      Parâmetro
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-xs text-error"
+                    onClick={() => removeCustomParam(p.id)}
+                  >
+                    <Trash2 className="size-3.5" />
+                    Remover
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-xs text-error"
-                  onClick={() => removeCustomParam(p.id)}
-                >
-                  <Trash2 className="size-3.5" />
-                  Remover
-                </button>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="form-control flex flex-col">
+                    <div className="label py-1">
+                      <span className="label-text text-xs uppercase tracking-wide text-base-content/50">
+                        Nome
+                      </span>
+                      <span className="label-text-alt text-xs text-base-content/50">
+                        {p.name.length}/50
+                      </span>
+                    </div>
+
+                    <input
+                      type="text"
+                      className="input input-bordered input-sm w-full mt-1"
+                      value={p.name}
+                      maxLength={50}
+                      placeholder="ex: velocidade"
+                      onChange={(e) =>
+                        updateCustomParam(p.id, {
+                          name: e.target.value,
+                        })
+                      }
+                    />
+                  </label>
+
+                  <label className="form-control flex flex-col">
+                    <div className="label py-1 flex items-center justify-between">
+                      <span className="label-text text-xs uppercase tracking-wide text-base-content/50">
+                        Tipo
+                      </span>
+                    </div>
+
+                    <select
+                      className="select select-bordered select-sm w-full mt-1"
+                      value={p.type}
+                      onChange={(e) =>
+                        updateCustomParam(p.id, {
+                          type: e.target.value,
+                        })
+                      }
+                    >
+                      {CUSTOM_PARAM_TYPES.map((tp) => (
+                        <option key={tp.value} value={tp.value}>
+                          {tp.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {p.type === "number" && (
+                    <>
+                      <label className="form-control flex flex-col">
+                        <div className="label py-1">
+                          <span className="label-text text-xs uppercase tracking-wide text-base-content/50">
+                            Mínimo
+                          </span>
+                        </div>
+
+                        <input
+                          type="number"
+                          className="input input-bordered input-sm w-full mt-1"
+                          value={p.min ?? ""}
+                          onChange={(e) =>
+                            updateCustomParam(p.id, {
+                              min:
+                                e.target.value === ""
+                                  ? undefined
+                                  : Number(e.target.value),
+                            })
+                          }
+                        />
+                      </label>
+
+                      <label className="form-control flex flex-col">
+                        <div className="label py-1">
+                          <span className="label-text text-xs uppercase tracking-wide text-base-content/50">
+                            Máximo
+                          </span>
+                        </div>
+
+                        <input
+                          type="number"
+                          className="input input-bordered input-sm w-full mt-1"
+                          value={p.max ?? 100}
+                          onChange={(e) =>
+                            updateCustomParam(p.id, {
+                              max: Number(e.target.value),
+                            })
+                          }
+                        />
+                      </label>
+                    </>
+                  )}
+                </div>
+
+                <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                  <label className="form-control flex flex-col">
+                    <div className="label py-1">
+                      <span className="label-text text-xs uppercase tracking-wide text-base-content/50">
+                        Descrição (opcional)
+                      </span>
+                      <span className="label-text-alt text-xs text-base-content/50">
+                        {(customMeta[p.id]?.description ?? "").length}/200
+                      </span>
+                    </div>
+
+                    <input
+                      type="text"
+                      className="input input-bordered input-sm w-full mt-1"
+                      value={customMeta[p.id]?.description ?? ""}
+                      maxLength={200}
+                      placeholder="ex: velocidade do motor durante o teste"
+                      onChange={(e) =>
+                        updateCustomMeta(p.id, {
+                          description: e.target.value,
+                        })
+                      }
+                    />
+                  </label>
+
+                  <label className="flex cursor-pointer items-center gap-2 pb-1.5">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-sm checkbox-neutral"
+                      checked={customMeta[p.id]?.required ?? false}
+                      onChange={(e) =>
+                        updateCustomMeta(p.id, {
+                          required: e.target.checked,
+                        })
+                      }
+                    />
+                    <span className="text-xs">Obrigatório</span>
+                  </label>
+                </div>
               </div>
-
-              <div className="grid gap-3 md:grid-cols-[1.4fr_1fr_0.7fr_0.7fr]">
-                <label className="form-control">
-                  <div className="label py-1">
-                    <span className="label-text text-xs">Nome</span>
-                  </div>
-
-                  <input
-                    type="text"
-                    className="input input-bordered input-sm"
-                    value={p.name}
-                    placeholder="ex: velocidade"
-                    onChange={(e) =>
-                      updateCustomParam(p.id, {
-                        name: e.target.value,
-                      })
-                    }
-                  />
-                </label>
-
-                <label className="form-control">
-                  <div className="label py-1">
-                    <span className="label-text text-xs">Tipo</span>
-                  </div>
-
-                  <select
-                    className="select select-bordered select-sm"
-                    value={p.type}
-                    onChange={(e) =>
-                      updateCustomParam(p.id, {
-                        type: e.target.value,
-                      })
-                    }
-                  >
-                    {CUSTOM_PARAM_TYPES.map((tp) => (
-                      <option key={tp.value} value={tp.value}>
-                        {tp.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                {p.type === "number" && (
-                  <>
-                    <label className="form-control">
-                      <div className="label py-1">
-                        <span className="label-text text-xs">Mínimo</span>
-                      </div>
-
-                      <input
-                        type="number"
-                        className="input input-bordered input-sm"
-                        value={p.min ?? 0}
-                        onChange={(e) =>
-                          updateCustomParam(p.id, {
-                            min: Number(e.target.value),
-                          })
-                        }
-                      />
-                    </label>
-
-                    <label className="form-control">
-                      <div className="label py-1">
-                        <span className="label-text text-xs">Máximo</span>
-                      </div>
-
-                      <input
-                        type="number"
-                        className="input input-bordered input-sm"
-                        value={p.max ?? 100}
-                        onChange={(e) =>
-                          updateCustomParam(p.id, {
-                            max: Number(e.target.value),
-                          })
-                        }
-                      />
-                    </label>
-                  </>
-                )}
-              </div>
-
-              <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
-                <label className="form-control">
-                  <div className="label py-1">
-                    <span className="label-text text-xs">Descrição (opcional)</span>
-                  </div>
-
-                  <input
-                    type="text"
-                    className="input input-bordered input-sm"
-                    value={customMeta[p.id]?.description ?? ""}
-                    placeholder="ex: velocidade do motor durante o teste"
-                    onChange={(e) =>
-                      updateCustomMeta(p.id, {
-                        description: e.target.value,
-                      })
-                    }
-                  />
-                </label>
-
-                <label className="flex cursor-pointer items-center gap-2 self-end pb-1.5">
-                  <input
-                    type="checkbox"
-                    className="checkbox checkbox-sm"
-                    checked={customMeta[p.id]?.required ?? false}
-                    onChange={(e) =>
-                      updateCustomMeta(p.id, {
-                        required: e.target.checked,
-                      })
-                    }
-                  />
-                  <span className="text-xs">Obrigatório</span>
-                </label>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
-        <button type="button" className="btn btn-outline btn-sm mt-2 w-fit" onClick={addCustomParam}>
-          <Plus className="size-4" />
-          Adicionar parâmetro
-        </button>
+        {customParams.length > 0 && (
+          <button
+            type="button"
+            className="btn btn-outline btn-sm mt-2 w-fit ml-auto"
+            onClick={addCustomParam}
+            disabled={customParams.length >= 10}
+          >
+            <Plus className="size-4" />
+            {customParams.length >= 10
+              ? "Limite atingido"
+              : "Adicionar parâmetro"}
+          </button>
+        )}
       </div>
     </section>
   );

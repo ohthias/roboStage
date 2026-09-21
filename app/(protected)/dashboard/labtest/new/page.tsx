@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import {
+  ArrowLeft,
   Gauge,
   ListChecks,
   Plus,
@@ -17,6 +18,7 @@ import { RunsSection } from "./components/RunsSection";
 import { CalibrabotSection } from "./components/CalibrabotSection";
 import { CustomSection } from "./components/CustomSection";
 import { GenerateSection } from "./components/GenerateSection";
+import Link from "next/link";
 
 type CustomParamMeta = { required: boolean; description: string };
 
@@ -165,6 +167,30 @@ export default function CreateTest() {
     });
   }
 
+  const canCreateTest = (() => {
+    if (!testName.trim()) return false;
+
+    if (t.mode === "runs") {
+      return (
+        !!t.competition &&
+        t.orderedSelected.length > 0 &&
+        !t.loadingMissions &&
+        !t.missionsError
+      );
+    }
+
+    if (t.mode === "calibrabot") {
+      if (t.calibraMode === "motores") return t.motors.length > 0;
+      if (t.calibraMode === "giroscópio") return t.giroAnalysis.length > 0;
+      return t.pidParams.length > 0;
+    }
+
+    return (
+      t.customParams.length > 0 &&
+      t.customParams.every((param) => param.name.trim().length > 0)
+    );
+  })();
+
   const tabs: Array<{
     value: CreateTestMode;
     label: string;
@@ -177,6 +203,9 @@ export default function CreateTest() {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-8">
+      <Link href="/dashboard/labtest" className="group text-sm text-base-content hover:text-base-content/80">
+        <ArrowLeft className="size-5 inline-block mr-2 group-hover:-translate-x-1 transition-transform duration-200" />Voltar
+      </Link>
       <header className="flex flex-col gap-4 items-center sm:items-start sm:justify-between">
         <h1 className="text-2xl sm:text-3xl font-bold text-primary-content uppercase tracking-wide -rotate-1 bg-primary w-fit inline-block px-2 py-1 shadow-sm">
           Criar teste
@@ -329,36 +358,24 @@ export default function CreateTest() {
       </section>
 
       {/* Geração */}
-      <section className="rounded-2xl border border-base-300 bg-base-100">
-        <div className="border-b border-base-300 bg-base-200/30 px-5 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-sm font-semibold text-base-content">
-                Gerar teste
-              </h2>
-              <p className="mt-0.5 text-xs text-base-content/45">
-                Revise a configuração e gere a rotina para execução.
-              </p>
-            </div>
-
-            <span className="hidden text-[10px] font-medium uppercase tracking-[0.14em] text-base-content/30 sm:block">
-              Etapa 4
-            </span>
-          </div>
-        </div>
-
-        <div className="p-5">
-          <GenerateSection
-            isSaving={isSaving}
-            saveError={saveError}
-            saveSuccess={saveSuccess}
-            generated={t.generated}
-            copyLabel={t.copyLabel}
-            onGenerate={t.handleGenerate}
-            onSave={handleSave}
-            onCopyGenerated={t.copyGenerated}
-          />
-        </div>
+      <section
+        aria-disabled={!canCreateTest}
+        className={`rounded-2xl border border-base-300 bg-base-100 ${
+          !canCreateTest ? "pointer-events-none opacity-50" : ""
+        }`}
+      >
+        <GenerateSection
+          isSaving={isSaving}
+          saveError={saveError}
+          saveSuccess={saveSuccess}
+          generated={t.generated}
+          copyLabel={t.copyLabel}
+          onGenerate={t.handleGenerate}
+          onSave={() => {
+            if (canCreateTest) handleSave();
+          }}
+          onCopyGenerated={t.copyGenerated}
+        />
       </section>
     </div>
   );

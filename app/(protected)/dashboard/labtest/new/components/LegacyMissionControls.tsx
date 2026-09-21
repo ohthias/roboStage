@@ -22,44 +22,30 @@ export function LegacyMissionControls({
   const subMissions = mission["sub-mission"] ?? [];
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="overflow-hidden rounded-xl border border-base-300 bg-base-100">
-        <div className="flex items-center justify-between gap-4 p-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Target className="size-5" />
-            </div>
-
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold">Resultado principal</p>
-                <span className="badge badge-primary badge-sm">Principal</span>
-              </div>
-
-              <p className="mt-0.5 text-xs text-base-content/55">
-                Defina o resultado geral desta missão.
-              </p>
-            </div>
-          </div>
-
-          <div className="shrink-0 rounded-lg bg-base-200/60 p-1">
+    <div className="flex flex-col gap-3 sm:gap-4">
+      <div className={`overflow-hidden rounded-xl border border-base-300 ${value === 0 ? "bg-base-100" : "bg-primary/5 border-primary/20"} shadow-sm`}>
+        <div className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4">
+          <p className="text-sm text-base-content/80 sm:line-clamp-2">
+            {mission.mission}
+          </p>
+          <div className="flex justify-end">
             <TypeControl type={mission.type} value={value} onChange={onChange} />
           </div>
         </div>
       </div>
 
       {subMissions.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-base-300 bg-base-100">
-          <div className="flex items-center justify-between border-b border-base-300 bg-base-200/40 px-4 py-3">
+        <div className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-sm">
+          <div className="flex items-center justify-between border-b border-base-300 bg-base-200/40 px-3 py-3 sm:px-4">
             <div className="flex items-center gap-3">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-base-200 text-base-content/60">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-base-200 text-base-content/60">
                 <ListTree className="size-4" />
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-semibold">Submissões</p>
                 <p className="text-xs text-base-content/50">
-                  Critérios adicionais da missão
+                  Outros resultados que podem ser avaliados separadamente.
                 </p>
               </div>
             </div>
@@ -76,7 +62,7 @@ export function LegacyMissionControls({
               return (
                 <div
                   key={subId}
-                  className="group flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-base-200/40"
+                    className={`group flex flex-col items-stretch gap-2.5 px-3 py-3 transition-colors hover:bg-base-200/40 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-4 ${subAnswers[subId] ?? 0 !== 0 ? "bg-primary/5" : ""}`}
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="flex size-7 shrink-0 items-center justify-center rounded-full border border-base-300 bg-base-100 text-[11px] font-semibold text-base-content/50 transition group-hover:border-primary/40 group-hover:text-primary">
@@ -84,7 +70,7 @@ export function LegacyMissionControls({
                     </div>
 
                     <div className="min-w-0">
-                      <p className="text-sm leading-snug text-base-content/80">
+                      <p className="text-sm leading-snug text-base-content/80 sm:line-clamp-2 cursor-default" title={s.submission}>
                         {s.submission}
                       </p>
 
@@ -99,12 +85,14 @@ export function LegacyMissionControls({
                     </div>
                   </div>
 
-                  <div className="shrink-0 rounded-lg bg-base-200/50 p-1">
-                    <TypeControl
-                      type={s.type}
-                      value={subAnswers[subId] ?? 0}
-                      onChange={(v) => onSubChange(subId, v)}
-                    />
+                  <div className="self-end rounded-lg p-1 sm:shrink-0 sm:self-auto">
+                    <div className="flex justify-end">
+                      <TypeControl
+                        type={s.type}
+                        value={subAnswers[subId] ?? 0}
+                        onChange={(v) => onSubChange(subId, v)}
+                      />
+                    </div>
                   </div>
                 </div>
               );
@@ -114,8 +102,8 @@ export function LegacyMissionControls({
       )}
 
       {subMissions.length === 0 && (
-        <div className="flex items-center gap-3 rounded-xl border border-dashed border-base-300 bg-base-200/20 p-4">
-          <CheckCircle2 className="size-5 text-base-content/30" />
+        <div className="flex items-start gap-3 rounded-2xl border border-dashed border-base-300 bg-base-200/20 p-3 sm:items-center sm:p-4">
+          <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-base-content/30 sm:mt-0" />
 
           <div>
             <p className="text-sm font-medium">Sem submissões adicionais</p>
@@ -154,13 +142,13 @@ function TypeControl({
     );
   }
 
-  const labels = [type[1], type[2]].filter((v): v is string => Boolean(v));
+  const labels = type.slice(1).filter((v): v is string => Boolean(v));
 
   if (labels.length === 0) {
     return (
       <input
         type="checkbox"
-        className="toggle toggle-sm"
+        className="toggle toggle-sm toggle-primary"
         checked={value === 1}
         onChange={(e) => onChange(e.target.checked ? 1 : 0)}
       />
@@ -197,7 +185,7 @@ export function MissionBody({
 }) {
   if (isFEMission(mission)) {
     return (
-      <div className="flex flex-col divide-y divide-base-300">
+      <div className="flex flex-col divide-y divide-base-content/10">
         {mission.objectives.map((o) => (
           <div
             key={o.id}

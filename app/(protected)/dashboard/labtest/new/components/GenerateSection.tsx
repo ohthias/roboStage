@@ -20,7 +20,7 @@ export function GenerateSection({
   onCopyGenerated: () => void;
 }) {
   return (
-    <section className="card border border-primary/20 bg-base-100 shadow-sm">
+    <section className="card border border-primary/20 rounded-none rounded-tl-2xl rounded-br-2xl bg-base-100 shadow-sm">
       <div className="card-body p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
@@ -29,9 +29,9 @@ export function GenerateSection({
             </div>
 
             <div>
-              <h2 className="font-semibold">Gerar teste</h2>
+              <h2 className="font-semibold">Criar teste</h2>
               <p className="text-xs text-base-content/50">
-                Revise as configurações, confira o payload e salve no banco.
+                Revise a configuração e gere a rotina para execução.
               </p>
             </div>
           </div>
@@ -43,7 +43,7 @@ export function GenerateSection({
               ) : (
                 <Save className="size-4" />
               )}
-              Salvar teste
+              Criar teste
             </button>
           </div>
         </div>

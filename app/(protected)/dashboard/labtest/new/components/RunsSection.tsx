@@ -67,8 +67,8 @@ export function RunsSection({
 }) {
   return (
     <div className="flex flex-col gap-5">
-      <section className="card border border-base-300 bg-base-100 shadow-sm">
-        <div className="card-body gap-5 p-5">
+      <section>
+        <div className="gap-5 p-5">
           <div className="flex items-start gap-3">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <GitBranch className="size-4" />
@@ -82,7 +82,7 @@ export function RunsSection({
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
             <label className="form-control w-full">
               <div className="label py-1.5">
                 <span className="label-text text-xs font-semibold uppercase tracking-wide">
@@ -125,38 +125,23 @@ export function RunsSection({
                     <option key={s.value} value={s.value}>
                       {s.label.toUpperCase()}
                     </option>
-                  ))}
+                  )).reverse()}
                 </select>
               </label>
-            )}
-
-            {selectedCompetitionConfig && (
-              <div className="form-control w-full h-full">
-                <div className="label py-1.5">
-                  <span className="label-text text-xs font-semibold uppercase tracking-wide">
-                    Modelo
-                  </span>
-                </div>
-
-                <div className="flex h-full items-center rounded-xl border border-base-300 bg-base-200/40 px-3 py-2.5 text-sm font-medium text-base-content/80">
-                  {selectedCompetitionConfig.label}
-                </div>
-              </div>
             )}
           </div>
 
           {competition && !missionEndpoint && (
-            <div className="alert alert-warning">
+            <div className="alert alert-warning mt-4">
               <Info className="size-5 shrink-0" />
 
               <div className="text-sm">
-                <p className="font-medium">Conjunto de missões indisponível</p>
+                <p className="font-medium">Competição em construção!</p>
                 <p className="opacity-80">
-                  Nenhum conjunto de missões está configurado para o código{" "}
+                  As missões/temporadas para{" "}
                   <code className="rounded bg-base-content/10 px-1.5 py-0.5">
-                    {selectedCompetition?.code}
-                  </code>
-                  .
+                    {selectedCompetition?.code ?? selectedCompetition?.name}
+                  </code> ainda estão tomando um cafezinho nos bastidores. Aguarde: em breve elas estarão prontas para a ação!
                 </p>
               </div>
             </div>
@@ -179,8 +164,8 @@ export function RunsSection({
       </section>
 
       {!loadingMissions && readyToFetchMissions && missions.length > 0 && (
-        <div className="grid gap-5 lg:grid-cols-[1fr_1.15fr]">
-          <section className="card border border-base-300 bg-base-100 shadow-sm">
+        <div className="grid gap-5 lg:grid-cols-[1fr_1.15fr] p-5">
+          <section className="card border border-base-300 shadow-sm rounded-none rounded-tl-2xl rounded-br-2xl">
             <div className="card-body min-h-0 p-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -225,7 +210,7 @@ export function RunsSection({
             </div>
           </section>
 
-          <section className="card border border-primary/20 bg-base-100 shadow-sm">
+          <section className="card border border-primary/20 rounded-none rounded-tl-2xl rounded-br-2xl shadow-sm">
             <div className="card-body min-h-0 p-5">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -261,17 +246,17 @@ export function RunsSection({
                     className="rounded-xl border border-base-300 bg-base-100 transition hover:border-base-content/20"
                   >
                     <div className="p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-content">
+                      <div className="flex items-center gap-3 justify-between">
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/30 text-xs font-bold text-primary">
                           {idx + 1}
                         </div>
 
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="badge badge-outline badge-sm font-mono">{m.id}</span>
                             <span className="text-sm font-semibold">
                               {isFEMission(m) ? m.title : m.name}
                             </span>
+                            <span className="badge badge-outline badge-xs font-mono">{m.id}</span>
                           </div>
                         </div>
 
@@ -307,7 +292,7 @@ export function RunsSection({
                         </div>
                       </div>
 
-                      <div className="mt-4 rounded-lg bg-base-200/50 p-3">
+                      <div className="mt-4">
                         {isFEMission(m) ? (
                           <div className="flex flex-col divide-y divide-base-300">
                             {m.objectives.map((o) => (

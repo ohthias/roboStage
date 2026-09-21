@@ -4,12 +4,15 @@ import { LabTestCard } from "@/components/labtest/LabTestCard";
 import { LabTestToolbar } from "@/components/labtest/LabTestToolbar";
 import { MODE_META, type ModeKey } from "@/utils/labtest/catalog";
 import { listTests } from "./new/actions";
-import { LabTestModels } from "@/components/labtest/LabTestModels";
 
 export default async function LabTestPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ modo?: string; visualizacao?: string }>;
+    searchParams?: Promise<{
+      modo?: string;
+      visualizacao?: string;
+      pagina?: string;
+    }>;
 }) {
   const tests = await listTests();
   const params = await searchParams;
@@ -22,6 +25,16 @@ export default async function LabTestPage({
   const filteredTests = validMode
     ? tests.filter((test) => test.mode === validMode)
     : tests;
+  const pageSize = 9;
+  const totalPages = Math.max(1, Math.ceil(filteredTests.length / pageSize));
+  const currentPage = Math.min(
+    Math.max(Number(params?.pagina) || 1, 1),
+    totalPages,
+  );
+  const paginatedTests = filteredTests.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
 
   return (
     <div className="w-full">
@@ -58,7 +71,7 @@ export default async function LabTestPage({
 
             <Link
               href="/dashboard/labtest/analytics"
-              className="px-3 py-3 text-sm font-medium text-base-content/50 transition-colors hover:text-base-content"
+              className="px-3 py-3 text-sm font-medium pointer-events-none cursor-none text-base-content/50"
             >
               Analytics
             </Link>
@@ -111,9 +124,33 @@ export default async function LabTestPage({
                 : "mt-6 flex flex-col gap-3"
             }
           >
-            {filteredTests.map((test) => (
+            {paginatedTests.map((test) => (
               <LabTestCard key={test.id} test={test} viewMode={viewMode} />
             ))}
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center gap-2">
+            {Array.from({ length: totalPages }, (_, index) => {
+              const page = index + 1;
+              const query = new URLSearchParams();
+              if (validMode) query.set("modo", validMode);
+              if (viewMode === "grid") query.set("visualizacao", "grid");
+              query.set("pagina", String(page));
+
+              return (
+                <Link
+                  key={page}
+                  href={`/dashboard/labtest?${query.toString()}`}
+                  className={`btn btn-sm ${
+                    page === currentPage ? "btn-primary" : "btn-ghost"
+                  }`}
+                >
+                  {page}
+                </Link>
+              );
+            })}
           </div>
         )}
       </main>

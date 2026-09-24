@@ -204,7 +204,7 @@ export async function createTest(input: CreateTestInput) {
     })
     .returning();
 
-  revalidatePath("/tests");
+  revalidatePath("/dashboard/labtest");
 
   return created;
 }
@@ -229,8 +229,8 @@ export async function updateTestStatus(testId: string, status: string) {
     throw new Error("Teste não encontrado ou sem permissão.");
   }
 
-  revalidatePath("/tests");
-  revalidatePath(`/tests/${testId}`);
+  revalidatePath("/dashboard/labtest");
+  revalidatePath(`/dashboard/labtest/${testId}`);
 
   return updated;
 }
@@ -249,7 +249,7 @@ export async function deleteTest(testId: string) {
     .delete(tests)
     .where(and(eq(tests.id, testId), eq(tests.userId, session.userId)));
 
-  revalidatePath("/tests");
+  revalidatePath("/dashboard/labtest");
 }
 
 /* =========================================================================
@@ -295,7 +295,7 @@ export async function createTestExecution(input: {
     })
     .returning();
 
-  revalidatePath(`/tests/${input.testId}`);
+  revalidatePath(`/dashboard/labtest/${input.testId}`);
 
   return created;
 }

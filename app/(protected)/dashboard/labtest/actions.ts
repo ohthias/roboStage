@@ -6,6 +6,8 @@ import { db } from "@/db/client";
 import { tests, testExecutions } from "@/db/schema/labtest";
 import type { FieldDefinition, TestEntry, TestRecord } from "@/types/labtest.types";
 
+export { createTestExecution } from "./new/actions";
+
 function toFieldLabel(key: string) {
   return key
     .replace(/[_-]+/g, " ")
@@ -63,10 +65,76 @@ function normalizeResults(raw: unknown): Record<string, unknown> {
   return obj;
 }
 
+// ---------------------------------------------------------------------------
+// CalibraBot · Motores — não guarda "parametros"/"indicadores" no config,
+// guarda a lista de motores (e, no modo duplas, os pares já combinados).
+// Cada motor (ou cada dupla) vira DOIS campos numéricos sintéticos:
+// rotação (RPM) e tempo de execução (s). É o que os gráficos de comparação
+// do modo Motores usam como eixo de dados.
+// ---------------------------------------------------------------------------
+
+function buildMotorFields(config: Record<string, unknown>): FieldDefinition[] {
+  const defs: FieldDefinition[] = [];
+
+  const motores = Array.isArray(config.motores)
+    ? (config.motores as unknown[]).filter((m): m is string => typeof m === "string")
+    : [];
+
+  const pares = Array.isArray(config.pares) ? (config.pares as unknown[]) : [];
+  const isDuplas = config.modo === "duplas" && pares.length > 0;
+
+  if (isDuplas) {
+    pares.forEach((pair, index) => {
+      if (!Array.isArray(pair)) return;
+      const [a, b] = pair as unknown[];
+      if (typeof a !== "string" || typeof b !== "string") return;
+      const base = `${a}__${b}`;
+      defs.push({
+        fieldKey: `${base}__rotacao`,
+        label: `${a} + ${b} · Rotação`,
+        type: "number",
+        unit: "RPM",
+        order: index * 2,
+      });
+      defs.push({
+        fieldKey: `${base}__tempo`,
+        label: `${a} + ${b} · Tempo`,
+        type: "duration",
+        unit: "s",
+        order: index * 2 + 1,
+      });
+    });
+    return defs;
+  }
+
+  motores.forEach((motor, index) => {
+    defs.push({
+      fieldKey: `${motor}__rotacao`,
+      label: `${motor} · Rotação`,
+      type: "number",
+      unit: "RPM",
+      order: index * 2,
+    });
+    defs.push({
+      fieldKey: `${motor}__tempo`,
+      label: `${motor} · Tempo`,
+      type: "duration",
+      unit: "s",
+      order: index * 2 + 1,
+    });
+  });
+
+  return defs;
+}
+
 function buildFieldsFromConfig(config: Record<string, unknown> | null | undefined): FieldDefinition[] {
   const defs: FieldDefinition[] = [];
 
   if (!config || typeof config !== "object") return defs;
+
+  if (config.tipo === "motores") {
+    return buildMotorFields(config);
+  }
 
   if (Array.isArray(config.missions)) {
     config.missions.forEach((mission, index) => {

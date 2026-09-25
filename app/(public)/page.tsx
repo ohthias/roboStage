@@ -1,136 +1,130 @@
+"use client";
+
+import { useState } from "react";
 import UseCasesSection from "@/components/competicoes/FLL/Components/UseCasesSection";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
 import NoiseImage from "@/components/UI/NoiseImage";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import { Newspaper } from "lucide-react";
+import { ArrowUpRight, ChevronRight, Newspaper } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+
+const heroImages = [
+  "/images/index/hero_banner_fll.jpg",
+  "/images/index/hero_banner_fll_2.jpg",
+];
+
+function HeroSection() {
+  const [heroImage] = useState(
+    heroImages[Math.floor(Math.random() * heroImages.length)],
+  );
+
+  return (
+    <header className="relative flex min-h-[100svh] w-full items-center overflow-hidden">
+      <Image
+        src={heroImage}
+        alt="Equipe de robótica em competição"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-t from-neutral via-neutral/70 to-neutral/20"
+      />
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-center px-5 py-24 sm:px-8 md:justify-start md:px-12 lg:py-24">
+        <div className="flex w-full max-w-2xl flex-col items-center text-center md:items-start md:text-left">
+          <h1 className="text-5xl font-black leading-[0.95] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+            O palco onde a
+          </h1>
+          <p
+            className="-rotate-1 bg-primary px-3 py-1 font-black leading-[0.95] tracking-tight text-white text-3xl md:text-4xl lg:text-6xl"
+            style={{ animationDelay: "150ms" }}
+          >
+            robótica acontece.
+          </p>
+          <p
+            className="mt-6 max-w-[34rem] text-base leading-relaxed text-base-content/80 sm:text-lg md:mt-7 md:text-xl"
+            style={{ animationDelay: "300ms" }}
+          >
+            Uma plataforma para acompanhar competições, descobrir equipes,
+            explorar projetos e conectar a comunidade da robótica.
+          </p>
+          <div
+            className="mt-8 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row"
+            style={{ animationDelay: "450ms" }}
+          >
+            <Link
+              href="/sign-up"
+              className="btn btn-primary group w-full px-6 transition-transform duration-200 hover:scale-105 sm:w-auto"
+            >
+              Cadastre-se
+              <ArrowUpRight
+                size={16}
+                className="transition-transform duration-200 group-hover:translate-x-1"
+              />
+            </Link>
+            <Link
+              href="/fll"
+              className="btn btn-ghost group w-full px-6 transition-transform duration-200 hover:scale-105 sm:w-auto"
+            >
+              Conhecer a plataforma
+              <ChevronRight
+                size={16}
+                className="transition-transform duration-200 group-hover:translate-x-1"
+              />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
 
 export default function Page() {
   return (
     <>
       <Navbar />
-      <header className="relative min-h-screen w-full overflow-hidden bg-base-100">
-        <div
-          aria-hidden="true"
-          className="
-            absolute inset-0
-            opacity-[0.035]
-            bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)]
-            bg-[size:32px_32px]
-            mask-[linear-gradient(to_bottom,black_0%,transparent_85%)]
-          "
-        />
-        <div
-          aria-hidden="true"
-          className="absolute -top-32 right-[-10%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-3xl pointer-events-none"
-        />
-        <div className="relative z-10 max-w-7xl min-h-screen mx-auto px-6 md:px-12 py-28 lg:py-24 flex flex-col lg:flex-row items-center justify-between gap-16">
-          <div className="w-full max-w-2xl flex flex-col items-start">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95] z-10">
-              O palco onde a
-            </h1>
-            <p className="inline-block bg-primary text-primary-content px-3 py-1 italic -rotate-1 text-2xl sm:text-3xl lg:text-6xl mt-1 z-8 font-black tracking-tight leading-[0.95]">
-              robótica acontece.
-            </p>
-            <p className="mt-7 max-w-xl text-lg md:text-xl leading-relaxed text-base-content/65">
-              Uma plataforma para acompanhar competições, descobrir equipes,
-              explorar projetos e conectar a comunidade da robótica.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 mt-9">
-              <a href="/fll" className="btn btn-primary px-6">
-                Explorar a FLL
-              </a>
-
-              <a href="/sign-up" className="btn btn-ghost px-6">
-                Conhecer a plataforma
-                <span aria-hidden="true">→</span>
-              </a>
-            </div>
-
-            <div className="flex flex-wrap gap-x-8 gap-y-3 mt-12 pt-6 border-t border-base-content/10 text-sm text-base-content/50">
-              <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                Competições
-              </span>
-
-              <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
-                Ferramentas
-              </span>
-
-              <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-                Comunidade
-              </span>
-            </div>
-          </div>
-
-          <div className="relative w-full max-w-lg h-[430px] lg:h-[500px] shrink-0">
-            <div className="absolute right-0 top-8 w-[75%] h-[78%] overflow-hidden transition-transform duration-500 hover:rotate-1 hover:scale-[1.02]" style={{ boxShadow: "-10px 10px 0 #CF2A2A" }}>
-              <img
-                src="https://www.first-lego-league.org/files/Dateiverwaltung%20NEU/Fotos/f%C3%BCr%20Presse%20%26%20Download/%28C%29%20HANDS%20on%20TECHNOLOGY%20e.V.%20-%20FIRST%20LEGO%20League%20-%20Challenge%2003.jpg"
-                alt="Equipe de robótica durante uma competição"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
-            </div>
-
-            <div className="absolute bottom-0 left-0 w-44 h-44 overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] shadow-xl rotate-[-5deg] transition-transform duration-500 hover:rotate-0 hover:scale-105" style={{ boxShadow: "5px -5px 0 #1E459F"}}>
-              <img
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdq11Zclmz-Hrxdc_Si6M7x1y9mE4QHmvdTs4dLiRFE0Nr7ggLx12BRdg&s=10"
-                alt="Crianças construindo um robô"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="absolute top-0 right-[-1rem] w-32 h-32 overflow-hidden rounded-full shadow-xl rotate-[6deg] transition-transform duration-500 hover:rotate-0 hover:scale-110" style={{ boxShadow: "5px 5px 0 #FABD32"}}>
-              <img
-                src="https://www.firstinspires.org/hs-fs/hubfs/20230420_bm_0312.jpg?width=630&height=420&name=20230420_bm_0312.jpg"
-                alt="Competição de robótica"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="absolute bottom-8 right-[-2rem] z-[-1] w-32 h-32 border border-primary/30 rounded-full" />
-            <div className="absolute bottom-20 right-8 z-[-1] w-3 h-3 rounded-full bg-primary" />
-          </div>
-        </div>
-
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-2 text-xs uppercase tracking-widest 'text-base-content/30">
-          <span>Explore</span>
-          <span className="text-lg">↓</span>
-        </div>
-      </header>
+      <HeroSection />
       <main className="bg-base-100">
-        <section className="max-w-7xl mx-auto px-6 md:px-12 py-16 md:py-24 flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16">
-          <div className="flex flex-col">
-            <h2 className="text-3xl md:text-4xl font-bold">
-              Muito mais que uma{" "}
-              <span className="text-primary-content bg-primary">
-                plataforma
-              </span>
-            </h2>
-            <p className="mt-4 text-base-content/70 max-w-xl text-xl">
-              O RoboStage conecta pessoas, equipes e competições em um único
-              lugar, tornando a experiência mais organizada, acessível e
-              divertida para todos.
-            </p>
-            <p className="mt-4 text-base-content/70 max-w-xl text-lg">
-              Seja você um competidor, mentor, organizador, árbitro ou apenas um
-              apaixonado por robótica, aqui sempre existe algo novo para
-              descobrir.
-            </p>
-          </div>
-          <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdf7TJNOmMTAIpSFfY1gu1so6SXXhEt8eVnOotnUjaKX1hnCU5CZcmkyC7&s=10"
-            alt="Robô de LEGO"
-            className="w-full max-w-sm md:max-w-lg h-auto object-cover"
-            style={{ boxShadow: "-10px 10px 0 #DE5017" }}
-          />
-        </section>
+        <div className="bg-neutral">
+          <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-16 md:px-12 md:py-20 lg:flex-row lg:items-stretch">
+            <div className="flex flex-1 flex-col justify-center rounded-tl-[30px] rounded-br-[30px] bg-base-200 p-8 md:p-10">
+              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+                Muito mais que uma{" "}
+                <span className="inline-block bg-primary px-2 text-primary-content">
+                  plataforma
+                </span>
+              </h2>
 
+              <p className="mt-5 max-w-xl text-lg leading-relaxed text-base-content/70">
+                O RoboStage reúne tudo o que acontece no universo da robótica em
+                um só lugar. Conectando equipes, pessoas, projetos e competições
+                para tornar cada etapa mais simples de acompanhar e participar.
+              </p>
+
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-base-content/60">
+                Da preparação à competição, encontre ferramentas para organizar
+                sua equipe, acompanhar seus projetos e viver a robótica com mais
+                conexão, clareza e propósito.
+              </p>
+            </div>
+
+            <div className="relative min-h-[280px] flex-1 overflow-hidden rounded-tl-[30px] rounded-br-[30px] bg-primary">
+              <img
+                src="https://www.seattleschools.org/wp-content/uploads/2026/01/990A0831-scaled.jpg"
+                alt="Robótica e competição"
+                className="object-cover transition-transform duration-500 hover:scale-105"
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/70 via-primary/20 to-transparent" />
+            </div>
+          </section>
+        </div>
         {/* Competições */}
-        <section className="py-8 mb-16">
+        <section className="pt-16 pb-24 bg-base-100">
           <RevealOnScroll>
             <div className="max-w-6xl mx-auto px-4">
               <div className="text-center max-w-3xl mx-auto mb-16">
@@ -148,73 +142,98 @@ export default function Page() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+              <div className="flex flex-col gap-4 lg:flex-row">
                 {/* FLL */}
                 <Link
                   href="/fll"
-                  className="group relative overflow-hidden rounded-tl-[30px] rounded-br-[30px] bg-primary text-primary-content p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                  className="group relative min-h-[190px] flex-1 overflow-hidden rounded-tl-[28px] rounded-br-[28px] bg-primary text-primary-content transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
-                  <div className="relative">
-                    <div className="badge badge-neutral mb-6">
-                      Disponível agora
+                  <img
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2MaJHxvQaDf651mvznuwe3TPQ0RjcFLNHypBRED4X8z9LnoAHlr5ATQU&s=10"
+                    alt="Equipe FLL em competição"
+                    className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/85 via-45% to-primary/10" />
+                  <div className="relative z-10 flex min-h-[190px] items-center p-5 sm:p-6">
+                    <div className="max-w-xl">
+                      <div className="badge badge-neutral mb-3">
+                        Disponível agora
+                      </div>
+                      <h3 className="text-4xl font-black tracking-tight sm:text-5xl">
+                        FIRST LEGO League
+                      </h3>
+
+                      <p className="mt-2 max-w-lg text-sm leading-relaxed opacity-80">
+                        Organize sua documentação, acompanhe testes, estratégias
+                        e gerencie tudo o que sua equipe precisa para competir
+                        na FIRST LEGO League.
+                      </p>
                     </div>
-                    <h3 className="text-6xl font-black tracking-tight">FLL</h3>
-                    <p className="mt-4 opacity-80">
-                      Gestão completa para equipes, projetos, temporadas e
-                      torneios da FIRST LEGO League.
-                    </p>
+                    <ChevronRight
+                      className="ml-auto hidden shrink-0 pr-2 text-2xl opacity-50 transition-all duration-300 group-hover:translate-x-2 group-hover:opacity-100 sm:block"
+                    />
                   </div>
                 </Link>
 
-                {/* FTC */}
-                <div className="rounded-tl-[30px] rounded-br-[30px] border border-base-300 bg-base-200 p-8 transition-all hover:border-secondary/30">
-                  <div className="badge badge-ghost mb-6">Em breve</div>
-                  <h3 className="text-6xl font-black text-base-content/50">
-                    FTC
-                  </h3>
-                  <p className="mt-4 text-base-content/60">
-                    Recursos dedicados para equipes da FIRST Tech Challenge.
-                  </p>
-                </div>
+                {/* FTC + Mais */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:w-[420px]">
+                  {/* FTC */}
+                  <div className="rounded-tl-[28px] rounded-br-[28px] border border-base-300 bg-base-200 px-5 py-5 transition-all hover:border-secondary/30 hover:bg-base-200/80">
+                    <div className="badge badge-ghost mb-3">Em breve</div>
 
-                {/* OBR */}
-                <div className="rounded-tl-[30px] rounded-br-[30px] border border-base-300 bg-base-200 p-8 transition-all hover:border-secondary/30">
-                  <div className="badge badge-ghost mb-6">Em breve</div>
-                  <h3 className="text-6xl font-black text-base-content/50">
-                    OBR
-                  </h3>
-                  <p className="mt-4 text-base-content/60">
-                    Ferramentas para a Olimpíada Brasileira de Robótica.
-                  </p>
-                </div>
+                    <h3 className="text-4xl font-black text-base-content/50">
+                      FTC
+                    </h3>
 
-                {/* Mais */}
-                <div className="rounded-tl-[30px] rounded-br-[30px] border border-dashed border-base-300 bg-base-200/50 p-8 flex flex-col justify-center transition-all hover:border-secondary/30">
-                  <h3 className="text-6xl font-black text-base-content/40">
-                    +
-                  </h3>
-                  <p className="mt-4 text-base-content/60">
-                    Novas modalidades e programas serão adicionados futuramente.
-                  </p>
+                    <p className="mt-2 text-sm leading-relaxed text-base-content/60">
+                      Recursos dedicados para equipes da FIRST Tech Challenge.
+                    </p>
+                  </div>
+
+                  {/* Mais */}
+                  <div className="rounded-tl-[28px] rounded-br-[28px] border border-dashed border-base-300 bg-base-200/50 px-5 py-5 transition-all hover:border-secondary/30">
+                    <h3 className="text-4xl font-black text-base-content/40">
+                      +
+                    </h3>
+
+                    <p className="mt-2 text-sm leading-relaxed text-base-content/60">
+                      Novas modalidades e programas serão adicionados
+                      futuramente.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </RevealOnScroll>
         </section>
 
-        <NoiseImage variant="animated" noiseOpacity={0.8} className="relative shadow-2xl">
-          <section className="bg-neutral text-neutral-content py-16 px-4 md:px-12">
-            <h3 className="text-xl md:text-2xl font-bold">
-              Plataforma passando por transformação
-            </h3>
-            <p className="text-base-content/80">
-              O RoboStage está em constante evolução, e novas funcionalidades
-              estão sendo adicionadas regularmente. Algumas features ainda estão
-              em desenvolvimento e estão chegando em breve.
-            </p>
+        <NoiseImage
+          variant="animated"
+          noiseOpacity={0.3}
+          className="relative overflow-hidden"
+        >
+          <section className="bg-base-300 px-6 py-12 text-accent-content md:px-12 md:py-14">
+            <div className="relative z-10 max-w-3xl">
+              <h3 className="text-2xl font-black tracking-tight md:text-3xl">
+                O RoboStage está em evolução!
+              </h3>
+
+              <p className="mt-3 max-w-2xl text-base leading-relaxed opacity-75 md:text-lg">
+                Estamos construindo novas ferramentas, experiências e recursos
+                para tornar a jornada das equipes de robótica cada vez mais
+                completa.
+              </p>
+
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed opacity-60">
+                Novidades chegam continuamente. Acompanhe a evolução e descubra
+                o que vem pela frente.
+              </p>
+            </div>
           </section>
-          <div className="absolute top-0 -translate-y-1/2 left-0 -translate-x-1/2 w-100 h-100 border border-primary/30 rounded-full" />
-          <div className="absolute bottom-0 translate-y-1/2 right-0 translate-x-1/2 w-50 h-50 border border-primary/30 rounded-full" />
+
+          {/* Elementos decorativos */}
+          <div className="pointer-events-none absolute -left-24 -top-24 size-56 rounded-full border border-primary/30" />
+          <div className="pointer-events-none absolute -bottom-24 -right-16 size-40 rounded-full border border-primary/30" />
         </NoiseImage>
         <UseCasesSection />
 
@@ -260,33 +279,48 @@ export default function Page() {
           </div>
         </section>
 
-        <section className="max-w-6xl mx-auto py-16 px-4 mb-24">
-          <h3 className="text-2xl md:text-3xl font-semibold">
-            Um{" "}
-            <span className="bg-secondary text-secondary-content px-1">
-              projeto independente
-            </span>
-            , construído com a comunidade.
-          </h3>
-          <div className="border-l-5 border-secondary pl-4 mt-4 max-w-xl">
-            <p className="text-lg">
-              O RoboStage é desenvolvido por uma única pessoa e evolui
-              continuamente com a ajuda de equipes de robótica, organizadores e
-              voluntários que participam dos testes e compartilham ideias para
-              novas funcionalidades.
-            </p>
-            <p className="text-lg mt-2">
-              Cada atualização nasce de experiências reais vividas dentro das
-              competições.
-            </p>
+        <section className="mx-auto mb-16 max-w-7xl px-6 md:mb-20 md:px-12 mt-16">
+          <div className="relative overflow-hidden rounded-tl-[30px] rounded-br-[30px] bg-base-200/60 px-6 py-10 md:px-10 md:py-12">
+            <div className="pointer-events-none absolute -right-20 -top-20 size-48 rounded-full border border-secondary/20" />
+
+            <div className="relative z-10 max-w-3xl">
+              <h3 className="text-2xl font-black leading-tight tracking-tight md:text-3xl">
+                Um{" "}
+                <span className="inline-block bg-secondary px-2 text-secondary-content">
+                  projeto independente
+                </span>
+                , construído com a comunidade.
+              </h3>
+
+              <div className="mt-5 border-l-2 border-secondary pl-5">
+                <p className="text-base leading-7 text-base-content/70 md:text-lg">
+                  O RoboStage é desenvolvido de forma independente e evolui em
+                  colaboração com equipes de robótica, organizadores e
+                  voluntários que testam a plataforma, compartilham experiências
+                  e ajudam a definir seus próximos passos.
+                </p>
+
+                <p className="mt-3 text-base leading-7 text-base-content/60">
+                  Cada atualização parte de situações reais vividas dentro das
+                  competições e busca transformar essas experiências em
+                  ferramentas úteis para toda a comunidade.
+                </p>
+              </div>
+
+              <div className="mt-7">
+                <Link
+                  href="/news"
+                  className="btn btn-outline rounded-tl-xl rounded-br-xl border-secondary text-base-content hover:bg-secondary hover:text-secondary-content"
+                >
+                  <Newspaper size={17} />
+                  Acompanhar novidades
+                </Link>
+              </div>
+            </div>
           </div>
-          <Link href="/news" className="mt-8 btn bnt-outline">
-            <Newspaper className="inline-block mr-2" />
-            Ver notícias
-          </Link>
         </section>
 
-        <div className="w-full h-10 bg-gradient-to-t from-neutral to-transparent " />
+        <div className="w-full h-10 bg-gradient-to-t from-neutral to-base-100 " />
         <section className="w-full bg-neutral text-neutral-content py-24 px-4 relative">
           <div className="max-w-5xl mx-auto text-center">
             <h2 className="text-4xl md:text-5xl font-black leading-tight">

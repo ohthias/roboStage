@@ -1,14 +1,27 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-// Rotas que não exigem onboarding concluído (a própria página de onboarding,
-// assets, webhooks e a home pública, se houver).
+// Rotas que não exigem autenticação ou onboarding concluído.
 const publicRoutePatterns = [
   "/",
+  "/about(.*)",
+  "/assets(.*)",
+  "/changelog(.*)",
+  "/fll(.*)",
+  "/help(.*)",
+  "/labtest(.*)",
+  "/legal(.*)",
+  "/licences(.*)",
+  "/news(.*)",
   "/onboarding",
   "/api/webhooks(.*)",
+  "/robostage-canopy(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/showlive(.*)",
+  "/sponsors(.*)",
+  "/stagebook(.*)",
+  "/universe(.*)",
 ];
 
 const isPublicRoute = (pathname: string) =>

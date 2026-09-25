@@ -111,16 +111,6 @@ export default function ExecuteTestForm({
             })}
           </div>
 
-          {numericFields.length > 1 && (
-            <div className="mt-4 flex items-center justify-between rounded-xl border border-base-content/8 bg-base-200/60 px-4 py-2.5">
-              <div className="flex items-center gap-2 text-sm text-base-content/60">
-                <Sigma className="h-4 w-4" />
-                <span>Somatório dos campos numéricos</span>
-              </div>
-              <span className={`text-base font-bold ${accent.text}`}>{total}</span>
-            </div>
-          )}
-
           <div className="form-control mt-4 gap-1">
             <label className="label py-0">
               <span className="label-text text-xs font-medium">Observações</span>

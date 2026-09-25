@@ -5,8 +5,15 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { tests, testExecutions } from "@/db/schema/labtest";
 import type { FieldDefinition, TestEntry, TestRecord } from "@/types/labtest.types";
+import { createTestExecution as createTestExecutionAction } from "./new/actions";
 
-export { createTestExecution } from "./new/actions";
+export async function createTestExecution(input: {
+  testId: string;
+  notes?: string;
+  results?: Record<string, unknown>;
+}) {
+  return createTestExecutionAction(input);
+}
 
 function toFieldLabel(key: string) {
   return key

@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { requireAuthenticatedUser } from "@/utils/stagebook/scope";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { tests, testExecutions } from "@/db/schema/labtest";
@@ -135,8 +135,7 @@ function resolveFields(test: TestRecord, entries: TestEntry[]): FieldDefinition[
 }
 
 export async function getLabTestViewData(testId: string) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Usuário não autenticado.");
+  const userId = await requireAuthenticatedUser();
 
   const test = await db.query.tests.findFirst({
     where: and(eq(tests.id, testId), eq(tests.userId, userId)),

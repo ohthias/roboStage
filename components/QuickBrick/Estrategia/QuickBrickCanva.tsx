@@ -107,7 +107,7 @@ export default function QuickBrickCanvas() {
         setHistoryIndex((i) => i + 1);
         return newState;
       });
-      useToast().addToast("Camada limpa com sucesso!", "success");
+      addToast("Camada limpa com sucesso!", "success");
     }
   };
 

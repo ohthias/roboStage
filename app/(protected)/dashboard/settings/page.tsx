@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
+import { useToast } from "@/app/context/ToastContext";
 
 export default function SettingsPage() {
   const { isLoaded, user } = useUser();
@@ -156,6 +157,7 @@ function ProfileSection() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const { addToast } = useToast();
 
   if (!user) return null;
 
@@ -176,8 +178,10 @@ function ProfileSection() {
       });
 
       setFeedback("Perfil atualizado com sucesso.");
+      addToast("Perfil atualizado com sucesso.", "success");
     } catch {
       setFeedback("Não foi possível salvar as alterações.");
+      addToast("Não foi possível salvar as alterações.", "error");
     } finally {
       setSaving(false);
     }
@@ -194,8 +198,10 @@ function ProfileSection() {
     try {
       await currentUser.setProfileImage({ file });
       setFeedback("Foto atualizada.");
+      addToast("Foto atualizada.", "success");
     } catch {
       setFeedback("Não foi possível atualizar a foto.");
+      addToast("Não foi possível atualizar a foto.", "error");
     } finally {
       setUploading(false);
     }

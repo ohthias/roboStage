@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ptBR } from "@clerk/localizations";
+import SmoothScroll from "@/components/SmoothScroll";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -57,7 +58,9 @@ export default function RootLayout({
         <ClerkProvider localization={ptBR}>
           <Analytics />
           <SpeedInsights />
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <SmoothScroll>{children}</SmoothScroll>
+          </ToastProvider>
         </ClerkProvider>
       </body>
     </html>

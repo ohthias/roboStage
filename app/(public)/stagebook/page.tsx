@@ -1,4 +1,5 @@
 import { Footer } from "@/components/UI/Footer";
+import HeroSection from "@/components/UI/HeroSection";
 import { Navbar } from "@/components/UI/Navbar";
 import {
   BookOpen,
@@ -20,58 +21,18 @@ export default function StagebookPage() {
   return (
     <>
       <Navbar />
+      <HeroSection
+        title="Suas ideias,"
+        highlight="Seu processo!"
+        description="O Stagebook é o espaço do RoboStage para registrar ideias, estratégias, testes, aprendizados e tudo aquilo que acontece antes de uma solução ganhar vida."
+        images={["/images/index/banner_stagebook.png"]}
+        primaryAction={{ label: "Abrir meu satgebook", href: "/dashboard" }}
+        secondaryAction={{ label: "Conhecer a plataforma", href: "/stagebook#sobre" }}
+        ariaLabel="Seção do Stagebook"
+      />
       <main className="min-h-screen bg-base-100 text-base-content">
-        {/* Hero */}
-        <section className="relative overflow-hidden">
-          {/* Background grid */}
-          <div className="pointer-events-none absolute inset-0 opacity-[0.035]">
-            <div
-              className="h-full w-full"
-              style={{
-                backgroundImage: `
-                linear-gradient(to right, currentColor 1px, transparent 1px),
-                linear-gradient(to bottom, currentColor 1px, transparent 1px)
-              `,
-                backgroundSize: "32px 32px",
-              }}
-            />
-          </div>
-
-          <div className="relative mx-auto flex min-h-[70vh] max-w-7xl items-center px-6 py-24 lg:px-8">
-            <div className="max-w-4xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-200/70 px-4 py-2 text-sm font-medium backdrop-blur">
-                <BookOpen className="size-4" />
-                Stagebook
-              </div>
-
-              <h1 className="text-5xl font-black tracking-tight sm:text-6xl lg:text-7xl">
-                Suas ideias.
-                <br />
-                <span className="text-primary">Seu processo.</span>
-              </h1>
-
-              <p className="mt-6 max-w-2xl text-lg leading-relaxed text-base-content/70 sm:text-xl">
-                O Stagebook é o espaço do RoboStage para registrar ideias,
-                estratégias, testes, aprendizados e tudo aquilo que acontece
-                antes de uma solução ganhar vida.
-              </p>
-
-              <div className="mt-8 flex flex-wrap gap-3">
-                <button className="btn btn-primary btn-lg">
-                  Abrir meu Stagebook
-                  <ArrowRight className="size-5" />
-                </button>
-
-                <button className="btn btn-ghost btn-lg">
-                  Conhecer o Stagebook
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Intro */}
-        <section className="border-y border-base-300 bg-base-200/40">
+        <section className="border-b border-base-300 bg-neutral">
           <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-2 lg:px-8">
             <div>
               <p className="mb-3 text-sm font-bold uppercase tracking-widest text-primary">
@@ -99,7 +60,7 @@ export default function StagebookPage() {
         </section>
 
         {/* Features */}
-        <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
+        <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8" id="sobre">
           <div className="mb-12 max-w-2xl">
             <p className="mb-3 text-sm font-bold uppercase tracking-widest text-primary">
               O que você pode fazer

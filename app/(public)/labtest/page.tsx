@@ -21,6 +21,7 @@ import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
 import { motion, useReducedMotion } from "framer-motion";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
+import HeroSection from "@/components/UI/HeroSection";
 
 const modes = [
   {
@@ -137,120 +138,23 @@ export default function LabTestPage() {
   return (
     <>
       <Navbar />
+      <HeroSection
+        title="Seu robô,"
+        highlight="Seu teste!"
+        description="O LabTest é o espaço do RoboStage para registrar e analisar testes do seu robô, transformando execuções em informações úteis para a equipe."
+        images={["/images/index/banner_labtest.png"]}
+        primaryAction={{ label: "Abrir meu LabTest", href: "/dashboard" }}
+        secondaryAction={{
+          label: "Conhecer a plataforma",
+          href: "/labtest#como-funciona",
+        }}
+        ariaLabel="Seção do LabTest"
+      />
       <div className="min-h-screen overflow-hidden bg-base-100 text-base-content">
-        <header className="relative isolate">
-          <div
-            className="pointer-events-none absolute inset-0 -z-10 opacity-[0.035]"
-            style={{
-              backgroundImage:
-                "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
-              backgroundSize: "20px 20px",
-            }}
-          />
-
-          <div className="mx-auto max-w-7xl px-6 pb-24 pt-16 lg:px-8">
-            <motion.div
-              className="grid items-center gap-16 lg:grid-cols-[1fr_0.9fr]"
-              initial="hidden"
-              animate="show"
-              variants={{
-                hidden: {},
-                show: { transition: { staggerChildren: 0.12 } },
-              }}
-            >
-              <motion.div
-                variants={{
-                  hidden: {},
-                  show: { transition: { staggerChildren: 0.12 } },
-                }}
-              >
-                <motion.h1
-                  variants={heroItem}
-                  className="max-w-4xl text-3xl font-black sm:text-5xl lg:text-6xl"
-                >
-                  Seu robô.
-                  <br />
-                  Seus testes.
-                  <br />
-                  <motion.span
-                    className="inline-block bg-primary text-primary-content"
-                    initial={{ scaleX: 0, transformOrigin: "left" }}
-                    animate={{ scaleX: 1 }}
-                    transition={{
-                      delay: reduceMotion ? 0 : 0.65,
-                      duration: 0.5,
-                      ease,
-                    }}
-                  >
-                    Seus dados.
-                  </motion.span>
-                </motion.h1>
-
-                <motion.p
-                  variants={heroItem}
-                  className="mt-7 max-w-2xl text-lg leading-8 text-base-content/65 sm:text-xl"
-                >
-                  O <strong className="text-base-content">LabTest</strong> é o
-                  laboratório de análise do RoboStage. Teste seu robô, suas
-                  estratégias e seus componentes — e transforme cada execução em
-                  dados para tomar decisões melhores.
-                </motion.p>
-
-                <motion.div
-                  variants={heroItem}
-                  className="mt-9 flex flex-wrap gap-4"
-                >
-                  <motion.div
-                    whileHover={reduceMotion ? undefined : { y: -3 }}
-                    whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-                  >
-                    <Link
-                      href="/sign-up"
-                      className="btn btn-primary rounded-2xl px-8 shadow-lg shadow-primary/20"
-                    >
-                      Abrir LabTest
-                      <ArrowRight size={18} />
-                    </Link>
-                  </motion.div>
-
-                  <motion.a
-                    href="#como-funciona"
-                    className="btn btn-ghost rounded-2xl border border-base-content/10 px-8"
-                    whileHover={reduceMotion ? undefined : { y: -3 }}
-                    whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-                  >
-                    Conhecer a ferramenta
-                  </motion.a>
-                </motion.div>
-              </motion.div>
-
-              <LabTestHeroPreview />
-            </motion.div>
-          </div>
-          <div className="absolute bottom-0 w-full h-30 bg-gradient-to-t from-base-100 to-transparent" />
-        </header>
-        {/* Aviso */}
-        <section className="mx-auto max-w-5xl px-6 py-24 lg:px-8">
-          <div className="rounded-3xl bg-primary p-8 text-primary-content sm:p-12">
-            <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h2 className="text-3xl font-black">
-                  Função em desenvolvimento.
-                </h2>
-
-                <p className="mt-2 text-base leading-7 text-primary-content/80">
-                  O LabTest ainda está em fase de desenvolvimento. Em breve
-                  estará disponível para todas as equipes, com mais recursos e
-                  funcionalidades.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
         <main>
           <section
             id="como-funciona"
-            className="border-b border-base-content/10"
+            className="border-b border-base-content/10 bg-neutral"
           >
             <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-32">
               <RevealOnScroll>

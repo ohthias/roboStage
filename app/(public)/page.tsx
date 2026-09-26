@@ -6,82 +6,9 @@ import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
 import NoiseImage from "@/components/UI/NoiseImage";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import { ArrowUpRight, ChevronRight, Newspaper } from "lucide-react";
+import { ChevronRight, Newspaper } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
-
-const heroImages = [
-  "/images/index/hero_banner_fll.jpg",
-  "/images/index/hero_banner_fll_2.jpg",
-];
-
-function HeroSection() {
-  const [heroImage] = useState(
-    heroImages[Math.floor(Math.random() * heroImages.length)],
-  );
-
-  return (
-    <header className="relative flex min-h-[100svh] w-full items-center overflow-hidden">
-      <Image
-        src={heroImage}
-        alt="Equipe de robótica em competição"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-center"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-neutral via-neutral/70 to-neutral/20"
-      />
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-center px-5 py-24 sm:px-8 md:justify-start md:px-12 lg:py-24">
-        <div className="flex w-full max-w-2xl flex-col items-center text-center md:items-start md:text-left">
-          <h1 className="text-5xl font-black leading-[0.95] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-            O palco onde a
-          </h1>
-          <p
-            className="-rotate-1 bg-primary px-3 py-1 font-black leading-[0.95] tracking-tight text-white text-3xl md:text-4xl lg:text-6xl"
-            style={{ animationDelay: "150ms" }}
-          >
-            robótica acontece.
-          </p>
-          <p
-            className="mt-6 max-w-[34rem] text-base leading-relaxed text-base-content/80 sm:text-lg md:mt-7 md:text-xl"
-            style={{ animationDelay: "300ms" }}
-          >
-            Uma plataforma para acompanhar competições, descobrir equipes,
-            explorar projetos e conectar a comunidade da robótica.
-          </p>
-          <div
-            className="mt-8 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row"
-            style={{ animationDelay: "450ms" }}
-          >
-            <Link
-              href="/sign-up"
-              className="btn btn-primary group w-full px-6 transition-transform duration-200 hover:scale-105 sm:w-auto"
-            >
-              Cadastre-se
-              <ArrowUpRight
-                size={16}
-                className="transition-transform duration-200 group-hover:translate-x-1"
-              />
-            </Link>
-            <Link
-              href="/fll"
-              className="btn btn-ghost group w-full px-6 transition-transform duration-200 hover:scale-105 sm:w-auto"
-            >
-              Conhecer a plataforma
-              <ChevronRight
-                size={16}
-                className="transition-transform duration-200 group-hover:translate-x-1"
-              />
-            </Link>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
+import HeroSection from "@/components/UI/HeroSection";
 
 export default function Page() {
   return (
@@ -116,7 +43,7 @@ export default function Page() {
               <img
                 src="https://www.seattleschools.org/wp-content/uploads/2026/01/990A0831-scaled.jpg"
                 alt="Robótica e competição"
-                className="object-cover transition-transform duration-500 hover:scale-105"
+                className="object-cover transition-transform duration-500 hover:scale-105 h-full w-full"
               />
 
               <div className="absolute inset-0 bg-gradient-to-r from-primary/70 via-primary/20 to-transparent" />

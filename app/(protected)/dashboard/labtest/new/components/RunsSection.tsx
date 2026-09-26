@@ -24,6 +24,7 @@ export function RunsSection({
   setCompetition,
   selectedCompetition,
   selectedCompetitionConfig,
+  isFullRun,
   missionEndpoint,
   loadingMissions,
   missionsError,
@@ -47,6 +48,7 @@ export function RunsSection({
   setCompetition: (value: string) => void;
   selectedCompetition: { id: string; name: string; code?: string; teamName?: string | null; season?: string | null } | undefined;
   selectedCompetitionConfig: { label: string } | undefined;
+  isFullRun: boolean;
   missionEndpoint?: string;
   loadingMissions: boolean;
   missionsError: string | null;
@@ -151,6 +153,18 @@ export function RunsSection({
             <div className="flex items-center gap-3 rounded-xl border border-base-300 bg-base-200/40 p-4 text-sm">
               <span className="loading loading-spinner loading-sm text-primary" />
               <span className="text-base-content/70">Carregando missões...</span>
+            </div>
+          )}
+
+          {!loadingMissions && readyToFetchMissions && isFullRun && missions.length > 0 && (
+            <div className="alert alert-info mt-4">
+              <ListChecks className="size-5 shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium">Run completa configurada</p>
+                <p className="opacity-80">
+                  Todas as missões da FLL Future Edition foram adicionadas na ordem oficial.
+                </p>
+              </div>
             </div>
           )}
 

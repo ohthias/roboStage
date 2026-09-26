@@ -94,6 +94,7 @@ type CompetitionRunConfig = {
   label: string;
   missionEndpoint?: string;
   missionIdPrefix?: string;
+  fullRun?: boolean;
 };
 
 const COMPETITION_RUN_CONFIG: Record<string, CompetitionRunConfig> = {
@@ -101,8 +102,9 @@ const COMPETITION_RUN_CONFIG: Record<string, CompetitionRunConfig> = {
   FLLC: { label: "FLL Challenge", missionEndpoint: "/api/data/missions", missionIdPrefix: "M" },
   FLLCHALLENGE: { label: "FLL Challenge", missionEndpoint: "/api/data/missions", missionIdPrefix: "M" },
   CHALLENGE: { label: "FLL Challenge", missionEndpoint: "/api/data/missions", missionIdPrefix: "M" },
-  FUTUREEDITION: { label: "Future Edition", missionEndpoint: "/api/data/missions/future-edition", missionIdPrefix: "M" },
-  "FUTURE-EDITION": { label: "Future Edition", missionEndpoint: "/api/data/missions/future-edition", missionIdPrefix: "M" },
+  FUTUREEDITION: { label: "Future Edition", missionEndpoint: "/api/data/missions/future-edition", fullRun: true },
+  FLLFUTUREEDITION: { label: "Future Edition", missionEndpoint: "/api/data/missions/future-edition", fullRun: true },
+  "FUTURE-EDITION": { label: "Future Edition", missionEndpoint: "/api/data/missions/future-edition", fullRun: true },
   EXPLORE: { label: "FLL Explore" },
   FLLEXPLORE: { label: "FLL Explore" },
   DISCOVER: { label: "FLL Discover" },
@@ -230,6 +232,7 @@ export function useCreateTest() {
   const selectedCompetition = competitions.find((c) => c.id === competition);
   const selectedCompetitionConfig = resolveCompetitionRunConfig(selectedCompetition?.code);
   const missionEndpoint = selectedCompetitionConfig?.missionEndpoint;
+  const isFullRun = selectedCompetitionConfig?.fullRun ?? false;
 
   const [missionsData, setMissionsData] = useState<Record<string, unknown> | null>(null);
   const [seasonOptions, setSeasonOptions] = useState<{ value: string; label: string }[]>([]);
@@ -284,12 +287,32 @@ export function useCreateTest() {
         const seasons = deriveSeasons(data);
         setSeasonOptions(seasons);
         if (seasons.length === 0) {
-          setMissions(Array.isArray(data.missions) ? data.missions : []);
+          const loadedMissions = Array.isArray(data.missions) ? (data.missions as AnyMission[]) : [];
+          setMissions(loadedMissions);
+
+          if (isFullRun) {
+            if (typeof data.season === "string") setSeason(data.season);
+            setSelectedMissionIds(loadedMissions.map((mission) => mission.id));
+            setAnswers(
+              Object.fromEntries(
+                loadedMissions.map((mission, order) => [
+                  mission.id,
+                  {
+                    missionId: mission.id,
+                    order,
+                    value: 0,
+                    subAnswers: {},
+                    objectiveAnswers: {},
+                  },
+                ]),
+              ),
+            );
+          }
         }
       })
       .catch((err) => setMissionsError(err.message ?? "Erro ao buscar as missões"))
       .finally(() => setLoadingMissions(false));
-  }, [mode, missionEndpoint]);
+  }, [isFullRun, mode, missionEndpoint]);
 
   const readyToFetchMissions = Boolean(missionEndpoint) && (!needsSeasonPick || Boolean(season));
 
@@ -464,6 +487,7 @@ export function useCreateTest() {
     needsSeasonPick,
     selectedCompetition,
     selectedCompetitionConfig,
+    isFullRun,
     missionEndpoint,
     missions,
     loadingMissions,

@@ -302,6 +302,7 @@ export default function CreateTest() {
             setCompetition={t.setCompetition}
             selectedCompetition={t.selectedCompetition}
             selectedCompetitionConfig={t.selectedCompetitionConfig}
+            isFullRun={t.isFullRun}
             missionEndpoint={t.missionEndpoint}
             loadingMissions={t.loadingMissions}
             missionsError={t.missionsError}

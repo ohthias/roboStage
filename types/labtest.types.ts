@@ -16,6 +16,7 @@ export interface FieldOption {
 export interface FieldDefinition {
   fieldKey: string;
   label: string;
+  description?: string | null;
   type: FieldType;
   unit?: string | null;
   targetValue?: number | null;

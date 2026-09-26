@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 
-const DATA_PATH = path.join(process.cwd(), "data", "fll", "future-edition.json");
+const DATA_PATH = path.join(process.cwd(), "public", "data", "fll", "future-edition.json");
 
 export async function GET() {
   try {

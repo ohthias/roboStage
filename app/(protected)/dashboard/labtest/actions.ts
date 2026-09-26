@@ -99,6 +99,7 @@ function buildMotorFields(config: Record<string, unknown>): FieldDefinition[] {
       defs.push({
         fieldKey: `${base}__rotacao`,
         label: `${a} + ${b} · Rotação`,
+        description: "Velocidade de rotação dos motores durante o teste.",
         type: "number",
         unit: "RPM",
         order: index * 2,
@@ -106,6 +107,7 @@ function buildMotorFields(config: Record<string, unknown>): FieldDefinition[] {
       defs.push({
         fieldKey: `${base}__tempo`,
         label: `${a} + ${b} · Tempo`,
+        description: "Tempo de execução dos motores durante o teste.",
         type: "duration",
         unit: "s",
         order: index * 2 + 1,
@@ -118,6 +120,7 @@ function buildMotorFields(config: Record<string, unknown>): FieldDefinition[] {
     defs.push({
       fieldKey: `${motor}__rotacao`,
       label: `${motor} · Rotação`,
+      description: "Velocidade de rotação do motor durante o teste.",
       type: "number",
       unit: "RPM",
       order: index * 2,
@@ -125,6 +128,7 @@ function buildMotorFields(config: Record<string, unknown>): FieldDefinition[] {
     defs.push({
       fieldKey: `${motor}__tempo`,
       label: `${motor} · Tempo`,
+      description: "Tempo de execução do motor durante o teste.",
       type: "duration",
       unit: "s",
       order: index * 2 + 1,
@@ -163,6 +167,7 @@ function buildFieldsFromConfig(config: Record<string, unknown> | null | undefine
       defs.push({
         fieldKey: key,
         label: toFieldLabel(key),
+        description: typeof item.descricao === "string" ? item.descricao : null,
         type: typeof item.tipo === "string" && item.tipo === "boolean" ? "boolean" : "number",
         unit: typeof item.unidade === "string" ? item.unidade : null,
         order: index,

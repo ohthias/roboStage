@@ -79,9 +79,11 @@ export default function ExecuteTestPage() {
           <ExecuteTestForm
             testId={test.id}
             mode={test.mode}
+            season={test.season}
             testName={test.name}
             fields={fields}
             nextExecutionNumber={nextExecutionNumber}
+            isMotorPairs={test.config?.modo === "duplas"}
           />
         )}
       </div>

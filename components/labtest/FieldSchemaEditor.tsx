@@ -75,6 +75,16 @@ export function FieldSchemaEditor({
             className="input input-bordered input-sm flex-1 focus:input-primary"
           />
 
+          <input
+            type="text"
+            placeholder="Descrição (opcional)"
+            value={field.description ?? ""}
+            onChange={(e) =>
+              update(field.fieldKey, { description: e.target.value || null })
+            }
+            className="input input-bordered input-sm flex-1 focus:input-primary"
+          />
+
           {allowedTypes.length > 1 && (
             <select
               className="select select-bordered select-sm w-full sm:w-36"

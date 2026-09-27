@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { tests, testExecutions } from "@/db/schema";
+import type { FieldDefinition } from "@/types/labtest.types";
 
 // ---------------------------------------------------------------------------
 // Tipos de entrada/saída — o `config` e o `results` são jsonb livre;
@@ -18,6 +19,7 @@ type CreateTestBody = {
   mode: TestMode;
   season?: string | null;
   config: Record<string, unknown>;
+  fields?: FieldDefinition[];
 };
 
 type ExecutionEntry = {
@@ -124,7 +126,7 @@ export async function POST(req: NextRequest) {
 
   try {
     if (body.action === "create") {
-      const { name, description, mode, season, config }: CreateTestBody = body;
+      const { name, description, mode, season, config, fields }: CreateTestBody = body;
 
       if (!name?.trim()) {
         return NextResponse.json({ error: "Nome é obrigatório" }, { status: 400 });
@@ -143,7 +145,9 @@ export async function POST(req: NextRequest) {
           // "season: se tiver a da fll registra o nome da temporada em minúsculo"
           season: season ? season.toLowerCase() : null,
           status: "planejamento",
-          config: config ?? {},
+          config: config ?? (mode === "runs"
+            ? { missions: (fields ?? []).map((field) => field.fieldKey) }
+            : {}),
         })
         .returning({ id: tests.id });
 

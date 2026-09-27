@@ -8,6 +8,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import {
   Award,
   Activity,
@@ -16,6 +17,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
+  ClipboardList,
   FlaskConical,
   ListOrdered,
   XCircle,
@@ -37,6 +39,7 @@ import { getModeDefinition, ACCENT_STYLES } from "@/utils/labtest/modes";
 import { computeFieldStats, entryTotal, maxPossibleTotal } from "@/utils/labtest/stats";
 import { getFieldValue } from "@/types/labtest.types";
 import { StatCard, SectionHeader, CustomTooltip, fmtDate } from "@/components/labtest/shared";
+import { LabTestModeCharts } from "@/components/labtest/LabTestModeCharts";
 import type { FieldDefinition, TestEntry } from "@/types/labtest.types";
 import { getLabTestViewData } from "../actions";
 
@@ -312,10 +315,6 @@ function EntryHistory({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Página principal
-// ---------------------------------------------------------------------------
-
 export default function LabTestView() {
   const params = useParams();
   const testId = String(params.id ?? "");
@@ -408,15 +407,33 @@ export default function LabTestView() {
               )}
             </div>
           </div>
+
+          <Link
+            href={`/dashboard/labtest/${test.id}/execute`}
+            className={`btn btn-sm gap-2 rounded-lg ${style.text}`}
+          >
+            <ClipboardList className="h-3.5 w-3.5" />
+            Registrar execução
+          </Link>
         </div>
 
         <OverviewStats fields={fields} entries={entries} accent={modeDef.accent} />
 
-        {(hasNumericFields || numericFieldCount > 1) && (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {hasNumericFields && <TotalEvolutionChart fields={fields} entries={entries} />}
-            {numericFieldCount > 1 && <FieldComparisonChart fields={fields} entries={entries} />}
-          </div>
+        {test.mode === "runs" ? (
+          (hasNumericFields || numericFieldCount > 1) && (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              {hasNumericFields && <TotalEvolutionChart fields={fields} entries={entries} />}
+              {numericFieldCount > 1 && <FieldComparisonChart fields={fields} entries={entries} />}
+            </div>
+          )
+        ) : (
+          <LabTestModeCharts
+            mode={test.mode}
+            config={test.config}
+            fields={fields}
+            entries={entries}
+            accent={modeDef.accent}
+          />
         )}
 
         <EntryHistory fields={fields} entries={entries} accent={modeDef.accent} />

@@ -21,6 +21,7 @@ type MissionAnswer = {
 type RunsPayload = {
   mode: "runs";
   competitionId: string;
+  competitionName?: string | null;
   season?: string | null;
   missionOrder: string[]; // t.orderedSelected.map(m => m.id) — ordem definida pelo usuário
   answers: Record<string, MissionAnswer>; // t.answers
@@ -100,6 +101,8 @@ function buildConfig(input: CreateTestInput) {
       return {
         missions: input.missionOrder,
         answers: input.answers,
+        ...(input.competitionId ? { competitionId: input.competitionId } : {}),
+        ...(input.competitionName ? { competitionName: input.competitionName } : {}),
       };
     }
 
@@ -198,7 +201,7 @@ export async function createTest(input: CreateTestInput) {
     })
     .returning();
 
-  revalidatePath("/tests");
+  revalidatePath("/dashboard/labtest");
 
   return created;
 }
@@ -220,8 +223,8 @@ export async function updateTestStatus(testId: string, status: string) {
     throw new Error("Teste não encontrado ou sem permissão.");
   }
 
-  revalidatePath("/tests");
-  revalidatePath(`/tests/${testId}`);
+  revalidatePath("/dashboard/labtest");
+  revalidatePath(`/dashboard/labtest/${testId}`);
 
   return updated;
 }
@@ -237,7 +240,7 @@ export async function deleteTest(testId: string) {
     .delete(tests)
     .where(and(eq(tests.id, testId), eq(tests.userId, userId)));
 
-  revalidatePath("/tests");
+  revalidatePath("/dashboard/labtest");
 }
 
 /* =========================================================================
@@ -280,7 +283,7 @@ export async function createTestExecution(input: {
     })
     .returning();
 
-  revalidatePath(`/tests/${input.testId}`);
+  revalidatePath(`/dashboard/labtest/${input.testId}`);
 
   return created;
 }

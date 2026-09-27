@@ -5,12 +5,10 @@ import {
   ArrowLeft,
   Gauge,
   ListChecks,
-  Plus,
-  Settings2,
   SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
-
+import { useToast } from "@/app/context/ToastContext";
 import { useCreateTest, type CreateTestMode } from "./Usecreatetest";
 import { createTest, type CreateTestInput } from "./actions";
 import { TestDetailsSection } from "./components/TestDetailsSection";
@@ -33,6 +31,8 @@ export default function CreateTest() {
   const [isSaving, startSaving] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+
+  const { addToast } = useToast();
 
   function updateCustomMeta(id: string, patch: Partial<CustomParamMeta>) {
     setCustomMeta((prev) => ({

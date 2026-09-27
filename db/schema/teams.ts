@@ -27,6 +27,10 @@ export const teams = pgTable(
     // Texto livre por enquanto — se no futuro "organização" virar uma entidade
     // formal (ex: escola, empresa), basta trocar por uma FK sem quebrar nada aqui.
     organizationName: text("organization_name"),
+    // Toda equipe criada pelo Stagebook tem uma Clerk Organization por trás
+    // (ver lib/stagebook/actions/teams.ts). Nullable só por segurança de
+    // schema — na prática, toda linha nova sempre tem isso preenchido.
+    clerkOrgId: text("clerk_org_id"),
     createdBy: text("created_by").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -35,6 +39,7 @@ export const teams = pgTable(
   (table) => ({
     leagueIdIdx: index("teams_league_id_idx").on(table.leagueId),
     createdByIdx: index("teams_created_by_idx").on(table.createdBy),
+    clerkOrgIdUnique: unique("teams_clerk_org_id_unique").on(table.clerkOrgId),
     leagueFk: foreignKey({
       columns: [table.leagueId],
       foreignColumns: [leagues.id],

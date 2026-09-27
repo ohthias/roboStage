@@ -313,7 +313,7 @@ const ViewSection: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden w-full h-full relative">
+      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden w-full h-[calc(100vh-4rem)] relative">
         <aside className="w-full lg:w-[300px] bg-base-200 flex flex-col h-full shrink-0 rounded-lg border border-base-content/10 overflow-hidden">
           <div className="p-1.5 border-b border-base-content/10 flex items-center justify-between bg-base-300">
             <div className="flex gap-0.5 bg-base-300 rounded-md p-0.5">
@@ -360,7 +360,7 @@ const ViewSection: React.FC = () => {
           </div>
         </aside>
 
-        <section className="flex-grow relative flex items-center justify-center overflow-hidden p-3.5">
+        <section className="flex-grow relative flex items-center justify-center overflow-hidden p-3.5 h-full">
           <div className="relative z-10 max-w-full max-h-full">
             <Mat
               trajectory={trajectory}

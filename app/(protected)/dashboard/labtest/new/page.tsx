@@ -159,7 +159,9 @@ export default function CreateTest() {
       try {
         const created = await createTest(payload);
         setSaveSuccess(`Teste "${created.name}" salvo com sucesso.`);
+        addToast(`Teste "${created.name}" salvo com sucesso.`, "success");
       } catch (err) {
+        addToast(err instanceof Error ? err.message : "Erro ao salvar o teste.", "error");
         setSaveError(
           err instanceof Error ? err.message : "Erro ao salvar o teste.",
         );

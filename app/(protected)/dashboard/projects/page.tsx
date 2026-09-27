@@ -8,7 +8,7 @@ const projects: any[] = [];
 
 export default function ProjectsPage() {
   return (
-    <div className="space-y-8">
+    <div className="mx-auto w-full px-6 py-8 space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">

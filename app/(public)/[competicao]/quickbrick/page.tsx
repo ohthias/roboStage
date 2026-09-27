@@ -26,7 +26,8 @@ export default function QuickBrickHome() {
   }, []);
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pb-8 pt-4">
+    <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
       <Header
         type="QuickBrick"
         name="QuickBrick"

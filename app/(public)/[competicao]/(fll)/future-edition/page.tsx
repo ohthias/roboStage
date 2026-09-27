@@ -1,4 +1,4 @@
-import { ArrowUpRight, Cpu, File, Leaf, TriangleAlert, Trophy, Users } from "lucide-react";
+import { ArrowUpRight, Cpu, File, Leaf, NotepadText, TriangleAlert, Trophy, Users } from "lucide-react";
 import Link from "next/link";
 
 const heroBadges = [
@@ -13,6 +13,16 @@ const tools = [
     icon: Trophy,
     title: "Pontuador",
     description: "Simule partidas e calcule automaticamente sua pontuação.",
+    text: "text-secondary",
+    iconBg: "bg-secondary text-secondary-content",
+    iconGhost: "text-secondary",
+    bar: "bg-secondary",
+  },
+  {
+    href: "/fll/future-edition/rubric",
+    icon: NotepadText,
+    title: "Rúbrica de Avaliação",
+    description: "Ferramenta de avaliação das rúbricas de forma interativa.",
     text: "text-secondary",
     iconBg: "bg-secondary text-secondary-content",
     iconGhost: "text-secondary",

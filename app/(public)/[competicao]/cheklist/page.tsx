@@ -1,9 +1,3 @@
-// app/(public)/fll/confere-ai/page.tsx
-//
-// Rota pública, sem autenticação e sem dependência do Dashboard.
-// Server Component: apenas metadata + composição. Toda a interatividade
-// (estado, cookies, JSON via fetch) fica isolada no ConfereAI (client component).
-
 import type { Metadata } from "next";
 import ConfereAI from "@/components/competicoes/FLL/confere-ai/ConfereAI";
 

@@ -4,7 +4,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { tests, testExecutions } from "@/db/schema/labtest";
 import { revalidatePath } from "next/cache";
-import { auth } from "@clerk/nextjs/server";
+import { requireAuthenticatedUser } from "@/utils/stagebook/scope";
 
 /* =========================================================================
  * Tipos de entrada — espelham o estado que o hook `useCreateTest` produz
@@ -173,10 +173,7 @@ function resolveTestMode(
  * ========================================================================= */
 
 export async function createTest(input: CreateTestInput) {
-  const session = await auth();
-  if (!session?.userId) {
-    throw new Error("Usuário não autenticado.");
-  }
+  const userId = await requireAuthenticatedUser();
 
   if (!input.name?.trim()) {
     throw new Error("Informe um nome para o teste.");
@@ -192,7 +189,7 @@ export async function createTest(input: CreateTestInput) {
   const [created] = await db
     .insert(tests)
     .values({
-      userId: session.userId,
+      userId,
       teamId: input.teamId ?? null,
       folderId: input.folderId ?? null,
       name: input.name.trim(),
@@ -214,15 +211,12 @@ export async function createTest(input: CreateTestInput) {
  * ========================================================================= */
 
 export async function updateTestStatus(testId: string, status: string) {
-  const session = await auth();
-  if (!session?.userId) {
-    throw new Error("Usuário não autenticado.");
-  }
+  const userId = await requireAuthenticatedUser();
 
   const [updated] = await db
     .update(tests)
     .set({ status, updatedAt: new Date() })
-    .where(and(eq(tests.id, testId), eq(tests.userId, session.userId)))
+    .where(and(eq(tests.id, testId), eq(tests.userId, userId)))
     .returning();
 
   if (!updated) {
@@ -240,14 +234,11 @@ export async function updateTestStatus(testId: string, status: string) {
  * ========================================================================= */
 
 export async function deleteTest(testId: string) {
-  const session = await auth();
-  if (!session?.userId) {
-    throw new Error("Usuário não autenticado.");
-  }
+  const userId = await requireAuthenticatedUser();
 
   await db
     .delete(tests)
-    .where(and(eq(tests.id, testId), eq(tests.userId, session.userId)));
+    .where(and(eq(tests.id, testId), eq(tests.userId, userId)));
 
   revalidatePath("/dashboard/labtest");
 }
@@ -262,15 +253,12 @@ export async function createTestExecution(input: {
   notes?: string;
   results?: Record<string, unknown>;
 }) {
-  const session = await auth();
-  if (!session?.userId) {
-    throw new Error("Usuário não autenticado.");
-  }
+  const userId = await requireAuthenticatedUser();
 
   const [owned] = await db
     .select({ id: tests.id })
     .from(tests)
-    .where(and(eq(tests.id, input.testId), eq(tests.userId, session.userId)));
+    .where(and(eq(tests.id, input.testId), eq(tests.userId, userId)));
 
   if (!owned) {
     throw new Error("Teste não encontrado ou sem permissão.");
@@ -305,14 +293,11 @@ export async function createTestExecution(input: {
  * ========================================================================= */
 
 export async function listTests() {
-  const session = await auth();
-  if (!session?.userId) {
-    throw new Error("Usuário não autenticado.");
-  }
+  const userId = await requireAuthenticatedUser();
 
   return db
     .select()
     .from(tests)
-    .where(eq(tests.userId, session.userId))
+    .where(eq(tests.userId, userId))
     .orderBy(desc(tests.createdAt));
 }

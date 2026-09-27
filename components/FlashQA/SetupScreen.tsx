@@ -32,8 +32,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart }) => {
     totalMinutes < 1 ? `${count * timePerCard}s` : `~${totalMinutes} min`;
 
   return (
-    <div className="flex flex-col gap-4 lg:gap-6 max-w-6xl mx-auto">
-      <Breadcrumbs start="fll" />
+    <div className="space-y-8">
       <Header
         type="Desafio"
         name="RECALL"

@@ -14,13 +14,14 @@ export default function SmoothScroll({
       smoothWheel: true,
       easing: (t: number) => t,
     });
+    let animationFrame: number;
 
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      animationFrame = requestAnimationFrame(raf);
     }
 
-    const animationFrame = requestAnimationFrame(raf);
+    animationFrame = requestAnimationFrame(raf);
 
     return () => {
       cancelAnimationFrame(animationFrame);

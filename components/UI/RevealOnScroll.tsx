@@ -40,7 +40,7 @@ export default function RevealOnScroll({
       {
         threshold: 0.12,
         rootMargin: "0px 0px -50px 0px",
-      }
+      },
     );
 
     observer.observe(element);
@@ -64,11 +64,15 @@ export default function RevealOnScroll({
         transition-all
         duration-700
         ease-[cubic-bezier(0.22,1,0.36,1)]
-        ${visible ? "translate-x-0 translate-y-0 opacity-100" : `${directions[direction]} opacity-0`}
+        ${
+          visible
+            ? "translate-x-0 translate-y-0 opacity-100"
+            : `${directions[direction]} opacity-0`
+        }
         ${className}
       `}
       style={{
-        transitionDelay: `${delay}ms`,
+        transitionDelay: `${delay * 1000}ms`,
       }}
     >
       {children}

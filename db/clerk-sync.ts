@@ -13,10 +13,18 @@ import type { TeamRole } from "@/utils/stagebook/scope";
  * (mentor/competidor/colaborador), mais granular do que admin/member.
  */
 function mapClerkOrgRole(role: string, stagebookRole?: unknown): TeamRole {
-  if (role === "org:admin") return "owner";
+  if (stagebookRole === "tecnico") {
+    return "owner";
+  }
+
+  if (role === "org:admin") {
+    return "owner";
+  }
+
   if (stagebookRole === "mentor" || stagebookRole === "competidor" || stagebookRole === "colaborador") {
     return stagebookRole;
   }
+
   return "colaborador";
 }
 

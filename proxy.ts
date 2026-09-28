@@ -41,15 +41,23 @@ export default clerkMiddleware(async (auth, req) => {
   // Sem sessão: redireciona para o sign-in antes de acessar rotas protegidas.
   if (!userId) {
     const url = req.nextUrl.clone();
+
     url.pathname = "/sign-in";
+    url.searchParams.set(
+      "redirect_url",
+      req.nextUrl.pathname + req.nextUrl.search,
+    );
+
     return NextResponse.redirect(url);
   }
 
   // Só bloqueia quando a flag existir e estiver explicitamente desativada.
   // Se o claim não vier no token ou estiver desatualizado, evita loop de redirect.
-  const onboardingComplete =
-    (sessionClaims?.publicMetadata as { onboardingComplete?: boolean } | undefined)
-      ?.onboardingComplete;
+  const onboardingComplete = (
+    sessionClaims?.publicMetadata as
+      | { onboardingComplete?: boolean }
+      | undefined
+  )?.onboardingComplete;
 
   if (onboardingComplete === false) {
     const url = req.nextUrl.clone();
@@ -61,8 +69,5 @@ export default clerkMiddleware(async (auth, req) => {
 });
 
 export const config = {
-  matcher: [
-    "/((?!_next|.*\\..*).*)",
-    "/(api|trpc)(.*)",
-  ],
+  matcher: ["/((?!_next|.*\\..*).*)", "/(api|trpc)(.*)"],
 };

@@ -28,9 +28,8 @@ export default function Home() {
         code: cat.code,
         label: cat.name,
       })),
-    ], [
-      RUBRIC
-    ]
+    ],
+    [RUBRIC],
   );
 
   function handleSelect(indicatorId: string, level: LevelKey) {
@@ -83,16 +82,18 @@ export default function Home() {
             className="tabs tabs-box bg-base-200/70 mb-4 no-print w-fit flex-wrap"
           >
             {tabs.map((tab) => (
-              <a
+              <button
                 key={tab.id}
+                type="button"
                 role="tab"
+                aria-selected={activeTab === tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`tab font-mono-tech text-xs sm:text-sm gap-2 ${
+                className={`tab gap-2 font-mono-tech text-xs sm:text-sm ${
                   activeTab === tab.id ? "tab-active" : ""
                 }`}
               >
                 {tab.label}
-              </a>
+              </button>
             ))}
           </div>
 

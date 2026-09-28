@@ -11,22 +11,34 @@ interface BottomSheetMobileProps {
   headerRight?: React.ReactNode;
 }
 
-const BottomSheetMobile: React.FC<BottomSheetMobileProps> = ({ open, title, onClose, children, headerRight }) => {
+const BottomSheetMobile: React.FC<BottomSheetMobileProps> = ({
+  open,
+  title,
+  onClose,
+  children,
+  headerRight,
+}) => {
   return (
     <>
       {/* Backdrop */}
       <div
         onClick={onClose}
         className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-200 ${
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          open
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
       />
       {/* Sheet */}
       <div
-        className={`fixed left-0 right-0 bottom-0 z-50 bg-base-100 rounded-t-2xl border-t border-base-content/10 shadow-2xl transition-transform duration-250 ease-out max-h-[80vh] flex flex-col ${
-          open ? "translate-y-0" : "translate-y-full"
+        aria-hidden={!open}
+        className={`fixed bottom-0 left-0 right-0 z-50 flex max-h-[80vh] flex-col rounded-t-2xl border-t border-base-content/10 bg-base-100 shadow-2xl transition-transform duration-250 ease-out ${
+          open
+            ? "translate-y-0 pointer-events-auto"
+            : "translate-y-full pointer-events-none"
         }`}
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        inert={!open ? false : undefined}
       >
         <div className="flex items-center justify-center pt-2">
           <div className="w-10 h-1.5 rounded-full bg-base-content/20" />
@@ -35,7 +47,11 @@ const BottomSheetMobile: React.FC<BottomSheetMobileProps> = ({ open, title, onCl
           <h3 className="text-sm font-bold uppercase tracking-wide">{title}</h3>
           <div className="flex items-center gap-2">
             {headerRight}
-            <button onClick={onClose} className="btn btn-ghost btn-sm btn-circle" aria-label="Fechar">
+            <button
+              onClick={onClose}
+              className="btn btn-ghost btn-sm btn-circle"
+              aria-label="Fechar"
+            >
               <X size={18} />
             </button>
           </div>

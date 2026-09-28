@@ -249,7 +249,6 @@ export default function LabTestResponseForm({
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {fields.map((field) => {
                       const fv = entry.values.find((v) => v.fieldKey === field.fieldKey);
-                      console.log("Field value for", field.fieldKey, fv);
                       return (
                         <div key={field.fieldKey} className="form-control gap-1">
                           <label className="label py-0">

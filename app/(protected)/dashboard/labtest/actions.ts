@@ -72,6 +72,31 @@ function normalizeResults(raw: unknown): Record<string, unknown> {
   return obj;
 }
 
+function normalizeFllAnswers(raw: unknown): TestEntry["fllAnswers"] {
+  if (!raw || typeof raw !== "object") return undefined;
+
+  const answers = (raw as Record<string, unknown>).answers;
+  if (!answers || typeof answers !== "object" || Array.isArray(answers)) return undefined;
+
+  const normalized = Object.fromEntries(
+    Object.entries(answers).flatMap(([missionId, answer]) => {
+      if (!answer || typeof answer !== "object") return [];
+      const record = answer as Record<string, unknown>;
+      const subAnswers = record.subAnswers;
+      return [[missionId, {
+        value: typeof record.value === "number" ? record.value : 0,
+        subAnswers: subAnswers && typeof subAnswers === "object" && !Array.isArray(subAnswers)
+          ? Object.fromEntries(
+              Object.entries(subAnswers).map(([key, value]) => [key, typeof value === "number" ? value : 0]),
+            )
+          : {},
+      }]];
+    }),
+  );
+
+  return Object.keys(normalized).length > 0 ? normalized : undefined;
+}
+
 // ---------------------------------------------------------------------------
 // CalibraBot · Motores — não guarda "parametros"/"indicadores" no config,
 // guarda a lista de motores (e, no modo duplas, os pares já combinados).
@@ -244,6 +269,7 @@ export async function getLabTestViewData(testId: string) {
       notes: execution.notes,
       createdAt: execution.createdAt.toISOString(),
       values,
+      fllAnswers: normalizeFllAnswers(execution.results),
     };
   });
 

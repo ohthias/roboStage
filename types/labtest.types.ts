@@ -37,6 +37,10 @@ export interface TestEntry {
   notes: string | null;
   createdAt: string;
   values: FieldValue[];
+  fllAnswers?: Record<string, {
+    value: number;
+    subAnswers: Record<string, number>;
+  }>;
 }
 
 export interface TestRecord {

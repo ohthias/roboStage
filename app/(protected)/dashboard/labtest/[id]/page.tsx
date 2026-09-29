@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Award,
@@ -22,6 +22,7 @@ import {
   ListOrdered,
   XCircle,
   ArrowLeft,
+  Trash2,
 } from "lucide-react";
 import {
   LineChart,
@@ -60,6 +61,7 @@ import {
   scoreFllExecution,
   scoreFllMission,
 } from "@/utils/labtest/fll";
+import { deleteTest } from "../new/actions";
 
 // ---------------------------------------------------------------------------
 // Bloco de estatísticas gerais — funciona para qualquer modo
@@ -771,6 +773,7 @@ export default function LabTestView() {
   const [entries, setEntries] = useState<TestEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!testId) return;
@@ -877,14 +880,27 @@ export default function LabTestView() {
               )}
             </div>
           </div>
-
-          <Link
-            href={`/dashboard/labtest/${test.id}/execute`}
-            className={`btn btn-sm gap-2 rounded-lg ${style.text}`}
-          >
-            <ClipboardList className="h-3.5 w-3.5" />
-            Registrar execução
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/dashboard/labtest/${test.id}/execute`}
+              className={`btn btn-sm gap-2 rounded-lg ${style.text}`}
+            >
+              <ClipboardList className="h-3.5 w-3.5" />
+              Registrar execução
+            </Link>
+            <button
+              className="btn btn-sm gap-2 rounded-lg"
+              onClick={() => {
+                if (confirm("Tem certeza que deseja excluir este teste?")) {
+                  deleteTest(test.id);
+                  router.push("/dashboard/labtest");
+                }
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Excluir teste
+            </button>
+          </div>
         </div>
 
         {test.mode === "runs" && test.season ? (

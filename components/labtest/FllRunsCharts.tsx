@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Award, BarChart3 } from "lucide-react";
+import { Award, BarChart3, Disc3 } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -27,6 +27,7 @@ import {
 } from "@/utils/labtest/fll";
 import { ACCENT_STYLES, type AccentColor } from "@/utils/labtest/modes";
 import { CustomTooltip, SectionHeader, StatCard } from "./shared";
+import Image from "next/image";
 
 interface FllRunsChartsProps {
   season: string;
@@ -223,38 +224,30 @@ function MissionChart({
                 index,
               );
 
-              const subData: ChartValue[] = entries
-                .map((entry): ChartValue | null => {
-                  const missionAnswer = entry.fllAnswers?.[mission.id];
+              const subData: ChartValue[] = entries.map((entry): ChartValue => {
+                const missionAnswer = entry.fllAnswers?.[mission.id];
 
-                  if (!missionAnswer) {
-                    return null;
-                  }
+                // Sem resposta = Não realizado = 0
+                const subAnswer =
+                  missionAnswer?.subAnswers?.[subMissionKey] ?? 0;
 
-                  const subAnswer = missionAnswer.subAnswers?.[subMissionKey];
-
-                  if (subAnswer === undefined || subAnswer === null) {
-                    return null;
-                  }
-
-                  return {
-                    name: `#${entry.executionNumber}`,
-                    value: scoreFllMission(
-                      {
-                        id: subMissionKey,
-                        name: subMission.submission ?? `Submissão ${index + 1}`,
-                        points: subMission.points,
-                        type: subMission.type,
-                      },
-                      {
-                        value: subAnswer,
-                        subAnswers: {},
-                      },
-                    ),
-                    rawValue: subAnswer,
-                  };
-                })
-                .filter((item): item is ChartValue => item !== null);
+                return {
+                  name: `#${entry.executionNumber}`,
+                  value: scoreFllMission(
+                    {
+                      id: subMissionKey,
+                      name: subMission.submission ?? `Submissão ${index + 1}`,
+                      points: subMission.points,
+                      type: subMission.type,
+                    },
+                    {
+                      value: subAnswer,
+                      subAnswers: {},
+                    },
+                  ),
+                  rawValue: subAnswer,
+                };
+              });
 
               return (
                 <div
@@ -276,7 +269,7 @@ function MissionChart({
                   )}
                 </div>
               );
-            })}
+            })} 
           </div>
         </div>
       )}
@@ -348,6 +341,24 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
 
   if (missions.length === 0) return null;
 
+  const precisionDiscsMode = (() => {
+    const frequencies = new Map<number, number>();
+
+    entries.forEach((entry) => {
+      const remaining = entry.precisionDiscs?.remaining;
+
+      if (typeof remaining === "number") {
+        frequencies.set(remaining, (frequencies.get(remaining) ?? 0) + 1);
+      }
+    });
+
+    if (!frequencies.size) return 0;
+
+    return [...frequencies.entries()].reduce((mode, current) =>
+      current[1] > mode[1] ? current : mode,
+    )[0];
+  })();
+
   const scoreData = scoredEntries.map((entry) => ({
     name: `#${entry.executionNumber}`,
     score: entry.score,
@@ -365,7 +376,6 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
           icon={Award}
           accent={accent}
         />
-
         <StatCard
           label="Menor execução"
           value={`${
@@ -374,6 +384,12 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
               : 0
           } pts`}
           icon={BarChart3}
+          accent={accent}
+        />
+        <StatCard
+          label="Moda dos discos"
+          value={`${precisionDiscsMode} restantes`}
+          icon={Disc3}
           accent={accent}
         />
       </div>
@@ -435,6 +451,75 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
                   entries={entries}
                   chartColor={chartColor}
                 />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-base-content/10 bg-base-100 p-5">
+        <SectionHeader label="Discos de Precisão por execução" />
+
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {entries.map((entry) => {
+            const precisionDiscs = entry.precisionDiscs;
+
+            const total = precisionDiscs?.total ?? 6;
+            const remaining = precisionDiscs?.remaining ?? 0;
+            const used = precisionDiscs?.used ?? total - remaining;
+
+            return (
+              <div
+                key={entry.executionNumber}
+                className="rounded-xl border border-base-content/10 bg-base-200/30 p-4"
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg ${style.bgSoft}`}
+                    >
+                      <Disc3 className={`h-4 w-4 ${style.text}`} />
+                    </div>
+
+                    <span className="text-sm font-semibold">
+                      Execução #{entry.executionNumber}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {Array.from({ length: total }, (_, index) => {
+                    const isRemaining = index < remaining;
+
+                    return (
+                      <div
+                        key={index}
+                        className={`
+                  relative size-10 overflow-hidden rounded-lg
+                  bg-base-100 transition-opacity
+                  ${isRemaining ? "opacity-100" : "opacity-30"}
+                `}
+                      >
+                        <Image
+                          src={
+                            isRemaining
+                              ? "/images/labTest/fll_pt_active.png"
+                              : "/images/labTest/fll_pt_disable.png"
+                          }
+                          alt=""
+                          fill
+                          sizes="40px"
+                          className="object-contain"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-3 flex items-center justify-between text-xs text-base-content/50">
+                  <span>{remaining} restantes</span>
+                  <span>{used} utilizadas</span>
+                </div>
               </div>
             );
           })}

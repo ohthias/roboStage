@@ -4,7 +4,12 @@ import { requireAuthenticatedUser } from "@/utils/stagebook/scope";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { tests, testExecutions } from "@/db/schema/labtest";
-import type { FieldDefinition, TestEntry, TestRecord } from "@/types/labtest.types";
+import type {
+  FieldDefinition,
+  FllExecutionResults,
+  TestEntry,
+  TestRecord,
+} from "@/types/labtest.types";
 import { createTestExecution as createTestExecutionAction } from "./new/actions";
 
 export async function createTestExecution(input: {
@@ -32,7 +37,11 @@ function inferFieldType(value: unknown): FieldDefinition["type"] {
 }
 
 function normalizeScalar(value: unknown): number | boolean | string | null {
-  if (typeof value === "number" || typeof value === "boolean" || typeof value === "string") {
+  if (
+    typeof value === "number" ||
+    typeof value === "boolean" ||
+    typeof value === "string"
+  ) {
     return value;
   }
   if (value === null || value === undefined) return null;
@@ -63,7 +72,10 @@ function normalizeResults(raw: unknown): Record<string, unknown> {
     const values = (obj as { values: Array<Record<string, unknown>> }).values;
     return Object.fromEntries(
       values.map((entry, index) => {
-        const key = typeof entry.fieldKey === "string" ? entry.fieldKey : `campo_${index + 1}`;
+        const key =
+          typeof entry.fieldKey === "string"
+            ? entry.fieldKey
+            : `campo_${index + 1}`;
         return [key, entry.value ?? null];
       }),
     );
@@ -76,21 +88,33 @@ function normalizeFllAnswers(raw: unknown): TestEntry["fllAnswers"] {
   if (!raw || typeof raw !== "object") return undefined;
 
   const answers = (raw as Record<string, unknown>).answers;
-  if (!answers || typeof answers !== "object" || Array.isArray(answers)) return undefined;
+  if (!answers || typeof answers !== "object" || Array.isArray(answers))
+    return undefined;
 
   const normalized = Object.fromEntries(
     Object.entries(answers).flatMap(([missionId, answer]) => {
       if (!answer || typeof answer !== "object") return [];
       const record = answer as Record<string, unknown>;
       const subAnswers = record.subAnswers;
-      return [[missionId, {
-        value: typeof record.value === "number" ? record.value : 0,
-        subAnswers: subAnswers && typeof subAnswers === "object" && !Array.isArray(subAnswers)
-          ? Object.fromEntries(
-              Object.entries(subAnswers).map(([key, value]) => [key, typeof value === "number" ? value : 0]),
-            )
-          : {},
-      }]];
+      return [
+        [
+          missionId,
+          {
+            value: typeof record.value === "number" ? record.value : 0,
+            subAnswers:
+              subAnswers &&
+              typeof subAnswers === "object" &&
+              !Array.isArray(subAnswers)
+                ? Object.fromEntries(
+                    Object.entries(subAnswers).map(([key, value]) => [
+                      key,
+                      typeof value === "number" ? value : 0,
+                    ]),
+                  )
+                : {},
+          },
+        ],
+      ];
     }),
   );
 
@@ -109,7 +133,9 @@ function buildMotorFields(config: Record<string, unknown>): FieldDefinition[] {
   const defs: FieldDefinition[] = [];
 
   const motores = Array.isArray(config.motores)
-    ? (config.motores as unknown[]).filter((m): m is string => typeof m === "string")
+    ? (config.motores as unknown[]).filter(
+        (m): m is string => typeof m === "string",
+      )
     : [];
 
   const pares = Array.isArray(config.pares) ? (config.pares as unknown[]) : [];
@@ -163,7 +189,9 @@ function buildMotorFields(config: Record<string, unknown>): FieldDefinition[] {
   return defs;
 }
 
-function buildFieldsFromConfig(config: Record<string, unknown> | null | undefined): FieldDefinition[] {
+function buildFieldsFromConfig(
+  config: Record<string, unknown> | null | undefined,
+): FieldDefinition[] {
   const defs: FieldDefinition[] = [];
 
   if (!config || typeof config !== "object") return defs;
@@ -174,7 +202,10 @@ function buildFieldsFromConfig(config: Record<string, unknown> | null | undefine
 
   if (Array.isArray(config.missions)) {
     config.missions.forEach((mission, index) => {
-      const key = typeof mission === "string" ? mission : String(mission ?? `missao_${index + 1}`);
+      const key =
+        typeof mission === "string"
+          ? mission
+          : String(mission ?? `missao_${index + 1}`);
       defs.push({
         fieldKey: key,
         label: toFieldLabel(key),
@@ -188,12 +219,16 @@ function buildFieldsFromConfig(config: Record<string, unknown> | null | undefine
   if (Array.isArray(config.parametros)) {
     config.parametros.forEach((param, index) => {
       const item = param as Record<string, unknown>;
-      const key = typeof item.nome === "string" ? item.nome : `parametro_${index + 1}`;
+      const key =
+        typeof item.nome === "string" ? item.nome : `parametro_${index + 1}`;
       defs.push({
         fieldKey: key,
         label: toFieldLabel(key),
         description: typeof item.descricao === "string" ? item.descricao : null,
-        type: typeof item.tipo === "string" && item.tipo === "boolean" ? "boolean" : "number",
+        type:
+          typeof item.tipo === "string" && item.tipo === "boolean"
+            ? "boolean"
+            : "number",
         unit: typeof item.unidade === "string" ? item.unidade : null,
         order: index,
       });
@@ -203,7 +238,8 @@ function buildFieldsFromConfig(config: Record<string, unknown> | null | undefine
 
   if (Array.isArray(config.indicadores)) {
     config.indicadores.forEach((indicator, index) => {
-      const key = typeof indicator === "string" ? indicator : `indicador_${index + 1}`;
+      const key =
+        typeof indicator === "string" ? indicator : `indicador_${index + 1}`;
       defs.push({
         fieldKey: key,
         label: toFieldLabel(key),
@@ -217,7 +253,10 @@ function buildFieldsFromConfig(config: Record<string, unknown> | null | undefine
   return defs;
 }
 
-function resolveFields(test: TestRecord, entries: TestEntry[]): FieldDefinition[] {
+function resolveFields(
+  test: TestRecord,
+  entries: TestEntry[],
+): FieldDefinition[] {
   const configFields = buildFieldsFromConfig(test.config ?? {});
   const seen = new Map<string, FieldDefinition>();
 
@@ -258,10 +297,15 @@ export async function getLabTestViewData(testId: string) {
 
   const entries: TestEntry[] = executionRows.map((execution) => {
     const normalized = normalizeResults(execution.results);
+
     const values = Object.entries(normalized).map(([fieldKey, value]) => ({
       fieldKey,
       value: normalizeScalar(value),
     }));
+
+    const results = execution.results as FllExecutionResults | null;
+
+    const precisionDiscs = results?.precisionDiscs;
 
     return {
       id: execution.id,
@@ -270,6 +314,16 @@ export async function getLabTestViewData(testId: string) {
       createdAt: execution.createdAt.toISOString(),
       values,
       fllAnswers: normalizeFllAnswers(execution.results),
+
+      precisionDiscs: precisionDiscs
+        ? {
+            total: precisionDiscs.total ?? 6,
+            remaining: precisionDiscs.remaining ?? 0,
+            used:
+              precisionDiscs.used ??
+              (precisionDiscs.total ?? 6) - (precisionDiscs.remaining ?? 0),
+          }
+        : undefined,
     };
   });
 

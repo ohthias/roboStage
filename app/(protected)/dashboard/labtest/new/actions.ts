@@ -301,3 +301,32 @@ export async function listTests() {
     .where(eq(tests.userId, userId))
     .orderBy(desc(tests.createdAt));
 }
+
+export async function updateLabTestStatus({
+  testId,
+  status,
+}: {
+  testId: string;
+  status: string;
+}) {
+  const userId = await requireAuthenticatedUser();
+
+  const [updated] = await db
+    .update(tests)
+    .set({
+      status,
+    })
+    .where(
+      and(
+        eq(tests.id, testId),
+        eq(tests.userId, userId),
+      ),
+    )
+    .returning();
+
+  if (!updated) {
+    throw new Error("Teste não encontrado ou sem permissão.");
+  }
+
+  return updated;
+}

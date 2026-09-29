@@ -18,6 +18,9 @@ import { getModeDefinition, ACCENT_STYLES } from "@/utils/labtest/modes";
 import { FieldValueInput } from "./FieldValueInput";
 import { SectionDivider } from "./shared";
 import { createTestExecution } from "@/app/(protected)/dashboard/labtest/actions";
+import { LabTestModels } from "./LabTestModels";
+import { updateLabTestStatus } from "@/app/(protected)/dashboard/labtest/new/actions";
+import { STATUS_META } from "@/utils/labtest/catalog";
 
 interface ExecuteTestFormProps {
   testId: string;
@@ -34,6 +37,7 @@ interface ExecutionDraft {
   selectedPair: string;
   values: FieldValue[];
   missionAnswers: Record<string, MissionAnswerDraft>;
+  precisionDiscsRemaining: number;
   notes: string;
 }
 
@@ -120,6 +124,7 @@ export default function ExecuteTestForm({
         const mission = missionCatalog.find(
           (item) => item.id === field.fieldKey,
         );
+
         return [
           field.fieldKey,
           {
@@ -134,6 +139,7 @@ export default function ExecuteTestForm({
         ];
       }),
     ),
+    precisionDiscsRemaining: 6,
     notes: "",
   });
   const [drafts, setDrafts] = useState<ExecutionDraft[]>(() => [makeDraft()]);
@@ -221,40 +227,50 @@ export default function ExecuteTestForm({
             value: String(index + 1),
           }));
 
-    const visibleOptions = options.filter(
-      (option) => (typeof option === "string" ? option : option.value) !== "0",
-    );
+    const visibleOptions = options.filter((option) => {
+      const optionValue = typeof option === "string" ? option : option.value;
+
+      // No FLL Challenge, "Não" e "Não realizado"
+      // representam a mesma resposta.
+      if (
+        kind === "switch" &&
+        typeof option !== "string" &&
+        option.label.toLowerCase() === "não"
+      ) {
+        return false;
+      }
+
+      return optionValue !== "0";
+    });
 
     const allOptions = [
       {
         label: "Não realizado",
-        value: "0",
+        value: 0,
       },
       ...visibleOptions.map((option) => ({
-        value: typeof option === "string" ? option : option.value,
+        value: Number(typeof option === "string" ? option : option.value),
         label: typeof option === "string" ? option : option.label,
       })),
     ];
 
-    // Fallback para switch sem opções configuradas
     if (kind === "switch" && namedOptions.length === 0) {
       allOptions.push({
         label: "Cumprido",
-        value: "1",
+        value: 1,
       });
     }
 
     return (
       <div className="flex flex-wrap gap-2">
         {allOptions.map((option) => {
-          const optionValue = Number(option.value);
-          const selected = value === optionValue;
+          const selected = value === option.value;
 
           return (
             <button
-              key={`${option.value}-${option.label}`}
+              key={`${option.label}-${option.value}`}
               type="button"
-              onClick={() => onChange(optionValue)}
+              onClick={() => onChange(option.value)}
               className={[
                 "btn btn-sm",
                 "min-w-24",
@@ -297,12 +313,13 @@ export default function ExecuteTestForm({
     setError(null);
 
     try {
-      for (const draft of drafts) {
+      for (const [draftIndex, draft] of drafts.entries()) {
         const fieldsForExecution = pairOptions.length
           ? fields.filter((field) =>
               field.fieldKey.startsWith(`${draft.selectedPair}__`),
             )
           : fields;
+
         const results = Object.fromEntries(
           draft.values
             .filter((value) =>
@@ -312,36 +329,54 @@ export default function ExecuteTestForm({
             )
             .map((value) => [value.fieldKey, value.value]),
         );
-        const executionResults =
-          isFllRuns && fllMissions.length > 0
-            ? {
-                answers: Object.fromEntries(
-                  fllMissions.map((mission, missionIndex) => {
-                    const answer = draft.missionAnswers[mission.id] ?? {
-                      value: 0,
-                      subAnswers: {},
-                    };
-                    return [
-                      mission.id,
-                      {
-                        order: missionIndex,
-                        value: answer.value,
-                        missionId: mission.id,
-                        subAnswers: answer.subAnswers,
-                        objectiveAnswers: {},
-                      },
-                    ];
-                  }),
-                ),
-                missions: fllMissions.map((mission) => mission.id),
-              }
-            : results;
+
+        const executionResults = isFllRuns
+          ? {
+              answers: Object.fromEntries(
+                fllMissions.map((mission, missionIndex) => {
+                  const answer = draft.missionAnswers[mission.id] ?? {
+                    value: 0,
+                    subAnswers: {},
+                  };
+
+                  return [
+                    mission.id,
+                    {
+                      order: missionIndex,
+                      value: answer.value,
+                      missionId: mission.id,
+                      subAnswers: answer.subAnswers,
+                      objectiveAnswers: {},
+                    },
+                  ];
+                }),
+              ),
+
+              missions: fllMissions.map((mission) => mission.id),
+
+              precisionDiscs: {
+                total: 6,
+                remaining: draft.precisionDiscsRemaining,
+                used: 6 - draft.precisionDiscsRemaining,
+              },
+            }
+          : results;
+
         await createTestExecution({
           testId,
           notes: draft.notes.trim() || undefined,
           results: executionResults,
         });
+
+        // O primeiro lançamento altera o status do teste.
+        if (nextExecutionNumber === 1 && draftIndex === 0) {
+          await updateLabTestStatus({
+            testId,
+            status: STATUS_META.em_andamento.label,
+          });
+        }
       }
+
       router.push(`/dashboard/labtest/${testId}`);
       router.refresh();
     } catch (err) {
@@ -450,7 +485,7 @@ export default function ExecuteTestForm({
                       })}
                     </select>
                   )}
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="flex flex-col gap-4">
                     {isFllRuns && fllMissions.length > 0
                       ? fllMissions.map((mission) => {
                           const answer = draft.missionAnswers[mission.id] ?? {
@@ -460,12 +495,10 @@ export default function ExecuteTestForm({
                           return (
                             <div
                               key={mission.id}
-                              className="form-control gap-1 sm:col-span-2"
+                              className="form-control gap-1 border-b border-base-content/10 pb-2"
                             >
-                              <label className="label py-0">
-                                <span className="label-text text-xs font-medium">
-                                  {mission.id} · {mission.name}
-                                </span>
+                              <label className="label-text text-xs font-medium">
+                                {mission.id} · {mission.name}
                               </label>
                               {renderMissionInput(
                                 mission.type,
@@ -482,14 +515,9 @@ export default function ExecuteTestForm({
                                   const subId =
                                     sub.id ?? `${mission.id}-sub-${subIndex}`;
                                   return (
-                                    <div
-                                      key={subId}
-                                      className="ml-4 mt-2 form-control gap-1"
-                                    >
-                                      <label className="label py-0">
-                                        <span className="label-text text-xs">
-                                          {sub.submission}
-                                        </span>
+                                    <div key={subId} className="ml-4 my-2">
+                                      <label className="label-text text-xs text-base-content/50">
+                                        {sub.submission}
                                       </label>
                                       {renderMissionInput(
                                         sub.type,
@@ -554,6 +582,25 @@ export default function ExecuteTestForm({
                     }
                     className="textarea textarea-bordered textarea-sm mt-3 w-full resize-none text-sm"
                   />
+                  {isFllRuns && (
+                    <div className="my-4">
+                      <LabTestModels
+                        value={draft.precisionDiscsRemaining}
+                        onChange={(value) =>
+                          setDrafts((prev) =>
+                            prev.map((item) =>
+                              item.id === draft.id
+                                ? {
+                                    ...item,
+                                    precisionDiscsRemaining: value,
+                                  }
+                                : item,
+                            ),
+                          )
+                        }
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}

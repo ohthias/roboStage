@@ -17,6 +17,7 @@ import { CalibrabotSection } from "./components/CalibrabotSection";
 import { CustomSection } from "./components/CustomSection";
 import { GenerateSection } from "./components/GenerateSection";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type CustomParamMeta = { required: boolean; description: string };
 
@@ -33,6 +34,7 @@ export default function CreateTest() {
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
   const { addToast } = useToast();
+  const router = useRouter();
 
   function updateCustomMeta(id: string, patch: Partial<CustomParamMeta>) {
     setCustomMeta((prev) => ({
@@ -160,6 +162,7 @@ export default function CreateTest() {
         const created = await createTest(payload);
         setSaveSuccess(`Teste "${created.name}" salvo com sucesso.`);
         addToast(`Teste "${created.name}" salvo com sucesso.`, "success");
+        router.push(`/dashboard/labtest/${created.id}`);
       } catch (err) {
         addToast(err instanceof Error ? err.message : "Erro ao salvar o teste.", "error");
         setSaveError(

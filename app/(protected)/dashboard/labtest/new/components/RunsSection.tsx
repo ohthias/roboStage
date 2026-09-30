@@ -338,10 +338,7 @@ export function RunsSection({
                         Sua run
                       </h2>
 
-                      <p className="text-xs text-base-content/50">
-                        Revise a sequência de execução e ajuste a
-                        ordem conforme a estratégia.
-                      </p>
+                      <p className="text-xs text-base-content/50">Defina a ordem de execução e, em cada missão, ative os objetivos que deseja realizar e informe o valor que pretende alcançar.</p>
                     </div>
                   </div>
 

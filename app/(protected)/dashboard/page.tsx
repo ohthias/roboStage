@@ -15,22 +15,25 @@ import {
   boards,
   teams,
 } from "@/db/schema";
-import ComingSoon from "@/components/ComingSoon";
-import { requireAuthenticatedUser, resolveStagebookScope } from "@/utils/stagebook/scope";
+import {
+  requireAuthenticatedUser,
+  resolveStagebookScope,
+} from "@/utils/stagebook/scope";
 import { scopeWhere } from "@/utils/stagebook/permissions";
 import {
   ArrowRight,
   ArrowUpRight,
+  BarChart3,
   CalendarDays,
+  CheckCircle2,
+  Clock,
   FileText,
   KanbanSquare,
+  Play,
   Trophy,
   Users,
 } from "lucide-react";
 
-// CORREÇÃO: as chaves precisam bater com os valores reais do enum test_mode
-// ("runs" | "calibrabot" | "individual" | "custom") — antes usavam "run" e
-// "personalizado", que nunca batiam com nada vindo do banco.
 const TYPE_BADGE: Record<string, { label: string; className: string }> = {
   runs: { label: "Runs", className: "badge-primary" },
   calibrabot: { label: "CalibraBot", className: "badge-info" },
@@ -39,12 +42,6 @@ const TYPE_BADGE: Record<string, { label: string; className: string }> = {
     label: "Personalizado",
     className: "badge-secondary badge-outline",
   },
-};
-
-const STATUS_BADGE: Record<string, { label: string; className: string }> = {
-  ativo: { label: "Ativo", className: "badge-success badge-outline" },
-  rascunho: { label: "Rascunho", className: "badge-ghost" },
-  arquivado: { label: "Arquivado", className: "badge-neutral" },
 };
 
 function startOfWeek() {
@@ -70,9 +67,6 @@ export default async function DashboardPage() {
   });
   if (!currentUser?.onboardingCompletedAt) redirect("/onboarding");
 
-  // Etapa 9 — widgets do Stagebook agregam dados do scope ATUAL (pessoal ou
-  // equipe selecionada), nunca só do userId cru — mesma regra de qualquer
-  // outra query do Stagebook (seção 31).
   const scope = await resolveStagebookScope();
   const activeTeamName =
     scope.type === "team"
@@ -131,8 +125,6 @@ export default async function DashboardPage() {
         executionCount: sql<number>`count(${testExecutions.id})`.mapWith(
           Number,
         ),
-        lastExecutedAt: tests.lastAccessAt,
-        updatedAt: tests.updatedAt,
       })
       .from(tests)
       .leftJoin(testExecutions, eq(testExecutions.testId, tests.id))
@@ -205,7 +197,6 @@ export default async function DashboardPage() {
       .limit(4),
   ]);
 
-  const activeTests = activeTestsCount[0]?.count ?? 0;
   const totalExecutions = totalExecutionsCount[0]?.count ?? 0;
   const weeklyExecutions = executionsThisWeek[0]?.count ?? 0;
 
@@ -325,102 +316,208 @@ export default async function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
           <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 xl:col-span-8">
-            <div className="flex items-center justify-between gap-4 border-b border-base-300 px-5 py-4 sm:px-6">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-semibold">Testes recentes</h2>
-
-                  <span className="badge badge-ghost badge-xs">LabTest</span>
+            <div className="border-b border-base-300">
+              <div className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-sm font-semibold">Testes recentes</h2>
+                    <span className="badge badge-primary badge-xs">
+                      LabTest
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-base-content/45">
+                    Acompanhe seus testes e o volume de execuções
+                  </p>
+                </div>
+                <Link
+                  href="/dashboard/labtest"
+                  className="btn btn-ghost btn-xs gap-1.5 normal-case"
+                >
+                  Abrir LabTest
+                  <ArrowUpRight size={13} />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 border-t border-base-300">
+                <div className="border-r border-base-300 px-4 py-3 sm:px-5">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                      <Play size={13} />
+                    </span>
+                    <span className="text-[11px] font-medium text-base-content/45">
+                      Execuções
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xl font-bold tracking-tight">
+                    {totalExecutions}
+                  </p>
                 </div>
 
-                <p className="mt-1 text-xs text-base-content/45">
-                  Últimas atividades de teste e execução
-                </p>
+                <div className="px-4 py-3 sm:px-5">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-info/10 text-info">
+                      <BarChart3 size={14} />
+                    </span>
+                    <span className="text-[11px] font-medium text-base-content/45">
+                      Esta semana
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xl font-bold tracking-tight">
+                    {weeklyExecutions}
+                  </p>
+                </div>
               </div>
+            </div>
 
+            <div className="min-h-[280px]">
+              {recentTests.length === 0 ? (
+                <div className="flex min-h-[280px] flex-col items-center justify-center px-6 text-center">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8 text-primary">
+                    <Clock size={21} strokeWidth={1.8} />
+                  </div>
+                  <p className="text-sm font-semibold">Nenhum teste recente</p>
+                  <p className="mt-1.5 max-w-[280px] text-xs leading-5 text-base-content/45">
+                    Crie e execute um teste para acompanhar seus resultados
+                    aqui.
+                  </p>
+                  <Link
+                    href="/dashboard/labtest"
+                    className="btn btn-primary btn-sm mt-5 rounded-lg px-4"
+                  >
+                    Abrir LabTest
+                  </Link>
+                </div>
+              ) : (
+                <ul className="divide-y divide-base-300">
+                  {recentTests.map((test) => {
+                    const typeBadge = TYPE_BADGE[test.type] ?? {
+                      label: test.type,
+                      className: "badge-ghost",
+                    };
+                    return (
+                      <li
+                        key={test.id}
+                        className="group transition-colors hover:bg-base-200/50"
+                      >
+                        <Link
+                          href={`/dashboard/labtest/${test.id}`}
+                          className="block px-5 py-4 sm:px-6"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/8 text-primary sm:flex">
+                              <BarChart3 size={17} strokeWidth={1.8} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="truncate text-sm font-semibold transition-colors group-hover:text-primary">
+                                  {test.name}
+                                </p>
+                                <p
+                                  className={`badge badge-xs badge-outline ${typeBadge.className}`}
+                                >
+                                  {typeBadge.label}
+                                </p>
+                              </div>
+                              {test.description && (
+                                <p className="mt-1 truncate text-xs text-base-content/40">
+                                  {test.description}
+                                </p>
+                              )}
+                              <div className="mt-2 flex items-center gap-3 text-[11px] text-base-content/40">
+                                <p className="inline-flex items-center gap-1">
+                                  <Play size={11} />
+                                  {test.executionCount}{" "}
+                                  {test.executionCount === 1
+                                    ? "execução"
+                                    : "execuções"}
+                                </p>
+
+                                {test.executionCount > 0 && (
+                                  <p className="inline-flex items-center gap-1 text-success/70">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                                    Com atividade
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <span className="hidden text-xs font-medium text-base-content/35 transition-colors group-hover:text-primary sm:inline">
+                                Abrir
+                              </span>
+                              <ArrowUpRight
+                                size={15}
+                                className="text-base-content/25 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary"
+                              />
+                            </div>
+                          </div>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </section>
+          <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 xl:col-span-4">
+            <div className="flex items-center justify-between border-b border-base-300 px-5 py-4 sm:px-6">
+              <h2 className="text-sm font-semibold">Páginas recentes</h2>
               <Link
-                href="/dashboard/labtest"
+                href="/dashboard/documents"
                 className="btn btn-ghost btn-xs gap-1.5 normal-case"
               >
-                Abrir LabTest
+                Abrir páginas
                 <ArrowUpRight size={13} />
               </Link>
             </div>
 
-            <div className="min-h-[280px]">
-              <ComingSoon />
-            </div>
-          </section>
+            {recentDocuments.length === 0 ? (
+              <div className="flex min-h-[220px] items-center justify-center px-6 py-10">
+                <div className="max-w-sm text-center">
+                  <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-base-200 text-base-content/45">
+                    <FileText size={19} />
+                  </div>
 
-          <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 xl:col-span-4">
-            <div className="flex items-center justify-between border-b border-base-300 px-5 py-4">
-              <div>
-                <h2 className="text-sm font-semibold">Suas ligas</h2>
+                  <p className="text-sm font-semibold">Nenhuma página ainda</p>
 
-                <p className="mt-1 text-xs text-base-content/45">
-                  Competições acompanhadas
-                </p>
-              </div>
-            </div>
+                  <p className="mt-1 text-xs leading-5 text-base-content/45">
+                    Crie documentação, anotações e materiais para sua equipe.
+                  </p>
 
-            {leagueInterests.length === 0 ? (
-              <div className="flex min-h-[280px] flex-col items-center justify-center px-6 text-center">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8 text-primary">
-                  <Trophy size={21} strokeWidth={1.8} />
+                  <Link
+                    href="/dashboard/documents"
+                    className="btn btn-primary btn-sm mt-5 rounded-lg"
+                  >
+                    Criar página
+                  </Link>
                 </div>
-
-                <p className="text-sm font-semibold">Nenhuma liga adicionada</p>
-
-                <p className="mt-1.5 max-w-[260px] text-xs leading-5 text-base-content/45">
-                  Adicione competições que você participa ou deseja acompanhar.
-                </p>
-
-                <Link
-                  href="/dashboard/leagues"
-                  className="btn btn-primary btn-sm mt-5 rounded-lg px-4"
-                >
-                  Configurar ligas
-                </Link>
               </div>
             ) : (
-              <ul className="divide-y divide-base-300">
-                {leagueInterests.map((interest) => (
-                  <li
-                    key={interest.id}
-                    className="group px-5 py-4 transition-colors hover:bg-base-200/60"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold">
-                          {interest.leagueName}
-                        </p>
-
-                        {(interest.teamName || interest.season) && (
-                          <p className="mt-1 text-xs text-base-content/45">
-                            {interest.teamName}
-
-                            {interest.teamName && interest.season ? " · " : ""}
-
-                            {interest.season}
-                          </p>
-                        )}
-                      </div>
-
-                      <span
-                        className={`badge badge-sm shrink-0 ${
-                          interest.relationType === "participante"
-                            ? "badge-primary"
-                            : "badge-outline"
-                        }`}
-                      >
-                        {interest.relationType === "participante"
-                          ? "Participo"
-                          : "Acompanhando"}
+              <div className="flex flex-col gap-3 p-5">
+                {recentDocuments.map((doc) => (
+                  <Link
+                    key={doc.id}
+                    href={`/dashboard/documents/${doc.id}`}
+                    className="group rounded-xl border border-base-300 bg-base-100 p-4 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/[0.02]">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-base-200 text-base">
+                        {doc.icon ?? "📝"}
+                      </span>
+                      <span className="text-[10px] font-medium uppercase tracking-[0.08em] text-base-content/30">
+                        {formatDate(doc.updatedAt)}
                       </span>
                     </div>
-                  </li>
+                    <div className="mt-5">
+                      <p className="truncate text-sm font-semibold transition-colors group-hover:text-primary">
+                        {doc.title}
+                      </p>
+
+                      <span className="mt-2 inline-flex items-center gap-1 text-xs text-base-content/40 transition-colors group-hover:text-primary">
+                        Abrir documento
+                        <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+                      </span>
+                    </div>
+                  </Link>
                 ))}
-              </ul>
+              </div>
             )}
           </section>
 
@@ -563,89 +660,75 @@ export default async function DashboardPage() {
               </ul>
             )}
           </section>
-
-          <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 xl:col-span-12">
-            <div className="flex items-center justify-between border-b border-base-300 px-5 py-4 sm:px-6">
+          <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 xl:col-span-4">
+            <div className="flex items-center justify-between border-b border-base-300 px-5 py-4">
               <div>
-                <h2 className="text-sm font-semibold">Páginas recentes</h2>
+                <h2 className="text-sm font-semibold">Suas ligas</h2>
 
                 <p className="mt-1 text-xs text-base-content/45">
-                  Conhecimento e documentação da equipe
+                  Competições acompanhadas
                 </p>
               </div>
-
-              <Link
-                href="/dashboard/documents"
-                className="btn btn-ghost btn-xs gap-1.5 normal-case"
-              >
-                Abrir páginas
-                <ArrowUpRight size={13} />
-              </Link>
             </div>
 
-            {recentDocuments.length === 0 ? (
-              <div className="flex min-h-[220px] items-center justify-center px-6 py-10">
-                <div className="max-w-sm text-center">
-                  <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-base-200 text-base-content/45">
-                    <FileText size={19} />
-                  </div>
-
-                  <p className="text-sm font-semibold">Nenhuma página ainda</p>
-
-                  <p className="mt-1 text-xs leading-5 text-base-content/45">
-                    Crie documentação, anotações e materiais para sua equipe.
-                  </p>
-
-                  <Link
-                    href="/dashboard/documents"
-                    className="btn btn-primary btn-sm mt-5 rounded-lg"
-                  >
-                    Criar página
-                  </Link>
+            {leagueInterests.length === 0 ? (
+              <div className="flex min-h-[280px] flex-col items-center justify-center px-6 text-center">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8 text-primary">
+                  <Trophy size={21} strokeWidth={1.8} />
                 </div>
+
+                <p className="text-sm font-semibold">Nenhuma liga adicionada</p>
+
+                <p className="mt-1.5 max-w-[260px] text-xs leading-5 text-base-content/45">
+                  Adicione competições que você participa ou deseja acompanhar.
+                </p>
+
+                <Link
+                  href="/dashboard/leagues"
+                  className="btn btn-primary btn-sm mt-5 rounded-lg px-4"
+                >
+                  Configurar ligas
+                </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
-                {recentDocuments.map((doc) => (
-                  <Link
-                    key={doc.id}
-                    href={`/dashboard/documents/${doc.id}`}
-                    className="
-                  group
-                  rounded-xl
-                  border
-                  border-base-300
-                  bg-base-100
-                  p-4
-                  transition-all
-                  hover:-translate-y-0.5
-                  hover:border-primary/30
-                  hover:bg-primary/[0.02]
-                "
+              <ul className="divide-y divide-base-300">
+                {leagueInterests.map((interest) => (
+                  <li
+                    key={interest.id}
+                    className="group px-5 py-4 transition-colors hover:bg-base-200/60"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-base-200 text-base">
-                        {doc.icon ?? "📝"}
-                      </span>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">
+                          {interest.leagueName}
+                        </p>
 
-                      <span className="text-[10px] font-medium uppercase tracking-[0.08em] text-base-content/30">
-                        {formatDate(doc.updatedAt)}
+                        {(interest.teamName || interest.season) && (
+                          <p className="mt-1 text-xs text-base-content/45">
+                            {interest.teamName}
+
+                            {interest.teamName && interest.season ? " · " : ""}
+
+                            {interest.season}
+                          </p>
+                        )}
+                      </div>
+
+                      <span
+                        className={`badge badge-sm shrink-0 ${
+                          interest.relationType === "participante"
+                            ? "badge-primary"
+                            : "badge-outline"
+                        }`}
+                      >
+                        {interest.relationType === "participante"
+                          ? "Participo"
+                          : "Acompanhando"}
                       </span>
                     </div>
-
-                    <div className="mt-5">
-                      <p className="truncate text-sm font-semibold transition-colors group-hover:text-primary">
-                        {doc.title}
-                      </p>
-
-                      <span className="mt-2 inline-flex items-center gap-1 text-xs text-base-content/40 transition-colors group-hover:text-primary">
-                        Abrir página
-                        <ArrowRight size={12} />
-                      </span>
-                    </div>
-                  </Link>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </section>
         </div>

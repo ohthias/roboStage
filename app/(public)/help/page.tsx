@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import Accordion from "@/components/UI/Accordion";
 import { Footer } from "@/components/UI/Footer";
 import Loader from "@/components/Loader";
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
 import Header from "@/components/UI/Header";
 import { Navbar } from "@/components/UI/Navbar";
 import { Search, ToolCase, X } from "lucide-react";
@@ -102,7 +101,7 @@ export default function HelpDesk() {
               </label>
 
               <div className="join w-full shadow-sm">
-                  <label className="input input-bordered input-lg join-item flex w-full items-center gap-3 bg-base-100 focus-within:outline-primary">
+                <label className="input input-bordered input-lg join-item flex w-full items-center gap-3 bg-base-100 focus-within:outline-primary">
                   <Search className="h-5 w-5 shrink-0 text-base-content/50" />
                   <input
                     id="tool-search"
@@ -151,7 +150,11 @@ export default function HelpDesk() {
         {/* Content */}
         <section className="mx-auto max-w-5xl px-4 pb-16">
           {loading ? (
-              <div className="flex min-h-[320px] items-center justify-center" role="status" aria-label="Carregando ferramentas">
+            <div
+              className="flex min-h-[320px] items-center justify-center"
+              role="status"
+              aria-label="Carregando ferramentas"
+            >
               <div className="flex flex-col items-center gap-4">
                 <Loader />
                 <span className="text-sm text-base-content/50">
@@ -160,40 +163,38 @@ export default function HelpDesk() {
               </div>
             </div>
           ) : filteredTools.length > 0 ? (
-            <RevealOnScroll>
-              <div className="space-y-5">
-                {filteredTools.map((tool) => (
-                  <article
-                    key={tool.name}
-                    className="card border border-base-300 bg-base-100 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
-                  >
-                    <div className="card-body p-5 sm:p-7 md:p-8">
-                      <div className="mb-5">
-                        <div className="mb-3 flex items-start gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                            <ToolCase className="h-5 w-5" />
-                          </div>
+            <div className="space-y-5">
+              {filteredTools.map((tool) => (
+                <article
+                  key={tool.name}
+                  className="card border border-base-300 bg-base-100 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  <div className="card-body p-5 sm:p-7 md:p-8">
+                    <div className="mb-5">
+                      <div className="mb-3 flex items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <ToolCase className="h-5 w-5" />
+                        </div>
 
-                          <div className="min-w-0">
-                            <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
-                              {tool.name}
-                            </h2>
+                        <div className="min-w-0">
+                          <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
+                            {tool.name}
+                          </h2>
 
-                            <p className="mt-1 text-sm leading-relaxed text-base-content/65 sm:text-base">
-                              {tool.description}
-                            </p>
-                          </div>
+                          <p className="mt-1 text-sm leading-relaxed text-base-content/65 sm:text-base">
+                            {tool.description}
+                          </p>
                         </div>
                       </div>
-
-                      {tool.details?.length > 0 && (
-                        <Accordion items={tool.details} />
-                      )}
                     </div>
-                  </article>
-                ))}
-              </div>
-            </RevealOnScroll>
+
+                    {tool.details?.length > 0 && (
+                      <Accordion items={tool.details} />
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
           ) : (
             <div className="flex min-h-[320px] items-center justify-center">
               <div className="card w-full max-w-md border border-base-300 bg-base-100 shadow-sm">

@@ -32,9 +32,14 @@ const MAIN_LINKS: NavItem[] = [
     label: "Equipe",
     Icon: Users,
   },
+    {
+    href: "/dashboard/labtest",
+    label: "LabTest",
+    Icon: FlaskConical,
+  },
   {
     href: "/dashboard/documents",
-    label: "Páginas",
+    label: "StageBook",
     Icon: Book,
   },
   {
@@ -47,16 +52,11 @@ const MAIN_LINKS: NavItem[] = [
     label: "Kanban",
     Icon: KanbanSquare,
   },
-  {
+  /*{
     href: "/dashboard/projects",
     label: "Projetos",
     Icon: Boxes,
-  },
-  {
-    href: "/dashboard/labtest",
-    label: "LabTest",
-    Icon: FlaskConical,
-  }
+  },*/
 ];
 
 const SYSTEM_LINKS: NavItem[] = [

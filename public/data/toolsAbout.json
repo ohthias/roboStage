@@ -18,7 +18,7 @@
     ]
   },
   {
-    "name": "Flash Q&A",
+    "name": "Recall",
     "description": "Plataforma de perguntas e respostas para simular a sala de avaliação da FLL. Permite treinar a equipe com perguntas de Core Values, Projeto de Inovação e Design do Robô, com tempo cronometrado por pergunta, tornando o treino mais rápido, dinâmico e realista.",
     "details": [
       {
@@ -27,7 +27,7 @@
       },
       {
         "title": "Para que serve?",
-        "content": "O Flash Q&A prepara a equipe para o momento de perguntas dos juízes, simulando a pressão do tempo e cobrindo os três pilares avaliados na FLL: Core Values, Projeto de Inovação e Design do Robô."
+        "content": "O Recall prepara a equipe para o momento de perguntas dos juízes, simulando a pressão do tempo e cobrindo os três pilares avaliados na FLL: Core Values, Projeto de Inovação e Design do Robô."
       },
       {
         "title": "Posso personalizar o treino?",
@@ -128,6 +128,10 @@
       {
         "title": "Dá para exportar ou imprimir a rubrica preenchida?",
         "content": "Sim, a ferramenta conta com uma opção de Imprimir/PDF para gerar um registro da avaliação, além de um botão para limpar e reiniciar o preenchimento."
+      },
+      {
+        "title": "Em quais competições pode ser usada?",
+        "content": "A Rúbrica de Avaliação pode ser utilizada em todas as competições da FIRST LEGO League, incluindo a Challenge e a Future Edition, permitindo que equipes e juízes avaliem o desempenho das equipes de forma consistente."
       }
     ]
   },
@@ -145,7 +149,7 @@
       },
       {
         "title": "Quais ferramentas estão disponíveis?",
-        "content": "Pontuador: simule partidas da BIOGLOW Future Edition e calcule automaticamente a pontuação.\nDocumentação: acesse a documentação oficial da Future Edition na seção de Documentações do site."
+        "content": "Pontuador: simule partidas da BIOGLOW Future Edition e calcule automaticamente a pontuação.\nDocumentação: acesse a documentação oficial da Future Edition na seção de Documentações do site. \nRúbrica de Avaliação: utilize a rúbrica para avaliar o desempenho das equipes de forma consistente."
       }
     ]
   },
@@ -218,6 +222,30 @@
       {
         "title": "Para que serve?",
         "content": "O Guia de Missões ajuda a equipe a entender rapidamente cada missão da temporada antes de definir as estratégias no QuickBrick Studio ou simular saídas no Partiu Mesa!, servindo como material de consulta e estudo durante os treinos."
+      }
+    ]
+  },
+  {
+    "name": "LabTest",
+    "description": "O LabTest é uma ferramenta de análise de desempenho por meio de testes, seja em partes do robô ou em cenários das ligas/competições disponíveis. Permite que as equipes identifiquem problemas e otimizem o desempenho antes das competições, comprovando com dados, gráficos e relatórios detalhados.",
+    "details": [
+      {
+        "title": "Quando devo usar?",
+        "content": "Durante os treinos e preparações para as competições, pois permite identificar problemas e otimizar o desempenho do robô antes de participar das competições. Além de, também pode ser usado para avaliar o desempenho em diferentes cenários e missões."
+      }
+    ]
+  },
+  {
+    "name": "StageBook",
+    "description": "O StageBook é uma ferramenta que permite às equipes registrarem e organizarem informações sobre suas atividades, estratégias e desempenhos durante a temporada da FLL, facilitando o acompanhamento e a análise de progresso.",
+    "details": [
+      {
+        "title": "Para que serve?",
+        "content": "O StageBook ajuda as equipes a manterem um registro detalhado de suas atividades, estratégias e desempenhos, permitindo uma melhor organização e análise de progresso ao longo da temporada."
+      },
+      {
+        "title": "Quando devo usar?",
+        "content": "Durante toda a temporada, para registrar informações relevantes sobre as missões, treinos e competições, garantindo que todos os detalhes importantes sejam capturados e possam ser revisados posteriormente."
       }
     ]
   }

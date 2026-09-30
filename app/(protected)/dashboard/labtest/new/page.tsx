@@ -19,15 +19,20 @@ import { GenerateSection } from "./components/GenerateSection";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-type CustomParamMeta = { required: boolean; description: string };
+type CustomParamMeta = {
+  required: boolean;
+  description: string;
+};
 
 export default function CreateTest() {
   const t = useCreateTest();
+
   const [testName, setTestName] = useState("");
   const [testDescription, setTestDescription] = useState("");
-  const [customMeta, setCustomMeta] = useState<Record<string, CustomParamMeta>>(
-    {},
-  );
+
+  const [customMeta, setCustomMeta] = useState<
+    Record<string, CustomParamMeta>
+  >({});
 
   const [isSaving, startSaving] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -36,7 +41,10 @@ export default function CreateTest() {
   const { addToast } = useToast();
   const router = useRouter();
 
-  function updateCustomMeta(id: string, patch: Partial<CustomParamMeta>) {
+  function updateCustomMeta(
+    id: string,
+    patch: Partial<CustomParamMeta>,
+  ) {
     setCustomMeta((prev) => ({
       ...prev,
       [id]: {
@@ -47,16 +55,23 @@ export default function CreateTest() {
     }));
   }
 
+  /**
+   * Future Edition funciona como FRC/FTC:
+   * não possui configuração de missões.
+   *
+   * A detecção é feita pela competição selecionada.
+   */
+  const isFutureEdition =
+    t.selectedCompetition?.code?.toLowerCase().includes("future") ||
+    t.selectedCompetition?.name
+      ?.toLowerCase()
+      .includes("future edition");
+
   function buildPayload(): CreateTestInput | null {
     if (!testName.trim()) {
       setSaveError("Informe um nome para o teste.");
       return null;
     }
-
-    const base = {
-      name: testName.trim(),
-      description: testDescription.trim() || undefined,
-    };
 
     if (t.mode === "runs") {
       if (!t.competition) {
@@ -64,13 +79,40 @@ export default function CreateTest() {
         return null;
       }
 
+      /*
+       * Future Edition:
+       * somente competição + temporada.
+       * Não existe missão, ordem ou resposta.
+       */
+      if (isFutureEdition) {
+        if (!t.season) {
+          setSaveError("Selecione uma temporada.");
+          return null;
+        }
+
+        return {
+          name: testName.trim(),
+          description: testDescription.trim() || undefined,
+          mode: "runs",
+          competitionId: t.competition,
+          competitionName: t.selectedCompetition?.name ?? null,
+          season: t.season,
+          missionOrder: [],
+          answers: {},
+        };
+      }
+
+      /*
+       * Founders Edition / demais competições com missões.
+       */
       if (t.orderedSelected.length === 0) {
         setSaveError("Selecione ao menos uma missão para a run.");
         return null;
       }
 
       return {
-        ...base,
+        name: testName.trim(),
+        description: testDescription.trim() || undefined,
         mode: "runs",
         competitionId: t.competition,
         competitionName: t.selectedCompetition?.name ?? null,
@@ -79,6 +121,11 @@ export default function CreateTest() {
         answers: t.answers,
       };
     }
+
+    const base = {
+      name: testName.trim(),
+      description: testDescription.trim() || undefined,
+    };
 
     if (t.mode === "calibrabot") {
       if (t.calibraMode === "motores") {
@@ -155,19 +202,29 @@ export default function CreateTest() {
     setSaveSuccess(null);
 
     const payload = buildPayload();
+
     if (!payload) return;
 
     startSaving(async () => {
       try {
         const created = await createTest(payload);
+
         setSaveSuccess(`Teste "${created.name}" salvo com sucesso.`);
-        addToast(`Teste "${created.name}" salvo com sucesso.`, "success");
+
+        addToast(
+          `Teste "${created.name}" salvo com sucesso.`,
+          "success",
+        );
+
         router.push(`/dashboard/labtest/${created.id}`);
       } catch (err) {
-        addToast(err instanceof Error ? err.message : "Erro ao salvar o teste.", "error");
-        setSaveError(
-          err instanceof Error ? err.message : "Erro ao salvar o teste.",
-        );
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Erro ao salvar o teste.";
+
+        addToast(message, "error");
+        setSaveError(message);
       }
     });
   }
@@ -176,6 +233,22 @@ export default function CreateTest() {
     if (!testName.trim()) return false;
 
     if (t.mode === "runs") {
+      /*
+       * Future Edition não precisa de missão.
+       */
+      if (isFutureEdition) {
+        return (
+          !!t.competition &&
+          !!t.season &&
+          !t.loadingMissions &&
+          !t.missionsError
+        );
+      }
+
+      /*
+       * Founders Edition continua exigindo
+       * pelo menos uma missão.
+       */
       return (
         !!t.competition &&
         t.orderedSelected.length > 0 &&
@@ -185,14 +258,22 @@ export default function CreateTest() {
     }
 
     if (t.mode === "calibrabot") {
-      if (t.calibraMode === "motores") return t.motors.length > 0;
-      if (t.calibraMode === "giroscópio") return t.giroAnalysis.length > 0;
+      if (t.calibraMode === "motores") {
+        return t.motors.length > 0;
+      }
+
+      if (t.calibraMode === "giroscópio") {
+        return t.giroAnalysis.length > 0;
+      }
+
       return t.pidParams.length > 0;
     }
 
     return (
       t.customParams.length > 0 &&
-      t.customParams.every((param) => param.name.trim().length > 0)
+      t.customParams.every(
+        (param) => param.name.trim().length > 0,
+      )
     );
   })();
 
@@ -201,38 +282,60 @@ export default function CreateTest() {
     label: string;
     icon: LucideIcon;
   }> = [
-    { value: "runs", label: "Runs", icon: ListChecks },
-    { value: "calibrabot", label: "Calibrabot", icon: Gauge },
-    { value: "custom", label: "Customizado", icon: SlidersHorizontal },
+    {
+      value: "runs",
+      label: "Runs",
+      icon: ListChecks,
+    },
+    {
+      value: "calibrabot",
+      label: "Calibrabot",
+      icon: Gauge,
+    },
+    {
+      value: "custom",
+      label: "Customizado",
+      icon: SlidersHorizontal,
+    },
   ];
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-8">
-      <Link href="/dashboard/labtest" className="group text-sm text-base-content hover:text-base-content/80">
-        <ArrowLeft className="size-5 inline-block mr-2 group-hover:-translate-x-1 transition-transform duration-200" />Voltar
+      <Link
+        href="/dashboard/labtest"
+        className="group text-sm text-base-content hover:text-base-content/80"
+      >
+        <ArrowLeft className="mr-2 inline-block size-5 transition-transform duration-200 group-hover:-translate-x-1" />
+        Voltar
       </Link>
-      <header className="flex flex-col gap-4 items-center sm:items-start sm:justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold text-primary-content uppercase tracking-wide -rotate-1 bg-primary w-fit inline-block px-2 py-1 shadow-sm">
+
+      <header className="flex flex-col items-center gap-4 sm:items-start sm:justify-between">
+        <h1 className="w-fit -rotate-1 bg-primary px-2 py-1 text-2xl font-bold uppercase tracking-wide text-primary-content shadow-sm sm:text-3xl">
           Criar teste
         </h1>
-        <p className="mt-1 ml-2 max-w-2xl text-md leading-relaxed text-base-content/55 text-center sm:text-left">
-          Escolha o tipo de teste, configure os parâmetros e gere a rotina para
-          execução de acordo com a sua necessidade.
+
+        <p className="ml-2 max-w-2xl text-center text-md leading-relaxed text-base-content/55 sm:text-left">
+          Escolha o tipo de teste, configure os parâmetros e gere a rotina
+          para execução de acordo com a sua necessidade.
         </p>
       </header>
 
       {/* Informações básicas */}
-      <section className="overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-100 hover:shadow-lg transition-shadow duration-200 hover:border-base-content/20">
+      <section className="overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-100 transition-shadow duration-200 hover:border-base-content/20 hover:shadow-lg">
         <div className="border-b border-base-content/10 bg-base-200/30 px-5 py-4">
           <div>
             <h2 className="text-md font-semibold text-base-content">
               Informações do teste
             </h2>
+
             <p className="mt-0.5 text-sm text-base-content/45">
-              Defina um nome e uma descrição para identificar este teste.
+              Comece informando o nome do teste e, se necessário, adicione
+              uma descrição para identificar seu objetivo e uso durante as
+              execuções.
             </p>
           </div>
         </div>
+
         <TestDetailsSection
           testName={testName}
           testDescription={testDescription}
@@ -242,20 +345,23 @@ export default function CreateTest() {
       </section>
 
       {/* Tipo de teste */}
-      <section className="overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-100 hover:shadow-lg transition-shadow duration-200 hover:border-base-content/20">
+      <section className="overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-100 transition-shadow duration-200 hover:border-base-content/20 hover:shadow-lg">
         <div className="border-b border-base-content/10 bg-base-200/30 px-5 py-4">
           <h2 className="text-md font-semibold text-base-content">
             Tipo de teste
           </h2>
+
           <p className="mt-0.5 text-sm text-base-content/45">
-            Escolha o tipo de rotina que deseja configurar.
+            Em seguida, escolha o tipo de teste que deseja criar: uma
+            sequência de missões/teste para uma competição, uma rotina de
+            calibração ou um teste com parâmetros personalizados.
           </p>
         </div>
 
         <div
           role="tablist"
           aria-label="Tipo de teste"
-          className="grid w-full grid-cols-1 gap-4 rounded-xl p-1 sm:grid-cols-3 px-2 sm:px-3 py-2 sm:py-3"
+          className="grid w-full grid-cols-1 gap-4 rounded-xl px-2 py-2 sm:grid-cols-3 sm:px-3 sm:py-3"
         >
           {tabs.map(({ value, label, icon: Icon }) => {
             const active = t.mode === value;
@@ -267,21 +373,27 @@ export default function CreateTest() {
                 role="tab"
                 aria-selected={active}
                 className={`
-                  flex min-h-10 items-center justify-center gap-2 rounded-lg px-4
-                  text-sm font-medium transition-all duration-200 cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-base-100 hover:shadow-sm hover:bg-base-200/60 hover:text-base-content/75
+                  flex min-h-10 cursor-pointer select-none items-center justify-center gap-2
+                  rounded-lg px-4 text-sm font-medium transition-all duration-200
+                  focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+                  focus:ring-offset-base-100 hover:bg-base-200/60 hover:text-base-content/75
+                  hover:shadow-sm
                   ${
                     active
                       ? "bg-primary/20 text-primary shadow-sm hover:bg-primary/30 hover:text-primary-content"
-                      : "text-base-content/50 hover:bg-base-200/60 hover:text-base-content/75"
+                      : "text-base-content/50"
                   }
                 `}
                 onClick={() => t.setMode(value)}
               >
                 <Icon
                   className={`size-4 ${
-                    active ? "text-primary" : "text-base-content/40"
+                    active
+                      ? "text-primary"
+                      : "text-base-content/40"
                   }`}
                 />
+
                 {label}
               </button>
             );
@@ -290,13 +402,16 @@ export default function CreateTest() {
       </section>
 
       {/* Configuração específica */}
-      <section className="overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-100 hover:shadow-lg transition-shadow duration-200 hover:border-base-content/20">
+      <section className="overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-100 transition-shadow duration-200 hover:border-base-content/20 hover:shadow-lg">
         <div className="border-b border-base-content/10 bg-base-200/30 px-5 py-4">
           <h2 className="text-md font-semibold text-base-content">
             Configuração
           </h2>
+
           <p className="mt-0.5 text-sm text-base-content/45">
-            Ajuste os parâmetros específicos deste tipo de teste.
+            Agora configure os parâmetros do tipo de teste escolhido. As
+            opções apresentadas aqui mudam de acordo com a modalidade
+            selecionada acima.
           </p>
         </div>
 
@@ -367,7 +482,9 @@ export default function CreateTest() {
       <section
         aria-disabled={!canCreateTest}
         className={`rounded-2xl border border-base-300 bg-base-100 ${
-          !canCreateTest ? "pointer-events-none opacity-50" : ""
+          !canCreateTest
+            ? "pointer-events-none opacity-50"
+            : ""
         }`}
       >
         <GenerateSection
@@ -378,7 +495,9 @@ export default function CreateTest() {
           copyLabel={t.copyLabel}
           onGenerate={t.handleGenerate}
           onSave={() => {
-            if (canCreateTest) handleSave();
+            if (canCreateTest) {
+              handleSave();
+            }
           }}
           onCopyGenerated={t.copyGenerated}
         />

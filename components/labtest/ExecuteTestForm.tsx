@@ -7,7 +7,6 @@
 // rascunhos de uma vez), esta tela registra UMA execução por envio — pensada
 // para ser aberta rapidamente antes/depois de rodar o teste no robô.
 // ---------------------------------------------------------------------------
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FlaskConical, Plus, Save, Trash2 } from "lucide-react";
@@ -419,13 +418,6 @@ export default function ExecuteTestForm({
         <div className="rounded-2xl border border-base-content/10 bg-base-100 p-5">
           <div className="flex items-center justify-between gap-3">
             <SectionDivider label={`Execuções (${drafts.length})`} />
-            <button
-              type="button"
-              onClick={() => setDrafts((prev) => [...prev, makeDraft()])}
-              className="btn btn-ghost btn-sm gap-1"
-            >
-              <Plus className="h-4 w-4" /> Adicionar
-            </button>
           </div>
           <div className="mt-4 flex flex-col gap-4">
             {drafts.map((draft, index) => {
@@ -604,6 +596,15 @@ export default function ExecuteTestForm({
                 </div>
               );
             })}
+          </div>
+          <div className="my-4">
+            <button
+              type="button"
+              onClick={() => setDrafts((prev) => [...prev, makeDraft()])}
+              className="btn btn-ghost btn-sm gap-1"
+            >
+              <Plus className="h-4 w-4" /> Adicionar
+            </button>
           </div>
         </div>
       )}

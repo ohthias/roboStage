@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 /* ------------------------------------------------------------------ */
 /* Tipos                                                               */
 /* ------------------------------------------------------------------ */
-
 export type LegacyType =
   | ["switch", string | null, string | null]
   | ["range", number, number];
@@ -83,7 +82,6 @@ export type CreateTestMode = "runs" | "calibrabot" | "custom";
 /* ------------------------------------------------------------------ */
 /* Opções estáticas                                                    */
 /* ------------------------------------------------------------------ */
-
 /**
  * Registro central de competições suportadas no modo `runs`. Cada nova
  * competição entra aqui com o seu endpoint e regras de filtragem específicas.
@@ -98,17 +96,41 @@ type CompetitionRunConfig = {
 };
 
 const COMPETITION_RUN_CONFIG: Record<string, CompetitionRunConfig> = {
-  FLL: { label: "FLL Challenge", missionEndpoint: "/api/data/missions", missionIdPrefix: "M" },
-  FLLC: { label: "FLL Challenge", missionEndpoint: "/api/data/missions", missionIdPrefix: "M" },
-  FLLCHALLENGE: { label: "FLL Challenge", missionEndpoint: "/api/data/missions", missionIdPrefix: "M" },
-  CHALLENGE: { label: "FLL Challenge", missionEndpoint: "/api/data/missions", missionIdPrefix: "M" },
-  FUTUREEDITION: { label: "Future Edition", missionEndpoint: "/api/data/missions/future-edition", fullRun: true },
-  FLLFUTUREEDITION: { label: "Future Edition", missionEndpoint: "/api/data/missions/future-edition", fullRun: true },
-  "FUTURE-EDITION": { label: "Future Edition", missionEndpoint: "/api/data/missions/future-edition", fullRun: true },
-  EXPLORE: { label: "FLL Explore" },
-  FLLEXPLORE: { label: "FLL Explore" },
-  DISCOVER: { label: "FLL Discover" },
-  FLLDISCOVER: { label: "FLL Discover" },
+  FLL: {
+    label: "FLL Challenge",
+    missionEndpoint: "/api/data/missions",
+    missionIdPrefix: "M",
+  },
+  FLLC: {
+    label: "FLL Challenge",
+    missionEndpoint: "/api/data/missions",
+    missionIdPrefix: "M",
+  },
+  FLLCHALLENGE: {
+    label: "FLL Challenge",
+    missionEndpoint: "/api/data/missions",
+    missionIdPrefix: "M",
+  },
+  CHALLENGE: {
+    label: "FLL Challenge",
+    missionEndpoint: "/api/data/missions",
+    missionIdPrefix: "M",
+  },
+  FUTUREEDITION: {
+    label: "Future Edition",
+    missionEndpoint: "/api/data/missions/future-edition",
+    fullRun: true,
+  },
+  FLLFUTUREEDITION: {
+    label: "Future Edition",
+    missionEndpoint: "/api/data/missions/future-edition",
+    fullRun: true,
+  },
+  "FUTURE-EDITION": {
+    label: "Future Edition",
+    missionEndpoint: "/api/data/missions/future-edition",
+    fullRun: true,
+  },
 };
 
 function normalizeCompetitionCode(code?: string | null) {
@@ -200,7 +222,9 @@ export function useCreateTest() {
   const [calibraMode, setCalibraMode] = useState<CalibraMode>("motores");
   const [motorInput, setMotorInput] = useState("");
   const [motors, setMotors] = useState<string[]>([]);
-  const [motorTestType, setMotorTestType] = useState<"individual" | "duplas">("individual");
+  const [motorTestType, setMotorTestType] = useState<"individual" | "duplas">(
+    "individual",
+  );
   const [giroAngle, setGiroAngle] = useState(90);
   const [giroAnalysis, setGiroAnalysis] = useState<string[]>([]);
   const [pidDistance, setPidDistance] = useState(50);
@@ -209,7 +233,9 @@ export function useCreateTest() {
   /* ---------------- modo custom ---------------- */
   const [customParams, setCustomParams] = useState<CustomParam[]>([]);
 
-  const [generated, setGenerated] = useState<Record<string, unknown> | null>(null);
+  const [generated, setGenerated] = useState<Record<string, unknown> | null>(
+    null,
+  );
   const [copyLabel, setCopyLabel] = useState("Copiar JSON");
 
   /* -------------------------------------------------------------- */
@@ -230,13 +256,25 @@ export function useCreateTest() {
   /* Competição selecionada -> endpoint de missões correspondente     */
   /* -------------------------------------------------------------- */
   const selectedCompetition = competitions.find((c) => c.id === competition);
-  const selectedCompetitionConfig = resolveCompetitionRunConfig(selectedCompetition?.code);
+  const selectedCompetitionConfig = resolveCompetitionRunConfig(
+    selectedCompetition?.code,
+  );
   const missionEndpoint = selectedCompetitionConfig?.missionEndpoint;
   const isFullRun = selectedCompetitionConfig?.fullRun ?? false;
 
-  const [missionsData, setMissionsData] = useState<Record<string, unknown> | null>(null);
-  const [seasonOptions, setSeasonOptions] = useState<{ value: string; label: string }[]>([]);
+  const [missionsData, setMissionsData] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
+  const [seasonOptions, setSeasonOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
   const needsSeasonPick = seasonOptions.length > 0;
+
+  /* ---------------- Outras Competições/Ligas ---------------- */
+  const isFutureEdition =
+    selectedCompetition?.code?.toLowerCase().includes("future") ||
+    selectedCompetition?.name?.toLowerCase().includes("future edition");
 
   const resetRunMissionState = () => {
     setSeason("");
@@ -287,7 +325,9 @@ export function useCreateTest() {
         const seasons = deriveSeasons(data);
         setSeasonOptions(seasons);
         if (seasons.length === 0) {
-          const loadedMissions = Array.isArray(data.missions) ? (data.missions as AnyMission[]) : [];
+          const loadedMissions = Array.isArray(data.missions)
+            ? (data.missions as AnyMission[])
+            : [];
           setMissions(loadedMissions);
 
           if (isFullRun) {
@@ -310,11 +350,16 @@ export function useCreateTest() {
           }
         }
       })
-      .catch((err) => setMissionsError(err.message ?? "Erro ao buscar as missões"))
+      .catch((err) =>
+        setMissionsError(err.message ?? "Erro ao buscar as missões"),
+      )
       .finally(() => setLoadingMissions(false));
   }, [isFullRun, mode, missionEndpoint]);
 
-  const readyToFetchMissions = Boolean(missionEndpoint) && (!needsSeasonPick || Boolean(season));
+  const readyToFetchMissions =
+    Boolean(missionEndpoint) &&
+    (!needsSeasonPick || Boolean(season)) &&
+    !isFutureEdition;
 
   /* -------------------------------------------------------------- */
   /* Helpers - runs / missões                                        */
@@ -332,7 +377,13 @@ export function useCreateTest() {
       }
       setAnswers((a) => ({
         ...a,
-        [id]: { missionId: id, order: prev.length, value: 0, subAnswers: {}, objectiveAnswers: {} },
+        [id]: {
+          missionId: id,
+          order: prev.length,
+          value: 0,
+          subAnswers: {},
+          objectiveAnswers: {},
+        },
       }));
       return [...prev, id];
     });
@@ -363,12 +414,19 @@ export function useCreateTest() {
     }));
   }
 
-  function updateObjectiveAnswer(missionId: string, objId: string, value: number) {
+  function updateObjectiveAnswer(
+    missionId: string,
+    objId: string,
+    value: number,
+  ) {
     setAnswers((a) => ({
       ...a,
       [missionId]: {
         ...a[missionId],
-        objectiveAnswers: { ...(a[missionId]?.objectiveAnswers ?? {}), [objId]: value },
+        objectiveAnswers: {
+          ...(a[missionId]?.objectiveAnswers ?? {}),
+          [objId]: value,
+        },
       },
     }));
   }
@@ -398,7 +456,9 @@ export function useCreateTest() {
     setMotors((m) => m.filter((x) => x !== name));
   }
   function toggleGiroAnalysis(v: string) {
-    setGiroAnalysis((a) => (a.includes(v) ? a.filter((x) => x !== v) : [...a, v]));
+    setGiroAnalysis((a) =>
+      a.includes(v) ? a.filter((x) => x !== v) : [...a, v],
+    );
   }
   function togglePidParam(v: string) {
     setPidParams((a) => (a.includes(v) ? a.filter((x) => x !== v) : [...a, v]));
@@ -406,7 +466,8 @@ export function useCreateTest() {
   function motorPairs(): [string, string][] {
     const pairs: [string, string][] = [];
     for (let i = 0; i < motors.length; i++) {
-      for (let j = i + 1; j < motors.length; j++) pairs.push([motors[i], motors[j]]);
+      for (let j = i + 1; j < motors.length; j++)
+        pairs.push([motors[i], motors[j]]);
     }
     return pairs;
   }
@@ -416,48 +477,86 @@ export function useCreateTest() {
   /* -------------------------------------------------------------- */
 
   function addCustomParam() {
-    setCustomParams((p) => [...p, { id: uid(), name: "", type: "number", min: 0, max: 100 }]);
+    setCustomParams((p) => [
+      ...p,
+      { id: uid(), name: "", type: "number", min: 0, max: 100 },
+    ]);
   }
   function updateCustomParam(id: string, patch: Partial<CustomParam>) {
-    setCustomParams((p) => p.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+    setCustomParams((p) =>
+      p.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    );
   }
   function removeCustomParam(id: string) {
     setCustomParams((p) => p.filter((c) => c.id !== id));
   }
 
   /* -------------------------------------------------------------- */
-  /* Gerar teste                                                     */
+  /* Gerar teste                                                    */
   /* -------------------------------------------------------------- */
 
   function handleGenerate() {
-    let payload: Record<string, unknown> = { mode };
+    let payload: Record<string, unknown> = {
+      mode,
+    };
 
     if (mode === "runs") {
-      payload = {
-        ...payload,
-        competition,
-        season,
-        missions: orderedSelected.map((m, idx) => ({
-          ...answers[m.id],
-          missionId: m.id,
-          name: isFEMission(m) ? m.title : m.name,
-          order: idx,
-        })),
-      };
+      /*
+       * Future Edition funciona como FRC/FTC.
+       * Não existem missões configuráveis aqui.
+       * O teste é definido somente pela competição
+       * e pela temporada.
+       */
+      if (isFutureEdition) {
+        payload = {
+          ...payload,
+          competition,
+          season,
+        };
+      } else {
+        /*
+         * Founders Edition e demais competições baseadas
+         * em missões continuam utilizando a configuração
+         * completa da run.
+         */
+        payload = {
+          ...payload,
+          competition,
+          season,
+          missions: orderedSelected.map((m, idx) => ({
+            ...answers[m.id],
+            missionId: m.id,
+            name: isFEMission(m) ? m.title : m.name,
+            order: idx,
+          })),
+        };
+      }
     } else if (mode === "calibrabot") {
       payload = {
         ...payload,
         calibraMode,
+
         ...(calibraMode === "motores" && {
           motors,
           motorTestType,
           pairs: motorTestType === "duplas" ? motorPairs() : undefined,
         }),
-        ...(calibraMode === "giroscópio" && { targetAngle: giroAngle, analyze: giroAnalysis }),
-        ...(calibraMode === "pid" && { targetDistance: pidDistance, params: pidParams }),
+
+        ...(calibraMode === "giroscópio" && {
+          targetAngle: giroAngle,
+          analyze: giroAnalysis,
+        }),
+
+        ...(calibraMode === "pid" && {
+          targetDistance: pidDistance,
+          params: pidParams,
+        }),
       };
     } else {
-      payload = { ...payload, parameters: customParams };
+      payload = {
+        ...payload,
+        parameters: customParams,
+      };
     }
 
     setGenerated(payload);
@@ -466,10 +565,12 @@ export function useCreateTest() {
 
   function copyGenerated() {
     if (!generated) return;
-    navigator.clipboard.writeText(JSON.stringify(generated, null, 2)).then(() => {
-      setCopyLabel("Copiado!");
-      setTimeout(() => setCopyLabel("Copiar JSON"), 1500);
-    });
+    navigator.clipboard
+      .writeText(JSON.stringify(generated, null, 2))
+      .then(() => {
+        setCopyLabel("Copiado!");
+        setTimeout(() => setCopyLabel("Copiar JSON"), 1500);
+      });
   }
 
   return {

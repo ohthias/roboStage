@@ -55,18 +55,6 @@ export default function CreateTest() {
     }));
   }
 
-  /**
-   * Future Edition funciona como FRC/FTC:
-   * não possui configuração de missões.
-   *
-   * A detecção é feita pela competição selecionada.
-   */
-  const isFutureEdition =
-    t.selectedCompetition?.code?.toLowerCase().includes("future") ||
-    t.selectedCompetition?.name
-      ?.toLowerCase()
-      .includes("future edition");
-
   function buildPayload(): CreateTestInput | null {
     if (!testName.trim()) {
       setSaveError("Informe um nome para o teste.");
@@ -77,29 +65,6 @@ export default function CreateTest() {
       if (!t.competition) {
         setSaveError("Selecione uma competição.");
         return null;
-      }
-
-      /*
-       * Future Edition:
-       * somente competição + temporada.
-       * Não existe missão, ordem ou resposta.
-       */
-      if (isFutureEdition) {
-        if (!t.season) {
-          setSaveError("Selecione uma temporada.");
-          return null;
-        }
-
-        return {
-          name: testName.trim(),
-          description: testDescription.trim() || undefined,
-          mode: "runs",
-          competitionId: t.competition,
-          competitionName: t.selectedCompetition?.name ?? null,
-          season: t.season,
-          missionOrder: [],
-          answers: {},
-        };
       }
 
       /*
@@ -233,18 +198,6 @@ export default function CreateTest() {
     if (!testName.trim()) return false;
 
     if (t.mode === "runs") {
-      /*
-       * Future Edition não precisa de missão.
-       */
-      if (isFutureEdition) {
-        return (
-          !!t.competition &&
-          !!t.season &&
-          !t.loadingMissions &&
-          !t.missionsError
-        );
-      }
-
       /*
        * Founders Edition continua exigindo
        * pelo menos uma missão.

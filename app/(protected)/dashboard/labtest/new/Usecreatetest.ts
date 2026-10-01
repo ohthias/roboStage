@@ -95,6 +95,13 @@ type CompetitionRunConfig = {
   fullRun?: boolean;
 };
 
+function isFutureEditionCompetition(competition?: Competition | null) {
+  return Boolean(
+    competition?.code?.toLowerCase().includes("future") ||
+      competition?.name?.toLowerCase().includes("future edition"),
+  );
+}
+
 const COMPETITION_RUN_CONFIG: Record<string, CompetitionRunConfig> = {
   FLL: {
     label: "FLL Challenge",
@@ -116,7 +123,7 @@ const COMPETITION_RUN_CONFIG: Record<string, CompetitionRunConfig> = {
     missionEndpoint: "/api/data/missions",
     missionIdPrefix: "M",
   },
-  FUTUREEDITION: {
+/*  FUTUREEDITION: {
     label: "Future Edition",
     missionEndpoint: "/api/data/missions/future-edition",
     fullRun: true,
@@ -130,7 +137,7 @@ const COMPETITION_RUN_CONFIG: Record<string, CompetitionRunConfig> = {
     label: "Future Edition",
     missionEndpoint: "/api/data/missions/future-edition",
     fullRun: true,
-  },
+  },*/
 };
 
 function normalizeCompetitionCode(code?: string | null) {
@@ -245,7 +252,9 @@ export function useCreateTest() {
     fetch("/api/competitions")
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((data) => {
-        if (Array.isArray(data) && data.length) setCompetitions(data);
+        if (Array.isArray(data) && data.length) {
+          setCompetitions(data.filter((item) => !isFutureEditionCompetition(item)));
+        }
       })
       .catch(() => {
         /* mantém o fallback já definido no estado inicial */
@@ -272,10 +281,6 @@ export function useCreateTest() {
   const needsSeasonPick = seasonOptions.length > 0;
 
   /* ---------------- Outras Competições/Ligas ---------------- */
-  const isFutureEdition =
-    selectedCompetition?.code?.toLowerCase().includes("future") ||
-    selectedCompetition?.name?.toLowerCase().includes("future edition");
-
   const resetRunMissionState = () => {
     setSeason("");
     setMissions([]);
@@ -358,8 +363,7 @@ export function useCreateTest() {
 
   const readyToFetchMissions =
     Boolean(missionEndpoint) &&
-    (!needsSeasonPick || Boolean(season)) &&
-    !isFutureEdition;
+    (!needsSeasonPick || Boolean(season));
 
   /* -------------------------------------------------------------- */
   /* Helpers - runs / missões                                        */
@@ -501,36 +505,17 @@ export function useCreateTest() {
     };
 
     if (mode === "runs") {
-      /*
-       * Future Edition funciona como FRC/FTC.
-       * Não existem missões configuráveis aqui.
-       * O teste é definido somente pela competição
-       * e pela temporada.
-       */
-      if (isFutureEdition) {
-        payload = {
-          ...payload,
-          competition,
-          season,
-        };
-      } else {
-        /*
-         * Founders Edition e demais competições baseadas
-         * em missões continuam utilizando a configuração
-         * completa da run.
-         */
-        payload = {
-          ...payload,
-          competition,
-          season,
-          missions: orderedSelected.map((m, idx) => ({
-            ...answers[m.id],
-            missionId: m.id,
-            name: isFEMission(m) ? m.title : m.name,
-            order: idx,
-          })),
-        };
-      }
+      payload = {
+        ...payload,
+        competition,
+        season,
+        missions: orderedSelected.map((m, idx) => ({
+          ...answers[m.id],
+          missionId: m.id,
+          name: isFEMission(m) ? m.title : m.name,
+          order: idx,
+        })),
+      };
     } else if (mode === "calibrabot") {
       payload = {
         ...payload,

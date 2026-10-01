@@ -29,13 +29,6 @@ function toFieldLabel(key: string) {
     .replace(/^(.)/, (char) => char.toUpperCase());
 }
 
-function inferFieldType(value: unknown): FieldDefinition["type"] {
-  if (typeof value === "boolean") return "boolean";
-  if (typeof value === "number") return "number";
-  if (typeof value === "string") return "text";
-  return "text";
-}
-
 function normalizeScalar(value: unknown): number | boolean | string | null {
   if (
     typeof value === "number" ||
@@ -218,7 +211,10 @@ function buildFieldsFromConfig(
 
   if (Array.isArray(config.parametros)) {
     config.parametros.forEach((param, index) => {
-      const item = param as Record<string, unknown>;
+      const item =
+        typeof param === "string"
+          ? { nome: param }
+          : (param as Record<string, unknown>);
       const key =
         typeof item.nome === "string" ? item.nome : `parametro_${index + 1}`;
       defs.push({
@@ -226,8 +222,11 @@ function buildFieldsFromConfig(
         label: toFieldLabel(key),
         description: typeof item.descricao === "string" ? item.descricao : null,
         type:
-          typeof item.tipo === "string" && item.tipo === "boolean"
-            ? "boolean"
+          item.tipo === "boolean" ||
+          item.tipo === "text" ||
+          item.tipo === "select" ||
+          item.tipo === "duration"
+            ? item.tipo
             : "number",
         unit: typeof item.unidade === "string" ? item.unidade : null,
         order: index,
@@ -253,27 +252,11 @@ function buildFieldsFromConfig(
   return defs;
 }
 
-function resolveFields(
-  test: TestRecord,
-  entries: TestEntry[],
-): FieldDefinition[] {
+function resolveFields(test: TestRecord): FieldDefinition[] {
   const configFields = buildFieldsFromConfig(test.config ?? {});
   const seen = new Map<string, FieldDefinition>();
 
   for (const field of configFields) seen.set(field.fieldKey, field);
-
-  for (const entry of entries) {
-    for (const value of entry.values) {
-      if (!seen.has(value.fieldKey)) {
-        seen.set(value.fieldKey, {
-          fieldKey: value.fieldKey,
-          label: toFieldLabel(value.fieldKey),
-          type: inferFieldType(value.value),
-          order: seen.size,
-        });
-      }
-    }
-  }
 
   return Array.from(seen.values()).sort((a, b) => a.order - b.order);
 }
@@ -339,7 +322,7 @@ export async function getLabTestViewData(testId: string) {
     updatedAt: test.updatedAt.toISOString(),
   };
 
-  const fields = resolveFields(record, entries);
+  const fields = resolveFields(record);
   const nextExecutionNumber = entries.length
     ? Math.max(...entries.map((entry) => entry.executionNumber)) + 1
     : 1;

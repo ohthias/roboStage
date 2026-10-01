@@ -157,6 +157,123 @@ function buildConfig(input: CreateTestInput) {
   }
 }
 
+function validateCreateInput(input: CreateTestInput) {
+  if (input.mode === "runs") {
+    if (
+      !Array.isArray(input.missionOrder) ||
+      input.missionOrder.length === 0 ||
+      input.missionOrder.some(
+        (mission) => typeof mission !== "string" || !mission.trim(),
+      ) ||
+      new Set(input.missionOrder).size !== input.missionOrder.length
+    ) {
+      throw new Error("Selecione ao menos uma missão para a run.");
+    }
+    return;
+  }
+
+  if (input.mode === "calibrabot") {
+    if (
+      input.calibraMode === "motores" &&
+      (!Array.isArray(input.motores) || input.motores.length === 0)
+    ) {
+      throw new Error("Adicione ao menos um motor.");
+    }
+    if (
+      input.calibraMode === "giroscópio" &&
+      (!Array.isArray(input.giroAnalysis) || input.giroAnalysis.length === 0)
+    ) {
+      throw new Error("Selecione ao menos um indicador.");
+    }
+    if (
+      input.calibraMode === "pid" &&
+      (!Array.isArray(input.pidParams) || input.pidParams.length === 0)
+    ) {
+      throw new Error("Selecione ao menos um parâmetro do PID.");
+    }
+    return;
+  }
+
+  if (
+    !Array.isArray(input.params) ||
+    input.params.length === 0 ||
+    input.params.some((param) => !param.name.trim()) ||
+    new Set(input.params.map((param) => param.name.trim().toLowerCase())).size !==
+      input.params.length
+  ) {
+    throw new Error("Adicione ao menos um parâmetro com nome.");
+  }
+}
+
+function validateExecutionResults(
+  config: Record<string, unknown>,
+  results: Record<string, unknown>,
+) {
+  const configuredFields = new Set<string>();
+
+  if (Array.isArray(config.missions)) {
+    config.missions.forEach((mission) => {
+      if (typeof mission === "string") configuredFields.add(mission);
+    });
+
+    const answers = results.answers;
+    const resultFields =
+      answers && typeof answers === "object" && !Array.isArray(answers)
+        ? Object.keys(answers)
+        : Object.keys(results);
+
+    if (
+      resultFields.length === 0 ||
+      resultFields.some((fieldKey) =>
+        fieldKey === "answers" || fieldKey === "missions" || fieldKey === "precisionDiscs"
+          ? false
+          : !configuredFields.has(fieldKey),
+      )
+    ) {
+      throw new Error("A execução contém um campo que não pertence a este teste.");
+    }
+    return;
+  }
+
+  if (config.tipo === "motores") {
+    const motores = Array.isArray(config.motores)
+      ? config.motores.filter((motor): motor is string => typeof motor === "string")
+      : [];
+    const pares = Array.isArray(config.pares) ? config.pares : [];
+    const bases = config.modo === "duplas"
+      ? pares.flatMap((pair) =>
+          Array.isArray(pair) && pair.every((motor) => typeof motor === "string")
+            ? [`${pair[0]}__${pair[1]}`]
+            : [],
+        )
+      : motores;
+    bases.forEach((base) => {
+      configuredFields.add(`${base}__rotacao`);
+      configuredFields.add(`${base}__tempo`);
+    });
+  } else if (Array.isArray(config.parametros)) {
+    config.parametros.forEach((param) => {
+      if (typeof param === "string") configuredFields.add(param);
+      else if (param && typeof param === "object" && typeof param.nome === "string") {
+        configuredFields.add(param.nome);
+      }
+    });
+  } else if (Array.isArray(config.indicadores)) {
+    config.indicadores.forEach((indicator) => {
+      if (typeof indicator === "string") configuredFields.add(indicator);
+    });
+  }
+
+  const resultKeys = Object.keys(results);
+  if (
+    configuredFields.size === 0 ||
+    resultKeys.length === 0 ||
+    resultKeys.some((fieldKey) => !configuredFields.has(fieldKey))
+  ) {
+    throw new Error("A execução contém campos inválidos para este teste.");
+  }
+}
+
 /** O form tem 3 abas (runs | calibrabot | custom), mas o enum do banco tem 4
  * valores (runs | calibrabot | individual | custom) — "individual" existe
  * separadamente para o sub-caso "motores". Aqui eu direciono "motores" para
@@ -181,6 +298,16 @@ export async function createTest(input: CreateTestInput) {
 
   if (!input.name?.trim()) {
     throw new Error("Informe um nome para o teste.");
+  }
+
+  validateCreateInput(input);
+
+  if (
+    input.mode === "runs" &&
+    (input.competitionId.toLowerCase().includes("future") ||
+      input.competitionName?.toLowerCase().includes("future edition"))
+  ) {
+    throw new Error("A criação de testes da FLL Future Edition está temporariamente desabilitada.");
   }
 
   if (input.folderId) {
@@ -275,13 +402,16 @@ export async function createTestExecution(input: {
   const userId = await requireAuthenticatedUser();
 
   const [owned] = await db
-    .select({ id: tests.id })
+    .select({ id: tests.id, config: tests.config })
     .from(tests)
     .where(and(eq(tests.id, input.testId), eq(tests.userId, userId)));
 
   if (!owned) {
     throw new Error("Teste não encontrado ou sem permissão.");
   }
+
+  const results = input.results ?? {};
+  validateExecutionResults(owned.config as Record<string, unknown>, results);
 
   const [lastExecution] = await db
     .select({ executionNumber: testExecutions.executionNumber })
@@ -298,7 +428,7 @@ export async function createTestExecution(input: {
       testId: input.testId,
       executionNumber: nextNumber,
       notes: input.notes ?? null,
-      results: input.results ?? {},
+      results,
     })
     .returning();
 

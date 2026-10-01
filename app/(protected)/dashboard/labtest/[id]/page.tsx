@@ -23,6 +23,7 @@ import {
   XCircle,
   ArrowLeft,
   Trash2,
+  FileDown,
 } from "lucide-react";
 import {
   LineChart,
@@ -881,6 +882,13 @@ export default function LabTestView() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/dashboard/labtest/${test.id}/export`}
+              className="btn btn-sm gap-2 rounded-lg"
+            >
+              <FileDown className="h-3.5 w-3.5" />
+              Exportar relatório
+            </Link>
             <Link
               href={`/dashboard/labtest/${test.id}/execute`}
               className={`btn btn-sm gap-2 rounded-lg ${style.text}`}

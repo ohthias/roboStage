@@ -27,7 +27,8 @@ const publicRoutePatterns = [
 const isPublicRoute = (pathname: string) =>
   publicRoutePatterns.some((pattern) => {
     if (pattern.endsWith("(.*)")) {
-      return pathname.startsWith(pattern.slice(0, -4));
+      const basePath = pattern.slice(0, -4);
+      return pathname === basePath || pathname.startsWith(`${basePath}/`);
     }
 
     return pathname === pattern;

@@ -1,6 +1,6 @@
 <div align="center">
 
-<a href="https://robostage.com.br/"><strong>🌐 Acessar Plataforma</strong></a> • <a href="https://github.com/ohthias/roboStage/releases">📦 Releases</a> • <a href="https://github.com/ohthias/roboStage/issues">🐞 Issues</a> • <em>v2026.2</em></br>
+<a href="https://robostage.com.br/"><strong>🌐 Acessar Plataforma</strong></a> • <a href="https://github.com/ohthias/roboStage/releases">📦 Releases</a> • <a href="https://github.com/ohthias/roboStage/issues">🐞 Issues</a> • <em>v2026.3</em></br>
 
 ![Status](https://img.shields.io/badge/status-active-brightgreen.svg)
 ![Version](https://img.shields.io/badge/version-v5.1.0-informational)

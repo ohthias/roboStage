@@ -15,6 +15,11 @@ export async function notifyUser(params: {
   message?: string | null;
   data?: Record<string, unknown>;
 }) {
+  const authenticatedUserId = await requireAuthenticatedUser();
+  if (params.userId !== authenticatedUserId) {
+    throw new Error("Não autorizado");
+  }
+
   await db.insert(notifications).values({
     userId: params.userId,
     type: params.type,

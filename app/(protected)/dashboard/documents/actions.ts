@@ -44,6 +44,21 @@ async function nextDocumentPosition(
 
 export async function createFolder(parentId: string | null = null) {
   const scope = await resolveStagebookScope();
+
+  if (parentId) {
+    const [parent] = await db
+      .select({ id: folders.id })
+      .from(folders)
+      .where(
+        and(
+          eq(folders.id, parentId),
+          scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId })
+        )
+      )
+      .limit(1);
+    if (!parent) throw new Error("Pasta pai inválida.");
+  }
+
   const position = await nextFolderPosition(scope, parentId);
 
   const [created] = await db
@@ -94,6 +109,35 @@ export async function createDocument(
   parentId: string | null = null
 ) {
   const scope = await resolveStagebookScope();
+
+  if (folderId) {
+    const [folder] = await db
+      .select({ id: folders.id })
+      .from(folders)
+      .where(
+        and(
+          eq(folders.id, folderId),
+          scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId })
+        )
+      )
+      .limit(1);
+    if (!folder) throw new Error("Pasta inválida.");
+  }
+
+  if (parentId) {
+    const [parent] = await db
+      .select({ id: documents.id })
+      .from(documents)
+      .where(
+        and(
+          eq(documents.id, parentId),
+          scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId })
+        )
+      )
+      .limit(1);
+    if (!parent) throw new Error("Página pai inválida.");
+  }
+
   const position = await nextDocumentPosition(scope, folderId, parentId);
 
   const [created] = await db
@@ -348,15 +392,31 @@ export async function deleteDocument(id: string) {
 // ---------------------------------------------------------------------------
 
 export async function getDocumentTags(id: string) {
+  const scope = await resolveStagebookScope();
   return db
     .select({ tagId: tags.id, name: tags.name })
     .from(documentTags)
     .innerJoin(tags, eq(tags.id, documentTags.tagId))
-    .where(eq(documentTags.documentId, id));
+    .innerJoin(documents, eq(documents.id, documentTags.documentId))
+    .where(
+      and(
+        eq(documentTags.documentId, id),
+        scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId })
+      )
+    );
 }
 
 export async function toggleDocumentTag(id: string, tagName: string) {
-  await resolveStagebookScope();
+  const scope = await resolveStagebookScope();
+  const [document] = await db
+    .select({ id: documents.id })
+    .from(documents)
+    .where(
+      and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+    )
+    .limit(1);
+  if (!document) throw new Error("Página não encontrada.");
+
   const clean = cleanText(tagName, { maxLength: 40 });
   if (!clean) return;
 

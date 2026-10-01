@@ -140,6 +140,8 @@ export async function revokeInvitation(teamId: string, invitationId: string) {
 // ---------------------------------------------------------------------------
 
 export async function listTeamMembersDetailed(teamId: string) {
+  await requireStagebookAccess(teamId);
+
   return db
     .select({
       userId: users.id,

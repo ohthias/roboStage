@@ -79,15 +79,19 @@ export async function createTeam(name: string) {
   });
 
   try {
-    const [team] = await db
-      .insert(teams)
-      .values({ name: clean, createdBy: userId, clerkOrgId: organization.id })
-      .returning({ id: teams.id, name: teams.name });
+    const team = await db.transaction(async (tx) => {
+      const [createdTeam] = await tx
+        .insert(teams)
+        .values({ name: clean, createdBy: userId, clerkOrgId: organization.id })
+        .returning({ id: teams.id, name: teams.name });
 
-    await db.insert(teamMembers).values({
-      teamId: team.id,
-      userId,
-      role: "owner",
+      await tx.insert(teamMembers).values({
+        teamId: createdTeam.id,
+        userId,
+        role: "owner",
+      });
+
+      return createdTeam;
     });
 
     revalidatePath("/dashboard", "layout");

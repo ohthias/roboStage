@@ -57,6 +57,11 @@ export async function createEvent(input: {
   location?: string | null;
 }) {
   const scope = await resolveStagebookScope();
+  const startAt = requireDate(input.startAt, "data de início");
+  const endAt = optionalDate(input.endAt);
+  if (endAt && endAt < startAt) {
+    throw new Error("A data de fim não pode ser anterior à data de início.");
+  }
 
   const [created] = await db
     .insert(calendarEvents)
@@ -64,8 +69,8 @@ export async function createEvent(input: {
       ...scopeOwnership(scope),
       title: cleanText(input.title, { fallback: "Novo evento", maxLength: 200 }),
       description: optionalText(input.description, 2000),
-      startAt: requireDate(input.startAt, "data de início"),
-      endAt: optionalDate(input.endAt),
+      startAt,
+      endAt,
       allDay: Boolean(input.allDay),
       type: input.type || "evento",
       status: input.status || "confirmado",
@@ -94,14 +99,19 @@ export async function updateEvent(
   }
 ) {
   const scope = await resolveStagebookScope();
+  const startAt = requireDate(input.startAt, "data de início");
+  const endAt = optionalDate(input.endAt);
+  if (endAt && endAt < startAt) {
+    throw new Error("A data de fim não pode ser anterior à data de início.");
+  }
 
   await db
     .update(calendarEvents)
     .set({
       title: cleanText(input.title, { fallback: "Novo evento", maxLength: 200 }),
       description: optionalText(input.description, 2000),
-      startAt: requireDate(input.startAt, "data de início"),
-      endAt: optionalDate(input.endAt),
+      startAt,
+      endAt,
       allDay: Boolean(input.allDay),
       type: input.type || "evento",
       status: input.status || "confirmado",
@@ -169,7 +179,16 @@ export async function linkDocumentToEvent(eventId: string, documentId: string) {
 }
 
 export async function unlinkDocumentFromEvent(eventId: string, documentId: string) {
-  await resolveStagebookScope();
+  const scope = await resolveStagebookScope();
+  const [event] = await db
+    .select({ id: calendarEvents.id })
+    .from(calendarEvents)
+    .where(
+      and(eq(calendarEvents.id, eventId), scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId }))
+    )
+    .limit(1);
+  if (!event) throw new Error("Evento não encontrado.");
+
   await db
     .delete(calendarEventDocuments)
     .where(and(eq(calendarEventDocuments.eventId, eventId), eq(calendarEventDocuments.documentId, documentId)));

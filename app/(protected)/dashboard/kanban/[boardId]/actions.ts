@@ -38,6 +38,15 @@ async function requireBoardInScope(boardId: string) {
   return { scope, board };
 }
 
+async function requireColumnInBoard(boardId: string, columnId: string) {
+  const [column] = await db
+    .select({ id: boardColumns.id })
+    .from(boardColumns)
+    .where(and(eq(boardColumns.id, columnId), eq(boardColumns.boardId, boardId)))
+    .limit(1);
+  if (!column) throw new Error("Coluna não encontrada.");
+}
+
 export async function getBoardDetail(boardId: string) {
   const { board } = await requireBoardInScope(boardId);
 
@@ -62,6 +71,11 @@ export async function getBoardDetail(boardId: string) {
 }
 
 export async function listTeamMembersForAssignment(teamId: string) {
+  const scope = await resolveStagebookScope();
+  if (scope.type !== "team" || scope.teamId !== teamId) {
+    throw new StagebookAuthError("A equipe não pertence ao espaço atual.");
+  }
+
   return db
     .select({ userId: users.id, name: users.name, avatarUrl: users.avatarUrl, role: teamMembers.role })
     .from(teamMembers)
@@ -118,6 +132,7 @@ export async function reorderColumns(boardId: string, orderedColumnIds: string[]
 
 export async function createCard(boardId: string, columnId: string, title: string) {
   const { scope } = await requireBoardInScope(boardId);
+  await requireColumnInBoard(boardId, columnId);
   const existing = await db.select({ position: boardCards.position }).from(boardCards).where(eq(boardCards.columnId, columnId));
 
   const [card] = await db
@@ -170,6 +185,7 @@ export async function moveCard(
   afterPosition: number | null
 ) {
   await requireBoardInScope(boardId);
+  await requireColumnInBoard(boardId, targetColumnId);
   const position = positionBetween(beforePosition, afterPosition);
   await db
     .update(boardCards)

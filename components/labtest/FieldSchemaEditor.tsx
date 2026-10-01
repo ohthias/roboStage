@@ -17,6 +17,7 @@ const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   select: "Opções (lista)",
   duration: "Duração",
 };
+const MAX_FIELDS = 100;
 
 let _draftId = 1;
 const nextKey = () => `campo_${_draftId++}`;
@@ -161,11 +162,15 @@ export function FieldSchemaEditor({
       <button
         type="button"
         onClick={add}
+        disabled={fields.length >= MAX_FIELDS}
         className="btn btn-ghost btn-sm mt-1 gap-2 self-start text-primary hover:bg-primary/10"
       >
         <Plus className="h-4 w-4" />
         {addLabel}
       </button>
+      <span className="text-xs text-base-content/45">
+        {fields.length}/{MAX_FIELDS} campos
+      </span>
     </div>
   );
 }

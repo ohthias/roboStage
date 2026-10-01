@@ -2,9 +2,14 @@
 
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
+import { folders } from "@/db/schema/notebook";
 import { tests, testExecutions } from "@/db/schema/labtest";
 import { revalidatePath } from "next/cache";
-import { requireAuthenticatedUser } from "@/utils/stagebook/scope";
+import {
+  requireAuthenticatedUser,
+  resolveStagebookScope,
+} from "@/utils/stagebook/scope";
+import { scopeWhere } from "@/utils/stagebook/permissions";
 
 /* =========================================================================
  * Tipos de entrada — espelham o estado que o hook `useCreateTest` produz
@@ -71,7 +76,6 @@ type CustomPayload = {
 export type CreateTestInput = (RunsPayload | CalibrabotPayload | CustomPayload) & {
   name: string;
   description?: string;
-  teamId?: string | null;
   folderId?: string | null;
 };
 
@@ -173,10 +177,25 @@ function resolveTestMode(
  * ========================================================================= */
 
 export async function createTest(input: CreateTestInput) {
-  const userId = await requireAuthenticatedUser();
+  const scope = await resolveStagebookScope();
 
   if (!input.name?.trim()) {
     throw new Error("Informe um nome para o teste.");
+  }
+
+  if (input.folderId) {
+    const [folder] = await db
+      .select({ id: folders.id })
+      .from(folders)
+      .where(
+        and(
+          eq(folders.id, input.folderId),
+          scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }),
+        ),
+      )
+      .limit(1);
+
+    if (!folder) throw new Error("Pasta inválida ou sem permissão.");
   }
 
   const config = buildConfig(input);
@@ -189,8 +208,8 @@ export async function createTest(input: CreateTestInput) {
   const [created] = await db
     .insert(tests)
     .values({
-      userId,
-      teamId: input.teamId ?? null,
+      userId: scope.userId,
+      teamId: scope.type === "team" ? scope.teamId : null,
       folderId: input.folderId ?? null,
       name: input.name.trim(),
       description: input.description ?? null,

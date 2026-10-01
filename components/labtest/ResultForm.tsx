@@ -11,6 +11,7 @@
 import { useState } from "react";
 import {
   FlaskConical,
+  Info,
   Plus,
   RotateCcw,
   Save,
@@ -283,6 +284,7 @@ export default function LabTestResponseForm({
                       rows={2}
                       placeholder="Comportamento observado, anomalias, contexto..."
                       value={entry.notes}
+                      maxLength={2000}
                       onChange={(e) => updateNotes(entry.id, e.target.value)}
                       className="textarea textarea-bordered textarea-sm resize-none text-sm"
                     />
@@ -291,14 +293,28 @@ export default function LabTestResponseForm({
               );
             })}
 
-            <button
-              type="button"
-              onClick={addDraft}
-              className={`btn btn-ghost btn-sm mt-1 gap-2 self-start hover:bg-primary/10 ${accent.text}`}
-            >
-              <Plus className="h-4 w-4" />
-              Novo lançamento
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={addDraft}
+                disabled={drafts.length >= 100}
+                className={`btn btn-ghost btn-sm mt-1 gap-2 self-start hover:bg-primary/10 ${accent.text}`}
+              >
+                <Plus className="h-4 w-4" />
+                Novo lançamento
+              </button>
+              <span className="text-xs text-base-content/45">
+                {drafts.length}/100 lançamentos nesta remessa
+              </span>
+            </div>
+          </div>
+
+          <div className="alert alert-info items-start py-3 text-xs">
+            <Info className="mt-0.5 size-4 shrink-0" />
+            <span>
+              Cada envio aceita até 100 lançamentos e 256 KB. As observações
+              aceitam até 2.000 caracteres.
+            </span>
           </div>
 
           {error && (

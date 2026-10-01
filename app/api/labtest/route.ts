@@ -6,10 +6,105 @@ import { tests, testExecutions } from "@/db/schema";
 import type { FieldDefinition } from "@/types/labtest.types";
 
 // ---------------------------------------------------------------------------
-// Tipos de entrada/saída — o `config` e o `results` são jsonb livre;
-// a forma exata de cada um depende do `mode` do teste (runs | calibrabot |
-// individual | custom), montada no client (ver actions/hook useCreateTest).
+// Limites de entrada — os objetos internos continuam flexíveis por modo, mas
+// não podem crescer sem limite antes de chegar ao jsonb do banco.
 // ---------------------------------------------------------------------------
+
+const MAX_BODY_BYTES = 256 * 1024;
+const MAX_JSON_DEPTH = 8;
+const MAX_JSON_NODES = 1_000;
+const MAX_JSON_KEYS = 100;
+const MAX_JSON_ARRAY_ITEMS = 100;
+const MAX_JSON_STRING_LENGTH = 4_000;
+const MAX_ENTRIES_PER_REQUEST = 100;
+const MAX_TEXT_LENGTH = 2_000;
+
+class PayloadTooLargeError extends Error {}
+
+async function readJsonBody(req: NextRequest): Promise<unknown> {
+  const contentLength = Number(req.headers.get("content-length"));
+  if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
+    throw new PayloadTooLargeError();
+  }
+
+  const reader = req.body?.getReader();
+  if (!reader) return {};
+
+  const decoder = new TextDecoder();
+  let bytesRead = 0;
+  let text = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    bytesRead += value.byteLength;
+    if (bytesRead > MAX_BODY_BYTES) {
+      await reader.cancel();
+      throw new PayloadTooLargeError();
+    }
+    text += decoder.decode(value, { stream: true });
+  }
+
+  text += decoder.decode();
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new SyntaxError("JSON inválido");
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function hasBoundedJsonStructure(value: unknown): boolean {
+  const state = { nodes: 0 };
+
+  function visit(current: unknown, depth: number): boolean {
+    state.nodes += 1;
+    if (state.nodes > MAX_JSON_NODES || depth > MAX_JSON_DEPTH) return false;
+    if (typeof current === "string") return current.length <= MAX_JSON_STRING_LENGTH;
+    if (current === null || typeof current === "number" || typeof current === "boolean") {
+      return true;
+    }
+    if (Array.isArray(current)) {
+      return (
+        current.length <= MAX_JSON_ARRAY_ITEMS &&
+        current.every((item) => visit(item, depth + 1))
+      );
+    }
+    if (!isRecord(current)) return false;
+
+    const keys = Object.keys(current);
+    return (
+      keys.length <= MAX_JSON_KEYS &&
+      keys.every(
+        (key) =>
+          key.length <= MAX_JSON_STRING_LENGTH && visit(current[key], depth + 1),
+      )
+    );
+  }
+
+  return visit(value, 0);
+}
+
+function isBoundedRecord(value: unknown): value is Record<string, unknown> {
+  return isRecord(value) && hasBoundedJsonStructure(value);
+}
+
+function isBoundedText(value: unknown, nullable = false): value is string | null | undefined {
+  return (
+    (nullable && (value === null || value === undefined)) ||
+    (typeof value === "string" && value.length <= MAX_TEXT_LENGTH)
+  );
+}
+
+function isUuid(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+  );
+}
 
 type TestMode = "runs" | "calibrabot" | "individual" | "custom";
 
@@ -122,17 +217,38 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
-  const body = await req.json();
+  let body: unknown;
+  try {
+    body = await readJsonBody(req);
+  } catch (err) {
+    if (err instanceof PayloadTooLargeError) {
+      return NextResponse.json({ error: "Payload excede o limite de 256 KB" }, { status: 413 });
+    }
+    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
+  }
 
   try {
-    if (body.action === "create") {
-      const { name, description, mode, season, config, fields }: CreateTestBody = body;
+    if (!isRecord(body) || typeof body.action !== "string") {
+      return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
+    }
 
-      if (!name?.trim()) {
+    if (body.action === "create") {
+      const { name, description, mode, season, config, fields } = body as Partial<CreateTestBody>;
+
+      if (typeof name !== "string" || !name.trim() || name.length > MAX_TEXT_LENGTH) {
         return NextResponse.json({ error: "Nome é obrigatório" }, { status: 400 });
       }
-      if (!mode) {
+      if (!mode || !["runs", "calibrabot", "individual", "custom"].includes(mode)) {
         return NextResponse.json({ error: "Modo é obrigatório" }, { status: 400 });
+      }
+      if (!isBoundedText(description, true) || !isBoundedText(season, true)) {
+        return NextResponse.json({ error: "Texto excede o limite permitido" }, { status: 400 });
+      }
+      if (config !== undefined && !isBoundedRecord(config)) {
+        return NextResponse.json({ error: "Configuração inválida ou excede os limites" }, { status: 400 });
+      }
+      if (fields !== undefined && (!Array.isArray(fields) || fields.length > MAX_JSON_ARRAY_ITEMS || !hasBoundedJsonStructure(fields))) {
+        return NextResponse.json({ error: "Campos inválidos ou excedem os limites" }, { status: 400 });
       }
 
       const [created] = await db
@@ -155,7 +271,22 @@ export async function POST(req: NextRequest) {
     }
 
     if (body.action === "entries") {
-      const { testId, entries }: CreateEntriesBody = body;
+      const { testId, entries } = body as Partial<CreateEntriesBody>;
+
+      if (!isUuid(testId) || !Array.isArray(entries) || entries.length > MAX_ENTRIES_PER_REQUEST) {
+        return NextResponse.json({ error: "Lançamentos inválidos ou excedem o limite de 100 por requisição" }, { status: 400 });
+      }
+      if (
+        !entries.length ||
+        !entries.every(
+          (entry) =>
+            isRecord(entry) &&
+            isBoundedRecord(entry.results) &&
+            isBoundedText(entry.notes, true),
+        )
+      ) {
+        return NextResponse.json({ error: "Lançamentos inválidos ou excedem os limites" }, { status: 400 });
+      }
 
       const test = await db.query.tests.findFirst({
         where: and(eq(tests.id, testId), eq(tests.userId, userId)),
@@ -163,7 +294,7 @@ export async function POST(req: NextRequest) {
       if (!test) {
         return NextResponse.json({ error: "Teste não encontrado" }, { status: 404 });
       }
-      if (!entries?.length) {
+      if (!entries.length) {
         return NextResponse.json({ error: "Nenhum lançamento para salvar" }, { status: 400 });
       }
 

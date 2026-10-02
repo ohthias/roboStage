@@ -16,6 +16,7 @@ export interface FieldOption {
 export interface FieldDefinition {
   fieldKey: string;
   label: string;
+  description?: string | null;
   type: FieldType;
   unit?: string | null;
   targetValue?: number | null;
@@ -36,6 +37,18 @@ export interface TestEntry {
   notes: string | null;
   createdAt: string;
   values: FieldValue[];
+  fllAnswers?: Record<
+    string,
+    {
+      value: number;
+      subAnswers: Record<string, number>;
+    }
+  >;
+  precisionDiscs?: {
+    total: number;
+    remaining: number;
+    used: number;
+  };
 }
 
 export interface TestRecord {
@@ -78,3 +91,22 @@ export function emptyValueForType(type: FieldType): FieldValue["value"] {
       return null;
   }
 }
+
+export type FllExecutionResults = {
+  answers?: Record<
+    string,
+    {
+      order?: number;
+      value: number;
+      missionId?: string;
+      subAnswers: Record<string, number>;
+      objectiveAnswers?: Record<string, unknown>;
+    }
+  >;
+  missions?: string[];
+  precisionDiscs?: {
+    total?: number;
+    remaining?: number;
+    used?: number;
+  };
+};

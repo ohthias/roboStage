@@ -1,128 +1,430 @@
 <div align="center">
 
-<a href="https://robostage.com.br/"><strong>🌐 Acessar Plataforma</strong></a> • <a href="https://github.com/ohthias/roboStage/releases">📦 Releases</a> • <a href="https://github.com/ohthias/roboStage/issues">🐞 Issues</a> • <em>v2026.2</em></br>
+# 🤖 RoboStage
+
+### A plataforma para planejar, treinar, documentar e evoluir equipes de robótica.
+
+**Do primeiro planejamento ao dia da competição.**
+
+[🌐 Acessar Plataforma](https://www.robostage.com.br/) • [📚 Documentação](https://www.robostage.com.br/fll/help) • [📦 Releases](https://github.com/ohthias/roboStage/releases) • [🐞 Issues](https://github.com/ohthias/roboStage/issues) • [💡 Contribuir](CONTRIBUTING.md)
+
+<br>
 
 ![Status](https://img.shields.io/badge/status-active-brightgreen.svg)
-![Version](https://img.shields.io/badge/version-v5.1.0-informational)
-![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white)
-![React](https://img.shields.io/badge/React_19-61DAFB?logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/TailwindCSS_4-38B2AC?logo=tailwind-css&logoColor=white)
+![Version](https://img.shields.io/badge/version-v2026.3-informational.svg)
+![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js\&logoColor=white)
+![React](https://img.shields.io/badge/React_19-61DAFB?logo=react\&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript\&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS_4-38B2AC?logo=tailwind-css\&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 </div>
 
-## Sobre o projeto
 
-O RoboStage nasceu de uma necessidade real dentro de uma equipe de robótica: um lugar único para documentar testes, organizar estratégias e acompanhar o progresso ao longo da temporada. O que começou como o **ShowLive**, um hub para microeventos da FLL. Ele cresceu até se tornar um ecossistema completo, mantido por uma única pessoa com apoio ativo da comunidade de robótica.
+## Sobre o RoboStage
 
-Hoje a plataforma cobre toda a jornada de uma equipe: do planejamento inicial da temporada no QuickBrick Studio até a análise de resultados no LabTest — e a gestão de torneios inteiros no ShowLive.
+O **RoboStage** é uma plataforma web criada para ajudar equipes de robótica a **organizar o trabalho da temporada, planejar estratégias, realizar testes, documentar decisões, acompanhar tarefas e analisar resultados** em um único ambiente.
 
-A plataforma é **gratuita**, com todas as funcionalidades liberadas sem custo, e é focada atualmente na **FIRST LEGO League Challenge (FLLC)**, com suporte a **FIRST Tech Challenge (FTC)** e à **Olimpíada Brasileira de Robótica (OBR)** planejado para o futuro.
+O projeto nasceu dentro de uma equipe de robótica a partir de uma necessidade simples: ter um lugar onde fosse possível registrar testes, organizar estratégias e acompanhar a evolução da equipe.
 
-> [!IMPORTANT]
-> A plataforma está passando por modernização, e parte dos recursos está temporariamente desativada.
+O que começou como o **ShowLive**, uma ferramenta para gerenciamento de microeventos da FIRST® LEGO® League, evoluiu para um ecossistema de ferramentas que acompanha diferentes etapas da jornada de uma equipe.
 
-## Para quem é o RoboStage
+Hoje, o RoboStage conecta:
 
-| Perfil | O que encontra na plataforma |
-|---|---|
-| 🧩 **Equipes iniciantes** | Aprendem estratégia de missões e documentação sem se perder |
-| 🧑‍🏫 **Técnicos e mentores** | Centralizam treinos, testes e análises de desempenho da equipe |
-| 🏆 **Equipes avançadas** | Validam consistência de pontuação e evoluem estratégias com dados |
-| 🎤 **Organizadores e árbitros** | Criam e gerenciam torneios completos, com rankings e transmissões, em minutos |
+**planejamento → estratégia → documentação → testes → análise → organização → competição.**
 
-## Ecossistema de ferramentas
+A plataforma é gratuita e atualmente tem como principal foco a **FIRST® LEGO® League Challenge (FLLC)**.
 
-Cada ferramenta cobre um pilar diferente da temporada, do técnico ao administrativo.
+> **Feito para equipes de robótica. Construído com a comunidade.**
 
-### ⚙️ QuickBrick Studio
-Workspace estratégico para análise de missões, criação de matrizes táticas, planejamento de runs e documentação técnica do robô desde as primeiras ideias.
+<br />
 
-### 🧪 LabTest
-Ambiente de testes e validação de estratégias, com registro de tentativas de missão, análise de desempenho, feedback visual e acompanhamento da evolução da equipe nos treinos.
+## 🚀 O que você pode fazer no RoboStage?
 
-### 💡 ThinkLab
-Hub colaborativo para o Projeto de Inovação: brainstorming, pesquisa, diagramas (5W2H, Ishikawa, fluxogramas), organização de evidências e preparação de apresentações.
+O RoboStage reúne ferramentas diferentes em um único espaço de trabalho.
 
-### 🎥 ShowLive
-Central de gerenciamento de torneios e festivais: controle de rodadas, rankings em tempo real, chamada de equipes e experiências visuais inspiradas em grandes eventos de robótica.
+### 🧠 Planejar
 
-### ⏱️ Timers
-Cronômetros inteligentes para treinos, apresentações e desafios, com modos dedicados para mesa, pit, inovação e dinâmicas de equipe.
+Transforme ideias em estratégias, organize missões e documente decisões da equipe.
 
-### 🎓 Recall
-Sistema gamificado de flashcards e perguntas estratégicas para treinar entrevistas técnicas e fortalecer o domínio do conteúdo da temporada.
+### 🧪 Testar
 
-## Temporadas FIRST® LEGO® League suportadas
+Registre execuções, compare resultados e acompanhe a evolução do robô durante os treinos.
 
-- BIOGLOW (26/27)
-- UNEARTHED (25/26)
-- SUBMERGED (24/25)
-- MASTERPIECE (23/24)
+### 📚 Documentar
 
-## Como começar
+Mantenha estratégias, pesquisas, aprendizados e documentos organizados durante toda a temporada.
 
-1. Acesse [robostage.com.br](https://www.robostage.com.br/)
-2. Escolha sua competição (atualmente **FLL**)
-3. Explore as ferramentas da temporada em [robostage.com.br/fll](https://www.robostage.com.br/fll)
+### 📋 Organizar
 
-Não é necessário instalar nada — o RoboStage é 100% web.
+Gerencie tarefas, eventos, responsáveis e atividades da equipe.
 
-## Stack técnica
+### 📊 Analisar
 
-- **[Next.js](https://nextjs.org/)** (App Router, Turbopack) + **React 19** + **TypeScript**
-- **Tailwind CSS 4** + **DaisyUI** para estilo e componentes
-- **Recharts** para gráficos de desempenho (LabTest, dashboards)
-- **jsPDF** / **jspdf-autotable** / **html2canvas-pro** para exportação de relatórios e documentação em PDF
-- **next-mdx-remote** + **react-markdown** + **gray-matter** para conteúdo em MDX (guias, notícias, changelog)
-- **Framer Motion** para animações de interface
-- **Vercel Analytics** e **Speed Insights** para monitoramento
+Use dados dos testes para identificar padrões, acompanhar desempenho e tomar decisões durante o desenvolvimento.
 
-[Veja mais em LICENCES](.github/LICENSES.md)
+### 🏆 Competir
 
-## Perguntas frequentes
+Prepare a equipe para a competição e, através das ferramentas do ecossistema, também organize eventos e torneios.
 
-**O RoboStage é gratuito?**
-Sim, totalmente gratuito, com todas as funcionalidades disponíveis sem custo.
+<br />
 
-**Funciona com outras competições além da FLL?**
-Hoje o foco é a FLL, mas a expansão para outras competições de robótica (como FTC e OBR) está nos planos.
+# 🧰 Ecossistema RoboStage
 
-**Como funciona o LabTest?**
-Você cria testes personalizados para avaliar o robô nas missões da temporada, lança os resultados em tempo real e acompanha progresso, taxa de sucesso e missões mais realizadas.
+Cada ferramenta possui uma função específica, mas todas fazem parte do mesmo ecossistema.
 
-**O ThinkLab serve só para diagramas?**
-Não. Além de diagramas (5W2H, Ishikawa, fluxogramas), o ThinkLab organiza ideias, pesquisas e estratégias para toda a fase de Projeto de Inovação.
+## 📖 Stagebook
 
-Mais dúvidas? Veja o [FAQ completo](https://www.robostage.com.br/fll/help).
+### Seu espaço. Seu processo.
 
-## Contribuindo
+O **Stagebook** é o espaço de organização e documentação do trabalho da equipe.
 
-Sugestões, ideias e feedbacks são bem-vindos — o RoboStage evolui com a experiência real de equipes, técnicos e organizadores da comunidade FLL.
+Ele permite centralizar informações que normalmente ficam espalhadas entre documentos, anotações, aplicativos e planilhas.
 
-- Abra uma [issue](https://github.com/ohthias/roboStage/issues) para bugs ou sugestões
-- Envie um e-mail para **robostage.dev@gmail.com**
+* Documentos e páginas.
+* Pastas e organização hierárquica.
+* Tags.
+* Ideias e aprendizados.
+* Estratégias e registros de desenvolvimento.
+* Documentação técnica.
+* Organização por equipes e espaços de trabalho.
+* Membros e permissões.
+* Notificações.
+* Integração com outros recursos da plataforma.
 
-## Créditos
+O Stagebook foi pensado para acompanhar o processo da equipe durante toda a temporada — não apenas o resultado final.
 
-- **Desenvolvimento:** [Matheus Gabriel (@ohthias)](https://github.com/ohthias) — fundador e desenvolvedor
-- **Ícones:** Flaticon / Freepik
-- **Ilustrações:** Freepik / Storyset
-- **Imagens:** Unsplash / FIRST Inspire
-- **UI:** DaisyUI
-- Comunidade FLL (incluindo equipes como VMRT e Sharks FLL) que contribui com feedback contínuo
+## ⚙️ QuickBrick Studio
 
-## Suporte
+### Transforme estratégia em plano.
 
-- 🌐 Site: [robostage.com.br](https://www.robostage.com.br/)
-- 💻 GitHub: [github.com/ohthias/roboStage](https://github.com/ohthias/roboStage)
-- 🐞 Issues: [github.com/ohthias/roboStage/issues](https://github.com/ohthias/roboStage/issues)
-- 📸 Instagram: [@robo.stage](https://www.instagram.com/robo.stage)
-- ✉️ E-mail: robostage.dev@gmail.com
+O **QuickBrick Studio** reúne ferramentas para planejamento estratégico e preparação do robô.
+
+Inclui recursos para:
+
+* Análise de missões.
+* Planejamento de runs.
+* Estratégias de mesa.
+* Construção de zonas.
+* Planejamento de robôs.
+* Mapas de calor.
+* Matriz SWOT.
+* Documentação técnica.
+* Simulação e preparação de estratégias.
+
+## 🧪 LabTest
+
+### Teste. Registre. Compare. Evolua.
+
+O **LabTest** é o ambiente de testes do RoboStage.
+
+Ele permite transformar treinos em dados que podem ser analisados posteriormente.
+
+* Criação de testes personalizados.
+* Testes de missões.
+* Diferentes modos de execução.
+* Registro de tentativas.
+* Histórico de execuções.
+* Resultados e observações.
+* Gráficos de desempenho.
+* Análise de consistência.
+* Comparação de resultados.
+* Analytics.
+* Suporte aos dados das missões da temporada.
+
+Em vez de depender apenas da memória da equipe, os treinos podem gerar dados para orientar as próximas decisões.
+
+## 📋 Kanban
+
+### Organize o que precisa ser feito.
+
+O Kanban permite transformar as atividades da equipe em um fluxo visual de trabalho.
+
+* Quadros.
+* Colunas.
+* Cartões.
+* Tags.
+* Responsáveis.
+* Documentos vinculados.
+* Histórico de atividades.
+* Organização do trabalho por equipe.
+
+Ideal para acompanhar tarefas de robô, projeto de inovação, pesquisa, documentação, preparação para competição e outras atividades da temporada.
+
+## 📅 Calendário
+
+### Organize o tempo da equipe.
+
+O calendário centraliza compromissos e atividades importantes.
+
+* Treinos.
+* Reuniões.
+* Competições.
+* Eventos.
+* Prazos.
+* Atividades da equipe.
+* Documentos relacionados aos eventos.
+
+Os eventos podem ser organizados diretamente dentro do espaço de trabalho da equipe.
 
 ---
 
+## 💡 ThinkLab
+
+### Desenvolva o Projeto de Inovação.
+
+O **ThinkLab** oferece ferramentas para estruturar o processo de pesquisa e desenvolvimento do Projeto de Inovação.
+
+Inclui recursos para:
+
+* Brainstorming.
+* Pesquisa.
+* 5W2H.
+* Ishikawa.
+* Fluxogramas.
+* Organização de evidências.
+* Desenvolvimento de ideias.
+* Preparação de apresentações.
+
+## 🎥 ShowLive
+
+### Gerencie torneios e eventos.
+
+O **ShowLive** é voltado para organizadores de eventos e competições.
+
+Permite trabalhar com:
+
+* Rodadas.
+* Salas.
+* Equipes.
+* Rankings.
+* Pontuação.
+* Chamadas.
+* Exibição de resultados.
+* Transmissões e experiências visuais para eventos.
+
+O ShowLive foi a origem do RoboStage e continua fazendo parte do ecossistema da plataforma.
+
+## ⏱️ Timers
+
+### Cronômetros para diferentes momentos da equipe.
+
+Conjunto de cronômetros para atividades de treino, competição e preparação.
+
+Inclui modos voltados para:
+
+* Mesa.
+* Pit.
+* Inovação.
+* Apresentações.
+* Dinâmicas de equipe.
+
+## 🎓 Recall
+
+### Aprenda. Revise. Lembre.
+
+O **Recall** é uma ferramenta de revisão baseada em perguntas e flashcards.
+
+Foi desenvolvido para ajudar equipes a revisar:
+
+* Conteúdo da temporada.
+* Missões.
+* Estratégias.
+* Projeto de Inovação.
+* Biodiversidade.
+* Pesquisa.
+* Entrevistas técnicas.
+
+## 🤖 Sharks Simulator
+
+### Teste estratégias antes de colocá-las na mesa.
+
+O simulador permite experimentar trajetórias e estratégias do robô em um ambiente virtual.
+
+Inclui recursos para:
+
+* Construção de trajetórias.
+* Waypoints.
+* Controle de velocidade.
+* Configuração do robô.
+* Experiência para dispositivos móveis.
+* Testes de diferentes trajetórias.
+
+###  E muito mais...
+
+<br />
+
+# 🏆 Foco na FIRST® LEGO® League
+
+O RoboStage é atualmente desenvolvido principalmente para a **FIRST® LEGO® League Challenge**.
+
+### Temporadas disponíveis
+
+| Temporada        | Ano       |
+| ---------------- | --------- |
+| **BIOGLOW™**     | 2026/2027 |
+| **UNEARTHED™**   | 2025/2026 |
+| **SUBMERGED℠**   | 2024/2025 |
+| **MASTERPIECE℠** | 2023/2024 |
+
+A plataforma possui estrutura preparada para evoluir com novas temporadas e, futuramente, ampliar o suporte para outras competições de robótica.
+
+<br />
+
+# 👥 Para quem é?
+
+| Perfil                        | Como o RoboStage ajuda                                                    |
+| ----------------------------- | ------------------------------------------------------------------------- |
+| 🧩 **Equipes iniciantes**     | Aprender estratégias, organizar tarefas e começar a documentar o processo |
+| 🧑‍🏫 **Técnicos e mentores** | Centralizar treinos, testes, documentos e acompanhamento da equipe        |
+| 🏆 **Equipes avançadas**      | Analisar dados, comparar estratégias e acompanhar consistência            |
+| 💡 **Equipes de inovação**    | Pesquisar, organizar ideias e documentar o Projeto de Inovação            |
+| 🎤 **Organizadores**          | Gerenciar torneios, rodadas, equipes e resultados                         |
+
+<br />
+
+# 🌐 Começando
+
+O RoboStage é uma plataforma **100% web**. Não é necessário instalar nenhum programa para utilizá-lo.
+
+### 1. Acesse
+
+[**robostage.com.br**](https://www.robostage.com.br/)
+
+### 2. Escolha sua competição
+
+Atualmente, o foco principal é a **FIRST® LEGO® League Challenge**.
+
+### 3. Explore as ferramentas
+
+Acesse a área da competição e encontre as ferramentas disponíveis para sua temporada.
+
+[**Explorar FLL →**](https://www.robostage.com.br/fll)
+
+<br />
+
+# 🛠️ Desenvolvimento
+
+O RoboStage é um projeto de software aberto desenvolvido com tecnologias modernas para aplicações web.
+
+### Stack principal
+
+* **Next.js** — App Router e Turbopack
+* **React 19**
+* **TypeScript**
+* **Tailwind CSS 4**
+* **DaisyUI**
+* **Recharts**
+* **Drizzle ORM**
+* **Clerk**
+* **Framer Motion**
+* **Lenis**
+* **MDX / React Markdown**
+* **jsPDF**
+* **html2canvas**
+* **Vercel Analytics**
+* **Vercel Speed Insights**
+
+O projeto utiliza uma arquitetura baseada em Next.js App Router e possui áreas separadas para aplicação, componentes, banco de dados, conteúdo, hooks, tipos e utilitários.
+
+<br />
+
+# 🤝 Contribuindo
+
+O RoboStage é construído com participação da comunidade de robótica.
+
+Contribuições podem acontecer de várias formas:
+
+* Relatando bugs.
+* Sugerindo funcionalidades.
+* Melhorando documentação.
+* Corrigindo textos.
+* Melhorando acessibilidade.
+* Contribuindo com código.
+* Testando funcionalidades.
+* Compartilhando feedback de uso.
+* Ajudando a identificar necessidades reais das equipes.
+
+Antes de contribuir, consulte:
+
+* [**Guia de Contribuição**](.github/CONTRIBUTING.md)
+* [**Código de Conduta**](.github/CODE-OF-CONDUCT.md)
+* [**Issues**](https://github.com/ohthias/roboStage/issues)
+* [**Pull Requests**](https://github.com/ohthias/roboStage/pulls)
+
+O GitHub reconhece `CONTRIBUTING.md` como o local apropriado para orientar colaboradores sobre issues, pull requests e outras formas de participação, além de disponibilizar esse conteúdo diretamente na interface do repositório.
+
+# 📚 Documentação
+
+A documentação da plataforma está disponível dentro do próprio ecossistema RoboStage.
+
+* [📖 Central de Ajuda](https://www.robostage.com.br/fll/help)
+* [📋 Changelog](CHANGELOG.md)
+* [📦 Releases](https://github.com/ohthias/roboStage/releases)
+* [📜 Licenças](.github/LICENSES.md)
+* [🤝 Contributing](.github/CONTRIBUTING.md)
+* [🛡️ Código de Conduta](.github/CODE-OF-CONDUCT.md)
+
+# ❓ Perguntas frequentes
+
+### O RoboStage é gratuito?
+
+Sim. O RoboStage é disponibilizado gratuitamente, com as funcionalidades da plataforma oferecidas sem custo.
+
+### Preciso instalar alguma coisa?
+
+Não. O RoboStage é uma plataforma web.
+
+### O RoboStage funciona apenas para FLL?
+
+Atualmente, o principal foco é a **FIRST® LEGO® League Challenge**. A arquitetura e o desenvolvimento do projeto consideram a possibilidade de suporte futuro a outras competições.
+
+### Posso contribuir com o projeto?
+
+Sim. O projeto aceita feedback, sugestões, correções e contribuições de código.
+
+Consulte o [Guia de Contribuição](.github/CONTRIBUTING.md) antes de abrir uma contribuição.
+
+# 📈 Projeto em evolução
+
+O RoboStage é desenvolvido continuamente.
+
+Novas temporadas, ferramentas, melhorias e integrações são adicionadas conforme as necessidades das equipes e da comunidade.
+
+As atualizações podem ser acompanhadas em:
+
+[**Releases →**](https://github.com/ohthias/roboStage/releases)
+
+[**Changelog →**](.github/CHANGELOG.md)
+
+# 👨‍💻 Créditos
+
+**Desenvolvimento:** [Matheus Gabriel (@ohthias)](https://github.com/ohthias)
+
+O RoboStage é um projeto independente construído com participação e feedback da comunidade de robótica.
+
+### Recursos e créditos
+
+* Ícones: Flaticon / Freepik
+* Ilustrações: Freepik / Storyset
+* Imagens: Unsplash / FIRST Inspire
+* Interface: DaisyUI
+* Comunidade FLL e equipes que contribuem com feedback e testes
+
+# 📬 Contato
+
+* 🌐 **Plataforma:** [robostage.com.br](https://www.robostage.com.br/)
+* 💻 **GitHub:** [github.com/ohthias/roboStage](https://github.com/ohthias/roboStage)
+* 🐞 **Issues:** [github.com/ohthias/roboStage/issues](https://github.com/ohthias/roboStage/issues)
+* 📸 **Instagram:** [@robo.stage](https://www.instagram.com/robo.stage)
+* ✉️ **E-mail:** [robostage.dev@gmail.com](mailto:robostage.dev@gmail.com)
+
 <div align="center">
-<sub>Feito para a comunidade de robótica 🤖</sub>
+
+**RoboStage**
+
+*Seu espaço para planejar, testar, documentar e evoluir.*
+
+Feito para a comunidade de robótica.
+
 </div>

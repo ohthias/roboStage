@@ -2,9 +2,14 @@
 
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
+import { folders } from "@/db/schema/notebook";
 import { tests, testExecutions } from "@/db/schema/labtest";
 import { revalidatePath } from "next/cache";
-import { auth } from "@clerk/nextjs/server";
+import {
+  requireAuthenticatedUser,
+  resolveStagebookScope,
+} from "@/utils/stagebook/scope";
+import { scopeWhere } from "@/utils/stagebook/permissions";
 
 /* =========================================================================
  * Tipos de entrada — espelham o estado que o hook `useCreateTest` produz
@@ -21,6 +26,7 @@ type MissionAnswer = {
 type RunsPayload = {
   mode: "runs";
   competitionId: string;
+  competitionName?: string | null;
   season?: string | null;
   missionOrder: string[]; // t.orderedSelected.map(m => m.id) — ordem definida pelo usuário
   answers: Record<string, MissionAnswer>; // t.answers
@@ -70,7 +76,6 @@ type CustomPayload = {
 export type CreateTestInput = (RunsPayload | CalibrabotPayload | CustomPayload) & {
   name: string;
   description?: string;
-  teamId?: string | null;
   folderId?: string | null;
 };
 
@@ -100,6 +105,8 @@ function buildConfig(input: CreateTestInput) {
       return {
         missions: input.missionOrder,
         answers: input.answers,
+        ...(input.competitionId ? { competitionId: input.competitionId } : {}),
+        ...(input.competitionName ? { competitionName: input.competitionName } : {}),
       };
     }
 
@@ -150,6 +157,123 @@ function buildConfig(input: CreateTestInput) {
   }
 }
 
+function validateCreateInput(input: CreateTestInput) {
+  if (input.mode === "runs") {
+    if (
+      !Array.isArray(input.missionOrder) ||
+      input.missionOrder.length === 0 ||
+      input.missionOrder.some(
+        (mission) => typeof mission !== "string" || !mission.trim(),
+      ) ||
+      new Set(input.missionOrder).size !== input.missionOrder.length
+    ) {
+      throw new Error("Selecione ao menos uma missão para a run.");
+    }
+    return;
+  }
+
+  if (input.mode === "calibrabot") {
+    if (
+      input.calibraMode === "motores" &&
+      (!Array.isArray(input.motores) || input.motores.length === 0)
+    ) {
+      throw new Error("Adicione ao menos um motor.");
+    }
+    if (
+      input.calibraMode === "giroscópio" &&
+      (!Array.isArray(input.giroAnalysis) || input.giroAnalysis.length === 0)
+    ) {
+      throw new Error("Selecione ao menos um indicador.");
+    }
+    if (
+      input.calibraMode === "pid" &&
+      (!Array.isArray(input.pidParams) || input.pidParams.length === 0)
+    ) {
+      throw new Error("Selecione ao menos um parâmetro do PID.");
+    }
+    return;
+  }
+
+  if (
+    !Array.isArray(input.params) ||
+    input.params.length === 0 ||
+    input.params.some((param) => !param.name.trim()) ||
+    new Set(input.params.map((param) => param.name.trim().toLowerCase())).size !==
+      input.params.length
+  ) {
+    throw new Error("Adicione ao menos um parâmetro com nome.");
+  }
+}
+
+function validateExecutionResults(
+  config: Record<string, unknown>,
+  results: Record<string, unknown>,
+) {
+  const configuredFields = new Set<string>();
+
+  if (Array.isArray(config.missions)) {
+    config.missions.forEach((mission) => {
+      if (typeof mission === "string") configuredFields.add(mission);
+    });
+
+    const answers = results.answers;
+    const resultFields =
+      answers && typeof answers === "object" && !Array.isArray(answers)
+        ? Object.keys(answers)
+        : Object.keys(results);
+
+    if (
+      resultFields.length === 0 ||
+      resultFields.some((fieldKey) =>
+        fieldKey === "answers" || fieldKey === "missions" || fieldKey === "precisionDiscs"
+          ? false
+          : !configuredFields.has(fieldKey),
+      )
+    ) {
+      throw new Error("A execução contém um campo que não pertence a este teste.");
+    }
+    return;
+  }
+
+  if (config.tipo === "motores") {
+    const motores = Array.isArray(config.motores)
+      ? config.motores.filter((motor): motor is string => typeof motor === "string")
+      : [];
+    const pares = Array.isArray(config.pares) ? config.pares : [];
+    const bases = config.modo === "duplas"
+      ? pares.flatMap((pair) =>
+          Array.isArray(pair) && pair.every((motor) => typeof motor === "string")
+            ? [`${pair[0]}__${pair[1]}`]
+            : [],
+        )
+      : motores;
+    bases.forEach((base) => {
+      configuredFields.add(`${base}__rotacao`);
+      configuredFields.add(`${base}__tempo`);
+    });
+  } else if (Array.isArray(config.parametros)) {
+    config.parametros.forEach((param) => {
+      if (typeof param === "string") configuredFields.add(param);
+      else if (param && typeof param === "object" && typeof param.nome === "string") {
+        configuredFields.add(param.nome);
+      }
+    });
+  } else if (Array.isArray(config.indicadores)) {
+    config.indicadores.forEach((indicator) => {
+      if (typeof indicator === "string") configuredFields.add(indicator);
+    });
+  }
+
+  const resultKeys = Object.keys(results);
+  if (
+    configuredFields.size === 0 ||
+    resultKeys.length === 0 ||
+    resultKeys.some((fieldKey) => !configuredFields.has(fieldKey))
+  ) {
+    throw new Error("A execução contém campos inválidos para este teste.");
+  }
+}
+
 /** O form tem 3 abas (runs | calibrabot | custom), mas o enum do banco tem 4
  * valores (runs | calibrabot | individual | custom) — "individual" existe
  * separadamente para o sub-caso "motores". Aqui eu direciono "motores" para
@@ -170,13 +294,35 @@ function resolveTestMode(
  * ========================================================================= */
 
 export async function createTest(input: CreateTestInput) {
-  const session = await auth();
-  if (!session?.userId) {
-    throw new Error("Usuário não autenticado.");
-  }
+  const scope = await resolveStagebookScope();
 
   if (!input.name?.trim()) {
     throw new Error("Informe um nome para o teste.");
+  }
+
+  validateCreateInput(input);
+
+  if (
+    input.mode === "runs" &&
+    (input.competitionId.toLowerCase().includes("future") ||
+      input.competitionName?.toLowerCase().includes("future edition"))
+  ) {
+    throw new Error("A criação de testes da FLL Future Edition está temporariamente desabilitada.");
+  }
+
+  if (input.folderId) {
+    const [folder] = await db
+      .select({ id: folders.id })
+      .from(folders)
+      .where(
+        and(
+          eq(folders.id, input.folderId),
+          scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }),
+        ),
+      )
+      .limit(1);
+
+    if (!folder) throw new Error("Pasta inválida ou sem permissão.");
   }
 
   const config = buildConfig(input);
@@ -189,8 +335,8 @@ export async function createTest(input: CreateTestInput) {
   const [created] = await db
     .insert(tests)
     .values({
-      userId: session.userId,
-      teamId: input.teamId ?? null,
+      userId: scope.userId,
+      teamId: scope.type === "team" ? scope.teamId : null,
       folderId: input.folderId ?? null,
       name: input.name.trim(),
       description: input.description ?? null,
@@ -201,7 +347,7 @@ export async function createTest(input: CreateTestInput) {
     })
     .returning();
 
-  revalidatePath("/tests");
+  revalidatePath("/dashboard/labtest");
 
   return created;
 }
@@ -211,23 +357,20 @@ export async function createTest(input: CreateTestInput) {
  * ========================================================================= */
 
 export async function updateTestStatus(testId: string, status: string) {
-  const session = await auth();
-  if (!session?.userId) {
-    throw new Error("Usuário não autenticado.");
-  }
+  const userId = await requireAuthenticatedUser();
 
   const [updated] = await db
     .update(tests)
     .set({ status, updatedAt: new Date() })
-    .where(and(eq(tests.id, testId), eq(tests.userId, session.userId)))
+    .where(and(eq(tests.id, testId), eq(tests.userId, userId)))
     .returning();
 
   if (!updated) {
     throw new Error("Teste não encontrado ou sem permissão.");
   }
 
-  revalidatePath("/tests");
-  revalidatePath(`/tests/${testId}`);
+  revalidatePath("/dashboard/labtest");
+  revalidatePath(`/dashboard/labtest/${testId}`);
 
   return updated;
 }
@@ -237,16 +380,13 @@ export async function updateTestStatus(testId: string, status: string) {
  * ========================================================================= */
 
 export async function deleteTest(testId: string) {
-  const session = await auth();
-  if (!session?.userId) {
-    throw new Error("Usuário não autenticado.");
-  }
+  const userId = await requireAuthenticatedUser();
 
   await db
     .delete(tests)
-    .where(and(eq(tests.id, testId), eq(tests.userId, session.userId)));
+    .where(and(eq(tests.id, testId), eq(tests.userId, userId)));
 
-  revalidatePath("/tests");
+  revalidatePath("/dashboard/labtest");
 }
 
 /* =========================================================================
@@ -259,19 +399,19 @@ export async function createTestExecution(input: {
   notes?: string;
   results?: Record<string, unknown>;
 }) {
-  const session = await auth();
-  if (!session?.userId) {
-    throw new Error("Usuário não autenticado.");
-  }
+  const userId = await requireAuthenticatedUser();
 
   const [owned] = await db
-    .select({ id: tests.id })
+    .select({ id: tests.id, config: tests.config })
     .from(tests)
-    .where(and(eq(tests.id, input.testId), eq(tests.userId, session.userId)));
+    .where(and(eq(tests.id, input.testId), eq(tests.userId, userId)));
 
   if (!owned) {
     throw new Error("Teste não encontrado ou sem permissão.");
   }
+
+  const results = input.results ?? {};
+  validateExecutionResults(owned.config as Record<string, unknown>, results);
 
   const [lastExecution] = await db
     .select({ executionNumber: testExecutions.executionNumber })
@@ -288,11 +428,11 @@ export async function createTestExecution(input: {
       testId: input.testId,
       executionNumber: nextNumber,
       notes: input.notes ?? null,
-      results: input.results ?? {},
+      results,
     })
     .returning();
 
-  revalidatePath(`/tests/${input.testId}`);
+  revalidatePath(`/dashboard/labtest/${input.testId}`);
 
   return created;
 }
@@ -302,14 +442,40 @@ export async function createTestExecution(input: {
  * ========================================================================= */
 
 export async function listTests() {
-  const session = await auth();
-  if (!session?.userId) {
-    throw new Error("Usuário não autenticado.");
-  }
+  const userId = await requireAuthenticatedUser();
 
   return db
     .select()
     .from(tests)
-    .where(eq(tests.userId, session.userId))
+    .where(eq(tests.userId, userId))
     .orderBy(desc(tests.createdAt));
+}
+
+export async function updateLabTestStatus({
+  testId,
+  status,
+}: {
+  testId: string;
+  status: string;
+}) {
+  const userId = await requireAuthenticatedUser();
+
+  const [updated] = await db
+    .update(tests)
+    .set({
+      status,
+    })
+    .where(
+      and(
+        eq(tests.id, testId),
+        eq(tests.userId, userId),
+      ),
+    )
+    .returning();
+
+  if (!updated) {
+    throw new Error("Teste não encontrado ou sem permissão.");
+  }
+
+  return updated;
 }

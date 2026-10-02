@@ -13,7 +13,8 @@ export default function RecallPage() {
 
   return (
     <div className="px-8 md:px-16 py-4 pb-12">
-      <main className="flex items-center justify-center">
+      <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
         <div className="w-full">
           {gameState.status === "setup" && <SetupScreen onStart={startGame} />}
 

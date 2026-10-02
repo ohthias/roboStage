@@ -1,20 +1,34 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-// Rotas que não exigem onboarding concluído (a própria página de onboarding,
-// assets, webhooks e a home pública, se houver).
+// Rotas que não exigem autenticação ou onboarding concluído.
 const publicRoutePatterns = [
   "/",
+  "/about(.*)",
+  "/assets(.*)",
+  "/changelog(.*)",
+  "/fll(.*)",
+  "/help(.*)",
+  "/labtest(.*)",
+  "/legal(.*)",
+  "/licences(.*)",
+  "/news(.*)",
   "/onboarding",
   "/api/webhooks(.*)",
+  "/robostage-canopy(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/showlive(.*)",
+  "/sponsors(.*)",
+  "/stagebook(.*)",
+  "/universe(.*)",
 ];
 
 const isPublicRoute = (pathname: string) =>
   publicRoutePatterns.some((pattern) => {
     if (pattern.endsWith("(.*)")) {
-      return pathname.startsWith(pattern.slice(0, -4));
+      const basePath = pattern.slice(0, -4);
+      return pathname === basePath || pathname.startsWith(`${basePath}/`);
     }
 
     return pathname === pattern;
@@ -25,14 +39,26 @@ export default clerkMiddleware(async (auth, req) => {
 
   if (isPublicRoute(req.nextUrl.pathname)) return NextResponse.next();
 
-  // Sem sessão: deixa o Clerk cuidar do redirect para sign-in normalmente.
-  if (!userId) return NextResponse.next();
+  // Sem sessão: redireciona para o sign-in antes de acessar rotas protegidas.
+  if (!userId) {
+    const url = req.nextUrl.clone();
+
+    url.pathname = "/sign-in";
+    url.searchParams.set(
+      "redirect_url",
+      req.nextUrl.pathname + req.nextUrl.search,
+    );
+
+    return NextResponse.redirect(url);
+  }
 
   // Só bloqueia quando a flag existir e estiver explicitamente desativada.
   // Se o claim não vier no token ou estiver desatualizado, evita loop de redirect.
-  const onboardingComplete =
-    (sessionClaims?.publicMetadata as { onboardingComplete?: boolean } | undefined)
-      ?.onboardingComplete;
+  const onboardingComplete = (
+    sessionClaims?.publicMetadata as
+      | { onboardingComplete?: boolean }
+      | undefined
+  )?.onboardingComplete;
 
   if (onboardingComplete === false) {
     const url = req.nextUrl.clone();
@@ -44,8 +70,5 @@ export default clerkMiddleware(async (auth, req) => {
 });
 
 export const config = {
-  matcher: [
-    "/((?!_next|.*\\..*).*)",
-    "/(api|trpc)(.*)",
-  ],
+  matcher: ["/((?!_next|.*\\..*).*)", "/(api|trpc)(.*)"],
 };

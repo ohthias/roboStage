@@ -267,10 +267,8 @@ const Mat: React.FC<MatProps> = ({
 
   return (
     <div className="relative group/mat bg-base-100 border border-base-content/10 select-none">
-       {/* Collapsible Info Overlay */}
        <div className="absolute -bottom-10 left-4 z-50 pointer-events-auto flex flex-col items-start gap-2">
            <div className="bg-base-100/90 backdrop-blur-md border border-base-content/10 rounded-lg transition-all duration-300">
-             {/* Header / Toggle */}
              <button 
                 onClick={() => setIsInfoCollapsed(!isInfoCollapsed)}
                 className="w-full flex items-center justify-between gap-4 p-2 hover:bg-base-200 transition-colors"
@@ -324,7 +322,7 @@ const Mat: React.FC<MatProps> = ({
             background: 'url("/images/QuickBrick/quickbrick_robottrack.png")',
             backgroundSize: 'cover',
           }}
-          className="relative mx-auto overflow-visible rounded-lg transition-transform duration-75 ease-out"
+          className="relative mx-auto overflow-visible transition-transform duration-75 ease-out"
         >
           {/* Rulers (Inside scaled container to move with Pan) */}
            <div className="absolute -top-6 left-0 w-full h-6 flex justify-between px-2 text-[9px] text-base-content/50 font-mono select-none pointer-events-none">

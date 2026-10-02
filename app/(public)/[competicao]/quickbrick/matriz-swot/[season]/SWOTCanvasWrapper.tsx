@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { SWOTCanvas } from "@/components/QuickBrick/Swot/SwotCanva";
-import CardMobileNotUse from "@/components/MobileNotUse";
+import { SwotMobile } from "@/components/QuickBrick/Swot/SwotMobile";
 import HeaderTool from "@/components/QuickBrick/HeaderTool";
 import { LayoutGrid } from "lucide-react";
 
@@ -66,10 +66,6 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
       });
   }, [selectedSeason]);
 
-  if (isMobile) {
-    return <CardMobileNotUse />;
-  }
-
   return (
     <div className="px-4 md:px-8">
       <HeaderTool
@@ -78,13 +74,21 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
         IconTool={LayoutGrid}
       />
       <div className="mt-8 mb-16">
-        <SWOTCanvas
-          missions={missions}
-          setMissions={setMissions}
-          seasons={availableSeasons}
-          selectedSeason={selectedSeason}
-          setSelectedSeason={setSelectedSeason}
-        />
+        {isMobile ? (
+          <SwotMobile
+            missions={missions}
+            setMissions={setMissions}
+            selectedSeason={selectedSeason}
+          />
+        ) : (
+          <SWOTCanvas
+            missions={missions}
+            setMissions={setMissions}
+            seasons={availableSeasons}
+            selectedSeason={selectedSeason}
+            setSelectedSeason={setSelectedSeason}
+          />
+        )}
       </div>
     </div>
   );

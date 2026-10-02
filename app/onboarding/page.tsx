@@ -4,6 +4,7 @@ import { db } from "@/db/client";
 import { users, leagues } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { OnboardingForm } from "./onboarding-form";
+import { BackgroundStars } from "@/components/UI/BackgroundStars";
 
 export default async function OnboardingPage() {
   const { userId } = await auth();
@@ -21,6 +22,7 @@ export default async function OnboardingPage() {
 
   return (
     <main className="h-screen">
+      <BackgroundStars />
       <OnboardingForm leagues={leagueCatalog} />
     </main>
   );

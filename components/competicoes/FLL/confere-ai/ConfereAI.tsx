@@ -87,8 +87,8 @@ export default function ConfereAI() {
   }
 
   return (
-    <div className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pb-8 pt-4">
-      {/* Hero */}
+    <div className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
       <Header name="Confia," highlight="mas Confira!" type="Cheklist" description="Organize sua equipe para os treinos e campeonatos da FLL. Adicione itens personalizados às suas checklists, e acompanhe o progresso de forma simples e eficiente. " />
 
       {/* Seleção de modo */}

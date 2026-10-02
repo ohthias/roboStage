@@ -17,6 +17,7 @@ const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   select: "Opções (lista)",
   duration: "Duração",
 };
+const MAX_FIELDS = 100;
 
 let _draftId = 1;
 const nextKey = () => `campo_${_draftId++}`;
@@ -72,6 +73,16 @@ export function FieldSchemaEditor({
             placeholder="Nome do parâmetro (ex: velocidade, ângulo...)"
             value={field.label}
             onChange={(e) => update(field.fieldKey, { label: e.target.value })}
+            className="input input-bordered input-sm flex-1 focus:input-primary"
+          />
+
+          <input
+            type="text"
+            placeholder="Descrição (opcional)"
+            value={field.description ?? ""}
+            onChange={(e) =>
+              update(field.fieldKey, { description: e.target.value || null })
+            }
             className="input input-bordered input-sm flex-1 focus:input-primary"
           />
 
@@ -151,11 +162,15 @@ export function FieldSchemaEditor({
       <button
         type="button"
         onClick={add}
+        disabled={fields.length >= MAX_FIELDS}
         className="btn btn-ghost btn-sm mt-1 gap-2 self-start text-primary hover:bg-primary/10"
       >
         <Plus className="h-4 w-4" />
         {addLabel}
       </button>
+      <span className="text-xs text-base-content/45">
+        {fields.length}/{MAX_FIELDS} campos
+      </span>
     </div>
   );
 }

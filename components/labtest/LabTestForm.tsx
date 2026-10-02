@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------------------
 
 import { useMemo, useState } from "react";
-import { X, FlaskConical } from "lucide-react";
+import { X, FlaskConical, Info } from "lucide-react";
 import { useCreateTest, useMissionCatalog } from "@/hooks/useLabTests";
 import { LAB_TEST_MODE_LIST, getModeDefinition, ACCENT_STYLES } from "@/utils/labtest/modes";
 import { FieldSchemaEditor, newField } from "./FieldSchemaEditor";
@@ -200,6 +200,14 @@ export default function LabTestForm({
               {error}
             </div>
           )}
+
+          <div className="alert alert-info items-start py-3 text-xs">
+            <Info className="mt-0.5 size-4 shrink-0" />
+            <span>
+              Limites de segurança: até 100 campos, 2.000 caracteres nos textos
+              e 256 KB no envio.
+            </span>
+          </div>
 
           <div className="mt-auto flex items-center justify-end gap-2 border-t border-base-content/10 pt-4">
             <button type="button" onClick={onCancel} className="btn btn-ghost">

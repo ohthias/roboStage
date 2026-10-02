@@ -4,8 +4,21 @@ import { NavLinks } from "./nav-links";
 import Logo from "@/components/UI/Logo";
 import { Menu, PanelLeft } from "lucide-react";
 import { ThemeController } from "@/components/UI/themeController";
+import { ScopeSwitcher } from "@/components/stagebook/scope-switcher";
+import { NotificationsBell } from "@/components/stagebook/notifications-bell";
+import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { listMyTeams, canCurrentUserCreateTeam } from "@/utils/stagebook/actions/teams";
+import { listUnreadNotifications } from "@/utils/stagebook/actions/notifications";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export default async function DashboardLayout({ children }: { children: ReactNode }) {
+  const [scope, teams, notifications, canCreateTeam] = await Promise.all([
+    resolveStagebookScope(),
+    listMyTeams(),
+    listUnreadNotifications(),
+    canCurrentUserCreateTeam(),
+  ]);
+  const activeTeamId = scope.type === "team" ? scope.teamId : null;
+
   return (
     <div className="drawer lg:drawer-open" data-theme="labtest">
       <input id="lt-drawer" type="checkbox" className="drawer-toggle" />
@@ -28,12 +41,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            <ScopeSwitcher teams={teams} activeTeamId={activeTeamId} canCreateTeam={canCreateTeam} />
+            <NotificationsBell initialNotifications={notifications} />
             <ThemeController />
             <UserButton />
           </div>
         </div>
 
-        <main className="mx-auto w-full flex-1">{children}</main>
+        <main className="mx-auto w-full flex-1 bg-base-300/25">{children}</main>
       </div>
 
       {/* Sidebar */}

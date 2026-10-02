@@ -2,10 +2,14 @@
 
 import {
   Book,
+  Boxes,
+  CalendarDays,
   Earth,
   FlaskConical,
   Home,
+  KanbanSquare,
   Settings,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -24,15 +28,35 @@ const MAIN_LINKS: NavItem[] = [
     Icon: Home,
   },
   {
-    href: "/dashboard/documents",
-    label: "Caderno",
-    Icon: Book,
+    href: "/dashboard/team",
+    label: "Equipe",
+    Icon: Users,
   },
-  /*{
+    {
     href: "/dashboard/labtest",
     label: "LabTest",
     Icon: FlaskConical,
-  }*/
+  },
+  {
+    href: "/dashboard/documents",
+    label: "StageBook",
+    Icon: Book,
+  },
+  {
+    href: "/dashboard/calendar",
+    label: "Calendário",
+    Icon: CalendarDays,
+  },
+  {
+    href: "/dashboard/kanban",
+    label: "Kanban",
+    Icon: KanbanSquare,
+  },
+  /*{
+    href: "/dashboard/projects",
+    label: "Projetos",
+    Icon: Boxes,
+  },*/
 ];
 
 const SYSTEM_LINKS: NavItem[] = [

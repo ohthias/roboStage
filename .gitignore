@@ -43,8 +43,13 @@ cache/
 
 # drizzle
 drizzle/
+/drizzle*
 *.db
 *.sql
+!/drizzle/
+!/drizzle/**/*.sql
+!/drizzle/meta/
+!/drizzle/meta/*.json
 
 # clerk configuration
 /.clerk/

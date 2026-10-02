@@ -1,10 +1,24 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { requireAuthenticatedUser } from "@/utils/stagebook/scope";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { tests, testExecutions } from "@/db/schema/labtest";
-import type { FieldDefinition, TestEntry, TestRecord } from "@/types/labtest.types";
+import type {
+  FieldDefinition,
+  FllExecutionResults,
+  TestEntry,
+  TestRecord,
+} from "@/types/labtest.types";
+import { createTestExecution as createTestExecutionAction } from "./new/actions";
+
+export async function createTestExecution(input: {
+  testId: string;
+  notes?: string;
+  results?: Record<string, unknown>;
+}) {
+  return createTestExecutionAction(input);
+}
 
 function toFieldLabel(key: string) {
   return key
@@ -15,15 +29,12 @@ function toFieldLabel(key: string) {
     .replace(/^(.)/, (char) => char.toUpperCase());
 }
 
-function inferFieldType(value: unknown): FieldDefinition["type"] {
-  if (typeof value === "boolean") return "boolean";
-  if (typeof value === "number") return "number";
-  if (typeof value === "string") return "text";
-  return "text";
-}
-
 function normalizeScalar(value: unknown): number | boolean | string | null {
-  if (typeof value === "number" || typeof value === "boolean" || typeof value === "string") {
+  if (
+    typeof value === "number" ||
+    typeof value === "boolean" ||
+    typeof value === "string"
+  ) {
     return value;
   }
   if (value === null || value === undefined) return null;
@@ -54,7 +65,10 @@ function normalizeResults(raw: unknown): Record<string, unknown> {
     const values = (obj as { values: Array<Record<string, unknown>> }).values;
     return Object.fromEntries(
       values.map((entry, index) => {
-        const key = typeof entry.fieldKey === "string" ? entry.fieldKey : `campo_${index + 1}`;
+        const key =
+          typeof entry.fieldKey === "string"
+            ? entry.fieldKey
+            : `campo_${index + 1}`;
         return [key, entry.value ?? null];
       }),
     );
@@ -63,14 +77,128 @@ function normalizeResults(raw: unknown): Record<string, unknown> {
   return obj;
 }
 
-function buildFieldsFromConfig(config: Record<string, unknown> | null | undefined): FieldDefinition[] {
+function normalizeFllAnswers(raw: unknown): TestEntry["fllAnswers"] {
+  if (!raw || typeof raw !== "object") return undefined;
+
+  const answers = (raw as Record<string, unknown>).answers;
+  if (!answers || typeof answers !== "object" || Array.isArray(answers))
+    return undefined;
+
+  const normalized = Object.fromEntries(
+    Object.entries(answers).flatMap(([missionId, answer]) => {
+      if (!answer || typeof answer !== "object") return [];
+      const record = answer as Record<string, unknown>;
+      const subAnswers = record.subAnswers;
+      return [
+        [
+          missionId,
+          {
+            value: typeof record.value === "number" ? record.value : 0,
+            subAnswers:
+              subAnswers &&
+              typeof subAnswers === "object" &&
+              !Array.isArray(subAnswers)
+                ? Object.fromEntries(
+                    Object.entries(subAnswers).map(([key, value]) => [
+                      key,
+                      typeof value === "number" ? value : 0,
+                    ]),
+                  )
+                : {},
+          },
+        ],
+      ];
+    }),
+  );
+
+  return Object.keys(normalized).length > 0 ? normalized : undefined;
+}
+
+// ---------------------------------------------------------------------------
+// CalibraBot · Motores — não guarda "parametros"/"indicadores" no config,
+// guarda a lista de motores (e, no modo duplas, os pares já combinados).
+// Cada motor (ou cada dupla) vira DOIS campos numéricos sintéticos:
+// rotação (RPM) e tempo de execução (s). É o que os gráficos de comparação
+// do modo Motores usam como eixo de dados.
+// ---------------------------------------------------------------------------
+
+function buildMotorFields(config: Record<string, unknown>): FieldDefinition[] {
+  const defs: FieldDefinition[] = [];
+
+  const motores = Array.isArray(config.motores)
+    ? (config.motores as unknown[]).filter(
+        (m): m is string => typeof m === "string",
+      )
+    : [];
+
+  const pares = Array.isArray(config.pares) ? (config.pares as unknown[]) : [];
+  const isDuplas = config.modo === "duplas" && pares.length > 0;
+
+  if (isDuplas) {
+    pares.forEach((pair, index) => {
+      if (!Array.isArray(pair)) return;
+      const [a, b] = pair as unknown[];
+      if (typeof a !== "string" || typeof b !== "string") return;
+      const base = `${a}__${b}`;
+      defs.push({
+        fieldKey: `${base}__rotacao`,
+        label: `${a} + ${b} · Rotação`,
+        description: "Velocidade de rotação dos motores durante o teste.",
+        type: "number",
+        unit: "RPM",
+        order: index * 2,
+      });
+      defs.push({
+        fieldKey: `${base}__tempo`,
+        label: `${a} + ${b} · Tempo`,
+        description: "Tempo de execução dos motores durante o teste.",
+        type: "duration",
+        unit: "s",
+        order: index * 2 + 1,
+      });
+    });
+    return defs;
+  }
+
+  motores.forEach((motor, index) => {
+    defs.push({
+      fieldKey: `${motor}__rotacao`,
+      label: `${motor} · Rotação`,
+      description: "Velocidade de rotação do motor durante o teste.",
+      type: "number",
+      unit: "RPM",
+      order: index * 2,
+    });
+    defs.push({
+      fieldKey: `${motor}__tempo`,
+      label: `${motor} · Tempo`,
+      description: "Tempo de execução do motor durante o teste.",
+      type: "duration",
+      unit: "s",
+      order: index * 2 + 1,
+    });
+  });
+
+  return defs;
+}
+
+function buildFieldsFromConfig(
+  config: Record<string, unknown> | null | undefined,
+): FieldDefinition[] {
   const defs: FieldDefinition[] = [];
 
   if (!config || typeof config !== "object") return defs;
 
+  if (config.tipo === "motores") {
+    return buildMotorFields(config);
+  }
+
   if (Array.isArray(config.missions)) {
     config.missions.forEach((mission, index) => {
-      const key = typeof mission === "string" ? mission : String(mission ?? `missao_${index + 1}`);
+      const key =
+        typeof mission === "string"
+          ? mission
+          : String(mission ?? `missao_${index + 1}`);
       defs.push({
         fieldKey: key,
         label: toFieldLabel(key),
@@ -83,12 +211,23 @@ function buildFieldsFromConfig(config: Record<string, unknown> | null | undefine
 
   if (Array.isArray(config.parametros)) {
     config.parametros.forEach((param, index) => {
-      const item = param as Record<string, unknown>;
-      const key = typeof item.nome === "string" ? item.nome : `parametro_${index + 1}`;
+      const item =
+        typeof param === "string"
+          ? { nome: param }
+          : (param as Record<string, unknown>);
+      const key =
+        typeof item.nome === "string" ? item.nome : `parametro_${index + 1}`;
       defs.push({
         fieldKey: key,
         label: toFieldLabel(key),
-        type: typeof item.tipo === "string" && item.tipo === "boolean" ? "boolean" : "number",
+        description: typeof item.descricao === "string" ? item.descricao : null,
+        type:
+          item.tipo === "boolean" ||
+          item.tipo === "text" ||
+          item.tipo === "select" ||
+          item.tipo === "duration"
+            ? item.tipo
+            : "number",
         unit: typeof item.unidade === "string" ? item.unidade : null,
         order: index,
       });
@@ -98,7 +237,8 @@ function buildFieldsFromConfig(config: Record<string, unknown> | null | undefine
 
   if (Array.isArray(config.indicadores)) {
     config.indicadores.forEach((indicator, index) => {
-      const key = typeof indicator === "string" ? indicator : `indicador_${index + 1}`;
+      const key =
+        typeof indicator === "string" ? indicator : `indicador_${index + 1}`;
       defs.push({
         fieldKey: key,
         label: toFieldLabel(key),
@@ -112,31 +252,17 @@ function buildFieldsFromConfig(config: Record<string, unknown> | null | undefine
   return defs;
 }
 
-function resolveFields(test: TestRecord, entries: TestEntry[]): FieldDefinition[] {
+function resolveFields(test: TestRecord): FieldDefinition[] {
   const configFields = buildFieldsFromConfig(test.config ?? {});
   const seen = new Map<string, FieldDefinition>();
 
   for (const field of configFields) seen.set(field.fieldKey, field);
 
-  for (const entry of entries) {
-    for (const value of entry.values) {
-      if (!seen.has(value.fieldKey)) {
-        seen.set(value.fieldKey, {
-          fieldKey: value.fieldKey,
-          label: toFieldLabel(value.fieldKey),
-          type: inferFieldType(value.value),
-          order: seen.size,
-        });
-      }
-    }
-  }
-
   return Array.from(seen.values()).sort((a, b) => a.order - b.order);
 }
 
 export async function getLabTestViewData(testId: string) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Usuário não autenticado.");
+  const userId = await requireAuthenticatedUser();
 
   const test = await db.query.tests.findFirst({
     where: and(eq(tests.id, testId), eq(tests.userId, userId)),
@@ -154,10 +280,15 @@ export async function getLabTestViewData(testId: string) {
 
   const entries: TestEntry[] = executionRows.map((execution) => {
     const normalized = normalizeResults(execution.results);
+
     const values = Object.entries(normalized).map(([fieldKey, value]) => ({
       fieldKey,
       value: normalizeScalar(value),
     }));
+
+    const results = execution.results as FllExecutionResults | null;
+
+    const precisionDiscs = results?.precisionDiscs;
 
     return {
       id: execution.id,
@@ -165,6 +296,17 @@ export async function getLabTestViewData(testId: string) {
       notes: execution.notes,
       createdAt: execution.createdAt.toISOString(),
       values,
+      fllAnswers: normalizeFllAnswers(execution.results),
+
+      precisionDiscs: precisionDiscs
+        ? {
+            total: precisionDiscs.total ?? 6,
+            remaining: precisionDiscs.remaining ?? 0,
+            used:
+              precisionDiscs.used ??
+              (precisionDiscs.total ?? 6) - (precisionDiscs.remaining ?? 0),
+          }
+        : undefined,
     };
   });
 
@@ -180,7 +322,7 @@ export async function getLabTestViewData(testId: string) {
     updatedAt: test.updatedAt.toISOString(),
   };
 
-  const fields = resolveFields(record, entries);
+  const fields = resolveFields(record);
   const nextExecutionNumber = entries.length
     ? Math.max(...entries.map((entry) => entry.executionNumber)) + 1
     : 1;

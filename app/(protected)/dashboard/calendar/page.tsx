@@ -1,5 +1,7 @@
 import { listEventsInRange } from "./actions";
 import { CalendarView } from "./calendar-view";
+import { listMyTeams } from "@/utils/stagebook/actions/teams";
+import { resolveStagebookScope } from "@/utils/stagebook/scope";
 
 function parseMonthParam(month?: string) {
   if (month && /^\d{4}-\d{2}$/.test(month)) {
@@ -26,13 +28,26 @@ function monthGridRange(monthStart: Date) {
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string }>;
+  searchParams: Promise<{ month?: string; teams?: string }>;
 }) {
-  const { month } = await searchParams;
+  const { month, teams: teamsParam } = await searchParams;
+  const selectedTeamIds = teamsParam
+    ? teamsParam.split(",").filter((teamId) => /^[0-9a-f-]{36}$/i.test(teamId))
+    : [];
   const monthStart = parseMonthParam(month);
   const { gridStart, gridEnd } = monthGridRange(monthStart);
 
-  const events = await listEventsInRange(gridStart, gridEnd);
+  const [teams, events, scope] = await Promise.all([
+    listMyTeams(),
+    listEventsInRange(gridStart, gridEnd, selectedTeamIds),
+    resolveStagebookScope(),
+  ]);
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date(todayStart);
+  todayEnd.setHours(23, 59, 59, 999);
+  const todayEvents = await listEventsInRange(todayStart, todayEnd, selectedTeamIds);
+  const teamNames = new Map(teams.map((team) => [team.id, team.name]));
 
   return (
     <div className="mx-auto w-full px-6 py-8">
@@ -48,9 +63,19 @@ export default async function CalendarPage({
         gridStart={gridStart.toISOString()}
         events={events.map((e) => ({
           ...e,
+          teamName: e.teamId ? teamNames.get(e.teamId) ?? "Equipe" : null,
           startAt: e.startAt.toISOString(),
           endAt: e.endAt ? e.endAt.toISOString() : null,
         }))}
+        todayEvents={todayEvents.map((e) => ({
+          ...e,
+          teamName: e.teamId ? teamNames.get(e.teamId) ?? "Equipe" : null,
+          startAt: e.startAt.toISOString(),
+          endAt: e.endAt ? e.endAt.toISOString() : null,
+        }))}
+        teams={teams.map(({ id, name }) => ({ id, name }))}
+        selectedTeamIds={selectedTeamIds}
+        activeTeamId={scope.type === "team" ? scope.teamId : null}
       />
     </div>
   );

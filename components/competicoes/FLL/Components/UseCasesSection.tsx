@@ -48,20 +48,11 @@ export default function UseCasesSection() {
             </div>
           </div>
 
-          {/* Conteúdo */}
           <div>
-            <span className="text-xs font-bold uppercase tracking-[0.18em] text-base-content/50">
-              Feito para a jornada
-            </span>
-
             <h2 className="max-w-2xl text-3xl font-black leading-[1.08] tracking-tight md:text-4xl">
-              Cada equipe vive a robótica de um jeito.
-              <span className="mt-1 block text-primary">
-                O RoboStage acompanha essa jornada.
-              </span>
+              Cada equipe vive a robótica <span className="bg-accent px-2 inline-block">de um jeito.</span>
             </h2>
 
-            {/* Perfis */}
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               {users.map((user) => (
                 <div

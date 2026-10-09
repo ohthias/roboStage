@@ -1,0 +1,33 @@
+---
+title: "Atualização sobre a instabilidade dos sistemas da FLL"
+description: "Os sistemas integrados à FIRST LEGO League Founders Edition Challenge apresentaram instabilidades nas requisições à API durante os dias 8 e 9 de outubro."
+date: "2026-10-09"
+category: "Infraestrutura"
+tags:
+  - Plataforma
+  - Backend
+  - Infraestrutura
+  - FLL
+featured: true
+draft: false
+---
+
+Durante os dias 8 e 9 de outubro, o sistema responsável pela comunicação com os recursos da FIRST LEGO League (FLL) Founders Edition Challenge apresentou instabilidades no processamento das requisições à API. Em determinados casos, as solicitações não retornavam os dados esperados, comprometendo o funcionamento de ferramentas integradas à plataforma RoboStage.
+
+## Impacto na plataforma
+
+A instabilidade afetou parcialmente o funcionamento de alguns recursos do **QuickBrick Studio** e do **Pontuador da FLL**, ocasionando falhas na obtenção e no processamento de dados relacionados às missões da competição.
+
+## Melhorias implementadas
+
+Foram realizadas correções no tratamento das rotas e na camada de proxy responsável pela comunicação com a API da FLL. Os ajustes aprimoram o encaminhamento das requisições, o tratamento das respostas e a identificação de falhas durante a comunicação entre os serviços.
+
+Também foram aprimorados os mecanismos de tratamento de erros, permitindo lidar de forma mais adequada com respostas inesperadas e falhas nas requisições, reduzindo o risco de que essas situações comprometam o funcionamento dos recursos dependentes da integração.
+
+Essas melhorias têm como objetivo aumentar a confiabilidade da comunicação entre a plataforma RoboStage e os serviços da FIRST LEGO League Founders Edition Challenge, contribuindo para maior estabilidade no QuickBrick Studio e no Pontuador da FLL.
+
+## Acompanhamento
+
+Seguimos acompanhando o comportamento desses recursos para identificar possíveis recorrências e aprimorar a estabilidade das ferramentas relacionadas à FLL.
+
+Agradecemos pela compreensão durante o período de instabilidade.

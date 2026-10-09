@@ -6,6 +6,7 @@ import { ArrowUpRight, ChevronRight } from "lucide-react";
 const heroImages = [
   "/images/index/hero_banner_fll.jpg",
   "/images/index/hero_banner_fll_2.jpg",
+  "/images/index/hero_banner_obr.png",
 ];
 
 type HeroAction = {

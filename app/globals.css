@@ -1,60 +1,32 @@
 /*/global.css*/
 @import "@flaticon/flaticon-uicons/css/all/all.css";
 @import "tailwindcss";
-
-.export-page { min-height: 100vh; background: #eef1f5; padding: 24px; color: #172033; }
-.export-toolbar { display: flex; justify-content: space-between; gap: 12px; max-width: 1120px; margin: 0 auto 16px; }
-.export-report { max-width: 1120px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 8px 32px #17203318; }
-.report-header { border-bottom: 3px solid #2563eb; padding-bottom: 24px; }
-.report-brand { display: flex; align-items: center; gap: 8px; color: #2563eb; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
-.report-brand svg { width: 18px; height: 18px; }
-.report-header h1 { margin: 18px 0 6px; font-size: 30px; font-weight: 800; }
-.report-header p, .muted { color: #637083; }
-.report-meta { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 18px; color: #637083; font-size: 12px; }
-.report-section { margin-top: 28px; break-inside: avoid; }
-.report-section h2 { margin-bottom: 12px; border-bottom: 1px solid #dce2ea; padding-bottom: 8px; font-size: 16px; font-weight: 800; }
-.report-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.report-summary div { border: 1px solid #dce2ea; padding: 14px; }
-.report-summary strong, .report-summary span { display: block; }
-.report-summary strong { color: #2563eb; font-size: 24px; }
-.report-summary span { color: #637083; font-size: 11px; text-transform: uppercase; }
-.report-chart { height: 300px; border: 1px solid #dce2ea; padding: 8px; }
-.table-wrap { overflow-x: auto; }
-.export-report table { width: 100%; border-collapse: collapse; font-size: 11px; }
-.export-report th { background: #172033; color: white; text-align: left; }
-.export-report th, .export-report td { border: 1px solid #dce2ea; padding: 8px; vertical-align: top; }
-.export-report tr:nth-child(even) { background: #f6f8fa; }
-.export-report .notes { min-width: 180px; white-space: pre-wrap; }
-.report-state { display: grid; min-height: 100vh; place-items: center; color: #637083; }
-@media (max-width: 640px) { .export-page { padding: 12px; } .export-report { padding: 20px; } .report-summary { grid-template-columns: 1fr; } .report-header h1 { font-size: 24px; } }
-@media print { .export-page { padding: 0; background: white; } .export-toolbar { display: none; } .export-report { box-shadow: none; max-width: none; } }
-
 @plugin "@tailwindcss/typography";
 @plugin "daisyui/theme" {
   name: "lightScheme";
   default: true;
   prefersdark: false;
   color-scheme: "light";
-  --color-base-100: oklch(100% 0 0);
-  --color-base-200: oklch(98% 0 0);
-  --color-base-300: oklch(97% 0 0);
-  --color-base-content: oklch(20% 0 0);
+  --color-base-100: oklch(99% 0.005 90);
+  --color-base-200: oklch(96.5% 0.008 90);
+  --color-base-300: oklch(92.5% 0.012 90);
+  --color-base-content: oklch(20% 0.015 60);
   --color-primary: #cf2a2a;
   --color-primary-content: oklch(97% 0.014 343.198);
   --color-secondary: #1e459f;
   --color-secondary-content: oklch(98% 0.001 106.423);
   --color-accent: #fabd32;
   --color-accent-content: oklch(42% 0.095 57.708);
-  --color-neutral: #e1dcca;
-  --color-neutral-content: oklch(28% 0.066 53.813);
-  --color-info: #6ca3c8;
-  --color-info-content: oklch(29% 0.066 243.157);
-  --color-success: #466421;
-  --color-success-content: oklch(98% 0.031 120.757);
-  --color-warning: #efb24b;
-  --color-warning-content: oklch(41% 0.112 45.904);
-  --color-error: #de5017;
-  --color-error-content: oklch(23.7% 0.267 45.635);
+  --color-neutral: #ded6c4;
+  --color-neutral-content: #494234;
+  --color-info: #3b82b6;
+  --color-info-content: #f5fbff;
+  --color-success: #4f7a2a;
+  --color-success-content: #f7fbf2;
+  --color-warning: #e5a52f;
+  --color-warning-content: #2f2108;
+  --color-error: #d94a2f;
+  --color-error-content: #fff7f5;
   --radius-selector: 0.5rem;
   --radius-field: 0.5rem;
   --radius-box: 0.5rem;
@@ -70,26 +42,26 @@
   default: false;
   prefersdark: false;
   color-scheme: "dark";
-  --color-base-100: oklch(26% 0 0);
-  --color-base-200: oklch(20% 0 0);
-  --color-base-300: oklch(14% 0 0);
-  --color-base-content: oklch(98% 0 0);
-  --color-primary: oklch(60% 0.19 25);
-  --color-primary-content: oklch(15% 0.03 25);
-  --color-secondary: oklch(58% 0.13 258);
-  --color-secondary-content: oklch(15% 0.03 258);
+  --color-base-100: oklch(22% 0.008 70);
+  --color-base-200: oklch(18% 0.008 70);
+  --color-base-300: oklch(14% 0.008 70);
+  --color-base-content: oklch(94% 0.008 70);
+  --color-primary: #e04444;
+  --color-primary-content: oklch(97% 0.015 25);
+  --color-secondary: #5279d1;
+  --color-secondary-content: oklch(97% 0.01 258);
   --color-accent: #fabd32;
-  --color-accent-content: oklch(42% 0.095 57.708);
-  --color-neutral: oklch(35% 0.025 93.0);
-  --color-neutral-content: oklch(92% 0.02 93.0);
-  --color-info: #6ca3c8;
-  --color-info-content: oklch(29% 0.066 243.157);
-  --color-success: oklch(58% 0.13 132);
-  --color-success-content: oklch(15% 0.03 132);
+  --color-accent-content: oklch(20% 0.035 70);
+  --color-neutral: #665c49;
+  --color-neutral-content: #f3ecdc;
+  --color-info: #6faed4;
+  --color-info-content: oklch(18% 0.035 243);
+  --color-success: #79a94b;
+  --color-success-content: oklch(18% 0.035 132);
   --color-warning: #efb24b;
-  --color-warning-content: oklch(41% 0.112 45.904);
-  --color-error: #de5017;
-  --color-error-content: oklch(23.7% 0.267 45.635);
+  --color-warning-content: oklch(20% 0.04 70);
+  --color-error: #e45b38;
+  --color-error-content: oklch(18% 0.035 30);
   --radius-selector: 0.5rem;
   --radius-field: 0.5rem;
   --radius-box: 0.5rem;

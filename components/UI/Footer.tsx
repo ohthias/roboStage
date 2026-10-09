@@ -281,7 +281,7 @@ export function Footer() {
                 {communities.length > 0 && (
                   <li className="pt-4">
                     <span className="text-xs font-medium text-base-content/40">
-                      Comunidade
+                      Comunidade Contribuinte
                     </span>
 
                     <ul className="mt-2 space-y-2">

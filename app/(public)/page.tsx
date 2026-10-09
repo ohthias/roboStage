@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import UseCasesSection from "@/components/competicoes/FLL/Components/UseCasesSection";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
@@ -134,34 +133,6 @@ export default function Page() {
           </RevealOnScroll>
         </section>
 
-        <NoiseImage
-          variant="animated"
-          noiseOpacity={0.3}
-          className="relative overflow-hidden"
-        >
-          <section className="bg-base-300 px-6 py-12 text-accent-content md:px-12 md:py-14">
-            <div className="relative z-10 max-w-3xl">
-              <h3 className="text-2xl font-black tracking-tight md:text-3xl">
-                O RoboStage está em evolução!
-              </h3>
-
-              <p className="mt-3 max-w-2xl text-base leading-relaxed opacity-75 md:text-lg">
-                Estamos construindo novas ferramentas, experiências e recursos
-                para tornar a jornada das equipes de robótica cada vez mais
-                completa.
-              </p>
-
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed opacity-60">
-                Novidades chegam continuamente. Acompanhe a evolução e descubra
-                o que vem pela frente.
-              </p>
-            </div>
-          </section>
-
-          {/* Elementos decorativos */}
-          <div className="pointer-events-none absolute -left-24 -top-24 size-56 rounded-full border border-primary/30" />
-          <div className="pointer-events-none absolute -bottom-24 -right-16 size-40 rounded-full border border-primary/30" />
-        </NoiseImage>
         <UseCasesSection />
 
         <section className="bg-[#091A07] w-full flex flex-col md:flex-row gap-8">

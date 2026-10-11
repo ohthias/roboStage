@@ -3,6 +3,7 @@ import {
   uuid,
   text,
   timestamp,
+  jsonb,
   doublePrecision,
   index,
   foreignKey,
@@ -66,6 +67,13 @@ export const boardColumns = pgTable(
     name: text("name").notNull(),
     position: doublePrecision("position").notNull().default(0),
     color: text("color"),
+    rules: jsonb("rules").$type<{
+      maxCards?: number | null;
+      allowedPriorities?: string[];
+      dueDateRequired?: boolean;
+      maxDueDays?: number | null;
+      milestoneId?: string | null;
+    }>().notNull().default({}),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -77,6 +85,25 @@ export const boardColumns = pgTable(
       columns: [table.boardId],
       foreignColumns: [boards.id],
       name: "board_columns_board_id_fkey",
+    }).onDelete("cascade"),
+  })
+);
+
+export const boardMilestones = pgTable(
+  "board_milestones",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    boardId: uuid("board_id").notNull(),
+    name: text("name").notNull(),
+    dueAt: timestamp("due_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    boardIdIdx: index("board_milestones_board_id_idx").on(table.boardId),
+    boardFk: foreignKey({
+      columns: [table.boardId],
+      foreignColumns: [boards.id],
+      name: "board_milestones_board_id_fkey",
     }).onDelete("cascade"),
   })
 );
@@ -95,6 +122,7 @@ export const boardCards = pgTable(
     // Texto livre ("baixa" | "media" | "alta" | "urgente") pelo mesmo motivo
     // do type/status do Calendar: evitar migração para novo valor de enum.
     priority: text("priority").notNull().default("media"),
+    milestoneId: uuid("milestone_id"),
     createdBy: text("created_by").notNull(),
     updatedBy: text("updated_by"),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -118,6 +146,11 @@ export const boardCards = pgTable(
       foreignColumns: [boardColumns.id],
       name: "board_cards_column_id_fkey",
     }).onDelete("cascade"),
+    milestoneFk: foreignKey({
+      columns: [table.milestoneId],
+      foreignColumns: [boardMilestones.id],
+      name: "board_cards_milestone_id_fkey",
+    }).onDelete("set null"),
   })
 );
 
@@ -224,5 +257,7 @@ export type BoardRow = typeof boards.$inferSelect;
 export type NewBoardRow = typeof boards.$inferInsert;
 export type BoardColumnRow = typeof boardColumns.$inferSelect;
 export type NewBoardColumnRow = typeof boardColumns.$inferInsert;
+export type BoardMilestoneRow = typeof boardMilestones.$inferSelect;
+export type NewBoardMilestoneRow = typeof boardMilestones.$inferInsert;
 export type BoardCardRow = typeof boardCards.$inferSelect;
 export type NewBoardCardRow = typeof boardCards.$inferInsert;

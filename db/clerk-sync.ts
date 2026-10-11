@@ -69,6 +69,12 @@ async function ensureMembershipUser(userData: {
  * Clerk), então isso sim precisa ficar sincronizado via webhook.
  */
 export async function handleClerkWebhook(req: Request) {
+  const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    console.error("CLERK_WEBHOOK_SECRET não está configurado");
+    return new Response("Webhook não configurado", { status: 500 });
+  }
+
   const headerPayload = await headers();
   const svixId = headerPayload.get("svix-id");
   const svixTimestamp = headerPayload.get("svix-timestamp");
@@ -79,7 +85,7 @@ export async function handleClerkWebhook(req: Request) {
   }
 
   const payload = await req.text();
-  const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET!);
+  const wh = new Webhook(webhookSecret);
 
   let event: any;
   try {

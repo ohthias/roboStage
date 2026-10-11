@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>RoboStage — Documentação</title>
+  <meta name="description" content="Documentação do RoboStage: plataforma para planejar, testar e evoluir equipes de robótica.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="https://www.robostage.com.br/favicon.ico">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@5/lib/themes/vue.css">
+  <style>
+    :root {
+      --theme-color: #cf2a2a;
+      --sidebar-width: 280px;
+    }
+
+    .app-name-link img {
+      max-width: 220px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    window.$docsify = {
+      name: '🤖 RoboStage',
+      repo: 'https://github.com/ohthias/roboStage',
+      coverpage: true,
+      loadSidebar: true,
+      subMaxLevel: 2,
+      auto2top: true,
+      relativePath: true,
+      homepage: 'README.md',
+      search: {
+        depth: 3,
+        noData: 'Nenhum resultado encontrado.',
+        placeholder: 'Buscar na documentação'
+      },
+      copyCode: {
+        buttonText: 'Copiar',
+        errorText: 'Erro',
+        successText: 'Copiado!'
+      },
+      pagination: {
+        previousText: 'Anterior',
+        nextText: 'Próximo',
+        crossChapter: true
+      },
+      'flexible-alerts': {
+        style: 'flat'
+      }
+    }
+  </script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@5"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@5/lib/plugins/search.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code@3/dist/docsify-copy-code.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-pagination@2/dist/docsify-pagination.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-plugin-flexible-alerts@1/dist/docsify-plugin-flexible-alerts.min.js"></script>
+</body>
+</html>

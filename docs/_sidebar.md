@@ -1,4 +1,7 @@
 - [🏠 Início](README.md)
+- [📄 Páginas](PAGES.md)
+- [🧩 Referência técnica](DEVELOPMENT.md)
+- [🛠️ Utilitários](UTILS.md)
 - [🔌 APIs](API.md)
   - [Convenções](API.md#convencoes)
   - [Resumo das rotas](API.md#resumo-das-rotas)

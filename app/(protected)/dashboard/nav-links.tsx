@@ -43,20 +43,10 @@ const MAIN_LINKS: NavItem[] = [
     Icon: Book,
   },
   {
-    href: "/dashboard/calendar",
-    label: "Calendário",
-    Icon: CalendarDays,
-  },
-  {
     href: "/dashboard/kanban",
     label: "Kanban",
     Icon: KanbanSquare,
   },
-  /*{
-    href: "/dashboard/projects",
-    label: "Projetos",
-    Icon: Boxes,
-  },*/
 ];
 
 const SYSTEM_LINKS: NavItem[] = [

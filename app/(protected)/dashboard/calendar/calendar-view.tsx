@@ -1,8 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarClock, ChevronLeft, ChevronRight, Clock, MapPin, Plus, Users, X } from "lucide-react";
+import {
+  CalendarClock,
+  CalendarDays,
+  CalendarRange,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  MapPin,
+  Plus,
+  Users,
+  X,
+} from "lucide-react";
 import { EventModal } from "./event-modal";
 import { EVENT_TYPES } from "./constants";
 
@@ -21,7 +32,7 @@ export type CalendarEventClient = {
   teamName?: string | null;
 };
 
-const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 const TYPE_COLOR: Record<string, string> = {
   treino: "#2563eb",
@@ -71,8 +82,23 @@ export function CalendarView({
   >(null);
   const [isTodayPanelOpen, setIsTodayPanelOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [calendarView, setCalendarView] = useState<"month" | "week" | "day">("month");
+  const [calendarView, setCalendarView] = useState<"month" | "week" | "day">(
+    "month",
+  );
+  const teamsDropdownRef = useRef<HTMLDetailsElement>(null);
   const todayKey = new Date().toISOString().slice(0, 10);
+
+  useEffect(() => {
+    function closeTeamsDropdown(event: PointerEvent) {
+      if (!teamsDropdownRef.current?.contains(event.target as Node)) {
+        teamsDropdownRef.current?.removeAttribute("open");
+      }
+    }
+
+    document.addEventListener("pointerdown", closeTeamsDropdown);
+    return () =>
+      document.removeEventListener("pointerdown", closeTeamsDropdown);
+  }, []);
 
   const days = useMemo(() => {
     const start = new Date(gridStart);
@@ -99,10 +125,16 @@ export function CalendarView({
   }, [days, events]);
 
   const agendaDateKey = selectedDate ?? todayKey;
-  const agendaEvents = selectedDate ? eventsByDay.get(selectedDate) ?? [] : todayEvents;
-  const viewAnchor = new Date(`${selectedDate ?? month.toISOString().slice(0, 10)}T12:00:00Z`);
+  const agendaEvents = selectedDate
+    ? (eventsByDay.get(selectedDate) ?? [])
+    : todayEvents;
+  const viewAnchor = new Date(
+    `${selectedDate ?? month.toISOString().slice(0, 10)}T12:00:00Z`,
+  );
   const weekStart = new Date(viewAnchor);
-  weekStart.setUTCDate(weekStart.getUTCDate() - ((weekStart.getUTCDay() + 6) % 7));
+  weekStart.setUTCDate(
+    weekStart.getUTCDate() - ((weekStart.getUTCDay() + 6) % 7),
+  );
   const weekDays = Array.from({ length: 7 }, (_, index) => {
     const day = new Date(weekStart);
     day.setUTCDate(day.getUTCDate() + index);
@@ -132,87 +164,100 @@ export function CalendarView({
       next.setUTCDate(next.getUTCDate() + offset);
     }
     const param = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}`;
-    setSelectedDate(calendarView === "month" ? null : next.toISOString().slice(0, 10));
+    setSelectedDate(
+      calendarView === "month" ? null : next.toISOString().slice(0, 10),
+    );
     const params = new URLSearchParams({ month: param });
-    if (selectedTeamIds.length > 0) params.set("teams", selectedTeamIds.join(","));
+    if (selectedTeamIds.length > 0)
+      params.set("teams", selectedTeamIds.join(","));
     router.push(`/dashboard/calendar?${params.toString()}`);
   }
 
   function goToday() {
     setSelectedDate(calendarView === "month" ? null : todayKey);
     const params = new URLSearchParams();
-    if (selectedTeamIds.length > 0) params.set("teams", selectedTeamIds.join(","));
-    router.push(`/dashboard/calendar${params.size ? `?${params.toString()}` : ""}`);
+    if (selectedTeamIds.length > 0)
+      params.set("teams", selectedTeamIds.join(","));
+    router.push(
+      `/dashboard/calendar${params.size ? `?${params.toString()}` : ""}`,
+    );
   }
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button type="button" className="btn btn-ghost btn-sm btn-square" onClick={() => navigate(-1)}>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm btn-square"
+            onClick={() => navigate(-1)}
+          >
             <ChevronLeft size={16} />
           </button>
           <h2 className="min-w-40 text-center text-lg font-semibold capitalize">
             {calendarView === "month"
               ? formatMonthLabel(month)
               : calendarView === "week"
-              ? `${weekDays[0].getUTCDate()} - ${weekDays[6].getUTCDate()} ${new Intl.DateTimeFormat("pt-BR", {
-                  month: "long",
-                  year: "numeric",
-                  timeZone: "UTC",
-                }).format(weekDays[6])}`
-              : new Intl.DateTimeFormat("pt-BR", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                  timeZone: "UTC",
-                }).format(viewAnchor)}
+                ? `${weekDays[0].getUTCDate()} - ${weekDays[6].getUTCDate()} ${new Intl.DateTimeFormat(
+                    "pt-BR",
+                    {
+                      month: "long",
+                      year: "numeric",
+                      timeZone: "UTC",
+                    },
+                  ).format(weekDays[6])}`
+                : new Intl.DateTimeFormat("pt-BR", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                    timeZone: "UTC",
+                  }).format(viewAnchor)}
           </h2>
-          <button type="button" className="btn btn-ghost btn-sm btn-square" onClick={() => navigate(1)}>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm btn-square"
+            onClick={() => navigate(1)}
+          >
             <ChevronRight size={16} />
           </button>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={goToday}>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={goToday}
+          >
             Hoje
           </button>
+          <div className="divider divider-horizontal" />
+          <div className="flex gap-2">
+            {(
+              [
+                ["month", "Mensal", CalendarDays],
+                ["week", "Semanal", CalendarRange],
+                ["day", "Hoje", CalendarClock],
+              ] as const
+            ).map(([value, label, Icon]) => (
+              <button
+                key={value}
+                type="button"
+                className={`btn btn-sm ${calendarView === value ? "btn-primary" : "btn-outline"}`}
+                title={`Visualização ${label.toLowerCase()}`}
+                aria-label={`Visualização ${label.toLowerCase()}`}
+                onClick={() => setCalendarView(value)}
+              >
+                <Icon size={15} aria-hidden="true" />
+              </button>
+            ))}
+          </div>
         </div>
-
-        <button
-          type="button"
-          className="btn btn-primary btn-sm gap-1.5"
-          onClick={() => setModalState({ mode: "create", date: new Date().toISOString() })}
-        >
-          <Plus size={15} />
-          Novo evento
-        </button>
-      </div>
-
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="join">
-          {(
-            [
-              ["month", "Mensal"],
-              ["week", "Semanal"],
-              ["day", "Diária"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              className={`btn btn-sm join-item ${calendarView === value ? "btn-primary" : "btn-outline"}`}
-              onClick={() => setCalendarView(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-1">
           {teams.length > 0 && (
-            <details className="dropdown dropdown-end">
-              <summary className="btn btn-outline btn-sm list-none gap-1.5">
+            <details ref={teamsDropdownRef} className="dropdown dropdown-end">
+              <summary
+                className="btn btn-outline btn-sm list-none gap-1.5"
+                title="Incluir eventos das equipes"
+              >
                 <Users size={15} />
-                Eventos das equipes
               </summary>
               <div className="dropdown-content z-20 mt-2 w-72 rounded-xl border border-base-300 bg-base-100 p-3 shadow-xl">
                 <p className="mb-2 text-xs font-semibold text-base-content/60">
@@ -220,7 +265,10 @@ export function CalendarView({
                 </p>
                 <div className="flex flex-col gap-2">
                   {teams.map((team) => (
-                    <label key={team.id} className="flex cursor-pointer items-center gap-2 text-sm">
+                    <label
+                      key={team.id}
+                      className="flex cursor-pointer items-center gap-2 text-sm"
+                    >
                       <input
                         type="checkbox"
                         className="checkbox checkbox-sm"
@@ -234,25 +282,49 @@ export function CalendarView({
               </div>
             </details>
           )}
+          <div className="divider divider-horizontal" />
+          <button
+            type="button"
+            className="btn btn-primary btn-sm gap-1.5"
+            onClick={() =>
+              setModalState({ mode: "create", date: new Date().toISOString() })
+            }
+          >
+            <Plus size={15} />
+            Novo evento
+          </button>
           <button
             type="button"
             className="btn btn-outline btn-sm gap-1.5"
             onClick={() => {
               setSelectedDate(null);
-              setIsTodayPanelOpen(true);
+              setIsTodayPanelOpen((isOpen) => !isOpen);
             }}
             aria-haspopup="dialog"
             aria-expanded={isTodayPanelOpen}
           >
-            <CalendarClock size={15} />
-            Agenda de hoje
+            {isTodayPanelOpen ? (
+              <>
+                <ChevronRight size={15} />
+                Recolher
+              </>
+            ) : (
+              <>
+                <ChevronLeft size={15} />
+                Expandir
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      <div className={`flex items-start gap-4 ${isTodayPanelOpen ? "flex-col xl:flex-row" : ""}`}>
+      <div
+        className={`flex items-start gap-4 ${isTodayPanelOpen ? "flex-col xl:flex-row" : ""}`}
+      >
         <div className="min-w-0 flex-1">
-          <div className={`grid grid-cols-7 overflow-hidden rounded-xl border border-base-300 ${calendarView !== "month" ? "hidden" : ""}`}>
+          <div
+            className={`grid grid-cols-7 overflow-hidden rounded-xl border border-base-300 ${calendarView !== "month" ? "hidden" : ""}`}
+          >
             {WEEKDAYS.map((day) => (
               <div
                 key={day}
@@ -279,26 +351,32 @@ export function CalendarView({
                     setSelectedDate(key);
                     setIsTodayPanelOpen(true);
                   }}
-                  onDoubleClick={() => setModalState({ mode: "create", date: day.toISOString() })}
+                  onDoubleClick={() =>
+                    setModalState({ mode: "create", date: day.toISOString() })
+                  }
                 >
                   <span
                     className={`text-xs ${
                       isToday
                         ? "flex h-5 w-5 items-center justify-center rounded-full bg-primary font-semibold text-primary-content"
                         : inMonth
-                        ? "text-base-content/60"
-                        : "text-base-content/25"
+                          ? "text-base-content/60"
+                          : "text-base-content/25"
                     }`}
                   >
                     {day.getDate()}
                   </span>
 
                   <div className="flex flex-col gap-0.5">
-                    {dayEvents.slice(0, 3).map((event) => (
+                    {dayEvents.slice(0, 3).map((event) =>
                       (() => {
                         const eventStartKey = toDateKey(event.startAt);
-                        const eventEndKey = event.endAt ? toDateKey(event.endAt) : eventStartKey;
-                        const isFirstSegment = key === eventStartKey || key === days[0].toISOString().slice(0, 10);
+                        const eventEndKey = event.endAt
+                          ? toDateKey(event.endAt)
+                          : eventStartKey;
+                        const isFirstSegment =
+                          key === eventStartKey ||
+                          key === days[0].toISOString().slice(0, 10);
                         const isLastSegment = key >= eventEndKey;
 
                         return (
@@ -308,10 +386,18 @@ export function CalendarView({
                             className={`-mx-1.5 w-[calc(100%+0.75rem)] truncate px-1.5 py-0.5 text-left text-[11px] font-medium text-white ${
                               isFirstSegment ? "rounded-l" : "rounded-l-none"
                             } ${isLastSegment ? "rounded-r" : "rounded-r-none"}`}
-                            style={{ backgroundColor: event.color || TYPE_COLOR[event.type] || TYPE_COLOR.outro }}
+                            style={{
+                              backgroundColor:
+                                event.color ||
+                                TYPE_COLOR[event.type] ||
+                                TYPE_COLOR.outro,
+                            }}
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (!event.teamId || event.teamId === activeTeamId) {
+                              if (
+                                !event.teamId ||
+                                event.teamId === activeTeamId
+                              ) {
                                 setModalState({ mode: "edit", event });
                               }
                             }}
@@ -322,8 +408,8 @@ export function CalendarView({
                             {event.title}
                           </button>
                         );
-                      })()
-                    ))}
+                      })(),
+                    )}
                     {dayEvents.length > 3 && (
                       <span className="px-1.5 text-[10px] text-base-content/40">
                         +{dayEvents.length - 3} mais
@@ -337,77 +423,103 @@ export function CalendarView({
 
           {calendarView !== "month" && (
             <div className="overflow-hidden rounded-xl border border-base-300">
-              <div className={`grid ${calendarView === "week" ? "grid-cols-7" : "grid-cols-1"}`}>
-                {(calendarView === "week" ? weekDays : [viewAnchor]).map((day) => {
-                  const key = day.toISOString().slice(0, 10);
-                  const selected = key === selectedDate;
-                  const dayEvents = eventsByDay.get(key) ?? [];
+              <div
+                className={`grid ${calendarView === "week" ? "grid-cols-7" : "grid-cols-1"}`}
+              >
+                {(calendarView === "week" ? weekDays : [viewAnchor]).map(
+                  (day) => {
+                    const key = day.toISOString().slice(0, 10);
+                    const selected = key === selectedDate;
+                    const dayEvents = eventsByDay.get(key) ?? [];
 
-                  return (
-                    <div
-                      key={key}
-                      className={`min-h-[360px] border-base-300 p-3 ${calendarView === "week" ? "border-r last:border-r-0" : ""} ${
-                        selected ? "bg-primary/5" : "bg-base-100"
-                      }`}
-                      onClick={() => {
-                        setSelectedDate(key);
-                        setIsTodayPanelOpen(true);
-                      }}
-                      onDoubleClick={() => setModalState({ mode: "create", date: day.toISOString() })}
-                    >
-                      <div className="mb-3 flex items-center justify-between border-b border-base-300 pb-2">
-                        <span className="text-sm font-semibold capitalize">
-                          {new Intl.DateTimeFormat("pt-BR", {
-                            weekday: "short",
-                            day: "numeric",
-                            month: calendarView === "day" ? "long" : "short",
-                            timeZone: "UTC",
-                          }).format(day)}
-                        </span>
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-xs"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            setModalState({ mode: "create", date: day.toISOString() });
-                          }}
-                        >
-                          <Plus size={13} />
-                        </button>
+                    return (
+                      <div
+                        key={key}
+                        className={`min-h-[360px] border-base-300 p-3 ${calendarView === "week" ? "border-r last:border-r-0" : ""} ${
+                          selected ? "bg-primary/5" : "bg-base-100"
+                        }`}
+                        onClick={() => {
+                          setSelectedDate(key);
+                          setIsTodayPanelOpen(true);
+                        }}
+                        onDoubleClick={() =>
+                          setModalState({
+                            mode: "create",
+                            date: day.toISOString(),
+                          })
+                        }
+                      >
+                        <div className="mb-3 flex items-center justify-between border-b border-base-300 pb-2">
+                          <span className="text-sm font-semibold capitalize">
+                            {new Intl.DateTimeFormat("pt-BR", {
+                              weekday: "short",
+                              day: "numeric",
+                              month: calendarView === "day" ? "long" : "short",
+                              timeZone: "UTC",
+                            }).format(day)}
+                          </span>
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-xs"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setModalState({
+                                mode: "create",
+                                date: day.toISOString(),
+                              });
+                            }}
+                          >
+                            <Plus size={13} />
+                          </button>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {dayEvents.length === 0 ? (
+                            <p className="py-8 text-center text-xs text-base-content/40">
+                              Nenhum evento
+                            </p>
+                          ) : (
+                            dayEvents.map((event) => (
+                              <button
+                                key={event.id}
+                                type="button"
+                                className="rounded-lg p-2 text-left text-xs font-medium text-white"
+                                style={{
+                                  backgroundColor:
+                                    event.color ||
+                                    TYPE_COLOR[event.type] ||
+                                    TYPE_COLOR.outro,
+                                }}
+                                onClick={(clickEvent) => {
+                                  clickEvent.stopPropagation();
+                                  if (
+                                    !event.teamId ||
+                                    event.teamId === activeTeamId
+                                  ) {
+                                    setModalState({ mode: "edit", event });
+                                  }
+                                }}
+                              >
+                                <span className="block truncate">
+                                  {event.title}
+                                </span>
+                                <span className="mt-1 block text-[10px] opacity-80">
+                                  {event.allDay
+                                    ? "Dia inteiro"
+                                    : new Date(
+                                        event.startAt,
+                                      ).toLocaleTimeString("pt-BR", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                </span>
+                              </button>
+                            ))
+                          )}
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-2">
-                        {dayEvents.length === 0 ? (
-                          <p className="py-8 text-center text-xs text-base-content/40">Nenhum evento</p>
-                        ) : (
-                          dayEvents.map((event) => (
-                            <button
-                              key={event.id}
-                              type="button"
-                              className="rounded-lg p-2 text-left text-xs font-medium text-white"
-                              style={{ backgroundColor: event.color || TYPE_COLOR[event.type] || TYPE_COLOR.outro }}
-                              onClick={(clickEvent) => {
-                                clickEvent.stopPropagation();
-                                if (!event.teamId || event.teamId === activeTeamId) {
-                                  setModalState({ mode: "edit", event });
-                                }
-                              }}
-                            >
-                              <span className="block truncate">{event.title}</span>
-                              <span className="mt-1 block text-[10px] opacity-80">
-                                {event.allDay
-                                  ? "Dia inteiro"
-                                  : new Date(event.startAt).toLocaleTimeString("pt-BR", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}
-                              </span>
-                            </button>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  },
+                )}
               </div>
             </div>
           )}
@@ -415,7 +527,7 @@ export function CalendarView({
 
         {isTodayPanelOpen && (
           <aside
-            className="flex w-full shrink-0 flex-col rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm xl:w-96"
+            className="flex w-full shrink-0 flex-col rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm xl:w-96 h-full"
             role="dialog"
             aria-modal="false"
             aria-labelledby="today-agenda-title"
@@ -446,9 +558,16 @@ export function CalendarView({
             <div className="mt-4 flex max-h-[calc(100vh-13rem)] flex-col gap-2 overflow-y-auto">
               {agendaEvents.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-base-300 px-4 py-8 text-center">
-                  <CalendarClock className="mx-auto mb-2 text-base-content/30" size={28} />
-                  <p className="text-sm font-medium">Nada agendado para este dia</p>
-                  <p className="mt-1 text-xs text-base-content/50">Você pode criar um evento com dois cliques na data.</p>
+                  <CalendarClock
+                    className="mx-auto mb-2 text-base-content/30"
+                    size={28}
+                  />
+                  <p className="text-sm font-medium">
+                    Nada agendado para este dia
+                  </p>
+                  <p className="mt-1 text-xs text-base-content/50">
+                    Você pode criar um evento com dois cliques na data.
+                  </p>
                 </div>
               ) : (
                 agendaEvents.map((event) => (
@@ -466,24 +585,37 @@ export function CalendarView({
                     <div className="flex items-start gap-3">
                       <span
                         className="mt-1 h-3 w-3 shrink-0 rounded-full"
-                        style={{ backgroundColor: event.color || TYPE_COLOR[event.type] || TYPE_COLOR.outro }}
+                        style={{
+                          backgroundColor:
+                            event.color ||
+                            TYPE_COLOR[event.type] ||
+                            TYPE_COLOR.outro,
+                        }}
                       />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-semibold">{event.title}</span>
+                        <span className="block truncate text-sm font-semibold">
+                          {event.title}
+                        </span>
                         <span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-base-content/55">
                           <span className="inline-flex items-center gap-1">
                             <Clock size={12} />
                             {event.allDay
                               ? "Dia inteiro"
-                              : new Date(event.startAt).toLocaleTimeString("pt-BR", {
+                              : new Date(event.startAt).toLocaleTimeString(
+                                  "pt-BR",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  },
+                                )}
+                            {event.endAt &&
+                              ` - ${new Date(event.endAt).toLocaleTimeString(
+                                "pt-BR",
+                                {
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                })}
-                            {event.endAt &&
-                              ` - ${new Date(event.endAt).toLocaleTimeString("pt-BR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}`}
+                                },
+                              )}`}
                           </span>
                           {event.location && (
                             <span className="inline-flex items-center gap-1">
@@ -514,8 +646,14 @@ export function CalendarView({
 
       <div className="mt-4 flex flex-wrap gap-3">
         {EVENT_TYPES.map((t) => (
-          <span key={t.value} className="flex items-center gap-1.5 text-xs text-base-content/50">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: TYPE_COLOR[t.value] }} />
+          <span
+            key={t.value}
+            className="flex items-center gap-1.5 text-xs text-base-content/50"
+          >
+            <span
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: TYPE_COLOR[t.value] }}
+            />
             {t.label}
           </span>
         ))}
@@ -524,7 +662,9 @@ export function CalendarView({
       {modalState && (
         <EventModal
           mode={modalState.mode}
-          initialDate={modalState.mode === "create" ? modalState.date : undefined}
+          initialDate={
+            modalState.mode === "create" ? modalState.date : undefined
+          }
           event={modalState.mode === "edit" ? modalState.event : undefined}
           onClose={() => setModalState(null)}
           onSaved={() => {
@@ -533,7 +673,6 @@ export function CalendarView({
           }}
         />
       )}
-
     </div>
   );
 }

@@ -8,4 +8,5 @@ export * from "./boards";
 export * from "./notifications";
 export * from "./tags";
 export * from "./labtest";
+export * from "./thinklab";
 export * from "./relations";

@@ -162,3 +162,8 @@ export const ferramentas: Ferramenta[] = [
     mobileSafe: true,
   },
 ];
+
+export const ferramentasPorCompeticao: Record<string, number[]> = {
+  fll: ferramentas.map((ferramenta) => ferramenta.id),
+  obr: [5, 6],
+};

@@ -14,11 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
-import {
-  createFolder,
-  deleteFolder,
-  renameFolder,
-} from "../documents/actions";
+import { createFolder, deleteFolder, renameFolder } from "../documents/actions";
 
 export type FolderItem = {
   id: string;
@@ -47,15 +43,20 @@ export function FoldersView({ folders }: { folders: FolderItem[] }) {
         router.refresh();
       } catch (error) {
         addToast(
-          error instanceof Error ? error.message : "Não foi possível atualizar a pasta.",
-          "error"
+          error instanceof Error
+            ? error.message
+            : "Não foi possível atualizar a pasta.",
+          "error",
         );
       }
     });
   }
 
   function addFolder(parentId: string | null) {
-    runAction(() => createFolder(parentId).then(() => undefined), "Pasta criada.");
+    runAction(
+      () => createFolder(parentId).then(() => undefined),
+      "Pasta criada.",
+    );
   }
 
   function startRename(folder: FolderItem) {
@@ -71,29 +72,36 @@ export function FoldersView({ folders }: { folders: FolderItem[] }) {
   }
 
   function removeFolder(folder: FolderItem) {
-    if (!window.confirm(`Excluir "${folder.name}"? As páginas voltam para a raiz.`)) return;
+    if (
+      !window.confirm(
+        `Excluir "${folder.name}"? As páginas voltam para a raiz.`,
+      )
+    )
+      return;
     runAction(() => deleteFolder(folder.id), "Pasta excluída.");
   }
 
   return (
-    <section className="mx-auto w-full max-w-5xl p-6 lg:p-10">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Organização
-          </p>
-          <h1 className="text-3xl font-semibold tracking-tight">Pastas</h1>
-          <p className="mt-2 text-sm text-base-content/60">
-            Organize as páginas do Stagebook por assunto, projeto ou equipe.
+    <section className="mx-auto w-full p-4 sm:p-6 lg:p-8">
+      <header className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight text-base-content sm:text-3xl">
+            Suas pastas
+          </h1>
+
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60">
+            Reúna documentos e organize suas ideias por projetos, assuntos ou
+            equipes. Mantenha tudo o que sua equipe precisa em um só lugar.
           </p>
         </div>
+
         <button
           type="button"
-          className="btn btn-primary btn-sm gap-2"
+          className="btn btn-primary btn-sm shrink-0 gap-2 self-start sm:self-auto"
           onClick={() => addFolder(null)}
           disabled={isPending}
         >
-          <Plus size={16} />
+          <Plus size={16} strokeWidth={2} />
           Nova pasta
         </button>
       </header>
@@ -103,7 +111,7 @@ export function FoldersView({ folders }: { folders: FolderItem[] }) {
           <Folder size={40} className="mx-auto mb-4 text-base-content/25" />
           <h2 className="font-medium">Nenhuma pasta criada</h2>
           <p className="mt-1 text-sm text-base-content/55">
-            Crie sua primeira pasta para começar a organizar o Stagebook.
+            Crie sua primeira pasta para começar a se organizar.
           </p>
           <button
             type="button"
@@ -116,7 +124,7 @@ export function FoldersView({ folders }: { folders: FolderItem[] }) {
           </button>
         </div>
       ) : (
-        <div className="rounded-2xl border border-base-300 bg-base-100 p-3 shadow-sm">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
           {childrenOf(null).map((folder) => (
             <FolderRow
               key={folder.id}
@@ -174,20 +182,18 @@ function FolderRow({
   return (
     <div>
       <div
-        className="group flex min-h-14 items-center gap-2 rounded-xl px-3 py-2 transition-colors hover:bg-base-200"
-        style={{ paddingLeft: `${12 + depth * 28}px` }}
+        className="group relative flex min-h-[58px] items-center gap-2 rounded-lg rounded-tl-none border border-base-300 bg-base-100 px-3 py-2 pt-3 transition-all duration-200 hover:border-primary/40 hover:bg-base-200/50 hover:shadow-sm"
+        style={{
+          marginTop: "7px",
+        }}
       >
-        <button
-          type="button"
-          className="btn btn-ghost btn-xs btn-square"
-          onClick={() => setExpanded((value) => !value)}
-          aria-label={expanded ? "Recolher pasta" : "Expandir pasta"}
-          disabled={children.length === 0}
-        >
-          {children.length > 0 &&
-            (expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
-        </button>
-        <Folder size={20} className="shrink-0 text-primary" />
+        {/* Aba superior da pasta */}
+        <div
+          aria-hidden="true"
+          className="absolute -top-[7px] left-0 h-[7px] w-12 rounded-t-md border border-b-0 border-base-300 bg-base-100 transition-colors duration-200 group-hover:border-primary/40 group-hover:bg-base-200/50"
+        />
+
+        {/* Nome da pasta */}
         {editing ? (
           <input
             autoFocus
@@ -203,23 +209,49 @@ function FolderRow({
         ) : (
           <Link
             href={`/dashboard/folders/${folder.id}`}
-            className="min-w-0 flex-1 truncate text-sm font-medium hover:text-primary"
+            className="flex min-w-0 flex-1 items-center gap-2 truncate text-sm font-medium text-base-content/85 transition-colors hover:text-primary"
           >
-            {folder.icon ?? "📁"} {folder.name}
+            <Folder
+              size={19}
+              strokeWidth={1.8}
+              className="shrink-0 text-primary"
+            />
+            <span className="truncate">{folder.name}</span>
           </Link>
         )}
-        <span className="hidden items-center gap-1 text-xs text-base-content/45 sm:flex">
-          <FileText size={14} />
-          {folder.documentCount}
-        </span>
-        <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-          <button type="button" className="btn btn-ghost btn-xs btn-square" title="Nova subpasta" onClick={() => onAdd(folder.id)} disabled={disabled}>
+
+        {/* Ações */}
+        <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs btn-square"
+            title="Nova subpasta"
+            aria-label="Nova subpasta"
+            onClick={() => onAdd(folder.id)}
+            disabled={disabled}
+          >
             <FolderPlus size={15} />
           </button>
-          <button type="button" className="btn btn-ghost btn-xs btn-square" title="Renomear" onClick={() => onStartRename(folder)} disabled={disabled}>
+
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs btn-square"
+            title="Renomear"
+            aria-label="Renomear pasta"
+            onClick={() => onStartRename(folder)}
+            disabled={disabled}
+          >
             <Pencil size={15} />
           </button>
-          <button type="button" className="btn btn-ghost btn-xs btn-square text-error" title="Excluir" onClick={() => onDelete(folder)} disabled={disabled}>
+
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs btn-square text-error"
+            title="Excluir"
+            aria-label="Excluir pasta"
+            onClick={() => onDelete(folder)}
+            disabled={disabled}
+          >
             <Trash2 size={15} />
           </button>
         </div>

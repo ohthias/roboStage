@@ -50,13 +50,14 @@ export default async function CalendarPage({
   const teamNames = new Map(teams.map((team) => [team.id, team.name]));
 
   return (
-    <div className="mx-auto w-full px-6 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Calendário</h1>
-        <p className="mt-1 text-sm text-base-content/60">
-          Treinos, reuniões, competições e prazos em um só lugar.
-        </p>
-      </div>
+    <section className="mx-auto w-full p-4 sm:p-6 lg:p-8">
+      <header className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight text-base-content sm:text-3xl">
+            Calendário
+          </h1>
+        </div>
+      </header>
 
       <CalendarView
         monthStart={monthStart.toISOString()}
@@ -77,6 +78,6 @@ export default async function CalendarPage({
         selectedTeamIds={selectedTeamIds}
         activeTeamId={scope.type === "team" ? scope.teamId : null}
       />
-    </div>
+    </section>
   );
 }

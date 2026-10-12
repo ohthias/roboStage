@@ -55,7 +55,11 @@ const BOARD_ICON_MAP = new Map(
 
 function BoardIcon({ name }: { name: string | null }) {
   const Icon = name ? BOARD_ICON_MAP.get(name) : undefined;
-  return Icon ? <Icon size={22} strokeWidth={1.8} /> : <span aria-hidden="true">🗂️</span>;
+  return Icon ? (
+    <Icon size={22} strokeWidth={1.8} />
+  ) : (
+    <span aria-hidden="true">🗂️</span>
+  );
 }
 
 export function BoardList({ boards }: { boards: Board[] }) {
@@ -134,35 +138,26 @@ export function BoardList({ boards }: { boards: Board[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Seus boards
-          </h2>
+    <section className="mx-auto w-full p-4 sm:p-6 lg:p-8">
+      <header className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight text-base-content sm:text-3xl">
+            Kanbans
+          </h1>
 
-          <p className="mt-1 text-sm text-base-content/55">
-            Organize tarefas, projetos e o seu trabalho, ou da sua equipe.
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60">
+            Separe suas tarefas em colunas e acompanhe o progresso de seus projetos com os boards kanban.
           </p>
         </div>
-
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-base-content/40">
-            {boards.length} {boards.length === 1 ? "board" : "boards"}
-          </span>
-
-          {!creating && (
-            <button
-              type="button"
-              className="btn btn-primary btn-sm h-10 gap-2 rounded-lg px-4 normal-case"
-              onClick={() => setCreating(true)}
-            >
-              <Plus size={15} />
-              Novo board
-            </button>
-          )}
-        </div>
-      </div>
+        <button
+          type="button"
+          className="btn btn-primary btn-sm gap-2 rounded-lg px-4"
+          onClick={() => setCreating(true)}
+        >
+          <Plus size={15} />
+          Novo board
+        </button>
+      </header>
 
       {/* Grade */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -221,10 +216,7 @@ export function BoardList({ boards }: { boards: Board[] }) {
                   className="menu dropdown-content z-20 mt-1 w-44 rounded-xl border border-base-300 bg-base-100 p-1.5 shadow-lg"
                 >
                   <li>
-                    <button
-                      type="button"
-                      onClick={() => openRename(board)}
-                    >
+                    <button type="button" onClick={() => openRename(board)}>
                       <Pencil size={14} />
                       Renomear board
                     </button>
@@ -471,6 +463,6 @@ export function BoardList({ boards }: { boards: Board[] }) {
           </form>
         </dialog>
       )}
-    </div>
+    </section>
   );
 }

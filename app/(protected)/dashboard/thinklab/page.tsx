@@ -18,7 +18,7 @@ export default async function ThinkLabDashboard() {
 			<div className="flex items-center justify-between gap-4">
 				<div>
 					<h1 className="text-2xl font-bold">ThinkLab</h1>
-					<p className="text-sm opacity-70">Seus diagramas salvos no banco de dados.</p>
+					<p className="text-sm opacity-70">Seus diagramas e ideias organizadas em um só lugar.</p>
 				</div>
 				<form action={create}>
 					<button className="btn btn-primary" type="submit">Novo Quadro</button>

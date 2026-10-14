@@ -26,8 +26,8 @@ export const HERO_CONFIG = {
     imagem:
       "https://2.bp.blogspot.com/-RwI2Zj2oTs0/Wz9faHeeOVI/AAAAAAAAJl4/XweL6dFnBbgaeH9wpOuSVzmQ7pGyl1ViwCLcBGAs/s1600/IMG_8560.JPG",
     ctaPrimario: {
-      label: "Explorar STAGE.data",
-      href: "/obr/stage-data",
+      label: "Explorar Anatix",
+      href: "/obr/anatix",
     },
     ctaSecundario: {
       label: "Pontuar na OBR",

@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, File, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Trophy, Code, Bot } from "lucide-react";
+import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Trophy, Code, Bot } from "lucide-react";
 
 export type NavMenuItem = {
   nome: string;
@@ -64,7 +64,7 @@ export const NAVIGATION = {
     scorePath: "score",
     options: [
       { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false },
-      { nome: "STAGE.data", path: "stage-data", icon: Code, new: false },
+      { nome: "Anatix", path: "anatix", icon: Code, new: false },
       { nome: "Documentação", path: "docs", icon: BookOpen, new: false },
     ],
     menus: [],

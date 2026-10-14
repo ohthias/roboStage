@@ -35,7 +35,7 @@ export default function Pontuador() {
           {/* Perigos */}
           <section className="card min-w-0 rounded-2xl bg-base-100 shadow-sm">
             <div className="card-body gap-2">
-              <h2 className="card-title">Perigos do trajeto</h2>
+              <h2 className="card-title text-balance text-lg leading-snug sm:text-xl">Perigos do trajeto</h2>
               <p className="text-xs opacity-60">
                 Cada perigo pontua apenas uma vez por direção do percurso; não
                 há pontos em tentativas subsequentes.
@@ -56,7 +56,7 @@ export default function Pontuador() {
           {/* Checkpoints */}
           <section className="card bg-base-100 shadow rounded-2xl">
             <div className="card-body gap-3 p-4 sm:gap-4 sm:p-5">
-              <h2 className="card-title">Checkpoints</h2>
+              <h2 className="card-title text-balance text-lg leading-snug sm:text-xl">Checkpoints</h2>
               <label className="label cursor-pointer justify-start gap-3">
                 <input
                   type="checkbox"
@@ -66,7 +66,7 @@ export default function Pontuador() {
                 />
                 <span>Superou o ladrilho de início (+5)</span>
               </label>
-              <p className="text-xs opacity-60">
+              <p className="max-w-prose break-words text-pretty text-xs leading-relaxed opacity-60">
                 Ao alcançar um checkpoint, registre os ladrilhos percorridos
                 desde o anterior e a tentativa em que foi superado: 1ª = 5
                 pts/ladrilho, 2ª = 3, 3ª = 1, 4ª+ = 0.
@@ -141,7 +141,7 @@ export default function Pontuador() {
           {/* Resgate */}
           <section className="card bg-base-100 shadow rounded-2xl">
             <div className="card-body gap-2">
-              <h2 className="card-title">
+              <h2 className="card-title text-balance text-lg leading-snug sm:text-xl">
                 Resgate de vítimas (multiplicadores)
               </h2>
               <Row label="Vítima viva na área verde" hint="×1,3 — há 2 vivas">
@@ -191,7 +191,7 @@ export default function Pontuador() {
           {/* Chegada e tempo */}
           <section className="card bg-base-100 shadow rounded-2xl">
             <div className="card-body gap-3">
-              <h2 className="card-title">Chegada, falhas e tempo</h2>
+              <h2 className="card-title text-balance text-lg leading-snug sm:text-xl">Chegada, falhas e tempo</h2>
               <Row
                 label="Falhas de Progresso (total)"
                 hint="Cada falha reduz 5 pts do ladrilho de chegada"
@@ -202,10 +202,10 @@ export default function Pontuador() {
                   onChange={(n) => patch({ falhas: n })}
                 />
               </Row>
-              <label className="label cursor-pointer justify-start gap-3">
+              <label className="flex min-w-0 cursor-pointer items-start gap-3 py-2">
                 <input
                   type="checkbox"
-                  className="checkbox checkbox-primary"
+                  className="checkbox checkbox-primary mt-0.5 shrink-0"
                   checked={r.chegada}
                   onChange={(e) =>
                     patch({
@@ -214,10 +214,12 @@ export default function Pontuador() {
                     })
                   }
                 />
-                <p className="flex flex-col">
+                <span className="min-w-0 flex-1 text-sm leading-relaxed [overflow-wrap:anywhere]">
                   Parou na faixa vermelha do ladrilho de chegada por ≥ 5 s{" "}
-                  <span className="opacity-60">(60 − 5 × falhas)</span>
-                </p>
+                  <span className="text-base-content/60">
+                    (60 − 5 × falhas)
+                  </span>
+                </span>
               </label>
               <label className="label cursor-pointer justify-start gap-3">
                 <input
@@ -358,11 +360,16 @@ function Row({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-w-0 flex-col gap-2 border-b border-base-200 py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-      <div className="min-w-0 flex-1">
-        <div className="font-medium leading-snug">{label}</div>
+    <div className="flex min-w-0 flex-col gap-3 border-b border-base-200 py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div className="min-w-0 flex-1 [overflow-wrap:anywhere]">
+        <div className="text-sm font-medium leading-relaxed sm:text-base">
+          {label}
+        </div>
+
         {hint && (
-          <div className="mt-1 text-xs leading-relaxed opacity-60">{hint}</div>
+          <p className="mt-1 text-xs leading-relaxed text-base-content/60">
+            {hint}
+          </p>
         )}
       </div>
 

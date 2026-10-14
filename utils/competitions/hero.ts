@@ -18,13 +18,13 @@ export const HERO_CONFIG = {
     accent: "#d70e0e",
   },
   obr: {
-    badge: "Competição Brasileira de Robótica",
+    badge: "3... 2... 1... Vai!",
     titulo: "OBR",
     abr: "OBR",
     descricao:
-      "A OBR é uma competição de robótica educacional que visa estimular o interesse dos estudantes em ciência, tecnologia, engenharia e matemática (STEM).",
+      "Na Olimpiada Brasileira de Robótica, você desenvolve o raciocínio lógico, a criatividade e o trabalho em equipe por meio da construção e programação de robôs.",
     imagem:
-      "https://obr.robocup.org.br/wp-content/uploads/2024/02/logo-png.png",
+      "https://obr.robocup.org.br/wp-content/uploads/2024/03/Resgate-300x300.png",
     ctaPrimario: {
       label: "Explorar STAGE.data",
       href: "/obr/stage-data",
@@ -33,6 +33,6 @@ export const HERO_CONFIG = {
       label: "Pontuar na OBR",
       href: "/obr/score",
     },
-    accent: "#0e5ed7",
+    accent: "#fabd32",
   },
 };

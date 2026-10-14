@@ -10,8 +10,9 @@ import {
   checkpointRate,
   emptyRound,
   formatTime,
-} from "../lib/scoring";
-import type { Round } from "../lib/types";
+} from "../../../../utils/competitions/obr/scoring";
+import type { Round } from "../../../../utils/competitions/obr/types";
+import Header from "@/components/UI/Header";
 
 export default function Pontuador() {
   const [r, setR] = useState<Round>(emptyRound);
@@ -21,24 +22,13 @@ export default function Pontuador() {
   const ss = r.tempo % 60;
 
   return (
-    <>
-      <div className="navbar bg-base-100 shadow-sm px-4">
-        <div className="flex-1 text-lg font-bold leading-tight">
-          Pontuador OBR 2026
-          <div className="text-xs font-normal opacity-60">Robótica de Resgate · Manual v1.2</div>
-        </div>
-        <button
-          className="btn btn-ghost btn-sm text-error"
-          onClick={() => confirm("Zerar a pontuação?") && setR(emptyRound())}
-        >
-          Zerar
-        </button>
-      </div>
+    <div className="mx-auto min-h-screen max-w-6xl px-4 py-12 space-y-8">
+      <Header type="OBR" name="Pontuador" description="Sua referência para pontuar, acompanhar e avaliar o desempenho nas provas de Resgate da OBR" highlight=""/>
 
-      <main className="mx-auto max-w-6xl p-4 grid gap-4 lg:grid-cols-[1fr_20rem]">
+      <main className="grid gap-4 lg:grid-cols-[1fr_20rem]">
         <div className="space-y-4">
           {/* Perigos */}
-          <section className="card bg-base-100 shadow">
+          <section className="card bg-base-100 shadow rounded-2xl">
             <div className="card-body gap-2">
               <h2 className="card-title">Perigos do trajeto</h2>
               <p className="text-xs opacity-60">
@@ -56,7 +46,7 @@ export default function Pontuador() {
           </section>
 
           {/* Checkpoints */}
-          <section className="card bg-base-100 shadow">
+          <section className="card bg-base-100 shadow rounded-2xl">
             <div className="card-body gap-3">
               <h2 className="card-title">Checkpoints</h2>
               <label className="label cursor-pointer justify-start gap-3">
@@ -121,7 +111,7 @@ export default function Pontuador() {
           </section>
 
           {/* Resgate */}
-          <section className="card bg-base-100 shadow">
+          <section className="card bg-base-100 shadow rounded-2xl">
             <div className="card-body gap-2">
               <h2 className="card-title">Resgate de vítimas (multiplicadores)</h2>
               <Row label="Vítima viva na área verde" hint="×1,3 — há 2 vivas">
@@ -153,7 +143,7 @@ export default function Pontuador() {
           </section>
 
           {/* Chegada e tempo */}
-          <section className="card bg-base-100 shadow">
+          <section className="card bg-base-100 shadow rounded-2xl">
             <div className="card-body gap-3">
               <h2 className="card-title">Chegada, falhas e tempo</h2>
               <Row label="Falhas de Progresso (total)" hint="Cada falha reduz 5 pts do ladrilho de chegada">
@@ -220,7 +210,7 @@ export default function Pontuador() {
 
         {/* Resumo */}
         <aside className="lg:sticky lg:top-4 h-fit">
-          <div className="card bg-base-100 shadow">
+          <div className="card bg-base-100 shadow rounded-none rounded-tl-2xl rounded-br-2xl">
             <div className="card-body gap-2">
               <div className="stats stats-vertical bg-primary text-primary-content">
                 <div className="stat">
@@ -254,7 +244,7 @@ export default function Pontuador() {
           </div>
         </aside>
       </main>
-    </>
+    </div>
   );
 }
 

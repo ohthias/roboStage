@@ -161,9 +161,19 @@ export const ferramentas: Ferramenta[] = [
       ),
     mobileSafe: true,
   },
+  {
+    id: 8,
+    titulo: "Criador de Arenas",
+    descricao:
+      "Ferramenta para criar e personalizar arenas de competição, permitindo que os usuários desenhem layouts, adicionem obstáculos e definam regras específicas para simulações de robótica.",
+    categoria: "Criar",
+    icon: <Puzzle className="w-5 h-5" />,
+    link: "/obr/quickbrick/criador-de-arenas",
+    customContent: null,
+  },
 ];
 
 export const ferramentasPorCompeticao: Record<string, number[]> = {
-  fll: ferramentas.map((ferramenta) => ferramenta.id),
-  obr: [5, 6],
+  fll: [1, 2, 3, 4, 5, 6, 7],
+  obr: [8, 5, 6],
 };

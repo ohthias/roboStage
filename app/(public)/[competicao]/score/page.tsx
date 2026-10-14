@@ -1,7 +1,7 @@
 import Header from "@/components/UI/Header";
 import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
-import PontuadorOBR from "@/obr-pontuador/components/Pontuador";
+import PontuadorOBR from "@/components/competicoes/OBR/score/Pontuador";
 
 export async function generateMetadata({
   params,
@@ -12,7 +12,7 @@ export async function generateMetadata({
 
   if (competicao === "obr") {
     return {
-      title: "Pontuador OBR",
+      title: "Pontuador OBR | RoboStage",
       description:
         "Pontuador da Olimpíada Brasileira de Robótica para calcular a pontuação da sua equipe.",
     };
@@ -72,7 +72,7 @@ export default async function ScorePage({
   const { competicao } = await params;
 
   if (competicao === "obr") {
-    return <PontuadorOBR />;
+    return <div className="bg-base-200"><PontuadorOBR /></div>;
   }
 
   return (

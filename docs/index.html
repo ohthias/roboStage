@@ -1,59 +1,131 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>RoboStage — Documentação</title>
-  <meta name="description" content="Documentação do RoboStage: plataforma para planejar, testar e evoluir equipes de robótica.">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <link rel="icon" href="https://www.robostage.com.br/favicon.ico">
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@5/lib/themes/vue.css">
-  <style>
-    :root {
-      --theme-color: #cf2a2a;
-      --sidebar-width: 280px;
-    }
-
-    .app-name-link img {
-      max-width: 220px;
-    }
-  </style>
-</head>
-<body>
-  <div id="app"></div>
-  <script>
-    window.$docsify = {
-      name: '🤖 RoboStage',
-      repo: 'https://github.com/ohthias/roboStage',
-      coverpage: true,
-      loadSidebar: true,
-      subMaxLevel: 2,
-      auto2top: true,
-      relativePath: true,
-      homepage: 'README.md',
-      search: {
-        depth: 3,
-        noData: 'Nenhum resultado encontrado.',
-        placeholder: 'Buscar na documentação'
-      },
-      copyCode: {
-        buttonText: 'Copiar',
-        errorText: 'Erro',
-        successText: 'Copiado!'
-      },
-      pagination: {
-        previousText: 'Anterior',
-        nextText: 'Próximo',
-        crossChapter: true
-      },
-      'flexible-alerts': {
-        style: 'flat'
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>RoboStage | Documentação</title>
+    <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+    <meta
+      name="description"
+      content="Documentação do RoboStage: plataforma para planejar, testar e evoluir equipes de robótica."
+    />
+    <meta name="theme-color" content="#cf2a2a" />
+    <link rel="icon" href="https://www.robostage.com.br/favicon.ico" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css"
+    />
+    <style>
+      :root {
+        --theme-color: #cf2a2a;
+        --sidebar-width: 280px;
+        --content-max-width: 900px;
       }
-    }
-  </script>
-  <script src="//cdn.jsdelivr.net/npm/docsify@5"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify@5/lib/plugins/search.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code@3/dist/docsify-copy-code.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-pagination@2/dist/docsify-pagination.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-plugin-flexible-alerts@1/dist/docsify-plugin-flexible-alerts.min.js"></script>
-</body>
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family:
+          Inter,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      .app-name-link img {
+        max-width: 220px;
+        max-height: 64px;
+        object-fit: contain;
+      }
+
+      .sidebar {
+        padding-top: 20px;
+      }
+
+      .markdown-section {
+        padding: 32px 24px;
+      }
+
+      .markdown-section a {
+        color: var(--theme-color);
+      }
+
+      .markdown-section h1,
+      .markdown-section h2,
+      .markdown-section h3 {
+        font-weight: 700;
+      }
+
+      .markdown-section code {
+        border-radius: 4px;
+      }
+
+      .markdown-section pre {
+        border-radius: 10px;
+      }
+
+      .search input {
+        border-radius: 8px;
+      }
+
+      @media (max-width: 768px) {
+        :root {
+          --sidebar-width: 280px;
+        }
+
+        .markdown-section {
+          padding: 24px 20px;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="sidebar-chevron-right">
+    <div id="app">Carregando documentação...</div>
+    <script>
+      window.$docsify = {
+        name: "RoboStage",
+        repo: "https://github.com/ohthias/roboStage",
+        loadSidebar: true,
+        subMaxLevel: 2,
+        auto2top: true,
+        relativePath: false,
+        homepage: "README.md",
+        alias: {
+          "/.*/_sidebar.md": "/_sidebar.md",
+        },
+        search: {
+          maxAge: 86400000,
+          paths: "auto",
+          placeholder: "Buscar na documentação",
+          noData: "Nenhum resultado encontrado",
+          depth: 6,
+        },
+        pagination: {
+          previousText: "Anterior",
+          nextText: "Próximo",
+          crossChapter: true,
+          crossChapterText: true,
+        },
+        copyCode: {
+          buttonText: "Copiar",
+          errorText: "Erro ao copiar",
+          successText: "Copiado!",
+        },
+        themeColor: "#cf2a2a",
+        notFoundPage: true,
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@3/dist/docsify-copy-code.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify-pagination@2/dist/docsify-pagination.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify-plugin-flexible-alerts@1/dist/docsify-plugin-flexible-alerts.min.js"></script>
+  </body>
 </html>

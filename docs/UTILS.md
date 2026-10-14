@@ -1,206 +1,248 @@
 # Utilitários e regras de negócio
 
-A pasta [`utils/`](https://github.com/ohthias/roboStage/tree/main/utils)
-reúne lógica compartilhada entre páginas, componentes, hooks e rotas. A
-separação por domínio evita duplicar cálculos e mantém as regras da plataforma
-fora da camada visual.
+A pasta [`utils/`](https://github.com/ohthias/roboStage/tree/main/utils) reúne funções e regras de negócio compartilhadas entre páginas, componentes, hooks e rotas da aplicação.
 
-## Mapa dos módulos
+A organização por domínio reduz a duplicação de lógica, centraliza cálculos e mantém as regras da plataforma separadas da camada visual.
+
+## 1. Visão geral dos módulos
 
 | Diretório ou arquivo | Responsabilidade |
 | --- | --- |
-| `utils/competitions` | Configuração, navegação e regras específicas das competições |
-| `utils/competitions/fll` | Fluxos e dados específicos da FIRST LEGO League |
-| `utils/EmpathyMap` | Análise heurística e exportação do mapa de empatia |
-| `utils/heatmap` | Pontos, intensidade, estatísticas e exportação de mapas de calor |
-| `utils/institutional` | Notícias, documentos legais, comunidade e releases |
-| `utils/labtest` | Catálogo, modos e estatísticas dos testes |
-| `utils/quickbrick` | Normalização e cálculo de pontuação das missões |
-| `utils/stagebook` | Escopo, permissões, validação, posições e ações do Stagebook |
-| `utils/audio.ts` | Reprodução dos sons usados pelos cronômetros |
-| `utils/scores.ts` | Cálculos compartilhados de pontuação |
+| `utils/competitions/` | Configuração, navegação e regras das competições. |
+| `utils/competitions/fll/` | Fluxos e dados específicos da FIRST LEGO League. |
+| `utils/EmpathyMap/` | Análise heurística e exportação do mapa de empatia. |
+| `utils/heatmap/` | Gerenciamento de pontos, intensidade, estatísticas e exportação de mapas de calor. |
+| `utils/institutional/` | Notícias, documentos legais, comunidade e releases. |
+| `utils/labtest/` | Catálogo, modos de teste e estatísticas. |
+| `utils/quickbrick/` | Normalização de missões e cálculo de pontuação. |
+| `utils/stagebook/` | Escopo, permissões, validação, ordenação e ações do Stagebook. |
+| `utils/audio.ts` | Reprodução de sons utilizados pelos cronômetros. |
+| `utils/scores.ts` | Cálculos compartilhados de pontuação. |
 
-## Competições
+## 2. Competições
 
-Arquivos principais:
+O diretório [`utils/competitions/`](https://github.com/ohthias/roboStage/tree/main/utils/competitions) centraliza configurações utilizadas na navegação e na composição das páginas de cada competição.
 
-- [`competicoes.ts`](https://github.com/ohthias/roboStage/blob/main/utils/competitions/competicoes.ts):
-  catálogo das competições suportadas.
-- [`competicoes-map.ts`](https://github.com/ohthias/roboStage/blob/main/utils/competitions/competicoes-map.ts):
-  associação entre uma competição e seus componentes.
-- [`navigation.ts`](https://github.com/ohthias/roboStage/blob/main/utils/competitions/navigation.ts):
-  grupos e itens de navegação.
-- [`hero.ts`](https://github.com/ohthias/roboStage/blob/main/utils/competitions/hero.ts):
-  configuração visual das páginas de competição.
+### Arquivos principais
 
-Essa camada permite que a rota dinâmica `/<competicao>` selecione o conteúdo
-correto sem espalhar condicionais de competição pelos componentes.
+| Arquivo | Responsabilidade |
+| --- | --- |
+| [`competicoes.ts`](https://github.com/ohthias/roboStage/blob/main/utils/competitions/competicoes.ts) | Define o catálogo de competições suportadas. |
+| [`competicoes-map.ts`](https://github.com/ohthias/roboStage/blob/main/utils/competitions/competicoes-map.ts) | Associa competições aos componentes correspondentes. |
+| [`navigation.ts`](https://github.com/ohthias/roboStage/blob/main/utils/competitions/navigation.ts) | Define grupos e itens de navegação. |
+| [`hero.ts`](https://github.com/ohthias/roboStage/blob/main/utils/competitions/hero.ts) | Centraliza a configuração visual das páginas de competição. |
 
-## Ferramentas FLL
+Essa camada permite que a rota dinâmica `/{competicao}` selecione o conteúdo adequado sem distribuir condicionais específicas de cada competição pela interface.
 
-O diretório
-[`utils/competitions/fll`](https://github.com/ohthias/roboStage/tree/main/utils/competitions/fll)
-contém regras dos fluxos da FLL:
+## 3. Ferramentas da FIRST LEGO League
 
-### Confere AI
+O diretório [`utils/competitions/fll/`](https://github.com/ohthias/roboStage/tree/main/utils/competitions/fll) concentra regras e funções reutilizáveis pelas ferramentas relacionadas à FIRST LEGO League (FLL).
 
-[`confere-ai/`](https://github.com/ohthias/roboStage/tree/main/utils/competitions/fll/confere-ai)
-define os tipos dos checklists, cria o estado inicial, combina itens padrão e
-personalizados, calcula o progresso e persiste o estado no navegador.
+### 3.1. Confere AI
 
-Funções importantes:
+Diretório: [`confere-ai/`](https://github.com/ohthias/roboStage/tree/main/utils/competitions/fll/confere-ai)
 
-- `createDefaultConfereAIState`;
-- `mergeChecklistItems`;
-- `calculateProgress`;
-- `findNextPendingItem`;
-- `getChecklistsForMode`;
-- `getConfereAIState`;
-- `setConfereAIState`;
-- `resetConfereAIState`.
+O módulo gerencia os dados dos checklists, incluindo a criação do estado inicial, a combinação de itens padrão e personalizados, o cálculo do progresso e a persistência no navegador.
 
-### Guia de missões
+**Funções principais:**
 
-[`mission-guide/`](https://github.com/ohthias/roboStage/tree/main/utils/competitions/fll/mission-guide)
-normaliza dados das missões e fornece tipos e helpers para a apresentação do
-guia.
+- `createDefaultConfereAIState`
+- `mergeChecklistItems`
+- `calculateProgress`
+- `findNextPendingItem`
+- `getChecklistsForMode`
+- `getConfereAIState`
+- `setConfereAIState`
+- `resetConfereAIState`
 
-### Partiu Mesa
+### 3.2. Guia de missões
 
-[`partiu-mesa/`](https://github.com/ohthias/roboStage/tree/main/utils/competitions/fll/partiu-mesa)
-concentra cálculos, normalização, armazenamento local, geração de Markdown e
-exportação em PDF para o planejamento de mesa. O hook `useClockTick` mantém o
-relógio sincronizado com a interface.
+Diretório: [`mission-guide/`](https://github.com/ohthias/roboStage/tree/main/utils/competitions/fll/mission-guide)
 
-## Empathy Map
+Fornece tipos, normalização de dados e funções auxiliares para preparar as informações das missões para apresentação no guia.
 
-Arquivos:
-[`utils/EmpathyMap`](https://github.com/ohthias/roboStage/tree/main/utils/EmpathyMap).
+### 3.3. Partiu Mesa
 
-- `generateHeuristicAnalysis` agrupa e interpreta notas de pensamentos,
-  sentimentos, falas e ações.
-- `exportMapToMarkdown` gera uma versão legível para documentação.
-- `exportMapToCSV` gera dados tabulares.
-- `downloadFile` inicia o download no navegador.
+Diretório: [`partiu-mesa/`](https://github.com/ohthias/roboStage/tree/main/utils/competitions/fll/partiu-mesa)
 
-O domínio mantém a análise e a exportação independentes da tela que edita o
-mapa.
+Reúne funções para o planejamento de mesa, incluindo:
 
-## Heatmap
+- cálculos e normalização de dados;
+- armazenamento local;
+- geração de documentos Markdown;
+- exportação em PDF;
+- sincronização do relógio com a interface por meio do hook `useClockTick`.
 
-Arquivos:
-[`utils/heatmap`](https://github.com/ohthias/roboStage/tree/main/utils/heatmap).
+A centralização dessas operações permite reutilizar a lógica de planejamento sem concentrar todas as responsabilidades nos componentes visuais.
 
-O módulo fornece:
+## 4. Empathy Map
 
-- `renderHeatmap` para desenhar a intensidade dos pontos;
-- `renderTable` para renderizar a mesa;
-- `computeStats` para calcular estatísticas;
-- `getLocalIntensity` para consultar a intensidade próxima a uma posição;
-- `findNearestPoint` para localizar o ponto mais próximo;
-- `getMissions` para carregar zonas de missão por temporada;
-- `exportCanvasPNG` e `getCanvasDataURL` para exportação.
+Diretório: [`utils/EmpathyMap/`](https://github.com/ohthias/roboStage/tree/main/utils/EmpathyMap)
 
-O hook [`useHeatmap`](DEVELOPMENT.md#hook-do-mapa-de-calor) usa essa lógica
-para controlar o estado da ferramenta.
+O módulo reúne funções para analisar e exportar os dados do mapa de empatia.
 
-## Pontuação e missões
+| Função | Responsabilidade |
+| --- | --- |
+| `generateHeuristicAnalysis` | Agrupa e interpreta notas relacionadas a pensamentos, sentimentos, falas e ações. |
+| `exportMapToMarkdown` | Gera uma representação legível em Markdown. |
+| `exportMapToCSV` | Converte os dados para um formato tabular CSV. |
+| `downloadFile` | Inicia o download de um arquivo no navegador. |
 
-### Placar compartilhado
+A separação entre análise, exportação e interface permite reutilizar as operações em diferentes contextos da aplicação.
 
-[`scores.ts`](https://github.com/ohthias/roboStage/blob/main/utils/scores.ts)
-implementa cálculos gerais de pontos, detalhamento por missão e soma do
-resultado final.
+## 5. Heatmap
 
-### Tabela de missões do QuickBrick
+Diretório: [`utils/heatmap/`](https://github.com/ohthias/roboStage/tree/main/utils/heatmap)
 
-[`quickbrick/scoring.ts`](https://github.com/ohthias/roboStage/blob/main/utils/quickbrick/scoring.ts)
-converte o JSON bruto da temporada em um modelo consistente para a tabela.
+O módulo fornece funções para renderização, análise espacial e exportação de mapas de calor.
 
-O fluxo:
+### Funções principais
 
-1. interpreta tipos `switch` e `range`;
-2. normaliza missões e sub-missões;
-3. avalia pré-requisitos;
-4. calcula pontos obtidos e pontuação máxima;
-5. atualiza uma missão sem alterar o objeto original.
+| Função | Responsabilidade |
+| --- | --- |
+| `renderHeatmap` | Desenha a intensidade dos pontos no mapa. |
+| `renderTable` | Renderiza a representação da mesa. |
+| `computeStats` | Calcula estatísticas dos dados. |
+| `getLocalIntensity` | Consulta a intensidade próxima a uma posição. |
+| `findNearestPoint` | Localiza o ponto mais próximo. |
+| `getMissions` | Carrega as zonas de missão de uma temporada. |
+| `exportCanvasPNG` | Exporta o conteúdo do canvas como PNG. |
+| `getCanvasDataURL` | Obtém uma representação do canvas em formato Data URL. |
 
-Isso permite suportar missões com booleanos, opções, contadores, dependências e
-missões personalizadas.
+O hook [`useHeatmap`](https://github.com/ohthias/roboStage/blob/main/hooks/useHeatmap.ts) utiliza essa camada para gerenciar o estado e as interações da ferramenta.
 
-### LabTest
+Consulte também a documentação de [contextos React e hooks](DEVELOPMENT.md#hook-do-mapa-de-calor).
 
-Os módulos em
-[`utils/labtest`](https://github.com/ohthias/roboStage/tree/main/utils/labtest)
-complementam os hooks do LabTest:
+## 6. Pontuação e missões
 
-- `catalog.ts`: catálogo e definição dos campos;
-- `fll.ts`: regras e dados relacionados à FLL;
-- `modes.tsx`: configurações dos modos de teste;
-- `stats.ts`: total possível, médias, melhores resultados e taxa de conclusão.
+### 6.1. Cálculos compartilhados
 
-`computeFieldStats` trata campos booleanos, numéricos e de duração de maneira
-diferente para produzir métricas adequadas a cada tipo.
+Arquivo: [`utils/scores.ts`](https://github.com/ohthias/roboStage/blob/main/utils/scores.ts)
 
-## Stagebook: escopo e segurança
+Implementa cálculos gerais de pontuação, detalhamento por missão e soma do resultado final.
 
-Os módulos em
-[`utils/stagebook`](https://github.com/ohthias/roboStage/tree/main/utils/stagebook)
-implementam regras usadas pelo espaço pessoal e pelos espaços de equipe.
+### 6.2. Pontuação do QuickBrick
 
-### Escopo
+Arquivo: [`utils/quickbrick/scoring.ts`](https://github.com/ohthias/roboStage/blob/main/utils/quickbrick/scoring.ts)
 
-[`scope.ts`](https://github.com/ohthias/roboStage/blob/main/utils/stagebook/scope.ts)
-resolve o usuário autenticado, o espaço atual e o papel do membro. Os papéis
-disponíveis são `owner`, `mentor`, `competidor` e `colaborador`.
+O módulo converte os dados JSON brutos de uma temporada em um modelo consistente para a tabela de missões.
 
-### Permissões
+O processamento contempla as seguintes etapas:
 
-[`permissions.ts`](https://github.com/ohthias/roboStage/blob/main/utils/stagebook/permissions.ts)
-fornece:
+1. Interpretação dos tipos `switch` e `range`.
+2. Normalização de missões e sub-missões.
+3. Avaliação de pré-requisitos.
+4. Cálculo dos pontos obtidos e da pontuação máxima.
+5. Atualização de uma missão sem modificar o objeto original.
 
-- `scopeWhere`, que vincula consultas ao usuário ou à equipe;
-- `requireRole`, que restringe ações administrativas;
-- `assertSameScope`, que impede relacionar recursos de espaços diferentes.
+Essa estrutura permite trabalhar com missões que utilizam valores booleanos, opções, contadores, dependências e missões personalizadas.
 
-Essas verificações são importantes para não confiar somente no identificador
-de um recurso recebido pelo cliente.
+## 7. LabTest
 
-### Validação e ordenação
+Diretório: [`utils/labtest/`](https://github.com/ohthias/roboStage/tree/main/utils/labtest)
 
-- `validation.ts`: limpeza de texto, UUIDs e datas, com
-  `ValidationError` para entradas inválidas.
-- `position.ts`: cálculo de posições para inserir itens sem reordenar tudo.
-- `actions/teams.ts`: criação, listagem e troca de equipe.
-- `actions/notifications.ts`: criação, listagem e marcação de notificações.
+Os módulos fornecem configurações, dados e cálculos utilizados pelas funcionalidades do LabTest.
 
-## Conteúdo institucional
+| Arquivo | Responsabilidade |
+| --- | --- |
+| `catalog.ts` | Define o catálogo e os campos dos testes. |
+| `fll.ts` | Reúne regras e dados relacionados à FLL. |
+| `modes.tsx` | Define as configurações dos modos de teste. |
+| `stats.ts` | Calcula métricas e estatísticas das execuções. |
 
-Os módulos em
-[`utils/institutional`](https://github.com/ohthias/roboStage/tree/main/utils/institutional)
-abstraem o carregamento de conteúdo:
+A função `computeFieldStats` considera o tipo de campo para produzir métricas apropriadas:
 
-- `news.ts`: lista notícias e busca uma notícia por `slug`;
-- `legal.ts`: lista documentos legais e carrega um documento específico;
-- `github.ts`: consulta releases do GitHub;
-- `community.ts`: disponibiliza os canais da comunidade.
+- **Booleanos:** métricas relacionadas a valores verdadeiro/falso.
+- **Numéricos:** estatísticas de valores e resultados.
+- **Duração:** métricas específicas para tempos registrados.
 
-As páginas institucionais e o sitemap reutilizam essas funções para manter uma
-única fonte de verdade.
+O módulo complementa os hooks documentados em [Contextos React e hooks](DEVELOPMENT.md#hooks-de-dados-e-testes).
 
-## Áudio
+## 8. Stagebook: escopo, permissões e validação
 
-[`audio.ts`](https://github.com/ohthias/roboStage/blob/main/utils/audio.ts)
-expõe `playSound(type)`, com os tipos `start`, `warning`, `end` e `tick`.
-Cronômetros podem usar essa função sem conhecer os caminhos dos arquivos de
-áudio.
+Diretório: [`utils/stagebook/`](https://github.com/ohthias/roboStage/tree/main/utils/stagebook)
 
-## Boas práticas para novos utilitários
+O Stagebook utiliza regras compartilhadas para gerenciar o espaço pessoal e os espaços de equipe. Essa camada concentra verificações de escopo, permissões e integridade dos dados.
 
-1. Coloque a regra no domínio correto, evitando helpers genéricos sem contexto.
-2. Mantenha funções de cálculo puras sempre que não precisarem de estado.
-3. Valide dados externos antes de normalizá-los.
-4. Não mova regras de autorização para componentes de cliente.
-5. Adicione o link do novo módulo nesta página quando ele se tornar parte da
-   arquitetura compartilhada.
+### 8.1. Resolução de escopo
 
+Arquivo: [`scope.ts`](https://github.com/ohthias/roboStage/blob/main/utils/stagebook/scope.ts)
+
+Resolve informações relacionadas ao usuário autenticado, ao espaço atual e ao papel do membro.
+
+Os papéis documentados são:
+
+- `owner`
+- `mentor`
+- `competidor`
+- `colaborador`
+
+### 8.2. Controle de permissões
+
+Arquivo: [`permissions.ts`](https://github.com/ohthias/roboStage/blob/main/utils/stagebook/permissions.ts)
+
+| Função | Responsabilidade |
+| --- | --- |
+| `scopeWhere` | Vincula consultas ao usuário ou à equipe correspondente. |
+| `requireRole` | Restringe ações conforme o papel exigido. |
+| `assertSameScope` | Impede relacionar recursos pertencentes a espaços diferentes. |
+
+**Regra de segurança:** não confie exclusivamente no identificador de um recurso recebido do cliente. As operações no servidor devem validar a autenticação, o escopo e as permissões aplicáveis antes de consultar ou modificar dados.
+
+### 8.3. Validação e ordenação
+
+| Arquivo ou módulo | Responsabilidade |
+| --- | --- |
+| `validation.ts` | Limpa e valida textos, UUIDs e datas; utiliza `ValidationError` para entradas inválidas. |
+| `position.ts` | Calcula posições para inserir itens sem exigir a reordenação completa. |
+| `actions/teams.ts` | Implementa operações de criação, listagem e troca de equipe. |
+| `actions/notifications.ts` | Implementa operações de criação, listagem e marcação de notificações. |
+
+A centralização dessas regras favorece a consistência entre as operações e reduz a duplicação de verificações.
+
+## 9. Conteúdo institucional
+
+Diretório: [`utils/institutional/`](https://github.com/ohthias/roboStage/tree/main/utils/institutional)
+
+Os módulos abstraem o carregamento de informações institucionais, permitindo que diferentes páginas reutilizem as mesmas fontes de dados.
+
+| Arquivo | Responsabilidade |
+| --- | --- |
+| `news.ts` | Lista notícias e busca uma notícia pelo `slug`. |
+| `legal.ts` | Lista documentos legais e carrega documentos específicos. |
+| `github.ts` | Consulta releases do GitHub. |
+| `community.ts` | Disponibiliza os canais da comunidade. |
+
+As páginas institucionais e o sitemap reutilizam essas funções para manter uma única fonte de verdade para o conteúdo correspondente.
+
+## 10. Áudio
+
+Arquivo: [`utils/audio.ts`](https://github.com/ohthias/roboStage/blob/main/utils/audio.ts)
+
+A função `playSound(type)` centraliza a reprodução dos sons utilizados pelos cronômetros.
+
+Os tipos documentados são:
+
+- `start`
+- `warning`
+- `end`
+- `tick`
+
+Com essa abstração, os cronômetros podem solicitar a reprodução de um som sem precisar conhecer os caminhos dos arquivos de áudio.
+
+## 11. Boas práticas para novos utilitários
+
+Ao adicionar ou modificar regras compartilhadas no RoboStage:
+
+1. **Organize por domínio:** mantenha a lógica no módulo correspondente à funcionalidade.
+2. **Prefira funções puras:** para cálculos que não dependem de estado ou efeitos colaterais.
+3. **Valide dados externos:** verifique entradas antes de normalizar ou processar os dados.
+4. **Preserve a segurança no servidor:** não dependa de verificações executadas exclusivamente em componentes do cliente para autorizar operações.
+5. **Evite mutações desnecessárias:** preserve os objetos de entrada quando a operação puder retornar uma nova estrutura.
+6. **Atualize a documentação:** inclua novos módulos nesta página quando passarem a fazer parte da arquitetura compartilhada.
+
+## 12. Documentação relacionada
+
+- [Páginas e rotas](pages.md) — catálogo das páginas e dos caminhos da aplicação.
+- [Referência de APIs](API.md) — endpoints utilizados pelo sistema.
+- [Contextos React e hooks](DEVELOPMENT.md) — estado compartilhado e lógica reutilizável da interface.

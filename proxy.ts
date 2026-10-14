@@ -8,6 +8,7 @@ const publicRoutePatterns = [
   "/assets(.*)",
   "/changelog(.*)",
   "/fll(.*)",
+  "/obr(.*)",
   "/help(.*)",
   "/labtest(.*)",
   "/legal(.*)",

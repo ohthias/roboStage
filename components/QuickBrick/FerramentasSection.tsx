@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ferramentas } from "./ferramentas.data";
+import { ferramentas, ferramentasPorCompeticao } from "./ferramentas.data";
 
 interface SeasonLogo {
   name: string;
@@ -10,15 +10,24 @@ interface SeasonLogo {
 interface FerramentasSectionProps {
   seasons: string[];
   seasonLogos: Record<string, SeasonLogo>;
+  competition: string;
 }
 
 export default function FerramentasSection({
   seasons,
   seasonLogos,
+  competition,
 }: FerramentasSectionProps) {
   const router = useRouter();
 
-  const filtradas = ferramentas;
+  const allowedTools =
+    ferramentasPorCompeticao[competition] ?? [];
+  const filtradas = ferramentas
+    .filter((ferramenta) => allowedTools.includes(ferramenta.id))
+    .map((ferramenta) => ({
+      ...ferramenta,
+      link: ferramenta.link?.replace("/fll/", `/${competition}/`),
+    }));
 
   return (
     <section className="grid gap-6 sm:grid-cols-2 w-full md:grid-cols-3">

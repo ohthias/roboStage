@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, File, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, UserSearch } from "lucide-react";
+import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Trophy, Code, Bot } from "lucide-react";
 
 export type NavMenuItem = {
   nome: string;
@@ -58,5 +58,16 @@ export const NAVIGATION = {
       { key: "submerged", name: "SUBMERGED", period: "2024/2025", icon: Fish },
       { key: "masterpiece", name: "MASTERPIECE", period: "2023/2024", icon: Palette },
     ],
+  },
+  obr: {
+    label: "OBR",
+    icon: Bot,
+    scorePath: "score",
+    options: [
+      { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false },
+      { nome: "Anatix", path: "anatix", icon: Code, new: false },
+      { nome: "Documentação", path: "docs", icon: BookOpen, new: false },
+    ],
+    menus: [],
   },
 };

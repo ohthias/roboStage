@@ -179,6 +179,11 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/obr/anatix" className="link link-hover">
+                    Anatix
+                  </Link>
+                </li>
+                <li>
                   <Link href="/dashboard" className="link link-hover">
                     Minha área
                   </Link>
@@ -199,6 +204,11 @@ export function Footer() {
                 <li>
                   <Link href="/fll/future-edition" className="link link-hover">
                     FIRST® LEGO® League Future Edition
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/obr" className="link link-hover">
+                    Olimpíada Brasileira de Robótica (OBR)
                   </Link>
                 </li>
                 <li>

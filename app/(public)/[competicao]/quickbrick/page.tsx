@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
 import FerramentasSection from "../../../../components/QuickBrick/FerramentasSection";
 import Header from "@/components/UI/Header";
+import { useParams } from "next/navigation";
 
 const seasonLogos: Record<string, { name: string; image: string }> = {
   bioglow: {
@@ -19,11 +19,9 @@ const seasonLogos: Record<string, { name: string; image: string }> = {
 };
 
 export default function QuickBrickHome() {
-  const [seasons, setSeasons] = useState<string[]>([]);
-
-  useEffect(() => {
-    setSeasons(Object.keys(seasonLogos));
-  }, []);
+  const params = useParams<{ competicao: string }>();
+  const competition = params.competicao;
+  const seasons = Object.keys(seasonLogos);
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
@@ -62,7 +60,11 @@ export default function QuickBrickHome() {
         </div>
       </div>
       {/* Seção de Ferramentas */}
-      <FerramentasSection seasons={seasons} seasonLogos={seasonLogos} />
+      <FerramentasSection
+        competition={competition}
+        seasons={seasons}
+        seasonLogos={seasonLogos}
+      />
     </main>
   );
 }

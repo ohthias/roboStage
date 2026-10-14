@@ -1,6 +1,5 @@
 import {
   Check,
-  Copy,
   Download,
   ExternalLink,
   FileArchive,
@@ -12,6 +11,7 @@ import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
 import ColorCard from "./ColorCard";
 import Image from "next/image";
+import { useToast } from "@/app/context/ToastContext";
 
 export const metadata = {
   title: "Assets",
@@ -20,31 +20,31 @@ export const metadata = {
 
 const colors = [
   {
-    name: "Robo Red",
+    name: "Brasa",
     value: "#CF2A2A",
-    description: "Cor primária da marca.",
+    description: "A energia que transforma ideias em movimento robótico.",
     className: "bg-[#CF2A2A]",
     textClass: "text-white",
   },
   {
-    name: "Robo Blue",
+    name: "Oceano",
     value: "#1E459F",
-    description: "Cor secundária da marca.",
-    className: "bg-[#1E459F]",
+    description: "A profundidade do conhecimento que guia cada projeto.",
+    className: "bg-[#1e459f]",
     textClass: "text-white",
   },
   {
-    name: "Robo Yellow",
+    name: "Sol",
     value: "#FABD32",
-    description: "Cor de destaque.",
+    description: "A criatividade que ilumina novas soluções tecnológicas.",
     className: "bg-[#FABD32]",
     textClass: "text-black",
   },
   {
-    name: "Robo Neutral",
-    value: "#E1DCCA",
-    description: "Base neutra complementar.",
-    className: "bg-[#E1DCCA]",
+    name: "Fundação",
+    value: "#DED6C4",
+    description: "A base sólida para construir, testar e inovar.",
+    className: "bg-[#ded6c4]",
     textClass: "text-black",
   },
 ];
@@ -80,31 +80,23 @@ export default function BrandPage() {
   return (
     <>
       <Navbar />
-
-      {/* =========================================================
-          HERO
-      ========================================================= */}
-      <header className="relative min-h-screen w-full overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:24px_24px]" />
-
+      <header className="relative isolate w-full overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)\_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)\_1px,transparent_1px)] bg-[size:24px_24px]" />
         <div className="absolute -right-40 top-1/4 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute -left-40 bottom-10 h-96 w-96 rounded-full bg-secondary/10 blur-3xl" />
-
-        <div className="relative flex min-h-screen flex-col md:flex-row items-center justify-between max-w-7xl mx-auto px-6 md:px-12 py-32 gap-16">
-          <div className="flex flex-col justify-center max-w-2xl z-10 gap-6">
-            <h1 className="text-5xl md:text-6xl lg:text-8xl font-black leading-[0.95] tracking-tight">
+        <div className="relative mx-auto flex min-h-[min(760px,calc(100svh-5rem))] max-w-7xl flex-col items-center justify-center gap-10 px-5 py-24 sm:px-8 md:flex-row md:justify-between md:gap-12 md:px-12 lg:py-28">
+          <div className="z-10 flex w-full max-w-2xl flex-col justify-center gap-5 text-center md:text-left">
+            <h1 className="text-4xl font-black leading-[0.98] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
               Assets do{" "}
-              <span className="text-primary-content bg-primary px-3 inline-block -rotate-1">
+              <span className="inline-block bg-primary px-2 py-1 text-primary-content sm:px-3 -rotate-1">
                 RoboStage
               </span>
             </h1>
-
-            <p className="max-w-xl text-lg md:text-xl font-semibold italic text-base-content/70 leading-relaxed">
+            <p className="mx-auto max-w-xl text-base leading-relaxed text-base-content/70 sm:text-lg md:mx-0">
               Recursos oficiais da identidade visual do RoboStage para uso em
               projetos, apresentações, documentos, eventos e materiais digitais.
             </p>
-
-            <div className="flex flex-wrap gap-3 pt-4">
+            <div className="flex flex-wrap justify-center gap-3 pt-2 md:justify-start">
               <a href="#logos" className="btn btn-primary">
                 Explorar assets
                 <ExternalLink size={18} />
@@ -117,33 +109,31 @@ export default function BrandPage() {
             </div>
           </div>
 
-          {/* Hero logo */}
-          <div className="relative flex-1 w-full max-w-xl">
+          <div className="relative mx-auto w-full max-w-md flex-1 md:max-w-xl">
             <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full" />
-
             <img
               src="/images/logos/logo_padrao.png"
               alt="Logo do RoboStage"
-              className="relative z-10 w-full h-full object-contain"
+              className="relative z-10 h-auto w-full object-contain"
             />
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 md:px-12">
-        {/* =========================================================
-            LOGOS
-        ========================================================= */}
-        <section id="logos" className="py-28 scroll-mt-20">
+      <main className="mx-auto max-w-7xl px-5 sm:px-8 md:px-12">
+        <section id="logos" className="scroll-mt-24 py-16 sm:py-20 lg:py-24">
           <SectionHeader
             eyebrow="01 — Identidade"
             title="Logos"
             description="A identidade do RoboStage possui diferentes configurações para se adaptar a diferentes contextos de aplicação."
           />
-
           <div className="grid lg:grid-cols-3 gap-6 mt-12">
-            {/* Logo principal */}
-            <div className="lg:col-span-2 card bg-base-200 border border-base-content/10 overflow-hidden">
+            <div className="group relative lg:col-span-2 card rounded-tl-2xl rounded-br-2xl bg-base-200 border border-base-content/10 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-base-content/5">
+              <div
+                className="absolute left-0 top-0 h-1 w-20 bg-primary"
+                aria-hidden="true"
+              />
+
               <div className="card-body">
                 <div className="flex items-start justify-between">
                   <div>
@@ -156,8 +146,8 @@ export default function BrandPage() {
                   <span className="badge badge-primary">Principal</span>
                 </div>
 
-                <div className="relative min-h-[320px] mt-8 rounded-2xl bg-base-100 border border-base-content/10 flex items-center justify-center overflow-hidden">
-                  <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:20px_20px]" />
+                <div className="relative min-h-[260px] sm:min-h-[320px] mt-8 rounded-tl-2xl rounded-br-2xl bg-base-100 border border-base-content/10 flex items-center justify-center overflow-hidden p-6 sm:p-10">
+                  <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)\_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)\_1px,transparent_1px)] bg-[size:20px_20px]" />
 
                   <div className="relative flex items-center gap-4">
                     <Image
@@ -186,8 +176,6 @@ export default function BrandPage() {
                 </div>
               </div>
             </div>
-
-            {/* Variações */}
             <div className="space-y-6">
               <LogoVariation
                 title="Versão clara"
@@ -204,22 +192,26 @@ export default function BrandPage() {
             </div>
           </div>
         </section>
-
-        {/* =========================================================
-            ÍCONE
-        ========================================================= */}
         <section
           id="icon"
-          className="py-28 border-t border-base-content/10 scroll-mt-20"
+          className="scroll-mt-24 border-t border-base-content/10 py-16 sm:py-20 lg:py-24"
         >
           <SectionHeader
             eyebrow="02 — Símbolo"
             title="Ícone"
             description="O símbolo pode ser utilizado de forma independente quando o contexto já estabelece a relação com o RoboStage."
           />
-
           <div className="grid md:grid-cols-2 gap-8 mt-12">
-            <div className="rounded-3xl bg-base-200 border border-base-content/10 p-8 md:p-12 flex items-center justify-center min-h-[420px]">
+            <div className="group relative rounded-tl-2xl rounded-br-2xl bg-base-200 border border-base-content/10 p-8 md:p-12 flex items-center justify-center min-h-[280px] sm:min-h-[360px] md:min-h-[420px] overflow-hidden">
+              <div
+                className="absolute left-0 top-0 h-1 w-16 bg-secondary"
+                aria-hidden="true"
+              />
+              <div
+                className="absolute inset-6 rounded-tl-xl rounded-br-xl border border-dashed border-base-content/15"
+                aria-hidden="true"
+              />
+
               <div className="relative">
                 <img
                   src="/images/logos/logo_padrao.png"
@@ -234,7 +226,7 @@ export default function BrandPage() {
                 Área de proteção
               </span>
 
-              <h3 className="text-3xl font-black">
+              <h3 className="text-2xl font-black sm:text-3xl">
                 Dê espaço para a marca respirar.
               </h3>
 
@@ -253,13 +245,9 @@ export default function BrandPage() {
             </div>
           </div>
         </section>
-
-        {/* =========================================================
-            CORES
-        ========================================================= */}
         <section
           id="colors"
-          className="py-28 border-t border-base-content/10 scroll-mt-20"
+          className="scroll-mt-24 border-t border-base-content/10 py-16 sm:py-20 lg:py-24"
         >
           <SectionHeader
             eyebrow="03 — Sistema visual"
@@ -272,17 +260,20 @@ export default function BrandPage() {
               <ColorCard key={color.name} {...color} />
             ))}
           </div>
-
-          <div className="mt-8 rounded-3xl border border-base-content/10 bg-base-200 p-6 md:p-8">
+          <div className="relative mt-8 overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-200 p-6 md:p-8">
+            <div
+              className="absolute left-0 top-0 h-full w-1 bg-[#FABD32]"
+              aria-hidden="true"
+            />
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
               <div>
                 <h3 className="font-bold text-lg">Uso recomendado</h3>
+
                 <p className="text-sm text-base-content/60 mt-1">
                   Priorize as cores da marca em proporções equilibradas e use o
                   amarelo como elemento de destaque.
                 </p>
               </div>
-
               <div className="flex h-12 overflow-hidden rounded-xl">
                 <div className="w-28 bg-[#CF2A2A]" />
                 <div className="w-20 bg-[#1E459F]" />
@@ -292,13 +283,9 @@ export default function BrandPage() {
             </div>
           </div>
         </section>
-
-        {/* =========================================================
-            TIPOGRAFIA
-        ========================================================= */}
         <section
           id="typography"
-          className="py-28 border-t border-base-content/10 scroll-mt-20"
+          className="scroll-mt-24 border-t border-base-content/10 py-16 sm:py-20 lg:py-24"
         >
           <SectionHeader
             eyebrow="04 — Tipografia"
@@ -306,18 +293,20 @@ export default function BrandPage() {
             description="A tipografia principal do RoboStage é a família Roboto, escolhida por sua legibilidade, neutralidade e versatilidade."
           />
 
-          <div className="mt-12 rounded-3xl border border-base-content/10 bg-base-200 overflow-hidden">
+          <div className="relative mt-12 rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-200 overflow-hidden">
+            <div
+              className="absolute right-0 top-0 h-1 w-24 bg-secondary"
+              aria-hidden="true"
+            />
             <div className="p-8 md:p-12 border-b border-base-content/10">
               <div className="flex items-center gap-3 mb-8">
                 <Type size={22} />
                 <span className="font-bold">Roboto</span>
                 <span className="badge badge-ghost">Sans Serif</span>
               </div>
-
-              <div className="text-7xl md:text-9xl font-black tracking-tight">
+              <div className="text-6xl sm:text-7xl md:text-9xl font-black tracking-tight">
                 Aa
               </div>
-
               <p className="mt-8 text-2xl md:text-4xl font-light">
                 Roboto Regular · Medium · Bold · Black
               </p>
@@ -332,37 +321,30 @@ export default function BrandPage() {
           </div>
         </section>
 
-        {/* =========================================================
-            DOWNLOADS
-        ========================================================= */}
         <section
           id="download"
-          className="py-28 border-t border-base-content/10 scroll-mt-20"
+          className="scroll-mt-24 border-t border-base-content/10 py-16 sm:py-20 lg:py-24"
         >
           <SectionHeader
             eyebrow="05 — Downloads"
             title="Baixar assets"
             description="Encontre os arquivos necessários para utilizar a identidade do RoboStage."
           />
-
           <div className="mt-12 grid md:grid-cols-2 gap-5">
             {assets.map((asset) => (
               <AssetCard key={asset.name} {...asset} />
             ))}
           </div>
-
-          <div className="mt-8 rounded-3xl bg-primary text-primary-content p-8 md:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+          <div className="mt-8 rounded-tl-2xl rounded-br-2xl bg-primary text-primary-content p-8 md:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
             <div>
               <h3 className="text-2xl font-black">
                 Precisa de tudo de uma vez?
               </h3>
-
               <p className="mt-2 opacity-80 max-w-xl">
                 Baixe o pacote completo com logos, ícones e arquivos necessários
                 para aplicações digitais e impressas.
               </p>
             </div>
-
             <a
               href="/assets/downloads/robostage-assets.zip"
               download
@@ -373,17 +355,12 @@ export default function BrandPage() {
             </a>
           </div>
         </section>
-
-        {/* =========================================================
-            USO
-        ========================================================= */}
         <section className="py-28 border-t border-base-content/10">
           <SectionHeader
             eyebrow="06 — Aplicação"
             title="Use a marca corretamente"
             description="Os assets são públicos, mas preservar a identidade visual é essencial para manter consistência."
           />
-
           <div className="grid md:grid-cols-2 gap-6 mt-12">
             <RuleCard
               type="do"
@@ -395,7 +372,6 @@ export default function BrandPage() {
                 "Prefira os arquivos vetoriais quando possível.",
               ]}
             />
-
             <RuleCard
               type="dont"
               title="Evite"
@@ -408,24 +384,16 @@ export default function BrandPage() {
             />
           </div>
         </section>
-
-        {/* =========================================================
-            FOOTER CTA
-        ========================================================= */}
-        <section className="pb-32">
+        <section className="pb-20 sm:pb-24 lg:pb-28">
           <div className="relative overflow-hidden rounded-[2rem] bg-base-200 border border-base-content/10 p-10 md:p-16">
             <div className="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-secondary/10 blur-3xl" />
-
             <div className="relative max-w-3xl">
-              <h2 className="mt-5 text-4xl md:text-6xl font-black tracking-tight">
+              <h2 className="mt-5 text-3xl sm:text-4xl md:text-6xl font-black tracking-tight">
                 Construindo experiências
                 <span className="text-primary"> para a robótica.</span>
               </h2>
-
               <p className="mt-5 text-lg text-base-content/60 max-w-2xl">
-                Este espaço reúne os recursos públicos da marca para que a
-                comunidade possa criar, apresentar e compartilhar projetos
-                mantendo a identidade do RoboStage.
+                Leve o RoboStage para o seu projeto, evento ou apresentação com os assets oficiais da marca. Use-os de forma responsável e preserve a identidade visual.
               </p>
             </div>
           </div>
@@ -436,10 +404,6 @@ export default function BrandPage() {
     </>
   );
 }
-
-/* ===============================================================
-   COMPONENTES
-=============================================================== */
 
 function SectionHeader({
   eyebrow,
@@ -452,15 +416,13 @@ function SectionHeader({
 }) {
   return (
     <div className="max-w-3xl">
-      <div className="text-sm font-black uppercase tracking-[0.2em] text-primary">
+      <div className="text-xs font-bold uppercase tracking-[0.18em] text-primary sm:text-sm">
         {eyebrow}
       </div>
-
-      <h2 className="mt-3 text-4xl md:text-5xl font-black tracking-tight">
+      <h2 className="mt-3 text-2xl font-black sm:text-3xl tracking-tight sm:text-4xl md:text-5xl">
         {title}
       </h2>
-
-      <p className="mt-5 text-lg text-base-content/60 leading-relaxed">
+      <p className="mt-4 max-w-2xl text-base leading-relaxed text-base-content/60 sm:mt-5 sm:text-lg">
         {description}
       </p>
     </div>
@@ -480,7 +442,7 @@ function LogoVariation({
 }) {
   return (
     <div
-      className={`rounded-3xl p-6 border ${
+      className={`rounded-tl-2xl rounded-br-2xl p-6 border ${
         dark
           ? "bg-neutral text-neutral-content border-neutral"
           : "bg-base-200 border-base-content/10"
@@ -491,10 +453,8 @@ function LogoVariation({
           <h3 className="font-bold">{title}</h3>
           <p className="text-sm opacity-60">{description}</p>
         </div>
-
         <ImageIcon size={18} className="opacity-50" />
       </div>
-
       <div className="h-28 flex items-center justify-center">
         <Image
           src={href.replace("/assets/logo/", "/images/logos/")}
@@ -504,7 +464,6 @@ function LogoVariation({
           height={100}
         />
       </div>
-
       <a href={href} download className="btn btn-sm btn-outline w-full">
         <Download size={15} />
         Baixar
@@ -519,7 +478,6 @@ function InfoBox({ label, value }: { label: string; value: string }) {
       <div className="text-xs uppercase tracking-wider text-base-content/40 font-bold">
         {label}
       </div>
-
       <div className="mt-2 font-mono font-bold">{value}</div>
     </div>
   );
@@ -539,7 +497,6 @@ function TypeSample({
       <div className="text-xs uppercase tracking-widest text-base-content/40 font-bold">
         {label}
       </div>
-
       <div className={`mt-5 ${size} ${weight}`}>RoboStage</div>
     </div>
   );
@@ -557,7 +514,7 @@ function AssetCard({
   href: string;
 }) {
   return (
-    <div className="group rounded-3xl border border-base-content/10 bg-base-200 p-6 hover:border-primary/40 transition-colors">
+    <div className="group rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-200 p-6 hover:border-primary/40 transition-colors">
       <div className="flex items-start justify-between gap-5">
         <div className="flex gap-4">
           <div className="h-12 w-12 rounded-xl bg-base-100 border border-base-content/10 flex items-center justify-center">
@@ -567,16 +524,13 @@ function AssetCard({
               <ImageIcon size={20} />
             )}
           </div>
-
           <div>
             <h3 className="font-bold text-lg">{name}</h3>
             <p className="text-sm text-base-content/50 mt-1">{description}</p>
           </div>
         </div>
-
         <span className="badge badge-outline h-full text-center">{format}</span>
       </div>
-
       <div className="flex justify-end mt-6">
         <a href={href} download className="btn btn-sm btn-primary">
           <Download size={16} />
@@ -597,7 +551,7 @@ function RuleCard({
   items: string[];
 }) {
   return (
-    <div className="rounded-3xl border border-base-content/10 bg-base-200 p-8">
+    <div className="rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-200 p-8">
       <div className="flex items-center gap-3">
         <div
           className={`h-10 w-10 rounded-xl flex items-center justify-center ${
@@ -612,7 +566,6 @@ function RuleCard({
             <Maximize2 size={20} className="rotate-45" />
           )}
         </div>
-
         <h3 className="text-xl font-black">{title}</h3>
       </div>
 
@@ -624,7 +577,6 @@ function RuleCard({
                 type === "do" ? "bg-success" : "bg-error"
               }`}
             />
-
             <span>{item}</span>
           </li>
         ))}

@@ -6,7 +6,7 @@ export const HERO_CONFIG = {
     descricao:
       "Planeje missões, analise pontuações e evolua sua estratégiam seja na Challenge, Future Edition ou na Explore.",
     imagem:
-      "/images/fll/FLL_hero.svg",
+      "https://rogeriopina.com/wp-content/uploads/2022/04/design-do-robo-torneio.jpg",
     ctaPrimario: {
       label: "Explorar QuickBrick",
       href: "/fll/quickbrick",
@@ -24,7 +24,7 @@ export const HERO_CONFIG = {
     descricao:
       "Na Olimpiada Brasileira de Robótica, você desenvolve o raciocínio lógico, a criatividade e o trabalho em equipe por meio da construção e programação de robôs.",
     imagem:
-      "https://obr.robocup.org.br/wp-content/uploads/2024/03/Resgate-300x300.png",
+      "https://2.bp.blogspot.com/-RwI2Zj2oTs0/Wz9faHeeOVI/AAAAAAAAJl4/XweL6dFnBbgaeH9wpOuSVzmQ7pGyl1ViwCLcBGAs/s1600/IMG_8560.JPG",
     ctaPrimario: {
       label: "Explorar STAGE.data",
       href: "/obr/stage-data",

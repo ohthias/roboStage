@@ -89,10 +89,9 @@ const modalities = [
 
 export default function OBRHome() {
   return (
-    <main className="min-h-screen overflow-hidden bg-base-200 text-base-content">
+    <main className="min-h-screen overflow-hidden bg-base-200 text-base-content mt-16">
       <Hero />
 
-      {/* Sobre a OBR */}
       <section className="relative mt-8 overflow-hidden bg-neutral py-16 text-neutral-content sm:py-20 lg:py-24">
         <div
           aria-hidden="true"

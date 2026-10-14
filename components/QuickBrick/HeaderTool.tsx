@@ -14,7 +14,6 @@ export default function HeaderTool({
 }: HeaderToolProps) {
   return (
     <div className="flex flex-col items-start justify-start gap-3 px-4 pt-8">
-      <Breadcrumbs start="fll" />
       <div className="flex flex-col items-start justify-start gap-2">
         <div className="flex items-center justify-start gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/10">

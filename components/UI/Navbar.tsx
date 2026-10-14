@@ -180,7 +180,7 @@ export function Navbar() {
                 <span className="megamenu-active" />
 
                 {/* Pontuador */}
-                {nav.scorePath && nav.seasons?.length ? (
+                {nav.scorePath && "seasons" in nav && nav.seasons.length ? (
                   <>
                     <button
                       type="button"
@@ -204,7 +204,7 @@ export function Navbar() {
                           Temporadas
                         </li>
 
-                        {nav?.seasons?.map((season) => {
+                        {nav.seasons.map((season) => {
                           const Icon = season.icon;
                           const href = `/${competition}/${nav.scorePath}/${season.key}`;
                           const active = isActive(href);
@@ -449,7 +449,7 @@ export function Navbar() {
             {showCompetitionNav && nav ? (
               <div className="space-y-5">
                 <div className="mt-2 space-y-3">
-                  {nav.scorePath && nav.seasons?.length ? (
+                  {nav.scorePath && "seasons" in nav && nav.seasons.length ? (
                     <details
                       className="collapse rounded-2xl hover:shadow-[4px_4px_0_theme(colors.primary))] transition hover:bg-base-200/40"
                       open={scoreOpen}

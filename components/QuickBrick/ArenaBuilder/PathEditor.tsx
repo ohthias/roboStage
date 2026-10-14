@@ -42,7 +42,7 @@ interface Props {
   onEditRescue: () => void;
 }
 
-const PAD_TOP = 16;
+const PAD_TOP = 8;
 
 export default function PathEditor(props: Props) {
   const { project, commit, live, checkpoint, selection, setSelection, mode, setMode, brush, setBrush, svgRef, onEditRescue } = props;
@@ -240,15 +240,15 @@ export default function PathEditor(props: Props) {
       {/* ----------------------------- caixa de ferramentas ----------------------------- */}
       <aside className="card card-border bg-base-100 h-fit">
         <div className="card-body gap-3 p-4">
-          <div className="join w-full">
+          <div className="tabs tabs-box w-full bg-base-200 tabs-sm">
             <button
-              className={`btn btn-sm join-item flex-1 ${mode === "select" ? "btn-primary" : ""}`}
+              className={`tab flex-1 ${mode === "select" ? "tab-active" : ""}`}
               onClick={() => setMode("select")}
             >
               Selecionar
             </button>
             <button
-              className={`btn btn-sm join-item flex-1 ${mode === "paint" ? "btn-primary" : ""}`}
+              className={`tab flex-1 ${mode === "paint" ? "tab-active" : ""}`}
               onClick={() => setMode("paint")}
             >
               Pincel
@@ -377,7 +377,7 @@ export default function PathEditor(props: Props) {
       {/* ----------------------------- espaço de trabalho ----------------------------- */}
       <div className="flex min-w-0 flex-col gap-3">
         <div className="card card-border overflow-auto bg-base-100">
-          <div className="p-3">
+          <div className="relative">
             <svg
               ref={svgRef}
               viewBox={`-2 ${-PAD_TOP} ${W + 4} ${H + PAD_TOP + 2}`}
@@ -386,7 +386,7 @@ export default function PathEditor(props: Props) {
               aria-label="Espaço de trabalho com 3 tablados de 3 por 3 ladrilhos e a sala de resgate"
             >
               <SvgDefs />
-              <rect x="-2" y={-PAD_TOP} width={W + 4} height={H + PAD_TOP + 2} fill="#e8edf3" />
+              <rect x="-2" y={-PAD_TOP} width={W + 4} height={H + PAD_TOP + 2} fill="#f3f3f3" />
               {/* grade do chão: 1 ladrilho = 30 cm */}
               <g stroke="#cbd5e1" strokeWidth=".3">
                 {Array.from({ length: COLS + 1 }, (_, i) => (
@@ -396,7 +396,7 @@ export default function PathEditor(props: Props) {
                   <line key={`h${i}`} x1="0" y1={i * CELL} x2={W} y2={i * CELL} />
                 ))}
               </g>
-              <text x={W} y={H + 1.2} textAnchor="end" fontSize="3" fill="#64748b">
+              <text x={W} y={H + 1.2} textAnchor="end" fontSize="3" fill="#64748b" className="pointer-events-none">
                 quadrícula = 30 cm
               </text>
 
@@ -496,7 +496,7 @@ export default function PathEditor(props: Props) {
                 );
               })}
             </svg>
-            <p className="mt-1 text-center text-[11px] opacity-60">
+            <p className="text-center text-[11px] absolute bottom-2 left-0 w-full pointer-events-none z-10 text-slate-500">
               Passe o mouse sobre um tablado ou sobre a sala para ver a legenda e arrastá-lo (encaixa a cada 30 cm).
             </p>
           </div>

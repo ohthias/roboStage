@@ -2,7 +2,7 @@ import { MonitorSmartphone } from "lucide-react";
 import { Footer } from "./UI/Footer";
 import { useRouter } from "next/navigation";
 
-export default function CardMobileNotUse() {
+export default function CardMobileNotUse({ competitionName = " FIRST LEGO League Challenge" }: { competitionName?: string }) {
   const router = useRouter();
   return (
     <div className="flex flex-col min-h-screen ">
@@ -22,7 +22,7 @@ export default function CardMobileNotUse() {
             <p className="text-sm text-base-content/75 leading-relaxed">
               O <strong>QuickBrick Studio</strong> foi projetado para
               planejamento e validação de estratégias avançadas da{" "}
-              <strong>FIRST LEGO League Challenge</strong>.
+              <strong>{competitionName}</strong>.
               <br />
               <br />
               Para preservar precisão visual, leitura de dados e controle das

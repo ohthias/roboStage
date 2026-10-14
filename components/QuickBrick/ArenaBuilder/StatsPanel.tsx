@@ -30,7 +30,7 @@ export default function StatsPanel({ path, rescue }: { path: Analysis; rescue: C
   const errors = [...path.checks, ...rescue].filter((c) => c.level === "error").length;
   return (
     <aside className="flex flex-col gap-4">
-      <div className="card card-border bg-base-100">
+      <div className="card card-border bg-base-100 rounded-none rounded-tl-xl rounded-br-xl">
         <div className="card-body gap-2 p-4">
           <div className="stats w-full shadow-none">
             <div className="stat px-0 py-1">
@@ -60,14 +60,14 @@ export default function StatsPanel({ path, rescue }: { path: Analysis; rescue: C
         </div>
       </div>
 
-      <div className="card card-border bg-base-100">
+      <div className="card card-border bg-base-100 rounded-none rounded-tl-xl rounded-br-xl">
         <div className="card-body gap-2 p-4">
           <h3 className="card-title text-sm">Percurso</h3>
           <CheckList checks={path.checks} />
         </div>
       </div>
 
-      <div className="card card-border bg-base-100">
+      <div className="card card-border bg-base-100 rounded-none rounded-tl-xl rounded-br-xl">
         <div className="card-body gap-2 p-4">
           <h3 className="card-title text-sm">Sala de resgate</h3>
           <CheckList checks={rescue} />

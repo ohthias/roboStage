@@ -1,12 +1,29 @@
 import Header from "@/components/UI/Header";
 import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
+import PontuadorOBR from "@/components/competicoes/OBR/score/Pontuador";
 
-export const metadata = {
-  title: "FLL Score",
-  description:
-    "Pontuador da FIRST LEGO League (FLL) para calcular a pontuação da sua equipe.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ competicao: string }>;
+}) {
+  const { competicao } = await params;
+
+  if (competicao === "obr") {
+    return {
+      title: "Pontuador OBR | RoboStage",
+      description:
+        "Pontuador da Olimpíada Brasileira de Robótica para calcular a pontuação da sua equipe.",
+    };
+  }
+
+  return {
+    title: "FLL Score",
+    description:
+      "Pontuador da FIRST LEGO League (FLL) para calcular a pontuação da sua equipe.",
+  };
+}
 
 const seasons = [
   {
@@ -47,7 +64,17 @@ const seasons = [
   },
 ];
 
-export default function ScorePage() {
+export default async function ScorePage({
+  params,
+}: {
+  params: Promise<{ competicao: string }>;
+}) {
+  const { competicao } = await params;
+
+  if (competicao === "obr") {
+    return <div className="bg-base-200"><PontuadorOBR /></div>;
+  }
+
   return (
     <div className="bg-base-200">
       <main className="mx-auto min-h-screen max-w-6xl px-4 py-12">

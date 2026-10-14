@@ -4,6 +4,10 @@ import { and, eq } from "drizzle-orm";
 import { leagues, userLeagueInterests } from "@/db/schema/leagues";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db/client";
+import { leagueRelationEnum } from "@/db/schema/enums";
+
+const RELATION_TYPES = ["participante", "interessado"] as const;
+type RelationType = (typeof RELATION_TYPES)[number];
 
 /**
  * GET /api/competitions
@@ -23,10 +27,20 @@ export async function GET(request: NextRequest) {
 
   const relationType = request.nextUrl.searchParams.get("relationType");
 
+  if (relationType && !RELATION_TYPES.includes(relationType as RelationType)) {
+    return NextResponse.json(
+      { error: "Tipo de relação inválido." },
+      { status: 400 },
+    );
+  }
+
   const conditions = relationType
     ? and(
         eq(userLeagueInterests.userId, userId),
-        eq(userLeagueInterests.relationType, relationType as any)
+        eq(
+          userLeagueInterests.relationType,
+          relationType as (typeof leagueRelationEnum.enumValues)[number],
+        ),
       )
     : eq(userLeagueInterests.userId, userId);
 

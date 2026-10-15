@@ -83,26 +83,9 @@ export function Navbar({
 }: NavbarProps) {
   return (
     <header className="h-16 px-4 border-b border-base-300 bg-base-100 flex items-center justify-between gap-4 z-30 select-none shadow-xs">
-      {/* Brand Zone */}
-      <div className="flex items-center gap-3 shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-primary text-primary-content flex items-center justify-center font-bold text-lg shadow-sm">
-            <span style={{ fontFamily: 'Patrick Hand, cursive' }}>E~</span>
-          </div>
-          <div>
-            <h1
-              className="text-lg font-bold tracking-tight text-base-content leading-none"
-              style={{ fontFamily: 'Patrick Hand, cursive', fontSize: '1.4rem' }}
-            >
-              ExcaliFlow
-            </h1>
-            <span className="text-[11px] text-base-content/60 font-sans">
-              Diagramas & Fluxogramas
-            </span>
-          </div>
-        </div>
-      </div>
-
+      <button onClick={() => window.history.back()} className="btn btn-sm btn-ghost gap-1.5">
+        Voltar
+      </button>
       {/* Middle Zone: Canvas actions */}
       <div className="flex items-center gap-1 sm:gap-2">
         {/* Undo / Redo */}
@@ -244,45 +227,6 @@ export function Navbar({
         >
           <HelpCircle className="w-4 h-4" />
         </button>
-
-        {/* Theme Dropdown */}
-        <div className="dropdown dropdown-end">
-          <label tabIndex={0} className="btn btn-sm btn-ghost gap-1.5 tooltip tooltip-bottom" data-tip="Tema visual DaisyUI">
-            <Palette className="w-4 h-4" />
-            <span className="capitalize hidden lg:inline text-xs">{currentTheme}</span>
-          </label>
-          <ul
-            tabIndex={0}
-            className="dropdown-content menu p-2 shadow-lg bg-base-200 rounded-box w-44 z-50 text-xs border border-base-300"
-          >
-            <li className="menu-title text-[10px] uppercase font-semibold text-base-content/50">
-              Temas DaisyUI
-            </li>
-            {THEMES.map((t) => (
-              <li key={t.id}>
-                <button
-                  onClick={() => onThemeChange(t.id)}
-                  className={currentTheme === t.id ? 'active font-semibold' : ''}
-                >
-                  {t.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Database JSONB Integration Button */}
-        {onOpenDatabase && (
-          <button
-            onClick={onOpenDatabase}
-            className="btn btn-sm btn-outline btn-neutral gap-1.5 shadow-2xs text-xs tooltip tooltip-bottom"
-            data-tip="Salvar ou Sincronizar em Banco de Dados (JSONB)"
-            aria-label="Banco de Dados JSONB"
-          >
-            <Database className="w-3.5 h-3.5 text-primary" />
-            <span className="hidden sm:inline">JSONB</span>
-          </button>
-        )}
 
         {/* Export Modal Primary Button */}
         <button

@@ -1,6 +1,6 @@
 'use client';
 import { useParams } from 'next/navigation';
-import { getThinkLabById, saveThinkLab } from '../actions';
+import { getThinkLabById, saveThinkLab } from '../../../../dashboard/thinklab/actions';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Navbar } from '@/components/thinklab/Navbar';
@@ -31,7 +31,7 @@ import { Sparkles } from 'lucide-react';
 const STORAGE_KEY = 'excaliflow_saved_diagram_v1';
 const THEME_STORAGE_KEY = 'excaliflow_theme_v1';
 
-export default function Home() {
+export default function ThinkLabCanvas() {
     const { id } = useParams<{ id: string }>();
     const [databaseLoaded, setDatabaseLoaded] = useState(false);
   // Elements state & history with lazy initialization
@@ -794,15 +794,6 @@ export default function Home() {
         onClose={() => setShortcutsOpen(false)}
       />
 
-      {/* DaisyUI Toast Feedback */}
-      {toastMessage && (
-        <div className="toast toast-bottom toast-end z-50 animate-bounce">
-          <div className="alert alert-info shadow-lg text-xs py-2 px-4 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-info-content" />
-            <span>{toastMessage}</span>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

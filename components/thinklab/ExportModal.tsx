@@ -187,20 +187,6 @@ export function ExportModal({
     }
   };
 
-  // Export JSON file
-  const handleExportJson = () => {
-    const dataStr =
-      'data:text/json;charset=utf-8,' +
-      encodeURIComponent(JSON.stringify(elements, null, 2));
-    const a = document.createElement('a');
-    a.href = dataStr;
-    a.download = `diagrama-excaliflow-${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    onNotify('Diagrama exportado como arquivo JSON!');
-  };
-
   return (
     <div className="modal modal-open z-50">
       <div className="modal-box max-w-5xl bg-base-100 border border-base-300 shadow-2xl p-6 rounded-2xl max-h-[92vh] flex flex-col">
@@ -261,15 +247,6 @@ export function ExportModal({
           >
             <FileCode className="w-3.5 h-3.5 text-warning" />
             Vetor SVG
-          </button>
-          <button
-            onClick={() => setExportSection('json')}
-            className={`btn btn-xs rounded-lg text-xs gap-1.5 ${
-              exportSection === 'json' ? 'btn-primary' : 'btn-ghost border border-base-300'
-            }`}
-          >
-            <FileJson className="w-3.5 h-3.5 text-success" />
-            Projeto JSON
           </button>
         </div>
 
@@ -534,53 +511,6 @@ export function ExportModal({
                 </div>
               </div>
             )}
-
-            {/* SECTION: JSON BACKUP */}
-            {(exportSection === 'all' || exportSection === 'json') && (
-              <div className="p-3 bg-base-200/50 rounded-xl border border-success/30 flex items-center justify-between">
-                <div>
-                  <div className="font-semibold text-xs text-success flex items-center gap-1.5">
-                    <FileJson className="w-3.5 h-3.5" />
-                    <span>Backup do Projeto</span>
-                  </div>
-                  <div className="text-[10px] text-base-content/50">
-                    Arquivo JSON com todos os nós e dados
-                  </div>
-                </div>
-                <button
-                  onClick={handleExportJson}
-                  className="btn btn-xs btn-outline btn-success gap-1 text-xs"
-                >
-                  <Download className="w-3 h-3" />
-                  <span>Salvar JSON</span>
-                </button>
-              </div>
-            )}
-
-            {/* SECTION: JSONB DATABASE INTEGRATION */}
-            {onOpenDatabaseJsonb && (
-              <div className="p-3 bg-primary/10 rounded-xl border border-primary/30 flex items-center justify-between">
-                <div>
-                  <div className="font-semibold text-xs text-primary flex items-center gap-1.5">
-                    <Database className="w-3.5 h-3.5" />
-                    <span>Integração Banco de Dados (JSONB)</span>
-                  </div>
-                  <div className="text-[10px] text-base-content/60">
-                    Gere scripts DDL, INSERT e estrutura JSONB
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    onClose();
-                    onOpenDatabaseJsonb();
-                  }}
-                  className="btn btn-xs btn-primary gap-1 text-xs shadow-2xs"
-                >
-                  <Database className="w-3 h-3" />
-                  <span>Abrir JSONB</span>
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Preview & Code Column (7 cols) */}
@@ -646,10 +576,6 @@ export function ExportModal({
 
         {/* Modal actions footer */}
         <div className="modal-action mt-2 pt-2 border-t border-base-200 flex items-center justify-between shrink-0">
-          <div className="text-[11px] text-base-content/60 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span>Exportações processadas 100% no cliente sem envio de dados a servidores externos.</span>
-          </div>
           <button onClick={onClose} className="btn btn-sm btn-ghost">
             Concluir / Fechar
           </button>

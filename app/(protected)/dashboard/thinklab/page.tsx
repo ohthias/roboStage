@@ -1,175 +1,268 @@
-import { createThinkLab, listThinkLabsByUserId } from "./actions";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { ComponentProps } from "react";
+import { ArrowUpRight, Edit, FlaskConical, Plus, Trash } from "lucide-react";
+
+import {
+  createThinkLab,
+  listThinkLabsByUserId,
+  deleteThinkLabAction,
+  updateThinkLabDetails,
+} from "./actions";
 import { ThinkLabThumbnail } from "@/components/thinklab/ThinkLabThumbnail";
-import { CanvasElement } from "@/types/thinklab.types";
 
 export default async function ThinkLabDashboard() {
   const thinkLabs = await listThinkLabsByUserId();
 
   async function create() {
     "use server";
+
     const created = await createThinkLab();
     redirect(`/dashboard/thinklab/${created.id}`);
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-base-100">
-      {/* Background decoration */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/8 via-base-100/50 to-transparent"
-      />
-
-      <div className="relative mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        {/* Header */}
-        <header className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
+    <main className="min-h-full bg-base-100 px-4 py-8 text-base-content sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl space-y-8">
+        <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
             <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
               Think<span className="text-primary">Lab</span>
             </h1>
-
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/65 sm:text-base">
-              Seus diagramas e ideias organizadas em um só lugar. Transforme
-              pensamentos em projetos visuais.
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
+              Organize ideias, conecte conceitos e desenvolva soluções para seus
+              projetos em um espaço visual.
             </p>
           </div>
 
-          <form action={create} className="shrink-0">
+          <form action={create}>
             <button
-              className="group inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl bg-primary px-5 py-3 text-sm font-bold text-primary-content shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100 sm:w-auto"
               type="submit"
+              className="btn btn-primary w-full rounded-tl-xl rounded-br-xl sm:w-auto"
             >
-              <span className="text-lg leading-none">+</span>
+              <Plus size={18} />
               Novo quadro
             </button>
           </form>
         </header>
-
-        {/* Divider */}
         <div className="h-px bg-gradient-to-r from-primary/30 via-base-300 to-transparent" />
-
-        {/* Boards */}
-        {thinkLabs.length > 0 ? (
-          <section
-            aria-label="Seus quadros ThinkLab"
-            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:gap-6"
-          >
-            {thinkLabs.map((thinkLab) => {
-              const config = thinkLab.config as {
-                elements?: CanvasElement[];
-              } | null;
-
-              const elements = Array.isArray(config?.elements)
-                ? config.elements
-                : [];
-
-              return (
-                <Link
-                  key={thinkLab.id}
-                  href={`/dashboard/thinklab/${thinkLab.id}`}
-                  className="group relative flex min-w-0 flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300/80 bg-base-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                >
-                  {/* Thumbnail */}
-                  <div className="relative overflow-hidden border-b border-base-300/70 bg-base-200/50">
-                    <div className="transition-transform duration-500 group-hover:scale-[1.02]">
-                      <ThinkLabThumbnail
-                        elements={elements}
-                        name={thinkLab.name}
-                      />
-                    </div>
-
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-base-100/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                    />
-
-                    <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-base-300/70 bg-base-100/90 px-3 py-1.5 text-xs font-semibold text-base-content/70 shadow-sm backdrop-blur-sm">
-                      <span className="size-1.5 rounded-full bg-primary" />
-                      {elements.length}{" "}
-                      {elements.length === 1 ? "item" : "itens"}
-                    </span>
-                  </div>
-
-                  {/* Card content */}
-                  <div className="flex flex-1 flex-col p-5 sm:p-6">
-                    <h2 className="line-clamp-2 text-lg font-bold leading-snug tracking-tight text-base-content transition-colors group-hover:text-primary">
-                      {thinkLab.name}
-                    </h2>
-
-                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-base-content/60">
-                      {thinkLab.description || "Sem descrição"}
-                    </p>
-
-                    <div className="mt-5 flex items-center justify-between border-t border-base-300/70 pt-4">
-                      <span className="text-xs font-semibold text-base-content/45">
-                        Quadro ThinkLab
-                      </span>
-
-                      <span className="flex size-8 items-center justify-center rounded-tl-lg rounded-br-lg bg-base-200 text-base-content/60 transition-all duration-300 group-hover:bg-primary group-hover:text-primary-content">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          className="size-4"
-                          aria-hidden="true"
-                        >
-                          <path d="M5 12h14" />
-                          <path d="m12 5 7 7-7 7" />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+        {thinkLabs.length === 0 ? (
+          <section className="flex min-h-72 flex-col items-center justify-center rounded-tl-3xl rounded-br-3xl border border-dashed border-base-300 bg-base-200/30 px-6 py-12 text-center">
+            <div className="mb-5 grid size-16 place-items-center rounded-tl-2xl rounded-br-2xl bg-primary/10 text-primary">
+              <FlaskConical size={28} />
+            </div>
+            <h2 className="text-xl font-bold">Nenhum quadro criado</h2>
+            <p className="mt-2 max-w-md text-sm leading-relaxed text-base-content/60">
+              Crie seu primeiro quadro para organizar ideias, diagramas e
+              evidências do seu projeto.
+            </p>
+            <form action={create} className="mt-6">
+              <button
+                type="submit"
+                className="btn btn-primary rounded-tl-xl rounded-br-xl"
+              >
+                <Plus size={18} />
+                Criar primeiro quadro
+              </button>
+            </form>
           </section>
         ) : (
-          <section className="relative overflow-hidden rounded-tl-3xl rounded-br-3xl border border-dashed border-base-300 bg-base-200/20 px-5 py-12 sm:px-10 sm:py-16">
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-12 -top-12 size-48 rounded-full border-[28px] border-primary/5"
-            />
+          <>
+            <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {thinkLabs.map((thinkLab) => {
+                const deleteAction = deleteThinkLabAction.bind(
+                  null,
+                  thinkLab.id,
+                );
 
-            <div className="relative mx-auto flex max-w-md flex-col items-center text-center">
-              <div className="mb-5 grid size-16 place-items-center rounded-tl-2xl rounded-br-2xl border border-primary/15 bg-primary/10 text-primary">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  className="size-8"
-                  aria-hidden="true"
-                >
-                  <rect x="3" y="4" width="18" height="16" rx="2" />
-                  <path d="M8 9h8M8 13h5" />
-                  <path d="M16 17h3" />
-                </svg>
-              </div>
+                const config = thinkLab.config as
+                  | {
+                      elements?: ComponentProps<
+                        typeof ThinkLabThumbnail
+                      >["elements"];
+                    }
+                  | null
+                  | undefined;
+                const elements = config?.elements ?? [];
 
-              <h2 className="text-xl font-black tracking-tight text-base-content sm:text-2xl">
-                Seu espaço começa aqui
-              </h2>
+                const modalId = `edit-thinklab-${thinkLab.id}`;
 
-              <p className="mt-3 text-sm leading-relaxed text-base-content/60 sm:text-base">
-                Você ainda não criou nenhum quadro. Comece a organizar suas
-                ideias, diagramas e evidências em seu primeiro ThinkLab.
-              </p>
+                return (
+                  <article
+                    key={thinkLab.id}
+                    className="group flex min-w-0 flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
+                  >
+                    <Link
+                      href={`/dashboard/thinklab/${thinkLab.id}`}
+                      className="block overflow-hidden border-b border-base-300 bg-base-200/40"
+                      aria-label={`Abrir ${thinkLab.name}`}
+                    >
+                      <div className="aspect-video overflow-hidden">
+                        <ThinkLabThumbnail
+                          elements={elements}
+                          name={thinkLab.name}
+                        />
+                      </div>
+                    </Link>
 
-              <form action={create} className="mt-6">
-                <button
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-tl-xl rounded-br-xl bg-primary px-5 py-3 text-sm font-bold text-primary-content transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                  type="submit"
-                >
-                  <span className="text-lg leading-none">+</span>
-                  Criar primeiro quadro
-                </button>
-              </form>
+                    <div className="flex flex-1 flex-col p-5 sm:p-6">
+                      <div className="mb-4 flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <h2 className="break-words text-lg font-bold leading-snug">
+                            {thinkLab.name}
+                          </h2>
+
+                          <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-base-content/60">
+                            {thinkLab.description?.trim() ||
+                              "Nenhuma descrição adicionada."}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-auto flex items-center justify-between border-t border-base-300/70 pt-4">
+                        <div className="flex items-center gap-1">
+                          <form action={deleteAction}>
+                            <button
+                              type="submit"
+                              className="btn btn-square btn-sm btn-ghost text-error hover:bg-error/10"
+                              aria-label={`Excluir ${thinkLab.name}`}
+                              title="Excluir quadro"
+                            >
+                              <Trash size={16} />
+                            </button>
+                          </form>
+
+                          <label
+                            htmlFor={modalId}
+                            className="btn btn-square btn-sm btn-ghost"
+                            aria-label={`Editar ${thinkLab.name}`}
+                            title="Editar quadro"
+                          >
+                            <Edit size={16} />
+                          </label>
+                        </div>
+
+                        <Link
+                          href={`/dashboard/thinklab/${thinkLab.id}`}
+                          className="grid size-9 place-items-center rounded-tl-lg rounded-br-lg text-base-content/50 transition-colors hover:bg-primary/10 hover:text-primary"
+                          aria-label={`Abrir ${thinkLab.name}`}
+                          title="Abrir quadro"
+                        >
+                          <ArrowUpRight size={18} />
+                        </Link>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </section>
+
+            <div>
+              {thinkLabs.map((thinkLab) => {
+                const modalId = `edit-thinklab-${thinkLab.id}`;
+
+                const updateAction = updateThinkLabDetails.bind(
+                  null,
+                  thinkLab.id,
+                );
+
+                return (
+                  <div key={thinkLab.id}>
+                    <input
+                      type="checkbox"
+                      id={modalId}
+                      className="modal-toggle"
+                    />
+
+                    <div
+                      className="modal"
+                      role="dialog"
+                      aria-modal="true"
+                      aria-labelledby={`${modalId}-title`}
+                    >
+                      <div className="modal-box w-11/12 max-w-lg rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 p-6 shadow-2xl sm:p-8">
+                        <div className="mb-6">
+                          <h3
+                            id={`${modalId}-title`}
+                            className="mt-2 text-2xl font-black tracking-tight"
+                          >
+                            Editar quadro
+                          </h3>
+                          <p className="mt-2 text-sm leading-relaxed text-base-content/60">
+                            Altere os dados do quadro. Seus diagramas e
+                            elementos serão preservados.
+                          </p>
+                        </div>
+
+                        <form action={updateAction}>
+                          <div className="space-y-5">
+                            <label className="form-control w-full">
+                              <span className="label pb-2">
+                                <span className="label-text font-semibold">
+                                  Nome do quadro
+                                </span>
+                              </span>
+                              <input
+                                type="text"
+                                name="name"
+                                defaultValue={thinkLab.name}
+                                maxLength={100}
+                                required
+                                autoComplete="off"
+                                placeholder="Nome do quadro"
+                                className="input input-bordered w-full focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+                              />
+                            </label>
+                            <label className="form-control w-full">
+                              <span className="label pb-2">
+                                <span className="label-text font-semibold">
+                                  Descrição
+                                </span>
+                                <span className="label-text-alt text-base-content/45">
+                                  Opcional
+                                </span>
+                              </span>
+                              <textarea
+                                name="description"
+                                defaultValue={thinkLab.description ?? ""}
+                                maxLength={1000}
+                                rows={4}
+                                placeholder="Descreva o objetivo deste quadro..."
+                                className="textarea textarea-bordered min-h-28 w-full resize-y leading-relaxed focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+                              />
+                            </label>
+                          </div>
+
+                          <div className="modal-action mt-8 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                            <label
+                              htmlFor={modalId}
+                              className="btn btn-ghost w-full sm:w-auto"
+                            >
+                              Cancelar
+                            </label>
+                            <button
+                              type="submit"
+                              className="btn btn-primary w-full sm:w-auto"
+                            >
+                              Salvar alterações
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+
+                      <label
+                        htmlFor={modalId}
+                        className="modal-backdrop"
+                        aria-label="Fechar modal"
+                      >
+                        Fechar
+                      </label>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </section>
+          </>
         )}
       </div>
     </main>

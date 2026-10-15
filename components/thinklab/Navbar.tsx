@@ -82,14 +82,14 @@ export function Navbar({
   onOpenDatabase,
 }: NavbarProps) {
   return (
-    <header className="h-16 px-4 border-b border-base-300 bg-base-100 flex items-center justify-between gap-4 z-30 select-none shadow-xs">
-      <button onClick={() => window.history.back()} className="btn btn-sm btn-ghost gap-1.5">
+    <header className="min-h-16 h-auto px-2 sm:px-4 py-2 border-b border-base-300 bg-base-100 flex flex-wrap items-center justify-between gap-2 sm:gap-4 z-30 select-none shadow-xs">
+      <button onClick={() => window.history.back()} className="btn btn-sm btn-ghost gap-1.5 shrink-0">
         Voltar
       </button>
       {/* Middle Zone: Canvas actions */}
-      <div className="flex items-center gap-1 sm:gap-2">
+      <div className="order-3 sm:order-none basis-full sm:basis-auto flex-1 min-w-0 flex items-center justify-start gap-1 sm:gap-2 overflow-x-auto whitespace-nowrap pb-0.5">
         {/* Undo / Redo */}
-        <div className="join">
+        <div className="join shrink-0">
           <button
             onClick={onUndo}
             disabled={!canUndo}
@@ -110,10 +110,10 @@ export function Navbar({
           </button>
         </div>
 
-        <div className="divider divider-horizontal mx-0 my-2" />
+        <div className="divider divider-horizontal mx-0 my-2 shrink-0" />
 
         {/* Zoom Controls */}
-        <div className="join items-center">
+        <div className="join items-center shrink-0">
           <button
             onClick={onZoomOut}
             className="btn btn-sm btn-ghost join-item tooltip tooltip-bottom"
@@ -139,12 +139,12 @@ export function Navbar({
           </button>
         </div>
 
-        <div className="divider divider-horizontal mx-0 my-2" />
+        <div className="divider divider-horizontal mx-0 my-2 shrink-0" />
 
         {/* Grid Style Toggle */}
         <button
           onClick={onToggleGrid}
-          className={`btn btn-sm ${gridType !== 'none' ? 'btn-neutral' : 'btn-ghost'} tooltip tooltip-bottom`}
+          className={`btn btn-sm shrink-0 ${gridType !== 'none' ? 'btn-neutral' : 'btn-ghost'} tooltip tooltip-bottom`}
           data-tip={`Grade: ${gridType === 'dots' ? 'Pontos' : gridType === 'lines' ? 'Linhas' : 'Sem Grade'}`}
           aria-label="Alternar grade do canvas"
         >
@@ -158,7 +158,7 @@ export function Navbar({
         {onToggleSmartSnapping && (
           <button
             onClick={onToggleSmartSnapping}
-            className={`btn btn-sm ${smartSnapping ? 'btn-neutral text-primary' : 'btn-ghost'} tooltip tooltip-bottom`}
+            className={`btn btn-sm shrink-0 ${smartSnapping ? 'btn-neutral text-primary' : 'btn-ghost'} tooltip tooltip-bottom`}
             data-tip={`Guias Inteligentes (Snap): ${smartSnapping ? 'Ativado (Alinhamento Automático)' : 'Desativado (Segure Alt)'}`}
             aria-label="Alternar guias inteligentes de alinhamento"
           >
@@ -170,7 +170,7 @@ export function Navbar({
         {/* Templates Picker */}
         <button
           onClick={onOpenTemplates}
-          className="btn btn-sm btn-ghost tooltip tooltip-bottom"
+          className="btn btn-sm btn-ghost shrink-0 tooltip tooltip-bottom"
           data-tip="Modelos Prontos de Fluxogramas"
           aria-label="Modelos prontos"
         >
@@ -182,7 +182,7 @@ export function Navbar({
         {onToggleLibrary && (
           <button
             onClick={onToggleLibrary}
-            className={`btn btn-sm ${isLibraryOpen ? 'btn-primary' : 'btn-ghost'} tooltip tooltip-bottom`}
+            className={`btn btn-sm shrink-0 ${isLibraryOpen ? 'btn-primary' : 'btn-ghost'} tooltip tooltip-bottom`}
             data-tip="Biblioteca de Formas & Componentes"
             aria-label="Biblioteca de componentes"
           >
@@ -195,7 +195,7 @@ export function Navbar({
         {onOpenGraphicAssets && (
           <button
             onClick={onOpenGraphicAssets}
-            className="btn btn-sm btn-ghost tooltip tooltip-bottom"
+            className="btn btn-sm btn-ghost shrink-0 tooltip tooltip-bottom"
             data-tip="Biblioteca de Elementos Gráficos Prontos (Uso Livre)"
             aria-label="Elementos Gráficos Prontos"
           >
@@ -208,7 +208,7 @@ export function Navbar({
         <button
           onClick={onClearCanvas}
           disabled={elementCount === 0}
-          className="btn btn-sm btn-ghost text-error/80 hover:text-error tooltip tooltip-bottom"
+          className="btn btn-sm btn-ghost shrink-0 text-error/80 hover:text-error tooltip tooltip-bottom"
           data-tip="Limpar Todo o Canvas"
           aria-label="Limpar Canvas"
         >
@@ -217,7 +217,7 @@ export function Navbar({
       </div>
 
       {/* Right Zone: Theme + Shortcuts + Export primary action */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-auto">
         {/* Shortcuts Guide */}
         <button
           onClick={onOpenShortcuts}

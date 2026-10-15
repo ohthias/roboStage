@@ -6,7 +6,7 @@ export const HERO_CONFIG = {
     descricao:
       "Planeje missões, analise pontuações e evolua sua estratégiam seja na Challenge, Future Edition ou na Explore.",
     imagem:
-      "https://rogeriopina.com/wp-content/uploads/2022/04/design-do-robo-torneio.jpg",
+      "/images/fll/FLL_hero.svg",
     ctaPrimario: {
       label: "Explorar QuickBrick",
       href: "/fll/quickbrick",

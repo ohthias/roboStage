@@ -15,10 +15,23 @@ export const PersonaModal: React.FC<PersonaModalProps> = ({
   persona,
   onSave,
 }) => {
+  const sanitizeAvatarUrl = (value: string): string => {
+    const trimmed = value.trim();
+    if (!trimmed) return '';
+
+    try {
+      const parsed = new URL(trimmed, window.location.origin);
+      const isHttp = parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      return isHttp ? parsed.toString() : '';
+    } catch {
+      return '';
+    }
+  };
+
   const [name, setName] = useState(persona.name);
   const [role, setRole] = useState(persona.role);
   const [quote, setQuote] = useState(persona.quote || '');
-  const [avatarUrl, setAvatarUrl] = useState(persona.avatarUrl);
+  const [avatarUrl, setAvatarUrl] = useState(sanitizeAvatarUrl(persona.avatarUrl || ''));
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -26,7 +39,7 @@ export const PersonaModal: React.FC<PersonaModalProps> = ({
       setName(persona.name);
       setRole(persona.role);
       setQuote(persona.quote || '');
-      setAvatarUrl(persona.avatarUrl);
+      setAvatarUrl(sanitizeAvatarUrl(persona.avatarUrl || ''));
     }
   }, [isOpen, persona]);
 
@@ -127,7 +140,7 @@ export const PersonaModal: React.FC<PersonaModalProps> = ({
             >
               {avatarUrl ? (
                 <img
-                  src={avatarUrl}
+                  src={sanitizeAvatarUrl(avatarUrl)}
                   alt={name}
                   className="w-full h-full object-cover"
                 />
@@ -230,7 +243,7 @@ export const PersonaModal: React.FC<PersonaModalProps> = ({
             <input
               type="text"
               value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
+              onChange={(e) => setAvatarUrl(sanitizeAvatarUrl(e.target.value))}
               placeholder="https://exemplo.com/foto.jpg"
               className="input input-bordered input-sm w-full text-xs"
             />

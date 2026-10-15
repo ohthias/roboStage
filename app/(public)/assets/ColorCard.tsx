@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@/app/context/ToastContext";
 import { Copy } from "lucide-react";
 
 export default function ColorCard({
@@ -15,6 +16,7 @@ export default function ColorCard({
   className: string;
   textClass: string;
 }) {
+  const { addToast } = useToast();
   return (
     <div className="rounded-3xl overflow-hidden border border-base-content/10 bg-base-200">
       <div className={`h-40 ${className} ${textClass} p-6 flex items-end`}>
@@ -36,7 +38,10 @@ export default function ColorCard({
           <button
             className="btn btn-ghost btn-xs"
             title={`Copiar ${value}`}
-            onClick={() => navigator.clipboard?.writeText(value)}
+            onClick={() => {
+              navigator.clipboard?.writeText(value);
+              addToast(`Cor ${name} copiada!`, "success");
+            }}
           >
             <Copy size={14} />
           </button>

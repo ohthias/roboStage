@@ -1,6 +1,8 @@
 [
   {
     "name": "QuickBrick Studio",
+    "competitions": ["fll"],
+    "category": "planning",
     "description": "Conjunto de ferramentas para criar, simular e documentar as estratégias do robô ao longo da temporada da FLL. Reúne editores visuais, matrizes de análise e simuladores de trajetória em um único ambiente, ajudando a equipe a planejar, testar e registrar decisões técnicas.",
     "details": [
       {
@@ -19,6 +21,8 @@
   },
   {
     "name": "Recall",
+    "competitions": ["fll"],
+    "category": "training",
     "description": "Plataforma de perguntas e respostas para simular a sala de avaliação da FLL. Permite treinar a equipe com perguntas de Core Values, Projeto de Inovação e Design do Robô, com tempo cronometrado por pergunta, tornando o treino mais rápido, dinâmico e realista.",
     "details": [
       {
@@ -37,6 +41,8 @@
   },
   {
     "name": "FLL Score/Pontuador",
+    "competitions": ["fll"],
+    "category": "competition",
     "description": "Ferramenta para registrar e acompanhar a pontuação da temporada da FLLC. Permite simulações rápidas de missões ou o acompanhamento completo de rounds com cronômetro integrado, auxiliando tanto em treinos quanto em competições oficiais de forma prática e confiável.",
     "details": [
       {
@@ -54,7 +60,25 @@
     ]
   },
   {
+    "name": "Pontuador",
+    "competitions": ["obr"],
+    "category": "competition",
+    "description": "Ferramenta para acompanhar a pontuação da arena. Permitindo o acompanhamento completo de rounds com multiplicadores de pontos e os desafios superados pelo robô, auxiliando tanto em treinos quanto em competições oficiais de forma prática e confiável.",
+    "details": [
+      {
+        "title": "Quais modos existem?",
+        "content": "Modo simples: registre apenas a pontuação das missões, ideal para treinos rápidos ou revisões pontuais."
+      },
+      {
+        "title": "Para que serve?",
+        "content": "O Pontuador ajuda equipes a testar estratégias de mesa, avaliar desempenhos em treinos e cronometrar rounds completos, garantindo maior realismo nas simulações."
+      }
+    ]
+  },
+  {
     "name": "Timers",
+    "competitions": ["fll"],
+    "category": "training",
     "description": "Conjunto de temporizadores pensados para a realidade das equipes de FLL, do treino à competição. Ajuda a controlar com precisão o tempo do Robot Game, das etapas da sala de avaliação e de qualquer outra atividade cronometrada.",
     "details": [
       {
@@ -69,6 +93,8 @@
   },
   {
     "name": "Timer: Round do Robô",
+    "competitions": ["fll"],
+    "category": "competition",
     "description": "Temporizador oficial para a fase de Robot Game da FLL, com contagem regressiva de 2:30 (tempo padrão de uma rodada), alertas sonoros e visuais para manter a equipe atenta ao tempo restante durante treinos e competições.",
     "details": [
       {
@@ -83,6 +109,8 @@
   },
   {
     "name": "Timer: Sala de Avaliação",
+    "competitions": ["fll"],
+    "category": "competition",
     "description": "Temporizador dividido em etapas para simular a dinâmica completa da sala de avaliação (judging) da FLL, controlando o tempo de Entrada, Apresentação, Perguntas e Feedback.",
     "details": [
       {
@@ -97,6 +125,8 @@
   },
   {
     "name": "Timer Ajustável",
+    "competitions": ["fll"],
+    "category": "training",
     "description": "Cronômetro totalmente personalizável, sem tempos fixos, para ser usado em treinos, apresentações ou qualquer outra atividade da equipe que precise de controle de tempo.",
     "details": [
       {
@@ -111,7 +141,9 @@
   },
   {
     "name": "Rúbrica de Avaliação",
-    "description": "Ferramenta interativa que reproduz a rubrica oficial de avaliação da FLL, permitindo que juízes ou a própria equipe registrem identificação, feedback da sessão e o nível (1 a 4) de cada indicador do Projeto de Inovação e do Design do Robô, com pontuação calculada automaticamente.",
+    "competitions": ["fll"],
+    "category": "competition",
+    "description": "Ferramenta interativa que reproduz a rubrica oficial de avaliação da FIRST LEGO League Founders Edition e Future Edition, permitindo que juízes ou a própria equipe registrem identificação, feedback da sessão e o nível (1 a 4) de cada indicador do Projeto de Inovação e do Design do Robô, com pontuação calculada automaticamente.",
     "details": [
       {
         "title": "Como funciona?",
@@ -137,6 +169,8 @@
   },
   {
     "name": "Future Edition",
+    "competitions": ["fll"],
+    "category": "documentation",
     "description": "Seção dedicada à FIRST LEGO League Future Edition (BIOGLOW), uma experiência baseada em biodiversidade que utiliza os kits LEGO® Education Computer Science & AI, com hardware sem fio e um formato de jogo cooperativo baseado em alianças.",
     "details": [
       {
@@ -155,6 +189,8 @@
   },
   {
     "name": "Pontuador Future Edition (BIOGLOW)",
+    "competitions": ["fll"],
+    "category": "competition",
     "description": "Pontuador dedicado à temporada BIOGLOW da FIRST LEGO League Future Edition, com cronômetro de 2:30 e cálculo automático da pontuação das missões baseadas nos kits LEGO® Education Computer Science & AI.",
     "details": [
       {
@@ -173,6 +209,8 @@
   },
   {
     "name": "Partiu Mesa!",
+    "competitions": ["fll"],
+    "category": "training",
     "description": "Simulador de saídas (runs) para teste de mesa, permitindo à equipe registrar e analisar o desempenho do robô a cada tentativa realizada durante os treinos.",
     "details": [
       {
@@ -191,6 +229,8 @@
   },
   {
     "name": "Confia, mas confira! (Checklist)",
+    "competitions": ["fll"],
+    "category": "planning",
     "description": "Checklist digital para verificação de itens antes e depois das competições de FLL, útil tanto na preparação da equipe para o evento quanto na avaliação pós-torneio.",
     "details": [
       {
@@ -209,6 +249,8 @@
   },
   {
     "name": "Guia de Missões",
+    "competitions": ["fll"],
+    "category": "documentation",
     "description": "Guia interativo com as missões da temporada da FLL Challenge (atualmente BIOGLOW™ Founders Edition), trazendo dicas, estratégias e mecanismos de cada missão para apoiar o planejamento da equipe.",
     "details": [
       {
@@ -226,7 +268,65 @@
     ]
   },
   {
+    "name": "QuickBrick Studio - Criador de Arenas",
+    "competitions": ["obr"],
+    "category": "planning",
+    "description": "Ferramenta visual da OBR para criar e personalizar arenas de competição, desenhar percursos, posicionar obstáculos e preparar simulações para a modalidade prática de Resgate.",
+    "details": [
+      {
+        "title": "O que posso fazer?",
+        "content": "Crie o percurso da arena usando peças de caminho, configure áreas de resgate e obstáculos e selecione elementos para ajustar o layout da simulação."
+      },
+      {
+        "title": "Para que serve?",
+        "content": "O Criador de Arenas ajuda a equipe a estudar o percurso, planejar a estratégia do robô e testar diferentes configurações antes de levar o robô para a pista."
+      },
+      {
+        "title": "Meu projeto fica salvo?",
+        "content": "O projeto é salvo localmente no navegador enquanto você trabalha. Use a opção de exportação para guardar uma cópia e compartilhar ou consultar a arena depois."
+      }
+    ]
+  },
+  {
+    "name": "Anatix - Em Desenvolvimento",
+    "competitions": ["obr"],
+    "category": "planning",
+    "description": "Ferramenta de apoio à OBR para transformar informações da arena em dados estruturados e facilitar a integração entre o planejamento do percurso e o código do robô.",
+    "details": [
+      {
+        "title": "Como o Anatix ajuda a equipe?",
+        "content": "Ele organiza as informações do percurso e da arena para que a equipe consiga transformar o planejamento visual em uma estratégia mais clara para programação e testes."
+      },
+      {
+        "title": "Para quem é indicado?",
+        "content": "É indicado para equipes da modalidade prática de Resgate que desejam conectar o planejamento da arena ao desenvolvimento do código do robô."
+      }
+    ]
+  },
+  {
+    "name": "Mapa de Empatia",
+    "competitions": ["fll"],
+    "category": "planning",
+    "description": "Ferramenta colaborativa para organizar percepções sobre uma pessoa ou público, ajudando a equipe a compreender melhor o problema investigado no Projeto de Inovação da FLL.",
+    "details": [
+      {
+        "title": "Como funciona?",
+        "content": "Crie um mapa, registre notas no mural e organize informações sobre o que a pessoa pensa, sente, fala, faz, ouve e observa. Alterne entre o mural e a visão de análise para identificar padrões."
+      },
+      {
+        "title": "Posso criar mais de um mapa?",
+        "content": "Sim. O gerenciador permite alternar entre mapas e personas, mantendo diferentes pesquisas organizadas para a equipe."
+      },
+      {
+        "title": "É possível exportar o resultado?",
+        "content": "Sim. Use a opção de baixar imagem para exportar o mural e registrar o resultado da pesquisa da equipe."
+      }
+    ]
+  },
+  {
     "name": "LabTest",
+    "competitions": ["fll"],
+    "category": "general",
     "description": "O LabTest é uma ferramenta de análise de desempenho por meio de testes, seja em partes do robô ou em cenários das ligas/competições disponíveis. Permite que as equipes identifiquem problemas e otimizem o desempenho antes das competições, comprovando com dados, gráficos e relatórios detalhados.",
     "details": [
       {
@@ -237,6 +337,8 @@
   },
   {
     "name": "StageBook",
+    "competitions": ["fll", "obr"],
+    "category": "general",
     "description": "O StageBook é uma ferramenta que permite às equipes registrarem e organizarem informações sobre suas atividades, estratégias e desempenhos durante a temporada da FLL, facilitando o acompanhamento e a análise de progresso.",
     "details": [
       {
@@ -246,6 +348,22 @@
       {
         "title": "Quando devo usar?",
         "content": "Durante toda a temporada, para registrar informações relevantes sobre as missões, treinos e competições, garantindo que todos os detalhes importantes sejam capturados e possam ser revisados posteriormente."
+      }
+    ]
+  },
+  {
+    "name": "ThinkLab",
+    "competitions": ["fll", "obr"],
+    "category": "general",
+    "description": "O ThinkLab é uma ferramenta de brainstorming e organização de ideias, permitindo que as equipes capturem, organizem e priorizem suas ideias de forma colaborativa, facilitando o desenvolvimento de soluções criativas para os desafios da temporada.",
+    "details": [
+      {
+        "title": "Como funciona?",
+        "content": "As equipes podem criar quadros de ideias, adicionar notas, organizar por categorias e priorizar as ideias mais relevantes, promovendo um ambiente colaborativo para o desenvolvimento de soluções criativas."
+      },
+      {
+        "title": "Para que serve?",
+        "content": "O ThinkLab ajuda as equipes a capturar e organizar suas ideias de forma eficiente, promovendo a criatividade e facilitando o desenvolvimento de soluções inovadoras para os desafios da temporada."
       }
     ]
   }

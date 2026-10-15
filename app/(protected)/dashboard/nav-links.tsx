@@ -58,11 +58,6 @@ const MAIN_LINKS: NavItem[] = [
     label: "Kanban",
     Icon: KanbanSquare,
   },
-  /*{
-    href: "/dashboard/projects",
-    label: "Projetos",
-    Icon: Boxes,
-  },*/
 ];
 
 const SYSTEM_LINKS: NavItem[] = [

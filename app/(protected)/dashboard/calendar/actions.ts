@@ -1,23 +1,37 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq, gte, isNull, lte, or } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, lte, or } from "drizzle-orm";
 import { db } from "@/db/client";
-import { calendarEvents, calendarEventDocuments, documents } from "@/db/schema";
+import { calendarEvents, calendarEventDocuments, documents, teamMembers } from "@/db/schema";
 import { resolveStagebookScope, scopeOwnership } from "@/utils/stagebook/scope";
 import { scopeWhere, assertSameScope } from "@/utils/stagebook/permissions";
 import { cleanText, optionalText, requireDate, optionalDate, requireUuid } from "@/utils/stagebook/validation";
 
 const PATH = "/dashboard/calendar";
 
-export async function listEventsInRange(rangeStart: Date, rangeEnd: Date) {
+export async function listEventsInRange(rangeStart: Date, rangeEnd: Date, additionalTeamIds: string[] = []) {
   const scope = await resolveStagebookScope();
+  const validAdditionalTeamIds = additionalTeamIds.length
+    ? (
+        await db
+          .select({ teamId: teamMembers.teamId })
+          .from(teamMembers)
+          .where(and(eq(teamMembers.userId, scope.userId), inArray(teamMembers.teamId, additionalTeamIds)))
+      ).map((membership) => membership.teamId)
+    : [];
+  const baseScope = scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId });
+  const teamScope =
+    validAdditionalTeamIds.length > 0
+      ? and(isNull(calendarEvents.userId), inArray(calendarEvents.teamId, validAdditionalTeamIds))
+      : null;
+
   return db
     .select()
     .from(calendarEvents)
     .where(
       and(
-        scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId }),
+        teamScope ? or(baseScope, teamScope) : baseScope,
         lte(calendarEvents.startAt, rangeEnd),
         or(isNull(calendarEvents.endAt), gte(calendarEvents.endAt, rangeStart))
       )

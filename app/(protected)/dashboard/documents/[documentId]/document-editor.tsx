@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -8,7 +8,22 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import {
+  DEFAULT_TRANSFORMERS,
+  MarkdownShortcutPlugin,
+} from "@lexical/react/LexicalMarkdownShortcutPlugin";
+import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
+import {
+  HorizontalRuleNode,
+} from "@lexical/react/LexicalHorizontalRuleNode";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { CodeNode } from "@lexical/code";
+import { LinkNode } from "@lexical/link";
+import {
+  TableCellNode,
+  TableNode,
+  TableRowNode,
+} from "@lexical/table";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ListNode, ListItemNode } from "@lexical/list";
 import {
@@ -25,8 +40,9 @@ import {
 } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
 
-import { ToolbarPlugin } from "@/components/editor/plugins/toolbar-plugin";
 import { AutosavePlugin } from "@/components/editor/plugins/auto-save-plugin";
+import { BlockSelectionPlugin } from "@/components/editor/plugins/block-selection-plugin";
+import { ContextualToolsPlugin } from "@/components/editor/plugins/contextual-tools-plugin";
 import {
   deleteDocument,
   duplicateDocument,
@@ -54,12 +70,15 @@ const EMOJI_OPTIONS = [
   "🚀",
 ];
 const COVER_OPTIONS = [
-  { label: "Azul", value: "#2563eb" },
+  { label: "Vermelho", value: "#cf2a2a" },
+  { label: "Azul", value: "#1e459f" },
   { label: "Verde", value: "#16a34a" },
   { label: "Laranja", value: "#ea580c" },
   { label: "Roxo", value: "#7c3aed" },
   { label: "Rosa", value: "#db2777" },
-  { label: "Cinza", value: "#475569" },
+  { label: "Cinza", value: "#64748b" },
+  { label: "Amarelo", value: "#d4a017" },
+  { label: "Turquesa", value: "#0d9488" },
 ];
 
 const editorTheme = {
@@ -82,6 +101,10 @@ const editorTheme = {
   },
   paragraph: "my-2 leading-7",
   code: "my-2 rounded-md bg-base-200/50 px-2 py-1 font-mono text-sm text-base-content/80",
+  table: "my-4 w-full border-collapse",
+  tableCell: "border border-base-300 px-3 py-2 align-top",
+  tableCellHeader: "bg-base-200 font-semibold",
+  tableRow: "border-base-300",
 };
 
 export function NotebookEditor({
@@ -140,12 +163,26 @@ export function NotebookEditor({
   );
 
   const [, startTransition] = useTransition();
+  const [editorAnchor, setEditorAnchor] = useState<HTMLDivElement | null>(
+    null,
+  );
 
   const initialConfig = useMemo(
     () => ({
       namespace: `notebook-${documentId}`,
       theme: editorTheme,
-      nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode],
+      nodes: [
+        CodeNode,
+        HeadingNode,
+        HorizontalRuleNode,
+        LinkNode,
+        ListNode,
+        ListItemNode,
+        QuoteNode,
+        TableCellNode,
+        TableNode,
+        TableRowNode,
+      ],
       editorState: initialContent ? JSON.stringify(initialContent) : undefined,
       onError(error: Error) {
         console.error(error);
@@ -645,13 +682,7 @@ export function NotebookEditor({
           )}
 
           {/* Editor */}
-          <div className="relative">
-            <div className="sticky top-20 z-20 mb-4">
-              <div className="w-fit max-w-full rounded-lg border border-base-300/70 bg-base-100/90 shadow-sm backdrop-blur-md w-full">
-                <ToolbarPlugin />
-              </div>
-            </div>
-
+          <div ref={setEditorAnchor} className="relative">
             <div className="relative">
               <RichTextPlugin
                 contentEditable={
@@ -684,6 +715,10 @@ export function NotebookEditor({
 
         <HistoryPlugin />
         <ListPlugin />
+        <MarkdownShortcutPlugin transformers={DEFAULT_TRANSFORMERS} />
+        <TablePlugin hasHorizontalScroll />
+        <BlockSelectionPlugin anchorElem={editorAnchor} />
+        <ContextualToolsPlugin />
 
         <AutosavePlugin documentId={documentId} onStatusChange={setSaveState} />
       </LexicalComposer>

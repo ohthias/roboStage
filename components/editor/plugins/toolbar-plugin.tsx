@@ -7,11 +7,13 @@ import {
   $isRangeSelection,
   $createParagraphNode,
   FORMAT_TEXT_COMMAND,
+  FORMAT_ELEMENT_COMMAND,
   UNDO_COMMAND,
   REDO_COMMAND,
   SELECTION_CHANGE_COMMAND,
   COMMAND_PRIORITY_LOW,
   $isTextNode,
+  $isElementNode,
   type TextNode,
 } from "lexical";
 import { $setBlocksType } from "@lexical/selection";
@@ -45,9 +47,39 @@ import {
   Undo2,
   Redo2,
   Code,
+  Minus,
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
   Palette,
+  Table2,
+  Settings2,
+  Rows3,
+  Columns3,
+  PaintBucket,
+  ArrowDown,
+  ArrowUp,
+  Trash2,
   type LucideIcon,
 } from "lucide-react";
+import { INSERT_HORIZONTAL_RULE_COMMAND } from "@lexical/react/LexicalHorizontalRuleNode";
+import {
+  getSelectedBlockCount,
+  getSelectedTopLevelNodes,
+} from "./block-selection-plugin";
+import {
+  $deleteTableColumnAtSelection,
+  $deleteTableRowAtSelection,
+  $getTableCellNodeFromLexicalNode,
+  $getTableNodeFromLexicalNodeOrThrow,
+  $insertTableColumnAtSelection,
+  $insertTableRowAtSelection,
+  INSERT_TABLE_COMMAND,
+  $isTableSelection,
+  $isTableRowNode,
+  TableCellHeaderStates,
+} from "@lexical/table";
 
 type BlockType =
   | "paragraph"
@@ -114,26 +146,60 @@ export function ToolbarPlugin() {
     useState<BlockType>("paragraph");
 
   const [colorOpen, setColorOpen] = useState(false);
+  const [tableMenuOpen, setTableMenuOpen] = useState(false);
+  const [insertTableMenuOpen, setInsertTableMenuOpen] = useState(false);
+  const [newTableSize, setNewTableSize] = useState({ rows: 3, columns: 3 });
+  const [tableContext, setTableContext] = useState<{
+    columns: number;
+    rows: number;
+    widths: readonly number[] | undefined;
+    heights: readonly (number | undefined)[];
+    isHeader: boolean;
+    backgroundColor: string | null;
+  } | null>(null);
+  const [alignment, setAlignment] = useState<
+    "left" | "center" | "right" | "justify"
+  >("left");
+  const [selectedBlockCount, setSelectedBlockCount] = useState(0);
 
   const updateToolbar = useCallback(() => {
     const selection = $getSelection();
 
-    if (!$isRangeSelection(selection)) return;
-
-    setFormat({
-      bold: selection.hasFormat("bold"),
-      italic: selection.hasFormat("italic"),
-      underline: selection.hasFormat("underline"),
-      strikethrough: selection.hasFormat("strikethrough"),
-      code: selection.hasFormat("code"),
-    });
-
+    if (!$isRangeSelection(selection) && !$isTableSelection(selection)) {
+      setTableContext(null);
+      setTableMenuOpen(false);
+      setSelectedBlockCount(0);
+      return;
+    }
+    setSelectedBlockCount(
+      $isRangeSelection(selection) ? getSelectedBlockCount() : 0,
+    );
+    if ($isRangeSelection(selection)) {
+      setFormat({
+        bold: selection.hasFormat("bold"),
+        italic: selection.hasFormat("italic"),
+        underline: selection.hasFormat("underline"),
+        strikethrough: selection.hasFormat("strikethrough"),
+        code: selection.hasFormat("code"),
+      });
+    }
     const anchorNode = selection.anchor.getNode();
 
     const element =
       anchorNode.getKey() === "root"
         ? anchorNode
         : anchorNode.getTopLevelElementOrThrow();
+    if ($isElementNode(element)) {
+      setAlignment(
+        (element.getFormatType() as
+          | "left"
+          | "center"
+          | "right"
+          | "justify") || "left",
+      );
+    } else {
+      setAlignment("left");
+    }
 
     if ($isListNode(element)) {
       setBlockType(
@@ -152,6 +218,27 @@ export function ToolbarPlugin() {
     } else {
       setBlockType("paragraph");
     }
+
+    const cellNode = $getTableCellNodeFromLexicalNode(
+      selection.anchor.getNode(),
+    );
+    if (!cellNode) {
+      setTableContext(null);
+      setTableMenuOpen(false);
+      return;
+    }
+
+    const tableNode = $getTableNodeFromLexicalNodeOrThrow(cellNode);
+    setTableContext({
+      columns: tableNode.getColumnCount(),
+      rows: tableNode.getChildrenSize(),
+      widths: tableNode.getColWidths(),
+      heights: tableNode
+        .getChildren()
+        .map((row) => ($isTableRowNode(row) ? row.getHeight() : undefined)),
+      isHeader: cellNode.hasHeader(),
+      backgroundColor: cellNode.getBackgroundColor(),
+    });
   }, []);
 
   useEffect(() => {
@@ -241,7 +328,12 @@ export function ToolbarPlugin() {
     editor.update(() => {
       const selection = $getSelection();
 
-      if (!$isRangeSelection(selection)) return;
+      if (
+        !$isRangeSelection(selection) &&
+        !$isTableSelection(selection)
+      ) {
+        return;
+      }
 
       const nodes = selection.getNodes();
 
@@ -259,6 +351,152 @@ export function ToolbarPlugin() {
     });
 
     setColorOpen(false);
+  }
+
+  function insertTable() {
+    editor.dispatchCommand(INSERT_TABLE_COMMAND, {
+      columns: String(newTableSize.columns),
+      rows: String(newTableSize.rows),
+      includeHeaders: true,
+    });
+    setInsertTableMenuOpen(false);
+  }
+
+  function insertDivider() {
+    editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined);
+  }
+
+  function setTextAlignment(
+    value: "left" | "center" | "right" | "justify",
+  ) {
+    setAlignment(value);
+    editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, value);
+  }
+
+  function updateTable(
+    operation:
+      | "add-row"
+      | "remove-row"
+      | "add-column"
+      | "remove-column"
+      | "wider"
+      | "narrower"
+      | "reset-width"
+      | "taller"
+      | "shorter"
+      | "reset-height"
+      | "toggle-header"
+      | "clear-cell-background"
+      | "cell-background",
+    backgroundColor?: string,
+  ) {
+    editor.update(() => {
+      const selection = $getSelection();
+      if (
+        !$isRangeSelection(selection) &&
+        !$isTableSelection(selection)
+      ) {
+        return;
+      }
+
+      const cellNode = $getTableCellNodeFromLexicalNode(
+        selection.anchor.getNode(),
+      );
+      if (!cellNode) return;
+
+      const tableNode = $getTableNodeFromLexicalNodeOrThrow(cellNode);
+      switch (operation) {
+        case "add-row":
+          $insertTableRowAtSelection(true);
+          break;
+        case "remove-row":
+          if (tableNode.getChildrenSize() > 1) {
+            $deleteTableRowAtSelection();
+          }
+          break;
+        case "add-column":
+          $insertTableColumnAtSelection(true);
+          break;
+        case "remove-column":
+          if (tableNode.getColumnCount() > 1) {
+            $deleteTableColumnAtSelection();
+          }
+          break;
+        case "toggle-header":
+          cellNode.toggleHeaderStyle(TableCellHeaderStates.BOTH);
+          break;
+        case "clear-cell-background":
+          cellNode.setBackgroundColor(null);
+          break;
+        case "cell-background":
+          cellNode.setBackgroundColor(backgroundColor ?? null);
+          break;
+        default: {
+          if (operation === "reset-width") {
+            tableNode.setColWidths(undefined);
+            break;
+          }
+
+          if (operation === "reset-height") {
+            tableNode.getChildren().forEach((row) => {
+              if ($isTableRowNode(row)) row.setHeight(undefined);
+            });
+            break;
+          }
+
+          if (operation === "taller" || operation === "shorter") {
+            const delta = operation === "taller" ? 16 : -16;
+            tableNode.getChildren().forEach((row) => {
+              if (!$isTableRowNode(row)) return;
+              row.setHeight(Math.max(32, (row.getHeight() ?? 48) + delta));
+            });
+            break;
+          }
+
+          const columnCount = tableNode.getColumnCount();
+          const currentWidths =
+            tableNode.getColWidths() ??
+            Array.from({ length: columnCount }, () => 160);
+          const delta = operation === "wider" ? 40 : -40;
+          tableNode.setColWidths(
+            currentWidths.map((width) => Math.max(80, width + delta)),
+          );
+          break;
+        }
+      }
+    });
+  }
+
+  function updateSelectedBlocks(operation: "delete" | "up" | "down") {
+    editor.update(() => {
+      const selectedNodes = getSelectedTopLevelNodes();
+      if (selectedNodes.length === 0) return;
+
+      if (operation === "delete") {
+        selectedNodes.forEach((node) => node.remove());
+        return;
+      }
+
+      const firstNode = selectedNodes[0];
+      const lastNode = selectedNodes[selectedNodes.length - 1];
+      if (operation === "up") {
+        const target = firstNode.getPreviousSibling();
+        if (!target) return;
+        selectedNodes
+          .slice()
+          .reverse()
+          .forEach((node) => node.insertBefore(target));
+        return;
+      }
+
+      const target = lastNode.getNextSibling();
+      if (!target) return;
+      let insertionPoint = target;
+      selectedNodes.forEach((node) => {
+        node.insertAfter(insertionPoint);
+        insertionPoint = node;
+      });
+    });
   }
 
   const createFormatButton = (
@@ -279,6 +517,17 @@ export function ToolbarPlugin() {
     createFormatButton(Underline, "Sublinhado", "underline"),
     createFormatButton(Strikethrough, "Tachado", "strikethrough"),
     createFormatButton(Code, "Código inline", "code"),
+  ];
+
+  const alignmentButtons: {
+    icon: LucideIcon;
+    label: string;
+    value: "left" | "center" | "right" | "justify";
+  }[] = [
+    { icon: AlignLeft, label: "Alinhar à esquerda", value: "left" },
+    { icon: AlignCenter, label: "Centralizar", value: "center" },
+    { icon: AlignRight, label: "Alinhar à direita", value: "right" },
+    { icon: AlignJustify, label: "Justificar", value: "justify" },
   ];
 
   const blockButtons: {
@@ -344,6 +593,23 @@ export function ToolbarPlugin() {
           }`}
         >
           <b.icon size={15} />
+        </button>
+      ))}
+
+      <div className="mx-1 h-4 w-px bg-base-300" />
+
+      {alignmentButtons.map((button) => (
+        <button
+          key={button.label}
+          type="button"
+          title={button.label}
+          aria-label={button.label}
+          onClick={() => setTextAlignment(button.value)}
+          className={`btn btn-ghost btn-xs btn-square ${
+            alignment === button.value ? "btn-active text-info" : ""
+          }`}
+        >
+          <button.icon size={15} />
         </button>
       ))}
 
@@ -418,6 +684,253 @@ export function ToolbarPlugin() {
           <b.icon size={15} />
         </button>
       ))}
+
+      <div className="mx-1 h-4 w-px bg-base-300" />
+
+      <div
+        className="relative"
+        onMouseDown={(event) => event.preventDefault()}
+      >
+        <button
+          type="button"
+          title="Inserir tabela"
+          aria-label="Inserir tabela"
+          aria-expanded={insertTableMenuOpen}
+          onClick={() => setInsertTableMenuOpen((open) => !open)}
+          className={`btn btn-ghost btn-xs gap-1 ${
+            insertTableMenuOpen ? "btn-active text-info" : ""
+          }`}
+        >
+          <Table2 size={15} />
+          Tabela
+        </button>
+        {insertTableMenuOpen && (
+          <div className="absolute left-0 top-full z-50 mt-2 w-56 rounded-box border border-base-300 bg-base-100 p-3 shadow-xl">
+            <div className="mb-2 text-xs font-semibold text-base-content/60">
+              Nova tabela
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="text-xs text-base-content/60">
+                Linhas
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={newTableSize.rows}
+                  onChange={(event) =>
+                    setNewTableSize((size) => ({
+                      ...size,
+                      rows: Math.min(20, Math.max(1, Number(event.target.value) || 1)),
+                    }))
+                  }
+                  className="input input-bordered input-xs mt-1 w-full"
+                />
+              </label>
+              <label className="text-xs text-base-content/60">
+                Colunas
+                <input
+                  type="number"
+                  min={1}
+                  max={12}
+                  value={newTableSize.columns}
+                  onChange={(event) =>
+                    setNewTableSize((size) => ({
+                      ...size,
+                      columns: Math.min(12, Math.max(1, Number(event.target.value) || 1)),
+                    }))
+                  }
+                  className="input input-bordered input-xs mt-1 w-full"
+                />
+              </label>
+            </div>
+            <button
+              type="button"
+              onClick={insertTable}
+              className="btn btn-primary btn-xs mt-3 w-full"
+            >
+              Inserir tabela
+            </button>
+          </div>
+        )}
+      </div>
+      <button
+        type="button"
+        title="Divisor"
+        aria-label="Inserir divisor"
+        onClick={insertDivider}
+        className="btn btn-ghost btn-xs btn-square"
+      >
+        <Minus size={15} />
+      </button>
+
+      {tableContext && (
+        <div
+          className="relative"
+          onMouseDown={(event) => event.preventDefault()}
+        >
+          <button
+            type="button"
+            title="Opções da tabela"
+            aria-label="Opções da tabela"
+            aria-expanded={tableMenuOpen}
+            onClick={() => setTableMenuOpen((open) => !open)}
+            className={`btn btn-ghost btn-xs gap-1 ${
+              tableMenuOpen ? "btn-active text-info" : ""
+            }`}
+          >
+            <Settings2 size={15} />
+            Tabela {tableContext.rows}×{tableContext.columns}
+          </button>
+
+          {tableMenuOpen && (
+            <div className="absolute left-0 top-full z-50 mt-2 w-72 rounded-box border border-base-300 bg-base-100 p-3 shadow-xl">
+              <div className="mb-3 text-xs font-semibold text-base-content/60">
+                Editar tabela
+              </div>
+
+              <div className="mb-3 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateTable("add-row")}
+                  className="btn btn-outline btn-xs justify-start gap-2"
+                >
+                  <Rows3 size={14} /> Adicionar linha
+                </button>
+                <button
+                  type="button"
+                  disabled={tableContext.rows <= 1}
+                  onClick={() => updateTable("remove-row")}
+                  className="btn btn-outline btn-xs justify-start gap-2"
+                >
+                  <Rows3 size={14} /> Remover linha
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateTable("add-column")}
+                  className="btn btn-outline btn-xs justify-start gap-2"
+                >
+                  <Columns3 size={14} /> Adicionar coluna
+                </button>
+                <button
+                  type="button"
+                  disabled={tableContext.columns <= 1}
+                  onClick={() => updateTable("remove-column")}
+                  className="btn btn-outline btn-xs justify-start gap-2"
+                >
+                  <Columns3 size={14} /> Remover coluna
+                </button>
+              </div>
+
+              <div className="mb-3 border-t border-base-200 pt-3">
+                <div className="mb-2 text-xs font-medium text-base-content/60">
+                  Tamanho
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={() => updateTable("wider")} className="btn btn-ghost btn-xs">
+                    Colunas mais largas
+                  </button>
+                  <button type="button" onClick={() => updateTable("narrower")} className="btn btn-ghost btn-xs">
+                    Colunas mais estreitas
+                  </button>
+                  <button type="button" onClick={() => updateTable("taller")} className="btn btn-ghost btn-xs">
+                    Linhas mais altas
+                  </button>
+                  <button type="button" onClick={() => updateTable("shorter")} className="btn btn-ghost btn-xs">
+                    Linhas mais baixas
+                  </button>
+                  <button type="button" onClick={() => updateTable("reset-width")} className="btn btn-ghost btn-xs">
+                    Largura automática
+                  </button>
+                  <button type="button" onClick={() => updateTable("reset-height")} className="btn btn-ghost btn-xs">
+                    Altura automática
+                  </button>
+                </div>
+              </div>
+
+              <div className="border-t border-base-200 pt-3">
+                <div className="mb-2 text-xs font-medium text-base-content/60">
+                  Célula atual
+                </div>
+                <button
+                  type="button"
+                  onClick={() => updateTable("toggle-header")}
+                  className={`btn btn-ghost btn-xs mb-2 w-full justify-start ${
+                    tableContext.isHeader ? "btn-active text-info" : ""
+                  }`}
+                >
+                  <Rows3 size={14} />
+                  {tableContext.isHeader
+                    ? "Remover cabeçalho"
+                    : "Usar como cabeçalho"}
+                </button>
+                <div className="flex items-center gap-2">
+                  <PaintBucket size={14} className="text-base-content/50" />
+                  {["#ffffff", "#fef3c7", "#dcfce7", "#dbeafe", "#fce7f3"].map(
+                    (color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        title={`Aplicar cor ${color}`}
+                        aria-label={`Aplicar cor ${color}`}
+                        onClick={() => updateTable("cell-background", color)}
+                        className={`h-6 w-6 rounded border ${
+                          tableContext.backgroundColor === color
+                            ? "border-primary ring-2 ring-primary/30"
+                            : "border-base-300"
+                        }`}
+                        style={{ backgroundColor: color }}
+                      />
+                    ),
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => updateTable("clear-cell-background")}
+                    className="btn btn-ghost btn-xs"
+                  >
+                    Limpar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {selectedBlockCount > 1 && (
+        <>
+          <div className="mx-1 h-4 w-px bg-base-300" />
+          <span className="px-1 text-xs text-base-content/50">
+            {selectedBlockCount} blocos selecionados
+          </span>
+          <button
+            type="button"
+            title="Mover blocos para cima"
+            aria-label="Mover blocos para cima"
+            onClick={() => updateSelectedBlocks("up")}
+            className="btn btn-ghost btn-xs btn-square"
+          >
+            <ArrowUp size={15} />
+          </button>
+          <button
+            type="button"
+            title="Mover blocos para baixo"
+            aria-label="Mover blocos para baixo"
+            onClick={() => updateSelectedBlocks("down")}
+            className="btn btn-ghost btn-xs btn-square"
+          >
+            <ArrowDown size={15} />
+          </button>
+          <button
+            type="button"
+            title="Excluir blocos selecionados"
+            aria-label="Excluir blocos selecionados"
+            onClick={() => updateSelectedBlocks("delete")}
+            className="btn btn-ghost btn-xs btn-square text-error"
+          >
+            <Trash2 size={15} />
+          </button>
+        </>
+      )}
 
       <div className="mx-1 h-4 w-px bg-base-300" />
 

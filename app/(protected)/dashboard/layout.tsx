@@ -2,13 +2,14 @@ import type { ReactNode } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { NavLinks } from "./nav-links";
 import Logo from "@/components/UI/Logo";
-import { Menu, PanelLeft } from "lucide-react";
+import { CalendarDays, FoldersIcon, Menu, PanelLeft } from "lucide-react";
 import { ThemeController } from "@/components/UI/themeController";
 import { ScopeSwitcher } from "@/components/stagebook/scope-switcher";
 import { NotificationsBell } from "@/components/stagebook/notifications-bell";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { listMyTeams, canCurrentUserCreateTeam } from "@/utils/stagebook/actions/teams";
 import { listUnreadNotifications } from "@/utils/stagebook/actions/notifications";
+import Link from "next/link";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const [scope, teams, notifications, canCreateTeam] = await Promise.all([
@@ -42,6 +43,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
           <div className="ml-auto flex items-center gap-2">
             <ScopeSwitcher teams={teams} activeTeamId={activeTeamId} canCreateTeam={canCreateTeam} />
+            <Link href="/dashboard/calendar" className="btn btn-ghost btn-sm btn-square relative" title="Abrir seu calendário">
+              <CalendarDays size={18} />
+            </Link>
+            <Link href="/dashboard/folders" className="btn btn-ghost btn-sm btn-square relative" title="Abrir suas pastas">
+              <FoldersIcon size={18} />
+            </Link>
             <NotificationsBell initialNotifications={notifications} />
             <ThemeController />
             <UserButton />

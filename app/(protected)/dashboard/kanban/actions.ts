@@ -7,9 +7,23 @@ import { boards, boardColumns } from "@/db/schema";
 import { resolveStagebookScope, scopeOwnership } from "@/utils/stagebook/scope";
 import { scopeWhere } from "@/utils/stagebook/permissions";
 import { nextPosition } from "@/utils/stagebook/position";
-import { cleanText } from "@/utils/stagebook/validation";
+import { cleanText, optionalText } from "@/utils/stagebook/validation";
 
 const DEFAULT_COLUMNS = ["A fazer", "Em andamento", "Concluído"];
+const BOARD_ICON_NAMES = [
+  "LayoutDashboard",
+  "ListTodo",
+  "FolderKanban",
+  "Rocket",
+  "Target",
+  "CalendarDays",
+  "Lightbulb",
+  "Briefcase",
+  "GraduationCap",
+  "Users",
+  "Star",
+  "Flag",
+] as const;
 
 export async function listBoards() {
   const scope = await resolveStagebookScope();
@@ -51,12 +65,27 @@ export async function createBoard(name: string) {
   return board;
 }
 
-export async function renameBoard(id: string, name: string) {
+export async function renameBoard(
+  id: string,
+  name: string,
+  description?: string,
+  icon?: string,
+) {
   const scope = await resolveStagebookScope();
   const clean = cleanText(name, { fallback: "Novo board", maxLength: 120 });
+  const cleanIcon = icon && BOARD_ICON_NAMES.includes(icon as (typeof BOARD_ICON_NAMES)[number])
+    ? icon
+    : undefined;
   await db
     .update(boards)
-    .set({ name: clean, updatedAt: new Date() })
+    .set({
+      name: clean,
+      ...(description !== undefined
+        ? { description: optionalText(description, 4000) }
+        : {}),
+      ...(cleanIcon ? { icon: cleanIcon } : {}),
+      updatedAt: new Date(),
+    })
     .where(and(eq(boards.id, id), scopeWhere(scope, { userId: boards.userId, teamId: boards.teamId })));
   revalidatePath("/dashboard/kanban", "layout");
 }

@@ -14,6 +14,7 @@ import { nextPosition } from "@/utils/stagebook/position";
 import { cleanText, optionalText, optionalUuid } from "@/utils/stagebook/validation";
 
 const PATH = "/dashboard/documents";
+const PATHS = [PATH, "/dashboard/folders"];
 
 async function nextFolderPosition(scope: StagebookScope, parentId: string | null) {
   const where = and(
@@ -72,7 +73,7 @@ export async function createFolder(parentId: string | null = null) {
     })
     .returning({ id: folders.id });
 
-  revalidatePath(PATH, "layout");
+  PATHS.forEach((path) => revalidatePath(path, "layout"));
   return created;
 }
 
@@ -85,7 +86,7 @@ export async function renameFolder(id: string, name: string) {
     .where(
       and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
     );
-  revalidatePath(PATH, "layout");
+  PATHS.forEach((path) => revalidatePath(path, "layout"));
 }
 
 export async function deleteFolder(id: string) {
@@ -97,7 +98,7 @@ export async function deleteFolder(id: string) {
     .where(
       and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
     );
-  revalidatePath(PATH, "layout");
+  PATHS.forEach((path) => revalidatePath(path, "layout"));
 }
 
 // ---------------------------------------------------------------------------

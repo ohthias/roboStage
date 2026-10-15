@@ -30,7 +30,7 @@ export async function generateMetadata({
         description: "Gestão completa para equipes FTC.",
       };
 
-    case "OBR":
+    case "obr":
       return {
         title: "Olimpíada Brasileira de Robótica",
         description: "Gestão completa para equipes OBR.",

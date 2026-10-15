@@ -7,6 +7,13 @@ export async function GET(
 ) {
   const { slug } = await params;
 
+  if (!/^[a-z0-9-]+$/i.test(slug)) {
+    return NextResponse.json(
+      { error: "Identificador de documento inválido." },
+      { status: 400 },
+    );
+  }
+
   const doc = await getLegalDocument(slug);
 
   if (!doc) {

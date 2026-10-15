@@ -1,0 +1,22 @@
+{
+  "Nacional 2026" : [
+    {
+      "title": "Livro de Regras",
+      "description": "Contém todas as regras oficiais da temporada, incluindo pontuação e restrições dos robôs.",
+      "url": "https://obr.robocup.org.br/wp-content/uploads/2026/07/OBR2026_REGIONAL_ESTADUAL_MANUAL-DE-REGRAS-E-INSTRUCOES_v1.2.pdf",
+      "category": "geral"
+    },
+    {
+      "title": "Manual de Construção da Arena",
+      "description": "Guia para montar a arena de competição, incluindo dimensões e posicionamento de desafios.",
+      "url": "https://obr.robocup.org.br/wp-content/uploads/2026/03/OBR2026_MP_ManualConstrucaoArena.pptx.pdf",
+      "category": "geral"
+    },
+    {
+      "title": "Site da OBR",
+      "description": "Site oficial da Olimpíada Brasileira de Robótica, com informações sobre inscrições, regulamentos e resultados.",
+      "url": "https://obr.robocup.org.br/",
+      "category": "geral"
+    }
+  ]
+}

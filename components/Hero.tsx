@@ -1,57 +1,116 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import Logo from "./UI/Logo";
-import { HERO_CONFIG } from "@/utils/competitions/hero";
 import Link from "next/link";
+import { ArrowDownRight, ArrowUpRight, MoveUpRight } from "lucide-react";
+import { HERO_CONFIG } from "@/utils/competitions/hero";
 
 type Competicao = keyof typeof HERO_CONFIG;
 
 export default function Hero() {
   const params = useParams();
-  const competicao = (params?.competicao as Competicao) || "fll";
+  const paramCompeticao = params?.competicao as string | undefined;
+
+  const competicao: Competicao =
+    paramCompeticao && paramCompeticao in HERO_CONFIG
+      ? (paramCompeticao as Competicao)
+      : "fll";
 
   const hero = HERO_CONFIG[competicao];
-  const titulo = hero.titulo.split(" ");
-  const ultimaPalavra = titulo.pop();
-  const tituloPrincipal = titulo.join(" ");
+  const palavras = hero.titulo.trim().split(/\s+/);
+  const ultimaPalavra = palavras.pop() ?? "";
+  const tituloPrincipal = palavras.join(" ");
 
   return (
-    <section className="w-full mx-auto px-3 sm:px-4 relative">
+    <section className="relative isolate overflow-hidden px-4 pb-12 pt-8 sm:px-6 sm:pb-16 sm:pt-12 lg:pb-20 lg:pt-16">
       <div
-        className="absolute inset-0 opacity-5"
-        style={{ background: `linear-gradient(to top, transparent, ${hero.accent}, transparent)` }}
-      />
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8 max-w-5xl mx-auto py-6 sm:py-12 md:py-16 z-10 relative">
-        <div className="flex flex-col gap-2 sm:gap-4 max-w-2xl w-full md:w-auto text-center justify-center sm:justify-start sm:text-left itens-center sm:items-start">
-          <div className="badge badge-primary badge-sm badge-outline mx-auto sm:mx-0">{hero.badge}</div>
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight max-w-md mx-auto sm:mx-0">
-            {tituloPrincipal ? `${tituloPrincipal} ` : ""}
-            <span style={{ color: hero.accent }}>{ultimaPalavra}</span>
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full overflow-hidden"
+      >
+        <div
+          className="absolute inset-0 opacity-[0.07]"
+          style={{
+            background: `linear-gradient(180deg, ${hero.accent} 0%, transparent 100%)`,
+          }}
+        />
+
+        <div
+          className="absolute -right-24 top-0 size-72 rounded-full border opacity-40 sm:-right-16 sm:size-96"
+          style={{ borderColor: hero.accent }}
+        />
+
+        <div
+          className="absolute -right-12 top-12 size-48 rounded-full border opacity-30 sm:right-8 sm:top-20 sm:size-64"
+          style={{ borderColor: hero.accent }}
+        />
+
+        <div className="absolute bottom-0 left-0 h-px w-full bg-base-300" />
+      </div>
+
+      <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[1.05fr_0.95fr] md:gap-8 lg:gap-16">
+        <div className="relative z-10 flex w-full flex-col items-center text-center md:items-start md:text-left">
+          <div className="inline-flex items-center gap-2 rounded-full bg-base-100/80 px-3 py-1.5 text-xs font-semibold text-base-content/70">
+            <span
+              className="size-2 rounded-full"
+              style={{ backgroundColor: hero.accent }}
+            />
+            {hero.badge}
+          </div>
+          <h1 className="mt-6 max-w-2xl text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl">
+            {tituloPrincipal && <>{tituloPrincipal} </>}
+            <span
+              className="relative inline-block"
+              style={{ color: hero.accent }}
+            >
+              {ultimaPalavra}
+              <span
+                aria-hidden="true"
+                className="absolute -bottom-1 left-0 h-1 w-1/2 rounded-full opacity-70 sm:-bottom-2 sm:h-1.5"
+                style={{ backgroundColor: hero.accent }}
+              />
+            </span>
           </h1>
-          <p className="text-sm sm:text-lg md:text-xl text-base-content/70">{hero.descricao}</p>
-          
-          <div className="flex flex-row gap-3 sm:gap-4 mt-2 sm:mt-4 max-w-sm w-full mx-auto sm:mx-0 justify-center sm:justify-start">
+
+          <p className="mt-6 max-w-xl text-sm leading-7 text-base-content/65 sm:text-base sm:leading-8 lg:text-lg">
+            {hero.descricao}
+          </p>
+          {/* Ações */}
+          <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row md:max-w-none">
             <Link
               href={hero.ctaPrimario.href}
-              className="btn btn-primary btn-md sm:btn-lg"
+              className="btn btn-primary group min-h-12 rounded-tl-xl rounded-br-xl px-5 shadow-sm"
             >
               {hero.ctaPrimario.label}
             </Link>
+
             <Link
               href={hero.ctaSecundario.href}
-              className="btn btn-outline btn-md sm:btn-lg"
+              className="btn btn-outline min-h-12 rounded-tl-xl rounded-br-xl border-base-300 px-5 transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
             >
               {hero.ctaSecundario.label}
+              <ArrowUpRight size={16} />
             </Link>
           </div>
         </div>
 
-        <div className="relative w-full md:max-w-md mt-6 md:mt-0 flex items-center justify-center">
+        {/* Imagem */}
+        <div className="relative mx-auto w-full max-w-lg md:max-w-none">
+          <div
+            aria-hidden="true"
+            className="absolute -left-3 -top-3 size-16 rounded-tl-xl border-l-2 border-t-2 sm:-left-4 sm:-top-4 sm:size-20"
+            style={{ borderColor: hero.accent }}
+          />
+
+          <div
+            aria-hidden="true"
+            className="absolute -bottom-3 -right-3 size-16 rounded-br-xl border-b-2 border-r-2 sm:-bottom-4 sm:-right-4 sm:size-20"
+            style={{ borderColor: hero.accent }}
+          />
+
           <img
             src={hero.imagem}
             alt={hero.titulo}
-            className="w-full h-auto object-contain max-h-84 sm:max-h-80 hover:scale-105 transition-transform duration-300"
+            className="relative flex min-h-[240px] items-center justify-center overflow-hidden rounded-tl-xl rounded-br-xl sm:min-h-[320px] lg:min-h-[370px] object-contain transition-transform duration-300 hover:scale-105"
           />
         </div>
       </div>

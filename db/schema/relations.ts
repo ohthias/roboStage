@@ -269,3 +269,24 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
     references: [users.id],
   }),
 }));
+
+// ---------------------------------------------------------------------------
+// ThinkLab
+// ---------------------------------------------------------------------------
+
+import { thinklab } from "./thinklab";
+
+export const thinklabRelations = relations(thinklab, ({ one }) => ({
+  user: one(users, {
+    fields: [thinklab.userId],
+    references: [users.id],
+  }),
+  team: one(teams, {
+    fields: [thinklab.teamId],
+    references: [teams.id],
+  }),
+  folder: one(folders, {
+    fields: [thinklab.folderId],
+    references: [folders.id],
+  }),
+}));

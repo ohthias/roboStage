@@ -8,6 +8,7 @@ import {
   FlaskConical,
   Home,
   KanbanSquare,
+  Lightbulb,
   Settings,
   Users,
   type LucideIcon,
@@ -41,6 +42,11 @@ const MAIN_LINKS: NavItem[] = [
     href: "/dashboard/documents",
     label: "StageBook",
     Icon: Book,
+  },
+  {
+    href: "/dashboard/thinklab",
+    label: "ThinkLab",
+    Icon: Lightbulb,
   },
   {
     href: "/dashboard/calendar",

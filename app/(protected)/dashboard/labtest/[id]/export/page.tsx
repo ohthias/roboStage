@@ -17,6 +17,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import "./style.css"
 
 import type { FieldDefinition, TestEntry } from "@/types/labtest.types";
 import { getFieldValue } from "@/types/labtest.types";

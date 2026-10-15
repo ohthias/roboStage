@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import UseCasesSection from "@/components/competicoes/FLL/Components/UseCasesSection";
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
@@ -69,64 +68,127 @@ export default function Page() {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-4 lg:flex-row">
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
                 {/* FLL */}
                 <Link
                   href="/fll"
-                  className="group relative min-h-[190px] flex-1 overflow-hidden rounded-tl-[28px] rounded-br-[28px] bg-primary text-primary-content transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                  className="group relative isolate min-h-[300px] overflow-hidden rounded-tl-[32px] rounded-br-[32px] bg-primary text-primary-content transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 lg:col-span-5"
                 >
                   <img
                     src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2MaJHxvQaDf651mvznuwe3TPQ0RjcFLNHypBRED4X8z9LnoAHlr5ATQU&s=10"
-                    alt="Equipe FLL em competição"
-                    className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                    alt="Equipe FIRST LEGO League em competição"
+                    className="absolute inset-0 -z-20 h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/85 via-45% to-primary/10" />
-                  <div className="relative z-10 flex min-h-[190px] items-center p-5 sm:p-6">
-                    <div className="max-w-xl">
-                      <div className="badge badge-neutral mb-3">
+                  <div className="absolute inset-0 -z-10 bg-gradient-to-t from-primary via-primary/75 to-primary/15 transition-opacity duration-500 group-hover:opacity-95" />
+                  <div className="flex min-h-[300px] flex-col justify-between p-6 sm:p-8">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="badge badge-neutral">
                         Disponível agora
-                      </div>
-                      <h3 className="text-4xl font-black tracking-tight sm:text-5xl">
+                      </span>
+                      <span className="flex size-10 items-center justify-center rounded-full border border-primary-content/30 bg-primary-content/10 transition-all duration-300 group-hover:rotate-[-45deg] group-hover:bg-primary-content group-hover:text-primary">
+                        <ChevronRight size={22} />
+                      </span>
+                    </div>
+                    <div className="max-w-lg transition-transform duration-500 group-hover:translate-x-1">
+                      <h3 className="text-3xl font-black tracking-tight sm:text-4xl xl:text-5xl text-white">
                         FIRST LEGO League
                       </h3>
-
-                      <p className="mt-2 max-w-lg text-sm leading-relaxed opacity-80">
-                        Organize sua documentação, acompanhe testes, estratégias
-                        e gerencie tudo o que sua equipe precisa para competir
-                        na FIRST LEGO League.
+                      <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">
+                        Organize documentos, registre testes e desenvolva
+                        estratégias para levar sua equipe mais longe.
                       </p>
+                      <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-white">
+                        Explorar plataforma
+                        <ChevronRight
+                          size={18}
+                          className="transition-transform duration-300 group-hover:translate-x-2"
+                        />
+                      </span>
                     </div>
-                    <ChevronRight
-                      className="ml-auto hidden shrink-0 pr-2 text-2xl opacity-50 transition-all duration-300 group-hover:translate-x-2 group-hover:opacity-100 sm:block"
-                    />
                   </div>
                 </Link>
 
-                {/* FTC + Mais */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:w-[420px]">
+                {/* OBR */}
+                <Link
+                  href="/obr"
+                  className="group relative isolate min-h-[300px] overflow-hidden rounded-tl-[32px] rounded-br-[32px] bg-secondary text-secondary-content transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-2xl hover:shadow-secondary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-4 lg:col-span-4"
+                >
+                  <img
+                    src="https://imgs.search.brave.com/_03sbcescxM_touUXL3zkaldk6AwnPGzF3OE_PwYyMA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9vYnIu/cm9ib2N1cC5vcmcu/YnIvd3AtY29udGVu/dC91cGxvYWRzLzIw/MjYvMDMvUmVzZ2F0/ZS1PQlItMS0xMDI0/eDY4My5qcGc"
+                    alt="Equipe participando da Olimpíada Brasileira de Robótica"
+                    className="absolute inset-0 -z-20 h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-110"
+                  />
+
+                  <div className="absolute inset-0 -z-10 bg-gradient-to-t from-secondary via-secondary/80 to-secondary/15 transition-opacity duration-500 group-hover:opacity-95" />
+                  <div className="flex min-h-[300px] flex-col justify-between p-6 sm:p-7">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="badge badge-neutral">
+                        Disponível agora
+                      </span>
+                      <span className="flex size-10 items-center justify-center rounded-full border border-secondary-content/30 bg-secondary-content/10 transition-all duration-300 group-hover:rotate-[-45deg] group-hover:bg-secondary-content group-hover:text-secondary">
+                        <ChevronRight size={22} />
+                      </span>
+                    </div>
+                    <div className="transition-transform duration-500 group-hover:translate-x-1 text-white">
+                      <h3 className="text-4xl font-black tracking-tight sm:text-5xl text-white">
+                        OBR
+                      </h3>
+                      <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85">
+                        Crie arenas, pontue partidas e acompanhe o desempenho
+                        das equipes.
+                      </p>
+                      <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-white">
+                        Explorar ferramentas
+                        <ChevronRight
+                          size={18}
+                          className="transition-transform duration-300 group-hover:translate-x-2"
+                        />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+
+                {/* Modalidades futuras */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-1">
                   {/* FTC */}
-                  <div className="rounded-tl-[28px] rounded-br-[28px] border border-base-300 bg-base-200 px-5 py-5 transition-all hover:border-secondary/30 hover:bg-base-200/80">
-                    <div className="badge badge-ghost mb-3">Em breve</div>
+                  <div className="group relative flex min-h-[140px] flex-col justify-between overflow-hidden rounded-tl-[28px] rounded-br-[28px] border border-base-300 bg-base-200 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-secondary/50 hover:bg-base-200 hover:shadow-lg sm:min-h-0 lg:min-h-0">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="badge badge-ghost">Em breve</span>
+                      <span className="text-base-content/30 transition-transform duration-300 group-hover:rotate-12 group-hover:text-secondary">
+                        <ChevronRight size={20} />
+                      </span>
+                    </div>
 
-                    <h3 className="text-4xl font-black text-base-content/50">
-                      FTC
-                    </h3>
-
-                    <p className="mt-2 text-sm leading-relaxed text-base-content/60">
-                      Recursos dedicados para equipes da FIRST Tech Challenge.
-                    </p>
+                    <div>
+                      <h3 className="text-3xl font-black text-base-content/60 transition-colors duration-300 group-hover:text-secondary">
+                        FTC
+                      </h3>
+                      <p className="mt-1 text-sm leading-relaxed text-base-content/60">
+                        Ferramentas para equipes da FIRST Tech Challenge.
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Mais */}
-                  <div className="rounded-tl-[28px] rounded-br-[28px] border border-dashed border-base-300 bg-base-200/50 px-5 py-5 transition-all hover:border-secondary/30">
-                    <h3 className="text-4xl font-black text-base-content/40">
-                      +
-                    </h3>
+                  {/* Novas modalidades */}
+                  <div className="group relative flex min-h-[140px] flex-col justify-between overflow-hidden rounded-tl-[28px] rounded-br-[28px] border border-dashed border-base-300 bg-base-200/40 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:bg-base-200 hover:shadow-lg sm:min-h-0 lg:min-h-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-3xl font-light text-base-content/40 transition-transform duration-300 group-hover:rotate-90 group-hover:text-primary">
+                        +
+                      </span>
+                      <span className="text-xs font-semibold uppercase tracking-wider text-base-content/40">
+                        Em expansão
+                      </span>
+                    </div>
 
-                    <p className="mt-2 text-sm leading-relaxed text-base-content/60">
-                      Novas modalidades e programas serão adicionados
-                      futuramente.
-                    </p>
+                    <div>
+                      <h3 className="text-lg font-bold text-base-content/70">
+                        Mais possibilidades
+                      </h3>
+                      <p className="mt-1 text-sm leading-relaxed text-base-content/60">
+                        Novas modalidades e ferramentas para a comunidade
+                        robótica.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -134,34 +196,6 @@ export default function Page() {
           </RevealOnScroll>
         </section>
 
-        <NoiseImage
-          variant="animated"
-          noiseOpacity={0.3}
-          className="relative overflow-hidden"
-        >
-          <section className="bg-base-300 px-6 py-12 text-accent-content md:px-12 md:py-14">
-            <div className="relative z-10 max-w-3xl">
-              <h3 className="text-2xl font-black tracking-tight md:text-3xl">
-                O RoboStage está em evolução!
-              </h3>
-
-              <p className="mt-3 max-w-2xl text-base leading-relaxed opacity-75 md:text-lg">
-                Estamos construindo novas ferramentas, experiências e recursos
-                para tornar a jornada das equipes de robótica cada vez mais
-                completa.
-              </p>
-
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed opacity-60">
-                Novidades chegam continuamente. Acompanhe a evolução e descubra
-                o que vem pela frente.
-              </p>
-            </div>
-          </section>
-
-          {/* Elementos decorativos */}
-          <div className="pointer-events-none absolute -left-24 -top-24 size-56 rounded-full border border-primary/30" />
-          <div className="pointer-events-none absolute -bottom-24 -right-16 size-40 rounded-full border border-primary/30" />
-        </NoiseImage>
         <UseCasesSection />
 
         <section className="bg-[#091A07] w-full flex flex-col md:flex-row gap-8">

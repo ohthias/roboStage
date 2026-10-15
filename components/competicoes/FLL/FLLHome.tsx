@@ -9,6 +9,12 @@ import {
   File,
   CircleAlertIcon,
   NotepadText,
+  ArrowUpRight,
+  CalendarDays,
+  Users,
+  Clock,
+  ListCheck,
+  MonitorDot,
 } from "lucide-react";
 import Banner from "@/components/Banner";
 import NoiseImage from "@/components/UI/NoiseImage";
@@ -17,20 +23,6 @@ import FLLHighlightSeason from "./Components/FLLHighlightSeason";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
 
 const modules = [
-  {
-    title: "LabTest",
-    description:
-      "Crie testes e runs para registrarem o progresso do desempenho do robô durante a temporada.",
-    color: "bg-warning",
-    icon: <ChartPie size={96} strokeWidth={1.5} />,
-  },
-  {
-    title: "ThinkLab",
-    description:
-      "Estruture projetos de inovação, organize pesquisas, registre evidências, acompanhe o progresso e desenvolva apresentações impactantes.",
-    color: "bg-secondary",
-    icon: <File size={96} strokeWidth={1.5} />,
-  },
   {
     title: "QuickBrick Studio",
     description:
@@ -59,6 +51,35 @@ const modules = [
     color: "bg-emerald-500",
     icon: <NotepadText size={96} strokeWidth={1.5} />,
   },
+  {
+    title: "Mapa de Empatia",
+    description:
+      "Entenda melhor as necessidades e desejos do seu público-alvo, criando soluções mais eficazes e inovadoras.",
+    color: "bg-cyan-500",
+    icon: <Users size={96} strokeWidth={1.5} />,
+    featured: true,
+  },
+  {
+    title: "Timers",
+    description:
+      "Gerencie o tempo de atividades, treinos e apresentações com precisão, garantindo que sua equipe esteja sempre dentro do cronograma.",
+    color: "bg-yellow-500",
+    icon: <Clock size={96} strokeWidth={1.5} />,
+  },
+  {
+    title: "Partiu Mesa!",
+    description:
+      "Simulador de simples para teste de saídas. Para análise de desempenho do robô durante um teste de saída.",
+    color: "bg-violet-500",
+    icon: <MonitorDot size={96} strokeWidth={1.5} />,
+  },
+  {
+    title: "Confia, Mas Confira!",
+    description:
+      "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento.",
+    color: "bg-green-500",
+    icon: <ListCheck size={96} strokeWidth={1.5} />,
+  },
 ];
 
 export default function FLLHome() {
@@ -66,65 +87,156 @@ export default function FLLHome() {
     <div className="min-h-screen bg-base-200 text-base-content">
       <main className="mt-16">
         <Hero />
-        <section className="py-12 md:py-16 max-w-7xl mx-auto px-6 sm:px-8">
-          <Banner />
-          <div className="mt-8">
-            <div className="flex flex-col xl:flex-row gap-10 xl:gap-16 items-start">
-              <div className="w-full xl:max-w-md flex-shrink-0">
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-base-content leading-tight">
-                  O que é o <span className="text-primary">RoboStage</span>?
+        <section className="py-12 md:pb-16 max-w-7xl mx-auto px-6 sm:px-8">
+          <div className="relative mt-12">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-4 lg:items-stretch lg:gap-6 xl:gap-8">
+              <div className="flex flex-col justify-center lg:col-span-1 lg:py-6">
+                <h2 className="mt-5 text-4xl font-black leading-[1.05] tracking-tight text-base-content sm:text-5xl lg:text-4xl xl:text-5xl">
+                  O que é o <span className="text-primary">RoboStage?</span>
                 </h2>
-                <p className="mt-4 text-base sm:text-lg text-base-content/80 leading-relaxed">
-                  É a plataforma que conecta todo o universo da FIRST LEGO
-                  League em um único lugar.
+                <p className="mt-5 text-base leading-relaxed text-base-content/70">
+                  Um ambiente que conecta pessoas, ideias e tecnologia em todas
+                  as etapas da robótica educacional.
                 </p>
-                <p className="mt-4 text-base sm:text-lg text-base-content/80 leading-relaxed">
-                  Chega de planilhas dispersas e documentos perdidos: o
-                  RoboStage transforma informações em decisões, organização em
-                  resultados e preparação em conquistas.
+
+                <p className="mt-3 text-sm leading-relaxed text-base-content/60">
+                  Menos tempo organizando informações. Mais tempo construindo,
+                  testando e inovando.
                 </p>
+
+                <div className="mt-6 flex items-center gap-3 border-t border-base-content/10 pt-5">
+                  <div className="flex -space-x-2">
+                    <span className="grid size-8 place-items-center rounded-full border-2 border-base-100 bg-primary text-xs font-black text-primary-content">
+                      R
+                    </span>
+                    <span className="grid size-8 place-items-center rounded-full border-2 border-base-100 bg-secondary text-xs font-black text-secondary-content">
+                      S
+                    </span>
+                    <span className="grid size-8 place-items-center rounded-full border-2 border-base-100 bg-warning text-xs font-black text-warning-content">
+                      +
+                    </span>
+                  </div>
+
+                  <span className="text-xs font-semibold leading-relaxed text-base-content/60">
+                    Do planejamento à competição.
+                    <span className="block text-base-content">
+                      Tudo conectado em um só lugar.
+                    </span>
+                  </span>
+                </div>
               </div>
 
-              <div className="grid w-full gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
-                <RevealOnScroll>
-                  <div className="bg-primary text-primary-content rounded-3xl p-6 lg:p-8 border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                    <span className="text-5xl font-black opacity-20">01</span>
+              {/* Card 01 — Vermelho */}
+              <RevealOnScroll>
+                <article className="group relative flex h-full min-h-[310px] flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-primary/20 bg-primary p-6 text-primary-content transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7">
+                  <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full border-[24px] border-white/5 transition-transform duration-500 group-hover:scale-110" />
 
-                    <h3 className="mt-4 text-lg lg:text-xl font-bold">
-                      Treine e desenvolva sua equipe
+                  <div className="relative flex items-center justify-between">
+                    <div className="grid size-11 place-items-center rounded-xl bg-white/15">
+                      <Users size={22} />
+                    </div>
+                    <span className="font-mono text-xs font-bold text-white/50">
+                      01 / 03
+                    </span>
+                  </div>
+
+                  <div className="relative mt-8">
+                    <h3 className="text-xl font-black leading-snug xl:text-2xl">
+                      Desenvolva sua equipe
                     </h3>
 
-                    <p className="mt-3 text-sm lg:text-base opacity-80 leading-relaxed">
-                      Gerencie integrantes, aplique testes, acompanhe evolução e
-                      registre resultados durante toda a temporada.
+                    <p className="mt-3 text-sm leading-relaxed text-white/80">
+                      Acompanhe integrantes, aplique testes e registre
+                      resultados para transformar evolução em aprendizado
+                      contínuo.
                     </p>
                   </div>
-                </RevealOnScroll>
-                <RevealOnScroll>
-                  <div className="bg-secondary text-secondary-content rounded-3xl p-6 lg:p-8 border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                    <span className="text-5xl font-black opacity-20">02</span>
-                    <h3 className="mt-4 text-lg lg:text-xl font-bold">
+
+                  <div className="relative mt-auto flex items-center justify-between gap-2 pt-7">
+                    <span className="text-xs font-bold uppercase tracking-wide text-white/70">
+                      Treinamento
+                    </span>
+                    <ArrowUpRight
+                      size={19}
+                      className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+                    />
+                  </div>
+                </article>
+              </RevealOnScroll>
+
+              {/* Card 02 — Azul */}
+              <RevealOnScroll>
+                <article className="group relative flex h-full min-h-[310px] flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-secondary/20 bg-secondary p-6 text-secondary-content transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7">
+                  <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full border-[24px] border-white/5 transition-transform duration-500 group-hover:scale-110" />
+
+                  <div className="relative flex items-center justify-between">
+                    <div className="grid size-11 place-items-center rounded-xl bg-white/15">
+                      <CalendarDays size={22} />
+                    </div>
+                    <span className="font-mono text-xs font-bold text-white/50">
+                      02 / 03
+                    </span>
+                  </div>
+
+                  <div className="relative mt-8">
+                    <h3 className="text-xl font-black leading-snug xl:text-2xl">
                       Planeje sua temporada
                     </h3>
-                    <p className="mt-3 text-sm lg:text-base opacity-80 leading-relaxed">
-                      Organize missões, projetos de inovação, apresentações e
-                      estratégias em um único ambiente.
+
+                    <p className="mt-3 text-sm leading-relaxed text-white/80">
+                      Organize missões, projetos de inovação, documentos e
+                      estratégias ao longo de toda a temporada.
                     </p>
                   </div>
-                </RevealOnScroll>
-                <RevealOnScroll>
-                  <div className="bg-warning text-warning-content rounded-3xl p-6 lg:p-8 border border-black/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                    <span className="text-5xl font-black opacity-20">03</span>
-                    <h3 className="mt-4 text-lg lg:text-xl font-bold">
-                      Gerencie torneios
+
+                  <div className="relative mt-auto flex items-center justify-between gap-2 pt-7">
+                    <span className="text-xs font-bold uppercase tracking-wide text-white/70">
+                      Organização
+                    </span>
+                    <ArrowUpRight
+                      size={19}
+                      className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+                    />
+                  </div>
+                </article>
+              </RevealOnScroll>
+
+              {/* Card 03 — Amarelo */}
+              <RevealOnScroll>
+                <article className="group relative flex h-full min-h-[310px] flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-warning/50 bg-warning p-6 text-warning-content transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7">
+                  <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full border-[24px] border-black/5 transition-transform duration-500 group-hover:scale-110" />
+
+                  <div className="relative flex items-center justify-between">
+                    <div className="grid size-11 place-items-center rounded-xl bg-black/5">
+                      <Trophy size={22} />
+                    </div>
+                    <span className="font-mono text-xs font-bold opacity-50">
+                      03 / 03
+                    </span>
+                  </div>
+
+                  <div className="relative mt-8">
+                    <h3 className="text-xl font-black leading-snug xl:text-2xl">
+                      Conecte-se às competições
                     </h3>
-                    <p className="mt-3 text-sm lg:text-base opacity-80 leading-relaxed">
-                      Rankings, dashboards, transmissões e todas as informações
-                      necessárias para seus eventos.
+
+                    <p className="mt-3 text-sm leading-relaxed opacity-80">
+                      Consulte rankings, acompanhe informações e utilize
+                      ferramentas para preparar e organizar eventos.
                     </p>
                   </div>
-                </RevealOnScroll>
-              </div>
+
+                  <div className="relative mt-auto flex items-center justify-between gap-2 pt-7">
+                    <span className="text-xs font-bold uppercase tracking-wide opacity-70">
+                      Competições
+                    </span>
+                    <ArrowUpRight
+                      size={19}
+                      className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+                    />
+                  </div>
+                </article>
+              </RevealOnScroll>
             </div>
           </div>
         </section>
@@ -205,34 +317,15 @@ export default function FLLHome() {
                     title={module.title}
                     description={module.description}
                     color={module.color}
+                    featured={module.featured}
                     icon={module.icon}
                   />
                 ))}
               </div>
-              <div
-                className="alert alert-warning shadow-lg my-4 mx-auto max-w-6xl px-4 mt-12"
-                role="status"
-                aria-live="polite"
-              >
-                <CircleAlertIcon className="stroke-current flex-shrink-0 w-6 h-6" />
-                <div>
-                  <h6 className="font-bold">
-                    Ferramentas LabTest e InnoLab temporariamente indisponíveis
-                  </h6>
-                  <p>
-                    As ferramentas LabTest e InnoLab estão passando por
-                    manutenções, envovelndo correção de bugs, performace, e
-                    melhorias na experiência do usuário.
-                  </p>
-                  <Link href="/news" className="font-bold underline">
-                    Clique aqui
-                  </Link>{" "}
-                  para acompanhar as atualizações.
-                </div>
-              </div>
             </div>
           </RevealOnScroll>
         </section>
+        <Banner />
         <RevealOnScroll>
           <div className="bg-base-300">
             <NoiseImage
@@ -283,7 +376,7 @@ export default function FLLHome() {
             </NoiseImage>
           </div>
         </RevealOnScroll>
-        <div className="w-full h-10 bg-gradient-to-t from-neutral to-transparent " />
+        <div className="w-full h-10 bg-gradient-to-t from-neutral to-base-300 " />
         <section className="w-full bg-neutral text-neutral-content py-24 px-4">
           <div className="max-w-5xl mx-auto text-center">
             <h2 className="text-4xl md:text-6xl font-black leading-tight">

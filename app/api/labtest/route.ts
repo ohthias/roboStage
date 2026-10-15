@@ -140,6 +140,10 @@ export async function GET(req: NextRequest) {
 
   try {
     if (testId) {
+      if (!isUuid(testId)) {
+        return NextResponse.json({ error: "Identificador de teste inválido" }, { status: 400 });
+      }
+
       const test = await db.query.tests.findFirst({
         where: and(eq(tests.id, testId), eq(tests.userId, userId)),
       });
@@ -294,10 +298,6 @@ export async function POST(req: NextRequest) {
       if (!test) {
         return NextResponse.json({ error: "Teste não encontrado" }, { status: 404 });
       }
-      if (!entries.length) {
-        return NextResponse.json({ error: "Nenhum lançamento para salvar" }, { status: 400 });
-      }
-
       // Próximo número de execução calculado no servidor (evita corrida entre
       // abas/usuários e dispensa o client enviar `startingExecutionNumber`).
       const [lastExecution] = await db

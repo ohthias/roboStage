@@ -5,7 +5,7 @@ export default async function KanbanPage() {
   const boards = await listBoards();
 
   return (
-    <div className="mx-auto w-full px-6 py-8">
+    <div className="mx-auto w-full">
       <BoardList
         boards={boards.map((b) => ({ id: b.id, name: b.name, description: b.description, icon: b.icon }))}
       />

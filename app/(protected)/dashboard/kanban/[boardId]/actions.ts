@@ -6,6 +6,7 @@ import { db } from "@/db/client";
 import {
   boards,
   boardColumns,
+  boardMilestones,
   boardCards,
   boardCardAssignees,
   boardCardDocuments,
@@ -22,6 +23,14 @@ import { scopeWhere, assertSameScope } from "@/utils/stagebook/permissions";
 import { nextPosition, positionBetween } from "@/utils/stagebook/position";
 import { cleanText, optionalText, optionalDate, requireUuid } from "@/utils/stagebook/validation";
 import { notifyUser } from "@/utils/stagebook/actions/notifications";
+
+type ColumnRules = {
+  maxCards?: number | null;
+  allowedPriorities?: string[];
+  dueDateRequired?: boolean;
+  maxDueDays?: number | null;
+  milestoneId?: string | null;
+};
 
 function boardPath(boardId: string) {
   return `/dashboard/kanban/${boardId}`;
@@ -50,7 +59,7 @@ async function requireColumnInBoard(boardId: string, columnId: string) {
 export async function getBoardDetail(boardId: string) {
   const { board } = await requireBoardInScope(boardId);
 
-  const [columns, cards, assignees, cardTags] = await Promise.all([
+  const [columns, cards, assignees, cardTags, allTags, milestones] = await Promise.all([
     db.select().from(boardColumns).where(eq(boardColumns.boardId, boardId)).orderBy(boardColumns.position),
     db.select().from(boardCards).where(eq(boardCards.boardId, boardId)).orderBy(boardCards.position),
     db
@@ -65,9 +74,14 @@ export async function getBoardDetail(boardId: string) {
       .innerJoin(tags, eq(tags.id, boardCardTags.tagId))
       .innerJoin(boardCards, eq(boardCards.id, boardCardTags.cardId))
       .where(eq(boardCards.boardId, boardId)),
+    db.select({ id: tags.id, name: tags.name }).from(tags).orderBy(tags.name),
+    db.select({ id: boardMilestones.id, name: boardMilestones.name, dueAt: boardMilestones.dueAt })
+      .from(boardMilestones)
+      .where(eq(boardMilestones.boardId, boardId))
+      .orderBy(boardMilestones.dueAt, boardMilestones.name),
   ]);
 
-  return { board, columns, cards, assignees, cardTags };
+  return { board, columns, cards, assignees, cardTags, allTags, milestones };
 }
 
 export async function listTeamMembersForAssignment(teamId: string) {
@@ -107,6 +121,75 @@ export async function renameColumn(boardId: string, columnId: string, name: stri
   revalidatePath(boardPath(boardId), "layout");
 }
 
+const COLUMN_COLORS = ["#64748b", "#2563eb", "#0891b2", "#16a34a", "#ca8a04", "#ea580c", "#dc2626", "#9333ea", "#db2777"];
+
+export async function updateColumnColor(boardId: string, columnId: string, color: string | null) {
+  await requireBoardInScope(boardId);
+  const nextColor = color && COLUMN_COLORS.includes(color) ? color : null;
+  await db
+    .update(boardColumns)
+    .set({ color: nextColor })
+    .where(and(eq(boardColumns.id, columnId), eq(boardColumns.boardId, boardId)));
+  revalidatePath(boardPath(boardId), "layout");
+}
+
+export async function updateColumnRules(boardId: string, columnId: string, rules: ColumnRules) {
+  await requireBoardInScope(boardId);
+  const cleanRules: ColumnRules = {
+    maxCards: rules.maxCards && rules.maxCards > 0 ? Math.floor(rules.maxCards) : null,
+    allowedPriorities: (rules.allowedPriorities ?? []).filter((priority) =>
+      ["baixa", "media", "alta", "urgente"].includes(priority)
+    ),
+    dueDateRequired: Boolean(rules.dueDateRequired),
+    maxDueDays: rules.maxDueDays && rules.maxDueDays > 0 ? Math.floor(rules.maxDueDays) : null,
+    milestoneId: rules.milestoneId || null,
+  };
+  if (cleanRules.milestoneId) {
+    const [milestone] = await db.select({ id: boardMilestones.id }).from(boardMilestones)
+      .where(and(eq(boardMilestones.id, cleanRules.milestoneId), eq(boardMilestones.boardId, boardId))).limit(1);
+    if (!milestone) throw new Error("Milestone não pertence a este board.");
+  }
+  await db.update(boardColumns).set({ rules: cleanRules })
+    .where(and(eq(boardColumns.id, columnId), eq(boardColumns.boardId, boardId)));
+  revalidatePath(boardPath(boardId), "layout");
+}
+
+export async function createMilestone(boardId: string, name: string, dueAt: string | null) {
+  await requireBoardInScope(boardId);
+  const [milestone] = await db.insert(boardMilestones).values({
+    boardId,
+    name: cleanText(name, { fallback: "Nova milestone", maxLength: 100 }),
+    dueAt: optionalDate(dueAt),
+  }).returning({ id: boardMilestones.id, name: boardMilestones.name, dueAt: boardMilestones.dueAt });
+  revalidatePath(boardPath(boardId), "layout");
+  return milestone;
+}
+
+function validateColumnRules(
+  rules: ColumnRules | null | undefined,
+  columnCards: { priority: string; dueAt: Date | null; milestoneId: string | null }[],
+  card: { priority: string; dueAt: Date | null; milestoneId: string | null }
+) {
+  if (!rules) return;
+  if (rules.maxCards && columnCards.length >= rules.maxCards) {
+    throw new Error(`Esta coluna atingiu o limite de ${rules.maxCards} cards.`);
+  }
+  if (rules.allowedPriorities?.length && !rules.allowedPriorities.includes(card.priority)) {
+    throw new Error("A prioridade deste card não é permitida nesta coluna.");
+  }
+  if (rules.dueDateRequired && !card.dueAt) {
+    throw new Error("Esta coluna exige um prazo de entrega.");
+  }
+  if (rules.maxDueDays && card.dueAt) {
+    const limit = new Date();
+    limit.setDate(limit.getDate() + rules.maxDueDays);
+    if (card.dueAt > limit) throw new Error(`O prazo deve estar dentro de ${rules.maxDueDays} dias.`);
+  }
+  if (rules.milestoneId && card.milestoneId !== rules.milestoneId) {
+    throw new Error("Este card precisa estar vinculado à milestone exigida pela coluna.");
+  }
+}
+
 export async function deleteColumn(boardId: string, columnId: string) {
   await requireBoardInScope(boardId);
   await db.delete(boardColumns).where(and(eq(boardColumns.id, columnId), eq(boardColumns.boardId, boardId)));
@@ -133,7 +216,12 @@ export async function reorderColumns(boardId: string, orderedColumnIds: string[]
 export async function createCard(boardId: string, columnId: string, title: string) {
   const { scope } = await requireBoardInScope(boardId);
   await requireColumnInBoard(boardId, columnId);
+  const [column] = await db.select().from(boardColumns).where(eq(boardColumns.id, columnId)).limit(1);
   const existing = await db.select({ position: boardCards.position }).from(boardCards).where(eq(boardCards.columnId, columnId));
+  const priority = column?.rules?.allowedPriorities?.[0] ?? "media";
+  const dueAt = column?.rules?.dueDateRequired ? new Date() : null;
+  const milestoneId = column?.rules?.milestoneId ?? null;
+  validateColumnRules(column?.rules, existing.map(() => ({ priority, dueAt, milestoneId })), { priority, dueAt, milestoneId });
 
   const [card] = await db
     .insert(boardCards)
@@ -143,6 +231,9 @@ export async function createCard(boardId: string, columnId: string, title: strin
       title: cleanText(title, { fallback: "Novo card", maxLength: 200 }),
       createdBy: scope.userId,
       position: nextPosition(existing.map((c) => c.position)),
+      priority,
+      dueAt,
+      milestoneId,
     })
     .returning({ id: boardCards.id });
 
@@ -153,16 +244,25 @@ export async function createCard(boardId: string, columnId: string, title: strin
 export async function updateCard(
   boardId: string,
   cardId: string,
-  input: { title: string; description?: string; dueAt?: string | null; priority?: string }
+  input: { title: string; description?: string; dueAt?: string | null; priority?: string; milestoneId?: string | null }
 ) {
   const { scope } = await requireBoardInScope(boardId);
+  const [current] = await db.select().from(boardCards).where(and(eq(boardCards.id, cardId), eq(boardCards.boardId, boardId))).limit(1);
+  if (!current) throw new Error("Card não encontrado.");
+  const [column] = await db.select().from(boardColumns).where(eq(boardColumns.id, current.columnId)).limit(1);
+  const milestoneId = input.milestoneId === undefined ? current.milestoneId : input.milestoneId;
+  const dueAt = optionalDate(input.dueAt);
+  const priority = input.priority || current.priority;
+  const updateRules = column?.rules ? { ...column.rules, maxCards: null } : undefined;
+  validateColumnRules(updateRules, [], { priority, dueAt, milestoneId });
   await db
     .update(boardCards)
     .set({
       title: cleanText(input.title, { fallback: "Novo card", maxLength: 200 }),
       description: optionalText(input.description, 2000),
-      dueAt: optionalDate(input.dueAt),
-      priority: input.priority || "media",
+      dueAt,
+      priority,
+      milestoneId,
       updatedBy: scope.userId,
       updatedAt: new Date(),
     })
@@ -186,6 +286,17 @@ export async function moveCard(
 ) {
   await requireBoardInScope(boardId);
   await requireColumnInBoard(boardId, targetColumnId);
+  const [card] = await db.select().from(boardCards).where(and(eq(boardCards.id, cardId), eq(boardCards.boardId, boardId))).limit(1);
+  const [column] = await db.select().from(boardColumns).where(eq(boardColumns.id, targetColumnId)).limit(1);
+  const targetCards = await db.select({ priority: boardCards.priority, dueAt: boardCards.dueAt, milestoneId: boardCards.milestoneId })
+    .from(boardCards).where(eq(boardCards.columnId, targetColumnId));
+  if (!card) throw new Error("Card não encontrado.");
+  const movingWithinSameColumn = card.columnId === targetColumnId;
+  validateColumnRules(
+    movingWithinSameColumn && column?.rules ? { ...column.rules, maxCards: null } : column?.rules,
+    movingWithinSameColumn ? [] : targetCards,
+    card
+  );
   const position = positionBetween(beforePosition, afterPosition);
   await db
     .update(boardCards)
@@ -247,6 +358,51 @@ export async function searchTags(query: string) {
   const clean = query.trim();
   if (!clean) return db.select().from(tags).orderBy(tags.name).limit(20);
   return db.select().from(tags).where(ilike(tags.name, `%${clean}%`)).orderBy(tags.name).limit(20);
+}
+
+export async function listTags() {
+  await resolveStagebookScope();
+  return db.select({ id: tags.id, name: tags.name }).from(tags).orderBy(tags.name);
+}
+
+export async function createTag(name: string) {
+  await resolveStagebookScope();
+  const clean = cleanText(name, { maxLength: 40 });
+  if (!clean) throw new Error("Informe um nome para a tag.");
+
+  const [existing] = await db.select({ id: tags.id }).from(tags).where(ilike(tags.name, clean)).limit(1);
+  if (existing) throw new Error("Já existe uma tag com esse nome.");
+
+  const [created] = await db
+    .insert(tags)
+    .values({ name: clean })
+    .returning({ id: tags.id, name: tags.name });
+  revalidatePath("/dashboard/kanban", "layout");
+  return created;
+}
+
+export async function renameTag(tagId: string, name: string) {
+  await resolveStagebookScope();
+  const clean = cleanText(name, { maxLength: 40 });
+  if (!clean) throw new Error("Informe um nome para a tag.");
+
+  const [existing] = await db
+    .select({ id: tags.id })
+    .from(tags)
+    .where(eq(tags.id, tagId))
+    .limit(1);
+  if (!existing) throw new Error("Tag não encontrada.");
+
+  const conflicts = await db.select({ id: tags.id }).from(tags).where(ilike(tags.name, clean)).limit(2);
+  if (conflicts.some((tag) => tag.id !== tagId)) throw new Error("Já existe uma tag com esse nome.");
+
+  const [updated] = await db
+    .update(tags)
+    .set({ name: clean })
+    .where(eq(tags.id, tagId))
+    .returning({ id: tags.id, name: tags.name });
+  revalidatePath("/dashboard/kanban", "layout");
+  return updated;
 }
 
 export async function toggleCardTag(boardId: string, cardId: string, tagName: string) {

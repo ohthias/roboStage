@@ -8,6 +8,7 @@ import {
   FlaskConical,
   Home,
   KanbanSquare,
+  Lightbulb,
   Settings,
   Users,
   type LucideIcon,
@@ -43,6 +44,11 @@ const MAIN_LINKS: NavItem[] = [
     Icon: Book,
   },
   {
+    href: "/dashboard/thinklab",
+    label: "ThinkLab",
+    Icon: Lightbulb,
+  },
+  {
     href: "/dashboard/calendar",
     label: "Calendário",
     Icon: CalendarDays,
@@ -52,11 +58,6 @@ const MAIN_LINKS: NavItem[] = [
     label: "Kanban",
     Icon: KanbanSquare,
   },
-  /*{
-    href: "/dashboard/projects",
-    label: "Projetos",
-    Icon: Boxes,
-  },*/
 ];
 
 const SYSTEM_LINKS: NavItem[] = [

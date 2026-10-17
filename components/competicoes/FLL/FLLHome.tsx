@@ -5,9 +5,6 @@ import {
   Trophy,
   MessageCircleQuestion,
   Cuboid,
-  ChartPie,
-  File,
-  CircleAlertIcon,
   NotepadText,
   ArrowUpRight,
   CalendarDays,
@@ -326,57 +323,64 @@ export default function FLLHome() {
           </RevealOnScroll>
         </section>
         <Banner />
-        <RevealOnScroll>
-          <div className="bg-base-300">
-            <NoiseImage
-              variant="animated"
-              noiseOpacity={0.2}
-              className="relative"
-            >
-              <section className="py-16">
-                <div className="max-w-6xl mx-auto px-4">
-                  <div className="relative overflow-hidden rounded-3xl bg-[url(https://www.bischoff-ag.ch/thumbnail/0f/a0/d5/1782169686/45834_Lifestyle_Cons_19_7d6229d67aa1ee63977a4f49a9682fb43b5dfc10_800x800.png?ts=1782173521&nocache=1)] bg-cover bg-bottom bg-no-repeat bg-[#6FA61C] text-primary-content">
-                    <div className="absolute inset-0 bg-black/50 w-full h-full" />
-                    {/* Glow */}
-                    <div className="absolute -left-24 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
-                    <div className="absolute -right-24 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
+        <section
+          className="w-full overflow-hidden max-w-5xl mx-auto rounded-tl-3xl rounded-br-3xl my-16"
+          style={{ boxShadow: "20px 20px 0 #fabd32" }}
+        >
+          <NoiseImage
+            variant="animated"
+            noiseOpacity={0.12}
+            className="relative"
+          >
+            <div className="w-full">
+              <div className="group relative isolate mx-auto w-full overflow-hidden bg-[#6FA61C] text-white shadow-xl">
+                <div
+                  className="absolute inset-0 z-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                  style={{
+                    backgroundImage:
+                      "url('https://www.bischoff-ag.ch/thumbnail/0f/a0/d5/1782169686/45834_Lifestyle_Cons_19_7d6229d67aa1ee63977a4f49a9682fb43b5dfc10_800x800.png?ts=1782173521&nocache=1')",
+                  }}
+                />
+                <div className="absolute inset-0 z-0 bg-black/35" />
+                <div className="absolute inset-0 z-0 bg-gradient-to-r from-black/85 via-black/60 to-black/15" />
+                <div className="absolute inset-0 z-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                <div className="pointer-events-none absolute -left-24 top-0 z-0 size-72 rounded-full bg-[#B8F34A]/20 blur-3xl" />
+                <div className="pointer-events-none absolute -right-24 bottom-0 z-0 size-72 rounded-full bg-[#B8F34A]/20 blur-3xl" />
+                <div className="relative z-10 flex items-center px-6 py-12 sm:px-10 sm:py-14 md:px-14 lg:px-16">
+                  <div className="max-w-4xl">
+                    <img
+                      src="https://www.firstinspires.org/hs-fs/hubfs/web/brand/season/2027/first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png?width=1436&height=484&name=first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png"
+                      alt="FIRST LEGO League BIOGLOW Future Edition"
+                      className="mb-7 h-auto w-44 max-w-full drop-shadow-lg sm:w-56"
+                    />
 
-                    <div className="relative p-8 md:p-12">
-                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
-                        <div className="max-w-3xl">
-                          <img
-                            src="https://www.firstinspires.org/hs-fs/hubfs/web/brand/season/2027/first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png?width=1436&height=484&name=first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png"
-                            alt="BIOGLOW Future Edition"
-                            className="max-w-[150px] h-auto mb-4"
-                          />
+                    <h2 className="max-w-2xl text-3xl font-black leading-[1.08] tracking-tight sm:text-4xl">
+                      Uma nova geração de possibilidades para a{" "}
+                      <span className="text-[#C8F77A]">FIRST LEGO League.</span>
+                    </h2>
 
-                          <h2 className="text-3xl md:text-5xl font-black leading-tight text-white">
-                            Conheça a próxima geração da
-                            <br />
-                            FIRST LEGO League
-                          </h2>
+                    <p className="mt-5 max-w-2xl text-sm leading-relaxed text-white/85 sm:text-base">
+                      Conheça a BIOGLOW™ Future Edition, com os novos kits LEGO®
+                      Education Computer Science & AI, hardware sem fio e uma
+                      experiência colaborativa baseada em alianças.
+                    </p>
 
-                          <p className="mt-4 text-lg opacity-90 text-white">
-                            BIOGLOW™ Future Edition introduz novos kits LEGO®
-                            Education Computer Science & AI, hardware sem fio e
-                            uma experiência colaborativa baseada em alianças.
-                          </p>
-                          <Link
-                            href="/fll/future-edition"
-                            className="btn btn-sm btn-primary mt-6"
-                          >
-                            Conheça a Future Edition
-                          </Link>
-                        </div>
-                      </div>
+                    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <Link
+                        href="/fll/future-edition"
+                        className="btn rounded-tl-xl rounded-br-xl border-0 bg-[#C8F77A] px-6 text-sm font-bold text-[#20320C] shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#D8FFA0] hover:shadow-xl"
+                      >
+                        Conheça a Future Edition
+                        <ArrowUpRight size={18} />
+                      </Link>
                     </div>
                   </div>
                 </div>
-              </section>
-            </NoiseImage>
-          </div>
-        </RevealOnScroll>
-        <div className="w-full h-10 bg-gradient-to-t from-neutral to-base-300 " />
+              </div>
+            </div>
+          </NoiseImage>
+        </section>
+        <div className="w-full h-10 bg-gradient-to-t from-neutral to-transparent " />
         <section className="w-full bg-neutral text-neutral-content py-24 px-4">
           <div className="max-w-5xl mx-auto text-center">
             <h2 className="text-4xl md:text-6xl font-black leading-tight">

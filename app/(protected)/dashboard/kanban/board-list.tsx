@@ -140,13 +140,13 @@ export function BoardList({ boards }: { boards: Board[] }) {
   return (
     <section className="mx-auto w-full p-4 sm:p-6 lg:p-8">
       <header className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-base-content sm:text-3xl">
-            Kanbans
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
+            Kan<span className="text-primary">ban</span>
           </h1>
-
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60">
-            Separe suas tarefas em colunas e acompanhe o progresso de seus projetos com os boards kanban.
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
+            Separe suas tarefas em colunas e acompanhe o progresso de seus
+            projetos com os boards kanban.
           </p>
         </div>
         <button

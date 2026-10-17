@@ -84,14 +84,13 @@ export function FoldersView({ folders }: { folders: FolderItem[] }) {
   return (
     <section className="mx-auto w-full p-4 sm:p-6 lg:p-8">
       <header className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-base-content sm:text-3xl">
-            Suas pastas
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
+            Pastas
           </h1>
-
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60">
-            Reúna documentos e organize suas ideias por projetos, assuntos ou
-            equipes. Mantenha tudo o que sua equipe precisa em um só lugar.
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
+            Organize suas páginas em pastas, crie subpastas e gerencie a
+            estrutura de forma eficiente.
           </p>
         </div>
 

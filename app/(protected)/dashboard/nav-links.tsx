@@ -49,11 +49,6 @@ const MAIN_LINKS: NavItem[] = [
     Icon: Lightbulb,
   },
   {
-    href: "/dashboard/calendar",
-    label: "Calendário",
-    Icon: CalendarDays,
-  },
-  {
     href: "/dashboard/kanban",
     label: "Kanban",
     Icon: KanbanSquare,

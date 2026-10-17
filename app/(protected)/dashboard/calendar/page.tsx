@@ -52,10 +52,13 @@ export default async function CalendarPage({
   return (
     <section className="mx-auto w-full p-4 sm:p-6 lg:p-8">
       <header className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-base-content sm:text-3xl">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
             Calendário
           </h1>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
+            Acompanhe os eventos e atividades suas ou da sua equipe, visualize os compromissos do mês e gerencie sua agenda de forma eficiente.
+          </p>
         </div>
       </header>
 

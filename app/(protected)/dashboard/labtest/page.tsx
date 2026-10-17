@@ -8,11 +8,11 @@ import { listTests } from "./new/actions";
 export default async function LabTestPage({
   searchParams,
 }: {
-    searchParams?: Promise<{
-      modo?: string;
-      visualizacao?: string;
-      pagina?: string;
-    }>;
+  searchParams?: Promise<{
+    modo?: string;
+    visualizacao?: string;
+    pagina?: string;
+  }>;
 }) {
   const tests = await listTests();
   const params = await searchParams;
@@ -40,12 +40,11 @@ export default async function LabTestPage({
     <div className="w-full">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between px-5 py-6">
         <div>
-          <h1 className="text-3xl font-black tracking-[-0.035em] text-base-content sm:text-4xl">
-            Testes
+          <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
+            Lab<span className="text-primary">Test</span>
           </h1>
-
-          <p className="mt-2 max-w-xl text-sm leading-6 text-base-content/50">
-            Gerencie, configure e acompanhe os testes realizados pelo seu time.
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
+            Gerencie, configure e acompanhe os testes realizados pelo seus teste, seja nos desafios das competições ou testes isolados.
           </p>
         </div>
 
@@ -73,7 +72,7 @@ export default async function LabTestPage({
               href="/dashboard/labtest/analytics"
               className="px-3 py-3 text-sm font-medium pointer-events-none cursor-none text-base-content/50"
             >
-              Analytics
+              Anatix
             </Link>
           </div>
         </div>

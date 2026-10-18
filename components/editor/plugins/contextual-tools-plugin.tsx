@@ -26,18 +26,13 @@ import {
   type LexicalEditor,
 } from "lexical";
 import { $setBlocksType } from "@lexical/selection";
-import {
-  $createHeadingNode,
-  $createQuoteNode,
-} from "@lexical/rich-text";
+import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
 import { $createCodeNode } from "@lexical/code";
 import {
   INSERT_ORDERED_LIST_COMMAND,
   INSERT_UNORDERED_LIST_COMMAND,
 } from "@lexical/list";
-import {
-  $createHorizontalRuleNode,
-} from "@lexical/react/LexicalHorizontalRuleNode";
+import { $createHorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 import { INSERT_TABLE_COMMAND } from "@lexical/table";
 import {
   Bold,
@@ -101,16 +96,58 @@ class SlashOption extends MenuOption {
 }
 
 const slashOptions = [
-  new SlashOption("paragraph", "Texto", "Comece com um parágrafo", <span>¶</span>, "paragraph"),
+  new SlashOption(
+    "paragraph",
+    "Texto",
+    "Comece com um parágrafo",
+    <span>¶</span>,
+    "paragraph",
+  ),
   new SlashOption("h1", "Título 1", "Título grande", <span>H1</span>, "h1"),
   new SlashOption("h2", "Título 2", "Título médio", <span>H2</span>, "h2"),
   new SlashOption("h3", "Título 3", "Título pequeno", <span>H3</span>, "h3"),
-  new SlashOption("bullet", "Lista", "Lista com marcadores", <span>•</span>, "bullet"),
-  new SlashOption("number", "Lista numerada", "Lista ordenada", <span>1.</span>, "number"),
-  new SlashOption("quote", "Citação", "Destaque uma citação", <span>“</span>, "quote"),
-  new SlashOption("code", "Código", "Bloco de código", <Code size={16} />, "code"),
-  new SlashOption("table", "Tabela", "Insira uma tabela editável", <Table2 size={16} />, "table"),
-  new SlashOption("divider", "Divisor", "Separe seções do conteúdo", <Minus size={16} />, "divider"),
+  new SlashOption(
+    "bullet",
+    "Lista",
+    "Lista com marcadores",
+    <span>•</span>,
+    "bullet",
+  ),
+  new SlashOption(
+    "number",
+    "Lista numerada",
+    "Lista ordenada",
+    <span>1.</span>,
+    "number",
+  ),
+  new SlashOption(
+    "quote",
+    "Citação",
+    "Destaque uma citação",
+    <span>“</span>,
+    "quote",
+  ),
+  new SlashOption(
+    "code",
+    "Código",
+    "Bloco de código",
+    <Code size={16} />,
+    "code",
+  ),
+  new SlashOption(
+    "table",
+    "Tabela",
+    "Insira uma tabela editável",
+    <Table2 size={16} />,
+    "table",
+  ),
+  new SlashOption(
+    "divider",
+    "Divisor",
+    "Separe seções do conteúdo",
+    <Minus size={16} />,
+    "divider",
+  ),
 ];
 
 function executeSlashAction(
@@ -210,7 +247,9 @@ export function SlashCommandsPlugin() {
                 {option.icon}
               </span>
               <span>
-                <span className="block text-sm font-medium">{option.label}</span>
+                <span className="block text-sm font-medium">
+                  {option.label}
+                </span>
                 <span className="block text-xs text-base-content/50">
                   {option.description}
                 </span>
@@ -242,7 +281,10 @@ export function SlashCommandsPlugin() {
 function selectedBlocks(editor: LexicalEditor) {
   const selection = $getSelection();
   if (!selection) return [];
-  const nodes = new Map<string, ReturnType<typeof selection.getNodes>[number]>();
+  const nodes = new Map<
+    string,
+    ReturnType<typeof selection.getNodes>[number]
+  >();
   selection.getNodes().forEach((node) => {
     const top = node.getTopLevelElement();
     if (top) nodes.set(top.getKey(), top);
@@ -253,20 +295,29 @@ function selectedBlocks(editor: LexicalEditor) {
 function moveSelectedBlocks(editor: LexicalEditor, direction: "up" | "down") {
   editor.update(() => {
     const nodes = selectedBlocks(editor);
-    if (!nodes.length) return;
+
+    if (nodes.length === 0) return;
+
+    const firstNode = nodes[0];
+    const lastNode = nodes[nodes.length - 1];
+
     if (direction === "up") {
-      const target = nodes[0].getPreviousSibling();
-      if (!target) return;
-      nodes.forEach((node) => target.insertBefore(node));
-    } else {
-      const target = nodes[nodes.length - 1].getNextSibling();
-      if (!target) return;
-      let position = target;
-      nodes.forEach((node) => {
-        position.insertAfter(node);
-        position = node;
-      });
+      const previous = firstNode.getPreviousSibling();
+
+      if (!previous) return;
+
+      // Move o bloco anterior para depois da seleção,
+      // preservando a ordem dos blocos selecionados.
+      lastNode.insertAfter(previous);
+      return;
     }
+
+    const next = lastNode.getNextSibling();
+
+    if (!next) return;
+
+    // Move o bloco seguinte para antes da seleção.
+    firstNode.insertBefore(next);
   });
 }
 
@@ -295,16 +346,27 @@ function SelectionToolsPlugin() {
       setTableContext(cell !== null);
       setSelectionCount(selectedBlocks(editor).length);
       const domSelection = window.getSelection();
-      const domRect = domSelection?.rangeCount
-        ? domSelection.getRangeAt(0).getBoundingClientRect()
+
+      const domRect =
+        domSelection && domSelection.rangeCount > 0
+          ? domSelection.getRangeAt(0).getBoundingClientRect()
+          : null;
+
+      const tableRect = cell
+        ? (editor
+            .getElementByKey(cell.getKey())
+            ?.closest("table")
+            ?.getBoundingClientRect() ?? null)
         : null;
-      setRect(
-        domRect && (domRect.width || domRect.height)
+
+      const editorRect = editor.getRootElement()?.getBoundingClientRect();
+
+      const nextRect =
+        domRect && (domRect.width > 0 || domRect.height > 0)
           ? domRect
-          : cell
-            ? editor.getElementByKey(cell.getKey())?.closest("table")?.getBoundingClientRect() ?? null
-            : null,
-      );
+          : (tableRect ?? editorRect ?? null);
+
+      setRect(nextRect);
     });
   }, [editor]);
 
@@ -358,7 +420,8 @@ function SelectionToolsPlugin() {
     {
       label: "Tachado",
       icon: Strikethrough,
-      onClick: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "strikethrough"),
+      onClick: () =>
+        editor.dispatchCommand(FORMAT_TEXT_COMMAND, "strikethrough"),
     },
     {
       label: "Esquerda",
@@ -410,7 +473,9 @@ function SelectionToolsPlugin() {
             type="button"
             title="Adicionar linha"
             aria-label="Adicionar linha"
-            onClick={() => editor.update(() => $insertTableRowAtSelection(true))}
+            onClick={() =>
+              editor.update(() => $insertTableRowAtSelection(true))
+            }
             className="btn btn-ghost btn-xs btn-square"
           >
             <Plus size={15} />
@@ -428,7 +493,9 @@ function SelectionToolsPlugin() {
             type="button"
             title="Adicionar coluna"
             aria-label="Adicionar coluna"
-            onClick={() => editor.update(() => $insertTableColumnAtSelection(true))}
+            onClick={() =>
+              editor.update(() => $insertTableColumnAtSelection(true))
+            }
             className="btn btn-ghost btn-xs btn-square"
           >
             <Plus size={15} />
@@ -487,7 +554,9 @@ function SelectionToolsPlugin() {
         title="Excluir seleção"
         aria-label="Excluir seleção"
         onClick={() =>
-          editor.update(() => selectedBlocks(editor).forEach((node) => node.remove()))
+          editor.update(() =>
+            selectedBlocks(editor).forEach((node) => node.remove()),
+          )
         }
         className="btn btn-ghost btn-xs btn-square text-error"
       >

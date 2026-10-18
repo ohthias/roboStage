@@ -22,10 +22,7 @@ import {
   $createQuoteNode,
   $isHeadingNode,
 } from "@lexical/rich-text";
-import {
-  $createCodeNode,
-  $isCodeNode,
-} from "@lexical/code";
+import { $createCodeNode, $isCodeNode } from "@lexical/code";
 import {
   INSERT_UNORDERED_LIST_COMMAND,
   INSERT_ORDERED_LIST_COMMAND,
@@ -142,8 +139,7 @@ export function ToolbarPlugin() {
     code: false,
   });
 
-  const [blockType, setBlockType] =
-    useState<BlockType>("paragraph");
+  const [blockType, setBlockType] = useState<BlockType>("paragraph");
 
   const [colorOpen, setColorOpen] = useState(false);
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
@@ -191,26 +187,17 @@ export function ToolbarPlugin() {
         : anchorNode.getTopLevelElementOrThrow();
     if ($isElementNode(element)) {
       setAlignment(
-        (element.getFormatType() as
-          | "left"
-          | "center"
-          | "right"
-          | "justify") || "left",
+        (element.getFormatType() as "left" | "center" | "right" | "justify") ||
+          "left",
       );
     } else {
       setAlignment("left");
     }
 
     if ($isListNode(element)) {
-      setBlockType(
-        element.getListType() === "number"
-          ? "ol"
-          : "ul"
-      );
+      setBlockType(element.getListType() === "number" ? "ol" : "ul");
     } else if ($isHeadingNode(element)) {
-      setBlockType(
-        element.getTag() as "h1" | "h2" | "h3"
-      );
+      setBlockType(element.getTag() as "h1" | "h2" | "h3");
     } else if ($isCodeNode(element)) {
       setBlockType("code");
     } else if (element.getType() === "quote") {
@@ -248,16 +235,14 @@ export function ToolbarPlugin() {
         updateToolbar();
         return false;
       },
-      COMMAND_PRIORITY_LOW
+      COMMAND_PRIORITY_LOW,
     );
   }, [editor, updateToolbar]);
 
   useEffect(() => {
-    return editor.registerUpdateListener(
-      ({ editorState }) => {
-        editorState.read(updateToolbar);
-      }
-    );
+    return editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(updateToolbar);
+    });
   }, [editor, updateToolbar]);
 
   function toggleBlock(type: BlockType) {
@@ -266,7 +251,7 @@ export function ToolbarPlugin() {
         blockType === "ul"
           ? REMOVE_LIST_COMMAND
           : INSERT_UNORDERED_LIST_COMMAND,
-        undefined
+        undefined,
       );
 
       return;
@@ -274,10 +259,8 @@ export function ToolbarPlugin() {
 
     if (type === "ol") {
       editor.dispatchCommand(
-        blockType === "ol"
-          ? REMOVE_LIST_COMMAND
-          : INSERT_ORDERED_LIST_COMMAND,
-        undefined
+        blockType === "ol" ? REMOVE_LIST_COMMAND : INSERT_ORDERED_LIST_COMMAND,
+        undefined,
       );
 
       return;
@@ -328,10 +311,7 @@ export function ToolbarPlugin() {
     editor.update(() => {
       const selection = $getSelection();
 
-      if (
-        !$isRangeSelection(selection) &&
-        !$isTableSelection(selection)
-      ) {
+      if (!$isRangeSelection(selection) && !$isTableSelection(selection)) {
         return;
       }
 
@@ -366,9 +346,7 @@ export function ToolbarPlugin() {
     editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined);
   }
 
-  function setTextAlignment(
-    value: "left" | "center" | "right" | "justify",
-  ) {
+  function setTextAlignment(value: "left" | "center" | "right" | "justify") {
     setAlignment(value);
     editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, value);
   }
@@ -392,10 +370,7 @@ export function ToolbarPlugin() {
   ) {
     editor.update(() => {
       const selection = $getSelection();
-      if (
-        !$isRangeSelection(selection) &&
-        !$isTableSelection(selection)
-      ) {
+      if (!$isRangeSelection(selection) && !$isTableSelection(selection)) {
         return;
       }
 
@@ -469,46 +444,45 @@ export function ToolbarPlugin() {
 
   function updateSelectedBlocks(operation: "delete" | "up" | "down") {
     editor.update(() => {
-      const selectedNodes = getSelectedTopLevelNodes();
-      if (selectedNodes.length === 0) return;
+      const nodes = getSelectedTopLevelNodes();
+
+      if (nodes.length === 0) return;
 
       if (operation === "delete") {
-        selectedNodes.forEach((node) => node.remove());
+        nodes.forEach((node) => node.remove());
         return;
       }
 
-      const firstNode = selectedNodes[0];
-      const lastNode = selectedNodes[selectedNodes.length - 1];
+      const firstNode = nodes[0];
+      const lastNode = nodes[nodes.length - 1];
+
       if (operation === "up") {
-        const target = firstNode.getPreviousSibling();
-        if (!target) return;
-        selectedNodes
-          .slice()
-          .reverse()
-          .forEach((node) => node.insertBefore(target));
+        const previous = firstNode.getPreviousSibling();
+
+        if (previous) {
+          lastNode.insertAfter(previous);
+        }
+
         return;
       }
 
-      const target = lastNode.getNextSibling();
-      if (!target) return;
-      let insertionPoint = target;
-      selectedNodes.forEach((node) => {
-        node.insertAfter(insertionPoint);
-        insertionPoint = node;
-      });
+      const next = lastNode.getNextSibling();
+
+      if (next) {
+        firstNode.insertBefore(next);
+      }
     });
   }
 
   const createFormatButton = (
     icon: LucideIcon,
     label: string,
-    formatType: keyof typeof format
+    formatType: keyof typeof format,
   ) => ({
     icon,
     label,
     active: format[formatType],
-    onClick: () =>
-      editor.dispatchCommand(FORMAT_TEXT_COMMAND, formatType),
+    onClick: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, formatType),
   });
 
   const inlineButtons = [
@@ -587,9 +561,7 @@ export function ToolbarPlugin() {
           title={b.label}
           onClick={b.onClick}
           className={`btn btn-ghost btn-xs btn-square ${
-            b.active
-              ? "btn-active text-info"
-              : ""
+            b.active ? "btn-active text-info" : ""
           }`}
         >
           <b.icon size={15} />
@@ -620,13 +592,9 @@ export function ToolbarPlugin() {
         <button
           type="button"
           title="Cor do texto"
-          onClick={() =>
-            setColorOpen((value) => !value)
-          }
+          onClick={() => setColorOpen((value) => !value)}
           className={`btn btn-ghost btn-xs btn-square ${
-            colorOpen
-              ? "btn-active text-info"
-              : ""
+            colorOpen ? "btn-active text-info" : ""
           }`}
         >
           <Palette size={15} />
@@ -641,23 +609,18 @@ export function ToolbarPlugin() {
                   type="button"
                   title={color.name}
                   aria-label={color.name}
-                  onClick={() =>
-                    applyTextColor(color.value)
-                  }
+                  onClick={() => applyTextColor(color.value)}
                   className="flex h-7 w-7 items-center justify-center rounded-md border border-base-300 transition hover:scale-110 hover:bg-base-200"
                 >
                   {color.value ? (
                     <span
                       className="h-4 w-4 rounded-full border border-base-content/20"
                       style={{
-                        backgroundColor:
-                          color.value,
+                        backgroundColor: color.value,
                       }}
                     />
                   ) : (
-                    <span className="text-xs font-bold">
-                      A
-                    </span>
+                    <span className="text-xs font-bold">A</span>
                   )}
                 </button>
               ))}
@@ -676,9 +639,7 @@ export function ToolbarPlugin() {
           title={b.label}
           onClick={() => toggleBlock(b.type)}
           className={`btn btn-ghost btn-xs btn-square ${
-            blockType === b.type
-              ? "btn-active text-info"
-              : ""
+            blockType === b.type ? "btn-active text-info" : ""
           }`}
         >
           <b.icon size={15} />
@@ -687,10 +648,7 @@ export function ToolbarPlugin() {
 
       <div className="mx-1 h-4 w-px bg-base-300" />
 
-      <div
-        className="relative"
-        onMouseDown={(event) => event.preventDefault()}
-      >
+      <div className="relative" onMouseDown={(event) => event.preventDefault()}>
         <button
           type="button"
           title="Inserir tabela"
@@ -720,7 +678,10 @@ export function ToolbarPlugin() {
                   onChange={(event) =>
                     setNewTableSize((size) => ({
                       ...size,
-                      rows: Math.min(20, Math.max(1, Number(event.target.value) || 1)),
+                      rows: Math.min(
+                        20,
+                        Math.max(1, Number(event.target.value) || 1),
+                      ),
                     }))
                   }
                   className="input input-bordered input-xs mt-1 w-full"
@@ -736,7 +697,10 @@ export function ToolbarPlugin() {
                   onChange={(event) =>
                     setNewTableSize((size) => ({
                       ...size,
-                      columns: Math.min(12, Math.max(1, Number(event.target.value) || 1)),
+                      columns: Math.min(
+                        12,
+                        Math.max(1, Number(event.target.value) || 1),
+                      ),
                     }))
                   }
                   className="input input-bordered input-xs mt-1 w-full"
@@ -826,22 +790,46 @@ export function ToolbarPlugin() {
                   Tamanho
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <button type="button" onClick={() => updateTable("wider")} className="btn btn-ghost btn-xs">
+                  <button
+                    type="button"
+                    onClick={() => updateTable("wider")}
+                    className="btn btn-ghost btn-xs"
+                  >
                     Colunas mais largas
                   </button>
-                  <button type="button" onClick={() => updateTable("narrower")} className="btn btn-ghost btn-xs">
+                  <button
+                    type="button"
+                    onClick={() => updateTable("narrower")}
+                    className="btn btn-ghost btn-xs"
+                  >
                     Colunas mais estreitas
                   </button>
-                  <button type="button" onClick={() => updateTable("taller")} className="btn btn-ghost btn-xs">
+                  <button
+                    type="button"
+                    onClick={() => updateTable("taller")}
+                    className="btn btn-ghost btn-xs"
+                  >
                     Linhas mais altas
                   </button>
-                  <button type="button" onClick={() => updateTable("shorter")} className="btn btn-ghost btn-xs">
+                  <button
+                    type="button"
+                    onClick={() => updateTable("shorter")}
+                    className="btn btn-ghost btn-xs"
+                  >
                     Linhas mais baixas
                   </button>
-                  <button type="button" onClick={() => updateTable("reset-width")} className="btn btn-ghost btn-xs">
+                  <button
+                    type="button"
+                    onClick={() => updateTable("reset-width")}
+                    className="btn btn-ghost btn-xs"
+                  >
                     Largura automática
                   </button>
-                  <button type="button" onClick={() => updateTable("reset-height")} className="btn btn-ghost btn-xs">
+                  <button
+                    type="button"
+                    onClick={() => updateTable("reset-height")}
+                    className="btn btn-ghost btn-xs"
+                  >
                     Altura automática
                   </button>
                 </div>
@@ -939,12 +927,7 @@ export function ToolbarPlugin() {
         type="button"
         title="Desfazer"
         className="btn btn-ghost btn-xs btn-square"
-        onClick={() =>
-          editor.dispatchCommand(
-            UNDO_COMMAND,
-            undefined
-          )
-        }
+        onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
       >
         <Undo2 size={15} />
       </button>
@@ -953,12 +936,7 @@ export function ToolbarPlugin() {
         type="button"
         title="Refazer"
         className="btn btn-ghost btn-xs btn-square"
-        onClick={() =>
-          editor.dispatchCommand(
-            REDO_COMMAND,
-            undefined
-          )
-        }
+        onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}
       >
         <Redo2 size={15} />
       </button>

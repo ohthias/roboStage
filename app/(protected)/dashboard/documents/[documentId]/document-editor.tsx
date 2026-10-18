@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -8,22 +8,25 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
+import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
+import { HorizontalRulePlugin } from "@lexical/react/LexicalHorizontalRulePlugin";
 import {
   DEFAULT_TRANSFORMERS,
   MarkdownShortcutPlugin,
 } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
 import {
+  $createHorizontalRuleNode,
+  $isHorizontalRuleNode,
   HorizontalRuleNode,
 } from "@lexical/react/LexicalHorizontalRuleNode";
+import { CHECK_LIST, type ElementTransformer } from "@lexical/markdown";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { CodeNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
-import {
-  TableCellNode,
-  TableNode,
-  TableRowNode,
-} from "@lexical/table";
+import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ListNode, ListItemNode } from "@lexical/list";
 import {
@@ -39,10 +42,13 @@ import {
   X,
 } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
+import { editorTheme } from "@/components/editor/editor-theme";
+import "@/components/editor/editor.css";
 
 import { AutosavePlugin } from "@/components/editor/plugins/auto-save-plugin";
 import { BlockSelectionPlugin } from "@/components/editor/plugins/block-selection-plugin";
 import { ContextualToolsPlugin } from "@/components/editor/plugins/contextual-tools-plugin";
+import { SlashMenuPlugin } from "@/components/editor/plugins/slash-menu-plugin";
 import {
   deleteDocument,
   duplicateDocument,
@@ -79,33 +85,32 @@ const COVER_OPTIONS = [
   { label: "Cinza", value: "#64748b" },
   { label: "Amarelo", value: "#d4a017" },
   { label: "Turquesa", value: "#0d9488" },
+  { label: "Preto", value: "#121212" },
+  { label: "Branco", value: "#f3f3f3" },
 ];
 
-const editorTheme = {
-  heading: {
-    h1: "mt-8 mb-3 text-3xl font-bold tracking-tight",
-    h2: "mt-7 mb-2 text-2xl font-semibold tracking-tight",
-    h3: "mt-5 mb-2 text-xl font-semibold",
+// "---" / "***" / "___" viram um divisor.
+const HR_TRANSFORMER: ElementTransformer = {
+  dependencies: [HorizontalRuleNode],
+  export: (node) => ($isHorizontalRuleNode(node) ? "***" : null),
+  regExp: /^(---|\*\*\*|___)\s?$/,
+  replace: (parentNode, _children, _match, isImport) => {
+    const line = $createHorizontalRuleNode();
+    if (isImport || parentNode.getNextSibling() != null) {
+      parentNode.replace(line);
+    } else {
+      parentNode.insertBefore(line);
+    }
+    line.selectNext();
   },
-  quote:
-    "my-4 border-l-2 border-base-content/20 pl-4 italic text-base-content/60",
-  list: {
-    ul: "my-2 flex list-disc flex-col gap-1 pl-6",
-    ol: "my-2 flex list-decimal flex-col gap-1 pl-6",
-  },
-  text: {
-    bold: "font-semibold",
-    italic: "italic",
-    underline: "underline",
-    strikethrough: "line-through",
-  },
-  paragraph: "my-2 leading-7",
-  code: "my-2 rounded-md bg-base-200/50 px-2 py-1 font-mono text-sm text-base-content/80",
-  table: "my-4 w-full border-collapse",
-  tableCell: "border border-base-300 px-3 py-2 align-top",
-  tableCellHeader: "bg-base-200 font-semibold",
-  tableRow: "border-base-300",
+  type: "element",
 };
+
+const MARKDOWN_TRANSFORMERS = [
+  HR_TRANSFORMER,
+  CHECK_LIST, // "[] " / "- [ ] " → lista de tarefas (antes da lista comum)
+  ...DEFAULT_TRANSFORMERS,
+];
 
 export function NotebookEditor({
   documentId,
@@ -163,9 +168,7 @@ export function NotebookEditor({
   );
 
   const [, startTransition] = useTransition();
-  const [editorAnchor, setEditorAnchor] = useState<HTMLDivElement | null>(
-    null,
-  );
+  const [editorAnchor, setEditorAnchor] = useState<HTMLDivElement | null>(null);
 
   const initialConfig = useMemo(
     () => ({
@@ -292,14 +295,14 @@ export function NotebookEditor({
           });
         }
         setShowMoveDialog(false);
-          addToast("Página movida com sucesso.", "success");
-          router.refresh();
+        addToast("Página movida com sucesso.", "success");
+        router.refresh();
       } catch (error) {
-          addToast(
+        addToast(
           error instanceof Error
             ? error.message
             : "Não foi possível mover a página.",
-            "error",
+          "error",
         );
       }
     });
@@ -317,49 +320,38 @@ export function NotebookEditor({
   return (
     <div className="min-h-[calc(100vh-5rem)]">
       <LexicalComposer initialConfig={initialConfig}>
+        {/* Cover */}
         {cover && (
           <div
-            className="h-32 w-full rounded-b-lg"
+            className="h-36 w-full rounded-b-2xl sm:h-44"
             style={{ backgroundColor: cover }}
           />
         )}
 
-        <div className="w-full px-6 pb-32">
-          <nav className="mb-8 mt-4 flex items-center gap-1 text-xs text-base-content/40">
-            <Link
-              href="/dashboard/documents"
-              className="transition-colors hover:text-base-content"
-            >
-              Páginas
-            </Link>
-            <ChevronRight size={12} />
-            <span className="max-w-48 truncate text-base-content/60">
-              {title || "Sem título"}
-            </span>
-          </nav>
-
-          {/* Page header */}
-          <header className="group mb-6">
-            <div className="flex items-start justify-between gap-4">
+        <div className="mx-auto w-full max-w-5xl px-5 pb-16 sm:px-8">
+          <header className="group relative my-4">
+            <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <div className="mb-3 flex items-center gap-2">
+                <div className="mb-5 flex flex-wrap items-center gap-3">
                   <div className="relative">
                     <button
                       type="button"
-                      className="flex h-16 w-16 items-center justify-center rounded-xl text-5xl transition-colors hover:bg-base-200"
+                      className="flex size-14 items-center justify-center rounded-2xl border border-base-300/70 bg-base-200/70 text-3xl transition-all hover:border-primary/40 hover:bg-base-200 sm:size-16 sm:text-4xl"
                       title="Alterar ícone"
+                      aria-label="Alterar ícone do documento"
                       onClick={() => setShowEmojiPicker((visible) => !visible)}
                     >
                       {icon ?? "📝"}
                     </button>
 
                     {showEmojiPicker && (
-                      <div className="absolute left-0 top-full z-50 mt-2 grid w-52 grid-cols-6 gap-1 rounded-xl border border-base-300 bg-base-100 p-2 shadow-xl">
+                      <div className="absolute left-0 top-full z-50 mt-2 grid w-56 grid-cols-6 gap-1 rounded-2xl border border-base-300 bg-base-100 p-3 shadow-xl">
                         {EMOJI_OPTIONS.map((emoji) => (
                           <button
                             key={emoji}
                             type="button"
-                            className="flex h-8 w-8 items-center justify-center rounded-md text-lg transition-colors hover:bg-base-200"
+                            aria-label={`Selecionar ${emoji}`}
+                            className="flex size-8 items-center justify-center rounded-lg text-lg transition-colors hover:bg-base-200"
                             onClick={() => {
                               pickIcon(emoji);
                               setShowEmojiPicker(false);
@@ -375,23 +367,33 @@ export function NotebookEditor({
                   <div className="relative">
                     <button
                       type="button"
-                      className="btn btn-ghost btn-xs gap-1.5 text-base-content/50"
-                      title="Capa"
+                      className="flex items-center gap-2 rounded-xl border border-base-300/70 bg-base-100 px-3 py-2 text-xs font-medium text-base-content/65 transition-colors hover:border-primary/40 hover:text-base-content"
+                      title="Personalizar capa"
                       onClick={() => setShowCoverPicker((visible) => !visible)}
                     >
-                      <Palette size={13} />
-                      {cover ? "Trocar capa" : "Adicionar capa"}
+                      <Palette size={15} />
+                      {cover ? "Personalizar capa" : "Adicionar capa"}
                     </button>
 
                     {showCoverPicker && (
-                      <div className="absolute left-0 top-full z-50 mt-2 flex w-56 flex-col gap-2 rounded-xl border border-base-300 bg-base-100 p-2 shadow-xl">
-                        <div className="grid grid-cols-6 gap-1">
+                      <div className="absolute left-0 top-full z-50 mt-2 flex w-60 flex-col gap-3 rounded-2xl border border-base-300 bg-base-100 p-3 shadow-xl">
+                        <p className="text-xs font-semibold text-base-content/70">
+                          Cor da capa
+                        </p>
+
+                        <div className="grid grid-cols-6 gap-2">
                           {COVER_OPTIONS.map((option) => (
                             <button
                               key={option.value}
                               type="button"
                               title={option.label}
-                              className="h-8 w-8 rounded-md border border-base-300"
+                              aria-label={`Capa ${option.label}`}
+                              aria-pressed={cover === option.value}
+                              className={`size-7 rounded-lg border transition-transform hover:scale-110 ${
+                                cover === option.value
+                                  ? "border-base-content ring-2 ring-primary/40 ring-offset-2 ring-offset-base-100"
+                                  : "border-base-300"
+                              }`}
                               style={{ backgroundColor: option.value }}
                               onClick={() => {
                                 pickCover(option.value);
@@ -400,10 +402,11 @@ export function NotebookEditor({
                             />
                           ))}
                         </div>
+
                         {cover && (
                           <button
                             type="button"
-                            className="btn btn-ghost btn-xs text-base-content/50"
+                            className="rounded-lg px-2 py-1.5 text-left text-xs text-base-content/60 transition-colors hover:bg-base-200 hover:text-base-content"
                             onClick={() => {
                               pickCover(null);
                               setShowCoverPicker(false);
@@ -419,7 +422,7 @@ export function NotebookEditor({
 
                 {/* Title */}
                 <input
-                  className="block w-full border-none bg-transparent p-0 text-4xl font-bold tracking-tight text-base-content outline-none placeholder:text-base-content/25 focus:outline-none focus:ring-0 lg:text-5xl"
+                  className="block w-full border-0 bg-transparent p-0 text-3xl font-bold leading-tight tracking-tight text-base-content outline-none placeholder:text-base-content/25 focus:outline-none focus:ring-0 sm:text-4xl lg:text-5xl"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   onBlur={commitTitle}
@@ -430,38 +433,40 @@ export function NotebookEditor({
                     }
                   }}
                   placeholder="Sem título"
+                  aria-label="Título do documento"
                 />
 
-                {/* Metadata */}
-                <div className="mt-3 flex items-center gap-3 text-xs text-base-content/40">
-                  <span className="flex items-center gap-1.5">
-                    <FileText size={12} />
-                    Página
-                  </span>
-
-                  <span>•</span>
-
-                  <div className="flex items-center gap-1">
-                    {saveState === "saving" && (
+                {/* Save status and document controls */}
+                <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-base-content/50">
+                  <span
+                    className={`inline-flex items-center gap-1.5 ${
+                      saveState === "saved"
+                        ? "text-success"
+                        : saveState === "saving"
+                          ? "text-base-content/60"
+                          : "text-base-content/45"
+                    }`}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {saveState === "saving" ? (
                       <>
-                        <Loader2 size={12} className="animate-spin" />
-                        Salvando
+                        <Loader2 size={13} className="animate-spin" />
+                        Salvando alterações
                       </>
-                    )}
-                    {saveState === "saved" && (
+                    ) : saveState === "saved" ? (
                       <>
-                        <Check size={12} />
+                        <Check size={13} />
                         Salvo
                       </>
+                    ) : (
+                      "Alterações salvas"
                     )}
-                    {saveState === "idle" && "Alterações salvas"}
-                  </div>
-
-                  <span>•</span>
+                  </span>
 
                   <button
                     type="button"
-                    className="flex items-center gap-1 text-xs text-base-content/40 transition-colors hover:text-base-content/70"
+                    className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-base-200 hover:text-base-content"
                     onClick={() =>
                       setShowAdvancedOptions((visible) => !visible)
                     }
@@ -469,128 +474,160 @@ export function NotebookEditor({
                   >
                     <ChevronRight
                       size={14}
-                      className={`transition-transform ${showAdvancedOptions ? "rotate-90" : ""}`}
+                      className={`transition-transform duration-200 ${
+                        showAdvancedOptions ? "rotate-90" : ""
+                      }`}
                     />
-                    Opções avançadas do documento
+                    {showAdvancedOptions ? "Ocultar detalhes" : "Detalhes"}
                   </button>
                 </div>
 
+                {/* Advanced document properties */}
                 {showAdvancedOptions && (
-                  <div className="mt-2 rounded-xl border border-base-200 bg-base-100/50 p-3">
-                    {/* Description */}
-                    <input
-                      className="block w-full border-none bg-transparent p-0 text-sm text-base-content/50 outline-none placeholder:text-base-content/25 focus:outline-none focus:ring-0"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      onBlur={commitDescription}
-                      placeholder="Adicionar uma descrição..."
-                    />
+                  <div className="mt-5 space-y-5 rounded-2xl border border-base-300/70 bg-base-200/30 p-4 sm:p-5">
+                    <div>
+                      <label className="mb-2 block text-xs font-semibold text-base-content/60">
+                        Descrição
+                      </label>
+                      <input
+                        className="w-full rounded-xl border border-base-300/70 bg-base-100 px-3 py-2.5 text-sm text-base-content outline-none transition-colors placeholder:text-base-content/35 focus:border-primary/50 focus:ring-2 focus:ring-primary/10"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        onBlur={commitDescription}
+                        placeholder="Descreva o objetivo desta página..."
+                      />
+                    </div>
 
-                    {/* Properties */}
-                    <div className="mt-4 flex flex-wrap items-center gap-1.5">
-                      {Object.entries(properties).map(([key, value]) => (
-                        <span
-                          key={key}
-                          className="group/prop flex items-center gap-1 rounded-full bg-base-200 px-2.5 py-1 text-xs text-base-content/70"
-                        >
-                          <span className="font-medium">{key}:</span>{" "}
-                          {String(value)}
-                          <button
-                            type="button"
-                            className="ml-0.5 opacity-0 transition-opacity group-hover/prop:opacity-100"
-                            onClick={() => removeProperty(key)}
+                    <div>
+                      <p className="mb-2 text-xs font-semibold text-base-content/60">
+                        Propriedades
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        {Object.entries(properties).map(([key, value]) => (
+                          <span
+                            key={key}
+                            className="group/prop inline-flex items-center gap-2 rounded-lg border border-base-300/70 bg-base-100 px-3 py-1.5 text-xs text-base-content/75"
                           >
-                            <X size={11} />
-                          </button>
-                        </span>
-                      ))}
-
-                      <div className="relative">
-                        <button
-                          type="button"
-                          className="flex items-center gap-1 rounded-full border border-dashed border-base-300 px-2.5 py-1 text-xs text-base-content/40 hover:text-base-content/70"
-                          onClick={() =>
-                            setShowPropertyForm((visible) => !visible)
-                          }
-                        >
-                          <Plus size={11} />
-                          Propriedade
-                        </button>
-                        {showPropertyForm && (
-                          <div className="absolute left-0 top-full z-50 mt-2 flex w-56 flex-col gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-xl">
-                            <input
-                              className="input input-xs input-bordered"
-                              placeholder="Nome (ex: status)"
-                              value={newPropKey}
-                              onChange={(e) => setNewPropKey(e.target.value)}
-                            />
-                            <input
-                              className="input input-xs input-bordered"
-                              placeholder="Valor (ex: em andamento)"
-                              value={newPropValue}
-                              onChange={(e) => setNewPropValue(e.target.value)}
-                              onKeyDown={(e) =>
-                                e.key === "Enter" && addProperty()
-                              }
-                            />
+                            <span className="text-base-content/50">{key}</span>
+                            <span className="font-semibold">
+                              {String(value)}
+                            </span>
                             <button
                               type="button"
-                              className="btn btn-xs btn-primary"
-                              onClick={addProperty}
+                              className="rounded p-0.5 text-base-content/40 transition-colors hover:bg-error/10 hover:text-error"
+                              aria-label={`Remover propriedade ${key}`}
+                              onClick={() => removeProperty(key)}
                             >
-                              Adicionar
+                              <X size={13} />
                             </button>
-                          </div>
-                        )}
+                          </span>
+                        ))}
+
+                        <div className="relative">
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-base-300 px-3 py-1.5 text-xs text-base-content/60 transition-colors hover:border-primary/50 hover:text-primary"
+                            onClick={() =>
+                              setShowPropertyForm((visible) => !visible)
+                            }
+                          >
+                            <Plus size={13} />
+                            Adicionar
+                          </button>
+
+                          {showPropertyForm && (
+                            <div className="absolute left-0 top-full z-50 mt-2 flex w-60 flex-col gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-xl">
+                              <input
+                                className="input input-sm input-bordered w-full"
+                                placeholder="Nome da propriedade"
+                                value={newPropKey}
+                                onChange={(e) => setNewPropKey(e.target.value)}
+                              />
+                              <input
+                                className="input input-sm input-bordered w-full"
+                                placeholder="Valor"
+                                value={newPropValue}
+                                onChange={(e) =>
+                                  setNewPropValue(e.target.value)
+                                }
+                                onKeyDown={(e) =>
+                                  e.key === "Enter" && addProperty()
+                                }
+                              />
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-primary"
+                                onClick={addProperty}
+                              >
+                                Adicionar propriedade
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Tags */}
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                      {tags.map((t) => (
-                        <span
-                          key={t.tagId}
-                          className="group/tag flex items-center gap-1 rounded-full border border-base-300 px-2.5 py-1 text-xs text-base-content/60"
-                        >
-                          {t.name}
-                          <button
-                            type="button"
-                            className="opacity-0 transition-opacity group-hover/tag:opacity-100"
-                            onClick={() => removeTag(t.name)}
+                    <div>
+                      <p className="mb-2 text-xs font-semibold text-base-content/60">
+                        Etiquetas
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        {tags.map((t) => (
+                          <span
+                            key={t.tagId}
+                            className="group/tag inline-flex items-center gap-1.5 rounded-full bg-primary/8 px-3 py-1.5 text-xs font-medium text-base-content/75 ring-1 ring-inset ring-primary/15"
                           >
-                            <X size={11} />
-                          </button>
-                        </span>
-                      ))}
-                      <input
-                        className="input input-xs input-bordered w-24"
-                        placeholder="+ tag"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && addTag()}
-                      />
+                            {t.name}
+                            <button
+                              type="button"
+                              className="rounded-full p-0.5 text-base-content/45 transition-colors hover:bg-error/10 hover:text-error"
+                              aria-label={`Remover etiqueta ${t.name}`}
+                              onClick={() => removeTag(t.name)}
+                            >
+                              <X size={12} />
+                            </button>
+                          </span>
+                        ))}
+
+                        <input
+                          className="w-28 rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-xs outline-none placeholder:text-base-content/40 focus:border-base-300 focus:bg-base-100"
+                          placeholder="+ Etiqueta"
+                          value={tagInput}
+                          onChange={(e) => setTagInput(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && addTag()}
+                          aria-label="Adicionar etiqueta"
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
 
               {/* Page actions */}
-              <div className="dropdown dropdown-end">
+              <div className="dropdown dropdown-end shrink-0">
                 <button
                   type="button"
                   tabIndex={0}
                   aria-label="Ações da página"
-                  className="btn btn-ghost btn-sm btn-square text-base-content/40"
+                  title="Ações da página"
+                  className="btn btn-ghost btn-square btn-sm rounded-xl text-base-content/55 hover:bg-base-200 hover:text-base-content"
                 >
-                  <MoreHorizontal size={18} />
+                  <MoreHorizontal size={20} />
                 </button>
 
                 <ul
                   tabIndex={0}
-                  className="menu dropdown-content z-50 mt-1 w-48 rounded-xl border border-base-300 bg-base-100 p-1 shadow-xl"
+                  className="menu dropdown-content z-50 mt-2 w-52 rounded-2xl border border-base-300 bg-base-100 p-2 shadow-xl"
                 >
                   <li>
-                    <button type="button" onClick={handleDuplicate}>
+                    <button
+                      type="button"
+                      className="rounded-xl text-sm"
+                      onClick={handleDuplicate}
+                    >
+                      <FileText size={15} />
                       Duplicar página
                     </button>
                   </li>
@@ -598,6 +635,7 @@ export function NotebookEditor({
                   <li>
                     <button
                       type="button"
+                      className="rounded-xl text-sm"
                       onClick={() => {
                         setMoveTarget(
                           currentParentId
@@ -613,15 +651,13 @@ export function NotebookEditor({
                     </button>
                   </li>
 
-                  <div className="my-1 border-t border-base-300" />
-
-                  <li>
+                  <li className="mt-1 border-t border-base-300 pt-1">
                     <button
                       type="button"
-                      className="text-error"
+                      className="rounded-xl text-sm text-error hover:bg-error/10"
                       onClick={handleDelete}
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={15} />
                       Excluir página
                     </button>
                   </li>
@@ -682,7 +718,8 @@ export function NotebookEditor({
           )}
 
           {/* Editor */}
-          <div ref={setEditorAnchor} className="relative">
+          {/* pl-14: espaço à esquerda para o handle (+ / arrastar) dos blocos */}
+          <div ref={setEditorAnchor} className="relative pl-14">
             <div className="relative">
               <RichTextPlugin
                 contentEditable={
@@ -703,8 +740,8 @@ export function NotebookEditor({
                   />
                 }
                 placeholder={
-                  <div className="pointer-events-none absolute left-1 top-2 text-[15px] text-base-content/30">
-                    Comece a escrever...
+                  <div className="pointer-events-none absolute left-1 top-4 text-[15px] text-base-content/30">
+                    Escreva algo ou digite &quot;/&quot; para ver os comandos...
                   </div>
                 }
                 ErrorBoundary={LexicalErrorBoundary}
@@ -715,8 +752,13 @@ export function NotebookEditor({
 
         <HistoryPlugin />
         <ListPlugin />
-        <MarkdownShortcutPlugin transformers={DEFAULT_TRANSFORMERS} />
-        <TablePlugin hasHorizontalScroll />
+        <CheckListPlugin />
+        <LinkPlugin />
+        <TabIndentationPlugin />
+        <HorizontalRulePlugin />
+        <MarkdownShortcutPlugin transformers={MARKDOWN_TRANSFORMERS} />
+        <TablePlugin hasHorizontalScroll hasCellMerge />
+        <SlashMenuPlugin />
         <BlockSelectionPlugin anchorElem={editorAnchor} />
         <ContextualToolsPlugin />
 

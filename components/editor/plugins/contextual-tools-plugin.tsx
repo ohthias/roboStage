@@ -3,577 +3,599 @@
 import {
   useCallback,
   useEffect,
-  useMemo,
+  useLayoutEffect,
+  useRef,
   useState,
-  type ReactElement,
-  type RefObject,
+  type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import {
-  LexicalTypeaheadMenuPlugin,
-  MenuOption,
-  useBasicTypeaheadTriggerMatch,
-} from "@lexical/react/LexicalTypeaheadMenuPlugin";
-import {
-  $getSelection,
-  $isRangeSelection,
-  $createParagraphNode,
-  FORMAT_ELEMENT_COMMAND,
-  FORMAT_TEXT_COMMAND,
-  KEY_ESCAPE_COMMAND,
-  SELECTION_CHANGE_COMMAND,
-  COMMAND_PRIORITY_LOW,
-  type LexicalEditor,
-} from "lexical";
-import { $setBlocksType } from "@lexical/selection";
-import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
-import { $createCodeNode } from "@lexical/code";
-import {
-  INSERT_ORDERED_LIST_COMMAND,
-  INSERT_UNORDERED_LIST_COMMAND,
-} from "@lexical/list";
-import { $createHorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
-import { INSERT_TABLE_COMMAND } from "@lexical/table";
-import {
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  Code,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
-  ArrowDown,
-  ArrowUp,
-  Trash2,
-  Table2,
-  Minus,
-  Plus,
-  type LucideIcon,
-} from "lucide-react";
+import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
+import { $isCodeNode } from "@lexical/code";
 import {
   $deleteTableColumnAtSelection,
   $deleteTableRowAtSelection,
-  $getTableCellNodeFromLexicalNode,
+  $getTableNodeFromLexicalNodeOrThrow,
   $insertTableColumnAtSelection,
   $insertTableRowAtSelection,
   $isTableSelection,
-  TableCellHeaderStates,
 } from "@lexical/table";
+import { $findMatchingParent, mergeRegister } from "@lexical/utils";
+import { $isHorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
+import {
+  $getSelection,
+  $isNodeSelection,
+  $isRangeSelection,
+  COMMAND_PRIORITY_HIGH,
+  COMMAND_PRIORITY_LOW,
+  FORMAT_TEXT_COMMAND,
+  KEY_DOWN_COMMAND,
+  SELECTION_CHANGE_COMMAND,
+  type TextFormatType,
+} from "lexical";
+import {
+  Bold,
+  Check,
+  ChevronDown,
+  Code,
+  Copy,
+  Italic,
+  Link2,
+  Link2Off,
+  Strikethrough,
+  Trash2,
+  Underline,
+  X,
+  ArrowUpToLine,
+  ArrowDownToLine,
+  ArrowLeftToLine,
+  ArrowRightToLine,
+} from "lucide-react";
+import {
+  $deleteBlock,
+  $getBlockType,
+  $getTopLevelBlock,
+  $transformBlock,
+  BLOCK_LABELS,
+  type BlockType,
+} from "../block-utils";
 
-type BlockAction =
-  | "paragraph"
-  | "h1"
-  | "h2"
-  | "h3"
-  | "quote"
-  | "code"
-  | "bullet"
-  | "number"
-  | "table"
-  | "divider";
+type Kind = "text" | "code" | "table" | "node";
 
-class SlashOption extends MenuOption {
-  label: string;
-  description: string;
-  icon: ReactElement;
-  action: BlockAction;
+type ToolbarState = {
+  kind: Kind;
+  rect: { top: number; left: number; width: number; height: number };
+  blockType: BlockType | null;
+  blockKey: string | null;
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  strikethrough: boolean;
+  code: boolean;
+  link: boolean;
+  linkUrl: string;
+};
 
-  constructor(
-    key: string,
-    label: string,
-    description: string,
-    icon: ReactElement,
-    action: BlockAction,
-  ) {
-    super(key);
-    this.label = label;
-    this.description = description;
-    this.icon = icon;
-    this.action = action;
-  }
-}
-
-const slashOptions = [
-  new SlashOption(
-    "paragraph",
-    "Texto",
-    "Comece com um parágrafo",
-    <span>¶</span>,
-    "paragraph",
-  ),
-  new SlashOption("h1", "Título 1", "Título grande", <span>H1</span>, "h1"),
-  new SlashOption("h2", "Título 2", "Título médio", <span>H2</span>, "h2"),
-  new SlashOption("h3", "Título 3", "Título pequeno", <span>H3</span>, "h3"),
-  new SlashOption(
-    "bullet",
-    "Lista",
-    "Lista com marcadores",
-    <span>•</span>,
-    "bullet",
-  ),
-  new SlashOption(
-    "number",
-    "Lista numerada",
-    "Lista ordenada",
-    <span>1.</span>,
-    "number",
-  ),
-  new SlashOption(
-    "quote",
-    "Citação",
-    "Destaque uma citação",
-    <span>“</span>,
-    "quote",
-  ),
-  new SlashOption(
-    "code",
-    "Código",
-    "Bloco de código",
-    <Code size={16} />,
-    "code",
-  ),
-  new SlashOption(
-    "table",
-    "Tabela",
-    "Insira uma tabela editável",
-    <Table2 size={16} />,
-    "table",
-  ),
-  new SlashOption(
-    "divider",
-    "Divisor",
-    "Separe seções do conteúdo",
-    <Minus size={16} />,
-    "divider",
-  ),
+const TURN_INTO: BlockType[] = [
+  "paragraph",
+  "h1",
+  "h2",
+  "h3",
+  "bullet",
+  "number",
+  "check",
+  "quote",
+  "code",
 ];
 
-function executeSlashAction(
-  editor: LexicalEditor,
-  option: SlashOption,
-  closeMenu: () => void,
-) {
-  editor.update(() => {
-    const selection = $getSelection();
-    if (!$isRangeSelection(selection)) return;
-
-    switch (option.action) {
-      case "table":
-        editor.dispatchCommand(INSERT_TABLE_COMMAND, {
-          columns: "3",
-          rows: "3",
-          includeHeaders: true,
-        });
-        break;
-      case "divider":
-        selection.insertNodes([$createHorizontalRuleNode()]);
-        break;
-      case "bullet":
-        editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
-        break;
-      case "number":
-        editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
-        break;
-      default:
-        $setBlocksType(selection, () => {
-          switch (option.action) {
-            case "h1":
-              return $createHeadingNode("h1");
-            case "h2":
-              return $createHeadingNode("h2");
-            case "h3":
-              return $createHeadingNode("h3");
-            case "quote":
-              return $createQuoteNode();
-            case "code":
-              return $createCodeNode();
-            default:
-              return $createParagraphNode();
-          }
-        });
-    }
-  });
-  closeMenu();
+function rectOf(r: DOMRect) {
+  return { top: r.top, left: r.left, width: r.width, height: r.height };
 }
 
-export function SlashCommandsPlugin() {
-  const [editor] = useLexicalComposerContext();
-  const triggerFn = useBasicTypeaheadTriggerMatch("/", {
-    minLength: 0,
-    maxLength: 30,
-  });
-
-  const menuRenderFn = useCallback(
-    (
-      anchorElementRef: RefObject<HTMLElement | null>,
-      {
-        selectedIndex,
-        options,
-        selectOptionAndCleanUp,
-        setHighlightedIndex,
-      }: {
-        selectedIndex: number | null;
-        options: SlashOption[];
-        selectOptionAndCleanUp: (option: SlashOption) => void;
-        setHighlightedIndex: (index: number) => void;
-      },
-      matchingString: string,
-    ) => (
-      <div
-        ref={(element) => {
-          anchorElementRef.current = element;
-        }}
-        className="z-50 w-72 rounded-xl border border-base-300 bg-base-100 p-2 shadow-xl"
-      >
-        <div className="px-2 pb-2 text-xs font-semibold text-base-content/50">
-          Inserir bloco
-          {matchingString && ` · ${matchingString}`}
-        </div>
-        <div className="max-h-72 overflow-y-auto">
-          {options.map((option, index) => (
-            <button
-              key={option.key}
-              ref={option.setRefElement}
-              type="button"
-              onMouseEnter={() => setHighlightedIndex(index)}
-              onClick={() => selectOptionAndCleanUp(option)}
-              className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left ${
-                selectedIndex === index ? "bg-base-200" : "hover:bg-base-200"
-              }`}
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-md border border-base-300 text-xs font-semibold">
-                {option.icon}
-              </span>
-              <span>
-                <span className="block text-sm font-medium">
-                  {option.label}
-                </span>
-                <span className="block text-xs text-base-content/50">
-                  {option.description}
-                </span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-    ),
-    [],
-  );
-
-  const options = useMemo(() => slashOptions, []);
-
+function ToolButton({
+  label,
+  active,
+  danger,
+  onClick,
+  children,
+}: {
+  label: string;
+  active?: boolean;
+  danger?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
-    <LexicalTypeaheadMenuPlugin<SlashOption>
-      triggerFn={triggerFn}
-      options={options}
-      menuRenderFn={menuRenderFn}
-      onSelectOption={(option, _node, closeMenu) =>
-        executeSlashAction(editor, option, closeMenu)
-      }
-      onQueryChange={() => undefined}
-      preselectFirstItem
-    />
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      aria-pressed={active}
+      onClick={onClick}
+      className={`btn btn-ghost btn-xs btn-square h-8 min-h-8 w-8 ${
+        active ? "bg-primary/15 text-primary" : ""
+      } ${danger ? "text-error hover:bg-error/10" : ""}`}
+    >
+      {children}
+    </button>
   );
 }
 
-function selectedBlocks(editor: LexicalEditor) {
-  const selection = $getSelection();
-  if (!selection) return [];
-  const nodes = new Map<
-    string,
-    ReturnType<typeof selection.getNodes>[number]
-  >();
-  selection.getNodes().forEach((node) => {
-    const top = node.getTopLevelElement();
-    if (top) nodes.set(top.getKey(), top);
-  });
-  return [...nodes.values()];
-}
+const Divider = () => <span className="mx-1 h-5 w-px bg-base-300" />;
 
-function moveSelectedBlocks(editor: LexicalEditor, direction: "up" | "down") {
-  editor.update(() => {
-    const nodes = selectedBlocks(editor);
-
-    if (nodes.length === 0) return;
-
-    const firstNode = nodes[0];
-    const lastNode = nodes[nodes.length - 1];
-
-    if (direction === "up") {
-      const previous = firstNode.getPreviousSibling();
-
-      if (!previous) return;
-
-      // Move o bloco anterior para depois da seleção,
-      // preservando a ordem dos blocos selecionados.
-      lastNode.insertAfter(previous);
-      return;
-    }
-
-    const next = lastNode.getNextSibling();
-
-    if (!next) return;
-
-    // Move o bloco seguinte para antes da seleção.
-    firstNode.insertBefore(next);
-  });
-}
-
-function SelectionToolsPlugin() {
+export function ContextualToolsPlugin() {
   const [editor] = useLexicalComposerContext();
-  const [selectionCount, setSelectionCount] = useState(0);
-  const [rect, setRect] = useState<DOMRect | null>(null);
-  const [tableContext, setTableContext] = useState(false);
+  const [state, setState] = useState<ToolbarState | null>(null);
+  const [pointerDown, setPointerDown] = useState(false);
+  const [linkInput, setLinkInput] = useState<string | null>(null);
+  const [showTurnInto, setShowTurnInto] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const linkLocked = useRef(false);
+  linkLocked.current = linkInput !== null;
 
-  const update = useCallback(() => {
+  const compute = useCallback(() => {
+    if (linkLocked.current) return;
+    const root = editor.getRootElement();
+    const domSel = window.getSelection();
+
     editor.getEditorState().read(() => {
       const selection = $getSelection();
-      if (
-        (!$isRangeSelection(selection) && !$isTableSelection(selection)) ||
-        ($isRangeSelection(selection) && selection.isCollapsed())
-      ) {
-        setSelectionCount(0);
-        setRect(null);
-        setTableContext(false);
-        return;
+
+      if (!root || !editor.isEditable()) return setState(null);
+
+      // Hr / outros nós selecionados como objeto
+      if ($isNodeSelection(selection)) {
+        const nodes = selection.getNodes();
+        if (nodes.length === 1 && $isHorizontalRuleNode(nodes[0])) {
+          const el = editor.getElementByKey(nodes[0].getKey());
+          if (el) {
+            return setState({
+              kind: "node",
+              rect: rectOf(el.getBoundingClientRect()),
+              blockType: null,
+              blockKey: nodes[0].getKey(),
+              bold: false,
+              italic: false,
+              underline: false,
+              strikethrough: false,
+              code: false,
+              link: false,
+              linkUrl: "",
+            });
+          }
+        }
+        return setState(null);
       }
-      const selectedNodes = selection.getNodes();
-      const cell = selectedNodes
-        .map((node) => $getTableCellNodeFromLexicalNode(node))
-        .find((node) => node !== null);
-      setTableContext(cell !== null);
-      setSelectionCount(selectedBlocks(editor).length);
-      const domSelection = window.getSelection();
 
-      const domRect =
-        domSelection && domSelection.rangeCount > 0
-          ? domSelection.getRangeAt(0).getBoundingClientRect()
-          : null;
+      // Várias células de tabela selecionadas
+      if ($isTableSelection(selection)) {
+        const cellEl = editor.getElementByKey(selection.anchor.key);
+        const table = cellEl?.closest("table");
+        if (cellEl) {
+          const r = table
+            ? (() => {
+                const c = cellEl.getBoundingClientRect();
+                const t = table.getBoundingClientRect();
+                return new DOMRect(c.left, t.top, c.width, c.height);
+              })()
+            : cellEl.getBoundingClientRect();
+          return setState({
+            kind: "table",
+            rect: rectOf(r),
+            blockType: null,
+            blockKey: null,
+            bold: false,
+            italic: false,
+            underline: false,
+            strikethrough: false,
+            code: false,
+            link: false,
+            linkUrl: "",
+          });
+        }
+        return setState(null);
+      }
 
-      const tableRect = cell
-        ? (editor
-            .getElementByKey(cell.getKey())
-            ?.closest("table")
-            ?.getBoundingClientRect() ?? null)
-        : null;
+      if (
+        !$isRangeSelection(selection) ||
+        selection.isCollapsed() ||
+        selection.getTextContent() === "" ||
+        !domSel ||
+        domSel.rangeCount === 0 ||
+        !root.contains(domSel.anchorNode)
+      ) {
+        return setState(null);
+      }
 
-      const editorRect = editor.getRootElement()?.getBoundingClientRect();
+      const anchorNode = selection.anchor.getNode();
+      const top = $getTopLevelBlock(anchorNode);
+      const inCode =
+        !!$findMatchingParent(anchorNode, $isCodeNode) ||
+        (top ? $isCodeNode(top) : false);
 
-      const nextRect =
-        domRect && (domRect.width > 0 || domRect.height > 0)
-          ? domRect
-          : (tableRect ?? editorRect ?? null);
+      const linkNode = $findMatchingParent(
+        selection.focus.getNode(),
+        $isLinkNode,
+      );
+      const rect = domSel.getRangeAt(0).getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) return setState(null);
 
-      setRect(nextRect);
+      setState({
+        kind: inCode ? "code" : "text",
+        rect: rectOf(rect),
+        blockType: top ? $getBlockType(top) : null,
+        blockKey: top ? top.getKey() : null,
+        bold: selection.hasFormat("bold"),
+        italic: selection.hasFormat("italic"),
+        underline: selection.hasFormat("underline"),
+        strikethrough: selection.hasFormat("strikethrough"),
+        code: selection.hasFormat("code"),
+        link: !!linkNode,
+        linkUrl: linkNode ? linkNode.getURL() : "",
+      });
     });
   }, [editor]);
 
+  // Mantém o estado sincronizado com o editor / seleção.
   useEffect(() => {
-    const unregister = editor.registerCommand(
-      SELECTION_CHANGE_COMMAND,
+    const onSelection = () => requestAnimationFrame(compute);
+    document.addEventListener("selectionchange", onSelection);
+    window.addEventListener("scroll", compute, true);
+    window.addEventListener("resize", compute);
+    return mergeRegister(
       () => {
-        update();
-        return false;
+        document.removeEventListener("selectionchange", onSelection);
+        window.removeEventListener("scroll", compute, true);
+        window.removeEventListener("resize", compute);
       },
-      COMMAND_PRIORITY_LOW,
+      editor.registerUpdateListener(() => compute()),
+      editor.registerCommand(
+        SELECTION_CHANGE_COMMAND,
+        () => {
+          compute();
+          return false;
+        },
+        COMMAND_PRIORITY_LOW,
+      ),
+      // Ctrl/Cmd + K abre o campo de link
+      editor.registerCommand(
+        KEY_DOWN_COMMAND,
+        (e: KeyboardEvent) => {
+          if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+            const hasSelection = editor.read(() => {
+              const s = $getSelection();
+              return $isRangeSelection(s) && !s.isCollapsed();
+            });
+            if (!hasSelection) return false;
+            e.preventDefault();
+            compute();
+            setLinkInput((prev) => prev ?? "https://");
+            return true;
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_HIGH,
+      ),
     );
-    const onSelectionChange = () => update();
-    document.addEventListener("selectionchange", onSelectionChange);
-    return () => {
-      unregister();
-      document.removeEventListener("selectionchange", onSelectionChange);
+  }, [editor, compute]);
+
+  // Esconde a barra enquanto o mouse seleciona texto.
+  useEffect(() => {
+    const root = editor.getRootElement();
+    if (!root) return;
+    const down = () => setPointerDown(true);
+    const up = () => {
+      setPointerDown(false);
+      requestAnimationFrame(compute);
     };
-  }, [editor, update]);
+    root.addEventListener("pointerdown", down);
+    document.addEventListener("pointerup", up);
+    return () => {
+      root.removeEventListener("pointerdown", down);
+      document.removeEventListener("pointerup", up);
+    };
+  }, [editor, compute]);
 
+  // Fecha submenus quando a seleção some.
   useEffect(() => {
-    return editor.registerCommand(
-      KEY_ESCAPE_COMMAND,
-      () => {
-        setSelectionCount(0);
-        setRect(null);
-        return false;
-      },
-      COMMAND_PRIORITY_LOW,
-    );
-  }, [editor]);
+    if (!state) {
+      setLinkInput(null);
+      setShowTurnInto(false);
+    }
+  }, [state]);
 
-  if (!rect || selectionCount === 0) return null;
+  // Posiciona acima da seleção (ou abaixo se não houver espaço).
+  useLayoutEffect(() => {
+    if (!state || !ref.current) return setPos(null);
+    const el = ref.current;
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    const gap = 8;
+    let top = state.rect.top - h - gap;
+    if (top < gap) top = state.rect.top + state.rect.height + gap;
+    let left = state.rect.left + state.rect.width / 2 - w / 2;
+    left = Math.max(gap, Math.min(left, window.innerWidth - w - gap));
+    setPos({ top, left });
+  }, [state, linkInput, showTurnInto]);
 
-  const actions: { label: string; icon: LucideIcon; onClick: () => void }[] = [
-    {
-      label: "Negrito",
-      icon: Bold,
-      onClick: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold"),
-    },
-    {
-      label: "Itálico",
-      icon: Italic,
-      onClick: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic"),
-    },
-    {
-      label: "Sublinhado",
-      icon: Underline,
-      onClick: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline"),
-    },
-    {
-      label: "Tachado",
-      icon: Strikethrough,
-      onClick: () =>
-        editor.dispatchCommand(FORMAT_TEXT_COMMAND, "strikethrough"),
-    },
-    {
-      label: "Esquerda",
-      icon: AlignLeft,
-      onClick: () => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "left"),
-    },
-    {
-      label: "Centro",
-      icon: AlignCenter,
-      onClick: () => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "center"),
-    },
-    {
-      label: "Direita",
-      icon: AlignRight,
-      onClick: () => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "right"),
-    },
-    {
-      label: "Justificar",
-      icon: AlignJustify,
-      onClick: () => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "justify"),
-    },
-  ];
+  const format = (type: TextFormatType) =>
+    editor.dispatchCommand(FORMAT_TEXT_COMMAND, type);
 
-  return (
+  const turnInto = (type: BlockType) => {
+    editor.update(() => {
+      const selection = $getSelection();
+      if (!$isRangeSelection(selection)) return;
+      const keys = new Set<string>();
+      selection.getNodes().forEach((n) => {
+        const t = $getTopLevelBlock(n);
+        if (t) keys.add(t.getKey());
+      });
+      keys.forEach((key) => $transformBlock(key, type));
+    });
+    setShowTurnInto(false);
+  };
+
+  const applyLink = () => {
+    const url = (linkInput ?? "").trim();
+    linkLocked.current = false;
+    setLinkInput(null);
+    if (url && url !== "https://") {
+      const safe = /^(https?:|mailto:|tel:|\/|#)/i.test(url)
+        ? url
+        : `https://${url}`;
+      editor.dispatchCommand(TOGGLE_LINK_COMMAND, safe);
+    }
+    editor.focus();
+  };
+
+  const tableAction = (fn: () => void) => {
+    editor.update(fn);
+  };
+
+  if (!state || pointerDown || typeof document === "undefined") return null;
+
+  const current = state.blockType ? BLOCK_LABELS[state.blockType] : "Texto";
+
+  return createPortal(
     <div
-      className="fixed z-50 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-1 rounded-xl border border-base-300 bg-base-100 p-1.5 shadow-xl"
+      ref={ref}
+      role="toolbar"
+      aria-label="Ferramentas de formatação"
+      className="fixed z-[60] flex items-center rounded-xl border border-base-300 bg-base-100 p-1 shadow-xl"
       style={{
-        left: Math.max(8, Math.min(rect.left, window.innerWidth - 360)),
-        top: Math.max(8, rect.top - 48),
+        top: pos?.top ?? -9999,
+        left: pos?.left ?? -9999,
+        visibility: pos ? "visible" : "hidden",
       }}
-      onMouseDown={(event) => event.preventDefault()}
+      // Evita perder a seleção do editor ao clicar nos botões.
+      onMouseDown={(e) => {
+        if ((e.target as HTMLElement).tagName !== "INPUT") e.preventDefault();
+      }}
     >
-      {actions.map(({ label, icon: Icon, onClick }) => (
-        <button
-          key={label}
-          type="button"
-          title={label}
-          aria-label={label}
-          onClick={onClick}
-          className="btn btn-ghost btn-xs btn-square"
+      {linkInput !== null ? (
+        <div className="flex items-center gap-1 px-1">
+          <input
+            autoFocus
+            className="input input-sm input-bordered w-64"
+            placeholder="Cole ou digite um link"
+            value={linkInput}
+            onChange={(e) => setLinkInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                applyLink();
+              } else if (e.key === "Escape") {
+                e.preventDefault();
+                linkLocked.current = false;
+                setLinkInput(null);
+                editor.focus();
+              }
+            }}
+          />
+          <ToolButton label="Aplicar link" onClick={applyLink}>
+            <Check size={15} />
+          </ToolButton>
+          <ToolButton
+            label="Cancelar"
+            onClick={() => {
+              linkLocked.current = false;
+              setLinkInput(null);
+              editor.focus();
+            }}
+          >
+            <X size={15} />
+          </ToolButton>
+        </div>
+      ) : state.kind === "node" ? (
+        <ToolButton
+          label="Remover divisor"
+          danger
+          onClick={() =>
+            editor.update(() => {
+              if (state.blockKey) $deleteBlock(state.blockKey);
+            })
+          }
         >
-          <Icon size={15} />
-        </button>
-      ))}
-      <span className="mx-1 h-5 w-px bg-base-300" />
-      {tableContext && (
+          <Trash2 size={15} />
+        </ToolButton>
+      ) : state.kind === "table" ? (
         <>
-          <button
-            type="button"
-            title="Adicionar linha"
-            aria-label="Adicionar linha"
+          <ToolButton
+            label="Inserir linha acima"
             onClick={() =>
-              editor.update(() => $insertTableRowAtSelection(true))
+              tableAction(() => void $insertTableRowAtSelection(false))
             }
-            className="btn btn-ghost btn-xs btn-square"
           >
-            <Plus size={15} />
-          </button>
-          <button
-            type="button"
-            title="Remover linha"
-            aria-label="Remover linha"
-            onClick={() => editor.update(() => $deleteTableRowAtSelection())}
-            className="btn btn-ghost btn-xs btn-square"
-          >
-            <Minus size={15} />
-          </button>
-          <button
-            type="button"
-            title="Adicionar coluna"
-            aria-label="Adicionar coluna"
+            <ArrowUpToLine size={15} />
+          </ToolButton>
+          <ToolButton
+            label="Inserir linha abaixo"
             onClick={() =>
-              editor.update(() => $insertTableColumnAtSelection(true))
+              tableAction(() => void $insertTableRowAtSelection(true))
             }
-            className="btn btn-ghost btn-xs btn-square"
           >
-            <Plus size={15} />
-          </button>
-          <button
-            type="button"
-            title="Remover coluna"
-            aria-label="Remover coluna"
-            onClick={() => editor.update(() => $deleteTableColumnAtSelection())}
-            className="btn btn-ghost btn-xs btn-square"
-          >
-            <Minus size={15} />
-          </button>
-          <button
-            type="button"
-            title="Alternar cabeçalho"
-            aria-label="Alternar cabeçalho"
+            <ArrowDownToLine size={15} />
+          </ToolButton>
+          <ToolButton
+            label="Inserir coluna à esquerda"
             onClick={() =>
-              editor.update(() => {
-                const selection = $getSelection();
-                const cell = selection
-                  ?.getNodes()
-                  .map((node) => $getTableCellNodeFromLexicalNode(node))
-                  .find((node) => node !== null);
-                cell?.toggleHeaderStyle(TableCellHeaderStates.BOTH);
+              tableAction(() => void $insertTableColumnAtSelection(false))
+            }
+          >
+            <ArrowLeftToLine size={15} />
+          </ToolButton>
+          <ToolButton
+            label="Inserir coluna à direita"
+            onClick={() =>
+              tableAction(() => void $insertTableColumnAtSelection(true))
+            }
+          >
+            <ArrowRightToLine size={15} />
+          </ToolButton>
+          <Divider />
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs h-8 min-h-8 text-error hover:bg-error/10"
+            onClick={() => tableAction(() => $deleteTableRowAtSelection())}
+          >
+            Excluir linha
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs h-8 min-h-8 text-error hover:bg-error/10"
+            onClick={() => tableAction(() => $deleteTableColumnAtSelection())}
+          >
+            Excluir coluna
+          </button>
+          <ToolButton
+            label="Excluir tabela"
+            danger
+            onClick={() =>
+              tableAction(() => {
+                const sel = $getSelection();
+                if (!$isTableSelection(sel)) return;
+                $getTableNodeFromLexicalNodeOrThrow(
+                  sel.anchor.getNode(),
+                ).remove();
               })
             }
-            className="btn btn-ghost btn-xs"
           >
-            <Table2 size={15} />
-            <span className="hidden sm:inline">Cabeçalho</span>
-          </button>
-          <span className="mx-1 h-5 w-px bg-base-300" />
+            <Trash2 size={15} />
+          </ToolButton>
+        </>
+      ) : (
+        <>
+          {/* Seletor do tipo de bloco */}
+          <div className="relative">
+            <button
+              type="button"
+              className="btn btn-ghost btn-xs h-8 min-h-8 gap-1 px-2 font-normal"
+              aria-haspopup="listbox"
+              aria-expanded={showTurnInto}
+              onClick={() => setShowTurnInto((v) => !v)}
+            >
+              {state.kind === "code" ? "Código" : current}
+              <ChevronDown size={13} />
+            </button>
+            {showTurnInto && (
+              <ul
+                role="listbox"
+                className="menu absolute left-0 top-full z-10 mt-2 w-52 rounded-xl border border-base-300 bg-base-100 p-1 shadow-xl"
+              >
+                {TURN_INTO.map((type) => (
+                  <li key={type}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={state.blockType === type}
+                      className={state.blockType === type ? "menu-active" : ""}
+                      onClick={() => turnInto(type)}
+                    >
+                      {BLOCK_LABELS[type]}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <Divider />
+
+          {state.kind === "code" ? (
+            <ToolButton
+              label="Copiar código"
+              onClick={() => {
+                const text = editor.read(() => {
+                  const s = $getSelection();
+                  return s ? s.getTextContent() : "";
+                });
+                void navigator.clipboard?.writeText(text);
+              }}
+            >
+              <Copy size={15} />
+            </ToolButton>
+          ) : (
+            <>
+              <ToolButton
+                label="Negrito (Ctrl+B)"
+                active={state.bold}
+                onClick={() => format("bold")}
+              >
+                <Bold size={15} />
+              </ToolButton>
+              <ToolButton
+                label="Itálico (Ctrl+I)"
+                active={state.italic}
+                onClick={() => format("italic")}
+              >
+                <Italic size={15} />
+              </ToolButton>
+              <ToolButton
+                label="Sublinhado (Ctrl+U)"
+                active={state.underline}
+                onClick={() => format("underline")}
+              >
+                <Underline size={15} />
+              </ToolButton>
+              <ToolButton
+                label="Tachado"
+                active={state.strikethrough}
+                onClick={() => format("strikethrough")}
+              >
+                <Strikethrough size={15} />
+              </ToolButton>
+              <ToolButton
+                label="Código em linha"
+                active={state.code}
+                onClick={() => format("code")}
+              >
+                <Code size={15} />
+              </ToolButton>
+              <Divider />
+              {state.link ? (
+                <ToolButton
+                  label="Remover link"
+                  active
+                  onClick={() =>
+                    editor.dispatchCommand(TOGGLE_LINK_COMMAND, null)
+                  }
+                >
+                  <Link2Off size={15} />
+                </ToolButton>
+              ) : (
+                <ToolButton
+                  label="Adicionar link (Ctrl+K)"
+                  onClick={() => setLinkInput("https://")}
+                >
+                  <Link2 size={15} />
+                </ToolButton>
+              )}
+            </>
+          )}
         </>
       )}
-      <button
-        type="button"
-        title="Mover seleção para cima"
-        aria-label="Mover seleção para cima"
-        onClick={() => moveSelectedBlocks(editor, "up")}
-        className="btn btn-ghost btn-xs btn-square"
-      >
-        <ArrowUp size={15} />
-      </button>
-      <button
-        type="button"
-        title="Mover seleção para baixo"
-        aria-label="Mover seleção para baixo"
-        onClick={() => moveSelectedBlocks(editor, "down")}
-        className="btn btn-ghost btn-xs btn-square"
-      >
-        <ArrowDown size={15} />
-      </button>
-      <button
-        type="button"
-        title="Excluir seleção"
-        aria-label="Excluir seleção"
-        onClick={() =>
-          editor.update(() =>
-            selectedBlocks(editor).forEach((node) => node.remove()),
-          )
-        }
-        className="btn btn-ghost btn-xs btn-square text-error"
-      >
-        <Trash2 size={15} />
-      </button>
-      <span className="px-1 text-xs text-base-content/50">
-        {selectionCount} bloco{selectionCount === 1 ? "" : "s"}
-      </span>
-    </div>
-  );
-}
-
-export function ContextualToolsPlugin() {
-  return (
-    <>
-      <SlashCommandsPlugin />
-      <SelectionToolsPlugin />
-    </>
+    </div>,
+    document.body,
   );
 }

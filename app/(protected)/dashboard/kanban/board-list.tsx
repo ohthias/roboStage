@@ -138,8 +138,8 @@ export function BoardList({ boards }: { boards: Board[] }) {
   }
 
   return (
-    <section className="mx-auto w-full p-4 sm:p-6 lg:p-8">
-      <header className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+    <section className="min-h-screen px-4 py-8 text-base-content sm:px-6 lg:px-8 mx-auto w-full max-w-7xl space-y-8">
+      <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
             Kan<span className="text-primary">ban</span>
@@ -158,9 +158,9 @@ export function BoardList({ boards }: { boards: Board[] }) {
           Novo board
         </button>
       </header>
-
+      <div className="h-px bg-gradient-to-r from-primary/30 via-base-300 to-transparent" />
       {/* Grade */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-8">
         {boards.map((board) => (
           <div
             key={board.id}

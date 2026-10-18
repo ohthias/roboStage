@@ -184,8 +184,8 @@ export function CalendarView({
   }
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -317,7 +317,7 @@ export function CalendarView({
           </button>
         </div>
       </div>
-
+      <div className="h-px bg-gradient-to-r from-primary/30 via-base-300 to-transparent" />
       <div
         className={`flex items-start gap-4 ${isTodayPanelOpen ? "flex-col xl:flex-row" : ""}`}
       >
@@ -345,7 +345,7 @@ export function CalendarView({
                 <div
                   key={key}
                   className={`flex min-h-[100px] cursor-pointer flex-col gap-1 border-b border-r border-base-300 p-1.5 last:border-r-0 ${
-                    inMonth ? "bg-base-100" : "bg-base-200/30"
+                    inMonth ? "bg-base-200/30" : "bg-base-100"
                   } ${isSelected ? "ring-2 ring-inset ring-primary" : ""}`}
                   onClick={() => {
                     setSelectedDate(key);
@@ -644,7 +644,7 @@ export function CalendarView({
         )}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3">
         {EVENT_TYPES.map((t) => (
           <span
             key={t.value}

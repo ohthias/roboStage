@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   Gauge,
@@ -17,7 +18,6 @@ import { CalibrabotSection } from "./components/CalibrabotSection";
 import { CustomSection } from "./components/CustomSection";
 import { GenerateSection } from "./components/GenerateSection";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 type CustomParamMeta = {
   required: boolean;
@@ -26,6 +26,8 @@ type CustomParamMeta = {
 
 export default function CreateTest() {
   const t = useCreateTest();
+  const searchParams = useSearchParams();
+  const folderId = searchParams.get("folderId");
 
   const [testName, setTestName] = useState("");
   const [testDescription, setTestDescription] = useState("");
@@ -84,12 +86,14 @@ export default function CreateTest() {
         season: t.season || null,
         missionOrder: t.orderedSelected.map((m) => m.id),
         answers: t.answers,
+        folderId,
       };
     }
 
     const base = {
       name: testName.trim(),
       description: testDescription.trim() || undefined,
+      folderId,
     };
 
     if (t.mode === "calibrabot") {

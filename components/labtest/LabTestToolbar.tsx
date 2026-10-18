@@ -22,7 +22,6 @@ export function LabTestToolbar({
           aria-current={viewMode === "list" ? "page" : undefined}
         >
           <List size={16} />
-          <span className="hidden lg:inline">Lista</span>
         </Link>
         <Link
           href={`/dashboard/labtest?${modeQuery}visualizacao=grid`}
@@ -31,7 +30,6 @@ export function LabTestToolbar({
           aria-current={viewMode === "grid" ? "page" : undefined}
         >
           <Grid2X2 size={16} />
-          <span className="hidden lg:inline">Grid</span>
         </Link>
       </div>
 

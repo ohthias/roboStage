@@ -11,13 +11,23 @@ import {
 } from "./actions";
 import { ThinkLabThumbnail } from "@/components/thinklab/ThinkLabThumbnail";
 
-export default async function ThinkLabDashboard() {
+export default async function ThinkLabDashboard({
+  searchParams,
+}: {
+  searchParams?: Promise<{ folderId?: string }>;
+}) {
   const thinkLabs = await listThinkLabsByUserId();
+  const selectedFolderId = (await searchParams)?.folderId ?? null;
 
   async function create() {
     "use server";
 
-    const created = await createThinkLab();
+    const created = await createThinkLab(
+      "Novo ThinkLab",
+      null,
+      {},
+      selectedFolderId,
+    );
     redirect(`/dashboard/thinklab/${created.id}`);
   }
 
@@ -36,6 +46,9 @@ export default async function ThinkLabDashboard() {
           </div>
 
           <form action={create}>
+            {selectedFolderId && (
+              <input type="hidden" name="folderId" value={selectedFolderId} />
+            )}
             <button
               type="submit"
               className="btn btn-primary w-full rounded-tl-xl rounded-br-xl sm:w-auto"
@@ -57,6 +70,9 @@ export default async function ThinkLabDashboard() {
               evidências do seu projeto.
             </p>
             <form action={create} className="mt-6">
+              {selectedFolderId && (
+                <input type="hidden" name="folderId" value={selectedFolderId} />
+              )}
               <button
                 type="submit"
                 className="btn btn-primary rounded-tl-xl rounded-br-xl"

@@ -2,8 +2,12 @@
 
 import { db } from "@/db/client";
 import { thinklab } from "@/db/schema/thinklab";
-import { requireAuthenticatedUser } from "@/utils/stagebook/scope";
-import { and, eq } from "drizzle-orm";
+import { folders } from "@/db/schema/notebook";
+import {
+  resolveStagebookScope,
+} from "@/utils/stagebook/scope";
+import { scopeWhere } from "@/utils/stagebook/permissions";
+import { and, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -14,48 +18,81 @@ export type ThinkLabConfig = {
   theme?: string;
 };
 
+function thinkLabScope(scope: Awaited<ReturnType<typeof resolveStagebookScope>>) {
+  return scope.type === "team"
+    ? eq(thinklab.teamId, scope.teamId)
+    : and(eq(thinklab.userId, scope.userId), isNull(thinklab.teamId));
+}
+
 export async function createThinkLab(
   name = "Novo ThinkLab",
   description: string | null = null,
   config: ThinkLabConfig = {},
+  folderId: string | null = null,
 ) {
-  const userId = await requireAuthenticatedUser();
+  const scope = await resolveStagebookScope();
+
+  if (folderId) {
+    const [folder] = await db
+      .select({ id: folders.id })
+      .from(folders)
+      .where(
+        and(
+          eq(folders.id, folderId),
+          scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }),
+        ),
+      )
+      .limit(1);
+
+    if (!folder) throw new Error("Pasta inválida ou sem permissão.");
+  }
+
   const [created] = await db
     .insert(thinklab)
     .values({
-      userId,
+      userId: scope.userId,
+      teamId: scope.type === "team" ? scope.teamId : null,
+      folderId,
       name: name.trim() || "Novo ThinkLab",
       description,
       config,
     })
     .returning();
+  revalidatePath("/dashboard/thinklab");
+  revalidatePath("/dashboard/folders", "layout");
   return created;
 }
 
 export async function getThinkLabById(id: string) {
-  const userId = await requireAuthenticatedUser();
+  const scope = await resolveStagebookScope();
+  const ownership = thinkLabScope(scope);
   const [found] = await db
     .select()
     .from(thinklab)
-    .where(and(eq(thinklab.id, id), eq(thinklab.userId, userId)))
+    .where(and(eq(thinklab.id, id), ownership))
     .limit(1);
 
   if (found) {
     await db
       .update(thinklab)
       .set({ lastAccessAt: new Date() })
-      .where(and(eq(thinklab.id, id), eq(thinklab.userId, userId)));
+      .where(and(eq(thinklab.id, id), ownership));
   }
 
   return found;
 }
 
 export async function saveThinkLab(id: string, config: ThinkLabConfig) {
-  const userId = await requireAuthenticatedUser();
+  const scope = await resolveStagebookScope();
   const [updated] = await db
     .update(thinklab)
     .set({ config, updatedAt: new Date(), lastAccessAt: new Date() })
-    .where(and(eq(thinklab.id, id), eq(thinklab.userId, userId)))
+    .where(
+      and(
+        eq(thinklab.id, id),
+        thinkLabScope(scope),
+      ),
+    )
     .returning({ id: thinklab.id, updatedAt: thinklab.updatedAt });
 
   if (!updated) throw new Error("ThinkLab não encontrado.");
@@ -63,10 +100,15 @@ export async function saveThinkLab(id: string, config: ThinkLabConfig) {
 }
 
 export async function deleteThinkLabById(id: string) {
-  const userId = await requireAuthenticatedUser();
+  const scope = await resolveStagebookScope();
   const [deleted] = await db
     .delete(thinklab)
-    .where(and(eq(thinklab.id, id), eq(thinklab.userId, userId)))
+    .where(
+      and(
+        eq(thinklab.id, id),
+        thinkLabScope(scope),
+      ),
+    )
     .returning();
   return deleted;
 }
@@ -82,16 +124,18 @@ export async function deleteThinkLabAction(id: string) {
 }
 
 export async function listThinkLabsByUserId() {
-  const userId = await requireAuthenticatedUser();
+  const scope = await resolveStagebookScope();
   return db
     .select()
     .from(thinklab)
-    .where(eq(thinklab.userId, userId))
+    .where(
+      thinkLabScope(scope),
+    )
     .orderBy(thinklab.lastAccessAt, thinklab.updatedAt);
 }
 
 export async function updateThinkLabDetails(id: string, formData: FormData) {
-  const userId = await requireAuthenticatedUser();
+  const scope = await resolveStagebookScope();
 
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
@@ -115,7 +159,12 @@ export async function updateThinkLabDetails(id: string, formData: FormData) {
       description: description || null,
       updatedAt: new Date(),
     })
-    .where(and(eq(thinklab.id, id), eq(thinklab.userId, userId)))
+    .where(
+      and(
+        eq(thinklab.id, id),
+        thinkLabScope(scope),
+      ),
+    )
     .returning({ id: thinklab.id });
 
   if (!updated) {

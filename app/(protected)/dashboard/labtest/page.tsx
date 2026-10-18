@@ -37,27 +37,19 @@ export default async function LabTestPage({
   );
 
   return (
-    <div className="w-full">
-      <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between px-5 py-6">
+    <div className="min-h-full bg-base-100 px-4 py-8 text-base-content sm:px-6 lg:px-8">
+      <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
             Lab<span className="text-primary">Test</span>
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
-            Gerencie, configure e acompanhe os testes realizados pelo seus teste, seja nos desafios das competições ou testes isolados.
+            Gerencie, configure e acompanhe os testes realizados pelo seus
+            teste, seja nos desafios das competições ou testes isolados.
           </p>
         </div>
-
-        <div className="flex items-center gap-3">
-          <span className="badge badge-neutral badge-sm h-7 rounded-lg px-3">
-            {filteredTests.length}{" "}
-            {filteredTests.length === 1 ? "teste" : "testes"}
-          </span>
-        </div>
       </header>
-
-      {/* Navigation */}
-      <nav className="flex w-full items-center justify-between border-b border-base-content/10 px-5">
+      <nav className="flex w-full items-center justify-between">
         <div className="flex items-center gap-6">
           <div className="flex h-full items-center gap-1">
             <Link
@@ -72,15 +64,16 @@ export default async function LabTestPage({
               href="/dashboard/labtest/analytics"
               className="px-3 py-3 text-sm font-medium pointer-events-none cursor-none text-base-content/50"
             >
-              Anatix
+              Anatix - Em breve
             </Link>
           </div>
         </div>
 
         <LabTestToolbar viewMode={viewMode} validMode={validMode} />
       </nav>
+      <div className="h-px bg-gradient-to-r from-primary/30 via-base-300 to-transparent" />
 
-      <main className="flex-1 px-5 py-6">
+      <main className="flex-1">
         {/* Empty state */}
         {filteredTests.length === 0 ? (
           <div className="mt-6 flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-base-300 bg-base-200/20 px-6 py-16 text-center">

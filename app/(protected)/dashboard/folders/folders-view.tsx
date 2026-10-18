@@ -82,7 +82,7 @@ export function FoldersView({ folders }: { folders: FolderItem[] }) {
   }
 
   return (
-    <section className="mx-auto w-full p-4 sm:p-6 lg:p-8">
+    <section className="min-h-full bg-base-100 px-4 py-8 text-base-content sm:px-6 lg:px-8 space-y-8">
       <header className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
@@ -104,6 +104,7 @@ export function FoldersView({ folders }: { folders: FolderItem[] }) {
           Nova pasta
         </button>
       </header>
+      <div className="h-px bg-gradient-to-r from-primary/30 via-base-300 to-transparent" />
 
       {folders.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 p-12 text-center">

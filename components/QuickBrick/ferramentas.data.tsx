@@ -95,7 +95,6 @@ export const ferramentas: Ferramenta[] = [
         "/fll/quickbrick/matriz-swot",
       ),
     mobileSafe: true,
-    badge: "Atualizado!"
   },
   {
     id: 3,
@@ -118,7 +117,6 @@ export const ferramentas: Ferramenta[] = [
     image: "/images/QuickBrick/SharksSimulator.png",
     link: "/fll/quickbrick/sharks-simulator",
     customContent: null,
-    badge: "Atualizado!",
     mobileSafe: true,
     feitoPor: ["Sharks", "https://www.instagram.com/sharksfll_12476/"],
   },
@@ -169,6 +167,7 @@ export const ferramentas: Ferramenta[] = [
     categoria: "Criar",
     icon: <Puzzle className="w-5 h-5" />,
     link: "/obr/quickbrick/criador-de-arenas",
+    badge: "Novo",
     customContent: null,
   },
 ];

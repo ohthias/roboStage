@@ -11,6 +11,150 @@ Exemplo: `2026.1` corresponde à primeira atualização oficial de 2026.
 
 ---
 
+## [2026.4] — Novas ferramentas, novas possibilidades
+
+**Data:** 19/10/2026
+
+A quarta atualização de 2026 amplia o ecossistema do RoboStage com novas ferramentas para competições de robótica, criação de arenas, análise de dados e organização de equipes. A versão também aprimora o Stagebook, expande os recursos de colaboração e fortalece a confiabilidade, a documentação e a experiência de uso da plataforma.
+
+### OBR — Olimpíada Brasileira de Robótica
+
+* Adicionado suporte à OBR na estrutura de competições do RoboStage.
+* Criada uma página dedicada à apresentação das ferramentas e dos recursos da OBR.
+* Adicionado um sistema de pontuação específico para a competição.
+* Implementado o cálculo automático da pontuação, incluindo multiplicadores e detalhamento dos resultados.
+* Criado o componente `Counter` para facilitar a entrada e o ajuste de valores.
+* Atualizada a navegação para incluir a OBR.
+* Adicionadas configurações específicas de metadados, ícones e apresentação visual.
+* Adicionada uma rota pública para acesso à página da competição.
+* Incluídos testes para validar os cálculos de pontuação.
+
+### ArenaBuilder
+
+* Adicionada uma nova ferramenta para criação e gerenciamento de arenas de robótica.
+* Implementada a configuração e o posicionamento de elementos no ambiente.
+* Adicionada detecção de colisões entre elementos.
+* Implementadas funções para análise e validação de projetos.
+* Adicionado suporte à configuração de áreas de resgate.
+* Implementado o gerenciamento de vítimas, peças e perigos.
+* Adicionadas funções para definir formatos de peças e suas interações com os elementos da arena.
+* Implementada a exportação de arenas para PNG a partir de SVG.
+* Melhorada a experiência de criação e edição em dispositivos móveis.
+* Adicionadas interfaces específicas para facilitar a utilização da ferramenta em telas menores.
+
+### Anatix
+
+* Adicionada uma nova página dedicada ao Anatix.
+* Integrada a ferramenta à navegação do RoboStage.
+* Atualizados os links de acesso e a configuração das páginas de competição.
+* Atualizados os elementos visuais e a configuração da apresentação da ferramenta.
+
+### Stagebook
+
+* Expandida a estrutura de organização de documentos e pastas.
+* Adicionada uma página dedicada à navegação e ao gerenciamento de pastas.
+* Implementadas ações para criação, renomeação e exclusão de pastas.
+* Melhorada a integração entre pastas, documentos e painéis de gerenciamento.
+* Adicionado suporte à criação de ThinkLabs vinculados a pastas.
+* Implementadas verificações de permissões para criação e gerenciamento de ThinkLabs.
+* Refatoradas as verificações de propriedade e acesso aos recursos.
+* Aprimorado o editor de documentos com suporte à criação, edição e exclusão de tabelas.
+* Adicionadas opções de alinhamento e manipulação de tabelas ao editor.
+* Implementados recursos de seleção de blocos e arrastar e soltar.
+* Adicionadas ferramentas contextuais para edição dos blocos selecionados.
+* Refatorados os plugins de seleção e a barra de ferramentas para melhorar a legibilidade e a manutenção do código.
+
+### Calendário
+
+* Aprimorado o calendário com filtros por equipe.
+* Adicionado suporte à seleção de múltiplas equipes.
+* Implementada a validação de associação do usuário às equipes selecionadas.
+* Adicionada uma visualização dos eventos do dia atual.
+* Melhorada a apresentação e a organização dos eventos.
+* Atualizados os links de acesso ao calendário no Dashboard e na navegação.
+
+### ThinkLab
+
+* Adicionado o ThinkLab, um espaço para organizar ideias, diagramas e evidências.
+* Implementada a criação e o gerenciamento de ThinkLabs.
+* Adicionado suporte à edição e exclusão de espaços.
+* Implementados modais e validações para as operações de gerenciamento.
+* Adicionados modelos de diagramas para diferentes atividades, incluindo Ishikawa, matriz 5W2H, mapa de empatia, fluxo de autenticação e arquitetura de microsserviços.
+* Criadas funções utilitárias para organização e composição de classes CSS.
+* Integrado o ThinkLab ao painel das equipes e à navegação do Stagebook.
+* Adicionado suporte à organização dos ThinkLabs em pastas.
+* Aprimoradas as verificações de permissões e escopos de acesso.
+
+### Mapa de Empatia
+
+* Adicionada uma ferramenta para criação e gerenciamento de mapas de empatia.
+* Implementado o gerenciamento de mapas, incluindo criação, seleção, duplicação e exclusão.
+* Adicionado gerenciamento de personas.
+* Implementada a edição de informações e o envio de fotos das personas.
+* Criado o componente `PersonaBar` para apresentação e busca rápida de personas.
+* Adicionadas notas adesivas com edição de conteúdo, alteração de cores e votação.
+* Implementada a geração de análises heurísticas.
+* Adicionada exportação dos mapas para Markdown e CSV.
+* Integrada a ferramenta à navegação do RoboStage.
+* Criados tipos específicos para melhorar a segurança e a organização dos dados.
+
+### LabTest
+
+* Melhorada a apresentação dos cartões de testes.
+* Aprimorado o tratamento e a exibição das imagens utilizadas nos testes.
+* Atualizada a organização visual dos componentes.
+* Simplificados os elementos da barra de ferramentas para uma interface mais limpa.
+
+### FLL e carregamento de dados
+
+* Melhorado o tratamento de erros no carregamento de `missions.json`.
+* Aprimorada a identificação de respostas inválidas durante a leitura dos dados das missões.
+* Melhorado o tratamento de falhas relacionadas à instabilidade das fontes de dados da FLL.
+* Adicionadas informações sobre a instabilidade dos sistemas da FLL à área de notícias.
+
+### Interface e experiência
+
+* Atualizada a apresentação visual da página inicial.
+* Adicionada uma nova imagem à seção principal.
+* Melhorada a apresentação da página de exportação.
+* Aprimorados os layouts e a responsividade de páginas e componentes.
+* Atualizados ícones, links e elementos de navegação para as novas ferramentas.
+* Melhorada a apresentação dos componentes de pontuação.
+* Refinados os layouts da página inicial da OBR.
+* Atualizados os textos e a organização das páginas de calendário, pastas e LabTest.
+* Removida a página de projetos, simplificando a navegação da plataforma.
+* Removido o `SmoothScroll` para simplificar o comportamento de rolagem.
+* Melhorada a consistência visual entre as diferentes ferramentas.
+
+### APIs, validação e confiabilidade
+
+* Aprimorada a validação dos tipos de relacionamento entre entidades.
+* Melhorado o tratamento de erros nas APIs.
+* Simplificada a leitura de arquivos JSON.
+* Aprimoradas as verificações de propriedade e permissões no ThinkLab.
+* Melhorada a confiabilidade das operações de criação, edição e exclusão.
+* Corrigidos problemas identificados durante o desenvolvimento das novas ferramentas.
+
+### Documentação
+
+* Ampliada a documentação técnica das páginas da plataforma.
+* Adicionada documentação para utilitários e APIs.
+* Reorganizados os documentos técnicos para facilitar a consulta e a manutenção.
+* Melhorada a estrutura de documentação das ferramentas e dos recursos do RoboStage.
+
+### Arquitetura e manutenção
+
+* Refatorados componentes e plugins para melhorar a legibilidade do código.
+* Melhorada a organização das funções utilitárias.
+* Atualizadas dependências relacionadas ao editor de documentos.
+* Expandida a estrutura de dados para suportar regras de colunas e marcos nos quadros.
+* Aprimorada a organização das permissões e dos escopos de acesso.
+* Melhorada a manutenção dos componentes e das funcionalidades existentes.
+
+> **A v2026.4 expande o RoboStage com novas ferramentas para competições, criação de arenas, análise e organização de ideias, conectando o desenvolvimento de projetos robóticos a um ambiente cada vez mais completo para equipes e técnicos.**
+
+---
+
 ## [2026.3] — Um novo espaço para suas ideias
 
 **Data:** 02/10/2026

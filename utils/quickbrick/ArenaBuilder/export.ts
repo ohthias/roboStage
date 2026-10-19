@@ -11,7 +11,13 @@ export function download(blob: Blob, filename: string) {
 
 export async function svgToPng(svg: SVGSVGElement, filename: string, pxPerCm = 8) {
   const clone = svg.cloneNode(true) as SVGSVGElement;
+  // remove camadas de interação (alças, áreas de clique, seleção)
   clone.querySelectorAll(".no-export").forEach((n) => n.remove());
+  // o SVG exportado não carrega o CSS da página: garante preenchimento explícito
+  clone.querySelectorAll("rect,circle,path,polygon,text").forEach((n) => {
+    const el = n as SVGElement;
+    if (!el.hasAttribute("fill") && !el.closest("[fill]")) el.setAttribute("fill", "none");
+  });
   const vb = svg.viewBox.baseVal;
   clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   clone.setAttribute("width", String(vb.width * pxPerCm));

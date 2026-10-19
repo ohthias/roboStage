@@ -100,3 +100,42 @@
   opacity: 0;
   will-change: transform;
 }
+
+/* ---------- Código ---------- */
+.editor-code {
+  border: 1px solid rgb(255 255 255 / 0.08);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+}
+.editor-code::before {
+  content: attr(data-gutter);
+  position: absolute;
+  left: 0;
+  top: 1rem;
+  width: 2.5rem;
+  padding-right: 0.75rem;
+  text-align: right;
+  white-space: pre;
+  color: #6e7681;
+  user-select: none;
+  pointer-events: none;
+}
+.editor-code::selection,
+.editor-code *::selection {
+  background: rgb(56 139 253 / 0.4);
+}
+
+::highlight(code-comment) { color: #8b949e; }
+::highlight(code-string) { color: #a5d6ff; }
+::highlight(code-number) { color: #79c0ff; }
+::highlight(code-keyword) { color: #ff7b72; }
+::highlight(code-function) { color: #d2a8ff; }
+::highlight(code-type) { color: #ffa657; }
+::highlight(code-property) { color: #7ee787; }
+::highlight(code-tag) { color: #7ee787; }
+::highlight(code-operator) { color: #ff9bce; }
+
+/* Cursor de redimensionar colunas */
+.col-resize-hover,
+.col-resize-hover * {
+  cursor: col-resize !important;
+}

@@ -125,7 +125,7 @@ export default function RescueArt({ rescue: r, level, bg = "#e8edf3", labels = f
               cy={v.y}
               r={VICTIM_R + 2}
               fill="transparent"
-              className="cursor-grab active:cursor-grabbing"
+              className="no-export cursor-grab active:cursor-grabbing"
               onPointerDown={(e) => victimHandlers.onDown(e, v.id)}
               onPointerMove={victimHandlers.onMove}
               onPointerUp={victimHandlers.onUp}

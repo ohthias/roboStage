@@ -1,22 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  analyzePath,
-  analyzeRescue,
-} from "@/utils/quickbrick/ArenaBuilder/analysis";
+import { analyzePath, analyzeRescue } from "@/utils/quickbrick/ArenaBuilder/analysis";
 import { download, svgToPng } from "@/utils/quickbrick/ArenaBuilder/export";
-import {
-  defaultProject,
-  sampleProject,
-  sanitizeProject,
-} from "@/utils/quickbrick/ArenaBuilder/project";
+import { defaultProject, sampleProject, sanitizeProject } from "@/utils/quickbrick/ArenaBuilder/project";
 import { emptyTile } from "@/utils/quickbrick/ArenaBuilder/tiles";
 import type { Project, Tile } from "@/utils/quickbrick/ArenaBuilder/types";
 import PathEditor, { type Mode, type Selection } from "./PathEditor";
 import RescueEditor from "./RescueEditor";
 import StatsPanel from "./StatsPanel";
-import { Redo2, Undo2 } from "lucide-react";
+import { Undo2, Redo2 } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
 
 const STORAGE_KEY = "obr-arena-builder:v1";
@@ -26,12 +19,9 @@ export default function ArenaBuilder() {
   const [tab, setTab] = useState<"path" | "rescue">("path");
   const [selection, setSelection] = useState<Selection | null>(null);
   const [mode, setMode] = useState<Mode>("select");
-  const [brush, setBrush] = useState<Tile>({
-    ...emptyTile(),
-    shape: "straight",
-  });
+  const [brush, setBrush] = useState<Tile>({ ...emptyTile(), shape: "straight" });
   const [ready, setReady] = useState(false);
-  const {addToast} = useToast();
+  const { addToast } = useToast();
 
   const projectRef = useRef(project);
   projectRef.current = project;
@@ -117,21 +107,13 @@ export default function ArenaBuilder() {
   }, [undo, redo]);
 
   /* ------------------------------- ações ------------------------------- */
-  const slug =
-    project.name
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "") || "arena";
+  const slug = project.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "arena";
 
   async function exportPng() {
     const svg = tab === "path" ? pathSvg.current : rescueSvg.current;
     if (!svg) return;
     try {
-      await svgToPng(
-        svg,
-        `${slug}-${tab === "path" ? "percurso" : "sala-de-resgate"}.png`,
-      );
+      await svgToPng(svg, `${slug}-${tab === "path" ? "percurso" : "sala-de-resgate"}.png`);
     } catch {
       addToast("Não foi possível gerar o PNG.");
     }
@@ -144,18 +126,14 @@ export default function ArenaBuilder() {
   }
 
   function reset() {
-    if (!window.confirm("Limpar toda a arena (percurso e sala de resgate)?"))
-      return;
+    if (!window.confirm("Limpar toda a arena (percurso e sala de resgate)?")) return;
     commit(defaultProject());
-    addToast("Arena limpa.");
     setSelection(null);
+    addToast("Arena limpa.");
   }
 
   const pathAnalysis = useMemo(() => analyzePath(project), [project]);
-  const rescueChecks = useMemo(
-    () => analyzeRescue(project.rescue),
-    [project.rescue],
-  );
+  const rescueChecks = useMemo(() => analyzeRescue(project.rescue), [project.rescue]);
 
   return (
     <div className="mx-auto flex w-full flex-col gap-4 px-4">
@@ -237,6 +215,7 @@ export default function ArenaBuilder() {
         </div>
       </header>
 
+      {/* -------------------------------- corpo -------------------------------- */}
       <div className="grid items-start gap-4 2xl:grid-cols-[1fr_340px]">
         <main className="flex min-w-0 flex-col gap-3">
           {tab === "path" ? (
@@ -255,13 +234,7 @@ export default function ArenaBuilder() {
               onEditRescue={() => setTab("rescue")}
             />
           ) : (
-            <RescueEditor
-              project={project}
-              commit={commit}
-              live={live}
-              checkpoint={checkpoint}
-              svgRef={rescueSvg}
-            />
+            <RescueEditor project={project} commit={commit} live={live} checkpoint={checkpoint} svgRef={rescueSvg} />
           )}
         </main>
 

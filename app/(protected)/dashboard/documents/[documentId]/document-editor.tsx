@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -26,7 +26,11 @@ import { CHECK_LIST, type ElementTransformer } from "@lexical/markdown";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { CodeNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
-import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
+import {
+  TableCellNode,
+  TableNode,
+  TableRowNode,
+} from "@lexical/table";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ListNode, ListItemNode } from "@lexical/list";
 import {
@@ -49,6 +53,8 @@ import { AutosavePlugin } from "@/components/editor/plugins/auto-save-plugin";
 import { BlockSelectionPlugin } from "@/components/editor/plugins/block-selection-plugin";
 import { ContextualToolsPlugin } from "@/components/editor/plugins/contextual-tools-plugin";
 import { SlashMenuPlugin } from "@/components/editor/plugins/slash-menu-plugin";
+import { TableToolsPlugin } from "@/components/editor/plugins/table-tools-plugin";
+import { CodeToolsPlugin } from "@/components/editor/plugins/code-tools-plugin";
 import {
   deleteDocument,
   duplicateDocument,
@@ -85,8 +91,6 @@ const COVER_OPTIONS = [
   { label: "Cinza", value: "#64748b" },
   { label: "Amarelo", value: "#d4a017" },
   { label: "Turquesa", value: "#0d9488" },
-  { label: "Preto", value: "#121212" },
-  { label: "Branco", value: "#f3f3f3" },
 ];
 
 // "---" / "***" / "___" viram um divisor.
@@ -168,7 +172,9 @@ export function NotebookEditor({
   );
 
   const [, startTransition] = useTransition();
-  const [editorAnchor, setEditorAnchor] = useState<HTMLDivElement | null>(null);
+  const [editorAnchor, setEditorAnchor] = useState<HTMLDivElement | null>(
+    null,
+  );
 
   const initialConfig = useMemo(
     () => ({
@@ -295,14 +301,14 @@ export function NotebookEditor({
           });
         }
         setShowMoveDialog(false);
-        addToast("Página movida com sucesso.", "success");
-        router.refresh();
+          addToast("Página movida com sucesso.", "success");
+          router.refresh();
       } catch (error) {
-        addToast(
+          addToast(
           error instanceof Error
             ? error.message
             : "Não foi possível mover a página.",
-          "error",
+            "error",
         );
       }
     });
@@ -320,10 +326,9 @@ export function NotebookEditor({
   return (
     <div className="min-h-[calc(100vh-5rem)]">
       <LexicalComposer initialConfig={initialConfig}>
-        {/* Cover */}
         {cover && (
           <div
-            className="h-36 w-full rounded-b-2xl sm:h-44"
+            className="h-32 w-full rounded-b-lg"
             style={{ backgroundColor: cover }}
           />
         )}
@@ -402,7 +407,6 @@ export function NotebookEditor({
                             />
                           ))}
                         </div>
-
                         {cover && (
                           <button
                             type="button"
@@ -761,6 +765,8 @@ export function NotebookEditor({
         <SlashMenuPlugin />
         <BlockSelectionPlugin anchorElem={editorAnchor} />
         <ContextualToolsPlugin />
+        <MarkdownShortcutPlugin transformers={MARKDOWN_TRANSFORMERS} />
+        <TablePlugin hasHorizontalScroll hasCellMerge />
 
         <AutosavePlugin documentId={documentId} onStatusChange={setSaveState} />
       </LexicalComposer>

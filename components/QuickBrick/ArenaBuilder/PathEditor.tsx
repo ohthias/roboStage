@@ -42,7 +42,7 @@ interface Props {
   onEditRescue: () => void;
 }
 
-const PAD_TOP = 8;
+const PAD_TOP = 16;
 
 export default function PathEditor(props: Props) {
   const { project, commit, live, checkpoint, selection, setSelection, mode, setMode, brush, setBrush, svgRef, onEditRescue } = props;
@@ -135,6 +135,34 @@ export default function PathEditor(props: Props) {
     return pt.matrixTransform(svg.getScreenCTM()!.inverse());
   }
 
+  /**
+   * Avança a peça célula a célula rumo ao alvo. Se a diagonal estiver bloqueada,
+   * desliza na horizontal ou na vertical, contornando peças coladas.
+   */
+  function slideTo(key: string, from: { col: number; row: number }, to: { col: number; row: number }) {
+    let { col, row } = from;
+    for (let guard = 0; guard < 60 && (col !== to.col || row !== to.row); guard++) {
+      const sc = Math.sign(to.col - col);
+      const sr = Math.sign(to.row - row);
+      const tries: [number, number][] = [];
+      if (sc && sr) tries.push([sc, sr]);
+      // prefere deslizar pelo eixo com maior distância restante
+      const horizFirst = Math.abs(to.col - col) >= Math.abs(to.row - row);
+      if (horizFirst) {
+        if (sc) tries.push([sc, 0]);
+        if (sr) tries.push([0, sr]);
+      } else {
+        if (sr) tries.push([0, sr]);
+        if (sc) tries.push([sc, 0]);
+      }
+      const ok = tries.find(([a, b]) => canPlace(key, col + a, row + b));
+      if (!ok) break;
+      col += ok[0];
+      row += ok[1];
+    }
+    return { col, row };
+  }
+
   function onHandleDown(e: React.PointerEvent, key: string) {
     e.stopPropagation();
     (e.currentTarget as Element).setPointerCapture(e.pointerId);
@@ -155,8 +183,9 @@ export default function PathEditor(props: Props) {
     const row = Math.min(ROWS - h, Math.max(0, Math.round((p.y - d.dy) / CELL)));
     const cur = posOf(d.key);
     if (cur.col === col && cur.row === row) return;
-    if (!canPlace(d.key, col, row)) return;
-    live(place(d.key, col, row));
+    const next = slideTo(d.key, cur, { col, row });
+    if (next.col === cur.col && next.row === cur.row) return;
+    live(place(d.key, next.col, next.row));
   }
 
   function onHandleUp() {
@@ -185,7 +214,7 @@ export default function PathEditor(props: Props) {
   const showHandle = (key: string) => hover === key || dragging === key;
 
   /** alça de arraste + legenda: aparece só ao passar o mouse sobre a peça */
-  function Handle(props: {
+  function renderHandle(props: {
     k: string;
     y: number;
     width: number;
@@ -198,7 +227,6 @@ export default function PathEditor(props: Props) {
       <g
         className="transition-opacity duration-150"
         opacity={showHandle(k) ? 1 : 0}
-        pointerEvents={showHandle(k) ? "auto" : "none"}
       >
         <rect
           x="0"
@@ -413,16 +441,19 @@ export default function PathEditor(props: Props) {
                   width={roomW(project.rescue) + WALL_T * 2}
                   height={roomH(project.rescue) + WALL_T * 2}
                   fill="transparent"
+                  className="no-export"
                   onDoubleClick={onEditRescue}
                 />
-                <Handle
-                  k="room"
-                  y={-WALL_T - 7.4}
-                  width={roomW(project.rescue) + WALL_T * 2}
-                  title="Sala de resgate"
-                  sub={`${roomW(project.rescue)}×${roomH(project.rescue)} cm`}
-                  action={{ label: "✎ editar", run: onEditRescue }}
-                />
+                <g className="no-export" transform={`translate(${-WALL_T} 0)`}>
+                  {renderHandle({
+                    k: "room",
+                    y: -WALL_T - 7.4,
+                    width: roomW(project.rescue) + WALL_T * 2,
+                    title: "Sala de resgate",
+                    sub: `${roomW(project.rescue)}×${roomH(project.rescue)} cm`,
+                    action: { label: "✎ editar", run: onEditRescue },
+                  })}
+                </g>
               </g>
 
               {project.boards.map((b) => {
@@ -448,7 +479,8 @@ export default function PathEditor(props: Props) {
                           <rect
                             width="30"
                             height="30"
-                            className="cursor-pointer fill-transparent hover:fill-sky-500/10"
+                            fill="transparent"
+                            className="no-export cursor-pointer hover:fill-sky-500/10"
                             onPointerDown={() => {
                               if (mode === "paint") paintCell(b.id, i);
                               else setSelection({ boardId: b.id, idx: i });
@@ -490,7 +522,7 @@ export default function PathEditor(props: Props) {
                       );
                     })}
                     <g className="no-export">
-                      <Handle k={key} y={-7.4} width={90} title={`Tablado ${b.id}`} sub={`${b.col * 30}, ${b.row * 30} cm`} />
+                      {renderHandle({ k: key, y: -7.4, width: 90, title: `Tablado ${b.id}`, sub: `${b.col * 30}, ${b.row * 30} cm` })}
                     </g>
                   </g>
                 );

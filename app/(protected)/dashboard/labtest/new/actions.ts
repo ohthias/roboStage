@@ -1,6 +1,6 @@
 "use server";
 
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { folders } from "@/db/schema/notebook";
 import { tests, testExecutions } from "@/db/schema/labtest";
@@ -348,6 +348,7 @@ export async function createTest(input: CreateTestInput) {
     .returning();
 
   revalidatePath("/dashboard/labtest");
+  revalidatePath("/dashboard/folders", "layout");
 
   return created;
 }
@@ -442,12 +443,16 @@ export async function createTestExecution(input: {
  * ========================================================================= */
 
 export async function listTests() {
-  const userId = await requireAuthenticatedUser();
+  const scope = await resolveStagebookScope();
 
   return db
     .select()
     .from(tests)
-    .where(eq(tests.userId, userId))
+    .where(
+      scope.type === "team"
+        ? eq(tests.teamId, scope.teamId)
+        : and(eq(tests.userId, scope.userId), isNull(tests.teamId)),
+    )
     .orderBy(desc(tests.createdAt));
 }
 

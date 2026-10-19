@@ -1,6 +1,6 @@
 import { and, asc, count, eq, gte } from "drizzle-orm";
 import { clerkClient } from "@clerk/nextjs/server";
-import { Book, CalendarDays, KanbanSquare, Settings, ShieldCheck, Users } from "lucide-react";
+import { Book, CalendarDays, KanbanSquare, Lightbulb, Settings, ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
 import { db } from "@/db/client";
 import {
@@ -208,11 +208,32 @@ export async function TeamContent({
       </div>
 
       {/* Acesso rápido */}
-      <div className="mb-8 grid gap-3 sm:grid-cols-3">
+      <div className="mb-8 grid gap-3 sm:grid-cols-4">
         <QuickLink href="/dashboard/documents" icon={<Book size={18} />} label="Páginas" value={pageCount[0]?.value ?? 0} />
         <QuickLink href="/dashboard/calendar" icon={<CalendarDays size={18} />} label="Próximos eventos" value={upcomingEventCount[0]?.value ?? 0} />
         <QuickLink href="/dashboard/kanban" icon={<KanbanSquare size={18} />} label="Boards" value={boardCount[0]?.value ?? 0} />
+        <QuickLink href="/dashboard/thinklab" icon={<Lightbulb size={18} />} label="ThinkLab" />
       </div>
+
+      <Link
+        href="/dashboard/thinklab"
+        className="group mb-8 flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-secondary/20 bg-secondary/10 p-5 transition-all hover:-translate-y-0.5 hover:border-secondary/40 hover:shadow-md"
+      >
+        <div className="flex items-center gap-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-content">
+            <Lightbulb size={21} />
+          </span>
+          <div>
+            <h2 className="font-semibold">ThinkLab</h2>
+            <p className="mt-1 text-sm text-base-content/60">
+              Organize ideias, pesquisas e evidências da sua equipe em um só lugar.
+            </p>
+          </div>
+        </div>
+        <span className="btn btn-secondary btn-sm shrink-0">
+          Abrir ThinkLab
+        </span>
+      </Link>
 
       {scope.role === "owner" ? (
         <MemberManagement teamId={scope.teamId} members={members} invitations={invitations} />
@@ -263,7 +284,7 @@ function QuickLink({
   href: string;
   icon: React.ReactNode;
   label: string;
-  value: number;
+  value?: number;
 }) {
   return (
     <Link
@@ -276,7 +297,9 @@ function QuickLink({
         </span>
         {label}
       </span>
-      <span className="text-lg font-bold text-base-content/70">{value}</span>
+      {value !== undefined && (
+        <span className="text-lg font-bold text-base-content/70">{value}</span>
+      )}
     </Link>
   );
 }

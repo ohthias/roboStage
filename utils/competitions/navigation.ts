@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, File, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy } from "lucide-react";
+import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Trophy, Code, Bot, UserSearch } from "lucide-react";
 
 export type NavMenuItem = {
   nome: string;
@@ -34,6 +34,7 @@ export const NAVIGATION = {
         items: [
           { nome: "Recall", path: "recall", icon: MessageSquare, description: "Reavaliação de conceitos por meio de flashcards" },
           { nome: "Rúbrica de Avaliação", path: "rubric", icon: NotepadText, description: "Ferramenta de avaliação interativa para competições de robótica" },
+          { nome: "Mapa de Empatia", path: "empathy-map", icon: UserSearch, description: "Ferramenta para análise de empatia com o profissional alvo", new: true },
           { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para competições" },
           { nome: "Partiu Mesa!", path: "partiu-mesa", icon: MonitorDot, description: "Simulador de simples para teste de saídas. Para análise de desempenho do robô durante um teste de saída." },
           { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento." },
@@ -57,5 +58,16 @@ export const NAVIGATION = {
       { key: "submerged", name: "SUBMERGED", period: "2024/2025", icon: Fish },
       { key: "masterpiece", name: "MASTERPIECE", period: "2023/2024", icon: Palette },
     ],
+  },
+  obr: {
+    label: "OBR",
+    icon: Bot,
+    scorePath: "score",
+    options: [
+      { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false },
+      { nome: "Anatix", path: "anatix", icon: Code, new: false },
+      { nome: "Documentação", path: "docs", icon: BookOpen, new: false },
+    ],
+    menus: [],
   },
 };

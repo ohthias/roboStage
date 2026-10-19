@@ -8,6 +8,7 @@ import { calendarEvents, calendarEventDocuments } from "./calendar";
 import {
   boards,
   boardColumns,
+  boardMilestones,
   boardCards,
   boardCardAssignees,
   boardCardDocuments,
@@ -163,6 +164,7 @@ export const boardsRelations = relations(boards, ({ one, many }) => ({
   owner: one(users, { fields: [boards.userId], references: [users.id] }),
   team: one(teams, { fields: [boards.teamId], references: [teams.id] }),
   columns: many(boardColumns),
+  milestones: many(boardMilestones),
   cards: many(boardCards),
 }));
 
@@ -177,6 +179,11 @@ export const boardColumnsRelations = relations(
   })
 );
 
+export const boardMilestonesRelations = relations(boardMilestones, ({ one, many }) => ({
+  board: one(boards, { fields: [boardMilestones.boardId], references: [boards.id] }),
+  cards: many(boardCards),
+}));
+
 export const boardCardsRelations = relations(boardCards, ({ one, many }) => ({
   board: one(boards, {
     fields: [boardCards.boardId],
@@ -185,6 +192,10 @@ export const boardCardsRelations = relations(boardCards, ({ one, many }) => ({
   column: one(boardColumns, {
     fields: [boardCards.columnId],
     references: [boardColumns.id],
+  }),
+  milestone: one(boardMilestones, {
+    fields: [boardCards.milestoneId],
+    references: [boardMilestones.id],
   }),
   assignees: many(boardCardAssignees),
   documents: many(boardCardDocuments),
@@ -267,5 +278,26 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   user: one(users, {
     fields: [notifications.userId],
     references: [users.id],
+  }),
+}));
+
+// ---------------------------------------------------------------------------
+// ThinkLab
+// ---------------------------------------------------------------------------
+
+import { thinklab } from "./thinklab";
+
+export const thinklabRelations = relations(thinklab, ({ one }) => ({
+  user: one(users, {
+    fields: [thinklab.userId],
+    references: [users.id],
+  }),
+  team: one(teams, {
+    fields: [thinklab.teamId],
+    references: [teams.id],
+  }),
+  folder: one(folders, {
+    fields: [thinklab.folderId],
+    references: [folders.id],
   }),
 }));

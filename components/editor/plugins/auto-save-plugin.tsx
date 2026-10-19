@@ -1,42 +1,68 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { useCallback, useEffect, useRef } from "react";
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import type { EditorState } from "lexical";
 import { updateDocumentContent } from "@/app/(protected)/dashboard/documents/actions";
 
-const DEBOUNCE_MS = 800;
+type SaveState = "idle" | "saving" | "saved";
 
 export function AutosavePlugin({
   documentId,
   onStatusChange,
+  delay = 800,
 }: {
   documentId: string;
-  onStatusChange: (status: "idle" | "saving" | "saved") => void;
+  onStatusChange?: (state: SaveState) => void;
+  delay?: number;
 }) {
-  const [editor] = useLexicalComposerContext();
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isFirstUpdate = useRef(true);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pending = useRef<EditorState | null>(null);
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const flush = useCallback(async () => {
+    const state = pending.current;
+    if (!state) return;
+    pending.current = null;
+    onStatusChange?.("saving");
+    try {
+      await updateDocumentContent(
+        documentId,
+        state.toJSON() as unknown as Record<string, unknown>,
+      );
+      onStatusChange?.("saved");
+      if (resetTimer.current) clearTimeout(resetTimer.current);
+      resetTimer.current = setTimeout(() => onStatusChange?.("idle"), 1500);
+    } catch (error) {
+      console.error("Falha ao salvar documento", error);
+      onStatusChange?.("idle");
+    }
+  }, [documentId, onStatusChange]);
+
+  // Salva o que estiver pendente ao sair da página / desmontar.
   useEffect(() => {
-    return editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }) => {
-      // A primeira atualização é o carregamento do conteúdo inicial, não uma edição.
-      if (isFirstUpdate.current) {
-        isFirstUpdate.current = false;
-        return;
-      }
-      if (dirtyElements.size === 0 && dirtyLeaves.size === 0) return;
+    const onHide = () => {
+      if (timer.current) clearTimeout(timer.current);
+      void flush();
+    };
+    window.addEventListener("pagehide", onHide);
+    return () => {
+      window.removeEventListener("pagehide", onHide);
+      if (timer.current) clearTimeout(timer.current);
+      if (resetTimer.current) clearTimeout(resetTimer.current);
+      void flush();
+    };
+  }, [flush]);
 
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      onStatusChange("saving");
-
-      timeoutRef.current = setTimeout(() => {
-        const json = editorState.toJSON();
-        updateDocumentContent(documentId, json)
-          .then(() => onStatusChange("saved"))
-          .catch(() => onStatusChange("idle"));
-      }, DEBOUNCE_MS);
-    });
-  }, [editor, documentId, onStatusChange]);
-
-  return null;
+  return (
+    <OnChangePlugin
+      ignoreSelectionChange
+      ignoreHistoryMergeTagChange
+      onChange={(state) => {
+        pending.current = state;
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => void flush(), delay);
+      }}
+    />
+  );
 }

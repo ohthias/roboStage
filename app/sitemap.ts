@@ -44,6 +44,14 @@ const publicRoutes = [
   "/fll/recall",
   "/fll/timers",
   "/fll/flash-qa",
+  "/obr",
+  "/obr/docs",
+  "/obr/anatix",
+  "/obr/quickbrick",
+  "/obr/quickbrick/criador-de-arena",
+  "/obr/quickbrick/matriz-de-risco",
+  "/obr/quickbrick/matriz-swot",
+  "/obr/score",
 ];
 
 function toSitemapUrl(pathname: string) {

@@ -1,215 +1,212 @@
 # Third-Party Software Licenses
 
-This project, **RoboStage**, uses open-source and third-party software distributed under their respective licenses.
+RoboStage uses open-source software, third-party libraries, services, and visual resources distributed under their respective licenses and terms of use.
 
-The licenses below apply only to the third-party software and visual resources listed in this document and do not grant any rights to the RoboStage source code, branding, trademarks, logos, illustrations created specifically for RoboStage, or other proprietary materials.
+This document identifies the direct dependencies declared in `package.json`, including development dependencies, and summarizes their known licensing conditions. Transitive dependencies may have additional licenses and notices that are not exhaustively listed here.
+
+The licenses described below apply only to the corresponding third-party software and resources. They do not grant rights to RoboStage's proprietary source code, branding, trademarks, logos, original illustrations, documentation, or other materials created specifically for the project.
+
+**Important:** Package versions, license metadata, copyright notices, and applicable terms must be verified against the installed packages and the relevant authoritative sources before redistribution or commercial deployment.
 
 ---
 
-# MIT License
+## MIT License
 
-The following dependencies are distributed under the MIT License:
+The following dependencies are identified as distributed under the MIT License, subject to verification against the installed package versions.
 
-* `@heroicons/react` — Tailwind Labs
-* `@tailwindcss/typography` — Tailwind Labs
-* `@vercel/analytics` — Vercel
-* `file-saver` — Eli Grey
-* `framer-motion` — Framer / Motion
-* `gray-matter` — Jon Schlinkert and contributors
-* `html2canvas-pro` — Yorick Shan
-* `jspdf` — James Hall / yWorks GmbH
-* `jspdf-autotable` — Simon Bengtsson and contributors
-* `nanoid` — Andrey Sitnik and contributors
-* `next` — Vercel
-* `postcss` — PostCSS contributors / Evil Martians
-* `react` — Meta Platforms, Inc. and contributors
-* `react-dom` — Meta Platforms, Inc. and contributors
-* `react-markdown` — Titus Wormer and contributors
-* `recharts` — Recharts contributors
-* `remark-gfm` — Titus Wormer and contributors
-* `uuid` — Robert Kieffer and contributors
+### Application dependencies
+
+- `@clerk/localizations` — Clerk
+- `@clerk/nextjs` — Clerk
+- `@heroicons/react` — Tailwind Labs
+- `@lexical/code` — Meta Platforms, Inc. and contributors
+- `@lexical/link` — Meta Platforms, Inc. and contributors
+- `@lexical/list` — Meta Platforms, Inc. and contributors
+- `@lexical/markdown` — Meta Platforms, Inc. and contributors
+- `@lexical/react` — Meta Platforms, Inc. and contributors
+- `@lexical/rich-text` — Meta Platforms, Inc. and contributors
+- `@lexical/selection` — Meta Platforms, Inc. and contributors
+- `@lexical/table` — Meta Platforms, Inc. and contributors
+- `@lexical/utils` — Meta Platforms, Inc. and contributors
+- `@neondatabase/serverless` — Neon
+- `@tailwindcss/typography` — Tailwind Labs
+- `@vercel/analytics` — Vercel
+- `animejs` — Anime.js contributors
+- `drizzle-orm` — Drizzle Team and contributors
+- `file-saver` — Eli Grey
+- `framer-motion` — Motion contributors
+- `gray-matter` — Jon Schlinkert and contributors
+- `html2canvas-pro` — Yorick Shan
+- `jspdf` — jsPDF contributors
+- `jspdf-autotable` — Simon Bengtsson and contributors
+- `lenis` — Studio Freight and contributors
+- `lexical` — Meta Platforms, Inc. and contributors
+- `nanoid` — Andrey Sitnik and contributors
+- `next` — Vercel
+- `postcss` — PostCSS contributors
+- `react` — Meta Platforms, Inc. and contributors
+- `react-dom` — Meta Platforms, Inc. and contributors
+- `react-markdown` — Titus Wormer and contributors
+- `recharts` — Recharts contributors
+- `remark-gfm` — Titus Wormer and contributors
+- `svix` — Svix
+- `tailwind-merge` — Tailwind Merge contributors
+- `uuid` — Robert Kieffer and contributors
+
+### Development dependencies
+
+- `@tailwindcss/postcss` — Tailwind Labs
+- `@types/file-saver` — DefinitelyTyped contributors
+- `@types/node` — DefinitelyTyped contributors
+- `@types/react` — DefinitelyTyped contributors
+- `@types/react-dom` — DefinitelyTyped contributors
+- `@types/uuid` — DefinitelyTyped contributors
+- `daisyui` — daisyUI contributors
+- `drizzle-kit` — Drizzle Team and contributors
+- `eslint` — ESLint contributors
+- `eslint-config-next` — Vercel
+- `knip` — Knip contributors
+- `tailwindcss` — Tailwind Labs
 
 ## MIT License Text
 
 Copyright holders remain those identified in the respective third-party projects.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-of this software and associated documentation files (the "Software"), to deal
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-in the Software without restriction, including without limitation the rights
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-
-copies of the Software, and to permit persons to whom the Software is
-
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-
-SOFTWARE.
-
-For the authoritative license and copyright notices, please refer to the
-
-LICENSE file distributed with each respective dependency.
+For authoritative license text and copyright notices, consult the LICENSE file distributed with each respective dependency.
 
 ---
 
-# ISC License
+## ISC License
 
-The following dependencies are distributed under the ISC License:
+The following dependencies are identified as distributed under the ISC License:
 
-* `@lucide/lab` — Lucide
-* `lucide-react` — Lucide
+- `@lucide/lab` — Lucide contributors
+- `lucide-react` — Lucide contributors
 
-## ISC License Text
+### ISC License Text
 
 Copyright (c) the respective copyright holders of the software listed above.
 
-Permission to use, copy, modify, and/or distribute this software for any
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 
-purpose with or without fee is hereby granted, provided that the above
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA, OR PROFITS.
 
-copyright notice and this permission notice appear in all copies.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-
-WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-
-MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-
-ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-
-WHATSOEVER RESULTING FROM LOSS OF USE, DATA, OR PROFITS.
-
-For the authoritative license and copyright notices, please refer to the
-
-LICENSE file distributed with each respective dependency.
+For authoritative license text and copyright notices, consult the LICENSE file distributed with each respective dependency.
 
 ---
 
-# Apache License 2.0
-
-The following dependencies are distributed under the Apache License, Version 2.0:
-
-* `@vercel/speed-insights` — Vercel
-* `jszip` — JSZip
-
 ## Apache License, Version 2.0
 
-Copyright holders remain those identified in the respective third-party projects.
+The following dependencies are identified as distributed under the Apache License, Version 2.0:
 
-Licensed under the Apache License, Version 2.0 (the "License");
+- `@vercel/speed-insights` — Vercel
+- `jszip` — JSZip contributors
+- `sharp` — Sharp contributors
+- `typescript` — Microsoft and TypeScript contributors
 
-you may not use these files except in compliance with the License.
+### Apache License Notice
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use these files except in compliance with the License.
 
 You may obtain a copy of the License at:
 
 https://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
-distributed under the License is distributed on an "AS IS" BASIS,
+See the License for the specific language governing permissions and limitations.
 
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-See the License for the specific language governing permissions and
-
-limitations under the License.
-
-The complete Apache License, Version 2.0, should be retained with
-
-redistributed copies of the applicable software.
+The complete Apache License, Version 2.0, and any applicable NOTICE files must be preserved when required by the license.
 
 ---
 
-# Mozilla Public License 2.0
+## Mozilla Public License, Version 2.0
 
-The following dependency is distributed under the Mozilla Public License 2.0:
+The following dependency is distributed under the Mozilla Public License, Version 2.0:
 
-* `next-mdx-remote` — HashiCorp and contributors
+- `next-mdx-remote` — HashiCorp and contributors
 
-## MPL-2.0 Notice
+### MPL-2.0 Notice
 
-`next-mdx-remote` is licensed under the Mozilla Public License, Version 2.0.
+`next-mdx-remote` is licensed under the Mozilla Public License, Version 2.0 (MPL-2.0).
 
-The MPL-2.0 is a file-level copyleft license. Modified files containing
-
-MPL-covered code remain subject to the MPL-2.0 when distributed.
+The MPL-2.0 is a file-level copyleft license. In general, modifications to MPL-covered files distributed to others must comply with the license's source-code disclosure requirements for those files. The license does not automatically impose the same obligations on every independent file in a larger application.
 
 The complete license text is available at:
 
 https://www.mozilla.org/en-US/MPL/2.0/
 
-The authoritative license included with `next-mdx-remote` must be retained when redistributing the applicable software.
+The upstream project repository is:
+
+https://github.com/hashicorp/next-mdx-remote
+
+The package's authoritative license and applicable notices must be retained when redistributing the applicable software.
 
 ---
 
-# Flaticon License
+## BSD-2-Clause License
 
-The RoboStage project uses:
+The following development dependency is identified as distributed under the BSD 2-Clause License:
 
-* `@flaticon/flaticon-uicons` — Flaticon / Freepik Company
+- `dotenv` — dotenv contributors
 
-The UIcons package is **not distributed under the MIT License**. It is governed by the Flaticon License and its applicable Terms of Use.
+The BSD-2-Clause License generally permits redistribution and use in source and binary forms, with or without modification, provided that the copyright notice, license conditions, and disclaimer are retained in the required locations.
 
-The package documentation states that attribution should be provided using:
+The authoritative license text is available in the package repository:
 
-> Uicons by Flaticon
+https://github.com/motdotla/dotenv
 
-Recommended attribution:
+Verify the installed package's license metadata before redistribution.
+
+---
+
+## Flaticon UIcons
+
+RoboStage uses the following third-party icon package:
+
+- `@flaticon/flaticon-uicons` — Flaticon / Freepik Company
+
+This package is **not assumed to be distributed under the MIT License**. Its use is governed by the applicable Flaticon license and Freepik Terms of Use.
+
+The package documentation recommends the following attribution:
 
 **Uicons by Flaticon**
 
 https://www.flaticon.com/uicons
 
-The Flaticon License permits use of the content under the conditions specified by Flaticon, including attribution requirements and restrictions concerning certain forms of redistribution and resale.
-
-The complete and authoritative license terms are available at:
+Repository and license information:
 
 https://github.com/freepik-company/flaticon-uicons/blob/main/LICENSE
 
-Flaticon Terms of Use:
+Freepik Terms of Use:
 
 https://www.freepikcompany.com/legal
 
-This attribution does not grant ownership of Flaticon or UIcons content to RoboStage.
+Use, modification, attribution, redistribution, and commercial exploitation must comply with the terms applicable to the specific assets and subscription or usage plan.
+
+Attribution does not transfer ownership of Flaticon or UIcons content to RoboStage.
 
 ---
 
-# Storyset
+## Storyset Illustrations
 
-The RoboStage project uses illustrations and visual assets provided by **Storyset**, a visual asset platform by Freepik Company.
+RoboStage uses illustrations and visual resources provided by Storyset, a visual asset platform operated by Freepik Company.
 
-Storyset illustrations are used within the RoboStage project in accordance with the applicable Storyset / Freepik license and Terms of Use.
+Storyset illustrations are used in accordance with the applicable Storyset and Freepik license and Terms of Use.
 
 Where required by the applicable license or usage plan, attribution should be provided according to Storyset's requirements.
-
-The use of Storyset illustrations does **not** transfer ownership of the illustrations, characters, artwork, or related intellectual property to RoboStage.
-
-RoboStage may modify, recolor, animate, combine, or otherwise incorporate Storyset illustrations into its interfaces and related materials only to the extent permitted by the applicable Storyset license.
-
-The authoritative licensing terms and attribution requirements should always be verified against the current Storyset and Freepik Terms of Use.
 
 Recommended attribution:
 
 **Storyset by Freepik**
 
-Storyset:
+Official website:
 
 https://storyset.com/
 
@@ -217,99 +214,138 @@ Freepik Terms of Use:
 
 https://www.freepikcompany.com/legal
 
+RoboStage may modify, recolor, animate, combine, or incorporate Storyset illustrations into its interfaces and related materials only to the extent permitted by the applicable license.
+
+The use of these illustrations does not transfer ownership of the original illustrations, characters, artwork, or associated intellectual property to RoboStage.
+
 ---
 
-# Magnific Illustrations
+## Magnific-Assisted Visual Assets
 
-The RoboStage project uses **Magnific** as a third-party creative tool for the generation, enhancement, transformation, and processing of certain visual assets and illustrations.
+RoboStage uses Magnific as a third-party creative tool for generating, enhancing, transforming, and processing selected visual assets and illustrations.
 
-Magnific is used as part of the creative workflow for selected RoboStage visual materials. The use of Magnific does **not**, by itself, constitute a transfer of ownership or licensing rights from Magnific to RoboStage over every resulting image or visual asset.
+Magnific is part of the creative workflow for certain RoboStage visual materials. Its use does not, by itself, establish ownership of every resulting image or grant rights to third-party material incorporated into an output.
 
-The intellectual property status and permitted use of each resulting asset may depend on several factors, including:
+The intellectual property status and permitted use of each resulting asset may depend on:
 
-* the applicable Magnific Terms of Use and license conditions;
-* the source material, reference images, or other assets used during the creation process;
-* any third-party copyrights, trademarks, characters, or other intellectual property incorporated into or referenced by the resulting asset; and
-* the specific rights held by RoboStage or otherwise granted to RoboStage for the materials used.
+- The applicable Magnific Terms of Use and license conditions.
+- The source material, reference images, and other assets used during creation.
+- Third-party copyrights, trademarks, characters, and other intellectual property incorporated into or referenced by the resulting asset.
+- The rights held by RoboStage or otherwise granted to RoboStage for the materials used.
 
-RoboStage does not claim ownership of third-party source materials, reference artwork, trademarks, characters, or other protected intellectual property merely because such materials were processed or transformed using Magnific.
+RoboStage does not claim ownership of third-party source materials, reference artwork, trademarks, characters, or other protected intellectual property merely because those materials were processed or transformed using Magnific.
 
-Where an illustration or visual asset incorporates, derives from, or is based upon third-party material, its use remains subject to the applicable rights, permissions, licenses, and Terms of Use governing that material.
+Where a visual asset incorporates, derives from, or is based on third-party material, its use remains subject to the applicable rights, permissions, licenses, and Terms of Use.
 
 Accordingly, **Magnific is acknowledged as a third-party creative tool used in the production or processing of certain RoboStage visual assets, rather than as the owner or licensor of all such assets**.
 
-Nothing in this notice should be interpreted as granting RoboStage rights to third-party material beyond those rights actually obtained or otherwise available under applicable law and licensing terms.
-
-For the current applicable terms and conditions, refer to the official Magnific service documentation and Terms of Use.
-
-Recommended reference:
-
-**Magnific**
+Official website:
 
 https://magnific.ai/
 
----
-
-# Visual Asset Attribution Notice
-
-Storyset illustrations, Flaticon UIcons, and Magnific-assisted visual assets are **third-party visual resources or resources created using third-party tools** and should not automatically be interpreted as original RoboStage artwork.
-
-The presence of a third-party visual resource within RoboStage does not imply ownership of that resource by RoboStage.
-
-Nothing in this document grants RoboStage ownership of third-party illustrations, generated assets subject to third-party rights, trademarks, logos, characters, or other protected intellectual property.
-
-Where a specific asset requires attribution, the applicable attribution notice should be maintained alongside the distributed product or in the location required by the respective license or Terms of Use.
+The current applicable terms should be reviewed before distributing or commercially using affected assets.
 
 ---
 
-# Third-Party License References
+## Other Development Tools
 
-For the authoritative license text, copyright notices, and applicable conditions, refer to the license files and official terms distributed or published by each respective dependency or service.
+The following development dependencies are used for building, validating, configuring, or maintaining RoboStage:
 
-## Project Repositories
+- `@tailwindcss/postcss`
+- `@types/file-saver`
+- `@types/node`
+- `@types/react`
+- `@types/react-dom`
+- `@types/uuid`
+- `daisyui`
+- `dotenv`
+- `drizzle-kit`
+- `eslint`
+- `eslint-config-next`
+- `knip`
+- `tailwindcss`
+- `typescript`
 
-* Heroicons: https://github.com/tailwindlabs/heroicons
-* Tailwind CSS Typography: https://github.com/tailwindlabs/tailwindcss-typography
-* Vercel Analytics: https://github.com/vercel/analytics
-* Vercel Speed Insights: https://github.com/vercel/speed-insights
-* FileSaver.js: https://github.com/eligrey/FileSaver.js
-* Motion / Framer Motion: https://github.com/motiondivision/motion
-* gray-matter: https://github.com/jonschlinkert/gray-matter
-* html2canvas-pro: https://github.com/yorickshan/html2canvas-pro
-* jsPDF: https://github.com/parallax/jsPDF
-* jsPDF-AutoTable: https://github.com/simonbengtsson/jsPDF-AutoTable
-* JSZip: https://github.com/Stuk/jszip
-* Lucide: https://github.com/lucide-icons/lucide
-* Nano ID: https://github.com/ai/nanoid
-* Next.js: https://github.com/vercel/next.js
-* next-mdx-remote: https://github.com/hashicorp/next-mdx-remote
-* PostCSS: https://github.com/postcss/postcss
-* React: https://github.com/facebook/react
-* react-markdown: https://github.com/remarkjs/react-markdown
-* Recharts: https://github.com/recharts/recharts
-* remark-gfm: https://github.com/remarkjs/remark-gfm
-* uuid: https://github.com/uuidjs/uuid
+Development dependencies may be included in local development, testing, build, or deployment environments without necessarily being shipped to end users as part of the production application.
 
-## Visual Resources
+Their inclusion in `package.json` does not establish that every development package is bundled into the production application. Each package's license must nevertheless be considered when distributing that package or its code.
 
-* Storyset: https://storyset.com/
-* Flaticon UIcons: https://www.flaticon.com/uicons
-* Magnific: https://magnific.ai/
+The applicable license metadata and notices should be verified against the installed versions.
 
 ---
 
-# Important Notice
+## Third-Party License References
 
-This document is provided to identify third-party software, services, and visual resources used by RoboStage and to summarize their applicable licenses and attribution requirements.
+The following upstream repositories provide starting points for reviewing package source code, license files, copyright notices, and applicable conditions.
+
+### Application dependencies
+
+- Clerk SDK: https://github.com/clerk/javascript
+- Heroicons: https://github.com/tailwindlabs/heroicons
+- Lexical: https://github.com/facebook/lexical
+- Neon Serverless Driver: https://github.com/neondatabase/serverless
+- Tailwind CSS Typography: https://github.com/tailwindlabs/tailwindcss-typography
+- Vercel Analytics: https://github.com/vercel/analytics
+- Vercel Speed Insights: https://github.com/vercel/speed-insights
+- Anime.js: https://github.com/juliangarnier/anime
+- Drizzle ORM: https://github.com/drizzle-team/drizzle-orm
+- FileSaver.js: https://github.com/eligrey/FileSaver.js
+- Motion / Framer Motion: https://github.com/motiondivision/motion
+- gray-matter: https://github.com/jonschlinkert/gray-matter
+- html2canvas-pro: https://github.com/yorickshan/html2canvas-pro
+- jsPDF: https://github.com/parallax/jsPDF
+- jsPDF-AutoTable: https://github.com/simonbengtsson/jsPDF-AutoTable
+- JSZip: https://github.com/Stuk/jszip
+- Lenis: https://github.com/darkroomengineering/lenis
+- Lucide: https://github.com/lucide-icons/lucide
+- Nano ID: https://github.com/ai/nanoid
+- Next.js: https://github.com/vercel/next.js
+- next-mdx-remote: https://github.com/hashicorp/next-mdx-remote
+- PostCSS: https://github.com/postcss/postcss
+- React: https://github.com/facebook/react
+- react-markdown: https://github.com/remarkjs/react-markdown
+- Recharts: https://github.com/recharts/recharts
+- remark-gfm: https://github.com/remarkjs/remark-gfm
+- Sharp: https://github.com/lovell/sharp
+- Svix: https://github.com/svix/svix-webhooks
+- Tailwind Merge: https://github.com/dcastil/tailwind-merge
+- TypeScript: https://github.com/microsoft/TypeScript
+- uuid: https://github.com/uuidjs/uuid
+
+### Development tools
+
+- daisyUI: https://github.com/saadeghi/daisyui
+- dotenv: https://github.com/motdotla/dotenv
+- Drizzle Kit: https://github.com/drizzle-team/drizzle-orm
+- ESLint: https://github.com/eslint/eslint
+- Knip: https://github.com/webpro-nl/knip
+- Tailwind CSS: https://github.com/tailwindlabs/tailwindcss
+- DefinitelyTyped: https://github.com/DefinitelyTyped/DefinitelyTyped
+
+### Visual resources
+
+- Storyset: https://storyset.com/
+- Flaticon UIcons: https://www.flaticon.com/uicons
+- Magnific: https://magnific.ai/
+
+---
+
+## Important Notice
+
+This document identifies third-party software, services, and visual resources used by RoboStage and summarizes their licensing and attribution requirements. It is not a substitute for the complete license terms distributed with each package or published by each service.
 
 The individual third-party projects, services, illustrations, and visual assets remain the copyright and/or intellectual property of their respective authors, creators, companies, or rights holders.
 
 Nothing in this document transfers ownership of third-party software, visual assets, trademarks, logos, illustrations, or other intellectual property to RoboStage.
 
-When distributing copies of third-party software or substantial portions of such software, the corresponding original license, copyright notices, and other required notices should be preserved in accordance with the applicable license.
+When redistributing third-party software or substantial portions of it, the corresponding license text, copyright notices, NOTICE files, and other required notices must be preserved in accordance with the applicable license.
 
-Third-party visual assets should likewise be used and attributed according to the license or Terms of Use applicable to the specific asset.
+Third-party visual assets must likewise be used, modified, distributed, and attributed according to the license or Terms of Use applicable to each specific asset.
 
-The licensing status and Terms of Use of third-party services may change over time. Users should consult the current authoritative terms before redistributing, modifying, or commercially using applicable third-party materials.
+The presence of a dependency in `package.json` does not necessarily mean that it is bundled into the production application. Conversely, a package's absence from the direct dependency list does not rule out the presence of transitive dependencies with separate licensing requirements.
 
-**Last reviewed: August 2026.**
+**For a complete compliance review, inspect the installed dependency tree and generate a software bill of materials (SBOM) or dependency-license report.** Verify all license classifications and required notices against the exact versions in the lockfile before publishing a release.
+
+Third-party license terms may change over time. Consult the current authoritative terms before redistributing, modifying, or commercially using applicable third-party materials.
+
+**Last reviewed: October 2026.**

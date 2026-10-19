@@ -13,8 +13,11 @@ export default async function BoardPage({
   let detail;
   try {
     detail = await getBoardDetail(boardId);
-  } catch {
-    notFound();
+  } catch (error) {
+    if (error instanceof Error && error.message === "Board não encontrado.") {
+      notFound();
+    }
+    throw error;
   }
 
   const scope = await resolveStagebookScope();
@@ -28,6 +31,8 @@ export default async function BoardPage({
       cards={detail.cards.map((c) => ({ ...c, dueAt: c.dueAt ? c.dueAt.toISOString() : null }))}
       assignees={detail.assignees}
       cardTags={detail.cardTags}
+      allTags={detail.allTags}
+      milestones={detail.milestones}
       teamMembers={teamMembers}
       isTeamScope={scope.type === "team"}
     />

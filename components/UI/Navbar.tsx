@@ -180,7 +180,7 @@ export function Navbar() {
                 <span className="megamenu-active" />
 
                 {/* Pontuador */}
-                {nav.scorePath && (
+                {nav.scorePath && "seasons" in nav && nav.seasons.length ? (
                   <>
                     <button
                       type="button"
@@ -204,7 +204,7 @@ export function Navbar() {
                           Temporadas
                         </li>
 
-                        {nav?.seasons?.map((season) => {
+                        {nav.seasons.map((season) => {
                           const Icon = season.icon;
                           const href = `/${competition}/${nav.scorePath}/${season.key}`;
                           const active = isActive(href);
@@ -243,11 +243,25 @@ export function Navbar() {
                       </ul>
                     </div>
                   </>
-                )}
+                ) : nav.scorePath ? (
+                  <Link
+                    href={`/${competition}/${nav.scorePath}`}
+                    className={navItemClass(
+                      isActive(`/${competition}/${nav.scorePath}`),
+                    )}
+                    aria-current={
+                      isActive(`/${competition}/${nav.scorePath}`)
+                        ? "page"
+                        : undefined
+                    }
+                  >
+                    <Trophy size={16} />
+                    <span>Pontuador</span>
+                  </Link>
+                ) : null}
 
-                {/* Itens diretos (apenas FLL) — links simples, sem popover */}
-                {competition === "fll" &&
-                  nav.options?.map((item) => {
+                {/* Itens diretos da competição — links simples, sem popover */}
+                {nav.options?.map((item) => {
                     const Icon = item.icon;
                     const href = `/${competition}/${item.path}`;
                     const active = isActive(href);
@@ -435,7 +449,7 @@ export function Navbar() {
             {showCompetitionNav && nav ? (
               <div className="space-y-5">
                 <div className="mt-2 space-y-3">
-                  {nav.scorePath && (
+                  {nav.scorePath && "seasons" in nav && nav.seasons.length ? (
                     <details
                       className="collapse rounded-2xl hover:shadow-[4px_4px_0_theme(colors.primary))] transition hover:bg-base-200/40"
                       open={scoreOpen}
@@ -502,10 +516,33 @@ export function Navbar() {
                         </ul>
                       </div>
                     </details>
-                  )}
+                  ) : nav.scorePath ? (
+                    <Link
+                      href={`/${competition}/${nav.scorePath}`}
+                      onClick={closeDrawer}
+                      className={mobileItemClass(
+                        isActive(`/${competition}/${nav.scorePath}`),
+                      )}
+                      aria-current={
+                        isActive(`/${competition}/${nav.scorePath}`)
+                          ? "page"
+                          : undefined
+                      }
+                    >
+                      <Trophy size={18} className="shrink-0 opacity-60" />
+                      <span
+                        className={
+                          isActive(`/${competition}/${nav.scorePath}`)
+                            ? "text-primary"
+                            : ""
+                        }
+                      >
+                        Pontuador
+                      </span>
+                    </Link>
+                  ) : null}
 
-                  {competition === "fll" &&
-                    nav?.options?.map((item) => {
+                  {nav?.options?.map((item) => {
                       const Icon = item.icon;
                       const href = `/${competition}/${item.path}`;
                       const active = isActive(href);

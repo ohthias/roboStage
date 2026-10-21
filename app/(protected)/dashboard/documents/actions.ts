@@ -12,6 +12,8 @@ import {
 import { scopeWhere } from "@/utils/stagebook/permissions";
 import { nextPosition } from "@/utils/stagebook/position";
 import { cleanText, optionalText, optionalUuid } from "@/utils/stagebook/validation";
+import { sanitizeDocIcon } from "@/utils/stagebook/doc-icon";
+import { sanitizeDocCover } from "@/utils/stagebook/doc-cover";
 
 const PATH = "/dashboard/documents";
 const PATHS = [PATH, "/dashboard/folders"];
@@ -299,7 +301,7 @@ export async function updateDocumentIcon(id: string, icon: string | null) {
   const scope = await resolveStagebookScope();
   await db
     .update(documents)
-    .set({ icon, updatedBy: scope.userId, updatedAt: new Date() })
+    .set({ icon: sanitizeDocIcon(icon), updatedBy: scope.userId, updatedAt: new Date() })
     .where(
       and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
     );
@@ -310,7 +312,7 @@ export async function updateDocumentCover(id: string, cover: string | null) {
   const scope = await resolveStagebookScope();
   await db
     .update(documents)
-    .set({ cover: optionalText(cover, 2000), updatedBy: scope.userId, updatedAt: new Date() })
+    .set({ cover: sanitizeDocCover(cover), updatedBy: scope.userId, updatedAt: new Date() })
     .where(
       and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
     );

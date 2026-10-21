@@ -28,7 +28,7 @@ function byPosition<T extends { position: number }>(a: T, b: T) {
 
 function buildDocumentChildren(
   parentId: string,
-  allDocuments: DocumentRow[],
+  allDocuments: DocumentRow[]
 ): TreeNode[] {
   return allDocuments
     .filter((d) => d.parentId === parentId)
@@ -45,7 +45,7 @@ function buildDocumentChildren(
 function buildTree(
   parentFolderId: string | null,
   allFolders: FolderRow[],
-  allDocuments: DocumentRow[],
+  allDocuments: DocumentRow[]
 ): TreeNode[] {
   const childFolders: TreeNode[] = allFolders
     .filter((f) => f.parentId === parentFolderId)
@@ -115,12 +115,10 @@ export default async function NotebookLayout({
   const tree = buildTree(null, allFolders, allDocuments);
 
   return (
-    <div className="flex h-full min-h-0">
-      <aside className="min-h-0 shrink-0 border-r border-base-300 bg-base-200">
-        <NotebookTree tree={tree} />
-      </aside>
+    <div className="flex h-full flex-col gap-6 lg:flex-row">
+      <NotebookTree tree={tree} />
 
-      <main className="min-w-0 flex-1">{children}</main>
+      <main className="flex-1">{children}</main>
     </div>
   );
 }

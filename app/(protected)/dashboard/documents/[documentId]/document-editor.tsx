@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -36,6 +36,7 @@ import { ListNode, ListItemNode } from "@lexical/list";
 import {
   Check,
   ChevronRight,
+  FileDown,
   FileText,
   Loader2,
   MoreHorizontal,
@@ -47,12 +48,26 @@ import {
 } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
 import { editorTheme } from "@/components/editor/editor-theme";
+import { DocIcon } from "@/components/editor/doc-icon";
+import { DocIconPicker } from "@/components/editor/doc-icon-picker";
+import { DocCover } from "@/components/editor/doc-cover";
+import { usePrintDocument } from "@/components/editor/use-print-document";
+import { DocCoverPicker } from "@/components/editor/doc-cover-picker";
+import { EditorBodySkeleton } from "@/components/editor/editor-skeleton";
+import { TemplateGalleryPlugin } from "@/components/editor/plugins/template-gallery-plugin";
 import "@/components/editor/editor.css";
 
 import { AutosavePlugin } from "@/components/editor/plugins/auto-save-plugin";
 import { BlockSelectionPlugin } from "@/components/editor/plugins/block-selection-plugin";
 import { ContextualToolsPlugin } from "@/components/editor/plugins/contextual-tools-plugin";
 import { SlashMenuPlugin } from "@/components/editor/plugins/slash-menu-plugin";
+import { LayoutPlugin } from "@/components/editor/plugins/layout-plugin";
+import { DividerPlugin } from "@/components/editor/plugins/divider-plugin";
+import {
+  LayoutContainerNode,
+  LayoutItemNode,
+} from "@/components/editor/nodes/layout-nodes";
+import { DividerNode } from "@/components/editor/nodes/divider-node";
 import { TableToolsPlugin } from "@/components/editor/plugins/table-tools-plugin";
 import { CodeToolsPlugin } from "@/components/editor/plugins/code-tools-plugin";
 import {
@@ -66,32 +81,6 @@ import {
   updateDocumentProperty,
   toggleDocumentTag,
 } from "../actions";
-
-const EMOJI_OPTIONS = [
-  "📝",
-  "🤖",
-  "🧪",
-  "🏁",
-  "⚙️",
-  "📌",
-  "💡",
-  "🔧",
-  "📊",
-  "🗂️",
-  "🎯",
-  "🚀",
-];
-const COVER_OPTIONS = [
-  { label: "Vermelho", value: "#cf2a2a" },
-  { label: "Azul", value: "#1e459f" },
-  { label: "Verde", value: "#16a34a" },
-  { label: "Laranja", value: "#ea580c" },
-  { label: "Roxo", value: "#7c3aed" },
-  { label: "Rosa", value: "#db2777" },
-  { label: "Cinza", value: "#64748b" },
-  { label: "Amarelo", value: "#d4a017" },
-  { label: "Turquesa", value: "#0d9488" },
-];
 
 // "---" / "***" / "___" viram um divisor.
 const HR_TRANSFORMER: ElementTransformer = {
@@ -172,6 +161,11 @@ export function NotebookEditor({
   );
 
   const [, startTransition] = useTransition();
+  // Mostra o skeleton até o editor (cliente) estar montado.
+  const printRootRef = useRef<HTMLDivElement>(null);
+  usePrintDocument(printRootRef, title);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [editorAnchor, setEditorAnchor] = useState<HTMLDivElement | null>(
     null,
   );
@@ -183,7 +177,10 @@ export function NotebookEditor({
       nodes: [
         CodeNode,
         HeadingNode,
-        HorizontalRuleNode,
+        HorizontalRuleNode, // mantido para ler documentos antigos (vira DividerNode)
+        DividerNode,
+        LayoutContainerNode,
+        LayoutItemNode,
         LinkNode,
         ListNode,
         ListItemNode,
@@ -216,7 +213,7 @@ export function NotebookEditor({
     });
   }
 
-  function pickIcon(next: string) {
+  function pickIcon(next: string | null) {
     setIcon(next);
     startTransition(async () => {
       await updateDocumentIcon(documentId, next);
@@ -275,6 +272,15 @@ export function NotebookEditor({
     });
   }
 
+  function handleExportPdf() {
+    // Fecha o menu (dropdown do daisyUI abre por foco) e abre o diálogo de
+    // impressão: em "Destino", escolha "Salvar como PDF".
+    (document.activeElement as HTMLElement | null)?.blur();
+    setShowEmojiPicker(false);
+    setShowCoverPicker(false);
+    setTimeout(() => window.print(), 150);
+  }
+
   function handleDuplicate() {
     startTransition(async () => {
       const duplicated = await duplicateDocument(documentId);
@@ -324,109 +330,62 @@ export function NotebookEditor({
   }
 
   return (
-    <div className="min-h-[calc(100vh-5rem)]">
+    <div ref={printRootRef} className="doc-print-root min-h-[calc(100vh-5rem)]">
       <LexicalComposer initialConfig={initialConfig}>
-        {cover && (
-          <div
-            className="h-32 w-full rounded-b-lg"
-            style={{ backgroundColor: cover }}
-          />
-        )}
+        {cover && <DocCover value={cover} className="doc-print-cover h-44 rounded-b-xl" />}
 
-        <div className="mx-auto w-full max-w-5xl px-5 pb-16 sm:px-8">
-          <header className="group relative my-4">
-            <div className="flex items-start justify-between gap-3">
+        <div className="doc-print-body w-full px-6 pb-32">
+          <header className="group mb-6">
+            <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="mb-5 flex flex-wrap items-center gap-3">
+                <div className="mb-3 flex items-center gap-2">
                   <div className="relative">
                     <button
                       type="button"
-                      className="flex size-14 items-center justify-center rounded-2xl border border-base-300/70 bg-base-200/70 text-3xl transition-all hover:border-primary/40 hover:bg-base-200 sm:size-16 sm:text-4xl"
+                      className="flex h-16 w-16 items-center justify-center rounded-xl transition-colors hover:bg-base-200"
                       title="Alterar ícone"
-                      aria-label="Alterar ícone do documento"
+                      data-icon-trigger
+                      aria-haspopup="dialog"
+                      aria-expanded={showEmojiPicker}
                       onClick={() => setShowEmojiPicker((visible) => !visible)}
                     >
-                      {icon ?? "📝"}
+                      <DocIcon value={icon} size={56} />
                     </button>
 
                     {showEmojiPicker && (
-                      <div className="absolute left-0 top-full z-50 mt-2 grid w-56 grid-cols-6 gap-1 rounded-2xl border border-base-300 bg-base-100 p-3 shadow-xl">
-                        {EMOJI_OPTIONS.map((emoji) => (
-                          <button
-                            key={emoji}
-                            type="button"
-                            aria-label={`Selecionar ${emoji}`}
-                            className="flex size-8 items-center justify-center rounded-lg text-lg transition-colors hover:bg-base-200"
-                            onClick={() => {
-                              pickIcon(emoji);
-                              setShowEmojiPicker(false);
-                            }}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
+                      <DocIconPicker
+                        value={icon}
+                        onChange={pickIcon}
+                        onClose={() => setShowEmojiPicker(false)}
+                      />
                     )}
                   </div>
 
-                  <div className="relative">
+                  <div className="no-print relative">
                     <button
                       type="button"
-                      className="flex items-center gap-2 rounded-xl border border-base-300/70 bg-base-100 px-3 py-2 text-xs font-medium text-base-content/65 transition-colors hover:border-primary/40 hover:text-base-content"
-                      title="Personalizar capa"
+                      className="btn btn-ghost btn-xs gap-1.5 text-base-content/50"
+                      title="Capa"
+                      data-cover-trigger
                       onClick={() => setShowCoverPicker((visible) => !visible)}
                     >
-                      <Palette size={15} />
-                      {cover ? "Personalizar capa" : "Adicionar capa"}
+                      <Palette size={13} />
+                      {cover ? "Trocar capa" : "Adicionar capa"}
                     </button>
 
                     {showCoverPicker && (
-                      <div className="absolute left-0 top-full z-50 mt-2 flex w-60 flex-col gap-3 rounded-2xl border border-base-300 bg-base-100 p-3 shadow-xl">
-                        <p className="text-xs font-semibold text-base-content/70">
-                          Cor da capa
-                        </p>
-
-                        <div className="grid grid-cols-6 gap-2">
-                          {COVER_OPTIONS.map((option) => (
-                            <button
-                              key={option.value}
-                              type="button"
-                              title={option.label}
-                              aria-label={`Capa ${option.label}`}
-                              aria-pressed={cover === option.value}
-                              className={`size-7 rounded-lg border transition-transform hover:scale-110 ${
-                                cover === option.value
-                                  ? "border-base-content ring-2 ring-primary/40 ring-offset-2 ring-offset-base-100"
-                                  : "border-base-300"
-                              }`}
-                              style={{ backgroundColor: option.value }}
-                              onClick={() => {
-                                pickCover(option.value);
-                                setShowCoverPicker(false);
-                              }}
-                            />
-                          ))}
-                        </div>
-                        {cover && (
-                          <button
-                            type="button"
-                            className="rounded-lg px-2 py-1.5 text-left text-xs text-base-content/60 transition-colors hover:bg-base-200 hover:text-base-content"
-                            onClick={() => {
-                              pickCover(null);
-                              setShowCoverPicker(false);
-                            }}
-                          >
-                            Remover capa
-                          </button>
-                        )}
-                      </div>
+                      <DocCoverPicker
+                        value={cover}
+                        onChange={pickCover}
+                        onClose={() => setShowCoverPicker(false)}
+                      />
                     )}
                   </div>
                 </div>
 
                 {/* Title */}
                 <input
-                  className="block w-full border-0 bg-transparent p-0 text-3xl font-bold leading-tight tracking-tight text-base-content outline-none placeholder:text-base-content/25 focus:outline-none focus:ring-0 sm:text-4xl lg:text-5xl"
+                  className="block w-full border-none bg-transparent p-0 text-4xl font-bold tracking-tight text-base-content outline-none placeholder:text-base-content/25 focus:outline-none focus:ring-0 lg:text-5xl"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   onBlur={commitTitle}
@@ -437,40 +396,38 @@ export function NotebookEditor({
                     }
                   }}
                   placeholder="Sem título"
-                  aria-label="Título do documento"
                 />
 
-                {/* Save status and document controls */}
-                <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-base-content/50">
-                  <span
-                    className={`inline-flex items-center gap-1.5 ${
-                      saveState === "saved"
-                        ? "text-success"
-                        : saveState === "saving"
-                          ? "text-base-content/60"
-                          : "text-base-content/45"
-                    }`}
-                    role="status"
-                    aria-live="polite"
-                  >
-                    {saveState === "saving" ? (
+                {/* Metadata */}
+                <div className="no-print mt-3 flex items-center gap-3 text-xs text-base-content/40">
+                  <span className="flex items-center gap-1.5">
+                    <FileText size={12} />
+                    Página
+                  </span>
+
+                  <span>•</span>
+
+                  <div className="flex items-center gap-1">
+                    {saveState === "saving" && (
                       <>
-                        <Loader2 size={13} className="animate-spin" />
-                        Salvando alterações
+                        <Loader2 size={12} className="animate-spin" />
+                        Salvando
                       </>
-                    ) : saveState === "saved" ? (
+                    )}
+                    {saveState === "saved" && (
                       <>
-                        <Check size={13} />
+                        <Check size={12} />
                         Salvo
                       </>
-                    ) : (
-                      "Alterações salvas"
                     )}
-                  </span>
+                    {saveState === "idle" && "Alterações salvas"}
+                  </div>
+
+                  <span>•</span>
 
                   <button
                     type="button"
-                    className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-base-200 hover:text-base-content"
+                    className="flex items-center gap-1 text-xs text-base-content/40 transition-colors hover:text-base-content/70"
                     onClick={() =>
                       setShowAdvancedOptions((visible) => !visible)
                     }
@@ -478,160 +435,135 @@ export function NotebookEditor({
                   >
                     <ChevronRight
                       size={14}
-                      className={`transition-transform duration-200 ${
-                        showAdvancedOptions ? "rotate-90" : ""
-                      }`}
+                      className={`transition-transform ${showAdvancedOptions ? "rotate-90" : ""}`}
                     />
-                    {showAdvancedOptions ? "Ocultar detalhes" : "Detalhes"}
+                    Opções avançadas do documento
                   </button>
                 </div>
 
-                {/* Advanced document properties */}
                 {showAdvancedOptions && (
-                  <div className="mt-5 space-y-5 rounded-2xl border border-base-300/70 bg-base-200/30 p-4 sm:p-5">
-                    <div>
-                      <label className="mb-2 block text-xs font-semibold text-base-content/60">
-                        Descrição
-                      </label>
-                      <input
-                        className="w-full rounded-xl border border-base-300/70 bg-base-100 px-3 py-2.5 text-sm text-base-content outline-none transition-colors placeholder:text-base-content/35 focus:border-primary/50 focus:ring-2 focus:ring-primary/10"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        onBlur={commitDescription}
-                        placeholder="Descreva o objetivo desta página..."
-                      />
-                    </div>
+                  <div className="no-print mt-2 rounded-xl border border-base-200 bg-base-100/50 p-3">
+                    {/* Description */}
+                    <input
+                      className="block w-full border-none bg-transparent p-0 text-sm text-base-content/50 outline-none placeholder:text-base-content/25 focus:outline-none focus:ring-0"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      onBlur={commitDescription}
+                      placeholder="Adicionar uma descrição..."
+                    />
 
-                    <div>
-                      <p className="mb-2 text-xs font-semibold text-base-content/60">
-                        Propriedades
-                      </p>
-
-                      <div className="flex flex-wrap items-center gap-2">
-                        {Object.entries(properties).map(([key, value]) => (
-                          <span
-                            key={key}
-                            className="group/prop inline-flex items-center gap-2 rounded-lg border border-base-300/70 bg-base-100 px-3 py-1.5 text-xs text-base-content/75"
-                          >
-                            <span className="text-base-content/50">{key}</span>
-                            <span className="font-semibold">
-                              {String(value)}
-                            </span>
-                            <button
-                              type="button"
-                              className="rounded p-0.5 text-base-content/40 transition-colors hover:bg-error/10 hover:text-error"
-                              aria-label={`Remover propriedade ${key}`}
-                              onClick={() => removeProperty(key)}
-                            >
-                              <X size={13} />
-                            </button>
-                          </span>
-                        ))}
-
-                        <div className="relative">
+                    {/* Properties */}
+                    <div className="mt-4 flex flex-wrap items-center gap-1.5">
+                      {Object.entries(properties).map(([key, value]) => (
+                        <span
+                          key={key}
+                          className="group/prop flex items-center gap-1 rounded-full bg-base-200 px-2.5 py-1 text-xs text-base-content/70"
+                        >
+                          <span className="font-medium">{key}:</span>{" "}
+                          {String(value)}
                           <button
                             type="button"
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-base-300 px-3 py-1.5 text-xs text-base-content/60 transition-colors hover:border-primary/50 hover:text-primary"
-                            onClick={() =>
-                              setShowPropertyForm((visible) => !visible)
-                            }
+                            className="ml-0.5 opacity-0 transition-opacity group-hover/prop:opacity-100"
+                            onClick={() => removeProperty(key)}
                           >
-                            <Plus size={13} />
-                            Adicionar
+                            <X size={11} />
                           </button>
+                        </span>
+                      ))}
 
-                          {showPropertyForm && (
-                            <div className="absolute left-0 top-full z-50 mt-2 flex w-60 flex-col gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-xl">
-                              <input
-                                className="input input-sm input-bordered w-full"
-                                placeholder="Nome da propriedade"
-                                value={newPropKey}
-                                onChange={(e) => setNewPropKey(e.target.value)}
-                              />
-                              <input
-                                className="input input-sm input-bordered w-full"
-                                placeholder="Valor"
-                                value={newPropValue}
-                                onChange={(e) =>
-                                  setNewPropValue(e.target.value)
-                                }
-                                onKeyDown={(e) =>
-                                  e.key === "Enter" && addProperty()
-                                }
-                              />
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-primary"
-                                onClick={addProperty}
-                              >
-                                Adicionar propriedade
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          className="flex items-center gap-1 rounded-full border border-dashed border-base-300 px-2.5 py-1 text-xs text-base-content/40 hover:text-base-content/70"
+                          onClick={() =>
+                            setShowPropertyForm((visible) => !visible)
+                          }
+                        >
+                          <Plus size={11} />
+                          Propriedade
+                        </button>
+                        {showPropertyForm && (
+                          <div className="absolute left-0 top-full z-50 mt-2 flex w-56 flex-col gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-xl">
+                            <input
+                              className="input input-xs input-bordered"
+                              placeholder="Nome (ex: status)"
+                              value={newPropKey}
+                              onChange={(e) => setNewPropKey(e.target.value)}
+                            />
+                            <input
+                              className="input input-xs input-bordered"
+                              placeholder="Valor (ex: em andamento)"
+                              value={newPropValue}
+                              onChange={(e) => setNewPropValue(e.target.value)}
+                              onKeyDown={(e) =>
+                                e.key === "Enter" && addProperty()
+                              }
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-xs btn-primary"
+                              onClick={addProperty}
+                            >
+                              Adicionar
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    <div>
-                      <p className="mb-2 text-xs font-semibold text-base-content/60">
-                        Etiquetas
-                      </p>
-
-                      <div className="flex flex-wrap items-center gap-2">
-                        {tags.map((t) => (
-                          <span
-                            key={t.tagId}
-                            className="group/tag inline-flex items-center gap-1.5 rounded-full bg-primary/8 px-3 py-1.5 text-xs font-medium text-base-content/75 ring-1 ring-inset ring-primary/15"
+                    {/* Tags */}
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      {tags.map((t) => (
+                        <span
+                          key={t.tagId}
+                          className="group/tag flex items-center gap-1 rounded-full border border-base-300 px-2.5 py-1 text-xs text-base-content/60"
+                        >
+                          {t.name}
+                          <button
+                            type="button"
+                            className="opacity-0 transition-opacity group-hover/tag:opacity-100"
+                            onClick={() => removeTag(t.name)}
                           >
-                            {t.name}
-                            <button
-                              type="button"
-                              className="rounded-full p-0.5 text-base-content/45 transition-colors hover:bg-error/10 hover:text-error"
-                              aria-label={`Remover etiqueta ${t.name}`}
-                              onClick={() => removeTag(t.name)}
-                            >
-                              <X size={12} />
-                            </button>
-                          </span>
-                        ))}
-
-                        <input
-                          className="w-28 rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-xs outline-none placeholder:text-base-content/40 focus:border-base-300 focus:bg-base-100"
-                          placeholder="+ Etiqueta"
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && addTag()}
-                          aria-label="Adicionar etiqueta"
-                        />
-                      </div>
+                            <X size={11} />
+                          </button>
+                        </span>
+                      ))}
+                      <input
+                        className="input input-xs input-bordered w-24"
+                        placeholder="+ tag"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && addTag()}
+                      />
                     </div>
                   </div>
                 )}
               </div>
 
               {/* Page actions */}
-              <div className="dropdown dropdown-end shrink-0">
+              <div className="no-print dropdown dropdown-end">
                 <button
                   type="button"
                   tabIndex={0}
                   aria-label="Ações da página"
-                  title="Ações da página"
-                  className="btn btn-ghost btn-square btn-sm rounded-xl text-base-content/55 hover:bg-base-200 hover:text-base-content"
+                  className="btn btn-ghost btn-sm btn-square text-base-content/40"
                 >
-                  <MoreHorizontal size={20} />
+                  <MoreHorizontal size={18} />
                 </button>
 
                 <ul
                   tabIndex={0}
-                  className="menu dropdown-content z-50 mt-2 w-52 rounded-2xl border border-base-300 bg-base-100 p-2 shadow-xl"
+                  className="menu dropdown-content z-50 mt-1 w-48 rounded-xl border border-base-300 bg-base-100 p-1 shadow-xl"
                 >
                   <li>
-                    <button
-                      type="button"
-                      className="rounded-xl text-sm"
-                      onClick={handleDuplicate}
-                    >
-                      <FileText size={15} />
+                    <button type="button" onClick={handleExportPdf}>
+                      <FileDown size={14} />
+                      Exportar como PDF
+                    </button>
+                  </li>
+
+                  <li>
+                    <button type="button" onClick={handleDuplicate}>
                       Duplicar página
                     </button>
                   </li>
@@ -639,7 +571,6 @@ export function NotebookEditor({
                   <li>
                     <button
                       type="button"
-                      className="rounded-xl text-sm"
                       onClick={() => {
                         setMoveTarget(
                           currentParentId
@@ -655,13 +586,15 @@ export function NotebookEditor({
                     </button>
                   </li>
 
-                  <li className="mt-1 border-t border-base-300 pt-1">
+                  <div className="my-1 border-t border-base-300" />
+
+                  <li>
                     <button
                       type="button"
-                      className="rounded-xl text-sm text-error hover:bg-error/10"
+                      className="text-error"
                       onClick={handleDelete}
                     >
-                      <Trash2 size={15} />
+                      <Trash2 size={14} />
                       Excluir página
                     </button>
                   </li>
@@ -671,7 +604,7 @@ export function NotebookEditor({
           </header>
 
           {showMoveDialog && (
-            <div className="modal modal-open" role="dialog" aria-modal="true">
+            <div className="no-print modal modal-open" role="dialog" aria-modal="true">
               <div className="modal-box max-w-sm">
                 <h2 className="text-lg font-semibold">Mover página</h2>
                 <select
@@ -687,7 +620,7 @@ export function NotebookEditor({
                       </option>
                     ))}
                   </optgroup>
-                  <optgroup label="Dentro de outra página (subpage)">
+                  <optgroup label="Dentro de outra página (subpágina)">
                     {pages.map((page) => (
                       <option key={page.id} value={`page:${page.id}`}>
                         {page.title}
@@ -723,7 +656,8 @@ export function NotebookEditor({
 
           {/* Editor */}
           {/* pl-14: espaço à esquerda para o handle (+ / arrastar) dos blocos */}
-          <div ref={setEditorAnchor} className="relative pl-14">
+          {!mounted && <EditorBodySkeleton />}
+          <div ref={setEditorAnchor} className={mounted ? "doc-print-editor relative pl-14" : "hidden"}>
             <div className="relative">
               <RichTextPlugin
                 contentEditable={
@@ -744,12 +678,13 @@ export function NotebookEditor({
                   />
                 }
                 placeholder={
-                  <div className="pointer-events-none absolute left-1 top-4 text-[15px] text-base-content/30">
+                  <div className="pointer-events-none absolute left-1 top-2 text-[15px] text-base-content/30">
                     Escreva algo ou digite &quot;/&quot; para ver os comandos...
                   </div>
                 }
                 ErrorBoundary={LexicalErrorBoundary}
               />
+              <TemplateGalleryPlugin />
             </div>
           </div>
         </div>
@@ -765,8 +700,10 @@ export function NotebookEditor({
         <SlashMenuPlugin />
         <BlockSelectionPlugin anchorElem={editorAnchor} />
         <ContextualToolsPlugin />
-        <MarkdownShortcutPlugin transformers={MARKDOWN_TRANSFORMERS} />
-        <TablePlugin hasHorizontalScroll hasCellMerge />
+        <LayoutPlugin />
+        <DividerPlugin />
+        <TableToolsPlugin />
+        <CodeToolsPlugin />
 
         <AutosavePlugin documentId={documentId} onStatusChange={setSaveState} />
       </LexicalComposer>

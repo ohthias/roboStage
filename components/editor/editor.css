@@ -139,3 +139,259 @@
 .col-resize-hover * {
   cursor: col-resize !important;
 }
+/* ---------- Paleta de cores (texto / fundo / divisor) ---------- */
+:root {
+  --ed-gray-text: #52525b;
+  --ed-gray-bg: #e4e4e7;
+  --ed-gray-solid: #3f3f46;
+  --ed-gray-on: #ffffff;
+  --ed-brown-text: #92400e;
+  --ed-brown-bg: #f3e3d3;
+  --ed-brown-solid: #78350f;
+  --ed-brown-on: #ffffff;
+  --ed-orange-text: #c2410c;
+  --ed-orange-bg: #ffedd5;
+  --ed-orange-solid: #c2410c;
+  --ed-orange-on: #ffffff;
+  --ed-yellow-text: #a16207;
+  --ed-yellow-bg: #fef9c3;
+  --ed-yellow-solid: #fde047;
+  --ed-yellow-on: #422006;
+  --ed-green-text: #15803d;
+  --ed-green-bg: #dcfce7;
+  --ed-green-solid: #15803d;
+  --ed-green-on: #ffffff;
+  --ed-teal-text: #0f766e;
+  --ed-teal-bg: #ccfbf1;
+  --ed-teal-solid: #0f766e;
+  --ed-teal-on: #ffffff;
+  --ed-blue-text: #1d4ed8;
+  --ed-blue-bg: #dbeafe;
+  --ed-blue-solid: #1d4ed8;
+  --ed-blue-on: #ffffff;
+  --ed-purple-text: #7e22ce;
+  --ed-purple-bg: #f3e8ff;
+  --ed-purple-solid: #7e22ce;
+  --ed-purple-on: #ffffff;
+  --ed-pink-text: #be185d;
+  --ed-pink-bg: #fce7f3;
+  --ed-pink-solid: #be185d;
+  --ed-pink-on: #ffffff;
+  --ed-red-text: #b91c1c;
+  --ed-red-bg: #fee2e2;
+  --ed-red-solid: #b91c1c;
+  --ed-red-on: #ffffff;
+  --ed-divider-default: color-mix(in oklab, currentColor 28%, transparent);
+}
+@supports (color: light-dark(#000, #fff)) {
+  :root {
+    --ed-gray-text: light-dark(#52525b, #a1a1aa);
+    --ed-gray-bg: light-dark(#e4e4e7, rgba(161,161,170,.15));
+    --ed-gray-solid: light-dark(#3f3f46, #d4d4d8);
+    --ed-gray-on: light-dark(#ffffff, #18181b);
+    --ed-brown-text: light-dark(#92400e, #d9a066);
+    --ed-brown-bg: light-dark(#f3e3d3, rgba(217,160,102,.15));
+    --ed-brown-solid: light-dark(#78350f, #e7c9a5);
+    --ed-brown-on: light-dark(#ffffff, #2a1405);
+    --ed-orange-text: light-dark(#c2410c, #fb923c);
+    --ed-orange-bg: light-dark(#ffedd5, rgba(251,146,60,.15));
+    --ed-orange-solid: light-dark(#c2410c, #fb923c);
+    --ed-orange-on: light-dark(#ffffff, #2a0f02);
+    --ed-yellow-text: light-dark(#a16207, #facc15);
+    --ed-yellow-bg: light-dark(#fef9c3, rgba(250,204,21,.15));
+    --ed-yellow-solid: light-dark(#fde047, #facc15);
+    --ed-yellow-on: light-dark(#422006, #2b1d00);
+    --ed-green-text: light-dark(#15803d, #4ade80);
+    --ed-green-bg: light-dark(#dcfce7, rgba(74,222,128,.15));
+    --ed-green-solid: light-dark(#15803d, #4ade80);
+    --ed-green-on: light-dark(#ffffff, #04210f);
+    --ed-teal-text: light-dark(#0f766e, #2dd4bf);
+    --ed-teal-bg: light-dark(#ccfbf1, rgba(45,212,191,.15));
+    --ed-teal-solid: light-dark(#0f766e, #2dd4bf);
+    --ed-teal-on: light-dark(#ffffff, #03211e);
+    --ed-blue-text: light-dark(#1d4ed8, #60a5fa);
+    --ed-blue-bg: light-dark(#dbeafe, rgba(96,165,250,.15));
+    --ed-blue-solid: light-dark(#1d4ed8, #60a5fa);
+    --ed-blue-on: light-dark(#ffffff, #06152e);
+    --ed-purple-text: light-dark(#7e22ce, #c084fc);
+    --ed-purple-bg: light-dark(#f3e8ff, rgba(192,132,252,.15));
+    --ed-purple-solid: light-dark(#7e22ce, #c084fc);
+    --ed-purple-on: light-dark(#ffffff, #1b0833);
+    --ed-pink-text: light-dark(#be185d, #f472b6);
+    --ed-pink-bg: light-dark(#fce7f3, rgba(244,114,182,.15));
+    --ed-pink-solid: light-dark(#be185d, #f472b6);
+    --ed-pink-on: light-dark(#ffffff, #2e0716);
+    --ed-red-text: light-dark(#b91c1c, #f87171);
+    --ed-red-bg: light-dark(#fee2e2, rgba(248,113,113,.15));
+    --ed-red-solid: light-dark(#b91c1c, #f87171);
+    --ed-red-on: light-dark(#ffffff, #2e0707);
+  }
+}
+
+/* ---------- Seção de colunas ---------- */
+.editor-layout {
+  display: grid;
+  gap: 1rem;
+  margin: 0.75rem 0;
+}
+.editor-layout-item {
+  min-width: 0;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.5rem;
+  outline: 1px dashed transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.15s ease;
+}
+.editor-layout:hover > .editor-layout-item,
+.editor-layout:focus-within > .editor-layout-item {
+  outline-color: color-mix(in oklab, currentColor 22%, transparent);
+}
+@media (max-width: 640px) {
+  .editor-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ---------- Divisor ---------- */
+.editor-divider {
+  margin: 0.75rem 0;
+}
+.editor-divider-hit {
+  padding: 0.5rem 0;
+  cursor: pointer;
+  border-radius: 0.375rem;
+}
+.editor-divider-selected .editor-divider-hit {
+  background: color-mix(in oklab, var(--color-primary, #3b82f6) 12%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #3b82f6) 25%, transparent);
+}
+
+/* ---------- Gradientes dos ícones de página ---------- */
+:root {
+  --ed-grad-sunset: linear-gradient(135deg, #f59e0b, #ef4444 55%, #db2777);
+  --ed-grad-ocean: linear-gradient(135deg, #06b6d4, #3b82f6 55%, #6366f1);
+  --ed-grad-forest: linear-gradient(135deg, #84cc16, #16a34a 55%, #0f766e);
+  --ed-grad-aurora: linear-gradient(135deg, #34d399, #38bdf8 50%, #a78bfa);
+  --ed-grad-candy: linear-gradient(135deg, #f472b6, #c084fc 55%, #60a5fa);
+  --ed-grad-night: linear-gradient(135deg, #1e293b, #4338ca 60%, #7e22ce);
+}
+
+/* ======================================================================
+   Exportação em PDF (impressão) — ativa só com body.doc-printing
+   ====================================================================== */
+@page {
+  size: A4;
+  margin: 16mm 14mm 18mm;
+}
+
+@media print {
+  body.doc-printing,
+  body.doc-printing * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body.doc-printing {
+    background: #fff !important;
+  }
+
+  /* Tudo que não é o documento some. */
+  body.doc-printing .print-hide,
+  body.doc-printing .no-print {
+    display: none !important;
+  }
+
+  /* Containers acima do documento: sem rolagem, altura fixa, margens de layout. */
+  body.doc-printing .print-ancestor {
+    display: block !important;
+    position: static !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
+    background: transparent !important;
+  }
+
+  /* Capa e conteúdo ocupam a largura útil da folha. */
+  body.doc-printing .doc-print-root {
+    min-height: 0 !important;
+    padding: 0 !important;
+  }
+  body.doc-printing .doc-print-root > .doc-print-body {
+    padding: 0 !important;
+  }
+  body.doc-printing .doc-print-cover {
+    height: 38mm !important;
+    border-radius: 6px !important;
+    margin-bottom: 6mm;
+    break-inside: avoid;
+  }
+
+  /* Editor: sem moldura de edição e sem espaço reservado ao handle. */
+  body.doc-printing .doc-print-editor {
+    padding-left: 0 !important;
+  }
+  body.doc-printing [data-lexical-editor] {
+    min-height: 0 !important;
+    outline: none !important;
+    caret-color: transparent;
+  }
+
+  /* Interface de edição nunca vai para o papel. */
+  body.doc-printing .block-handle,
+  body.doc-printing .block-target-line,
+  body.doc-printing [data-table-menu],
+  body.doc-printing [data-code-overlay],
+  body.doc-printing [data-layout-bar],
+  body.doc-printing [role="toolbar"] {
+    display: none !important;
+  }
+
+  /* Quebras de página */
+  body.doc-printing h1,
+  body.doc-printing h2,
+  body.doc-printing h3 {
+    break-after: avoid-page;
+    break-inside: avoid;
+  }
+  body.doc-printing tr,
+  body.doc-printing blockquote,
+  body.doc-printing li,
+  body.doc-printing [data-divider],
+  body.doc-printing img,
+  body.doc-printing svg {
+    break-inside: avoid;
+  }
+  body.doc-printing [data-layout-container] {
+    break-inside: auto;
+  }
+
+  /* Código e tabelas não podem ser cortados pela largura da folha. */
+  body.doc-printing .editor-code {
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    word-break: break-word;
+    padding-right: 1rem !important;
+    box-shadow: none !important;
+  }
+  body.doc-printing div:has(> table) {
+    overflow: visible !important;
+  }
+  body.doc-printing table {
+    width: 100% !important;
+  }
+
+  /* Colunas lado a lado também no papel. */
+  body.doc-printing .editor-layout {
+    grid-template-columns: var(--print-cols, inherit);
+  }
+  body.doc-printing .editor-layout-item {
+    outline: none !important;
+  }
+}

@@ -5,14 +5,16 @@ import { createPortal } from "react-dom";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
   LexicalTypeaheadMenuPlugin,
-  MenuOption,
   useBasicTypeaheadTriggerMatch,
+  MenuOption
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
 import { INSERT_HORIZONTAL_RULE_COMMAND } from "@lexical/react/LexicalHorizontalRuleNode";
 import { INSERT_TABLE_COMMAND } from "@lexical/table";
 import { $getSelection, $isRangeSelection, type TextNode } from "lexical";
 import {
   Code2,
+  Columns2,
+  Columns3,
   Heading1,
   Heading2,
   Heading3,
@@ -24,6 +26,9 @@ import {
   Quote,
   Table2,
 } from "lucide-react";
+import { $insertLayout } from "../nodes/layout-nodes";
+import { $insertTemplateAt, TEMPLATES } from "../templates";
+import { DocIcon } from "../doc-icon";
 import {
   $getTopLevelBlock,
   $transformBlock,
@@ -36,6 +41,7 @@ class SlashOption extends MenuOption {
   description: string;
   iconNode: ReactNode;
   keywords: string[];
+  group: string;
   onSelect: () => void;
 
   constructor(
@@ -44,6 +50,7 @@ class SlashOption extends MenuOption {
       description: string;
       icon: ReactNode;
       keywords?: string[];
+      group?: string;
       onSelect: () => void;
     },
   ) {
@@ -52,6 +59,7 @@ class SlashOption extends MenuOption {
     this.description = options.description;
     this.iconNode = options.icon;
     this.keywords = options.keywords ?? [];
+    this.group = options.group ?? "Blocos básicos";
     this.onSelect = options.onSelect;
   }
 }
@@ -79,6 +87,12 @@ export function SlashMenuPlugin() {
         if (!$isRangeSelection(selection)) return;
         const top = $getTopLevelBlock(selection.anchor.getNode());
         if (top) $transformBlock(top.getKey(), type);
+      });
+
+    const insertColumns = (n: 2 | 3) => () =>
+      editor.update(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) $insertLayout(n, selection.anchor.getNode());
       });
 
     const all = [
@@ -136,6 +150,18 @@ export function SlashMenuPlugin() {
         keywords: ["code", "codigo", "snippet", "pre"],
         onSelect: transform("code"),
       }),
+      new SlashOption("2 colunas", {
+        description: "Seção com duas colunas lado a lado",
+        icon: <Columns2 size={18} />,
+        keywords: ["colunas", "coluna", "columns", "duas", "2", "layout", "secao"],
+        onSelect: insertColumns(2),
+      }),
+      new SlashOption("3 colunas", {
+        description: "Seção com três colunas lado a lado",
+        icon: <Columns3 size={18} />,
+        keywords: ["colunas", "coluna", "columns", "tres", "3", "layout", "secao"],
+        onSelect: insertColumns(3),
+      }),
       new SlashOption("Divisor", {
         description: "Linha horizontal separadora",
         icon: <Minus size={18} />,
@@ -155,6 +181,22 @@ export function SlashMenuPlugin() {
           }),
       }),
     ];
+
+    const layouts = TEMPLATES.map(
+      (tpl) =>
+        new SlashOption(tpl.title, {
+          description: tpl.description,
+          icon: <DocIcon value={tpl.emoji} size={20} fallback={null} />,
+          keywords: ["layout", "modelo", "template", "pronto", tpl.id],
+          group: "Layouts prontos",
+          onSelect: () =>
+            editor.update(() => {
+              const selection = $getSelection();
+              if ($isRangeSelection(selection)) $insertTemplateAt(tpl, selection.anchor.getNode());
+            }),
+        }),
+    );
+    all.push(...layouts);
 
     if (!query) return all;
     const tokens = normalize(query).split(/\s+/).filter(Boolean);
@@ -204,12 +246,14 @@ export function SlashMenuPlugin() {
               </div>
             ) : (
               <>
-                <div className="px-3 pb-1 pt-2 text-xs font-medium uppercase tracking-wide text-base-content/40">
-                  Blocos básicos
-                </div>
                 {options.map((option, i) => (
+                  <div key={option.key}>
+                    {(i === 0 || options[i - 1].group !== option.group) && (
+                      <div className="px-3 pb-1 pt-2 text-xs font-medium uppercase tracking-wide text-base-content/40">
+                        {option.group}
+                      </div>
+                    )}
                   <button
-                    key={option.key}
                     type="button"
                     role="option"
                     aria-selected={selectedIndex === i}
@@ -242,6 +286,7 @@ export function SlashMenuPlugin() {
                       </span>
                     </span>
                   </button>
+                  </div>
                 ))}
               </>
             )}

@@ -59,7 +59,7 @@ export function parseDocIcon(raw: string | null | undefined): DocIconValue | nul
   const text = raw.trim().slice(0, MAX_LEN);
   if (!text) return null;
 
-  const m = text.match(/^(emo|ico):(.*)$/s);
+  const m = text.match(/^(emo|ico):([\s\S]*)$/);
   if (!m) {
     // Formato antigo: emoji puro.
     return defaultDocIcon("emoji", text.slice(0, 16));

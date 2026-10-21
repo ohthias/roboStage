@@ -24,15 +24,6 @@ import {
 } from "@lexical/react/LexicalHorizontalRuleNode";
 import { CHECK_LIST, type ElementTransformer } from "@lexical/markdown";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { CodeNode } from "@lexical/code";
-import { LinkNode } from "@lexical/link";
-import {
-  TableCellNode,
-  TableNode,
-  TableRowNode,
-} from "@lexical/table";
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { ListNode, ListItemNode } from "@lexical/list";
 import {
   Check,
   ChevronRight,
@@ -51,6 +42,8 @@ import { editorTheme } from "@/components/editor/editor-theme";
 import { DocIcon } from "@/components/editor/doc-icon";
 import { DocIconPicker } from "@/components/editor/doc-icon-picker";
 import { DocCover } from "@/components/editor/doc-cover";
+import { EDITOR_NODES } from "@/components/editor/editor-nodes";
+import { recordRecentDoc } from "@/components/editor/recent-docs";
 import { usePrintDocument } from "@/components/editor/use-print-document";
 import { DocCoverPicker } from "@/components/editor/doc-cover-picker";
 import { EditorBodySkeleton } from "@/components/editor/editor-skeleton";
@@ -63,11 +56,6 @@ import { ContextualToolsPlugin } from "@/components/editor/plugins/contextual-to
 import { SlashMenuPlugin } from "@/components/editor/plugins/slash-menu-plugin";
 import { LayoutPlugin } from "@/components/editor/plugins/layout-plugin";
 import { DividerPlugin } from "@/components/editor/plugins/divider-plugin";
-import {
-  LayoutContainerNode,
-  LayoutItemNode,
-} from "@/components/editor/nodes/layout-nodes";
-import { DividerNode } from "@/components/editor/nodes/divider-node";
 import { TableToolsPlugin } from "@/components/editor/plugins/table-tools-plugin";
 import { CodeToolsPlugin } from "@/components/editor/plugins/code-tools-plugin";
 import {
@@ -166,6 +154,7 @@ export function NotebookEditor({
   usePrintDocument(printRootRef, title);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  useEffect(() => recordRecentDoc(documentId), [documentId]);
   const [editorAnchor, setEditorAnchor] = useState<HTMLDivElement | null>(
     null,
   );
@@ -174,21 +163,7 @@ export function NotebookEditor({
     () => ({
       namespace: `notebook-${documentId}`,
       theme: editorTheme,
-      nodes: [
-        CodeNode,
-        HeadingNode,
-        HorizontalRuleNode, // mantido para ler documentos antigos (vira DividerNode)
-        DividerNode,
-        LayoutContainerNode,
-        LayoutItemNode,
-        LinkNode,
-        ListNode,
-        ListItemNode,
-        QuoteNode,
-        TableCellNode,
-        TableNode,
-        TableRowNode,
-      ],
+      nodes: EDITOR_NODES,
       editorState: initialContent ? JSON.stringify(initialContent) : undefined,
       onError(error: Error) {
         console.error(error);
@@ -332,9 +307,9 @@ export function NotebookEditor({
   return (
     <div ref={printRootRef} className="doc-print-root min-h-[calc(100vh-5rem)]">
       <LexicalComposer initialConfig={initialConfig}>
-        {cover && <DocCover value={cover} className="doc-print-cover h-44 rounded-b-xl" />}
+        {cover && <DocCover value={cover} className="doc-print-cover h-32 rounded-b-xl sm:h-44" />}
 
-        <div className="doc-print-body w-full px-6 pb-32">
+        <div className="doc-print-body w-full px-4 pb-44 sm:px-6 md:pb-32">
           <header className="group mb-6">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
@@ -385,7 +360,7 @@ export function NotebookEditor({
 
                 {/* Title */}
                 <input
-                  className="block w-full border-none bg-transparent p-0 text-4xl font-bold tracking-tight text-base-content outline-none placeholder:text-base-content/25 focus:outline-none focus:ring-0 lg:text-5xl"
+                  className="block w-full border-none bg-transparent p-0 text-3xl font-bold tracking-tight text-base-content outline-none sm:text-4xl placeholder:text-base-content/25 focus:outline-none focus:ring-0 lg:text-5xl"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   onBlur={commitTitle}
@@ -399,7 +374,7 @@ export function NotebookEditor({
                 />
 
                 {/* Metadata */}
-                <div className="no-print mt-3 flex items-center gap-3 text-xs text-base-content/40">
+                <div className="no-print mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-base-content/40">
                   <span className="flex items-center gap-1.5">
                     <FileText size={12} />
                     Página
@@ -463,7 +438,7 @@ export function NotebookEditor({
                           {String(value)}
                           <button
                             type="button"
-                            className="ml-0.5 opacity-0 transition-opacity group-hover/prop:opacity-100"
+                            className="ml-0.5 p-1 opacity-100 transition-opacity md:p-0 md:opacity-0 md:group-hover/prop:opacity-100"
                             onClick={() => removeProperty(key)}
                           >
                             <X size={11} />
@@ -604,7 +579,7 @@ export function NotebookEditor({
           </header>
 
           {showMoveDialog && (
-            <div className="no-print modal modal-open" role="dialog" aria-modal="true">
+            <div className="no-print modal modal-open modal-bottom sm:modal-middle" role="dialog" aria-modal="true">
               <div className="modal-box max-w-sm">
                 <h2 className="text-lg font-semibold">Mover página</h2>
                 <select
@@ -620,7 +595,7 @@ export function NotebookEditor({
                       </option>
                     ))}
                   </optgroup>
-                  <optgroup label="Dentro de outra página (subpágina)">
+                  <optgroup label="Dentro de outra página (subpage)">
                     {pages.map((page) => (
                       <option key={page.id} value={`page:${page.id}`}>
                         {page.title}
@@ -657,7 +632,7 @@ export function NotebookEditor({
           {/* Editor */}
           {/* pl-14: espaço à esquerda para o handle (+ / arrastar) dos blocos */}
           {!mounted && <EditorBodySkeleton />}
-          <div ref={setEditorAnchor} className={mounted ? "doc-print-editor relative pl-14" : "hidden"}>
+          <div ref={setEditorAnchor} className={mounted ? "doc-print-editor relative pl-0 md:pl-14" : "hidden"}>
             <div className="relative">
               <RichTextPlugin
                 contentEditable={
@@ -669,8 +644,9 @@ export function NotebookEditor({
                       bg-transparent
                       px-1
                       py-2
-                      text-[15px]
+                      text-base
                       leading-7
+                      md:text-[15px]
                       text-base-content
                       outline-none
                       focus:outline-none

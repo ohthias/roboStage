@@ -352,7 +352,7 @@ export function CalendarView({
                     setIsTodayPanelOpen(true);
                   }}
                   onDoubleClick={() =>
-                    setModalState({ mode: "create", date: day.toISOString() })
+                    setModalState({ mode: "create", date: `${key}T12:00:00` })
                   }
                 >
                   <span
@@ -445,7 +445,7 @@ export function CalendarView({
                         onDoubleClick={() =>
                           setModalState({
                             mode: "create",
-                            date: day.toISOString(),
+                            date: `${key}T12:00:00`,
                           })
                         }
                       >
@@ -465,7 +465,7 @@ export function CalendarView({
                               event.stopPropagation();
                               setModalState({
                                 mode: "create",
-                                date: day.toISOString(),
+                                date: `${key}T12:00:00`,
                               });
                             }}
                           >

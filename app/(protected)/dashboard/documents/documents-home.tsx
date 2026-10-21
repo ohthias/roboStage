@@ -89,7 +89,7 @@ export function DocumentsHome({ docs }: { docs: HomeDocument[] }) {
   }
 
   return (
-    <div className="min-h-full bg-base-100 px-4 py-8 text-base-content flex flex-col gap-8">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-1 py-4 sm:gap-10 sm:px-6 sm:py-8">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -113,8 +113,6 @@ export function DocumentsHome({ docs }: { docs: HomeDocument[] }) {
         </button>
       </header>
 
-      <div className="h-px bg-gradient-to-r from-primary/30 via-base-300 to-transparent" />
-
       <section aria-labelledby="quick-access">
         <h2
           id="quick-access"
@@ -131,7 +129,7 @@ export function DocumentsHome({ docs }: { docs: HomeDocument[] }) {
             </p>
           </div>
         ) : (
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
             {recents.map((doc) => (
               <li key={doc.id}>
                 <Link

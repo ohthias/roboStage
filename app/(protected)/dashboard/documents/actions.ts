@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq, ilike, isNull } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
-import { documents, folders, tags, documentTags } from "@/db/schema";
+import { documents, folders } from "@/db/schema";
 import {
   resolveStagebookScope,
   scopeOwnership,
@@ -171,6 +171,7 @@ export async function duplicateDocument(id: string) {
       parentId: documents.parentId,
       content: documents.content,
       properties: documents.properties,
+      milestoneId: documents.milestoneId,
     })
     .from(documents)
     .where(
@@ -194,6 +195,7 @@ export async function duplicateDocument(id: string) {
       description: source.description,
       content: source.content,
       properties: source.properties,
+      milestoneId: source.milestoneId,
       createdBy: scope.userId,
       position,
     })
@@ -390,56 +392,7 @@ export async function deleteDocument(id: string) {
   revalidatePath(PATH, "layout");
 }
 
-// ---------------------------------------------------------------------------
-// Tags (seção 26)
-// ---------------------------------------------------------------------------
-
-export async function getDocumentTags(id: string) {
-  const scope = await resolveStagebookScope();
-  return db
-    .select({ tagId: tags.id, name: tags.name })
-    .from(documentTags)
-    .innerJoin(tags, eq(tags.id, documentTags.tagId))
-    .innerJoin(documents, eq(documents.id, documentTags.documentId))
-    .where(
-      and(
-        eq(documentTags.documentId, id),
-        scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId })
-      )
-    );
-}
-
-export async function toggleDocumentTag(id: string, tagName: string) {
-  const scope = await resolveStagebookScope();
-  const [document] = await db
-    .select({ id: documents.id })
-    .from(documents)
-    .where(
-      and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-    )
-    .limit(1);
-  if (!document) throw new Error("Página não encontrada.");
-
-  const clean = cleanText(tagName, { maxLength: 40 });
-  if (!clean) return;
-
-  let [tag] = await db.select().from(tags).where(ilike(tags.name, clean)).limit(1);
-  if (!tag) {
-    [tag] = await db.insert(tags).values({ name: clean }).returning();
-  }
-
-  const existing = await db
-    .select()
-    .from(documentTags)
-    .where(and(eq(documentTags.documentId, id), eq(documentTags.tagId, tag.id)))
-    .limit(1);
-
-  if (existing.length > 0) {
-    await db.delete(documentTags).where(and(eq(documentTags.documentId, id), eq(documentTags.tagId, tag.id)));
-  } else {
-    await db.insert(documentTags).values({ documentId: id, tagId: tag.id });
-  }
-  revalidatePath(PATH, "layout");
-}
+// Tags e milestones de páginas: veja utils/stagebook/actions/{tags,milestones}.ts
+// (kind "document").
 
 export { optionalUuid };

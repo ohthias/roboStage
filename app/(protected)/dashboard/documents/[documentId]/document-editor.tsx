@@ -56,6 +56,7 @@ import { ContextualToolsPlugin } from "@/components/editor/plugins/contextual-to
 import { SlashMenuPlugin } from "@/components/editor/plugins/slash-menu-plugin";
 import { LayoutPlugin } from "@/components/editor/plugins/layout-plugin";
 import { DividerPlugin } from "@/components/editor/plugins/divider-plugin";
+import { EmbedPlugin } from "@/components/editor/plugins/embed-plugin";
 import { TableToolsPlugin } from "@/components/editor/plugins/table-tools-plugin";
 import { CodeToolsPlugin } from "@/components/editor/plugins/code-tools-plugin";
 import {
@@ -67,8 +68,9 @@ import {
   updateDocumentDescription,
   updateDocumentIcon,
   updateDocumentProperty,
-  toggleDocumentTag,
 } from "../actions";
+import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
+import type { MilestoneDTO, TagDTO } from "@/types/labels";
 
 // "---" / "***" / "___" viram um divisor.
 const HR_TRANSFORMER: ElementTransformer = {
@@ -101,6 +103,7 @@ export function NotebookEditor({
   initialCover,
   initialProperties,
   initialTags,
+  initialMilestone,
   initialContent,
   currentFolderId,
   currentParentId,
@@ -113,7 +116,8 @@ export function NotebookEditor({
   initialDescription: string | null;
   initialCover: string | null;
   initialProperties: Record<string, unknown>;
-  initialTags: { tagId: string; name: string }[];
+  initialTags: TagDTO[];
+  initialMilestone: MilestoneDTO | null;
   initialContent: Record<string, unknown> | null;
   currentFolderId: string | null;
   currentParentId: string | null;
@@ -128,8 +132,6 @@ export function NotebookEditor({
   const [description, setDescription] = useState(initialDescription ?? "");
   const [cover, setCover] = useState(initialCover);
   const [properties, setProperties] = useState(initialProperties);
-  const [tags, setTags] = useState(initialTags);
-  const [tagInput, setTagInput] = useState("");
   const [newPropKey, setNewPropKey] = useState("");
   const [newPropValue, setNewPropValue] = useState("");
   const [showPropertyForm, setShowPropertyForm] = useState(false);
@@ -223,27 +225,6 @@ export function NotebookEditor({
     });
     startTransition(async () => {
       await updateDocumentProperty(documentId, key, null);
-    });
-  }
-
-  function addTag() {
-    const clean = tagInput.trim();
-    if (!clean) return;
-    if (!tags.some((t) => t.name.toLowerCase() === clean.toLowerCase())) {
-      setTags((prev) => [...prev, { tagId: `pending-${clean}`, name: clean }]);
-    }
-    setTagInput("");
-    startTransition(async () => {
-      await toggleDocumentTag(documentId, clean);
-      router.refresh();
-    });
-  }
-
-  function removeTag(name: string) {
-    setTags((prev) => prev.filter((t) => t.name !== name));
-    startTransition(async () => {
-      await toggleDocumentTag(documentId, name);
-      router.refresh();
     });
   }
 
@@ -486,29 +467,13 @@ export function NotebookEditor({
                       </div>
                     </div>
 
-                    {/* Tags */}
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                      {tags.map((t) => (
-                        <span
-                          key={t.tagId}
-                          className="group/tag flex items-center gap-1 rounded-full border border-base-300 px-2.5 py-1 text-xs text-base-content/60"
-                        >
-                          {t.name}
-                          <button
-                            type="button"
-                            className="opacity-0 transition-opacity group-hover/tag:opacity-100"
-                            onClick={() => removeTag(t.name)}
-                          >
-                            <X size={11} />
-                          </button>
-                        </span>
-                      ))}
-                      <input
-                        className="input input-xs input-bordered w-24"
-                        placeholder="+ tag"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && addTag()}
+                    {/* Tags e milestone — catálogo universal (Kanban, Calendário, ThinkLab, LabTest) */}
+                    <div className="mt-2">
+                      <ResourceLabels
+                        kind="document"
+                        resourceId={documentId}
+                        initialTags={initialTags}
+                        initialMilestone={initialMilestone}
                       />
                     </div>
                   </div>
@@ -678,6 +643,7 @@ export function NotebookEditor({
         <ContextualToolsPlugin />
         <LayoutPlugin />
         <DividerPlugin />
+        <EmbedPlugin documentId={documentId} />
         <TableToolsPlugin />
         <CodeToolsPlugin />
 

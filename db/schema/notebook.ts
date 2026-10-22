@@ -12,6 +12,7 @@ import {
 import { sql } from "drizzle-orm";
 import { users } from "./users";
 import { teams } from "./teams";
+import { milestones } from "./milestones";
 
 /**
  * CORREÇÃO DE MODELAGEM (schema original): userId era NOT NULL e teamId era
@@ -114,6 +115,8 @@ export const documents = pgTable(
       .$type<Record<string, unknown>>()
       .notNull()
       .default({}),
+    // Milestone universal (opcional).
+    milestoneId: uuid("milestone_id"),
     // Ordenação dentro do mesmo (folderId, parentId) + scope.
     position: doublePrecision("position").notNull().default(0),
     createdBy: text("created_by").notNull(),
@@ -138,6 +141,12 @@ export const documents = pgTable(
       table.teamId,
       table.folderId
     ),
+    milestoneIdIdx: index("documents_milestone_id_idx").on(table.milestoneId),
+    milestoneFk: foreignKey({
+      columns: [table.milestoneId],
+      foreignColumns: [milestones.id],
+      name: "documents_milestone_id_fkey",
+    }).onDelete("set null"),
     ownershipCheckConstraint: ownershipCheck(table.userId, table.teamId),
     // Se a pasta for excluída, a página volta para a raiz (não é apagada).
     folderFk: foreignKey({

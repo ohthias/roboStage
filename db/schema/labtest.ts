@@ -14,6 +14,7 @@ import {
 import { users } from "./users";
 import { teams } from "./teams";
 import { folders } from "./notebook";
+import { milestones } from "./milestones";
 
 // ---------------------------------------------------------------------------
 // Enums
@@ -39,6 +40,9 @@ export const tests = pgTable("tests", {
     onDelete: "set null",
   }),
   folderId: uuid("folder_id").references(() => folders.id, {
+    onDelete: "set null",
+  }),
+  milestoneId: uuid("milestone_id").references(() => milestones.id, {
     onDelete: "set null",
   }),
   name: text("name").notNull(),

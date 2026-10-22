@@ -3,6 +3,7 @@ export * from "./users";
 export * from "./leagues";
 export * from "./teams";
 export * from "./notebook";
+export * from "./milestones";
 export * from "./calendar";
 export * from "./boards";
 export * from "./notifications";

@@ -12,7 +12,6 @@ import {
   MoreHorizontal,
   Milestone as MilestoneIcon,
   Palette,
-  Pencil,
   Plus,
   Settings2,
   Tags,
@@ -33,6 +32,7 @@ import { TagChip } from "@/components/stagebook/labels/tag-chip";
 import { LabelsManagerModal } from "@/components/stagebook/labels/labels-manager-modal";
 import { LiveRefresh } from "@/components/stagebook/live-refresh";
 import { BoardAlternativeViews, VIEW_OPTIONS } from "./board-view-modes";
+import Link from "next/link";
 
 type Column = { id: string; name: string; position: number; color: string | null; rules: ColumnRules };
 type Card = {
@@ -237,7 +237,7 @@ export function BoardView({
       <LiveRefresh />
       <div className="flex items-center justify-between border-b border-base-300 bg-base-100 px-6 py-4">
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary/70">Board view</p>
+          <Link href="/dashboard/kanban" className="text-xs font-medium uppercase tracking-[0.18em] text-primary/70">Voltar</Link>
           <h1 className="mt-1 text-xl font-bold tracking-tight">{boardName}</h1>
         </div>
         <div className="flex flex-wrap justify-end gap-2">

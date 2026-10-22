@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getDashboardData } from "./data";
+import { DocIcon } from "@/components/editor/doc-icon";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -339,7 +340,11 @@ export default async function DashboardPage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-base-200 text-base">
-                      {doc.icon ?? "📝"}
+                      {doc.icon ? (
+                        <DocIcon value={doc.icon} size={20} />
+                      ) : (
+                        "📝"
+                      )}
                     </span>
                     <span className="text-[10px] font-medium uppercase tracking-[0.08em] text-base-content/30">
                       {formatDate(doc.updatedAt)}

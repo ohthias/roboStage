@@ -38,7 +38,7 @@ export type CalendarEventClient = {
   milestone?: MilestoneDTO | null;
 };
 
-const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
 const TYPE_COLOR: Record<string, string> = {
   treino: "#2563eb",

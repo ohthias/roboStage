@@ -138,7 +138,7 @@ export function BoardList({ boards }: { boards: Board[] }) {
   }
 
   return (
-    <section className="min-h-screen px-4 py-8 text-base-content sm:px-6 lg:px-8 mx-auto w-full max-w-7xl space-y-8">
+    <section className="min-h-screen px-4 py-8 text-base-content sm:px-6 lg:px-8 mx-auto w-full space-y-8">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">

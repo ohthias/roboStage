@@ -24,6 +24,7 @@ import {
   ArrowLeft,
   Trash2,
   FileDown,
+  Settings2,
 } from "lucide-react";
 import {
   LineChart,
@@ -776,7 +777,10 @@ export default function LabTestView() {
   const [test, setTest] = useState<any>(null);
   const [fields, setFields] = useState<FieldDefinition[]>([]);
   const [entries, setEntries] = useState<TestEntry[]>([]);
-  const [labels, setLabels] = useState<{ tags: TagDTO[]; milestone: MilestoneDTO | null } | null>(null);
+  const [labels, setLabels] = useState<{
+    tags: TagDTO[];
+    milestone: MilestoneDTO | null;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -795,7 +799,10 @@ export default function LabTestView() {
         setFields(data.fields);
         setEntries(data.entries);
         // Tags e milestone universais (falha aqui não bloqueia a página).
-        Promise.all([getResourceTags("labtest", testId), getResourceMilestone("labtest", testId)])
+        Promise.all([
+          getResourceTags("labtest", testId),
+          getResourceMilestone("labtest", testId),
+        ])
           .then(([tags, milestone]) => active && setLabels({ tags, milestone }))
           .catch(() => active && setLabels({ tags: [], milestone: null }));
       })
@@ -850,120 +857,183 @@ export default function LabTestView() {
   const numericFieldCount = fields.filter((f) => f.type === "number").length;
 
   return (
-    <div className="min-h-screen bg-base-200/40 px-4 py-8">
-      <div className="mx-auto flex max-w-[1600px] flex-col gap-8 p-4 sm:p-6 lg:gap-10 lg:p-8">
+    <div className="min-h-screen bg-base-200/30">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6 px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
         <Link
           href="/dashboard/labtest"
-          className="flex w-fit items-center gap-1.5 text-sm text-base-content/50 hover:text-base-content"
+          className="group flex w-fit items-center gap-2 text-sm text-base-content/50 transition-colors hover:text-primary"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Voltar para a lista de testes
+          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+          Voltar para os testes
         </Link>
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-base-content/10 bg-base-100 shadow-sm">
-              <FlaskConical className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <div className="mb-1 flex flex-wrap items-center gap-2">
-                <span
-                  className={`badge badge-sm badge-outline gap-1.5 py-2.5 ${style.text} ${style.badgeBorder}`}
-                >
-                  <Icon className="h-3 w-3" />
-                  {modeDef.label}
-                </span>
-                {test.season && (
-                  <span className="badge badge-sm badge-ghost text-base-content/40">
-                    {test.season}
+
+        <section className="overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100">
+          <div className="h-1 bg-primary" />
+
+          <div className="flex flex-col gap-6 p-5 sm:p-7 xl:flex-row xl:items-start xl:justify-between">
+            <div className="flex min-w-0 flex-1 items-start gap-4 sm:gap-5">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-tl-2xl rounded-br-2xl bg-primary/10 text-primary sm:size-14">
+                <FlaskConical className="size-6 sm:size-7" />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                {/* Contexto */}
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <span
+                    className={`badge badge-outline badge-sm gap-1.5 py-3 ${style.text} ${style.badgeBorder}`}
+                  >
+                    <Icon className="size-3.5" />
+                    {modeDef.label}
                   </span>
+
+                  {test.season && (
+                    <span className="badge badge-ghost badge-sm py-3">
+                      Temporada {test.season}
+                    </span>
+                  )}
+                </div>
+
+                <h1 className="break-words text-2xl font-black tracking-tight sm:text-3xl">
+                  {test.name}
+                </h1>
+
+                {test.description && (
+                  <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm leading-6 text-base-content/60">
+                    {test.description}
+                  </p>
+                )}
+
+                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-base-content/50">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Calendar className="size-3.5" />
+                    Criado em {test.createdAt ? fmtDate(test.createdAt) : "—"}
+                  </span>
+                </div>
+
+                {labels && (
+                  <div className="mt-4 border-t border-base-200 pt-4">
+                    <ResourceLabels
+                      kind="labtest"
+                      resourceId={test.id}
+                      initialTags={labels.tags}
+                      initialMilestone={labels.milestone}
+                    />
+                  </div>
                 )}
               </div>
-              <h1 className="text-2xl font-bold tracking-tight">{test.name}</h1>
-              <p className="mt-1 flex items-center gap-1.5 text-xs text-base-content/40">
-                <Calendar className="h-3 w-3" />
-                Criado em {test.createdAt ? fmtDate(test.createdAt) : "—"}
-              </p>
-              {test.description && (
-                <p className="mt-2 max-w-3xl text-sm text-base-content/60">
-                  {test.description}
-                </p>
-              )}
-              {labels && (
-                <div className="mt-3">
-                  <ResourceLabels
-                    kind="labtest"
-                    resourceId={test.id}
-                    initialTags={labels.tags}
-                    initialMilestone={labels.milestone}
-                  />
-                </div>
-              )}
             </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href={`/dashboard/labtest/${test.id}/export`}
-              className="btn btn-sm gap-2 rounded-lg"
-            >
-              <FileDown className="h-3.5 w-3.5" />
-              Exportar relatório
-            </Link>
-            <Link
-              href={`/dashboard/labtest/${test.id}/execute`}
-              className={`btn btn-sm gap-2 rounded-lg ${style.text}`}
-            >
-              <ClipboardList className="h-3.5 w-3.5" />
-              Registrar execução
-            </Link>
-            <button
-              className="btn btn-sm gap-2 rounded-lg"
-              onClick={() => {
-                if (confirm("Tem certeza que deseja excluir este teste?")) {
-                  deleteTest(test.id);
-                  router.push("/dashboard/labtest");
-                }
-              }}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Excluir teste
-            </button>
-          </div>
-        </div>
 
-        {test.mode === "runs" && test.season ? (
-          <FllRunsCharts
-            season={test.season}
-            entries={entries}
-            accent={modeDef.accent}
-          />
-        ) : test.mode === "runs" ? (
-          (hasNumericFields || numericFieldCount > 1) && (
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-              {hasNumericFields && (
-                <TotalEvolutionChart fields={fields} entries={entries} />
-              )}
-              {numericFieldCount > 1 && (
-                <FieldComparisonChart fields={fields} entries={entries} />
-              )}
+            <div className="flex flex-wrap items-center gap-2 border-t border-base-200 pt-4 xl:max-w-sm xl:justify-end xl:border-0 xl:pt-0">
+              <Link
+                href={`/dashboard/labtest/${test.id}/export`}
+                className="btn btn-outline btn-sm gap-2 rounded-tl-xl rounded-br-xl"
+              >
+                <FileDown className="size-4" />
+                Exportar
+              </Link>
+              <Link
+                href={`/dashboard/labtest/${test.id}/edit`}
+                className="btn btn-outline btn-sm gap-2 rounded-tl-xl rounded-br-xl"
+              >
+                <Settings2 className="size-4" />
+                Editar
+              </Link>
+              <Link
+                href={`/dashboard/labtest/${test.id}/execute`}
+                className={`btn btn-primary btn-sm gap-2 rounded-tl-xl rounded-br-xl`}
+              >
+                <ClipboardList className="size-4" />
+                Nova execução
+              </Link>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm gap-2 text-error hover:bg-error/10"
+                onClick={() => {
+                  if (confirm("Tem certeza que deseja excluir este teste?")) {
+                    deleteTest(test.id);
+                    router.push("/dashboard/labtest");
+                  }
+                }}
+                aria-label="Excluir teste"
+              >
+                <Trash2 className="size-4" />
+                <span className="hidden sm:inline">Excluir</span>
+              </button>
             </div>
-          )
-        ) : (
-          <LabTestModeCharts
-            mode={test.mode}
-            config={test.config}
+          </div>
+        </section>
+
+        {/* Análises */}
+        <section className="space-y-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-lg font-bold tracking-tight">
+                Análise dos dados
+              </h2>
+              <p className="mt-1 text-sm text-base-content/50">
+                Visualize a evolução e compare os resultados registrados.
+              </p>
+            </div>
+          </div>
+
+          {test.mode === "runs" && test.season ? (
+            <FllRunsCharts
+              season={test.season}
+              entries={entries}
+              accent={modeDef.accent}
+            />
+          ) : test.mode === "runs" ? (
+            hasNumericFields || numericFieldCount > 1 ? (
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                {hasNumericFields && (
+                  <TotalEvolutionChart fields={fields} entries={entries} />
+                )}
+
+                {numericFieldCount > 1 && (
+                  <FieldComparisonChart fields={fields} entries={entries} />
+                )}
+              </div>
+            ) : (
+              <div className="rounded-tl-2xl rounded-br-2xl border border-dashed border-base-300 bg-base-100 px-5 py-10 text-center">
+                <FlaskConical className="mx-auto size-8 text-base-content/30" />
+                <p className="mt-3 text-sm font-semibold">
+                  Ainda não há dados numéricos para analisar
+                </p>
+                <p className="mt-1 text-sm text-base-content/50">
+                  Registre execuções com campos numéricos para visualizar os
+                  gráficos.
+                </p>
+              </div>
+            )
+          ) : (
+            <LabTestModeCharts
+              mode={test.mode}
+              config={test.config}
+              fields={fields}
+              entries={entries}
+              accent={modeDef.accent}
+            />
+          )}
+        </section>
+
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-bold tracking-tight">
+              Histórico de execuções
+            </h2>
+            <p className="mt-1 text-sm text-base-content/50">
+              Consulte os registros e acompanhe os resultados de cada execução.
+            </p>
+          </div>
+
+          <EntryHistory
             fields={fields}
             entries={entries}
             accent={modeDef.accent}
+            mode={test.mode}
+            season={test.season}
           />
-        )}
-
-        <EntryHistory
-          fields={fields}
-          entries={entries}
-          accent={modeDef.accent}
-          mode={test.mode}
-          season={test.season}
-        />
+        </section>
       </div>
     </div>
   );

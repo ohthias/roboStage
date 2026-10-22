@@ -517,6 +517,12 @@ export default async function DashboardPage() {
                 Competições acompanhadas
               </p>
             </div>
+            <Link
+              href="/dashboard/leagues"
+              className="btn btn-ghost btn-xs normal-case"
+            >
+              Ver ligas
+            </Link>
           </div>
 
           {leagueInterests.length === 0 ? (

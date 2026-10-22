@@ -5,6 +5,7 @@ import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
 import { DividerNode } from "./nodes/divider-node";
+import { EmbedNode } from "./nodes/embed-node";
 import { LayoutContainerNode, LayoutItemNode } from "./nodes/layout-nodes";
 
 /** Nós registrados no editor (usado também para gerar conteúdo fora da tela). */
@@ -13,6 +14,7 @@ export const EDITOR_NODES = [
   HeadingNode,
   HorizontalRuleNode, // mantido para ler documentos antigos (vira DividerNode)
   DividerNode,
+  EmbedNode,
   LayoutContainerNode,
   LayoutItemNode,
   LinkNode,

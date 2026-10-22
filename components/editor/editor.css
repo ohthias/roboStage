@@ -266,6 +266,18 @@
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #3b82f6) 25%, transparent);
 }
 
+/* ---------- Embeds (card, evento, gráfico LabTest, quadro ThinkLab) ---------- */
+.editor-embed {
+  margin: 0.75rem 0;
+}
+.editor-embed-card {
+  user-select: none;
+  transition: box-shadow 0.15s ease;
+}
+.editor-embed-selected .editor-embed-card {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #3b82f6) 35%, transparent);
+}
+
 /* ---------- Gradientes dos ícones de página ---------- */
 :root {
   --ed-grad-sunset: linear-gradient(135deg, #f59e0b, #ef4444 55%, #db2777);
@@ -364,6 +376,7 @@
   body.doc-printing blockquote,
   body.doc-printing li,
   body.doc-printing [data-divider],
+  body.doc-printing .editor-embed,
   body.doc-printing img,
   body.doc-printing svg {
     break-inside: avoid;

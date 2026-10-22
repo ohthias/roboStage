@@ -12,21 +12,27 @@ import { INSERT_HORIZONTAL_RULE_COMMAND } from "@lexical/react/LexicalHorizontal
 import { INSERT_TABLE_COMMAND } from "@lexical/table";
 import { $getSelection, $isRangeSelection, type TextNode } from "lexical";
 import {
+  CalendarDays,
   Code2,
   Columns2,
   Columns3,
   Heading1,
   Heading2,
   Heading3,
+  FlaskConical,
+  KanbanSquare,
   List,
   ListChecks,
   ListOrdered,
   Minus,
   Pilcrow,
   Quote,
+  Shapes,
   Table2,
 } from "lucide-react";
 import { $insertLayout } from "../nodes/layout-nodes";
+import { OPEN_EMBED_PICKER_COMMAND } from "./embed-plugin";
+import type { EmbedKind } from "../embeds/embed-types";
 import { $insertTemplateAt, TEMPLATES } from "../templates";
 import { DocIcon } from "../doc-icon";
 import {
@@ -94,6 +100,19 @@ export function SlashMenuPlugin() {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) $insertLayout(n, selection.anchor.getNode());
       });
+
+    // Abre o seletor de itens (card, evento, gráfico, quadro). Guarda o bloco
+    // atual: o foco sai do editor enquanto o diálogo está aberto.
+    const openEmbedPicker = (kind: EmbedKind) => () => {
+      const selection = $getSelection();
+      const top = $isRangeSelection(selection)
+        ? $getTopLevelBlock(selection.anchor.getNode())
+        : null;
+      editor.dispatchCommand(OPEN_EMBED_PICKER_COMMAND, {
+        kind,
+        anchorKey: top?.getKey() ?? null,
+      });
+    };
 
     const all = [
       new SlashOption("Texto", {
@@ -181,6 +200,38 @@ export function SlashMenuPlugin() {
           }),
       }),
     ];
+
+    const integrations = [
+      new SlashOption("Card do Kanban", {
+        description: "Mostra um card de qualquer board, sempre atualizado",
+        icon: <KanbanSquare size={18} />,
+        keywords: ["card", "cartao", "kanban", "tarefa", "board", "quadro", "task"],
+        group: "Integrações",
+        onSelect: openEmbedPicker("kanban-card"),
+      }),
+      new SlashOption("Evento do calendário", {
+        description: "Mostra um evento com data, horário e local",
+        icon: <CalendarDays size={18} />,
+        keywords: ["evento", "calendario", "agenda", "data", "reuniao", "prazo", "event"],
+        group: "Integrações",
+        onSelect: openEmbedPicker("calendar-event"),
+      }),
+      new SlashOption("Gráfico do LabTest", {
+        description: "Gráfico dos resultados de um teste do LabTest",
+        icon: <FlaskConical size={18} />,
+        keywords: ["grafico", "labtest", "teste", "resultado", "chart", "runs", "calibrabot"],
+        group: "Integrações",
+        onSelect: openEmbedPicker("labtest-chart"),
+      }),
+      new SlashOption("Quadro do ThinkLab", {
+        description: "Miniatura de um quadro do ThinkLab",
+        icon: <Shapes size={18} />,
+        keywords: ["thinklab", "quadro", "miniatura", "diagrama", "whiteboard", "board", "ideia"],
+        group: "Integrações",
+        onSelect: openEmbedPicker("thinklab-board"),
+      }),
+    ];
+    all.push(...integrations);
 
     const layouts = TEMPLATES.map(
       (tpl) =>

@@ -10,6 +10,7 @@ import {
   KanbanSquare,
   Lightbulb,
   Settings,
+  Tags,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -52,6 +53,11 @@ const MAIN_LINKS: NavItem[] = [
     href: "/dashboard/kanban",
     label: "Kanban",
     Icon: KanbanSquare,
+  },
+  {
+    href: "/dashboard/labels",
+    label: "Tags e milestones",
+    Icon: Tags,
   },
 ];
 

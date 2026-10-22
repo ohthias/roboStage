@@ -6,6 +6,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { TagList } from "@/components/stagebook/labels/tag-chip";
+import { MilestoneChip } from "@/components/stagebook/labels/milestone-chip";
+import type { MilestoneDTO, TagDTO } from "@/types/labels";
 import {
   getModeMeta,
   getTestImage,
@@ -23,6 +26,9 @@ export type LabTestCardData = {
   season: string | null;
   config: unknown;
   createdAt: Date | string;
+  /** Tags e milestone universais (mesmo catálogo das outras ferramentas). */
+  tags?: TagDTO[];
+  milestone?: MilestoneDTO | null;
 };
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
@@ -166,6 +172,13 @@ export function LabTestCard({
             {statusMeta.label}
           </span>
         </div>
+
+        {((test.tags?.length ?? 0) > 0 || test.milestone) && (
+          <div className="mt-3 flex flex-wrap items-center gap-1">
+            {test.milestone && <MilestoneChip milestone={test.milestone} size="xs" />}
+            <TagList tags={test.tags ?? []} />
+          </div>
+        )}
 
         <div className="mt-4 min-h-4">
           {test.description ? (

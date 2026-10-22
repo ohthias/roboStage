@@ -4,6 +4,8 @@ import { LabTestCard } from "@/components/labtest/LabTestCard";
 import { LabTestToolbar } from "@/components/labtest/LabTestToolbar";
 import { MODE_META, type ModeKey } from "@/utils/labtest/catalog";
 import { listTests } from "./new/actions";
+import { getResourcesTags } from "@/utils/stagebook/actions/tags";
+import { listMilestones } from "@/utils/stagebook/actions/milestones";
 
 export default async function LabTestPage({
   searchParams,
@@ -35,6 +37,18 @@ export default async function LabTestPage({
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
+
+  // Tags e milestones universais dos testes exibidos nesta página.
+  const [tagsByTest, milestoneList] = await Promise.all([
+    getResourcesTags("labtest", paginatedTests.map((t) => t.id)),
+    listMilestones(),
+  ]);
+  const milestoneById = new Map(milestoneList.map((m) => [m.id, m]));
+  const labeledTests = paginatedTests.map((test) => ({
+    ...test,
+    tags: tagsByTest[test.id] ?? [],
+    milestone: test.milestoneId ? (milestoneById.get(test.milestoneId) ?? null) : null,
+  }));
 
   return (
     <div className="min-h-full bg-base-100 px-4 py-8 text-base-content sm:px-6 lg:px-8">
@@ -116,7 +130,7 @@ export default async function LabTestPage({
                 : "mt-6 flex flex-col gap-3"
             }
           >
-            {paginatedTests.map((test) => (
+            {labeledTests.map((test) => (
               <LabTestCard key={test.id} test={test} viewMode={viewMode} />
             ))}
           </div>

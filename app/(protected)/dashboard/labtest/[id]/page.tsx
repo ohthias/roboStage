@@ -55,6 +55,10 @@ import { LabTestModeCharts } from "@/components/labtest/LabTestModeCharts";
 import { FllRunsCharts } from "@/components/labtest/FllRunsCharts";
 import type { FieldDefinition, ModeId, TestEntry } from "@/types/labtest.types";
 import { getLabTestViewData } from "../actions";
+import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
+import { getResourceTags } from "@/utils/stagebook/actions/tags";
+import { getResourceMilestone } from "@/utils/stagebook/actions/milestones";
+import type { MilestoneDTO, TagDTO } from "@/types/labels";
 import {
   FllMissionDefinition,
   FllSubMissionDefinition,
@@ -772,6 +776,7 @@ export default function LabTestView() {
   const [test, setTest] = useState<any>(null);
   const [fields, setFields] = useState<FieldDefinition[]>([]);
   const [entries, setEntries] = useState<TestEntry[]>([]);
+  const [labels, setLabels] = useState<{ tags: TagDTO[]; milestone: MilestoneDTO | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -789,6 +794,10 @@ export default function LabTestView() {
         setTest(data.test);
         setFields(data.fields);
         setEntries(data.entries);
+        // Tags e milestone universais (falha aqui não bloqueia a página).
+        Promise.all([getResourceTags("labtest", testId), getResourceMilestone("labtest", testId)])
+          .then(([tags, milestone]) => active && setLabels({ tags, milestone }))
+          .catch(() => active && setLabels({ tags: [], milestone: null }));
       })
       .catch((err) => {
         if (!active) return;
@@ -878,6 +887,16 @@ export default function LabTestView() {
                 <p className="mt-2 max-w-3xl text-sm text-base-content/60">
                   {test.description}
                 </p>
+              )}
+              {labels && (
+                <div className="mt-3">
+                  <ResourceLabels
+                    kind="labtest"
+                    resourceId={test.id}
+                    initialTags={labels.tags}
+                    initialMilestone={labels.milestone}
+                  />
+                </div>
               )}
             </div>
           </div>

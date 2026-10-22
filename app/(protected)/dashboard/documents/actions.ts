@@ -14,6 +14,7 @@ import { nextPosition } from "@/utils/stagebook/position";
 import { cleanText, optionalText, optionalUuid } from "@/utils/stagebook/validation";
 import { sanitizeDocIcon } from "@/utils/stagebook/doc-icon";
 import { sanitizeDocCover } from "@/utils/stagebook/doc-cover";
+import { sanitizeFolderColor } from "@/utils/stagebook/folder-colors";
 
 const PATH = "/dashboard/documents";
 const PATHS = [PATH, "/dashboard/folders"];
@@ -85,6 +86,26 @@ export async function renameFolder(id: string, name: string) {
   await db
     .update(folders)
     .set({ name: clean, updatedAt: new Date() })
+    .where(
+      and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
+    );
+  PATHS.forEach((path) => revalidatePath(path, "layout"));
+}
+
+/** Atualiza o ícone (mesmo formato dos ícones de página) e/ou a cor da pasta. */
+export async function updateFolderAppearance(
+  id: string,
+  patch: { icon?: string | null; color?: string | null }
+) {
+  const scope = await resolveStagebookScope();
+  const values: { icon?: string | null; color?: string | null; updatedAt: Date } = {
+    updatedAt: new Date(),
+  };
+  if ("icon" in patch) values.icon = sanitizeDocIcon(patch.icon ?? null);
+  if ("color" in patch) values.color = sanitizeFolderColor(patch.color);
+  await db
+    .update(folders)
+    .set(values)
     .where(
       and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
     );

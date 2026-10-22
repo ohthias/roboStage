@@ -66,6 +66,7 @@ CREATE TABLE "documents" (
 	"description" text,
 	"content" jsonb,
 	"properties" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"milestone_id" uuid,
 	"position" double precision DEFAULT 0 NOT NULL,
 	"created_by" text NOT NULL,
 	"updated_by" text,
@@ -81,11 +82,27 @@ CREATE TABLE "folders" (
 	"parent_id" uuid,
 	"name" text DEFAULT 'Nova pasta' NOT NULL,
 	"icon" text,
+	"color" text,
 	"position" double precision DEFAULT 0 NOT NULL,
 	"created_by" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "ownership_xor" CHECK (("folders"."user_id" is not null and "folders"."team_id" is null) or ("folders"."user_id" is null and "folders"."team_id" is not null))
+	CONSTRAINT "ownership_xor" CHECK (("folders"."user_id" is not null and "folders"."team_id" is null) or ("folders"."user_id" is null and "folders"."team_id" is not null)),
+	CONSTRAINT "folders_color_hex" CHECK ("folders"."color" is null or "folders"."color" ~* '^#[0-9a-f]{6}$')
+);
+--> statement-breakpoint
+CREATE TABLE "milestones" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" text,
+	"team_id" uuid,
+	"name" text NOT NULL,
+	"description" text,
+	"color" text,
+	"due_at" timestamp with time zone,
+	"created_by" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "milestones_ownership_xor" CHECK (("milestones"."user_id" is not null and "milestones"."team_id" is null) or ("milestones"."user_id" is null and "milestones"."team_id" is not null))
 );
 --> statement-breakpoint
 CREATE TABLE "calendar_event_documents" (
@@ -109,6 +126,7 @@ CREATE TABLE "calendar_events" (
 	"status" text DEFAULT 'confirmado' NOT NULL,
 	"color" text,
 	"location" text,
+	"milestone_id" uuid,
 	"created_by" text NOT NULL,
 	"updated_by" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -149,6 +167,7 @@ CREATE TABLE "board_cards" (
 	"position" double precision DEFAULT 0 NOT NULL,
 	"due_at" timestamp with time zone,
 	"priority" text DEFAULT 'media' NOT NULL,
+	"milestone_id" uuid,
 	"created_by" text NOT NULL,
 	"updated_by" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -161,6 +180,7 @@ CREATE TABLE "board_columns" (
 	"name" text NOT NULL,
 	"position" double precision DEFAULT 0 NOT NULL,
 	"color" text,
+	"rules" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -197,6 +217,14 @@ CREATE TABLE "board_card_tags" (
 	CONSTRAINT "board_card_tags_unique" UNIQUE("card_id","tag_id")
 );
 --> statement-breakpoint
+CREATE TABLE "calendar_event_tags" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"event_id" uuid NOT NULL,
+	"tag_id" uuid NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "calendar_event_tags_unique" UNIQUE("event_id","tag_id")
+);
+--> statement-breakpoint
 CREATE TABLE "document_tags" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"document_id" uuid NOT NULL,
@@ -207,9 +235,30 @@ CREATE TABLE "document_tags" (
 --> statement-breakpoint
 CREATE TABLE "tags" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" text,
+	"team_id" uuid,
 	"name" text NOT NULL,
+	"color" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "tags_name_unique" UNIQUE("name")
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "tags_ownership_xor" CHECK (("tags"."user_id" is not null and "tags"."team_id" is null) or ("tags"."user_id" is null and "tags"."team_id" is not null)),
+	CONSTRAINT "tags_color_hex" CHECK ("tags"."color" is null or "tags"."color" ~* '^#[0-9a-f]{6}$')
+);
+--> statement-breakpoint
+CREATE TABLE "test_tags" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"test_id" uuid NOT NULL,
+	"tag_id" uuid NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "test_tags_unique" UNIQUE("test_id","tag_id")
+);
+--> statement-breakpoint
+CREATE TABLE "thinklab_tags" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"thinklab_id" uuid NOT NULL,
+	"tag_id" uuid NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "thinklab_tags_unique" UNIQUE("thinklab_id","tag_id")
 );
 --> statement-breakpoint
 CREATE TABLE "test_executions" (
@@ -226,11 +275,26 @@ CREATE TABLE "tests" (
 	"user_id" text NOT NULL,
 	"team_id" uuid,
 	"folder_id" uuid,
+	"milestone_id" uuid,
 	"name" text NOT NULL,
 	"description" text,
 	"mode" "test_mode" DEFAULT 'runs' NOT NULL,
 	"season" text,
 	"status" text DEFAULT 'draft' NOT NULL,
+	"config" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"last_access_at" timestamp with time zone
+);
+--> statement-breakpoint
+CREATE TABLE "thinklab" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" text NOT NULL,
+	"team_id" uuid,
+	"folder_id" uuid,
+	"milestone_id" uuid,
+	"name" text NOT NULL,
+	"description" text,
 	"config" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -243,6 +307,7 @@ ALTER TABLE "team_members" ADD CONSTRAINT "team_members_team_id_fkey" FOREIGN KE
 ALTER TABLE "team_members" ADD CONSTRAINT "team_members_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "teams" ADD CONSTRAINT "teams_league_id_fkey" FOREIGN KEY ("league_id") REFERENCES "public"."leagues"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "teams" ADD CONSTRAINT "teams_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "documents" ADD CONSTRAINT "documents_milestone_id_fkey" FOREIGN KEY ("milestone_id") REFERENCES "public"."milestones"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "documents" ADD CONSTRAINT "documents_folder_id_fkey" FOREIGN KEY ("folder_id") REFERENCES "public"."folders"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "documents" ADD CONSTRAINT "documents_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "public"."documents"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "documents" ADD CONSTRAINT "documents_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -250,8 +315,11 @@ ALTER TABLE "documents" ADD CONSTRAINT "documents_team_id_fkey" FOREIGN KEY ("te
 ALTER TABLE "folders" ADD CONSTRAINT "folders_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "public"."folders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "folders" ADD CONSTRAINT "folders_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "folders" ADD CONSTRAINT "folders_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "milestones" ADD CONSTRAINT "milestones_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "milestones" ADD CONSTRAINT "milestones_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "calendar_event_documents" ADD CONSTRAINT "calendar_event_documents_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."calendar_events"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "calendar_event_documents" ADD CONSTRAINT "calendar_event_documents_document_id_fkey" FOREIGN KEY ("document_id") REFERENCES "public"."documents"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "calendar_events" ADD CONSTRAINT "calendar_events_milestone_id_fkey" FOREIGN KEY ("milestone_id") REFERENCES "public"."milestones"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "calendar_events" ADD CONSTRAINT "calendar_events_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "calendar_events" ADD CONSTRAINT "calendar_events_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "board_card_assignees" ADD CONSTRAINT "board_card_assignees_card_id_fkey" FOREIGN KEY ("card_id") REFERENCES "public"."board_cards"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -262,18 +330,32 @@ ALTER TABLE "board_card_events" ADD CONSTRAINT "board_card_events_card_id_fkey" 
 ALTER TABLE "board_card_events" ADD CONSTRAINT "board_card_events_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."calendar_events"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "board_cards" ADD CONSTRAINT "board_cards_board_id_fkey" FOREIGN KEY ("board_id") REFERENCES "public"."boards"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "board_cards" ADD CONSTRAINT "board_cards_column_id_fkey" FOREIGN KEY ("column_id") REFERENCES "public"."board_columns"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "board_cards" ADD CONSTRAINT "board_cards_milestone_id_fkey" FOREIGN KEY ("milestone_id") REFERENCES "public"."milestones"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "board_columns" ADD CONSTRAINT "board_columns_board_id_fkey" FOREIGN KEY ("board_id") REFERENCES "public"."boards"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "boards" ADD CONSTRAINT "boards_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "boards" ADD CONSTRAINT "boards_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "board_card_tags" ADD CONSTRAINT "board_card_tags_card_id_fkey" FOREIGN KEY ("card_id") REFERENCES "public"."board_cards"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "board_card_tags" ADD CONSTRAINT "board_card_tags_tag_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "calendar_event_tags" ADD CONSTRAINT "calendar_event_tags_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."calendar_events"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "calendar_event_tags" ADD CONSTRAINT "calendar_event_tags_tag_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "document_tags" ADD CONSTRAINT "document_tags_document_id_fkey" FOREIGN KEY ("document_id") REFERENCES "public"."documents"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "document_tags" ADD CONSTRAINT "document_tags_tag_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "tags" ADD CONSTRAINT "tags_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "tags" ADD CONSTRAINT "tags_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "test_tags" ADD CONSTRAINT "test_tags_test_id_fkey" FOREIGN KEY ("test_id") REFERENCES "public"."tests"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "test_tags" ADD CONSTRAINT "test_tags_tag_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "thinklab_tags" ADD CONSTRAINT "thinklab_tags_thinklab_id_fkey" FOREIGN KEY ("thinklab_id") REFERENCES "public"."thinklab"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "thinklab_tags" ADD CONSTRAINT "thinklab_tags_tag_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "test_executions" ADD CONSTRAINT "test_executions_test_id_tests_id_fk" FOREIGN KEY ("test_id") REFERENCES "public"."tests"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tests" ADD CONSTRAINT "tests_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tests" ADD CONSTRAINT "tests_team_id_teams_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tests" ADD CONSTRAINT "tests_folder_id_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."folders"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "tests" ADD CONSTRAINT "tests_milestone_id_milestones_id_fk" FOREIGN KEY ("milestone_id") REFERENCES "public"."milestones"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "thinklab" ADD CONSTRAINT "thinklab_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "thinklab" ADD CONSTRAINT "thinklab_team_id_teams_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "thinklab" ADD CONSTRAINT "thinklab_folder_id_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."folders"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "thinklab" ADD CONSTRAINT "thinklab_milestone_id_milestones_id_fk" FOREIGN KEY ("milestone_id") REFERENCES "public"."milestones"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "users_email_idx" ON "users" USING btree ("email");--> statement-breakpoint
 CREATE INDEX "users_persona_type_idx" ON "users" USING btree ("persona_type");--> statement-breakpoint
 CREATE INDEX "leagues_code_idx" ON "leagues" USING btree ("code");--> statement-breakpoint
@@ -289,11 +371,15 @@ CREATE INDEX "documents_folder_id_idx" ON "documents" USING btree ("folder_id");
 CREATE INDEX "documents_parent_id_idx" ON "documents" USING btree ("parent_id");--> statement-breakpoint
 CREATE INDEX "documents_user_folder_idx" ON "documents" USING btree ("user_id","folder_id");--> statement-breakpoint
 CREATE INDEX "documents_team_folder_idx" ON "documents" USING btree ("team_id","folder_id");--> statement-breakpoint
+CREATE INDEX "documents_milestone_id_idx" ON "documents" USING btree ("milestone_id");--> statement-breakpoint
 CREATE INDEX "folders_user_id_idx" ON "folders" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "folders_team_id_idx" ON "folders" USING btree ("team_id");--> statement-breakpoint
 CREATE INDEX "folders_parent_id_idx" ON "folders" USING btree ("parent_id");--> statement-breakpoint
 CREATE INDEX "folders_user_parent_idx" ON "folders" USING btree ("user_id","parent_id");--> statement-breakpoint
 CREATE INDEX "folders_team_parent_idx" ON "folders" USING btree ("team_id","parent_id");--> statement-breakpoint
+CREATE INDEX "milestones_user_id_idx" ON "milestones" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "milestones_team_id_idx" ON "milestones" USING btree ("team_id");--> statement-breakpoint
+CREATE INDEX "milestones_due_at_idx" ON "milestones" USING btree ("due_at");--> statement-breakpoint
 CREATE INDEX "calendar_event_documents_event_id_idx" ON "calendar_event_documents" USING btree ("event_id");--> statement-breakpoint
 CREATE INDEX "calendar_event_documents_document_id_idx" ON "calendar_event_documents" USING btree ("document_id");--> statement-breakpoint
 CREATE INDEX "calendar_events_user_id_idx" ON "calendar_events" USING btree ("user_id");--> statement-breakpoint
@@ -301,6 +387,7 @@ CREATE INDEX "calendar_events_team_id_idx" ON "calendar_events" USING btree ("te
 CREATE INDEX "calendar_events_start_at_idx" ON "calendar_events" USING btree ("start_at");--> statement-breakpoint
 CREATE INDEX "calendar_events_user_start_idx" ON "calendar_events" USING btree ("user_id","start_at");--> statement-breakpoint
 CREATE INDEX "calendar_events_team_start_idx" ON "calendar_events" USING btree ("team_id","start_at");--> statement-breakpoint
+CREATE INDEX "calendar_events_milestone_id_idx" ON "calendar_events" USING btree ("milestone_id");--> statement-breakpoint
 CREATE INDEX "board_card_assignees_card_id_idx" ON "board_card_assignees" USING btree ("card_id");--> statement-breakpoint
 CREATE INDEX "board_card_assignees_user_id_idx" ON "board_card_assignees" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "board_card_documents_card_id_idx" ON "board_card_documents" USING btree ("card_id");--> statement-breakpoint
@@ -318,5 +405,15 @@ CREATE INDEX "notifications_user_read_idx" ON "notifications" USING btree ("user
 CREATE INDEX "notifications_created_at_idx" ON "notifications" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "board_card_tags_card_id_idx" ON "board_card_tags" USING btree ("card_id");--> statement-breakpoint
 CREATE INDEX "board_card_tags_tag_id_idx" ON "board_card_tags" USING btree ("tag_id");--> statement-breakpoint
+CREATE INDEX "calendar_event_tags_event_id_idx" ON "calendar_event_tags" USING btree ("event_id");--> statement-breakpoint
+CREATE INDEX "calendar_event_tags_tag_id_idx" ON "calendar_event_tags" USING btree ("tag_id");--> statement-breakpoint
 CREATE INDEX "document_tags_document_id_idx" ON "document_tags" USING btree ("document_id");--> statement-breakpoint
-CREATE INDEX "document_tags_tag_id_idx" ON "document_tags" USING btree ("tag_id");
+CREATE INDEX "document_tags_tag_id_idx" ON "document_tags" USING btree ("tag_id");--> statement-breakpoint
+CREATE INDEX "tags_user_id_idx" ON "tags" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "tags_team_id_idx" ON "tags" USING btree ("team_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "tags_user_name_unique" ON "tags" USING btree ("user_id",lower("name")) WHERE "tags"."user_id" is not null;--> statement-breakpoint
+CREATE UNIQUE INDEX "tags_team_name_unique" ON "tags" USING btree ("team_id",lower("name")) WHERE "tags"."team_id" is not null;--> statement-breakpoint
+CREATE INDEX "test_tags_test_id_idx" ON "test_tags" USING btree ("test_id");--> statement-breakpoint
+CREATE INDEX "test_tags_tag_id_idx" ON "test_tags" USING btree ("tag_id");--> statement-breakpoint
+CREATE INDEX "thinklab_tags_thinklab_id_idx" ON "thinklab_tags" USING btree ("thinklab_id");--> statement-breakpoint
+CREATE INDEX "thinklab_tags_tag_id_idx" ON "thinklab_tags" USING btree ("tag_id");

@@ -26,16 +26,30 @@ import {
 type Overlay = { key: string; rect: DOMRect; language: string };
 
 const TOKEN_TYPES: TokenType[] = [
-  "comment", "string", "number", "keyword", "function", "type", "property", "tag", "operator",
+  "comment",
+  "string",
+  "number",
+  "keyword",
+  "function",
+  "type",
+  "property",
+  "tag",
+  "operator",
 ];
 
 type HighlightCtor = new (...ranges: Range[]) => unknown;
 type HighlightRegistry = Map<string, unknown>;
 
-function getRegistry(): { registry: HighlightRegistry; Highlight: HighlightCtor } | null {
+function getRegistry(): {
+  registry: HighlightRegistry;
+  Highlight: HighlightCtor;
+} | null {
   if (typeof window === "undefined") return null;
-  const css = (window as unknown as { CSS?: { highlights?: HighlightRegistry } }).CSS;
-  const Highlight = (window as unknown as { Highlight?: HighlightCtor }).Highlight;
+  const css = (
+    window as unknown as { CSS?: { highlights?: HighlightRegistry } }
+  ).CSS;
+  const Highlight = (window as unknown as { Highlight?: HighlightCtor })
+    .Highlight;
   if (!css?.highlights || !Highlight) return null;
   return { registry: css.highlights, Highlight };
 }
@@ -44,7 +58,10 @@ function getRegistry(): { registry: HighlightRegistry; Highlight: HighlightCtor 
 function readCodeDom(el: HTMLElement) {
   const segs: { node: Text; from: number }[] = [];
   let text = "";
-  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+  const walker = document.createTreeWalker(
+    el,
+    NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+  );
   for (let n = walker.nextNode(); n; n = walker.nextNode()) {
     if (n.nodeType === Node.TEXT_NODE) {
       segs.push({ node: n as Text, from: text.length });
@@ -79,7 +96,9 @@ export function CodeToolsPlugin() {
   /* ---------- realce de sintaxe + números de linha ---------- */
   const paint = useCallback(() => {
     const api = getRegistry();
-    const buckets = new Map<TokenType, Range[]>(TOKEN_TYPES.map((t) => [t, []]));
+    const buckets = new Map<TokenType, Range[]>(
+      TOKEN_TYPES.map((t) => [t, []]),
+    );
 
     editor.getEditorState().read(() => {
       for (const node of $nodesOfType(CodeNode)) {
@@ -88,8 +107,11 @@ export function CodeToolsPlugin() {
         const { text, locate } = readCodeDom(el);
 
         const lines = text.split("\n").length;
-        const gutter = Array.from({ length: lines }, (_, i) => i + 1).join("\n");
-        if (el.getAttribute("data-gutter") !== gutter) el.setAttribute("data-gutter", gutter);
+        const gutter = Array.from({ length: lines }, (_, i) => i + 1).join(
+          "\n",
+        );
+        if (el.getAttribute("data-gutter") !== gutter)
+          el.setAttribute("data-gutter", gutter);
 
         if (!api) continue;
         for (const tok of tokenize(text, node.getLanguage() ?? "plain")) {
@@ -111,7 +133,8 @@ export function CodeToolsPlugin() {
     if (!api) return;
     for (const type of TOKEN_TYPES) {
       const ranges = buckets.get(type)!;
-      if (ranges.length) api.registry.set(`code-${type}`, new api.Highlight(...ranges));
+      if (ranges.length)
+        api.registry.set(`code-${type}`, new api.Highlight(...ranges));
       else api.registry.delete(`code-${type}`);
     }
   }, [editor]);
@@ -122,14 +145,11 @@ export function CodeToolsPlugin() {
       rafRef.current = requestAnimationFrame(paint);
     };
     schedule();
-    return mergeRegister(
-      editor.registerUpdateListener(schedule),
-      () => {
-        cancelAnimationFrame(rafRef.current);
-        const api = getRegistry();
-        TOKEN_TYPES.forEach((t) => api?.registry.delete(`code-${t}`));
-      },
-    );
+    return mergeRegister(editor.registerUpdateListener(schedule), () => {
+      cancelAnimationFrame(rafRef.current);
+      const api = getRegistry();
+      TOKEN_TYPES.forEach((t) => api?.registry.delete(`code-${t}`));
+    });
   }, [editor, paint]);
 
   /* ---------- qual bloco mostra o cabeçalho ---------- */
@@ -144,7 +164,9 @@ export function CodeToolsPlugin() {
       return key;
     };
     const onMove = (e: MouseEvent) => {
-      const code = (e.target as HTMLElement).closest<HTMLElement>(".editor-code");
+      const code = (e.target as HTMLElement).closest<HTMLElement>(
+        ".editor-code",
+      );
       if (code && root.contains(code)) {
         if (hideTimer.current) clearTimeout(hideTimer.current);
         setHoverKey(keyFromEl(code));
@@ -192,14 +214,36 @@ export function CodeToolsPlugin() {
 
   useEffect(() => {
     measure();
-    const on = () => requestAnimationFrame(measure);
+
+    let frameId: number | null = null;
+
+    const on = () => {
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId);
+      }
+
+      frameId = requestAnimationFrame(() => {
+        frameId = null;
+        measure();
+      });
+    };
+
     window.addEventListener("scroll", on, true);
     window.addEventListener("resize", on);
-    const off = editor.registerUpdateListener(on);
+
+    const unregister = editor.registerUpdateListener(on);
+
     return () => {
       window.removeEventListener("scroll", on, true);
       window.removeEventListener("resize", on);
-      off();
+
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId);
+      }
+
+      if (typeof unregister === "function") {
+        unregister();
+      }
     };
   }, [editor, measure]);
 
@@ -233,14 +277,17 @@ export function CodeToolsPlugin() {
     if (!overlay) return;
     editor.update(() => {
       const n = $getNodeByKey(overlay.key);
-      if (n && $isCodeNode(n)) n.setLanguage(language === "plain" ? "" : language);
+      if (n && $isCodeNode(n))
+        n.setLanguage(language === "plain" ? "" : language);
     });
     editor.focus();
   };
 
   const copy = () => {
     if (!overlay) return;
-    const text = editor.read(() => $getNodeByKey(overlay.key)?.getTextContent() ?? "");
+    const text = editor.read(
+      () => $getNodeByKey(overlay.key)?.getTextContent() ?? "",
+    );
     void navigator.clipboard?.writeText(text).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
@@ -265,12 +312,20 @@ export function CodeToolsPlugin() {
     >
       <select
         aria-label="Linguagem do código"
-        value={CODE_LANGUAGES.some((l) => l.value === overlay.language) ? overlay.language : "plain"}
+        value={
+          CODE_LANGUAGES.some((l) => l.value === overlay.language)
+            ? overlay.language
+            : "plain"
+        }
         onChange={(e) => setLanguage(e.target.value)}
         className="h-7 cursor-pointer rounded-md border-0 bg-transparent px-2 text-xs text-[#c9d1d9] outline-none hover:bg-white/10 focus:bg-white/10"
       >
         {CODE_LANGUAGES.map((l) => (
-          <option key={l.value} value={l.value} className="bg-[#161b22] text-[#c9d1d9]">
+          <option
+            key={l.value}
+            value={l.value}
+            className="bg-[#161b22] text-[#c9d1d9]"
+          >
             {l.label}
           </option>
         ))}
@@ -283,7 +338,11 @@ export function CodeToolsPlugin() {
         aria-label="Copiar código"
         className="flex h-7 items-center gap-1 rounded-md px-2 text-xs hover:bg-white/10"
       >
-        {copied ? <Check size={13} className="text-green-400" /> : <Copy size={13} />}
+        {copied ? (
+          <Check size={13} className="text-green-400" />
+        ) : (
+          <Copy size={13} />
+        )}
         {copied ? "Copiado" : "Copiar"}
       </button>
       <span

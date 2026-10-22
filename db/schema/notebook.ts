@@ -42,6 +42,8 @@ export const folders = pgTable(
     parentId: uuid("parent_id"),
     name: text("name").notNull().default("Nova pasta"),
     icon: text("icon"), // emoji, ex: "📁"
+    // Cor de destaque da pasta (#rrggbb, da paleta do Stagebook). Null = padrão.
+    color: text("color"),
     // Ordenação dentro do mesmo parentId + scope. Ponto flutuante para permitir
     // inserir entre dois itens sem reescrever a posição dos vizinhos.
     position: doublePrecision("position").notNull().default(0),
@@ -67,6 +69,10 @@ export const folders = pgTable(
       table.parentId
     ),
     ownershipCheckConstraint: ownershipCheck(table.userId, table.teamId),
+    colorCheck: check(
+      "folders_color_hex",
+      sql`${table.color} is null or ${table.color} ~* '^#[0-9a-f]{6}$'`
+    ),
     // Ao excluir uma pasta, suas subpastas são excluídas em cascata (seção 42).
     parentFk: foreignKey({
       columns: [table.parentId],

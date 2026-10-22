@@ -117,7 +117,10 @@ export function LayoutPlugin() {
         editorState.read(() => {
           const sel = $getSelection();
           if ($isRangeSelection(sel)) {
-            const c = $findMatchingParent(sel.anchor.getNode(), $isLayoutContainerNode);
+            const c = $findMatchingParent(
+              sel.anchor.getNode(),
+              $isLayoutContainerNode,
+            );
             setCaretKey(c ? c.getKey() : null);
           } else setCaretKey(null);
         });
@@ -141,19 +144,46 @@ export function LayoutPlugin() {
       }
     });
     if (!template) return setInfo(null);
-    setInfo({ key: activeKey, rect: el.getBoundingClientRect(), template, columns });
+    setInfo({
+      key: activeKey,
+      rect: el.getBoundingClientRect(),
+      template,
+      columns,
+    });
   }, [editor, activeKey]);
 
   useEffect(() => {
     measure();
-    const on = () => requestAnimationFrame(measure);
+
+    let frameId: number | null = null;
+
+    const on = () => {
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId);
+      }
+
+      frameId = requestAnimationFrame(() => {
+        frameId = null;
+        measure();
+      });
+    };
+
     window.addEventListener("scroll", on, true);
     window.addEventListener("resize", on);
-    const off = editor.registerUpdateListener(on);
+
+    const unregister = editor.registerUpdateListener(on);
+
     return () => {
       window.removeEventListener("scroll", on, true);
       window.removeEventListener("resize", on);
-      off();
+
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId);
+      }
+
+      if (typeof unregister === "function") {
+        unregister();
+      }
     };
   }, [editor, measure]);
 
@@ -184,10 +214,18 @@ export function LayoutPlugin() {
       }}
       onMouseLeave={() => setHoverKey(null)}
     >
-      <button type="button" className={btn(info.columns === 2)} onClick={() => act((c) => $setLayoutColumns(c, 2))}>
+      <button
+        type="button"
+        className={btn(info.columns === 2)}
+        onClick={() => act((c) => $setLayoutColumns(c, 2))}
+      >
         <Columns2 size={15} /> 2 colunas
       </button>
-      <button type="button" className={btn(info.columns === 3)} onClick={() => act((c) => $setLayoutColumns(c, 3))}>
+      <button
+        type="button"
+        className={btn(info.columns === 3)}
+        onClick={() => act((c) => $setLayoutColumns(c, 3))}
+      >
         <Columns3 size={15} /> 3 colunas
       </button>
       <span className="mx-1 h-5 w-px bg-base-300" />
@@ -205,7 +243,12 @@ export function LayoutPlugin() {
         </button>
       ))}
       <span className="mx-1 h-5 w-px bg-base-300" />
-      <button type="button" className={btn(false)} title="Desfazer colunas" onClick={() => act($unwrapLayout)}>
+      <button
+        type="button"
+        className={btn(false)}
+        title="Desfazer colunas"
+        onClick={() => act($unwrapLayout)}
+      >
         <Rows3 size={15} /> Desfazer
       </button>
       <button

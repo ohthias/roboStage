@@ -401,7 +401,7 @@ export function FolderExplorer({
             />
           </label>
 
-          <div className="join" role="group" aria-label="Filtrar por tipo">
+          <div className="gap-1 flex flex-wrap" role="group" aria-label="Filtrar por tipo">
             {TYPE_TABS.map((tab) => (
               <button
                 key={tab.key}
@@ -509,7 +509,7 @@ export function FolderExplorer({
               </ul>
             </div>
 
-            <div className="join" role="group" aria-label="Modo de visualização">
+            <div className="gap-1 flex flex-wrap" role="group" aria-label="Modo de visualização">
               <button
                 type="button"
                 aria-pressed={view === "grid"}

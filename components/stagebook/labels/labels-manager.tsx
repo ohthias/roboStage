@@ -128,17 +128,17 @@ export function LabelsManager({
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
+    <div className="mx-auto w-full space-y-8">
       <header className={embedded ? "hidden" : undefined}>
-        <h1 className="text-3xl font-black tracking-tight">
+        <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
           Tags <span className="text-primary">&amp; Milestones</span>
         </h1>
-        <p className="mt-2 max-w-2xl text-sm text-base-content/60">
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
           Um único catálogo para Kanban, StageBook, Calendário, ThinkLab e LabTest. Renomear ou mudar a cor
           aqui atualiza tudo, em todas as ferramentas.
         </p>
       </header>
-
+      <div className="h-px bg-gradient-to-r from-primary/30 via-base-300 to-transparent" />
       <div className="flex flex-wrap items-center gap-3">
         <div role="tablist" className="tabs tabs-box">
           <button role="tab" className={`tab gap-1.5 ${tab === "tags" ? "tab-active" : ""}`} onClick={() => setTab("tags")}>
@@ -153,14 +153,14 @@ export function LabelsManager({
           </button>
         </div>
 
-        <label className="input input-bordered input-sm ml-auto flex w-full items-center gap-2 sm:w-64">
+        <label className="input input-bordered input-md ml-auto flex w-full items-center gap-2 flex-1">
           <Search size={14} className="text-base-content/40" />
           <input className="grow" placeholder="Buscar…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </label>
       </div>
 
       <form
-        className="space-y-3 rounded-2xl border border-base-300 bg-base-100 p-4"
+        className="space-y-3 rounded-2xl border border-dashed bg-base-200/50 border-base-300 bg-base-100 p-4"
         onSubmit={(e) => {
           e.preventDefault();
           submitCreate();
@@ -191,7 +191,7 @@ export function LabelsManager({
           <span className="text-xs font-medium text-base-content/55">Cor de fundo</span>
           <LabelColorPicker compact value={newColor} onChange={setNewColor} onReset={() => setNewColor(null)} />
           {newName.trim() && (
-            <span className="ml-auto">
+            <span className="flex-shrink-0">
               {tab === "tags" ? (
                 <TagChip tag={{ name: newName.trim(), color: newColor }} />
               ) : (
@@ -213,7 +213,7 @@ export function LabelsManager({
           {shownTags.map((tag) => {
             const editing = editId === tag.id;
             return (
-              <li key={tag.id} className="rounded-xl border border-base-300 bg-base-100 p-3">
+              <li key={tag.id} className="rounded-xl border border-base-300 bg-base-100 p-3 hover:border-base-content/20 transition-colors">
                 <div className="flex flex-wrap items-center gap-3">
                   <TagChip tag={tag} size="md" />
                   <UsageSummary usage={tag.usage} total={tag.total} />

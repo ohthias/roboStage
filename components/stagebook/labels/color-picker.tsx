@@ -30,8 +30,8 @@ export function LabelColorPicker({
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Cor de fundo">
+    <div className="space-y-2 flex flex-col sm:flex-row sm:items-center sm:gap-4">
+      <div className="flex flex-wrap gap-1.5 items-center" role="radiogroup" aria-label="Cor de fundo">
         {LABEL_PALETTE.map((c) => {
           const active = current === c.value;
           return (

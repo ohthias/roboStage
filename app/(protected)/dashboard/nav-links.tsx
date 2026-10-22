@@ -11,6 +11,7 @@ import {
   Lightbulb,
   Settings,
   Tags,
+  Trophy,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -54,11 +55,6 @@ const MAIN_LINKS: NavItem[] = [
     label: "Kanban",
     Icon: KanbanSquare,
   },
-  {
-    href: "/dashboard/labels",
-    label: "Tags e milestones",
-    Icon: Tags,
-  },
 ];
 
 const SYSTEM_LINKS: NavItem[] = [
@@ -66,6 +62,16 @@ const SYSTEM_LINKS: NavItem[] = [
     href: "/dashboard/settings",
     label: "Configurações",
     Icon: Settings,
+  },
+  {
+    href: "/dashboard/leagues",
+    label: "Ligas e Competições",
+    Icon: Trophy,
+  },
+  {
+    href: "/dashboard/labels",
+    label: "Tags e milestones",
+    Icon: Tags,
   },
   {
     href: "/",

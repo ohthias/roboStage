@@ -21,16 +21,16 @@ import {
 import {
   createCard,
   createColumn,
-  createTag,
   deleteColumn,
   moveCard,
   renameColumn,
-  renameTag,
   updateColumnColor,
 } from "./actions";
 import { CardModal } from "./card-modal";
 import { ColumnRulesModal, type ColumnRules } from "./column-rules-modal";
 import { MilestonesModal } from "./milestones-modal";
+import { TagChip } from "@/components/stagebook/labels/tag-chip";
+import { LabelsManagerModal } from "@/components/stagebook/labels/labels-manager-modal";
 import { LiveRefresh } from "@/components/stagebook/live-refresh";
 import { BoardAlternativeViews, VIEW_OPTIONS } from "./board-view-modes";
 
@@ -46,9 +46,9 @@ type Card = {
   milestoneId: string | null;
 };
 type Assignee = { cardId: string; userId: string; name: string | null; avatarUrl: string | null };
-type CardTag = { cardId: string; tagId: string; name: string };
-type Tag = { id: string; name: string };
-type Milestone = { id: string; name: string; dueAt: string | Date | null };
+type CardTag = { cardId: string; tagId: string; name: string; color: string | null };
+type Tag = { id: string; name: string; color: string | null };
+type Milestone = { id: string; name: string; color?: string | null; dueAt: string | Date | null };
 type TeamMember = { userId: string; name: string | null; avatarUrl: string | null; role: string };
 
 const PRIORITY_STYLE: Record<string, string> = {
@@ -102,6 +102,7 @@ export function BoardView({
   milestones,
   teamMembers,
   isTeamScope,
+  canManageLabels,
 }: {
   boardId: string;
   boardName: string;
@@ -113,6 +114,8 @@ export function BoardView({
   milestones: Milestone[];
   teamMembers: TeamMember[];
   isTeamScope: boolean;
+  /** Pode excluir/mesclar tags e milestones (owner/mentor em equipes). */
+  canManageLabels: boolean;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -121,10 +124,6 @@ export function BoardView({
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [tagsModalOpen, setTagsModalOpen] = useState(false);
-  const [tagSearch, setTagSearch] = useState("");
-  const [newTagName, setNewTagName] = useState("");
-  const [editingTagId, setEditingTagId] = useState<string | null>(null);
-  const [editingTagName, setEditingTagName] = useState("");
   const [rulesColumn, setRulesColumn] = useState<Column | null>(null);
   const [milestonesModalOpen, setMilestonesModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"kanban" | "list" | "calendar" | "timeline">("kanban");
@@ -159,27 +158,6 @@ export function BoardView({
 
   function refresh() {
     router.refresh();
-  }
-
-  function handleCreateTag() {
-    const clean = newTagName.trim();
-    if (!clean) return;
-    startTransition(async () => {
-      await createTag(clean);
-      setNewTagName("");
-      refresh();
-    });
-  }
-
-  function handleRenameTag() {
-    const clean = editingTagName.trim();
-    if (!editingTagId || !clean) return;
-    startTransition(async () => {
-      await renameTag(editingTagId, clean);
-      setEditingTagId(null);
-      setEditingTagName("");
-      refresh();
-    });
   }
 
   function handleAddColumn() {
@@ -390,9 +368,7 @@ export function BoardView({
                       {cardTagList.length > 0 && (
                         <div className="flex flex-wrap gap-1">
                           {cardTagList.map((t) => (
-                            <span key={t.tagId} className="badge badge-ghost badge-xs border-0 bg-primary/10 text-primary">
-                              {t.name}
-                            </span>
+                            <TagChip key={t.tagId} tag={t} size="xs" />
                           ))}
                         </div>
                       )}
@@ -481,7 +457,6 @@ export function BoardView({
 
       {milestonesModalOpen && (
         <MilestonesModal
-          boardId={boardId}
           milestones={milestones}
           cards={cards}
           onClose={() => setMilestonesModalOpen(false)}
@@ -518,99 +493,14 @@ export function BoardView({
       )}
 
       {tagsModalOpen && (
-        <div className="modal modal-open" role="dialog" aria-modal="true" aria-labelledby="tags-modal-title">
-          <div className="modal-box max-w-xl">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 id="tags-modal-title" className="text-lg font-bold">Tags do workspace</h2>
-                <p className="mt-1 text-sm text-base-content/55">
-                  Crie e renomeie tags reutilizáveis nos seus cards.
-                </p>
-              </div>
-              <button type="button" className="btn btn-ghost btn-sm btn-square" aria-label="Fechar gerenciador de tags" onClick={() => setTagsModalOpen(false)}>×</button>
-            </div>
-
-            <form
-              className="mt-5 flex gap-2"
-              onSubmit={(event) => {
-                event.preventDefault();
-                handleCreateTag();
-              }}
-            >
-              <input
-                className="input input-bordered input-sm flex-1"
-                placeholder="Nome da nova tag"
-                value={newTagName}
-                onChange={(event) => setNewTagName(event.target.value)}
-                maxLength={40}
-              />
-              <button type="submit" className="btn btn-primary btn-sm gap-2">
-                <Plus size={14} />
-                Criar tag
-              </button>
-            </form>
-
-            <label className="input input-bordered input-sm mt-4 flex items-center gap-2">
-              <Tags size={14} className="text-base-content/40" />
-              <input
-                type="search"
-                className="grow"
-                placeholder="Buscar tags..."
-                value={tagSearch}
-                onChange={(event) => setTagSearch(event.target.value)}
-              />
-            </label>
-
-            <div className="mt-3 max-h-72 space-y-2 overflow-y-auto pr-1">
-              {allTags.filter((tag) => tag.name.toLocaleLowerCase().includes(tagSearch.trim().toLocaleLowerCase())).map((tag) => (
-                <div key={tag.id} className="flex items-center gap-2 rounded-lg border border-base-300 bg-base-200/40 p-2">
-                  {editingTagId === tag.id ? (
-                    <>
-                      <input
-                        autoFocus
-                        className="input input-bordered input-sm flex-1"
-                        value={editingTagName}
-                        onChange={(event) => setEditingTagName(event.target.value)}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") handleRenameTag();
-                          if (event.key === "Escape") setEditingTagId(null);
-                        }}
-                        maxLength={40}
-                      />
-                      <button type="button" className="btn btn-primary btn-xs" onClick={handleRenameTag}>Salvar</button>
-                      <button type="button" className="btn btn-ghost btn-xs" onClick={() => setEditingTagId(null)}>Cancelar</button>
-                    </>
-                  ) : (
-                    <>
-                      <span className="badge badge-primary badge-outline">{tag.name}</span>
-                      <span className="flex-1" />
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-xs gap-1"
-                        onClick={() => {
-                          setEditingTagId(tag.id);
-                          setEditingTagName(tag.name);
-                        }}
-                      >
-                        <Pencil size={13} />
-                        Renomear
-                      </button>
-                    </>
-                  )}
-
-                </div>
-              ))}
-              {allTags.filter((tag) => tag.name.toLocaleLowerCase().includes(tagSearch.trim().toLocaleLowerCase())).length === 0 && (
-                <p className="py-8 text-center text-sm text-base-content/45">Nenhuma tag encontrada.</p>
-              )}
-            </div>
-
-            <div className="modal-action">
-              <button type="button" className="btn btn-sm" onClick={() => setTagsModalOpen(false)}>Fechar</button>
-            </div>
-          </div>
-          <button type="button" className="modal-backdrop" aria-label="Fechar" onClick={() => setTagsModalOpen(false)} />
-        </div>
+        <LabelsManagerModal
+          initialTab="tags"
+          canDelete={canManageLabels}
+          onClose={() => {
+            setTagsModalOpen(false);
+            refresh();
+          }}
+        />
       )}
     </div>
   );

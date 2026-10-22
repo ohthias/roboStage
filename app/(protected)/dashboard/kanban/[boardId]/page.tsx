@@ -35,6 +35,7 @@ export default async function BoardPage({
       milestones={detail.milestones}
       teamMembers={teamMembers}
       isTeamScope={scope.type === "team"}
+      canManageLabels={scope.type === "personal" || scope.role === "owner" || scope.role === "mentor"}
     />
   );
 }

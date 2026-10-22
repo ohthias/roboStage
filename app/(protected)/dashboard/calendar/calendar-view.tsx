@@ -16,6 +16,9 @@ import {
 } from "lucide-react";
 import { EventModal } from "./event-modal";
 import { EVENT_TYPES } from "./constants";
+import { TagList } from "@/components/stagebook/labels/tag-chip";
+import { MilestoneChip } from "@/components/stagebook/labels/milestone-chip";
+import type { MilestoneDTO, TagDTO } from "@/types/labels";
 
 export type CalendarEventClient = {
   id: string;
@@ -30,6 +33,9 @@ export type CalendarEventClient = {
   location: string | null;
   teamId: string | null;
   teamName?: string | null;
+  /** Tags e milestone universais (mesmo catálogo de todas as ferramentas). */
+  tags?: TagDTO[];
+  milestone?: MilestoneDTO | null;
 };
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -627,6 +633,12 @@ export function CalendarView({
                         {event.description && (
                           <span className="mt-2 block line-clamp-2 text-xs text-base-content/65">
                             {event.description}
+                          </span>
+                        )}
+                        {((event.tags?.length ?? 0) > 0 || event.milestone) && (
+                          <span className="mt-2 flex flex-wrap items-center gap-1">
+                            {event.milestone && <MilestoneChip milestone={event.milestone} size="xs" />}
+                            <TagList tags={event.tags ?? []} />
                           </span>
                         )}
                         {event.teamName && (

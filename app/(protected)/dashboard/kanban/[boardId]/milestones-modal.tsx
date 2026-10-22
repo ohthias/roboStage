@@ -2,22 +2,21 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { CalendarClock, Flag, Milestone as MilestoneIcon, Plus, Search, X } from "lucide-react";
-import { createMilestone } from "./actions";
+import { createMilestone } from "@/utils/stagebook/actions/milestones";
+import { MilestoneChip } from "@/components/stagebook/labels/milestone-chip";
 
-type Milestone = { id: string; name: string; dueAt: string | Date | null };
+type Milestone = { id: string; name: string; color?: string | null; dueAt: string | Date | null };
 
 function isPast(dueAt: string | Date | null) {
   return Boolean(dueAt && new Date(dueAt).getTime() < Date.now());
 }
 
 export function MilestonesModal({
-  boardId,
   milestones,
   cards,
   onClose,
   onChanged,
 }: {
-  boardId: string;
   milestones: Milestone[];
   cards: { milestoneId: string | null }[];
   onClose: () => void;
@@ -36,7 +35,7 @@ export function MilestonesModal({
   function addMilestone() {
     if (!name.trim()) return;
     startTransition(async () => {
-      await createMilestone(boardId, name, dueAt || null);
+      await createMilestone({ name, dueAt: dueAt || null });
       setName("");
       setDueAt("");
       onChanged();
@@ -50,9 +49,9 @@ export function MilestonesModal({
           <div>
             <h2 id="milestones-modal-title" className="flex items-center gap-2 text-lg font-bold">
               <MilestoneIcon size={19} className="text-primary" />
-              Milestones do board
+              Milestones
             </h2>
-            <p className="mt-1 text-sm text-base-content/55">Acompanhe prazos e veja quantos cards estão vinculados a cada milestone.</p>
+            <p className="mt-1 text-sm text-base-content/55">Compartilhadas com StageBook, Calendário, ThinkLab e LabTest. Aqui você vê quantos cards deste board usam cada uma.</p>
           </div>
           <button type="button" className="btn btn-ghost btn-sm btn-square" onClick={onClose} aria-label="Fechar">
             <X size={16} />
@@ -81,7 +80,7 @@ export function MilestonesModal({
                     {past ? <Flag size={16} /> : <CalendarClock size={16} />}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{milestone.name}</p>
+                    <MilestoneChip milestone={{ name: milestone.name, color: milestone.color ?? null, dueAt: null }} showDate={false} />
                     <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-base-content/55">
                       <span>{linkedCards} {linkedCards === 1 ? "card vinculado" : "cards vinculados"}</span>
                       {milestone.dueAt && (

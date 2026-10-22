@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { CalendarClock, Check, Milestone as MilestoneIcon, Settings2, X } from "lucide-react";
-import { createMilestone, updateColumnRules } from "./actions";
+import { updateColumnRules } from "./actions";
+import { createMilestone } from "@/utils/stagebook/actions/milestones";
 
 export type ColumnRules = {
   maxCards?: number | null;
@@ -54,7 +55,7 @@ export function ColumnRulesModal({
   function addMilestone() {
     if (!name.trim()) return;
     startTransition(async () => {
-      await createMilestone(boardId, name, dueAt || null);
+      await createMilestone({ name, dueAt: dueAt || null });
       setName("");
       setDueAt("");
       onChanged();

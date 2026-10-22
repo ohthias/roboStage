@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import {
   createEvent,
@@ -13,6 +14,12 @@ import {
 } from "./actions";
 import { EVENT_TYPES } from "./constants";
 import type { CalendarEventClient } from "./calendar-view";
+import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
+import { TagSelector } from "@/components/stagebook/labels/tag-selector";
+import { MilestoneSelector } from "@/components/stagebook/labels/milestone-selector";
+import { toggleResourceTag } from "@/utils/stagebook/actions/tags";
+import { setResourceMilestone } from "@/utils/stagebook/actions/milestones";
+import type { MilestoneDTO, TagDTO } from "@/types/labels";
 
 function toLocalInput(iso: string) {
   const date = new Date(iso);
@@ -41,7 +48,11 @@ export function EventModal({
   const [allDay, setAllDay] = useState(event?.allDay ?? false);
   const [startAt, setStartAt] = useState(toLocalInput(event?.startAt ?? initialDate ?? new Date().toISOString()));
   const [endAt, setEndAt] = useState(event?.endAt ? toLocalInput(event.endAt) : "");
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  // Tags/milestone de um evento NOVO ficam aqui até o evento existir.
+  const [draftTags, setDraftTags] = useState<TagDTO[]>([]);
+  const [draftMilestone, setDraftMilestone] = useState<MilestoneDTO | null>(null);
 
   const [availablePages, setAvailablePages] = useState<{ id: string; title: string; icon: string | null }[]>([]);
   const [linkedPageIds, setLinkedPageIds] = useState<string[]>([]);
@@ -70,7 +81,9 @@ export function EventModal({
       if (mode === "edit" && event) {
         await updateEvent(event.id, payload);
       } else {
-        await createEvent(payload);
+        const created = await createEvent(payload);
+        for (const tag of draftTags) await toggleResourceTag("calendar-event", created.id, tag.id);
+        if (draftMilestone) await setResourceMilestone("calendar-event", created.id, draftMilestone.id);
       }
       onSaved();
     });
@@ -162,6 +175,29 @@ export function EventModal({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+
+          <div>
+            <p className="mb-1 text-xs font-medium text-base-content/50">Tags e milestone</p>
+            {mode === "edit" && event ? (
+              <ResourceLabels
+                kind="calendar-event"
+                resourceId={event.id}
+                initialTags={event.tags ?? []}
+                initialMilestone={event.milestone ?? null}
+                onChange={() => router.refresh()}
+              />
+            ) : (
+              <div className="space-y-2">
+                <TagSelector
+                  value={draftTags}
+                  onAdd={(tag) => setDraftTags((prev) => (prev.some((t) => t.id === tag.id) ? prev : [...prev, tag]))}
+                  onRemove={(tag) => setDraftTags((prev) => prev.filter((t) => t.id !== tag.id))}
+                  onTagUpdated={(tag) => setDraftTags((prev) => prev.map((t) => (t.id === tag.id ? tag : t)))}
+                />
+                <MilestoneSelector value={draftMilestone} onChange={setDraftMilestone} />
+              </div>
+            )}
+          </div>
 
           {mode === "edit" && (
             <div>

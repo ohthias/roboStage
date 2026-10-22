@@ -171,7 +171,7 @@ export default async function FolderPage({
   // Tags realmente usadas por itens desta pasta (sem duplicatas, em ordem alfabética).
   const tagMap = new Map<string, TagDTO>();
   for (const entry of entries) {
-    for (const tag of entry.tags) tagMap.set(tag.tagId, tag);
+    for (const tag of entry.tags) tagMap.set(tag.id, tag);
   }
   const availableTags = [...tagMap.values()].sort((a, b) =>
     a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }),

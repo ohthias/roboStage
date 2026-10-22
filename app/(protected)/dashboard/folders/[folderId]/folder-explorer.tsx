@@ -185,7 +185,7 @@ export function FolderExplorer({
       if (selectedTags.length > 0) {
         // Pastas não têm tags: ficam de fora quando há filtro por tag.
         if (entry.kind === "folder") return false;
-        const ids = new Set(entry.tags.map((t) => t.tagId));
+        const ids = new Set(entry.tags.map((t) => t.id));
         if (!selectedTags.some((id) => ids.has(id))) return false;
       }
       return true;
@@ -451,17 +451,17 @@ export function FolderExplorer({
                 Mostrar itens com qualquer tag
               </p>
               {availableTags.map((tag) => {
-                const checked = selectedTags.includes(tag.tagId);
+                const checked = selectedTags.includes(tag.id);
                 return (
                   <label
-                    key={tag.tagId}
+                    key={tag.id}
                     className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-base-200/60"
                   >
                     <input
                       type="checkbox"
                       className="checkbox checkbox-primary checkbox-xs"
                       checked={checked}
-                      onChange={() => toggleTag(tag.tagId)}
+                      onChange={() => toggleTag(tag.id)}
                     />
                     <TagChip tag={tag} size="xs" />
                   </label>
@@ -542,12 +542,12 @@ export function FolderExplorer({
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-xs text-base-content/50">Tags:</span>
             {availableTags
-              .filter((t) => selectedTags.includes(t.tagId))
+              .filter((t) => selectedTags.includes(t.id))
               .map((tag) => (
                 <button
-                  key={tag.tagId}
+                  key={tag.id}
                   type="button"
-                  onClick={() => toggleTag(tag.tagId)}
+                  onClick={() => toggleTag(tag.id)}
                   className="inline-flex items-center gap-1 rounded-full"
                   title="Remover filtro"
                   aria-label={`Remover filtro da tag ${tag.name}`}
@@ -685,7 +685,7 @@ function TagsInline({ tags, max = 3 }: { tags: TagDTO[]; max?: number }) {
   return (
     <div className="flex flex-wrap items-center gap-1">
       {shown.map((tag) => (
-        <TagChip key={tag.tagId} tag={tag} size="xs" />
+        <TagChip key={tag.id} tag={tag} size="xs" />
       ))}
       {rest > 0 && (
         <span className="text-[10px] font-medium text-base-content/45">+{rest}</span>

@@ -28,7 +28,6 @@ export const LABELABLE_LABELS: Record<LabelableKind, string> = {
 };
 
 export type TagDTO = {
-  tagId: any;
   id: string;
   name: string;
   /** Cor de fundo escolhida (#rrggbb) ou null (cor automática pelo nome). */

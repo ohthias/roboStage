@@ -7,16 +7,13 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { db } from "@/db/client";
 import { teams, teamMembers, users } from "@/db/schema";
 import { requireAuthenticatedUser, StagebookAuthError } from "../scope";
-import { cleanText } from "../validation";
+import { requireText } from "../validation";
+import { personaCanCreateTeam } from "../persona";
+import { runAction, type ActionResult } from "../action-result";
 
 const SCOPE_COOKIE = "stagebook_team_id";
 
-/**
- * Regra pedida pelo produto: só quem NÃO é competidor pode criar um espaço
- * de equipe — mentores técnicos, entusiastas e organizadores. Um competidor
- * só participa de equipes já existentes (via convite), não abre uma nova.
- */
-const CAN_CREATE_TEAM_PERSONAS = ["mentor_tecnico", "entusiasta", "organizador"] as const;
+// Regra "só quem não é competidor cria equipe" vive em `../persona.ts`.
 
 export async function canCurrentUserCreateTeam(): Promise<boolean> {
   const userId = await requireAuthenticatedUser();
@@ -24,7 +21,7 @@ export async function canCurrentUserCreateTeam(): Promise<boolean> {
     where: eq(users.id, userId),
     columns: { personaType: true },
   });
-  return !!user?.personaType && (CAN_CREATE_TEAM_PERSONAS as readonly string[]).includes(user.personaType);
+  return personaCanCreateTeam(user?.personaType);
 }
 
 /** Lista as equipes das quais o usuário atual é membro (para o seletor de contexto). */
@@ -64,13 +61,13 @@ export async function createTeam(name: string) {
     columns: { personaType: true },
   });
 
-  if (!user?.personaType || !(CAN_CREATE_TEAM_PERSONAS as readonly string[]).includes(user.personaType)) {
+  if (!personaCanCreateTeam(user?.personaType)) {
     throw new StagebookAuthError(
       "Só perfis de mentor técnico, entusiasta ou organizador podem criar um espaço de equipe."
     );
   }
 
-  const clean = cleanText(name, { fallback: "Nova equipe", maxLength: 120 });
+  const clean = requireText(name, "o nome da equipe", { maxLength: 120 });
   const client = await clerkClient();
 
   const organization = await client.organizations.createOrganization({
@@ -101,6 +98,17 @@ export async function createTeam(name: string) {
     await client.organizations.deleteOrganization(organization.id).catch(() => {});
     throw error;
   }
+}
+
+/**
+ * Mesma criação, mas devolvendo `ActionResult` — em produção o Next mascara a
+ * mensagem de erros lançados por Server Actions, então a UI usa esta variante
+ * para mostrar o motivo real (permissão, nome vazio…).
+ */
+export async function createTeamAction(
+  name: string,
+): Promise<ActionResult<{ id: string; name: string }>> {
+  return runAction(() => createTeam(name));
 }
 
 /** Troca o scope ativo do Stagebook (seção 4). `teamId` null volta ao espaço pessoal. */

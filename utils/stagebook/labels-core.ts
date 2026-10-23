@@ -20,6 +20,7 @@ import {
 import { scopeOwnership, type StagebookScope } from "./scope";
 import { scopeWhere } from "./permissions";
 import { resolveLabelColor } from "./label-colors";
+import { ValidationError } from "./validation";
 import {
   LABELABLE_KINDS,
   type LabelableKind,
@@ -464,7 +465,7 @@ export async function requireMilestoneInScope(scope: StagebookScope, milestoneId
     .from(milestones)
     .where(and(eq(milestones.id, milestoneId), milestoneScope(scope)))
     .limit(1);
-  if (!row) throw new Error("Milestone não encontrada neste espaço.");
+  if (!row) throw new ValidationError("Milestone não encontrada neste espaço.");
   return toMilestoneDTO(row);
 }
 

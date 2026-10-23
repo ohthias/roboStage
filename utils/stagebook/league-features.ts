@@ -12,7 +12,7 @@
 
 export type AccessLevel = "full" | "simple" | "paused" | "soon";
 
-export type FeatureId = "runs" | "calibrabot" | "custom";
+export type FeatureId = "runs" | "calibrabot" | "custom" | "anatix";
 
 export const FEATURES: {
   id: FeatureId;
@@ -37,6 +37,12 @@ export const FEATURES: {
     label: "Testes personalizados",
     tool: "LabTest",
     description: "Testes com parâmetros e indicadores definidos por você.",
+  },
+  {
+    id: "anatix",
+    label: "Testes em tempo real via Anatix",
+    tool: "Anatix",
+    description: "Testes com dados do robô em tempo real, via Anatix.",
   },
 ];
 
@@ -67,7 +73,7 @@ const RUNS_DETAIL: Record<AccessLevel, string> = {
   soon: "Ainda sem implementação para esta liga",
 };
 
-export type ProfileKey = "fll" | "fll-future" | "frc" | "ftc" | "generic";
+export type ProfileKey = "fll" | "fll-future" | "generic" | "obr" | "obr-resgate";
 
 type Profile = {
   key: ProfileKey;
@@ -78,25 +84,27 @@ type Profile = {
 const PROFILES: Record<ProfileKey, Profile> = {
   fll: {
     key: "fll",
-    access: { runs: "full", calibrabot: "full", custom: "full" },
+    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "soon" },
     note: "Founders Edition com configuração completa de missões.",
   },
   "fll-future": {
     key: "fll-future",
-    access: { runs: "paused", calibrabot: "full", custom: "full" },
+    access: { runs: "paused", calibrabot: "full", custom: "full", anatix: "soon" },
     note: "Funciona de forma semelhante à FRC e à FTC, sem missões.",
   },
-  frc: {
-    key: "frc",
-    access: { runs: "simple", calibrabot: "full", custom: "full" },
+  "obr": {
+    key: "obr",
+    access: { runs: "soon", calibrabot: "soon", custom: "soon", anatix: "soon" },
+    note: "Liga de robótica educacional brasileira, com missões próprias.",
   },
-  ftc: {
-    key: "ftc",
-    access: { runs: "simple", calibrabot: "full", custom: "full" },
+  "obr-resgate": {
+    key: "obr-resgate",
+    access: { runs: "soon", calibrabot: "soon", custom: "soon", anatix: "soon" },
+    note: "Liga de robótica educacional brasileira, com missões próprias.",
   },
   generic: {
     key: "generic",
-    access: { runs: "soon", calibrabot: "full", custom: "full" },
+    access: { runs: "soon", calibrabot: "full", custom: "full", anatix: "soon" },
   },
 };
 
@@ -109,8 +117,9 @@ export function resolveProfileKey(league: {
   if (/\b(fll|lego league)\b/.test(haystack) || haystack.includes("fll")) {
     return haystack.includes("future") ? "fll-future" : "fll";
   }
-  if (/\bfrc\b/.test(haystack) || haystack.includes("first robotics")) return "frc";
-  if (/\bftc\b/.test(haystack) || haystack.includes("tech challenge")) return "ftc";
+  if (/\b(obr|olimpíada brasileira de robótica)\b/.test(haystack)) {
+    return haystack.includes("resgate") ? "obr-resgate" : "obr";
+  }
   return "generic";
 }
 

@@ -182,7 +182,7 @@ export async function TeamContent({
         </nav>
       </header>
 
-      <div className="mx-auto w-full max-w-6xl p-4 sm:p-6">
+      <div className="mx-auto w-full p-4 sm:p-6">
         {!isActiveScope && (
           <div role="alert" className="alert alert-info alert-soft mb-5">
             <Info size={18} />

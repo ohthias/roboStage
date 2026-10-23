@@ -26,15 +26,10 @@ export default async function TeamHomePage({
   const [teams, canCreateTeam] = await Promise.all([listMyTeams(), canCurrentUserCreateTeam()]);
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
+    <div className="mx-auto w-full px-4 py-8 text-base-content sm:px-6 lg:px-8">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Equipes</h1>
-          <p className="mt-1 text-sm text-base-content/60">
-            {teams.length === 0
-              ? "Você ainda não faz parte de nenhuma equipe."
-              : `${teams.length} ${teams.length === 1 ? "equipe" : "equipes"} — escolha uma para abrir.`}
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-primary">Equipes</h1>
         </div>
         {canCreateTeam && <CreateTeamButton />}
       </div>

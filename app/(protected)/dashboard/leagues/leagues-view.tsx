@@ -207,7 +207,7 @@ export function LeaguesView({ leagues: serverLeagues }: { leagues: LeagueItem[] 
       <header className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
           <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
-            Ligas e <span className="text-primary">competições</span>
+            Ligas e <span className="text-info">competições</span>
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
             Veja as competições disponíveis, marque em quais você participa ou
@@ -215,13 +215,13 @@ export function LeaguesView({ leagues: serverLeagues }: { leagues: LeagueItem[] 
           </p>
         </div>
 
-        <div className="join self-start" role="tablist" aria-label="Seções">
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Seções">
           <button
             type="button"
             role="tab"
             aria-selected={tab === "ligas"}
             onClick={() => setTab("ligas")}
-            className={`btn btn-sm join-item gap-2 ${tab === "ligas" ? "btn-primary" : "btn-ghost border-base-300"}`}
+            className={`btn btn-sm join-item gap-2 ${tab === "ligas" ? "btn-secondary" : "btn-ghost border-base-300"}`}
           >
             <Trophy size={15} />
             Ligas
@@ -231,7 +231,7 @@ export function LeaguesView({ leagues: serverLeagues }: { leagues: LeagueItem[] 
             role="tab"
             aria-selected={tab === "comparar"}
             onClick={() => setTab("comparar")}
-            className={`btn btn-sm join-item gap-2 ${tab === "comparar" ? "btn-primary" : "btn-ghost border-base-300"}`}
+            className={`btn btn-sm join-item gap-2 ${tab === "comparar" ? "btn-secondary" : "btn-ghost border-base-300"}`}
           >
             <Eye size={15} />
             Comparar recursos
@@ -239,12 +239,12 @@ export function LeaguesView({ leagues: serverLeagues }: { leagues: LeagueItem[] 
         </div>
       </header>
 
-      <div className="h-px bg-gradient-to-r from-primary/30 via-base-300 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-info/30 via-base-300 to-transparent" />
 
       {/* Recursos liberados para o usuário */}
-      <div className="rounded-2xl border border-base-300 bg-base-100 p-5">
+      <div className="rounded-tl-2xl rounded-br-2xl border border-info bg-info/5 p-5 shadow-sm">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-info/10 text-info">
             <Sparkles size={15} />
           </span>
           <div>
@@ -261,7 +261,7 @@ export function LeaguesView({ leagues: serverLeagues }: { leagues: LeagueItem[] 
           {unlocked.map(({ feature, level }) => (
             <li
               key={feature.id}
-              className={`rounded-xl border p-3 ${level ? "border-base-300 bg-base-200/30" : "border-dashed border-base-300 opacity-60"}`}
+              className={`rounded-box border p-3 ${level ? "border-base-300 bg-base-100" : "border-dashed border-base-300 opacity-60"}`}
             >
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm font-medium">{feature.label}</p>
@@ -271,15 +271,15 @@ export function LeaguesView({ leagues: serverLeagues }: { leagues: LeagueItem[] 
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[11px] text-base-content/45">
+        <p className="mt-3 text-[11px] text-base-content/80 italic">
           Disponíveis em todas as ligas: {GENERAL_FEATURES.join(", ")}.
         </p>
       </div>
 
       {tab === "ligas" ? (
         <>
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-sm">
-            <label className="input input-sm flex w-full items-center gap-2 border-base-300 sm:w-64">
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="input input-sm flex w-full items-center gap-2 border-base-300 flex-1">
               <Search size={15} className="shrink-0 text-base-content/45" />
               <input
                 type="search"
@@ -291,14 +291,14 @@ export function LeaguesView({ leagues: serverLeagues }: { leagues: LeagueItem[] 
               />
             </label>
 
-            <div className="join flex-wrap" role="group" aria-label="Filtrar ligas">
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar ligas">
               {FILTERS.map((f) => (
                 <button
                   key={f.key}
                   type="button"
                   aria-pressed={filter === f.key}
                   onClick={() => setFilter(f.key)}
-                  className={`btn btn-sm join-item gap-1.5 ${filter === f.key ? "btn-primary" : "btn-ghost border-base-300"}`}
+                  className={`btn btn-sm gap-1.5 ${filter === f.key ? "btn-info" : "btn-ghost border-base-300"}`}
                 >
                   {f.label}
                   <span className={`text-[10px] font-semibold ${filter === f.key ? "opacity-80" : "text-base-content/45"}`}>

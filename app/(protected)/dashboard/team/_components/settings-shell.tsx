@@ -18,7 +18,7 @@ export function SettingsShell({
 }) {
   const base = `/dashboard/team/${teamId}/settings`;
   return (
-    <div className={`mx-auto w-full px-4 py-6 sm:px-6 ${wide ? "max-w-4xl" : "max-w-2xl"}`}>
+    <div className={`mx-auto w-full px-4 py-6 sm:px-6`}>
       <div className="breadcrumbs mb-2 text-sm">
         <ul>
           <li>
@@ -34,13 +34,6 @@ export function SettingsShell({
       <nav role="tablist" className="tabs tabs-border mb-6 mt-3">
         <Link role="tab" href={base} className={`tab ${active === "geral" ? "tab-active font-semibold" : ""}`}>
           Geral
-        </Link>
-        <Link
-          role="tab"
-          href={`${base}/advanced`}
-          className={`tab ${active === "avancado" ? "tab-active font-semibold" : ""}`}
-        >
-          Avançado
         </Link>
       </nav>
       {children}

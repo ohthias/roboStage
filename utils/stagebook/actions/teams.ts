@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { clerkClient } from "@clerk/nextjs/server";
 import { db } from "@/db/client";
 import { teams, teamMembers, users } from "@/db/schema";
@@ -12,6 +12,7 @@ import { personaCanCreateTeam } from "../persona";
 import { runAction, type ActionResult } from "../action-result";
 
 const SCOPE_COOKIE = "stagebook_team_id";
+const MAX_CREATED_TEAMS = 2;
 
 // Regra "só quem não é competidor cria equipe" vive em `../persona.ts`.
 
@@ -21,7 +22,14 @@ export async function canCurrentUserCreateTeam(): Promise<boolean> {
     where: eq(users.id, userId),
     columns: { personaType: true },
   });
-  return personaCanCreateTeam(user?.personaType);
+  if (!personaCanCreateTeam(user?.personaType)) return false;
+
+  const [{ value: createdTeams }] = await db
+    .select({ value: count() })
+    .from(teams)
+    .where(eq(teams.createdBy, userId));
+
+  return createdTeams < MAX_CREATED_TEAMS;
 }
 
 /** Lista as equipes das quais o usuário atual é membro (para o seletor de contexto). */
@@ -67,6 +75,15 @@ export async function createTeam(name: string) {
     );
   }
 
+  const [{ value: createdTeams }] = await db
+    .select({ value: count() })
+    .from(teams)
+    .where(eq(teams.createdBy, userId));
+
+  if (createdTeams >= MAX_CREATED_TEAMS) {
+    throw new StagebookAuthError("Você já atingiu o limite de 2 equipes criadas.");
+  }
+
   const clean = requireText(name, "o nome da equipe", { maxLength: 120 });
   const client = await clerkClient();
 
@@ -76,20 +93,23 @@ export async function createTeam(name: string) {
   });
 
   try {
-    const team = await db.transaction(async (tx) => {
-      const [createdTeam] = await tx
-        .insert(teams)
-        .values({ name: clean, createdBy: userId, clerkOrgId: organization.id })
-        .returning({ id: teams.id, name: teams.name });
+    // neon-http não oferece suporte a transações; compensa a primeira escrita
+    // caso a criação do vínculo falhe.
+    const [team] = await db
+      .insert(teams)
+      .values({ name: clean, createdBy: userId, clerkOrgId: organization.id })
+      .returning({ id: teams.id, name: teams.name });
 
-      await tx.insert(teamMembers).values({
-        teamId: createdTeam.id,
+    try {
+      await db.insert(teamMembers).values({
+        teamId: team.id,
         userId,
         role: "owner",
       });
-
-      return createdTeam;
-    });
+    } catch (error) {
+      await db.delete(teams).where(eq(teams.id, team.id)).catch(() => {});
+      throw error;
+    }
 
     revalidatePath("/dashboard", "layout");
     return team;

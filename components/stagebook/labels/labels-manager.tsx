@@ -128,17 +128,17 @@ export function LabelsManager({
   }
 
   return (
-    <div className="mx-auto w-full space-y-8">
+    <div className="mx-auto w-full space-y-4">
       <header className={embedded ? "hidden" : undefined}>
         <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
-          Tags <span className="text-primary">&amp; Milestones</span>
+          Tags <span className="text-success">&amp; Milestones</span>
         </h1>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
           Um único catálogo para Kanban, StageBook, Calendário, ThinkLab e LabTest. Renomear ou mudar a cor
           aqui atualiza tudo, em todas as ferramentas.
         </p>
       </header>
-      <div className="h-px bg-gradient-to-r from-primary/30 via-base-300 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-success/30 via-base-300 to-transparent" />
       <div className="flex flex-wrap items-center gap-3">
         <div role="tablist" className="tabs tabs-box">
           <button role="tab" className={`tab gap-1.5 ${tab === "tags" ? "tab-active" : ""}`} onClick={() => setTab("tags")}>

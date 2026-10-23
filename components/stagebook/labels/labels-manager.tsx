@@ -159,8 +159,17 @@ export function LabelsManager({
         </label>
       </div>
 
+      {/* Em equipes, milestones são dos técnicos/mentores (`canDelete` = equipe técnica ou espaço pessoal). */}
+      {tab === "milestones" && !canDelete && (
+        <div role="note" className="alert alert-info alert-soft py-2 text-sm">
+          Só técnicos e mentores criam, editam e excluem milestones da equipe. Você pode usá-las em qualquer item.
+        </div>
+      )}
+
       <form
-        className="space-y-3 rounded-2xl border border-dashed bg-base-200/50 border-base-300 bg-base-100 p-4"
+        className={`space-y-3 rounded-2xl border border-dashed bg-base-200/50 border-base-300 bg-base-100 p-4 ${
+          tab === "milestones" && !canDelete ? "hidden" : ""
+        }`}
         onSubmit={(e) => {
           e.preventDefault();
           submitCreate();
@@ -348,17 +357,19 @@ export function LabelsManager({
                   <MilestoneChip milestone={m} size="sm" />
                   <UsageSummary usage={m.usage} total={m.total} />
                   <div className="ml-auto flex items-center gap-1">
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-xs gap-1"
-                      onClick={() => {
-                        setEditId(editing ? null : m.id);
-                        setEditName(m.name);
-                        setEditDue(m.dueAt ? m.dueAt.slice(0, 10) : "");
-                      }}
-                    >
-                      <Pencil size={13} /> Editar
-                    </button>
+                    {canDelete && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-xs gap-1"
+                        onClick={() => {
+                          setEditId(editing ? null : m.id);
+                          setEditName(m.name);
+                          setEditDue(m.dueAt ? m.dueAt.slice(0, 10) : "");
+                        }}
+                      >
+                        <Pencil size={13} /> Editar
+                      </button>
+                    )}
                     {canDelete && (
                       <button
                         type="button"
@@ -378,7 +389,7 @@ export function LabelsManager({
                   </div>
                 </div>
 
-                {editing && (
+                {editing && canDelete && (
                   <div className="mt-3 space-y-3 border-t border-base-200 pt-3">
                     <form
                       className="flex flex-wrap gap-2"

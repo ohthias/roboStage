@@ -5,7 +5,7 @@ import { resolveLabelColor } from "@/utils/stagebook/label-colors";
 import type { MilestoneDTO } from "@/types/labels";
 
 export const fmtMilestoneDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+  new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
 
 export const isMilestoneOverdue = (m: Pick<MilestoneDTO, "dueAt">) =>
   Boolean(m.dueAt && new Date(m.dueAt).getTime() < Date.now());
@@ -37,7 +37,7 @@ export function MilestoneChip({
       {showDate && milestone.dueAt && (
         <span className={`inline-flex shrink-0 items-center gap-0.5 ${overdue ? "text-error" : "text-base-content/55"}`}>
           <CalendarClock size={size === "xs" ? 9 : 10} />
-          {new Date(milestone.dueAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+          {new Date(milestone.dueAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "UTC" })}
         </span>
       )}
     </span>

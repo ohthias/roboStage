@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { Check, Flag, Loader2, Plus, X } from "lucide-react";
-import { createMilestone, listMilestones } from "@/utils/stagebook/actions/milestones";
+import { createMilestone, getMilestoneAccess, listMilestones } from "@/utils/stagebook/actions/milestones";
 import { LABEL_PALETTE } from "@/utils/stagebook/label-colors";
 import type { MilestoneDTO } from "@/types/labels";
 import { MilestoneChip, fmtMilestoneDate } from "./milestone-chip";
@@ -25,6 +25,8 @@ export function MilestoneSelector({
 }) {
   const { open, setOpen, ref } = usePopover();
   const [catalog, setCatalog] = useState<MilestoneDTO[] | null>(null);
+  // Em equipes, só técnico e mentor criam milestones; os demais só escolhem uma existente.
+  const [canCreate, setCanCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
   const [dueAt, setDueAt] = useState("");
@@ -35,8 +37,12 @@ export function MilestoneSelector({
   useEffect(() => {
     if (!open) return;
     let alive = true;
-    listMilestones()
-      .then((rows) => alive && setCatalog(rows))
+    Promise.all([listMilestones(), getMilestoneAccess()])
+      .then(([rows, access]) => {
+        if (!alive) return;
+        setCatalog(rows);
+        setCanCreate(access.canManage);
+      })
       .catch(() => alive && setError("Não foi possível carregar as milestones."));
     return () => {
       alive = false;
@@ -116,7 +122,9 @@ export function MilestoneSelector({
             {catalog === null ? (
               <p className="py-6 text-center text-xs text-base-content/45">Carregando…</p>
             ) : catalog.length === 0 ? (
-              <p className="py-6 text-center text-xs text-base-content/45">Nenhuma milestone ainda.</p>
+              <p className="py-6 text-center text-xs text-base-content/45">
+                Nenhuma milestone ainda{canCreate ? "." : " — peça a um técnico ou mentor para criar."}
+              </p>
             ) : (
               catalog.map((m) => (
                 <button
@@ -137,6 +145,7 @@ export function MilestoneSelector({
             )}
           </div>
 
+          {canCreate && (
           <div className="mt-2 border-t border-base-200 pt-2">
             {creating ? (
               <form
@@ -190,6 +199,7 @@ export function MilestoneSelector({
               </button>
             )}
           </div>
+          )}
 
           {error && <p className="mt-1.5 px-1 text-xs text-error">{error}</p>}
         </div>

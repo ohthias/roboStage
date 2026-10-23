@@ -4,8 +4,9 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Lock, Plus, User, Users } from "lucide-react";
-import { createTeam, switchStagebookScope } from "@/utils/stagebook/actions/teams";
+import { createTeamAction, switchStagebookScope } from "@/utils/stagebook/actions/teams";
 import { useToast } from "@/app/context/ToastContext";
+import { roleLabel } from "@/utils/stagebook/team-permissions";
 
 type TeamOption = { id: string; name: string; role: string; clerkOrgId: string | null };
 
@@ -43,17 +44,17 @@ export function ScopeSwitcher({
     const name = newTeamName.trim();
     if (!name) return;
     startTransition(async () => {
-      try {
-        const team = await createTeam(name);
-        setNewTeamName("");
-        setCreating(false);
-        await switchStagebookScope(team.id);
-        addToast("Equipe criada com sucesso.", "success");
-        router.push("/dashboard/team");
-        router.refresh();
-      } catch (error) {
-        addToast(error instanceof Error ? error.message : "Não foi possível criar a equipe.", "error");
+      const result = await createTeamAction(name);
+      if (!result.ok) {
+        addToast(result.error, "error");
+        return;
       }
+      setNewTeamName("");
+      setCreating(false);
+      await switchStagebookScope(result.data.id);
+      addToast("Equipe criada com sucesso.", "success");
+      router.push(`/dashboard/team/${result.data.id}`);
+      router.refresh();
     });
   }
 
@@ -104,7 +105,7 @@ export function ScopeSwitcher({
               <Users size={15} className="text-base-content/50" />
               <span className="truncate">{team.name}</span>
             </span>
-            <span className="badge badge-ghost badge-sm capitalize">{team.role}</span>
+            <span className="badge badge-ghost badge-sm">{roleLabel(team.role)}</span>
           </button>
         ))}
 

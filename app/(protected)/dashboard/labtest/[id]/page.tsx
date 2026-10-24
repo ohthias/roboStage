@@ -10,50 +10,38 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Award,
   Activity,
-  BarChart2,
+  ArrowLeft,
   Calendar,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   ClipboardList,
-  FlaskConical,
-  ListOrdered,
-  XCircle,
-  ArrowLeft,
-  Trash2,
   FileDown,
+  FlaskConical,
+  Layers,
+  ListOrdered,
+  Play,
+  Plus,
   Settings2,
+  Trash2,
+  TrendingUp,
+  Trophy,
+  XCircle,
+  Clock,
 } from "lucide-react";
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-} from "recharts";
 
-import { getModeDefinition, ACCENT_STYLES } from "@/utils/labtest/modes";
-import {
-  computeFieldStats,
-  entryTotal,
-  maxPossibleTotal,
-} from "@/utils/labtest/stats";
+import { getModeDefinition, ACCENT_STYLES, type AccentColor } from "@/utils/labtest/modes";
+import { computeFieldStats, entryTotal, maxPossibleTotal } from "@/utils/labtest/stats";
+import { buildExecutionRows, toNumber, type ChartSeries } from "@/utils/labtest/chart-data";
 import { getFieldValue } from "@/types/labtest.types";
-import {
-  StatCard,
-  SectionHeader,
-  CustomTooltip,
-  fmtDate,
-} from "@/components/labtest/shared";
+import { EmptyState, SectionHeader, StatCard, fmtDate } from "@/components/labtest/shared";
 import { LabTestModeCharts } from "@/components/labtest/LabTestModeCharts";
 import { FllRunsCharts } from "@/components/labtest/FllRunsCharts";
+import FutureEditionAnalysis from "@/components/labtest/future-edition/FutureEditionAnalysis";
+import { formatClock, isFutureEditionConfig } from "@/utils/labtest/future-edition";
+import { normalizeStatus } from "@/utils/labtest/catalog";
+import { SeriesChartPanel } from "@/components/labtest/charts/SeriesChart";
 import type { FieldDefinition, ModeId, TestEntry } from "@/types/labtest.types";
 import { getLabTestViewData } from "../actions";
 import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
@@ -69,79 +57,82 @@ import {
 } from "@/utils/labtest/fll";
 import { deleteTest } from "../new/actions";
 
+const STATUS_LABEL: Record<string, { label: string; badge: string }> = {
+  planejamento: { label: "Planejamento", badge: "badge-ghost" },
+  em_andamento: { label: "Em andamento", badge: "badge-warning" },
+  concluido: { label: "Concluído", badge: "badge-success" },
+  cancelado: { label: "Cancelado", badge: "badge-error" },
+};
+
 // ---------------------------------------------------------------------------
-// Bloco de estatísticas gerais — funciona para qualquer modo
+// Cards de resumo — funciona para qualquer modo
 // ---------------------------------------------------------------------------
 
 function OverviewStats({
+  mode,
   fields,
   entries,
-  accent,
 }: {
+  mode: ModeId;
   fields: FieldDefinition[];
   entries: TestEntry[];
-  accent: "primary" | "secondary" | "accent" | "info";
 }) {
-  const numericFields = fields.filter((f) => f.type === "number");
+  const last = entries[entries.length - 1];
   const booleanFields = fields.filter((f) => f.type === "boolean");
-
-  const totals = entries.map((e) => entryTotal(e, fields));
   const maxTotal = maxPossibleTotal(fields);
-  const best = totals.length ? Math.max(...totals) : 0;
-  const avg = totals.length
-    ? Math.round(totals.reduce((a, b) => a + b, 0) / totals.length)
-    : 0;
 
-  const overallCompletion = booleanFields.length
-    ? Math.round(
+  const fourth = (() => {
+    if (mode === "runs" && fields.some((f) => f.type === "number")) {
+      const totals = entries.map((e) => entryTotal(e, fields));
+      return (
+        <StatCard
+          label="Melhor total"
+          value={`${totals.length ? Math.max(...totals) : 0} pts`}
+          sub={maxTotal ? `máximo ${maxTotal} pts` : undefined}
+          icon={Trophy}
+          accent="accent"
+        />
+      );
+    }
+    if (booleanFields.length > 0) {
+      const rate = Math.round(
         booleanFields.reduce(
           (sum, f) => sum + (computeFieldStats(f, entries).completionRate ?? 0),
           0,
         ) / booleanFields.length,
-      )
-    : null;
+      );
+      return (
+        <StatCard label="Taxa de conclusão" value={`${rate}%`} sub="campos sim/não" icon={Activity} accent="accent" />
+      );
+    }
+    return (
+      <StatCard
+        label="Primeira execução"
+        value={entries[0] ? fmtDate(entries[0].createdAt) : "—"}
+        icon={Calendar}
+        accent="accent"
+      />
+    );
+  })();
 
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <StatCard label="Execuções" value={entries.length} sub="registradas neste teste" icon={ListOrdered} accent="primary" />
+      <StatCard label="Campos monitorados" value={fields.length} sub="parâmetros do teste" icon={Layers} accent="secondary" />
       <StatCard
-        label="Lançamentos"
-        value={entries.length}
-        icon={ListOrdered}
-        accent={accent}
+        label="Última execução"
+        value={last ? fmtDate(last.createdAt) : "—"}
+        sub={last ? `Execução #${last.executionNumber}` : "Nenhuma ainda"}
+        icon={Clock}
+        accent="info"
       />
-      {numericFields.length > 0 && (
-        <>
-          <StatCard
-            label="Melhor total"
-            value={`${best} pts`}
-            sub={maxTotal ? `máx ${maxTotal} pts` : undefined}
-            icon={Award}
-            accent={accent}
-          />
-          <StatCard
-            label="Média"
-            value={`${avg} pts`}
-            sub="por lançamento"
-            icon={BarChart2}
-            accent={accent}
-          />
-        </>
-      )}
-      {overallCompletion !== null && (
-        <StatCard
-          label="Taxa de conclusão"
-          value={`${overallCompletion}%`}
-          sub="campos sim/não"
-          icon={Activity}
-          accent={accent}
-        />
-      )}
+      {fourth}
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Gráfico: evolução do total (para modos com campos numéricos, ex. runs)
+// Gráfico: evolução do total (modo runs sem temporada)
 // ---------------------------------------------------------------------------
 
 function TotalEvolutionChart({
@@ -152,57 +143,32 @@ function TotalEvolutionChart({
   entries: TestEntry[];
 }) {
   const maxTotal = maxPossibleTotal(fields);
-  const data = entries.map((e, i) => ({
-    name: `#${i + 1}`,
-    total: entryTotal(e, fields),
-  }));
+  const series = useMemo<ChartSeries[]>(
+    () => [{ key: "total", label: "Pontuação", unit: "pts" }],
+    [],
+  );
+  const rows = useMemo(
+    () => buildExecutionRows(entries, series, (entry) => entryTotal(entry, fields)),
+    [entries, series, fields],
+  );
 
   return (
-    <div className="rounded-2xl border border-base-content/10 bg-base-100 p-5 lg:col-span-2">
-      <SectionHeader label="Evolução da pontuação" />
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="oklch(var(--bc)/0.07)" />
-          <XAxis
-            dataKey="name"
-            tick={{ fontSize: 11 }}
-            stroke="oklch(var(--bc)/0.2)"
-          />
-          <YAxis
-            tick={{ fontSize: 11 }}
-            stroke="oklch(var(--bc)/0.2)"
-            domain={[0, (maxTotal || 10) + 10]}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          {maxTotal > 0 && (
-            <ReferenceLine
-              y={maxTotal}
-              stroke="oklch(var(--bc)/0.15)"
-              strokeDasharray="4 4"
-              label={{
-                value: "máx",
-                fontSize: 10,
-                fill: "oklch(var(--bc)/0.3)",
-              }}
-            />
-          )}
-          <Line
-            type="monotone"
-            dataKey="total"
-            stroke="oklch(var(--p))"
-            strokeWidth={2.5}
-            dot={{ r: 4, fill: "oklch(var(--p))" }}
-            activeDot={{ r: 6 }}
-            name="Pontuação"
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <SeriesChartPanel
+      icon={TrendingUp}
+      title="Evolução da pontuação"
+      subtitle="Total de pontos por execução"
+      series={series}
+      rows={rows}
+      defaultType="area"
+      types={["area", "line", "bar", "step", "scatter"]}
+      referenceMax={maxTotal || undefined}
+      height={260}
+    />
   );
 }
 
 // ---------------------------------------------------------------------------
-// Gráfico: comparação por campo selecionado
+// Gráfico: comparação entre os campos numéricos
 // ---------------------------------------------------------------------------
 
 function FieldComparisonChart({
@@ -212,64 +178,31 @@ function FieldComparisonChart({
   fields: FieldDefinition[];
   entries: TestEntry[];
 }) {
-  const numericFields = fields.filter((f) => f.type === "number");
-  const [activeKey, setActiveKey] = useState(numericFields[0]?.fieldKey ?? "");
-  const activeField = numericFields.find((f) => f.fieldKey === activeKey);
+  const numericFields = useMemo(() => fields.filter((f) => f.type === "number"), [fields]);
+  const series = useMemo<ChartSeries[]>(
+    () => numericFields.map((f) => ({ key: f.fieldKey, label: f.label, unit: f.unit })),
+    [numericFields],
+  );
+  const rows = useMemo(
+    () =>
+      buildExecutionRows(entries, series, (entry, item) =>
+        toNumber(getFieldValue(entry.values, item.key)),
+      ),
+    [entries, series],
+  );
 
-  if (!activeField) return null;
-
-  const data = entries.map((e, i) => ({
-    name: `#${i + 1}`,
-    value: getFieldValue(e.values, activeField.fieldKey) ?? 0,
-  }));
+  if (numericFields.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-base-content/10 bg-base-100 p-5">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold uppercase tracking-widest text-base-content/60">
-          Comparativo por parâmetro
-        </h3>
-        <div className="flex flex-wrap gap-1">
-          {numericFields.map((f) => (
-            <button
-              key={f.fieldKey}
-              type="button"
-              onClick={() => setActiveKey(f.fieldKey)}
-              className={`btn btn-xs rounded-lg ${
-                activeKey === f.fieldKey
-                  ? "btn-secondary"
-                  : "btn-ghost text-base-content/50"
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart data={data}>
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="oklch(var(--bc)/0.07)"
-            vertical={false}
-          />
-          <XAxis
-            dataKey="name"
-            tick={{ fontSize: 11 }}
-            stroke="oklch(var(--bc)/0.2)"
-          />
-          <YAxis tick={{ fontSize: 11 }} stroke="oklch(var(--bc)/0.2)" />
-          <Tooltip content={<CustomTooltip />} />
-          <Bar
-            dataKey="value"
-            radius={[6, 6, 0, 0]}
-            fill="oklch(var(--s))"
-            name={activeField.label}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    <SeriesChartPanel
+      icon={Layers}
+      title="Comparativo por parâmetro"
+      subtitle="Clique nas legendas para ocultar parâmetros"
+      series={series}
+      rows={rows}
+      defaultType="bar"
+      height={260}
+    />
   );
 }
 
@@ -328,19 +261,21 @@ function EntryHistory({
   accent,
   mode,
   season,
+  futureEdition = false,
 }: {
   fields: FieldDefinition[];
   entries: TestEntry[];
   accent: "primary" | "secondary" | "accent" | "info";
   mode: ModeId;
   season?: string;
+  futureEdition?: boolean;
 }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [missions, setMissions] = useState<FllMissionDefinition[]>([]);
 
   const style = ACCENT_STYLES[accent];
 
-  const isFll = mode === "runs" && Boolean(season);
+  const isFll = mode === "runs" && Boolean(season) && !futureEdition;
 
   const showScore = mode === "runs" || mode === "individual";
 
@@ -401,7 +336,10 @@ function EntryHistory({
 
       <div className="flex flex-col gap-2">
         {[...entries].reverse().map((entry, ri) => {
-          const total = showScore && !isFll ? entryTotal(entry, fields) : null;
+          const total =
+            showScore && !isFll
+              ? (entry.futureEdition?.scores.total ?? entryTotal(entry, fields))
+              : null;
 
           const pct =
             showScore && !isFll && maxTotal > 0 && total !== null
@@ -749,6 +687,26 @@ function EntryHistory({
                       })}
                     </div>
 
+                    {entry.futureEdition && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <span className="badge badge-outline gap-1.5 py-3">
+                          Subtotal das missões <b>{entry.futureEdition.scores.missionsTotal}</b>
+                        </span>
+                        <span className="badge badge-outline badge-error gap-1.5 py-3">
+                          Penalidades <b>{entry.futureEdition.scores.penaltyCount}</b>
+                          {entry.futureEdition.scores.zeroed
+                            ? " · zerou o total"
+                            : ` · ${entry.futureEdition.scores.penaltyPoints} pts`}
+                        </span>
+                        <span className="badge badge-outline gap-1.5 py-3">
+                          Tempo jogado <b>{formatClock(entry.futureEdition.elapsedSec)}</b>
+                        </span>
+                        <span className="badge badge-outline gap-1.5 py-3">
+                          Registros <b>{entry.futureEdition.events.length}</b>
+                        </span>
+                      </div>
+                    )}
+
                     {entry.notes && (
                       <div className="mt-4 rounded-xl border border-base-content/8 bg-base-100 p-4">
                         <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-base-content/40">
@@ -808,9 +766,7 @@ export default function LabTestView() {
       })
       .catch((err) => {
         if (!active) return;
-        setError(
-          err instanceof Error ? err.message : "Erro ao carregar o teste.",
-        );
+        setError(err instanceof Error ? err.message : "Erro ao carregar o teste.");
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -821,16 +777,13 @@ export default function LabTestView() {
     };
   }, [testId]);
 
-  const modeDef = useMemo(
-    () => (test ? getModeDefinition(test.mode) : null),
-    [test],
-  );
+  const modeDef = useMemo(() => (test ? getModeDefinition(test.mode) : null), [test]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-base-200/40 px-4 py-8">
-        <div className="mx-auto flex max-w-5xl items-center justify-center rounded-3xl border border-base-content/10 bg-base-100 p-10">
-          <span className="loading loading-spinner loading-lg" />
+        <div className="mx-auto flex max-w-5xl items-center justify-center rounded-3xl border border-base-300 bg-base-100 p-10">
+          <span className="loading loading-spinner loading-lg text-primary" />
         </div>
       </div>
     );
@@ -839,79 +792,178 @@ export default function LabTestView() {
   if (error || !test || !modeDef) {
     return (
       <div className="min-h-screen bg-base-200/40 px-4 py-8">
-        <div className="mx-auto max-w-5xl rounded-3xl border border-error/20 bg-base-100 p-6">
-          <p className="font-semibold text-error">
-            Não foi possível carregar o teste.
-          </p>
-          <p className="mt-2 text-sm text-base-content/60">
-            {error ?? "Teste não encontrado."}
-          </p>
+        <div role="alert" className="alert alert-error alert-soft mx-auto max-w-5xl">
+          <div>
+            <p className="font-semibold">Não foi possível carregar o teste.</p>
+            <p className="mt-1 text-sm opacity-80">{error ?? "Teste não encontrado."}</p>
+          </div>
         </div>
       </div>
     );
   }
 
   const Icon = modeDef.icon;
-  const style = ACCENT_STYLES[modeDef.accent];
+  const style = ACCENT_STYLES[modeDef.accent as AccentColor];
+  const status = STATUS_LABEL[normalizeStatus(test.status) ?? ""] ?? { label: test.status, badge: "badge-ghost" };
+  const isFE = isFutureEditionConfig(test.config);
   const hasNumericFields = fields.some((f) => f.type === "number");
   const numericFieldCount = fields.filter((f) => f.type === "number").length;
+  const isFllRuns = test.mode === "runs" && Boolean(test.season) && !isFE;
+
+  const handleDelete = async () => {
+    if (!confirm("Tem certeza que deseja excluir este teste?")) return;
+    await deleteTest(test.id);
+    router.push("/dashboard/labtest");
+  };
 
   return (
-    <div className="min-h-screen bg-base-200/30">
+    <div className="min-h-screen bg-base-200/40">
       <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6 px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
         <Link
           href="/dashboard/labtest"
           className="group flex w-fit items-center gap-2 text-sm text-base-content/50 transition-colors hover:text-primary"
         >
-          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+          <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
           Voltar para os testes
         </Link>
 
-        <section className="overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100">
-          <div className="h-1 bg-primary" />
+        {/* Cabeçalho */}
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 items-start gap-4">
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-tl-2xl rounded-br-2xl bg-primary text-primary-content shadow-sm">
+              <FlaskConical className="size-7" />
+            </div>
 
-          <div className="flex flex-col gap-6 p-5 sm:p-7 xl:flex-row xl:items-start xl:justify-between">
-            <div className="flex min-w-0 flex-1 items-start gap-4 sm:gap-5">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-tl-2xl rounded-br-2xl bg-primary/10 text-primary sm:size-14">
-                <FlaskConical className="size-6 sm:size-7" />
+            <div className="min-w-0">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <span className={`badge badge-outline badge-sm gap-1.5 py-3 ${style.text} ${style.badgeBorder}`}>
+                  <Icon className="size-3.5" />
+                  {modeDef.label}
+                </span>
+                {test.season && <span className="badge badge-ghost badge-sm py-3">Temporada {test.season}</span>}
+                <span className={`badge badge-sm badge-soft py-3 ${status.badge}`}>{status.label}</span>
               </div>
 
-              <div className="min-w-0 flex-1">
-                {/* Contexto */}
-                <div className="mb-3 flex flex-wrap items-center gap-2">
-                  <span
-                    className={`badge badge-outline badge-sm gap-1.5 py-3 ${style.text} ${style.badgeBorder}`}
-                  >
-                    <Icon className="size-3.5" />
-                    {modeDef.label}
-                  </span>
+              <h1 className="break-words text-2xl font-black tracking-tight sm:text-3xl">{test.name}</h1>
+              <p className="mt-1 text-sm text-base-content/50">
+                Criado em {test.createdAt ? fmtDate(test.createdAt) : "—"}
+              </p>
+            </div>
+          </div>
 
-                  {test.season && (
-                    <span className="badge badge-ghost badge-sm py-3">
-                      Temporada {test.season}
-                    </span>
-                  )}
-                </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={`/dashboard/labtest/${test.id}/export`} className="btn btn-sm btn-outline gap-2 rounded-full">
+              <FileDown className="size-4" />
+              Exportar
+            </Link>
+            <Link href={`/dashboard/labtest/${test.id}/edit`} className="btn btn-sm btn-outline gap-2 rounded-full">
+              <Settings2 className="size-4" />
+              Editar
+            </Link>
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost gap-2 rounded-full text-error hover:bg-error/10"
+              onClick={handleDelete}
+              aria-label="Excluir teste"
+            >
+              <Trash2 className="size-4" />
+              <span className="hidden sm:inline">Excluir</span>
+            </button>
+          </div>
+        </header>
 
-                <h1 className="break-words text-2xl font-black tracking-tight sm:text-3xl">
-                  {test.name}
-                </h1>
+        {/* Resumo (FLL já traz os próprios cards dentro dos gráficos) */}
+        {!isFllRuns && !isFE && <OverviewStats mode={test.mode} fields={fields} entries={entries} />}
 
-                {test.description && (
-                  <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm leading-6 text-base-content/60">
-                    {test.description}
-                  </p>
+        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+          {/* Coluna principal */}
+          <div className="flex min-w-0 flex-col gap-8">
+            <section className="space-y-4">
+              <div>
+                <h2 className="text-lg font-bold tracking-tight">Análise dos dados</h2>
+                <p className="mt-1 text-sm text-base-content/50">
+                  Escolha o tipo de gráfico e passe o mouse nos pontos para ver o valor real de cada execução.
+                </p>
+              </div>
+
+              {isFE ? (
+                <FutureEditionAnalysis entries={entries} />
+              ) : isFllRuns ? (
+                <FllRunsCharts season={test.season} entries={entries} accent={modeDef.accent} />
+              ) : test.mode === "runs" ? (
+                hasNumericFields ? (
+                  <div className="flex flex-col gap-4">
+                    <TotalEvolutionChart fields={fields} entries={entries} />
+                    {numericFieldCount > 1 && <FieldComparisonChart fields={fields} entries={entries} />}
+                  </div>
+                ) : (
+                  <EmptyState>
+                    <FlaskConical className="mx-auto mb-3 size-8 text-base-content/30" />
+                    Ainda não há dados numéricos para analisar. Registre execuções com campos numéricos.
+                  </EmptyState>
+                )
+              ) : (
+                <LabTestModeCharts
+                  mode={test.mode}
+                  config={test.config}
+                  fields={fields}
+                  entries={entries}
+                  accent={modeDef.accent}
+                />
+              )}
+            </section>
+
+            <section className="space-y-4">
+              <div>
+                <h2 className="text-lg font-bold tracking-tight">Histórico de execuções</h2>
+                <p className="mt-1 text-sm text-base-content/50">
+                  Consulte os registros e acompanhe os resultados de cada execução.
+                </p>
+              </div>
+
+              <EntryHistory
+                fields={fields}
+                entries={entries}
+                accent={modeDef.accent}
+                mode={test.mode}
+                season={test.season}
+                futureEdition={isFE}
+              />
+            </section>
+          </div>
+
+          {/* Coluna lateral */}
+          <aside className="flex flex-col gap-4 xl:sticky xl:top-20">
+            <div className="rounded-tl-3xl rounded-tr-lg rounded-br-3xl rounded-bl-lg bg-primary p-6 text-primary-content shadow-md">
+              {isFE ? <Play className="mb-4 size-8 opacity-80" /> : <ClipboardList className="mb-4 size-8 opacity-80" />}
+              <h3 className="text-xl font-black leading-tight">
+                {isFE ? "Jogar uma nova partida" : "Registrar nova execução"}
+              </h3>
+              <p className="mt-2 text-sm opacity-80">
+                {isFE
+                  ? "Cronômetro, pontuação ao vivo e análise em gráficos ao fim de cada partida."
+                  : "Cada execução alimenta os gráficos e o histórico deste teste."}
+              </p>
+              <Link
+                href={`/dashboard/labtest/${test.id}/execute`}
+                className="btn mt-5 w-full rounded-full border-0 bg-base-100 text-base-content hover:bg-base-200"
+              >
+                {isFE ? <Play className="size-4" /> : <Plus className="size-4" />}
+                {isFE ? "Nova partida" : "Nova execução"}
+              </Link>
+            </div>
+
+            <div className="card border border-base-300/70 bg-base-100 shadow-sm">
+              <div className="card-body gap-3 p-5">
+                <h3 className="text-sm font-bold">Sobre o teste</h3>
+                {test.description ? (
+                  <p className="whitespace-pre-wrap text-sm leading-6 text-base-content/65">{test.description}</p>
+                ) : (
+                  <p className="text-sm italic text-base-content/40">Nenhuma descrição adicionada.</p>
                 )}
 
-                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-base-content/50">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Calendar className="size-3.5" />
-                    Criado em {test.createdAt ? fmtDate(test.createdAt) : "—"}
-                  </span>
-                </div>
-
                 {labels && (
-                  <div className="mt-4 border-t border-base-200 pt-4">
+                  <div className="border-t border-base-200 pt-3">
                     <ResourceLabels
                       kind="labtest"
                       resourceId={test.id}
@@ -923,117 +975,24 @@ export default function LabTestView() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 border-t border-base-200 pt-4 xl:max-w-sm xl:justify-end xl:border-0 xl:pt-0">
-              <Link
-                href={`/dashboard/labtest/${test.id}/export`}
-                className="btn btn-outline btn-sm gap-2 rounded-tl-xl rounded-br-xl"
-              >
-                <FileDown className="size-4" />
-                Exportar
-              </Link>
-              <Link
-                href={`/dashboard/labtest/${test.id}/edit`}
-                className="btn btn-outline btn-sm gap-2 rounded-tl-xl rounded-br-xl"
-              >
-                <Settings2 className="size-4" />
-                Editar
-              </Link>
-              <Link
-                href={`/dashboard/labtest/${test.id}/execute`}
-                className={`btn btn-primary btn-sm gap-2 rounded-tl-xl rounded-br-xl`}
-              >
-                <ClipboardList className="size-4" />
-                Nova execução
-              </Link>
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm gap-2 text-error hover:bg-error/10"
-                onClick={() => {
-                  if (confirm("Tem certeza que deseja excluir este teste?")) {
-                    deleteTest(test.id);
-                    router.push("/dashboard/labtest");
-                  }
-                }}
-                aria-label="Excluir teste"
-              >
-                <Trash2 className="size-4" />
-                <span className="hidden sm:inline">Excluir</span>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Análises */}
-        <section className="space-y-4">
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-lg font-bold tracking-tight">
-                Análise dos dados
-              </h2>
-              <p className="mt-1 text-sm text-base-content/50">
-                Visualize a evolução e compare os resultados registrados.
-              </p>
-            </div>
-          </div>
-
-          {test.mode === "runs" && test.season ? (
-            <FllRunsCharts
-              season={test.season}
-              entries={entries}
-              accent={modeDef.accent}
-            />
-          ) : test.mode === "runs" ? (
-            hasNumericFields || numericFieldCount > 1 ? (
-              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                {hasNumericFields && (
-                  <TotalEvolutionChart fields={fields} entries={entries} />
-                )}
-
-                {numericFieldCount > 1 && (
-                  <FieldComparisonChart fields={fields} entries={entries} />
-                )}
+            {entries.length > 0 && (
+              <div className="card border border-base-300/70 bg-base-100 shadow-sm">
+                <div className="card-body gap-2 p-5">
+                  <h3 className="mb-1 text-sm font-bold">Últimas execuções</h3>
+                  {[...entries].slice(-4).reverse().map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="flex items-center justify-between rounded-xl bg-base-200/60 px-3 py-2 text-sm"
+                    >
+                      <span className="font-semibold">#{entry.executionNumber}</span>
+                      <span className="text-xs text-base-content/50">{fmtDate(entry.createdAt)}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ) : (
-              <div className="rounded-tl-2xl rounded-br-2xl border border-dashed border-base-300 bg-base-100 px-5 py-10 text-center">
-                <FlaskConical className="mx-auto size-8 text-base-content/30" />
-                <p className="mt-3 text-sm font-semibold">
-                  Ainda não há dados numéricos para analisar
-                </p>
-                <p className="mt-1 text-sm text-base-content/50">
-                  Registre execuções com campos numéricos para visualizar os
-                  gráficos.
-                </p>
-              </div>
-            )
-          ) : (
-            <LabTestModeCharts
-              mode={test.mode}
-              config={test.config}
-              fields={fields}
-              entries={entries}
-              accent={modeDef.accent}
-            />
-          )}
-        </section>
-
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-lg font-bold tracking-tight">
-              Histórico de execuções
-            </h2>
-            <p className="mt-1 text-sm text-base-content/50">
-              Consulte os registros e acompanhe os resultados de cada execução.
-            </p>
-          </div>
-
-          <EntryHistory
-            fields={fields}
-            entries={entries}
-            accent={modeDef.accent}
-            mode={test.mode}
-            season={test.season}
-          />
-        </section>
+            )}
+          </aside>
+        </div>
       </div>
     </div>
   );

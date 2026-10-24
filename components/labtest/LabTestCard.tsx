@@ -12,6 +12,7 @@ import type { MilestoneDTO, TagDTO } from "@/types/labels";
 import {
   getModeMeta,
   getTestImage,
+  normalizeStatus,
   STATUS_META,
   summarizeConfig,
   type TestImage,
@@ -37,7 +38,7 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   year: "numeric",
 });
 
-function TestImagePreview({
+export function TestImagePreview({
   image,
   modeIcon: ModeIcon,
 }: {
@@ -106,7 +107,7 @@ export function LabTestCard({
     ? "Data indisponível"
     : dateFormatter.format(createdAt);
 
-  const statusMeta = STATUS_META[test.status as keyof typeof STATUS_META] ?? {
+  const statusMeta = STATUS_META[normalizeStatus(test.status) ?? ("" as keyof typeof STATUS_META)] ?? {
     label: test.status,
     badgeClass: "badge-ghost",
   };
@@ -129,9 +130,9 @@ export function LabTestCard({
       href={`/dashboard/labtest/${test.id}`}
       className={`group relative flex w-full overflow-hidden
         rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md
-        border border-base-300 bg-base-100
+        border border-base-300/70 bg-base-100 shadow-sm
         transition-all duration-200
-        hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md
+        hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg
         focus-visible:outline-none focus-visible:ring-2
         focus-visible:ring-primary/50 ${
           viewMode === "grid"
@@ -167,7 +168,7 @@ export function LabTestCard({
             </p>
           </div>
           <span
-            className={`badge badge-sm shrink-0 font-medium ${statusBadgeClass}`}
+            className={`badge badge-soft badge-sm shrink-0 font-medium ${statusBadgeClass}`}
           >
             {statusMeta.label}
           </span>
@@ -192,7 +193,7 @@ export function LabTestCard({
           )}
         </div>
 
-        <div className="mt-4 rounded-md border border-base-300/80 bg-base-200/40 px-3.5 py-3">
+        <div className="mt-4 rounded-xl bg-base-200/60 px-3.5 py-3">
           <p className="mb-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-base-content/45">
             Configuração
           </p>

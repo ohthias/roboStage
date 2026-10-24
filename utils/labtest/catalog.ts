@@ -1,5 +1,7 @@
 import { Gauge, Layers, ListChecks, SlidersHorizontal } from "lucide-react";
 import missionsCatalog from "@/public/data/missions.json";
+import { FE_EDITION, formatClock, getMatchDuration } from "./future-edition";
+import { getKitPreset } from "./kit-ia";
 
 export type MissionCatalogEntry = {
   id: string;
@@ -49,6 +51,20 @@ export const STATUS_META = {
 } as const;
 
 export type ModeKey = keyof typeof MODE_META;
+export type StatusKey = keyof typeof STATUS_META;
+
+/**
+ * Aceita a chave ("em_andamento") ou o rótulo ("Em andamento"). Testes antigos
+ * gravaram o rótulo no banco quando o primeiro lançamento era registrado.
+ */
+export function normalizeStatus(status: string | null | undefined): StatusKey | null {
+  if (!status) return null;
+  if (status in STATUS_META) return status as StatusKey;
+  const entry = Object.entries(STATUS_META).find(
+    ([, meta]) => meta.label.toLowerCase() === status.toLowerCase(),
+  );
+  return (entry?.[0] as StatusKey | undefined) ?? null;
+}
 export type TestImage = string | string[];
 
 export function getModeMeta(mode: string) {
@@ -63,6 +79,16 @@ export function summarizeConfig(mode: string, config: unknown): string {
   if (!config || typeof config !== "object") return "Sem configuração";
 
   const values = config as Record<string, unknown>;
+
+  if (mode === "runs" && values.edition === FE_EDITION) {
+    return `Future Edition · partida de ${formatClock(getMatchDuration(values))}`;
+  }
+
+  if (mode === "calibrabot" && values.tipo === "kit-ia") {
+    const preset = getKitPreset(typeof values.preset === "string" ? values.preset : null);
+    const count = Array.isArray(values.parametros) ? values.parametros.length : 0;
+    return `Kit Ciência e IA · ${preset?.label ?? "teste"} · ${count} parâmetro(s)`;
+  }
 
   if (mode === "runs") {
     const missions = Array.isArray(values.missions) ? values.missions.length : 0;
@@ -110,11 +136,24 @@ function getRunImages(season: string | null, config: unknown): string[] {
     .map((mission) => mission.image as string);
 }
 
+const FE_IMAGES = [1, 2, 3, 4].map(
+  (n) => `/images/missions/bioglow-fe/thumb-mission-0${n}.png`,
+);
+
 export function getTestImage(test: {
   mode: string;
   season: string | null;
   config: unknown;
 }): TestImage {
+  if (
+    test.mode === "runs" &&
+    test.config &&
+    typeof test.config === "object" &&
+    (test.config as Record<string, unknown>).edition === FE_EDITION
+  ) {
+    return FE_IMAGES;
+  }
+
   if (test.mode === "runs") return getRunImages(test.season, test.config);
 
   if ((test.mode === "calibrabot" || test.mode === "individual") && test.config && typeof test.config === "object") {

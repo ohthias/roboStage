@@ -71,6 +71,37 @@ export function scoreFllMission(
   return breakdown.total;
 }
 
+/**
+ * Pontos de UMA sub-missão já considerando `requires` e portões
+ * (`zero_whole_mission_if_false`) — o mesmo cálculo do placar real.
+ */
+export function scoreFllSubMission(
+  mission: FllMissionDefinition,
+  answer: FllAnswer | undefined,
+  subIndex: number,
+) {
+  if (!answer || !mission.type || mission.points == null) return 0;
+
+  const responses: Record<number, number> = { 0: answer.value };
+
+  (mission["sub-mission"] ?? []).forEach((subMission, index) => {
+    responses[index + 1] =
+      answer.subAnswers[getSubMissionKey(mission, subMission, index)] ?? 0;
+  });
+
+  const breakdown = computeMissionBreakdown(
+    {
+      ...mission,
+      equipaments: mission.equipaments ?? false,
+      type: mission.type,
+      points: mission.points,
+    } as unknown as Parameters<typeof computeMissionBreakdown>[0],
+    responses,
+  );
+
+  return breakdown.subPoints[subIndex] ?? 0;
+}
+
 export function scoreFllExecution(
   missions: FllMissionDefinition[],
   answers: Record<string, FllAnswer> | undefined,

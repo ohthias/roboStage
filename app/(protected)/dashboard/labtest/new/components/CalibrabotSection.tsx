@@ -14,6 +14,7 @@ import {
   PID_PARAM_OPTIONS,
 } from "../Usecreatetest";
 import { useToast } from "@/app/context/ToastContext";
+import { KitIaSection } from "./KitIaSection";
 
 export function CalibrabotSection({
   calibraMode,
@@ -34,9 +35,19 @@ export function CalibrabotSection({
   setPidDistance,
   pidParams,
   togglePidParam,
+  futureEditionActive,
+  kitPreset,
+  selectKitPreset,
+  kitParams,
+  toggleKitParam,
 }: {
-  calibraMode: "motores" | "giroscópio" | "pid";
-  setCalibraMode: (value: "motores" | "giroscópio" | "pid") => void;
+  futureEditionActive: boolean;
+  kitPreset: string;
+  selectKitPreset: (id: string) => void;
+  kitParams: string[];
+  toggleKitParam: (name: string) => void;
+  calibraMode: "motores" | "giroscópio" | "pid" | "kit-ia";
+  setCalibraMode: (value: "motores" | "giroscópio" | "pid" | "kit-ia") => void;
   motorInput: string;
   setMotorInput: (value: string) => void;
   addMotor: () => void;
@@ -78,6 +89,7 @@ export function CalibrabotSection({
     giroAnalysis.forEach(toggleGiroAnalysis);
     setPidDistance(0);
     pidParams.forEach(togglePidParam);
+    selectKitPreset("");
     setCalibraMode(mode);
   };
 
@@ -101,7 +113,12 @@ export function CalibrabotSection({
           </div>
 
           <div className="flex flex-col gap-2">
-            {CALIBRA_OPTIONS.map((o) => {
+            {[
+              ...CALIBRA_OPTIONS,
+              ...(futureEditionActive
+                ? [{ value: "kit-ia", label: "Kit Ciência e IA" } as const]
+                : []),
+            ].map((o) => {
               const active = calibraMode === o.value;
 
               return (
@@ -284,6 +301,15 @@ export function CalibrabotSection({
                 </div>
               )}
             </div>
+          )}
+
+          {calibraMode === "kit-ia" && futureEditionActive && (
+            <KitIaSection
+              kitPreset={kitPreset}
+              selectKitPreset={selectKitPreset}
+              kitParams={kitParams}
+              toggleKitParam={toggleKitParam}
+            />
           )}
 
           {calibraMode === "giroscópio" && (

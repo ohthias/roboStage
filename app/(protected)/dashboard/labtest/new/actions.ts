@@ -1,7 +1,18 @@
 "use server";
 
 import { and, desc, eq, isNull } from "drizzle-orm";
+import { promises as fs } from "fs";
+import path from "path";
 import { db } from "@/db/client";
+import { leagues, userLeagueInterests } from "@/db/schema/leagues";
+import {
+  FE_EDITION,
+  getMatchDuration,
+  normalizeFEResult,
+  scoreAt,
+  type FEData,
+} from "@/utils/labtest/future-edition";
+import { KIT_IA_ID, getKitPreset } from "@/utils/labtest/kit-ia";
 import { folders } from "@/db/schema/notebook";
 import { tests, testExecutions } from "@/db/schema/labtest";
 import { revalidatePath } from "next/cache";
@@ -30,6 +41,10 @@ type RunsPayload = {
   season?: string | null;
   missionOrder: string[]; // t.orderedSelected.map(m => m.id) — ordem definida pelo usuário
   answers: Record<string, MissionAnswer>; // t.answers
+  /** "future-edition" => partida cronometrada (missões fixas da temporada). */
+  edition?: string;
+  /** Duração da partida em segundos (Future Edition). */
+  matchDuration?: number;
 };
 
 type CalibrabotMotoresPayload = {
@@ -53,10 +68,19 @@ type CalibrabotPidPayload = {
   pidParams: string[]; // t.pidParams
 };
 
+/** Testes prontos do kit LEGO Education Ciência e IA (só com a liga Future Edition ativa). */
+type CalibrabotKitPayload = {
+  mode: "calibrabot";
+  calibraMode: "kit-ia";
+  kitPreset: string;
+  kitParams: string[]; // nomes dos parâmetros escolhidos dentro do preset
+};
+
 type CalibrabotPayload =
   | CalibrabotMotoresPayload
   | CalibrabotGiroPayload
-  | CalibrabotPidPayload;
+  | CalibrabotPidPayload
+  | CalibrabotKitPayload;
 
 type CustomParamPayload = {
   id: string;
@@ -107,6 +131,9 @@ function buildConfig(input: CreateTestInput) {
         answers: input.answers,
         ...(input.competitionId ? { competitionId: input.competitionId } : {}),
         ...(input.competitionName ? { competitionName: input.competitionName } : {}),
+        ...(input.edition === FE_EDITION
+          ? { edition: FE_EDITION, matchDuration: getMatchDuration({ matchDuration: input.matchDuration }) }
+          : {}),
       };
     }
 
@@ -122,6 +149,28 @@ function buildConfig(input: CreateTestInput) {
           modo: input.motorTestType,
           motores: input.motores,
           ...(pares ? { pares } : {}),
+        };
+      }
+
+      if (input.calibraMode === "kit-ia") {
+        const preset = getKitPreset(input.kitPreset)!;
+        return {
+          tipo: "kit-ia",
+          preset: preset.id,
+          presetNome: preset.label,
+          kit: KIT_IA_ID,
+          liga: FE_EDITION,
+          parametros: preset.params
+            .filter((param) => input.kitParams.includes(param.nome))
+            .map((param) => ({
+              nome: param.nome,
+              rotulo: param.rotulo,
+              descricao: param.descricao,
+              tipo: param.tipo,
+              ...(param.unidade ? { unidade: param.unidade } : {}),
+              ...(param.opcoes ? { opcoes: param.opcoes } : {}),
+              ...(param.meta !== undefined ? { meta: param.meta } : {}),
+            })),
         };
       }
 
@@ -179,6 +228,19 @@ function validateCreateInput(input: CreateTestInput) {
     ) {
       throw new Error("Adicione ao menos um motor.");
     }
+    if (input.calibraMode === "kit-ia") {
+      const preset = getKitPreset(input.kitPreset);
+      if (!preset) throw new Error("Escolha um teste do kit Ciência e IA.");
+      const valid = new Set(preset.params.map((param) => param.nome));
+      if (
+        !Array.isArray(input.kitParams) ||
+        input.kitParams.length === 0 ||
+        input.kitParams.some((name) => !valid.has(name))
+      ) {
+        throw new Error("Selecione ao menos um parâmetro válido do teste.");
+      }
+      return;
+    }
     if (
       input.calibraMode === "giroscópio" &&
       (!Array.isArray(input.giroAnalysis) || input.giroAnalysis.length === 0)
@@ -202,6 +264,32 @@ function validateCreateInput(input: CreateTestInput) {
       input.params.length
   ) {
     throw new Error("Adicione ao menos um parâmetro com nome.");
+  }
+}
+
+async function loadFutureEditionData(): Promise<FEData> {
+  const file = path.join(process.cwd(), "public", "data", "fll", "future-edition.json");
+  return JSON.parse(await fs.readFile(file, "utf-8")) as FEData;
+}
+
+/**
+ * Partida da Future Edition: o resultado precisa ser o pacote
+ * `futureEdition` e o total enviado tem de bater com o recálculo feito aqui
+ * a partir dos eventos (o cliente não é a fonte da verdade da pontuação).
+ */
+async function validateFutureEditionResults(results: Record<string, unknown>) {
+  const extra = Object.keys(results).filter((key) => key !== "futureEdition");
+  const fe = normalizeFEResult(results.futureEdition);
+
+  if (!fe || extra.length > 0) {
+    throw new Error("Partida inválida: resultado da Future Edition ausente ou incompleto.");
+  }
+
+  const data = await loadFutureEditionData();
+  const recomputed = scoreAt(data, fe.events);
+
+  if (recomputed.total !== fe.scores.total) {
+    throw new Error("A pontuação enviada não confere com os eventos da partida.");
   }
 }
 
@@ -289,6 +377,19 @@ function resolveTestMode(
   return input.mode;
 }
 
+/** A liga Future Edition está entre as ligas/competições do usuário? */
+async function userHasFutureEdition(userId: string) {
+  const rows = await db
+    .select({ code: leagues.code, name: leagues.name })
+    .from(userLeagueInterests)
+    .innerJoin(leagues, eq(userLeagueInterests.leagueId, leagues.id))
+    .where(eq(userLeagueInterests.userId, userId));
+
+  return rows.some(
+    (row) => /future/i.test(row.code) || /future edition/i.test(row.name),
+  );
+}
+
 /* =========================================================================
  * createTest — action principal, chamada pelo botão "Gerar teste"
  * ========================================================================= */
@@ -302,12 +403,15 @@ export async function createTest(input: CreateTestInput) {
 
   validateCreateInput(input);
 
-  if (
-    input.mode === "runs" &&
-    (input.competitionId.toLowerCase().includes("future") ||
-      input.competitionName?.toLowerCase().includes("future edition"))
-  ) {
-    throw new Error("A criação de testes da FLL Future Edition está temporariamente desabilitada.");
+  // Future Edition (partidas e testes do kit) só para quem tem a liga ativa.
+  const needsFutureEdition =
+    (input.mode === "runs" && input.edition === FE_EDITION) ||
+    (input.mode === "calibrabot" && input.calibraMode === "kit-ia");
+
+  if (needsFutureEdition && !(await userHasFutureEdition(scope.userId))) {
+    throw new Error(
+      "Ative a liga FLL Future Edition em Ligas e Competições para criar este teste.",
+    );
   }
 
   if (input.folderId) {
@@ -412,7 +516,13 @@ export async function createTestExecution(input: {
   }
 
   const results = input.results ?? {};
-  validateExecutionResults(owned.config as Record<string, unknown>, results);
+  const ownedConfig = owned.config as Record<string, unknown>;
+
+  if (ownedConfig.edition === FE_EDITION) {
+    await validateFutureEditionResults(results);
+  } else {
+    validateExecutionResults(ownedConfig, results);
+  }
 
   const [lastExecution] = await db
     .select({ executionNumber: testExecutions.executionNumber })

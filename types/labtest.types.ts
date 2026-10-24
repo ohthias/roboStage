@@ -1,3 +1,5 @@
+import type { FEExecutionResult } from "@/utils/labtest/future-edition";
+
 // ---------------------------------------------------------------------------
 // Tipos genéricos do LabTest.
 // Tudo (Runs, CalibraBot, Individual, Personalizado) usa exatamente estas
@@ -49,6 +51,8 @@ export interface TestEntry {
     remaining: number;
     used: number;
   };
+  /** Partida cronometrada da FLL Future Edition (modo runs). */
+  futureEdition?: FEExecutionResult;
 }
 
 export interface TestRecord {

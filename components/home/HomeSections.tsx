@@ -1,11 +1,41 @@
 import Link from "next/link";
 import {
-  ArrowRight, ArrowUpRight, BookOpen, CalendarDays, ChevronRight, Clock, Code, Cuboid, FlaskConical, FolderGit2, Gauge, GraduationCap, HeartHandshake, History, LifeBuoy, MessageSquare, Newspaper, NotebookPen, Radio,  Rocket, School, ShieldCheck, Sparkles, Telescope, Trophy, UserPlus, Users, Wrench, type LucideIcon,
+  ArrowRight,
+  ArrowUpRight,
+  BookOpen,
+  CalendarDays,
+  ChevronRight,
+  Clock,
+  Code,
+  Cuboid,
+  FlaskConical,
+  FolderGit2,
+  Gauge,
+  Globe2,
+  GraduationCap,
+  HeartHandshake,
+  History,
+  LifeBuoy,
+  MessageSquare,
+  Newspaper,
+  NotebookPen,
+  Radio,
+  Rocket,
+  School,
+  ShieldCheck,
+  Sparkles,
+  Telescope,
+  Trophy,
+  UserPlus,
+  Users,
+  Wrench,
+  type LucideIcon,
 } from "lucide-react";
 
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
 import LivePreview from "./LivePreview";
 import {
+  AnimatedBackground,
   SectionTitle,
   toneClasses,
   type Tone,
@@ -13,6 +43,8 @@ import {
 
 const cornerBtn =
   "rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none";
+
+/* ================================================================ SOBRE */
 
 const platformPoints = [
   { icon: Trophy, text: "Pontuadores e timers com as regras oficiais" },
@@ -26,6 +58,7 @@ export function PlatformIntro() {
       id="conheca"
       className="relative isolate scroll-mt-20 overflow-hidden border-b border-base-300 px-6 py-24"
     >
+      <AnimatedBackground />
       <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1.05fr_1fr] [&>*]:min-w-0">
         <RevealOnScroll>
           <SectionTitle
@@ -297,7 +330,7 @@ const tools: Tool[] = [
     title: "Anatix",
     description:
       "Biblioteca aberta para ver sensores, estados e tempos do robô da OBR enquanto ele roda.",
-    href: "/anatix",
+    href: "/obr/anatix",
     tone: "primary",
   },
   {
@@ -443,7 +476,7 @@ export function StepsSection() {
         <div className="relative mt-14 grid gap-10 md:grid-cols-3 md:gap-12">
           <div
             aria-hidden="true"
-            className="absolute left-0 right-0 max-w-[70%] top-6 hidden border-t-2 border-dashed border-base-300 md:block"
+            className="absolute left-[16.66%] right-[16.66%] top-6 hidden border-t-2 border-dashed border-base-300 md:block"
           />
           {steps.map(({ number, icon: Icon, title, description, detail, href, link }, i) => (
             <RevealOnScroll key={number} delay={i * 0.1}>
@@ -852,7 +885,17 @@ function formatDate(date?: string) {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-export function NewsSection({ news }: { news: HomeNews[] }) {
+export function NewsSection({
+  news,
+  kicker = "/ NOVIDADES",
+  title = "O que mudou",
+  highlight = "por aqui.",
+}: {
+  news: HomeNews[];
+  kicker?: string;
+  title?: string;
+  highlight?: string;
+}) {
   if (news.length === 0) return null;
   const [first, ...rest] = news;
 
@@ -861,11 +904,7 @@ export function NewsSection({ news }: { news: HomeNews[] }) {
       <div className="mx-auto max-w-6xl">
         <RevealOnScroll>
           <div className="flex flex-wrap items-end justify-between gap-6">
-            <SectionTitle
-              kicker="/ NOVIDADES"
-              title="O que mudou"
-              highlight="por aqui."
-            />
+            <SectionTitle kicker={kicker} title={title} highlight={highlight} />
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/news"
@@ -981,6 +1020,13 @@ const communityLinks = [
     text: "Veja como contribuir com código, divulgação ou apoio financeiro.",
     href: "/sponsors",
     tone: "accent" as Tone,
+  },
+  {
+    icon: Globe2,
+    title: "Roboticar",
+    text: "Iniciativas de equipes do Brasil e do mundo e os números da robótica no país.",
+    href: "/roboticar",
+    tone: "primary" as Tone,
   },
   {
     icon: LifeBuoy,

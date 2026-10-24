@@ -1,13 +1,18 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { ChevronDown, Menu, Trophy, X, ChevronUp } from "lucide-react";
 
 import Logo from "./Logo";
 import { ThemeController } from "./themeController";
-import { NAVIGATION, NAVIGATION_MAIN_LINKS} from "@/utils/competitions/navigation";
+import {
+  NAVIGATION,
+  NAVIGATION_MAIN_LINKS,
+  NAVIGATION_MAIN_MENUS,
+  type NavLinkGroup,
+} from "@/utils/competitions/navigation";
 import { Show, UserAvatar } from "@clerk/nextjs";
 
 export function Navbar() {
@@ -41,6 +46,27 @@ export function Navbar() {
     icon: value.icon,
   }));
 
+  /*
+    Grupos de menu normalizados com URLs absolutas.
+    - Em competição: menus da competição (path → /{competicao}/{path})
+    - Fora de competição: NAVIGATION_MAIN_MENUS
+    Assim a mesma renderização (popover no desktop / acordeão no mobile)
+    serve para os dois contextos.
+  */
+  const menuGroups: NavLinkGroup[] = useMemo(() => {
+    if (competition && nav) {
+      return (nav.menus ?? []).map((group) => ({
+        ...group,
+        items: group.items.map(({ path, ...item }) => ({
+          ...item,
+          href: `/${competition}/${path}`,
+        })),
+      }));
+    }
+    if (!competition) return NAVIGATION_MAIN_MENUS;
+    return [];
+  }, [competition, nav]);
+
   const closeDrawer = useCallback(() => {
     const drawer = document.getElementById(
       "navbar-drawer",
@@ -58,9 +84,8 @@ export function Navbar() {
   );
 
   const isMenuGroupActive = useCallback(
-    (group: { items: { path: string }[] }) =>
-      group.items.some((item) => isActive(`/${competition}/${item.path}`)),
-    [competition, isActive],
+    (group: NavLinkGroup) => group.items.some((item) => isActive(item.href)),
+    [isActive],
   );
 
   const baseLink =
@@ -79,10 +104,10 @@ export function Navbar() {
     `${baseLink} ${active ? activeLink : mutedLink}`;
 
   const mobileItemClass = (active: boolean) =>
-    `flex w-full items-start gap-3 rounded-xl px-3 py-2 transition-all duration-200 relative ${
+    `flex w-full items-start gap-3 rounded-xl px-3 py-2 transition-all duration-200 relative w-full ${
       active
-        ? "bg-primary/10 text-base-content shadow-[4px_4px_0_theme(colors.base-300))]"
-        : "hover:bg-base-200/80 hover:shadow-[4px_4px_0_theme(colors.primary))]"
+        ? "bg-primary/10 text-base-content shadow-[4px_4px_0_theme(colors.base-300)]"
+        : "hover:bg-base-200/80 hover:shadow-[4px_4px_0_theme(colors.primary)]"
     }`;
 
   const homeHref = competition ? `/${competition}` : "/";
@@ -91,9 +116,151 @@ export function Navbar() {
   const showCompetitionNav = Boolean(competition && nav);
   const showMainNav = !isCompetitionRoute;
 
-  // IDs estáveis por competição, exigidos pela Popover API do megamenu do daisyUI
+  // IDs estáveis por contexto, exigidos pela Popover API do megamenu do daisyUI
   const megamenuId = `megamenu-${competition ?? "root"}`;
   const scorePopoverId = `${megamenuId}-pontuador`;
+
+  const renderBadges = (
+    item: { new?: boolean; update?: boolean },
+    position: string,
+  ) => (
+    <>
+      {item.new && (
+        <span
+          className={`badge badge-sm badge-primary absolute ${position} text-[0.55rem] font-bold`}
+        >
+          Novo
+        </span>
+      )}
+      {item.update && (
+        <span
+          className={`badge badge-sm badge-secondary absolute ${position} text-[0.55rem] font-bold`}
+        >
+          Atualizado
+        </span>
+      )}
+    </>
+  );
+
+  /* ---------- Grupo de menu: desktop (gatilho + popover do megamenu) ---------- */
+  const renderDesktopGroup = (group: NavLinkGroup) => {
+    const GroupIcon = group.icon;
+    const groupPopoverId = `${megamenuId}-${group.key}`;
+
+    return (
+      <Fragment key={group.key}>
+        <button
+          type="button"
+          popoverTarget={groupPopoverId}
+          aria-label={`Abrir menu de ${group.label.toLowerCase()}`}
+          className={navItemClass(isMenuGroupActive(group))}
+        >
+          <GroupIcon size={16} />
+          <span>{group.label}</span>
+          {renderBadges(group, "-right-2 -top-2")}
+        </button>
+
+        <div
+          id={groupPopoverId}
+          popover="auto"
+          className="w-72 rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl"
+        >
+          <ul className="menu menu-sm space-y-1">
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href);
+
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`relative flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-200 ${
+                      active ? "bg-base-200" : "hover:bg-base-200/80"
+                    }`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    <Icon
+                      size={18}
+                      className={`mt-0.5 flex-shrink-0 transition-opacity duration-200 ${
+                        active ? "opacity-100" : "opacity-60"
+                      }`}
+                    />
+                    <span className="flex flex-col">
+                      <span className={`font-medium ${active ? "text-primary" : ""}`}>
+                        {item.nome}
+                      </span>
+                      <span className="text-xs opacity-60">
+                        {item.description || "Ferramenta"}
+                      </span>
+                    </span>
+                    {renderBadges(item, "right-2 top-2")}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </Fragment>
+    );
+  };
+
+  /* ---------- Grupo de menu: mobile (acordeão no drawer) ---------- */
+  const renderMobileGroup = (group: NavLinkGroup) => {
+    const GroupIcon = group.icon;
+    const isOpen = openMenus[group.key] ?? false;
+
+    return (
+      <details
+        key={group.key}
+        className="collapse rounded-2xl transition hover:bg-base-200/40 hover:shadow-[4px_4px_0_theme(colors.primary)]"
+        open={isOpen}
+        onToggle={(event) => toggleMenu(group.key, event.currentTarget.open)}
+      >
+        <summary className="collapse-title min-h-0 rounded-2xl px-4 py-3 text-base font-semibold">
+          <span className="flex items-center gap-2">
+            <GroupIcon size={16} className="shrink-0 text-base-content/70" />
+            {group.label}
+            {isOpen ? (
+              <ChevronUp size={14} className="ml-auto opacity-60" />
+            ) : (
+              <ChevronDown size={14} className="ml-auto opacity-60" />
+            )}
+          </span>
+        </summary>
+
+        <div className="collapse-content px-2 pb-2">
+          <ul className="space-y-1">
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href);
+
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={closeDrawer}
+                    className={mobileItemClass(active)}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    <Icon size={18} className="mt-0.5 shrink-0 opacity-60" />
+                    <span className="flex flex-col">
+                      <span className={`font-medium ${active ? "text-primary" : ""}`}>
+                        {item.nome}
+                      </span>
+                      <span className="text-xs opacity-60">
+                        {item.description || "Ferramenta"}
+                      </span>
+                    </span>
+                    {renderBadges(item, "-top-2 -right-2")}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </details>
+    );
+  };
 
   return (
     <div className="drawer drawer-start z-50">
@@ -132,7 +299,7 @@ export function Navbar() {
                         className="rounded-lg px-3 py-2 transition-all duration-200 hover:bg-base-200/80"
                       >
                         <span>
-                          {<competitionItem.icon className="opacity-60" />}
+                          <competitionItem.icon className="opacity-60" />
                         </span>
                         {competitionItem.label}
                       </Link>
@@ -157,102 +324,95 @@ export function Navbar() {
 
           {/*
             Navegação desktop.
-            Para rotas de competição, os grupos de menu (Pontuador + nav.menus)
-            agora usam o componente Megamenu do daisyUI (baseado na Popover API
-            nativa do navegador), em vez dos antigos "dropdown dropdown-end"
-            manuais. O daisyUI recomenda um único container `.megamenu` por
-            página/seção — por isso ele engloba todos os gatilhos e popovers
-            desta navbar.
+            Um único container `.megamenu` engloba tudo (recomendação do daisyUI),
+            tanto em rotas de competição quanto fora delas. Os grupos de menu
+            vêm de `menuGroups`, que já resolve o contexto.
           */}
           <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">
-            {showCompetitionNav && nav ? (
-              <div id={megamenuId} className="megamenu megamenu-md contents">
-                {/* Indicador visual que desliza entre os itens ativos do megamenu */}
-                <span className="megamenu-active" />
+            <div id={megamenuId} className="megamenu megamenu-md contents">
+              <span className="megamenu-active" />
 
-                {/* Pontuador */}
-                {nav.scorePath && "seasons" in nav && nav.seasons.length ? (
-                  <>
-                    <button
-                      type="button"
-                      popoverTarget={scorePopoverId}
-                      aria-label="Abrir menu de pontuador"
+              {showCompetitionNav && nav && (
+                <>
+                  {/* Pontuador */}
+                  {nav.scorePath && "seasons" in nav && nav.seasons.length ? (
+                    <>
+                      <button
+                        type="button"
+                        popoverTarget={scorePopoverId}
+                        aria-label="Abrir menu de pontuador"
+                        className={navItemClass(
+                          isActive(`/${competition}/${nav.scorePath}`),
+                        )}
+                      >
+                        <Trophy size={16} />
+                        <span>Pontuador</span>
+                      </button>
+
+                      <div
+                        id={scorePopoverId}
+                        popover="auto"
+                        className="rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl"
+                      >
+                        <ul className="menu menu-sm w-60">
+                          <li className="menu-title cursor-default select-none px-3 pb-1 pt-2">
+                            Temporadas
+                          </li>
+
+                          {nav.seasons.map((season) => {
+                            const Icon = season.icon;
+                            const href = `/${competition}/${nav.scorePath}/${season.key}`;
+                            const active = isActive(href);
+
+                            return (
+                              <li key={season.key}>
+                                <Link
+                                  href={href}
+                                  className={`flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-200 ${
+                                    active ? "bg-base-200" : "hover:bg-base-200/80"
+                                  }`}
+                                  aria-current={active ? "page" : undefined}
+                                >
+                                  <Icon
+                                    size={18}
+                                    className={`mt-0.5 transition-opacity duration-200 ${
+                                      active ? "opacity-100" : "opacity-60"
+                                    }`}
+                                  />
+                                  <span className="flex flex-col">
+                                    <span className={`font-medium ${active ? "text-primary" : ""}`}>
+                                      {season.name}
+                                    </span>
+                                    <span className="text-xs opacity-60">
+                                      {season.period}
+                                    </span>
+                                  </span>
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    </>
+                  ) : nav.scorePath ? (
+                    <Link
+                      href={`/${competition}/${nav.scorePath}`}
                       className={navItemClass(
                         isActive(`/${competition}/${nav.scorePath}`),
                       )}
+                      aria-current={
+                        isActive(`/${competition}/${nav.scorePath}`)
+                          ? "page"
+                          : undefined
+                      }
                     >
                       <Trophy size={16} />
                       <span>Pontuador</span>
-                    </button>
+                    </Link>
+                  ) : null}
 
-                    <div
-                      id={scorePopoverId}
-                      popover="auto"
-                      className="rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl"
-                    >
-                      <ul className="menu menu-sm w-60">
-                        <li className="menu-title px-3 pb-1 pt-2 cursor-default select-none">
-                          Temporadas
-                        </li>
-
-                        {nav.seasons.map((season) => {
-                          const Icon = season.icon;
-                          const href = `/${competition}/${nav.scorePath}/${season.key}`;
-                          const active = isActive(href);
-
-                          return (
-                            <li key={season.key}>
-                              <Link
-                                href={href}
-                                className={`flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-200 ${
-                                  active ? "bg-base-200" : "hover:bg-base-200/80"
-                                }`}
-                                aria-current={active ? "page" : undefined}
-                              >
-                                <Icon
-                                  size={18}
-                                  className={`mt-0.5 transition-opacity duration-200 ${
-                                    active ? "opacity-100" : "opacity-60"
-                                  }`}
-                                />
-                                <span className="flex flex-col">
-                                  <span
-                                    className={`font-medium ${
-                                      active ? "text-primary" : ""
-                                    }`}
-                                  >
-                                    {season.name}
-                                  </span>
-                                  <span className="text-xs opacity-60">
-                                    {season.period}
-                                  </span>
-                                </span>
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  </>
-                ) : nav.scorePath ? (
-                  <Link
-                    href={`/${competition}/${nav.scorePath}`}
-                    className={navItemClass(
-                      isActive(`/${competition}/${nav.scorePath}`),
-                    )}
-                    aria-current={
-                      isActive(`/${competition}/${nav.scorePath}`)
-                        ? "page"
-                        : undefined
-                    }
-                  >
-                    <Trophy size={16} />
-                    <span>Pontuador</span>
-                  </Link>
-                ) : null}
-
-                {/* Itens diretos da competição — links simples, sem popover */}
-                {nav.options?.map((item) => {
+                  {/* Itens diretos da competição */}
+                  {nav.options?.map((item) => {
                     const Icon = item.icon;
                     const href = `/${competition}/${item.path}`;
                     const active = isActive(href);
@@ -266,101 +426,16 @@ export function Navbar() {
                       >
                         <Icon size={16} className="flex-shrink-0" />
                         <span>{item.nome}</span>
-                        {"new" in item && item.new && (
-                          <span className="badge badge-sm badge-primary absolute -right-2 -top-2 text-[0.55rem] font-bold">
-                            Novo
-                          </span>
-                        )}
-                        {"update" in item && item.update && (
-                          <span className="badge badge-sm badge-secondary absolute -right-2 -top-2 text-[0.55rem] font-bold">
-                            Atualizado
-                          </span>
-                        )}
+                        {renderBadges(item, "-right-2 -top-2")}
                       </Link>
                     );
                   })}
+                </>
+              )}
 
-                {/* Grupos de menu — cada grupo vira um gatilho + popover do megamenu */}
-                {nav.menus?.map((group) => {
-                  const GroupIcon = group.icon;
-                  const groupActive = isMenuGroupActive(group);
-                  const groupPopoverId = `${megamenuId}-${group.key}`;
-
-                  return (
-                    <Fragment key={group.key}>
-                      <button
-                        type="button"
-                        popoverTarget={groupPopoverId}
-                        aria-label={`Abrir menu de ${group.label.toLowerCase()}`}
-                        className={navItemClass(groupActive)}
-                      >
-                        <GroupIcon size={16} />
-                        <span>{group.label}</span>
-                      </button>
-
-                      <div
-                        id={groupPopoverId}
-                        popover="auto"
-                        className="w-72 rounded-box border border-base-300/60 bg-base-100 p-2 shadow-xl"
-                      >
-                        <ul className="menu menu-sm space-y-1">
-                          {group.items.map((item) => {
-                            const Icon = item.icon;
-                            const href = `/${competition}/${item.path}`;
-                            const active = isActive(href);
-
-                            return (
-                              <li key={item.path}>
-                                <Link
-                                  href={href}
-                                  className={`flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-200 ${
-                                    active
-                                      ? "bg-base-200"
-                                      : "hover:bg-base-200/80"
-                                  }`}
-                                  aria-current={active ? "page" : undefined}
-                                >
-                                  <Icon
-                                    size={18}
-                                    className={`mt-0.5 transition-opacity duration-200 flex-shrink-0 ${
-                                      active ? "opacity-100" : "opacity-60"
-                                    }`}
-                                  />
-                                  <span className="flex flex-col">
-                                    <span
-                                      className={`font-medium ${active ? "text-primary" : ""}`}
-                                    >
-                                      {item.nome}
-                                    </span>
-                                    <span className="text-xs opacity-60">
-                                      {item.description || "Ferramenta"}
-                                    </span>
-                                  </span>
-                                  {"new" in item && item.new && (
-                                    <span className="badge badge-sm badge-primary absolute right-2 top-2 text-[0.55rem] font-bold">
-                                      Novo
-                                    </span>
-                                  )}
-                                  {"update" in item && item.update && (
-                                    <span className="badge badge-sm badge-secondary absolute right-2 top-2 text-[0.55rem] font-bold">
-                                      Atualizado
-                                      </span>
-                                  )}
-                                </Link>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </div>
-                    </Fragment>
-                  );
-                })}
-              </div>
-            ) : null}
-
-            {showMainNav && (
-              <>
-                {NAVIGATION_MAIN_LINKS.map((item) => {
+              {/* Links simples fora de competição */}
+              {showMainNav &&
+                NAVIGATION_MAIN_LINKS.map((item) => {
                   const active = isActive(item.href);
                   return (
                     <Link
@@ -371,21 +446,14 @@ export function Navbar() {
                     >
                       {item.icon && <item.icon size={16} className="flex-shrink-0" />}
                       <span>{item.label}</span>
-                      {"new" in item && item.new && (
-                        <span className="badge badge-xs badge-primary absolute -top-2 -right-2 text-[0.55rem] font-bold">
-                          Novo
-                        </span>
-                      )}
-                      {"update" in item && item.update && (
-                        <span className="badge badge-xs badge-secondary absolute -top-2 -right-2 text-[0.55rem] font-bold">
-                          Atualizado
-                        </span>
-                      )}
+                      {renderBadges(item, "-top-2 -right-2")}
                     </Link>
                   );
                 })}
-              </>
-            )}
+
+              {/* Grupos de menu — funcionam em qualquer contexto */}
+              {menuGroups.map(renderDesktopGroup)}
+            </div>
           </nav>
 
           <div className="hidden items-center gap-2 lg:flex">
@@ -394,7 +462,10 @@ export function Navbar() {
             <div className="divider divider-horizontal mx-1" />
 
             <Show when="signed-in">
-              <Link href="/dashboard" className="border rounded-full hover:shadow-[0_0_0_2px_theme(colors.primary)] transition-shadow duration-200 hover:scale-110">
+              <Link
+                href="/dashboard"
+                className="rounded-full border transition-shadow duration-200 hover:scale-110 hover:shadow-[0_0_0_2px_theme(colors.primary)]"
+              >
                 <UserAvatar component="button" />
               </Link>
             </Show>
@@ -422,12 +493,7 @@ export function Navbar() {
         </header>
       </div>
 
-      {/*
-        Menu mobile: mantido como drawer + accordions (collapse), pois já
-        oferece descrições, badges "Novo" e navegação vertical mais rica do
-        que o modo `megamenu-vertical` padrão do daisyUI ofereceria fora da
-        caixa. O megamenu acima cobre apenas o breakpoint `lg:` (desktop).
-      */}
+      {/* Menu mobile: drawer + acordeões */}
       <div className="drawer-side z-50">
         <label
           htmlFor="navbar-drawer"
@@ -442,7 +508,7 @@ export function Navbar() {
               {competitionLabel && (
                 <>
                   <div className="divider divider-horizontal divider-base-300/60" />
-                  <span className="inline-flex text-sm font-bold italic uppercase tracking-wide md:hidden text-base-content/70">
+                  <span className="inline-flex text-sm font-bold italic uppercase tracking-wide text-base-content/70 md:hidden">
                     {competitionLabel}
                   </span>
                 </>
@@ -458,41 +524,30 @@ export function Navbar() {
           </div>
 
           <div className="overflow-y-auto p-4">
-            {showCompetitionNav && nav ? (
-              <div className="space-y-5">
-                <div className="mt-2 space-y-3">
+            <div className="mt-2 space-y-3">
+              {showCompetitionNav && nav && (
+                <>
                   {nav.scorePath && "seasons" in nav && nav.seasons.length ? (
                     <details
-                      className="collapse rounded-2xl hover:shadow-[4px_4px_0_theme(colors.primary))] transition hover:bg-base-200/40"
+                      className="collapse rounded-2xl transition hover:bg-base-200/40 hover:shadow-[4px_4px_0_theme(colors.primary)]"
                       open={scoreOpen}
-                      onToggle={(event) =>
-                        setScoreOpen(event.currentTarget.open)
-                      }
+                      onToggle={(event) => setScoreOpen(event.currentTarget.open)}
                     >
                       <summary className="collapse-title min-h-0 rounded-2xl px-4 py-3 text-base font-semibold">
                         <span className="flex items-center gap-2">
-                          <Trophy
-                            size={16}
-                            className="shrink-0 text-base-content/70"
-                          />
+                          <Trophy size={16} className="shrink-0 text-base-content/70" />
                           Pontuador
                           {scoreOpen ? (
-                            <ChevronUp
-                              size={14}
-                              className="ml-auto opacity-60"
-                            />
+                            <ChevronUp size={14} className="ml-auto opacity-60" />
                           ) : (
-                            <ChevronDown
-                              size={14}
-                              className="ml-auto opacity-60"
-                            />
+                            <ChevronDown size={14} className="ml-auto opacity-60" />
                           )}
                         </span>
                       </summary>
 
                       <div className="collapse-content px-2 pb-2">
                         <ul className="space-y-1">
-                          {nav?.seasons?.map((season) => {
+                          {nav.seasons.map((season) => {
                             const Icon = season.icon;
                             const href = `/${competition}/${nav.scorePath}/${season.key}`;
                             const active = isActive(href);
@@ -505,16 +560,9 @@ export function Navbar() {
                                   className={mobileItemClass(active)}
                                   aria-current={active ? "page" : undefined}
                                 >
-                                  <Icon
-                                    size={18}
-                                    className="mt-0.5 shrink-0 opacity-60"
-                                  />
+                                  <Icon size={18} className="mt-0.5 shrink-0 opacity-60" />
                                   <span className="flex flex-col">
-                                    <span
-                                      className={`font-medium ${
-                                        active ? "text-primary" : ""
-                                      }`}
-                                    >
+                                    <span className={`font-medium ${active ? "text-primary" : ""}`}>
                                       {season.name}
                                     </span>
                                     <span className="text-xs opacity-60">
@@ -554,123 +602,31 @@ export function Navbar() {
                     </Link>
                   ) : null}
 
-                  {nav?.options?.map((item) => {
-                      const Icon = item.icon;
-                      const href = `/${competition}/${item.path}`;
-                      const active = isActive(href);
-
-                      return (
-                        <Link
-                          key={item.path}
-                          href={href}
-                          onClick={closeDrawer}
-                          className={mobileItemClass(active)}
-                          aria-current={active ? "page" : undefined}
-                        >
-                          <Icon
-                            size={18}
-                            className="mt-0.5 shrink-0 opacity-60"
-                          />
-                          <span className="flex flex-col">
-                            <span
-                              className={`font-medium ${
-                                active ? "text-primary" : ""
-                              }`}
-                            >
-                              {item.nome}
-                            </span>
-                          </span>
-                        </Link>
-                      );
-                    })}
-
-                  {nav.menus?.map((group) => {
-                    const GroupIcon = group.icon;
-                    const isOpen = openMenus[group.key] ?? false;
+                  {nav.options?.map((item) => {
+                    const Icon = item.icon;
+                    const href = `/${competition}/${item.path}`;
+                    const active = isActive(href);
 
                     return (
-                      <details
-                        key={group.key}
-                        className="collapse rounded-2xl hover:shadow-[4px_4px_0_theme(colors.primary))] transition hover:bg-base-200/40"
-                        open={isOpen}
-                        onToggle={(event) =>
-                          toggleMenu(group.key, event.currentTarget.open)
-                        }
+                      <Link
+                        key={item.path}
+                        href={href}
+                        onClick={closeDrawer}
+                        className={mobileItemClass(active)}
+                        aria-current={active ? "page" : undefined}
                       >
-                        <summary className="collapse-title min-h-0 rounded-2xl px-4 py-3 text-base font-semibold">
-                          <span className="flex items-center gap-2">
-                            <GroupIcon
-                              size={16}
-                              className="shrink-0 text-base-content/70"
-                            />
-                            {group.label}
-                            {isOpen ? (
-                              <ChevronUp
-                                size={14}
-                                className="ml-auto opacity-60"
-                              />
-                            ) : (
-                              <ChevronDown
-                                size={14}
-                                className="ml-auto opacity-60"
-                              />
-                            )}
-                          </span>
-                        </summary>
-
-                        <div className="collapse-content px-2 pb-2">
-                          <ul className="space-y-1">
-                            {group.items.map((item) => {
-                              const Icon = item.icon;
-                              const href = `/${competition}/${item.path}`;
-                              const active = isActive(href);
-
-                              return (
-                                <li key={item.path}>
-                                  <Link
-                                    href={href}
-                                    onClick={closeDrawer}
-                                    className={mobileItemClass(active)}
-                                    aria-current={active ? "page" : undefined}
-                                  >
-                                    <Icon
-                                      size={18}
-                                      className="mt-0.5 shrink-0 opacity-60"
-                                    />
-                                    <span className="flex flex-col">
-                                      <span
-                                        className={`font-medium ${active ? "text-primary" : ""}`}
-                                      >
-                                        {item.nome}
-                                      </span>
-                                      <span className="text-xs opacity-60">
-                                        {item.description || "Ferramenta"}
-                                      </span>
-                                    </span>
-                                    {"new" in item && item.new && (
-                                      <span className="badge badge-sm badge-primary absolute -top-2 -right-2 text-[0.55rem] font-bold">
-                                        Novo
-                                      </span>
-                                    )}
-                                    {"update" in item && item.update && (
-                                      <span className="badge badge-sm badge-secondary absolute -top-2 -right-2 text-[0.55rem] font-bold">
-                                        Atualizado
-                                        </span>
-                                    )}
-                                  </Link>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </div>
-                      </details>
+                        <Icon size={18} className="mt-0.5 shrink-0 opacity-60" />
+                        <span className={`font-medium ${active ? "text-primary" : ""}`}>
+                          {item.nome}
+                        </span>
+                      </Link>
                     );
                   })}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {NAVIGATION_MAIN_LINKS.map((item) => {
+                </>
+              )}
+
+              {showMainNav &&
+                NAVIGATION_MAIN_LINKS.map((item) => {
                   const active = isActive(item.href);
                   return (
                     <Link
@@ -680,22 +636,22 @@ export function Navbar() {
                       className={mobileItemClass(active)}
                       aria-current={active ? "page" : undefined}
                     >
-                      <span className="flex flex-col">
-                        <span
-                          className={`font-medium ${
-                            active ? "text-primary" : ""
-                          }`}
-                        >
-                          {item.label}
-                        </span>
+                      {item.icon && (
+                        <item.icon size={18} className="mt-0.5 shrink-0 opacity-60" />
+                      )}
+                      <span className={`font-medium ${active ? "text-primary" : ""}`}>
+                        {item.label}
                       </span>
                     </Link>
                   );
                 })}
-              </div>
-            )}
-            <div className="border-t border-base-300 p-4 mt-4">
-              <div className="flex items-center gap-2 flex-col">
+
+              {/* Grupos de menu — funcionam em qualquer contexto */}
+              {menuGroups.map(renderMobileGroup)}
+            </div>
+
+            <div className="mt-4 border-t border-base-300 p-4">
+              <div className="flex flex-col items-center gap-2">
                 <Show when="signed-in">
                   <Link href="/dashboard" className="btn btn-ghost btn-wide">
                     Acessar seu dashboard

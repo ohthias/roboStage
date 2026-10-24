@@ -1,9 +1,12 @@
+/* Fundo animado do hero do Anatix.
+   Cores via variáveis do daisyUI 5 (--color-*), que seguem o tema claro/escuro. */
+
 .anatix-background {
     position: absolute;
     inset: 0;
     z-index: -1;
     overflow: hidden;
-    color: oklch(var(--p));
+    color: var(--color-primary);
     pointer-events: none;
     opacity: 0.8;
 }
@@ -14,21 +17,21 @@
     aspect-ratio: 1;
     border-radius: 50%;
     filter: blur(90px);
-    opacity: 0.16;
+    opacity: 0.14;
     will-change: transform;
 }
 
 .anatix-glow-one {
     top: -35%;
     left: -15%;
-    background: oklch(var(--p));
+    background: var(--color-primary);
     animation: glow-move-one 12s ease-in-out infinite alternate;
 }
 
 .anatix-glow-two {
     right: -15%;
     bottom: -45%;
-    background: oklch(var(--s));
+    background: var(--color-secondary);
     animation: glow-move-two 16s ease-in-out infinite alternate;
 }
 
@@ -37,7 +40,7 @@
     inset: -5%;
     width: 110%;
     height: 110%;
-    color: oklch(var(--p));
+    color: var(--color-primary);
     opacity: 0.5;
     animation: network-drift 25s linear infinite alternate;
 }
@@ -53,83 +56,42 @@
 .anatix-grid {
     position: absolute;
     inset: -100%;
-    background-image: radial-gradient(currentColor 0.8px,
-            transparent 0.8px);
+    background-image: radial-gradient(currentColor 0.8px, transparent 0.8px);
     background-size: 30px 30px;
     opacity: 0.12;
-    mask-image: radial-gradient(ellipse at center,
-            black 0%,
-            transparent 65%);
+    mask-image: radial-gradient(ellipse at center, black 0%, transparent 65%);
     animation: grid-move 35s linear infinite;
 }
 
-/* Gradientes atravessam o fundo */
 @keyframes glow-move-one {
-    0% {
-        transform: translate(-5%, -5%) scale(0.9);
-    }
-
-    50% {
-        transform: translate(35%, 25%) scale(1.2);
-    }
-
-    100% {
-        transform: translate(15%, 45%) scale(1);
-    }
+    0% { transform: translate(-5%, -5%) scale(0.9); }
+    50% { transform: translate(35%, 25%) scale(1.2); }
+    100% { transform: translate(15%, 45%) scale(1); }
 }
 
 @keyframes glow-move-two {
-    0% {
-        transform: translate(10%, 0) scale(1);
-    }
-
-    50% {
-        transform: translate(-35%, -30%) scale(1.25);
-    }
-
-    100% {
-        transform: translate(-15%, -10%) scale(0.9);
-    }
+    0% { transform: translate(10%, 0) scale(1); }
+    50% { transform: translate(-35%, -30%) scale(1.25); }
+    100% { transform: translate(-15%, -10%) scale(0.9); }
 }
 
-/* Rede de dados flutua pela tela */
 @keyframes network-drift {
-    0% {
-        transform: translate(-1.5%, -1%);
-    }
-
-    50% {
-        transform: translate(1%, 1.5%);
-    }
-
-    100% {
-        transform: translate(-1%, 0.5%);
-    }
+    0% { transform: translate(-1.5%, -1%); }
+    50% { transform: translate(1%, 1.5%); }
+    100% { transform: translate(-1%, 0.5%); }
 }
 
-/* Grade percorre continuamente o fundo */
 @keyframes grid-move {
-    from {
-        transform: translate(0, 0);
-    }
-
-    to {
-        transform: translate(60px, 60px);
-    }
+    from { transform: translate(0, 0); }
+    to { transform: translate(60px, 60px); }
 }
 
 @keyframes node-pulse {
-    from {
-        opacity: 0.2;
-    }
-
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0.2; }
+    to { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-
     .anatix-glow,
     .anatix-network,
     .anatix-grid,

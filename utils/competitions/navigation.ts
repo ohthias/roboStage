@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Code, Bot, UserSearch, PencilRuler } from "lucide-react";
+import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Code, Bot, UserSearch, PencilRuler, LayoutGrid } from "lucide-react";
 
+/** Item de menu de competição: `path` é relativo a `/{competicao}/`. */
 export type NavMenuItem = {
   nome: string;
   path: string;
@@ -18,6 +19,11 @@ export type NavMenuGroup = {
   update?: boolean;
   items: NavMenuItem[];
 };
+
+/** Item de menu com URL absoluta (usado fora das competições e na renderização). */
+export type NavLinkItem = Omit<NavMenuItem, "path"> & { href: string };
+
+export type NavLinkGroup = Omit<NavMenuGroup, "items"> & { items: NavLinkItem[] };
 
 export const NAVIGATION = {
   fll: {
@@ -67,7 +73,6 @@ export const NAVIGATION = {
     scorePath: "score",
     options: [
       { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false },
-      { nome: "Anatix", path: "anatix", icon: Code, new: false, update: true },
     ],
     menus: [
       {
@@ -76,9 +81,9 @@ export const NAVIGATION = {
         icon: ToolCase,
         items: [
           { nome: "Recall", path: "recall", icon: MessageSquare, description: "Reavaliação de conceitos por meio de flashcards", update: true },
-           { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para auxiliar na gestão do tempo durante os treinos", update: true },
-           { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento.", update: true },
-        ]
+          { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para auxiliar na gestão do tempo durante os treinos", update: true },
+          { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento.", update: true },
+        ],
       },
       {
         key: "resources",
@@ -87,18 +92,30 @@ export const NAVIGATION = {
         items: [
           { nome: "Documentações", path: "docs", icon: BookOpen, description: "Documentos e materiais de apoio para competição." },
           { nome: "Bastidores", path: "bastidores", icon: PencilRuler, description: "O que sua equipe precisa para brilhar no palco. Recursos que auxiliam no desenvolvimento do seu robÔ.", new: true },
-        ]
-      }
+        ],
+      },
     ] satisfies NavMenuGroup[],
   },
 };
 
+/** Links simples exibidos fora das competições. */
 export const NAVIGATION_MAIN_LINKS = [
   { href: "/about", label: "Sobre", new: false },
-  { href: "/labtest", label: "LabTest", icon: MonitorDot, new: false},
-  { href: "/stagebook", label: "Stagebook", icon: BookOpen, new: false },
-  { href: "/showlive", label: "ShowLive", icon: Telescope, new: false },
-  { href: "/roboticar", label: "Roboticar", icon: Cuboid, new: true },
+  { href: "/anatix", label: "Anatix", new: false },
+  { href: "/roboticar", label: "Roboticar", new: true },
   { href: "/news", label: "Notícias", icon: NotepadText, new: false },
-  { href: "/help", label: "Ajuda", icon: MessageSquare, new: false, update: true }, 
+  { href: "/help", label: "Ajuda", icon: MessageSquare, new: false, update: true },
+];
+
+export const NAVIGATION_MAIN_MENUS: NavLinkGroup[] = [
+  {
+    key: "platforms",
+    label: "Plataforma",
+    icon: LayoutGrid,
+    items: [
+      { nome: "LabTest", href: "/labtest", icon: MonitorDot, description: "Transforme seus testes em resultados concretos com gráficos e análises" },
+      { nome: "Stagebook", href: "/stagebook", icon: BookOpen, description: "Documente e organize os seus detalhes e projetos ou da sua equipe" },
+      { nome: "ShowLive", href: "/showlive", icon: Telescope, description: "Crie eventos de robótica do seu jeito e compartilhe com o mundo" },
+    ],
+  },
 ];

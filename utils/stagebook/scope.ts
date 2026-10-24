@@ -6,7 +6,11 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { teamMembers, users } from "@/db/schema";
 
-export type TeamRole = "owner" | "mentor" | "competidor" | "colaborador";
+import { isTeamRole, type TeamRole } from "./team-permissions";
+import { StagebookAuthError } from "./scope-errors";
+
+export type { TeamRole };
+export { StagebookAuthError };
 
 /**
  * Seção 4 da spec: todo o Stagebook opera sobre um scope explícito, nunca
@@ -17,11 +21,11 @@ export type StagebookScope =
   | { type: "personal"; userId: string }
   | { type: "team"; teamId: string; userId: string; role: TeamRole };
 
-export class StagebookAuthError extends Error {
-  constructor(message = "Você não tem acesso a este recurso.") {
-    super(message);
-    this.name = "StagebookAuthError";
-  }
+export type TeamScope = Extract<StagebookScope, { type: "team" }>;
+
+/** Valor vindo do banco → TeamRole, falhando fechado (sem privilégio) se for desconhecido. */
+function toTeamRole(value: string): TeamRole {
+  return isTeamRole(value) ? value : "colaborador";
 }
 
 /** Nome do cookie que guarda qual equipe está selecionada no momento. */
@@ -90,7 +94,7 @@ export async function resolveStagebookScope(): Promise<StagebookScope> {
     type: "team",
     teamId,
     userId,
-    role: membership.role as TeamRole,
+    role: toTeamRole(membership.role),
   };
 }
 
@@ -113,7 +117,7 @@ export async function requireStagebookAccess(
     throw new StagebookAuthError("Você não é membro desta equipe.");
   }
 
-  return { type: "team", teamId, userId, role: membership.role as TeamRole };
+  return { type: "team", teamId, userId, role: toTeamRole(membership.role) };
 }
 
 /** Retorna o par { userId, teamId } a gravar em INSERTs, respeitando o scope. */

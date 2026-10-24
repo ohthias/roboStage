@@ -15,6 +15,7 @@ import {
   boardColumns,
   boards,
   teams,
+  teamMembers,
 } from "@/db/schema";
 import {
   requireAuthenticatedUser,
@@ -30,6 +31,19 @@ function startOfWeek() {
   monday.setHours(0, 0, 0, 0);
   return monday;
 }
+
+function startOfDay(offsetDays = 0) {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + offsetDays);
+  return d;
+}
+
+export type PersonaType =
+  | "competidor"
+  | "mentor_tecnico"
+  | "entusiasta"
+  | "organizador";
 
 export async function getDashboardData() {
   const userId = await requireAuthenticatedUser();
@@ -71,6 +85,9 @@ export async function getDashboardData() {
     recentDocuments,
     upcomingEvents,
     pendingCards,
+    dailyRows,
+    modeRows,
+    members,
   ] = await Promise.all([
     db
       .select({
@@ -91,6 +108,8 @@ export async function getDashboardData() {
         name: tests.name,
         description: tests.description,
         type: tests.mode,
+        season: tests.season,
+        config: tests.config,
         status: tests.status,
         executionCount: sql<number>`count(${testExecutions.id})`.mapWith(Number),
       })
@@ -136,7 +155,7 @@ export async function getDashboardData() {
       .from(calendarEvents)
       .where(and(eventScope, gte(calendarEvents.startAt, new Date())))
       .orderBy(asc(calendarEvents.startAt))
-      .limit(4),
+      .limit(5),
     db
       .select({
         id: boardCards.id,
@@ -153,7 +172,53 @@ export async function getDashboardData() {
       .where(and(boardScope, isNotNull(boardCards.dueAt)))
       .orderBy(asc(boardCards.dueAt))
       .limit(4),
+    // Execuções por dia nos últimos 7 dias (gráfico de atividade).
+    db
+      .select({
+        day: sql<string>`to_char(date_trunc('day', ${testExecutions.createdAt}), 'YYYY-MM-DD')`,
+        count: sql<number>`count(*)`.mapWith(Number),
+      })
+      .from(testExecutions)
+      .innerJoin(tests, eq(tests.id, testExecutions.testId))
+      .where(
+        and(
+          eq(tests.userId, userId),
+          gte(testExecutions.createdAt, startOfDay(-6)),
+        ),
+      )
+      .groupBy(sql`1`),
+    // Testes por modo (gráfico de distribuição).
+    db
+      .select({
+        mode: tests.mode,
+        count: sql<number>`count(*)`.mapWith(Number),
+      })
+      .from(tests)
+      .where(eq(tests.userId, userId))
+      .groupBy(tests.mode),
+    // Membros da equipe ativa (mentor/técnico acompanha o time).
+    scope.type === "team"
+      ? db
+          .select({
+            id: users.id,
+            name: users.name,
+            avatarUrl: users.avatarUrl,
+            role: teamMembers.role,
+          })
+          .from(teamMembers)
+          .innerJoin(users, eq(users.id, teamMembers.userId))
+          .where(eq(teamMembers.teamId, scope.teamId))
+          .orderBy(asc(teamMembers.joinedAt))
+          .limit(6)
+      : Promise.resolve([]),
   ]);
+
+  const dailyMap = new Map(dailyRows.map((r) => [r.day, r.count]));
+  const dailyExecutions = Array.from({ length: 7 }, (_, i) => {
+    const d = startOfDay(i - 6);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    return { date: d.toISOString(), count: dailyMap.get(key) ?? 0 };
+  });
 
   return {
     currentUser,
@@ -166,5 +231,11 @@ export async function getDashboardData() {
     recentDocuments,
     upcomingEvents,
     pendingCards,
+    dailyExecutions,
+    testsByMode: modeRows,
+    teamMembers: members,
+    persona: (currentUser.personaType ?? "entusiasta") as PersonaType,
   };
 }
+
+export type DashboardData = Awaited<ReturnType<typeof getDashboardData>>;

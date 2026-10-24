@@ -21,6 +21,7 @@ import "./style.css"
 
 import type { FieldDefinition, TestEntry } from "@/types/labtest.types";
 import { getFieldValue } from "@/types/labtest.types";
+import { formatWithUnit, toNumber } from "@/utils/labtest/chart-data";
 import { getModeDefinition } from "@/utils/labtest/modes";
 import { entryTotal, maxPossibleTotal } from "@/utils/labtest/stats";
 import { getLabTestViewData } from "../../actions";
@@ -44,14 +45,22 @@ function SummaryChart({ fields, entries }: { fields: FieldDefinition[]; entries:
   const numericFields = fields.filter((field) => field.type === "number");
   if (numericFields.length === 0 || entries.length === 0) return null;
 
-  const data = entries.map((entry, index) => {
-    const point: Record<string, string | number> = { name: `#${index + 1}` };
+  // Dado ausente fica null (antes virava 0 e aparecia como valor real).
+  const data = entries.map((entry) => {
+    const point: Record<string, string | number | null> = {
+      name: `#${entry.executionNumber}`,
+    };
     numericFields.forEach((field) => {
-      const value = getFieldValue(entry.values, field.fieldKey);
-      point[field.fieldKey] = typeof value === "number" ? value : 0;
+      point[field.fieldKey] = toNumber(getFieldValue(entry.values, field.fieldKey));
     });
     return point;
   });
+  const unitByLabel = new Map(numericFields.map((f) => [f.label, f.unit]));
+  const tooltipFormatter = (value: unknown, name: unknown) =>
+    formatWithUnit(
+      typeof value === "number" ? value : null,
+      unitByLabel.get(String(name)),
+    );
 
   return (
     <section className="report-section">
@@ -63,15 +72,15 @@ function SummaryChart({ fields, entries }: { fields: FieldDefinition[]; entries:
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
-              <Line dataKey={numericFields[0].fieldKey} name={numericFields[0].label} stroke="#2563eb" strokeWidth={3} />
+              <Tooltip formatter={tooltipFormatter} labelFormatter={(label) => `Execução ${label}`} />
+              <Line connectNulls dataKey={numericFields[0].fieldKey} name={numericFields[0].label} stroke="#2563eb" strokeWidth={3} />
             </LineChart>
           ) : (
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
+              <Tooltip formatter={tooltipFormatter} labelFormatter={(label) => `Execução ${label}`} />
               {numericFields.map((field, index) => (
                 <Bar key={field.fieldKey} dataKey={field.fieldKey} name={field.label} fill={index % 2 ? "#f59e0b" : "#2563eb"} />
               ))}
@@ -104,7 +113,7 @@ function ExecutionTable({ fields, entries }: { fields: FieldDefinition[]; entrie
             </thead>
             <tbody>
               {entries.map((entry) => {
-                const total = entryTotal(entry, fields);
+                const total = entry.futureEdition?.scores.total ?? entryTotal(entry, fields);
                 return (
                   <tr key={entry.id}>
                     <td>{entry.executionNumber}</td>

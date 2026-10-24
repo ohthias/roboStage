@@ -23,6 +23,7 @@ export default async function FoldersPage() {
         parentId: folders.parentId,
         name: folders.name,
         icon: folders.icon,
+        color: folders.color,
         position: folders.position,
       })
       .from(folders)

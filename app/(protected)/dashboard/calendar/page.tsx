@@ -2,6 +2,8 @@ import { listEventsInRange } from "./actions";
 import { CalendarView } from "./calendar-view";
 import { listMyTeams } from "@/utils/stagebook/actions/teams";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { getResourcesTags } from "@/utils/stagebook/actions/tags";
+import { listMilestones } from "@/utils/stagebook/actions/milestones";
 
 function parseMonthParam(month?: string) {
   if (month && /^\d{4}-\d{2}$/.test(month)) {
@@ -53,6 +55,18 @@ export default async function CalendarPage({
   );
   const teamNames = new Map(teams.map((team) => [team.id, team.name]));
 
+  // Tags e milestones universais dos eventos exibidos.
+  const allIds = [...new Set([...events, ...todayEvents].map((e) => e.id))];
+  const [tagsByEvent, milestoneList] = await Promise.all([
+    getResourcesTags("calendar-event", allIds),
+    listMilestones(),
+  ]);
+  const milestoneById = new Map(milestoneList.map((m) => [m.id, m]));
+  const labelsFor = (e: (typeof events)[number]) => ({
+    tags: tagsByEvent[e.id] ?? [],
+    milestone: e.milestoneId ? (milestoneById.get(e.milestoneId) ?? null) : null,
+  });
+
   return (
     <section className="min-h-full bg-base-100 px-4 py-8 text-base-content sm:px-6 lg:px-8 space-y-8">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -75,12 +89,14 @@ export default async function CalendarPage({
           teamName: e.teamId ? (teamNames.get(e.teamId) ?? "Equipe") : null,
           startAt: e.startAt.toISOString(),
           endAt: e.endAt ? e.endAt.toISOString() : null,
+          ...labelsFor(e),
         }))}
         todayEvents={todayEvents.map((e) => ({
           ...e,
           teamName: e.teamId ? (teamNames.get(e.teamId) ?? "Equipe") : null,
           startAt: e.startAt.toISOString(),
           endAt: e.endAt ? e.endAt.toISOString() : null,
+          ...labelsFor(e),
         }))}
         teams={teams.map(({ id, name }) => ({ id, name }))}
         selectedTeamIds={selectedTeamIds}

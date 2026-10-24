@@ -4,19 +4,26 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Loader2, Trash2, Upload } from "lucide-react";
 import { useEnsureActiveOrganization } from "@/components/stagebook/use-ensure-active-org";
-import { deleteTeamOrganization, updateTeamName } from "../../actions";
+import { deleteTeamOrganization, updateTeamProfile } from "../../actions";
 import { useToast } from "@/app/context/ToastContext";
 
 export function GeneralSettingsPanel({
   teamId,
   clerkOrgId,
   initialName,
+  initialSeason,
+  initialOrganizationName,
   initialLogoUrl,
+  canDeleteTeam,
 }: {
   teamId: string;
   clerkOrgId: string;
   initialName: string;
+  initialSeason: string | null;
+  initialOrganizationName: string | null;
   initialLogoUrl: string | null;
+  /** Só o técnico exclui a equipe (`team.delete`). */
+  canDeleteTeam: boolean;
 }) {
   const router = useRouter();
   const { organization, isReady, failed } = useEnsureActiveOrganization(clerkOrgId);
@@ -30,8 +37,20 @@ export function GeneralSettingsPanel({
         initialLogoUrl={initialLogoUrl}
         onChanged={() => router.refresh()}
       />
-      <NameSection teamId={teamId} initialName={initialName} onChanged={() => router.refresh()} />
-      <DangerZone teamId={teamId} teamName={initialName} />
+      <ProfileSection
+        teamId={teamId}
+        initialName={initialName}
+        initialSeason={initialSeason}
+        initialOrganizationName={initialOrganizationName}
+        onChanged={() => router.refresh()}
+      />
+      {canDeleteTeam ? (
+        <DangerZone teamId={teamId} teamName={initialName} />
+      ) : (
+        <p className="rounded-2xl border border-base-300 bg-base-100 p-4 text-xs text-base-content/55">
+          Excluir a equipe é uma ação do técnico responsável.
+        </p>
+      )}
     </div>
   );
 }
@@ -108,7 +127,7 @@ function PhotoSection({
   }
 
   return (
-    <section className="rounded-2xl border border-base-300 bg-base-200 p-5">
+    <section className="card card-border bg-base-100 p-5">
       <h2 className="font-semibold">Foto da equipe</h2>
       <p className="mt-0.5 text-xs text-base-content/50">Aparece no seletor de equipe e nos convites.</p>
 
@@ -172,64 +191,99 @@ function PhotoSection({
 }
 
 // ---------------------------------------------------------------------------
-// Nome
+// Perfil (nome, temporada, organização/escola)
 // ---------------------------------------------------------------------------
 
-function NameSection({
+function ProfileSection({
   teamId,
   initialName,
+  initialSeason,
+  initialOrganizationName,
   onChanged,
 }: {
   teamId: string;
   initialName: string;
+  initialSeason: string | null;
+  initialOrganizationName: string | null;
   onChanged: () => void;
 }) {
   const [name, setName] = useState(initialName);
+  const [season, setSeason] = useState(initialSeason ?? "");
+  const [organizationName, setOrganizationName] = useState(initialOrganizationName ?? "");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const { addToast } = useToast();
 
-  const dirty = name.trim() !== initialName && name.trim().length > 0;
+  const dirty =
+    name.trim().length > 0 &&
+    (name.trim() !== initialName ||
+      season.trim() !== (initialSeason ?? "") ||
+      organizationName.trim() !== (initialOrganizationName ?? ""));
 
   function save() {
     setError(null);
     startTransition(async () => {
-      try {
-        await updateTeamName(teamId, name.trim());
-        addToast("Nome da equipe atualizado.", "success");
-        onChanged();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Não foi possível salvar o nome.");
-        addToast(err instanceof Error ? err.message : "Não foi possível salvar o nome.", "error");
+      const result = await updateTeamProfile(teamId, {
+        name,
+        season: season || null,
+        organizationName: organizationName || null,
+      });
+      if (!result.ok) {
+        setError(result.error);
+        addToast(result.error, "error");
+        return;
       }
+      addToast("Perfil da equipe atualizado.", "success");
+      onChanged();
     });
   }
 
   return (
-    <section className="rounded-2xl border border-base-300 bg-base-200 p-5">
-      <h2 className="font-semibold">Nome da equipe</h2>
-      <p className="mt-0.5 text-xs text-base-content/50">
-        Aparece em todo o Stagebook e no seletor de contexto.
-      </p>
+    <section className="card card-border bg-base-100 p-5">
+      <h2 className="font-semibold">Perfil da equipe</h2>
+      <p className="mt-0.5 text-xs text-base-content/50">Aparece em todo o Stagebook, no seletor de equipes e nos convites.</p>
 
-      <div className="mt-4 flex items-center gap-2">
-        <input
-          className="input input-bordered input-sm flex-1"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={120}
-        />
-        <button
-          type="button"
-          className="btn btn-primary btn-sm"
-          onClick={save}
-          disabled={!dirty || isPending}
-        >
-          {isPending ? <Loader2 size={14} className="animate-spin" /> : "Salvar"}
-        </button>
-      </div>
+      <form
+        className="mt-4 space-y-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          save();
+        }}
+      >
+        <label className="fieldset">
+          <span className="fieldset-legend">Nome da equipe</span>
+          <input className="input w-full" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
+        </label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="fieldset">
+            <span className="fieldset-legend">Escola / organização</span>
+            <input
+              className="input w-full"
+              value={organizationName}
+              onChange={(e) => setOrganizationName(e.target.value)}
+              maxLength={120}
+            />
+          </label>
+          <label className="fieldset">
+            <span className="fieldset-legend">Temporada</span>
+            <input
+              className="input w-full"
+              placeholder="Ex.: 2026/27"
+              value={season}
+              onChange={(e) => setSeason(e.target.value)}
+              maxLength={40}
+            />
+          </label>
+        </div>
 
-      {error && <p className="mt-2 text-xs text-error">{error}</p>}
+        {error && <p className="text-xs text-error">{error}</p>}
+
+        <div className="flex justify-end">
+          <button type="submit" className="btn btn-primary btn-sm" disabled={!dirty || isPending}>
+            {isPending ? <Loader2 size={14} className="animate-spin" /> : "Salvar alterações"}
+          </button>
+        </div>
+      </form>
     </section>
   );
 }
@@ -251,15 +305,15 @@ function DangerZone({ teamId, teamName }: { teamId: string; teamName: string }) 
   function handleDelete() {
     setError(null);
     startTransition(async () => {
-      try {
-        await deleteTeamOrganization(teamId, confirmText.trim());
-        addToast("Equipe excluída com sucesso.", "success");
-        router.push("/dashboard/team");
-        router.refresh();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Não foi possível excluir a equipe.");
-        addToast(err instanceof Error ? err.message : "Não foi possível excluir a equipe.", "error");
+      const result = await deleteTeamOrganization(teamId, confirmText.trim());
+      if (!result.ok) {
+        setError(result.error);
+        addToast(result.error, "error");
+        return;
       }
+      addToast("Equipe excluída com sucesso.", "success");
+      router.push("/dashboard/team?view=all");
+      router.refresh();
     });
   }
 
@@ -267,7 +321,7 @@ function DangerZone({ teamId, teamName }: { teamId: string; teamName: string }) 
     <section className="rounded-2xl border border-error/30 bg-error/5 p-5">
       <h2 className="font-semibold text-error">Excluir equipe</h2>
       <p className="mt-0.5 text-xs text-base-content/60">
-        Apaga a equipe pra sempre — todas as Páginas, o Calendário, os Boards do Kanban e a
+        Apaga a equipe pra sempre — Páginas, Calendário, Boards do Kanban, marcos e a
         Organização no Clerk. Não pode ser desfeito.
       </p>
 

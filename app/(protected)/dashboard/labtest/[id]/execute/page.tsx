@@ -16,6 +16,8 @@ import { ArrowLeft } from "lucide-react";
 
 import type { FieldDefinition } from "@/types/labtest.types";
 import ExecuteTestForm from "@/components/labtest/ExecuteTestForm";
+import FutureEditionMatch from "@/components/labtest/future-edition/FutureEditionMatch";
+import { getMatchDuration, isFutureEditionConfig } from "@/utils/labtest/future-edition";
 import { getLabTestViewData } from "../../actions";
 
 export default function ExecuteTestPage() {
@@ -57,7 +59,7 @@ export default function ExecuteTestPage() {
 
   return (
     <div className="min-h-screen bg-base-200/40 px-4 py-8">
-      <div className="mx-auto flex max-w-3xl flex-col gap-6">
+      <div className={`mx-auto flex flex-col gap-6 ${test && isFutureEditionConfig(test.config) ? "max-w-6xl" : "max-w-3xl"}`}>
         <Link
           href={`/dashboard/labtest/${testId}`}
           className="flex w-fit items-center gap-1.5 text-sm text-base-content/50 hover:text-base-content"
@@ -75,6 +77,13 @@ export default function ExecuteTestPage() {
             <p className="font-semibold text-error">Não foi possível carregar o teste.</p>
             <p className="mt-2 text-sm text-base-content/60">{error ?? "Teste não encontrado."}</p>
           </div>
+        ) : isFutureEditionConfig(test.config) ? (
+          <FutureEditionMatch
+            testId={test.id}
+            testName={test.name}
+            nextExecutionNumber={nextExecutionNumber}
+            durationSec={getMatchDuration(test.config)}
+          />
         ) : (
           <ExecuteTestForm
             testId={test.id}

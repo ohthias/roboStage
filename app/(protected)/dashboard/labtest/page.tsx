@@ -1,9 +1,12 @@
-import { Layers, Plus } from "lucide-react";
+import { Activity, CheckCircle2, FlaskConical, Layers, Plus, Trophy } from "lucide-react";
 import Link from "next/link";
 import { LabTestCard } from "@/components/labtest/LabTestCard";
+import { StatCard } from "@/components/labtest/shared";
 import { LabTestToolbar } from "@/components/labtest/LabTestToolbar";
-import { MODE_META, type ModeKey } from "@/utils/labtest/catalog";
+import { MODE_META, normalizeStatus, type ModeKey } from "@/utils/labtest/catalog";
 import { listTests } from "./new/actions";
+import { getResourcesTags } from "@/utils/stagebook/actions/tags";
+import { listMilestones } from "@/utils/stagebook/actions/milestones";
 
 export default async function LabTestPage({
   searchParams,
@@ -36,11 +39,27 @@ export default async function LabTestPage({
     currentPage * pageSize,
   );
 
+  // Tags e milestones universais dos testes exibidos nesta página.
+  const [tagsByTest, milestoneList] = await Promise.all([
+    getResourcesTags("labtest", paginatedTests.map((t) => t.id)),
+    listMilestones(),
+  ]);
+  const milestoneById = new Map(milestoneList.map((m) => [m.id, m]));
+  const labeledTests = paginatedTests.map((test) => ({
+    ...test,
+    tags: tagsByTest[test.id] ?? [],
+    milestone: test.milestoneId ? (milestoneById.get(test.milestoneId) ?? null) : null,
+  }));
+
+  const countBy = (predicate: (t: (typeof tests)[number]) => boolean) =>
+    tests.filter(predicate).length;
+  const viewQuery = viewMode === "grid" ? "&visualizacao=grid" : "";
+
   return (
-    <div className="min-h-full bg-base-100 px-4 py-8 text-base-content sm:px-6 lg:px-8">
+    <div className="min-h-full bg-base-200/40 px-4 py-8 text-base-content sm:px-6 lg:px-8">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
+          <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
             Lab<span className="text-primary">Test</span>
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
@@ -48,35 +67,53 @@ export default async function LabTestPage({
             teste, seja nos desafios das competições ou testes isolados.
           </p>
         </div>
+        <LabTestToolbar viewMode={viewMode} validMode={validMode} />
       </header>
-      <nav className="flex w-full items-center justify-between">
-        <div className="flex items-center gap-6">
-          <div className="flex h-full items-center gap-1">
-            <Link
-              href="/dashboard/labtest"
-              className="relative px-3 py-3 text-sm font-medium text-base-content"
-            >
-              Geral
-              <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" />
-            </Link>
 
-            <Link
-              href="/dashboard/labtest/analytics"
-              className="px-3 py-3 text-sm font-medium pointer-events-none cursor-none text-base-content/50"
-            >
-              Anatix - Em breve
-            </Link>
-          </div>
+      <section className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Resumo dos testes">
+        <StatCard label="Total de testes" value={tests.length} sub="criados pela equipe" icon={FlaskConical} accent="primary" />
+        <StatCard label="Em andamento" value={countBy((t) => normalizeStatus(t.status) === "em_andamento")} sub="testes ativos agora" icon={Activity} accent="secondary" />
+        <StatCard label="Concluídos" value={countBy((t) => normalizeStatus(t.status) === "concluido")} sub="finalizados" icon={CheckCircle2} accent="info" />
+        <StatCard label="Runs de competição" value={countBy((t) => t.mode === "runs")} sub="pontuação por temporada" icon={Trophy} accent="accent" />
+      </section>
+
+      <nav className="mt-8 flex flex-wrap items-center justify-between gap-3">
+        <div role="tablist" className="tabs tabs-box bg-base-100">
+          <Link role="tab" href="/dashboard/labtest" className="tab tab-active">
+            Geral
+          </Link>
+          <span role="tab" aria-disabled="true" className="tab tab-disabled">
+            Anatix · em breve
+          </span>
         </div>
 
-        <LabTestToolbar viewMode={viewMode} validMode={validMode} />
+        <div className="flex flex-wrap items-center gap-1.5" aria-label="Filtrar por modo">
+          <Link
+            href={`/dashboard/labtest?${viewQuery.slice(1)}`}
+            className={`btn btn-sm rounded-full ${!validMode ? "btn-primary" : "btn-ghost border-base-300 bg-base-100"}`}
+          >
+            Todos
+          </Link>
+          {Object.entries(MODE_META).map(([mode, meta]) => {
+            const ModeIcon = meta.icon;
+            return (
+              <Link
+                key={mode}
+                href={`/dashboard/labtest?modo=${mode}${viewQuery}`}
+                className={`btn btn-sm gap-1.5 rounded-full ${validMode === mode ? "btn-primary" : "btn-ghost border-base-300 bg-base-100"}`}
+              >
+                <ModeIcon size={14} />
+                {meta.label}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
-      <div className="h-px bg-gradient-to-r from-primary/30 via-base-300 to-transparent" />
 
       <main className="flex-1">
         {/* Empty state */}
         {filteredTests.length === 0 ? (
-          <div className="mt-6 flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-base-300 bg-base-200/20 px-6 py-16 text-center">
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-base-300 bg-base-100 px-6 py-16 text-center">
             <Layers className="size-9 text-base-content/20" />
 
             <p className="text-sm font-medium text-base-content">
@@ -116,7 +153,7 @@ export default async function LabTestPage({
                 : "mt-6 flex flex-col gap-3"
             }
           >
-            {paginatedTests.map((test) => (
+            {labeledTests.map((test) => (
               <LabTestCard key={test.id} test={test} viewMode={viewMode} />
             ))}
           </div>
@@ -135,7 +172,7 @@ export default async function LabTestPage({
                 <Link
                   key={page}
                   href={`/dashboard/labtest?${query.toString()}`}
-                  className={`btn btn-sm ${
+                  className={`btn btn-sm btn-circle ${
                     page === currentPage ? "btn-primary" : "btn-ghost"
                   }`}
                 >

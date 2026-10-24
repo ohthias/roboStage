@@ -1,5 +1,6 @@
 "use client";
 
+import { MilestoneChip } from "@/components/stagebook/labels/milestone-chip";
 import { CalendarDays, Clock3, List, Table2 } from "lucide-react";
 
 type Column = { id: string; name: string; color: string | null };
@@ -12,7 +13,7 @@ type Card = {
   priority: string;
   milestoneId: string | null;
 };
-type Milestone = { id: string; name: string; dueAt: string | Date | null };
+type Milestone = { id: string; name: string; color?: string | null; dueAt: string | Date | null };
 
 function formatDate(value: string | Date | null) {
   return value ? new Date(value).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "Sem prazo";
@@ -51,7 +52,7 @@ export function BoardAlternativeViews({
                 <td>{columnById.get(card.columnId)?.name ?? "Sem coluna"}</td>
                 <td><span className="badge badge-ghost">{card.priority}</span></td>
                 <td>{formatDate(card.dueAt)}</td>
-                <td>{card.milestoneId ? milestoneById.get(card.milestoneId)?.name ?? "—" : "—"}</td>
+                <td>{card.milestoneId && milestoneById.get(card.milestoneId) ? <MilestoneChip milestone={{ ...milestoneById.get(card.milestoneId)!, color: milestoneById.get(card.milestoneId)!.color ?? null, dueAt: null }} showDate={false} size="xs" /> : "—"}</td>
               </tr>
             ))}
           </tbody>

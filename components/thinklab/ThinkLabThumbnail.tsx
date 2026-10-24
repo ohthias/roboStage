@@ -7,9 +7,15 @@ import { exportToSvgString } from '@/utils/thinklab/svg-exporter';
 interface ThinkLabThumbnailProps {
   elements: CanvasElement[];
   name: string;
+  /** Classes de tamanho/forma do contêiner (padrão: cartão de 11rem de altura). */
+  className?: string;
 }
 
-export function ThinkLabThumbnail({ elements, name }: ThinkLabThumbnailProps) {
+export function ThinkLabThumbnail({
+  elements,
+  name,
+  className = "h-44 rounded-box",
+}: ThinkLabThumbnailProps) {
   const svgMarkup = useMemo(
     () =>
       elements.length > 0
@@ -24,7 +30,7 @@ export function ThinkLabThumbnail({ elements, name }: ThinkLabThumbnailProps) {
   return (
     <div
       aria-label={`Miniatura do quadro ${name}`}
-      className="relative flex h-44 items-center justify-center overflow-hidden rounded-box bg-base-200/70"
+      className={`relative flex items-center justify-center overflow-hidden bg-base-200/70 ${className}`}
       role="img"
     >
       {svgMarkup ? (

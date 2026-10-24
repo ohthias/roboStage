@@ -5,6 +5,7 @@ import {
   Info,
   ListChecks,
   Plus,
+  Timer,
   Trash2,
   X,
 } from "lucide-react";
@@ -48,7 +49,11 @@ export function RunsSection({
   updateAnswerValue,
   updateSubAnswer,
   updateObjectiveAnswer,
+  matchDuration,
+  setMatchDuration,
 }: {
+  matchDuration: number;
+  setMatchDuration: (value: number) => void;
   competitions: Competition[];
   competition: string;
   setCompetition: (value: string) => void;
@@ -89,11 +94,10 @@ export function RunsSection({
    *
    * A identificação é feita através do código/nome da competição.
    */
-  const isFutureEdition =
+  const isFutureEdition = Boolean(
     selectedCompetition?.code?.toLowerCase().includes("future") ||
-    selectedCompetition?.name
-      ?.toLowerCase()
-      .includes("future edition");
+      selectedCompetition?.name?.toLowerCase().includes("future edition"),
+  );
 
   return (
     <div className="flex flex-col gap-5">
@@ -185,28 +189,58 @@ export function RunsSection({
             )}
           </div>
 
-          {/* Aviso Future Edition */}
+          {/* Future Edition: partida cronometrada */}
           {competition && isFutureEdition && (
-            <div className="alert alert-info mt-4 items-start">
-              <Info className="mt-0.5 size-5 shrink-0" />
-
-              <div className="text-sm">
-                <p className="font-semibold">
-                  Future Edition — configuração simplificada
-                </p>
-
-                <p className="mt-1 opacity-80">
-                  A Future Edition funciona de forma semelhante às
-                  competições FRC e FTC e não utiliza a configuração
-                  de missões da Founders Edition.
-                </p>
-
-                <p className="mt-1 opacity-80">
-                  Neste tipo de competição, o teste será vinculado
-                  somente à competição e à temporada selecionadas.
-                  Não é necessário configurar missões ou seus valores.
-                </p>
+            <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
+              <div className="flex items-start gap-3">
+                <Timer className="mt-0.5 size-5 shrink-0 text-primary" />
+                <div className="text-sm">
+                  <p className="font-semibold">Future Edition — partida cronometrada</p>
+                  <p className="mt-1 text-base-content/70">
+                    Todas as missões e a tabela de penalidades da temporada já vêm configuradas. Ao
+                    executar o teste você inicia o cronômetro, pontua durante a partida e, quando o
+                    tempo acaba, a soma final e a análise em gráficos são feitas automaticamente.
+                  </p>
+                </div>
               </div>
+
+              <label className="form-control mt-4 max-w-xs">
+                <div className="label py-1.5">
+                  <span className="label-text text-xs font-semibold uppercase tracking-wide">
+                    Duração da partida
+                  </span>
+                </div>
+                <label className="input input-bordered flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={30}
+                    max={600}
+                    step={5}
+                    className="min-w-0 grow"
+                    value={matchDuration}
+                    onChange={(e) =>
+                      setMatchDuration(Math.min(600, Math.max(30, Number(e.target.value) || 150)))
+                    }
+                  />
+                  <span className="text-base-content/60">segundos</span>
+                </label>
+                <div className="label py-1">
+                  <span className="label-text-alt text-base-content/50">
+                    Padrão de 150 s (2:30). Ajuste se o regulamento da sua liga usar outro tempo.
+                  </span>
+                </div>
+              </label>
+
+              {missions.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {missions.map((m) => (
+                    <span key={m.id} className="badge badge-outline gap-1">
+                      <span className="font-mono">{isFEMission(m) ? m.code : m.id}</span>
+                      {isFEMission(m) ? m.title : m.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

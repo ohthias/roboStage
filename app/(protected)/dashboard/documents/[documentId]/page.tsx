@@ -5,7 +5,8 @@ import { documents, folders } from "@/db/schema";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { scopeWhere } from "@/utils/stagebook/permissions";
 import { NotebookEditor } from "./document-editor";
-import { getDocumentTags } from "../actions";
+import { getResourceTags } from "@/utils/stagebook/actions/tags";
+import { getResourceMilestone } from "@/utils/stagebook/actions/milestones";
 
 export default async function NotebookDocumentPage({
   params,
@@ -24,7 +25,7 @@ export default async function NotebookDocumentPage({
     teamId: folders.teamId,
   });
 
-  const [document, folderOptions, pageOptions, documentTags] = await Promise.all([
+  const [document, folderOptions, pageOptions, documentTags, documentMilestone] = await Promise.all([
     db.query.documents.findFirst({
       where: and(eq(documents.id, documentId), documentScope),
     }),
@@ -38,7 +39,8 @@ export default async function NotebookDocumentPage({
       .from(documents)
       .where(and(documentScope, ne(documents.id, documentId)))
       .orderBy(documents.title),
-    getDocumentTags(documentId),
+    getResourceTags("document", documentId).catch(() => []),
+    getResourceMilestone("document", documentId).catch(() => null),
   ]);
 
   if (!document) notFound();
@@ -52,6 +54,7 @@ export default async function NotebookDocumentPage({
       initialCover={document.cover}
       initialProperties={document.properties ?? {}}
       initialTags={documentTags}
+      initialMilestone={documentMilestone}
       initialContent={document.content}
       currentFolderId={document.folderId}
       currentParentId={document.parentId}

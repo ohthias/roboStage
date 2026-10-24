@@ -10,13 +10,19 @@ import {
   checkpointRate,
   emptyRound,
   formatTime,
-} from "../../../../utils/competitions/obr/scoring";
-import type { Round } from "../../../../utils/competitions/obr/types";
+} from "@/utils/competitions/obr/scoring";
+import type { Round } from "@/utils/competitions/obr/types";
 import Header from "@/components/UI/Header";
+import RoundTimer from "./RoundTimer";
+import { useObrRoundTimer } from "@/utils/competitions/obr/roundTimer";
 
 export default function Pontuador() {
   const [r, setR] = useState<Round>(emptyRound);
   const patch = (p: Partial<Round>) => setR((cur) => ({ ...cur, ...p }));
+  const timer = useObrRoundTimer();
+  // tempo real corrido no round (sem penalidades), limitado a 5:00
+  const timerElapsed = Math.min(ROUND_MAX_SECONDS, timer.state.elapsed);
+  const hasTimerTime = timerElapsed > 0;
   const b = breakdown(r);
   const mm = Math.floor(r.tempo / 60);
   const ss = r.tempo % 60;
@@ -28,6 +34,13 @@ export default function Pontuador() {
         name="Pontuador"
         description="Sua referência para pontuar, acompanhar e avaliar o desempenho nas provas de Resgate da OBR"
         highlight=""
+      />
+
+      <RoundTimer
+        timer={timer}
+        falhas={r.falhas}
+        onFalha={() => setR((cur) => ({ ...cur, falhas: cur.falhas + 1 }))}
+        onResetScore={() => setR(emptyRound())}
       />
 
       <main className="grid min-w-0 grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6">
@@ -211,6 +224,8 @@ export default function Pontuador() {
                     patch({
                       chegada: e.target.checked,
                       desistiu: e.target.checked ? false : r.desistiu,
+                      // usa o tempo do cronômetro, se ele foi usado
+                      ...(e.target.checked && hasTimerTime ? { tempo: timerElapsed } : {}),
                     })
                   }
                 />
@@ -226,12 +241,14 @@ export default function Pontuador() {
                   type="checkbox"
                   className="checkbox checkbox-error"
                   checked={r.desistiu}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     patch({
                       desistiu: e.target.checked,
                       chegada: e.target.checked ? false : r.chegada,
-                    })
-                  }
+                    });
+                    // fim da rodada anunciado: para o cronômetro
+                    if (e.target.checked) timer.dispatch({ type: "FINISH" });
+                  }}
                 />
                 <span>
                   Capitão anunciou FIM DA RODADA{" "}
@@ -274,6 +291,17 @@ export default function Pontuador() {
                   }
                 />
                 <span>s</span>
+                {hasTimerTime && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-xs ml-1"
+                    disabled={!r.chegada}
+                    onClick={() => patch({ tempo: timerElapsed })}
+                    title="Preencher com o tempo corrido no cronômetro"
+                  >
+                    Usar cronômetro ({formatTime(timerElapsed)})
+                  </button>
+                )}
               </div>
               <p className="text-xs opacity-60">
                 Sem chegada, desistência ou estouro dos 5 minutos, o tempo

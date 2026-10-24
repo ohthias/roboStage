@@ -24,6 +24,7 @@ import {
 } from "./actions";
 import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
 import { MilestoneSelector } from "@/components/stagebook/labels/milestone-selector";
+import { DocIcon } from "@/components/editor/doc-icon";
 import type { MilestoneDTO } from "@/types/labels";
 
 type Card = {
@@ -268,7 +269,10 @@ export function CardModal({
                   {availablePages.length === 0 ? <span className="text-xs text-base-content/40">Nenhuma página.</span> : availablePages.map((p) => (
                     <label key={p.id} className="flex items-center gap-2 rounded-md px-1 py-1 text-xs hover:bg-base-200">
                       <input type="checkbox" className="checkbox checkbox-xs" checked={linkedPageIds.includes(p.id)} onChange={() => togglePageLink(p.id)} />
-                      <span className="truncate">{p.icon ?? "📝"} {p.title}</span>
+                      <span className="flex min-w-0 items-center gap-1 truncate">
+                        <DocIcon value={p.icon} size={16} />
+                        <span className="truncate">{p.title}</span>
+                      </span>
                     </label>
                   ))}
                 </div>

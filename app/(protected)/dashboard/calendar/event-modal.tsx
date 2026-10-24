@@ -17,6 +17,7 @@ import type { CalendarEventClient } from "./calendar-view";
 import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
 import { TagSelector } from "@/components/stagebook/labels/tag-selector";
 import { MilestoneSelector } from "@/components/stagebook/labels/milestone-selector";
+import { DocIcon } from "@/components/editor/doc-icon";
 import { toggleResourceTag } from "@/utils/stagebook/actions/tags";
 import { setResourceMilestone } from "@/utils/stagebook/actions/milestones";
 import type { MilestoneDTO, TagDTO } from "@/types/labels";
@@ -214,7 +215,8 @@ export function EventModal({
                         checked={linkedPageIds.includes(page.id)}
                         onChange={() => toggleLink(page.id)}
                       />
-                      {page.icon ?? "📝"} {page.title}
+                      <DocIcon value={page.icon} size={16} />
+                      <span className="truncate">{page.title}</span>
                     </label>
                   ))
                 )}

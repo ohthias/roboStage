@@ -35,9 +35,5 @@ export default async function ConfereAiPage({ params }: Props) {
   const { competicao } = await params;
   if (!isConfereAICompetition(competicao)) notFound();
 
-  return (
-    <main className="min-h-screen bg-base-200/40">
-      <ConfereAI key={competicao} competicao={competicao} />
-    </main>
-  );
+  return <ConfereAI key={competicao} competicao={competicao} />;
 }

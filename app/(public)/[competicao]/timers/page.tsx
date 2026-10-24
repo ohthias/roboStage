@@ -22,31 +22,31 @@ export default async function TimersPage({ params }: Props) {
   if (timers.length === 0) notFound();
 
   return (
-    <div className="bg-base-200/40 min-h-screen">
-      <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
-        <Header
-          type="Timers"
-          name="Controle o tempo"
-          highlight="do treino à competição"
-          description="Timers pensados para a realidade das equipes."
-        />
+    <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+      <Header
+        type="Timers"
+        name="Controle o tempo"
+        highlight="do treino à competição"
+        description="Timers pensados para a realidade das equipes."
+      />
 
-        <section className="my-8">
-          <div className={`grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 w-full`}>
-            {timers.map((timer) => (
-              <Link key={timer.slug} href={`/${competicao}/timers/${timer.slug}`}>
-                <MenuCard
-                  title={timer.title}
-                  description={timer.description}
-                  icon={timer.icon}
-                  color={timer.color}
-                />
-              </Link>
-            ))}
-          </div>
-        </section>
-      </main>
-    </div>
+      <section className="my-8">
+        <div
+          className={`grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 w-full`}
+        >
+          {timers.map((timer) => (
+            <Link key={timer.slug} href={`/${competicao}/timers/${timer.slug}`}>
+              <MenuCard
+                title={timer.title}
+                description={timer.description}
+                icon={timer.icon}
+                color={timer.color}
+              />
+            </Link>
+          ))}
+        </div>
+      </section>
+    </main>
   );
 }

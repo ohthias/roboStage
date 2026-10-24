@@ -4,6 +4,13 @@ export enum Category {
   INNOVATION_PROJECT = 'Projeto de Inovação',
   ROBOT_DESIGN = 'Design do Robô',
   BIOGLOW = 'BIOGLOW',
+  // OBR
+  OBR_MECHANICS = 'Mecânica e Estrutura',
+  OBR_SENSORS = 'Sensores',
+  OBR_PROGRAMMING = 'Programação',
+  OBR_TRACK = 'Desafios da Pista',
+  OBR_RESCUE = 'Área de Resgate',
+  OBR_STRATEGY = 'Estratégia de Prova',
 }
 
 export interface Question {
@@ -28,6 +35,11 @@ export interface GameState {
 
 export interface FlashQAMode {
   name: string;
+  /** destaque do header (ex.: "Flashcards FLL") */
+  highlight?: string;
+  description?: string;
+  /** pergunta usada no card de exemplo da tela inicial */
+  sampleQuestion?: string;
   questions: Question[];
   categories: Category[];
   defaultSettings: GameSettings;

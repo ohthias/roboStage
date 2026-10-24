@@ -1,55 +1,14 @@
-"use client";
+import { notFound } from "next/navigation";
+import RecallApp from "./RecallApp";
+import { isRecallCompetition } from "./modes";
 
-import SetupScreen from "@/components/FlashQA/SetupScreen";
-import FlashcardScreen from "@/components/FlashQA/FlashcardScreen";
-import ResultScreen from "@/components/FlashQA/ResultScreen";
-import { useFlashQA } from "./useFlashQA";
-import { FLL_MODE } from "./modes/FLL";
-import Breadcrumbs from "@/components/UI/Breadcrumbs";
+type Props = {
+  params: Promise<{ competicao: string }>;
+};
 
-export default function RecallPage() {
-  const { gameState, settings, startGame, finishGame, restartGame, goHome } =
-    useFlashQA(FLL_MODE);
+export default async function RecallPage({ params }: Props) {
+  const { competicao } = await params;
+  if (!isRecallCompetition(competicao)) notFound();
 
-  return (
-    <div className="px-8 md:px-16 py-4 pb-12">
-      <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
-        <div className="w-full">
-          {gameState.status === "setup" && <SetupScreen onStart={startGame} />}
-
-          {gameState.status === "playing" &&
-            gameState.selectedQuestions.length > 0 && (
-              <FlashcardScreen
-                questions={gameState.selectedQuestions}
-                settings={settings}
-                onFinish={finishGame}
-                onExit={goHome}
-              />
-            )}
-
-          {gameState.status === "playing" &&
-            gameState.selectedQuestions.length === 0 && (
-              <div className="text-center p-10">
-                <p className="text-red-500 font-bold">
-                  Nenhuma pergunta encontrada.
-                </p>
-                <button onClick={goHome} className="mt-4 underline">
-                  Voltar
-                </button>
-              </div>
-            )}
-
-          {gameState.status === "finished" && (
-            <ResultScreen
-              totalQuestions={gameState.selectedQuestions.length}
-              flaggedCount={gameState.answers.filter((a) => a.flagged).length}
-              onRestart={restartGame}
-              onHome={goHome}
-            />
-          )}
-        </div>
-      </main>
-    </div>
-  );
+  return <RecallApp key={competicao} competicao={competicao} />;
 }

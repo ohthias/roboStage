@@ -110,7 +110,7 @@ export const PersonaModal: React.FC<PersonaModalProps> = ({
   };
 
   return (
-    <div className="modal modal-open">
+    <div className="modal modal-open modal-bottom sm:modal-middle">
       <div className="modal-box max-w-md relative bg-base-100">
         <button
           onClick={onClose}
@@ -206,7 +206,7 @@ export const PersonaModal: React.FC<PersonaModalProps> = ({
               onChange={(e) => setName(e.target.value)}
               required
               placeholder="Ex: Marina Santos"
-              className="input input-bordered input-sm w-full text-xs"
+              className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
             />
           </div>
 
@@ -219,7 +219,7 @@ export const PersonaModal: React.FC<PersonaModalProps> = ({
               value={role}
               onChange={(e) => setRole(e.target.value)}
               placeholder="Ex: Product Manager & Mãe de 2 filhos"
-              className="input input-bordered input-sm w-full text-xs"
+              className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
             />
           </div>
 
@@ -232,7 +232,7 @@ export const PersonaModal: React.FC<PersonaModalProps> = ({
               value={quote}
               onChange={(e) => setQuote(e.target.value)}
               placeholder='Ex: "Só quero que o dinheiro funcione em paz sem burocracia."'
-              className="input input-bordered input-sm w-full text-xs"
+              className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
             />
           </div>
 
@@ -245,7 +245,7 @@ export const PersonaModal: React.FC<PersonaModalProps> = ({
               value={avatarUrl}
               onChange={(e) => setAvatarUrl(sanitizeAvatarUrl(e.target.value))}
               placeholder="https://exemplo.com/foto.jpg"
-              className="input input-bordered input-sm w-full text-xs"
+              className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
             />
           </div>
 

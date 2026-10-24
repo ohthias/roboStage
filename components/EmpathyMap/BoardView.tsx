@@ -83,6 +83,14 @@ export const BoardView: React.FC<BoardViewProps> = ({
     }
   };
 
+  const scrollToQuadrant = (catId: EmpathyCategory) => {
+    document
+      .getElementById(`em-quadrant-${catId}`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const categoryOrder = QUADRANTS.map((q) => q.id);
+
   const handleAddClick = (catId: EmpathyCategory) => {
     const text = (quickInput[catId] || '').trim();
     if (text) {
@@ -92,7 +100,32 @@ export const BoardView: React.FC<BoardViewProps> = ({
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-7xl mx-auto">
+    <div className="sm:p-4 lg:p-6 max-w-7xl mx-auto">
+      {/* Atalhos de quadrante (só celular) */}
+      <nav
+        aria-label="Ir para quadrante"
+        className="md:hidden sticky top-0 z-30 -mx-4 mb-3 px-4 py-2 bg-base-100/90 backdrop-blur-sm border-b border-base-200"
+      >
+        <div className="flex gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {QUADRANTS.map(({ id: catId, icon: IconComponent }) => {
+            const config = CATEGORIES[catId];
+            const count = notes.filter((n) => n.category === catId).length;
+            return (
+              <button
+                key={catId}
+                type="button"
+                onClick={() => scrollToQuadrant(catId)}
+                className="btn btn-sm btn-ghost border border-base-300 rounded-full shrink-0 gap-1.5 font-semibold"
+              >
+                <IconComponent className="w-3.5 h-3.5" style={{ color: config.accentColor }} />
+                <span>{config.title}</span>
+                <span className="font-mono text-xs opacity-60 tabular-nums">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
       <div
         ref={boardRef}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
@@ -105,6 +138,7 @@ export const BoardView: React.FC<BoardViewProps> = ({
           return (
             <div
               key={catId}
+              id={`em-quadrant-${catId}`}
               onDragOver={(e) => handleDragOver(e, catId)}
               onDragLeave={() => handleDragLeave(catId)}
               onDrop={(e) => handleDrop(e, catId)}
@@ -112,7 +146,7 @@ export const BoardView: React.FC<BoardViewProps> = ({
                 isTarget
                   ? 'border-primary ring-2 ring-primary/40 bg-primary/5'
                   : 'border-base-200 hover:border-base-300'
-              } min-h-[340px]`}
+              } scroll-mt-16 md:scroll-mt-24 md:min-h-[340px]`}
             >
               <div>
                 {/* Quadrant Header */}
@@ -151,15 +185,18 @@ export const BoardView: React.FC<BoardViewProps> = ({
                       setQuickInput((prev) => ({ ...prev, [catId]: e.target.value }))
                     }
                     onKeyDown={(e) => handleKeyDown(e, catId)}
-                    placeholder="+ Adicionar nota (Enter)"
-                    className="input input-bordered input-sm w-full text-xs"
+                    placeholder="+ Adicionar nota"
+                    enterKeyHint="send"
+                    aria-label={`Adicionar nota em ${config.title}`}
+                    className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
                   />
                   {quickInput[catId]?.trim() && (
                     <button
                       onClick={() => handleAddClick(catId)}
                       type="button"
-                      className="btn btn-primary btn-sm btn-square shrink-0"
+                      className="btn btn-primary btn-md sm:btn-sm btn-square shrink-0"
                       title="Adicionar nota"
+                      aria-label="Adicionar nota"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -177,13 +214,15 @@ export const BoardView: React.FC<BoardViewProps> = ({
                       onChangeColor={onChangeNoteColor}
                       onDelete={onDeleteNote}
                       onDragStart={handleDragStart}
+                      onChangeCategory={onChangeCategory}
+                      categoryOrder={categoryOrder}
                     />
                   ))}
 
                   {catNotes.length === 0 && (
                     <div className="border border-dashed border-base-300 rounded-xl p-4 text-center">
                       <span className="text-xs text-base-content/50">
-                        Nenhuma nota ainda. Digite acima ou arraste para cá.
+                        Nenhuma nota ainda. Digite acima ou mova uma nota para cá.
                       </span>
                     </div>
                   )}

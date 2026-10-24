@@ -14,6 +14,7 @@ const publicRoutePatterns = [
   "/legal(.*)",
   "/licences(.*)",
   "/news(.*)",
+  "/bastidores(.*)",
   "/onboarding",
   "/api/data/missions(.*)",
   "/api/data/fllDocs(.*)",

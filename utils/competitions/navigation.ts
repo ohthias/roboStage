@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Trophy, Code, Bot, UserSearch } from "lucide-react";
+import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Code, Bot, UserSearch, PencilRuler } from "lucide-react";
 
 export type NavMenuItem = {
   nome: string;
@@ -7,6 +7,7 @@ export type NavMenuItem = {
   icon: LucideIcon;
   description?: string;
   new?: boolean;
+  update?: boolean;
 };
 
 export type NavMenuGroup = {
@@ -14,6 +15,7 @@ export type NavMenuGroup = {
   label: string;
   icon: LucideIcon;
   new?: boolean;
+  update?: boolean;
   items: NavMenuItem[];
 };
 
@@ -23,7 +25,7 @@ export const NAVIGATION = {
     icon: ToyBrick,
     scorePath: "score",
     options: [
-      { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false },
+      { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false, update: false },
       { nome: "Future Edition", path: "future-edition", icon: Gamepad2 },
     ],
     menus: [
@@ -34,7 +36,7 @@ export const NAVIGATION = {
         items: [
           { nome: "Recall", path: "recall", icon: MessageSquare, description: "Reavaliação de conceitos por meio de flashcards" },
           { nome: "Rúbrica de Avaliação", path: "rubric", icon: NotepadText, description: "Ferramenta de avaliação interativa para competições de robótica" },
-          { nome: "Mapa de Empatia", path: "empathy-map", icon: UserSearch, description: "Ferramenta para análise de empatia com o profissional alvo", new: true },
+          { nome: "Mapa de Empatia", path: "empathy-map", icon: UserSearch, description: "Ferramenta para análise de empatia com o profissional alvo", new: false, update: true },
           { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para competições" },
           { nome: "Partiu Mesa!", path: "partiu-mesa", icon: MonitorDot, description: "Simulador de simples para teste de saídas. Para análise de desempenho do robô durante um teste de saída." },
           { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento." },
@@ -65,9 +67,31 @@ export const NAVIGATION = {
     scorePath: "score",
     options: [
       { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false },
-      { nome: "Anatix", path: "anatix", icon: Code, new: false },
+      { nome: "Bastidores", path: "bastidores", icon: PencilRuler, new: true },
+      { nome: "Anatix", path: "anatix", icon: Code, new: false, update: true },
       { nome: "Documentação", path: "docs", icon: BookOpen, new: false },
     ],
-    menus: [],
+    menus: [
+      {
+        key: "tools",
+        label: "Ferramentas",
+        icon: ToolCase,
+        items: [
+          { nome: "Recall", path: "recall", icon: MessageSquare, description: "Reavaliação de conceitos por meio de flashcards", update: true },
+           { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para competições", update: true },
+           { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento.", update: true },
+        ]
+      }
+    ] satisfies NavMenuGroup[],
   },
 };
+
+export const NAVIGATION_MAIN_LINKS = [
+  { href: "/about", label: "Sobre", new: false },
+  { href: "/labtest", label: "LabTest", icon: MonitorDot, new: false},
+  { href: "/stagebook", label: "Stagebook", icon: BookOpen, new: false },
+  { href: "/showlive", label: "ShowLive", icon: Telescope, new: false },
+  { href: "/roboticar", label: "Roboticar", icon: Cuboid, new: true },
+  { href: "/news", label: "Notícias", icon: NotepadText, new: false },
+  { href: "/help", label: "Ajuda", icon: MessageSquare, new: false, update: true }, 
+];

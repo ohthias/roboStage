@@ -7,17 +7,8 @@ import { ChevronDown, Menu, Trophy, X, ChevronUp } from "lucide-react";
 
 import Logo from "./Logo";
 import { ThemeController } from "./themeController";
-import { NAVIGATION } from "@/utils/competitions/navigation";
+import { NAVIGATION, NAVIGATION_MAIN_LINKS} from "@/utils/competitions/navigation";
 import { Show, UserAvatar } from "@clerk/nextjs";
-
-const mainLinks = [
-  { href: "/about", label: "Sobre" },
-  { href: "/labtest", label: "LabTest" },
-  { href: "/stagebook", label: "Stagebook" },
-  { href: "/showlive", label: "ShowLive" },
-  { href: "/news", label: "Notícias" },
-  { href: "/help", label: "Ajuda" },
-];
 
 export function Navbar() {
   const params = useParams();
@@ -275,9 +266,14 @@ export function Navbar() {
                       >
                         <Icon size={16} className="flex-shrink-0" />
                         <span>{item.nome}</span>
-                        {item.new && (
-                          <span className="badge badge-sm badge-primary absolute right-2 top-2 text-[0.55rem] font-bold">
+                        {"new" in item && item.new && (
+                          <span className="badge badge-sm badge-primary absolute -right-2 -top-2 text-[0.55rem] font-bold">
                             Novo
+                          </span>
+                        )}
+                        {"update" in item && item.update && (
+                          <span className="badge badge-sm badge-secondary absolute -right-2 -top-2 text-[0.55rem] font-bold">
+                            Atualizado
                           </span>
                         )}
                       </Link>
@@ -340,10 +336,15 @@ export function Navbar() {
                                       {item.description || "Ferramenta"}
                                     </span>
                                   </span>
-                                  {item.new && (
+                                  {"new" in item && item.new && (
                                     <span className="badge badge-sm badge-primary absolute right-2 top-2 text-[0.55rem] font-bold">
                                       Novo
                                     </span>
+                                  )}
+                                  {"update" in item && item.update && (
+                                    <span className="badge badge-sm badge-secondary absolute right-2 top-2 text-[0.55rem] font-bold">
+                                      Atualizado
+                                      </span>
                                   )}
                                 </Link>
                               </li>
@@ -359,7 +360,7 @@ export function Navbar() {
 
             {showMainNav && (
               <>
-                {mainLinks.map((item) => {
+                {NAVIGATION_MAIN_LINKS.map((item) => {
                   const active = isActive(item.href);
                   return (
                     <Link
@@ -368,7 +369,18 @@ export function Navbar() {
                       className={navItemClass(active)}
                       aria-current={active ? "page" : undefined}
                     >
+                      {item.icon && <item.icon size={16} className="flex-shrink-0" />}
                       <span>{item.label}</span>
+                      {"new" in item && item.new && (
+                        <span className="badge badge-xs badge-primary absolute -top-2 -right-2 text-[0.55rem] font-bold">
+                          Novo
+                        </span>
+                      )}
+                      {"update" in item && item.update && (
+                        <span className="badge badge-xs badge-secondary absolute -top-2 -right-2 text-[0.55rem] font-bold">
+                          Atualizado
+                        </span>
+                      )}
                     </Link>
                   );
                 })}
@@ -635,10 +647,15 @@ export function Navbar() {
                                         {item.description || "Ferramenta"}
                                       </span>
                                     </span>
-                                    {item.new && (
-                                      <span className="badge badge-sm badge-primary absolute right-2 top-2 text-[0.55rem] font-bold">
+                                    {"new" in item && item.new && (
+                                      <span className="badge badge-sm badge-primary absolute -top-2 -right-2 text-[0.55rem] font-bold">
                                         Novo
                                       </span>
+                                    )}
+                                    {"update" in item && item.update && (
+                                      <span className="badge badge-sm badge-secondary absolute -top-2 -right-2 text-[0.55rem] font-bold">
+                                        Atualizado
+                                        </span>
                                     )}
                                   </Link>
                                 </li>
@@ -653,7 +670,7 @@ export function Navbar() {
               </div>
             ) : (
               <div className="space-y-2">
-                {mainLinks.map((item) => {
+                {NAVIGATION_MAIN_LINKS.map((item) => {
                   const active = isActive(item.href);
                   return (
                     <Link

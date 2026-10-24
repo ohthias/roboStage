@@ -1,35 +1,13 @@
 import Header from "@/components/UI/Header";
 import { MenuCard } from "@/components/Timers/MenuCard";
-import { Trophy, BookOpen, Clock } from "lucide-react";
 import Link from "next/link";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getTimers } from "./config";
 
-const timers = [
-  {
-    slug: "robot-game",
-    title: "Round do Robô",
-    description:
-      "Timer de rodada oficial para competições FLL, com contagem regressiva, alertas sonoros e visuais.",
-    icon: Trophy,
-    color: "primary",
-  },
-  {
-    slug: "judging",
-    title: "Sala de Avaliação",
-    description:
-      "Controle completo do tempo de Entrada, Apresentação, Perguntas e Feedback.",
-    icon: BookOpen,
-    color: "secondary",
-  },
-  {
-    slug: "custom",
-    title: "Timer Ajustável",
-    description:
-      "Timer personalizável para treinos, apresentações ou qualquer outra necessidade.",
-    icon: Clock,
-    color: "success",
-  },
-];
+type Props = {
+  params: Promise<{ competicao: string }>;
+};
 
 export const metadata: Metadata = {
   title: "Timers | RoboStage",
@@ -37,7 +15,12 @@ export const metadata: Metadata = {
     "Controle o tempo do treino à competição com timers pensados para a realidade das equipes.",
 };
 
-export default function TimersPage() {
+export default async function TimersPage({ params }: Props) {
+  const { competicao } = await params;
+  const timers = getTimers(competicao);
+
+  if (timers.length === 0) notFound();
+
   return (
     <div className="bg-base-200/40 min-h-screen">
       <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
@@ -50,9 +33,9 @@ export default function TimersPage() {
         />
 
         <section className="my-8">
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className={`grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 w-full`}>
             {timers.map((timer) => (
-              <Link key={timer.slug} href={`/fll/timers/${timer.slug}`}>
+              <Link key={timer.slug} href={`/${competicao}/timers/${timer.slug}`}>
                 <MenuCard
                   title={timer.title}
                   description={timer.description}

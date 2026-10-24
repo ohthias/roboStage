@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Code, Bot, UserSearch, PencilRuler, LayoutGrid } from "lucide-react";
+import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Code, Bot, UserSearch, LayoutGrid, Clapperboard } from "lucide-react";
 
 /** Item de menu de competição: `path` é relativo a `/{competicao}/`. */
 export type NavMenuItem = {
@@ -91,7 +91,7 @@ export const NAVIGATION = {
         icon: BookOpen,
         items: [
           { nome: "Documentações", path: "docs", icon: BookOpen, description: "Documentos e materiais de apoio para competição." },
-          { nome: "Bastidores", path: "bastidores", icon: PencilRuler, description: "O que sua equipe precisa para brilhar no palco. Recursos que auxiliam no desenvolvimento do seu robÔ.", new: true },
+          { nome: "Bastidores", path: "bastidores", icon: Clapperboard, description: "O que sua equipe precisa para brilhar no palco. Recursos que auxiliam no desenvolvimento do seu robô.", new: true },
         ],
       },
     ] satisfies NavMenuGroup[],

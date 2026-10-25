@@ -1,15 +1,17 @@
 import { ShieldAlert } from "lucide-react";
 import { resolveStagebookScope, requireStagebookAccess, StagebookAuthError } from "@/utils/stagebook/scope";
-import { TeamContent } from "../team-content";
+import { TeamContent, parseTab } from "../team-content";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function TeamByIdPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
-  const { id } = await params;
+  const [{ id }, { tab }] = await Promise.all([params, searchParams]);
 
   if (!UUID_RE.test(id)) {
     return <NoAccess />;
@@ -32,7 +34,7 @@ export default async function TeamByIdPage({
   const activeScope = await resolveStagebookScope();
   const isActiveScope = activeScope.type === "team" && activeScope.teamId === id;
 
-  return <TeamContent scope={scope} isActiveScope={isActiveScope} />;
+  return <TeamContent scope={scope} isActiveScope={isActiveScope} tab={parseTab(tab)} />;
 }
 
 function NoAccess() {

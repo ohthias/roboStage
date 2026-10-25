@@ -2,27 +2,31 @@ import type { ReactNode } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { NavLinks } from "./nav-links";
 import Logo from "@/components/UI/Logo";
-import { CalendarDays, FoldersIcon, Menu, PanelLeft } from "lucide-react";
+import { CalendarDays, FoldersIcon, Lock, Menu, PanelLeft } from "lucide-react";
 import { ThemeController } from "@/components/UI/themeController";
 import { ScopeSwitcher } from "@/components/stagebook/scope-switcher";
 import { NotificationsBell } from "@/components/stagebook/notifications-bell";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { listMyTeams, canCurrentUserCreateTeam } from "@/utils/stagebook/actions/teams";
 import { listUnreadNotifications } from "@/utils/stagebook/actions/notifications";
+import { getUserPreferences } from "@/utils/stagebook/actions/preferences";
+import { LayoutPrefsProvider, SidebarPosition } from "@/components/stagebook/layout-prefs";
 import Link from "next/link";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const [scope, teams, notifications, canCreateTeam] = await Promise.all([
+  const [scope, teams, notifications, canCreateTeam, prefs] = await Promise.all([
     resolveStagebookScope(),
     listMyTeams(),
     listUnreadNotifications(),
     canCurrentUserCreateTeam(),
+    getUserPreferences(),
   ]);
   const activeTeamId = scope.type === "team" ? scope.teamId : null;
 
   return (
-    <div className="drawer lg:drawer-open" data-theme="labtest">
+    <div className="drawer lg:drawer-open" data-theme="labtest" data-layout-locked={prefs.layoutLocked || undefined}>
       <input id="lt-drawer" type="checkbox" className="drawer-toggle" />
+      <SidebarPosition expanded={prefs.sidebarExpanded} locked={prefs.layoutLocked} />
 
       <div className="drawer-content flex flex-col min-h-screen bg-base-100">
         {/* Navbar */}
@@ -55,7 +59,11 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           </div>
         </div>
 
-        <main className="mx-auto w-full flex-1 bg-base-300/25">{children}</main>
+        <main className="mx-auto w-full flex-1">
+          <LayoutPrefsProvider value={{ locked: prefs.layoutLocked, sidebarExpanded: prefs.sidebarExpanded }}>
+            {children}
+          </LayoutPrefsProvider>
+        </main>
       </div>
 
       {/* Sidebar */}
@@ -72,14 +80,23 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               <Logo logoSize="sm" />
             </div>
 
-            <label
-              htmlFor="lt-drawer"
-              aria-label="Recolher ou expandir menu"
-              data-tip="Expandir menu"
-              className="btn btn-square btn-ghost hidden lg:inline-flex is-drawer-close:tooltip is-drawer-close:tooltip-right transition-all duration-150 hover:bg-base-300/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            >
-              <PanelLeft className="size-4" />
-            </label>
+            {prefs.layoutLocked ? (
+              <span
+                data-tip="Menu travado — altere em Configurações"
+                className="hidden size-8 items-center justify-center text-base-content/35 lg:inline-flex is-drawer-close:tooltip is-drawer-close:tooltip-right"
+              >
+                <Lock className="size-3.5" aria-label="Menu travado" />
+              </span>
+            ) : (
+              <label
+                htmlFor="lt-drawer"
+                aria-label="Recolher ou expandir menu"
+                data-tip="Expandir menu"
+                className="btn btn-square btn-ghost hidden lg:inline-flex is-drawer-close:tooltip is-drawer-close:tooltip-right transition-all duration-150 hover:bg-base-300/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              >
+                <PanelLeft className="size-4" />
+              </label>
+            )}
           </div>
 
           <div className="flex-1 overflow-visible is-drawer-close:px-2 is-drawer-open:px-3 w-full">

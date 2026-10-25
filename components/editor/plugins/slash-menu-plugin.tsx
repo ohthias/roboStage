@@ -5,25 +5,36 @@ import { createPortal } from "react-dom";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
   LexicalTypeaheadMenuPlugin,
-  MenuOption,
   useBasicTypeaheadTriggerMatch,
+  MenuOption
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
 import { INSERT_HORIZONTAL_RULE_COMMAND } from "@lexical/react/LexicalHorizontalRuleNode";
 import { INSERT_TABLE_COMMAND } from "@lexical/table";
 import { $getSelection, $isRangeSelection, type TextNode } from "lexical";
 import {
+  CalendarDays,
   Code2,
+  Columns2,
+  Columns3,
   Heading1,
   Heading2,
   Heading3,
+  FlaskConical,
+  KanbanSquare,
   List,
   ListChecks,
   ListOrdered,
   Minus,
   Pilcrow,
   Quote,
+  Shapes,
   Table2,
 } from "lucide-react";
+import { $insertLayout } from "../nodes/layout-nodes";
+import { OPEN_EMBED_PICKER_COMMAND } from "./embed-plugin";
+import type { EmbedKind } from "../embeds/embed-types";
+import { $insertTemplateAt, TEMPLATES } from "../templates";
+import { DocIcon } from "../doc-icon";
 import {
   $getTopLevelBlock,
   $transformBlock,
@@ -36,6 +47,7 @@ class SlashOption extends MenuOption {
   description: string;
   iconNode: ReactNode;
   keywords: string[];
+  group: string;
   onSelect: () => void;
 
   constructor(
@@ -44,6 +56,7 @@ class SlashOption extends MenuOption {
       description: string;
       icon: ReactNode;
       keywords?: string[];
+      group?: string;
       onSelect: () => void;
     },
   ) {
@@ -52,6 +65,7 @@ class SlashOption extends MenuOption {
     this.description = options.description;
     this.iconNode = options.icon;
     this.keywords = options.keywords ?? [];
+    this.group = options.group ?? "Blocos básicos";
     this.onSelect = options.onSelect;
   }
 }
@@ -80,6 +94,25 @@ export function SlashMenuPlugin() {
         const top = $getTopLevelBlock(selection.anchor.getNode());
         if (top) $transformBlock(top.getKey(), type);
       });
+
+    const insertColumns = (n: 2 | 3) => () =>
+      editor.update(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) $insertLayout(n, selection.anchor.getNode());
+      });
+
+    // Abre o seletor de itens (card, evento, gráfico, quadro). Guarda o bloco
+    // atual: o foco sai do editor enquanto o diálogo está aberto.
+    const openEmbedPicker = (kind: EmbedKind) => () => {
+      const selection = $getSelection();
+      const top = $isRangeSelection(selection)
+        ? $getTopLevelBlock(selection.anchor.getNode())
+        : null;
+      editor.dispatchCommand(OPEN_EMBED_PICKER_COMMAND, {
+        kind,
+        anchorKey: top?.getKey() ?? null,
+      });
+    };
 
     const all = [
       new SlashOption("Texto", {
@@ -136,6 +169,18 @@ export function SlashMenuPlugin() {
         keywords: ["code", "codigo", "snippet", "pre"],
         onSelect: transform("code"),
       }),
+      new SlashOption("2 colunas", {
+        description: "Seção com duas colunas lado a lado",
+        icon: <Columns2 size={18} />,
+        keywords: ["colunas", "coluna", "columns", "duas", "2", "layout", "secao"],
+        onSelect: insertColumns(2),
+      }),
+      new SlashOption("3 colunas", {
+        description: "Seção com três colunas lado a lado",
+        icon: <Columns3 size={18} />,
+        keywords: ["colunas", "coluna", "columns", "tres", "3", "layout", "secao"],
+        onSelect: insertColumns(3),
+      }),
       new SlashOption("Divisor", {
         description: "Linha horizontal separadora",
         icon: <Minus size={18} />,
@@ -155,6 +200,54 @@ export function SlashMenuPlugin() {
           }),
       }),
     ];
+
+    const integrations = [
+      new SlashOption("Card do Kanban", {
+        description: "Mostra um card de qualquer board, sempre atualizado",
+        icon: <KanbanSquare size={18} />,
+        keywords: ["card", "cartao", "kanban", "tarefa", "board", "quadro", "task"],
+        group: "Integrações",
+        onSelect: openEmbedPicker("kanban-card"),
+      }),
+      new SlashOption("Evento do calendário", {
+        description: "Mostra um evento com data, horário e local",
+        icon: <CalendarDays size={18} />,
+        keywords: ["evento", "calendario", "agenda", "data", "reuniao", "prazo", "event"],
+        group: "Integrações",
+        onSelect: openEmbedPicker("calendar-event"),
+      }),
+      new SlashOption("Gráfico do LabTest", {
+        description: "Gráfico dos resultados de um teste do LabTest",
+        icon: <FlaskConical size={18} />,
+        keywords: ["grafico", "labtest", "teste", "resultado", "chart", "runs", "calibrabot"],
+        group: "Integrações",
+        onSelect: openEmbedPicker("labtest-chart"),
+      }),
+      new SlashOption("Quadro do ThinkLab", {
+        description: "Miniatura de um quadro do ThinkLab",
+        icon: <Shapes size={18} />,
+        keywords: ["thinklab", "quadro", "miniatura", "diagrama", "whiteboard", "board", "ideia"],
+        group: "Integrações",
+        onSelect: openEmbedPicker("thinklab-board"),
+      }),
+    ];
+    all.push(...integrations);
+
+    const layouts = TEMPLATES.map(
+      (tpl) =>
+        new SlashOption(tpl.title, {
+          description: tpl.description,
+          icon: <DocIcon value={tpl.emoji} size={20} fallback={null} />,
+          keywords: ["layout", "modelo", "template", "pronto", tpl.id],
+          group: "Layouts prontos",
+          onSelect: () =>
+            editor.update(() => {
+              const selection = $getSelection();
+              if ($isRangeSelection(selection)) $insertTemplateAt(tpl, selection.anchor.getNode());
+            }),
+        }),
+    );
+    all.push(...layouts);
 
     if (!query) return all;
     const tokens = normalize(query).split(/\s+/).filter(Boolean);
@@ -204,12 +297,14 @@ export function SlashMenuPlugin() {
               </div>
             ) : (
               <>
-                <div className="px-3 pb-1 pt-2 text-xs font-medium uppercase tracking-wide text-base-content/40">
-                  Blocos básicos
-                </div>
                 {options.map((option, i) => (
+                  <div key={option.key}>
+                    {(i === 0 || options[i - 1].group !== option.group) && (
+                      <div className="px-3 pb-1 pt-2 text-xs font-medium uppercase tracking-wide text-base-content/40">
+                        {option.group}
+                      </div>
+                    )}
                   <button
-                    key={option.key}
                     type="button"
                     role="option"
                     aria-selected={selectedIndex === i}
@@ -242,6 +337,7 @@ export function SlashMenuPlugin() {
                       </span>
                     </span>
                   </button>
+                  </div>
                 ))}
               </>
             )}

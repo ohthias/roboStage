@@ -8,13 +8,20 @@ import { calendarEvents, calendarEventDocuments } from "./calendar";
 import {
   boards,
   boardColumns,
-  boardMilestones,
   boardCards,
   boardCardAssignees,
   boardCardDocuments,
   boardCardEvents,
 } from "./boards";
-import { tags, documentTags, boardCardTags } from "./tags";
+import {
+  tags,
+  documentTags,
+  boardCardTags,
+  calendarEventTags,
+  thinklabTags,
+  testTags,
+} from "./tags";
+import { milestones } from "./milestones";
 import { notifications } from "./notifications";
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -164,7 +171,6 @@ export const boardsRelations = relations(boards, ({ one, many }) => ({
   owner: one(users, { fields: [boards.userId], references: [users.id] }),
   team: one(teams, { fields: [boards.teamId], references: [teams.id] }),
   columns: many(boardColumns),
-  milestones: many(boardMilestones),
   cards: many(boardCards),
 }));
 
@@ -179,11 +185,6 @@ export const boardColumnsRelations = relations(
   })
 );
 
-export const boardMilestonesRelations = relations(boardMilestones, ({ one, many }) => ({
-  board: one(boards, { fields: [boardMilestones.boardId], references: [boards.id] }),
-  cards: many(boardCards),
-}));
-
 export const boardCardsRelations = relations(boardCards, ({ one, many }) => ({
   board: one(boards, {
     fields: [boardCards.boardId],
@@ -193,9 +194,9 @@ export const boardCardsRelations = relations(boardCards, ({ one, many }) => ({
     fields: [boardCards.columnId],
     references: [boardColumns.id],
   }),
-  milestone: one(boardMilestones, {
+  milestone: one(milestones, {
     fields: [boardCards.milestoneId],
-    references: [boardMilestones.id],
+    references: [milestones.id],
   }),
   assignees: many(boardCardAssignees),
   documents: many(boardCardDocuments),
@@ -249,9 +250,14 @@ export const boardCardEventsRelations = relations(
 // Tags
 // ---------------------------------------------------------------------------
 
-export const tagsRelations = relations(tags, ({ many }) => ({
+export const tagsRelations = relations(tags, ({ one, many }) => ({
+  owner: one(users, { fields: [tags.userId], references: [users.id] }),
+  team: one(teams, { fields: [tags.teamId], references: [teams.id] }),
   documents: many(documentTags),
   cards: many(boardCardTags),
+  events: many(calendarEventTags),
+  thinklabs: many(thinklabTags),
+  tests: many(testTags),
 }));
 
 export const documentTagsRelations = relations(documentTags, ({ one }) => ({
@@ -268,6 +274,41 @@ export const boardCardTagsRelations = relations(boardCardTags, ({ one }) => ({
     references: [boardCards.id],
   }),
   tag: one(tags, { fields: [boardCardTags.tagId], references: [tags.id] }),
+}));
+
+export const calendarEventTagsRelations = relations(calendarEventTags, ({ one }) => ({
+  event: one(calendarEvents, {
+    fields: [calendarEventTags.eventId],
+    references: [calendarEvents.id],
+  }),
+  tag: one(tags, { fields: [calendarEventTags.tagId], references: [tags.id] }),
+}));
+
+export const thinklabTagsRelations = relations(thinklabTags, ({ one }) => ({
+  thinklab: one(thinklab, {
+    fields: [thinklabTags.thinklabId],
+    references: [thinklab.id],
+  }),
+  tag: one(tags, { fields: [thinklabTags.tagId], references: [tags.id] }),
+}));
+
+export const testTagsRelations = relations(testTags, ({ one }) => ({
+  test: one(tests, { fields: [testTags.testId], references: [tests.id] }),
+  tag: one(tags, { fields: [testTags.tagId], references: [tags.id] }),
+}));
+
+// ---------------------------------------------------------------------------
+// Milestones universais
+// ---------------------------------------------------------------------------
+
+export const milestonesRelations = relations(milestones, ({ one, many }) => ({
+  owner: one(users, { fields: [milestones.userId], references: [users.id] }),
+  team: one(teams, { fields: [milestones.teamId], references: [teams.id] }),
+  cards: many(boardCards),
+  documents: many(documents),
+  events: many(calendarEvents),
+  thinklabs: many(thinklab),
+  tests: many(tests),
 }));
 
 // ---------------------------------------------------------------------------

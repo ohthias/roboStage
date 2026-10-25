@@ -19,7 +19,6 @@ import { SectionDivider } from "./shared";
 import { createTestExecution } from "@/app/(protected)/dashboard/labtest/actions";
 import { LabTestModels } from "./LabTestModels";
 import { updateLabTestStatus } from "@/app/(protected)/dashboard/labtest/new/actions";
-import { STATUS_META } from "@/utils/labtest/catalog";
 
 interface ExecuteTestFormProps {
   testId: string;
@@ -371,7 +370,7 @@ export default function ExecuteTestForm({
         if (nextExecutionNumber === 1 && draftIndex === 0) {
           await updateLabTestStatus({
             testId,
-            status: STATUS_META.em_andamento.label,
+            status: "em_andamento",
           });
         }
       }

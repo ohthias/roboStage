@@ -4,12 +4,16 @@ import {
   Book,
   Boxes,
   CalendarDays,
+  Cuboid,
   Earth,
   FlaskConical,
   Home,
   KanbanSquare,
   Lightbulb,
+  Newspaper,
   Settings,
+  Tags,
+  Trophy,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -33,10 +37,15 @@ const MAIN_LINKS: NavItem[] = [
     label: "Equipe",
     Icon: Users,
   },
-    {
+  {
     href: "/dashboard/labtest",
     label: "LabTest",
     Icon: FlaskConical,
+  },
+  {
+    href: "/dashboard/quickbrick",
+    label: "QuickBrick Studio",
+    Icon: Cuboid,
   },
   {
     href: "/dashboard/documents",
@@ -60,6 +69,21 @@ const SYSTEM_LINKS: NavItem[] = [
     href: "/dashboard/settings",
     label: "Configurações",
     Icon: Settings,
+  },
+  {
+    href: "/dashboard/leagues",
+    label: "Ligas e Competições",
+    Icon: Trophy,
+  },
+  {
+    href: "/dashboard/labels",
+    label: "Tags e milestones",
+    Icon: Tags,
+  },
+  {
+    href: "/news",
+    label: "Notícias",
+    Icon: Newspaper,
   },
   {
     href: "/",

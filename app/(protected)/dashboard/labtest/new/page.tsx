@@ -87,6 +87,9 @@ export default function CreateTest() {
         missionOrder: t.orderedSelected.map((m) => m.id),
         answers: t.answers,
         folderId,
+        ...(t.isFutureEdition
+          ? { edition: "future-edition", matchDuration: t.matchDuration }
+          : {}),
       };
     }
 
@@ -124,6 +127,21 @@ export default function CreateTest() {
           calibraMode: "giroscópio",
           giroAngle: t.giroAngle,
           giroAnalysis: t.giroAnalysis,
+        };
+      }
+
+      if (t.calibraMode === "kit-ia") {
+        if (!t.kitPreset || t.kitParams.length === 0) {
+          setSaveError("Escolha um teste do kit e ao menos um parâmetro.");
+          return null;
+        }
+
+        return {
+          ...base,
+          mode: "calibrabot",
+          calibraMode: "kit-ia",
+          kitPreset: t.kitPreset,
+          kitParams: t.kitParams,
         };
       }
 
@@ -221,6 +239,10 @@ export default function CreateTest() {
 
       if (t.calibraMode === "giroscópio") {
         return t.giroAnalysis.length > 0;
+      }
+
+      if (t.calibraMode === "kit-ia") {
+        return Boolean(t.kitPreset) && t.kitParams.length > 0;
       }
 
       return t.pidParams.length > 0;
@@ -397,6 +419,8 @@ export default function CreateTest() {
             updateAnswerValue={t.updateAnswerValue}
             updateSubAnswer={t.updateSubAnswer}
             updateObjectiveAnswer={t.updateObjectiveAnswer}
+            matchDuration={t.matchDuration}
+            setMatchDuration={t.setMatchDuration}
           />
         )}
 
@@ -420,6 +444,11 @@ export default function CreateTest() {
             setPidDistance={t.setPidDistance}
             pidParams={t.pidParams}
             togglePidParam={t.togglePidParam}
+            futureEditionActive={t.futureEditionActive}
+            kitPreset={t.kitPreset}
+            selectKitPreset={t.selectKitPreset}
+            kitParams={t.kitParams}
+            toggleKitParam={t.toggleKitParam}
           />
         )}
 

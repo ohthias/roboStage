@@ -7,7 +7,11 @@ import {
   getBezierPath,
   getDocumentPath,
   getCloudPath,
+  emojiFontSize,
 } from './rough-renderer';
+import { getIconSvgMarkup } from './icon-library';
+import { EMOJI_FONT_STACK } from './emoji-library';
+import { getImageDataUrl } from './media-cache';
 
 export interface SvgExportOptions {
   padding?: number;
@@ -304,6 +308,13 @@ export function exportToSvgString(
         break;
       }
 
+      case 'emoji':
+      case 'icon':
+      case 'image': {
+        node = createMediaNode(el, svgNS, defs);
+        break;
+      }
+
       default:
         break;
     }
@@ -360,6 +371,67 @@ export function exportToSvgString(
   });
 
   return new XMLSerializer().serializeToString(svg);
+}
+
+let mediaClipCounter = 0;
+
+/** Nó SVG para emoji (<text>), ícone (<svg> aninhado) ou imagem (<image>). */
+function createMediaNode(el: CanvasElement, svgNS: string, defs: SVGDefsElement): SVGElement | null {
+  const x = Math.min(el.x, el.x + el.width);
+  const y = Math.min(el.y, el.y + el.height);
+  const w = Math.abs(el.width);
+  const h = Math.abs(el.height);
+
+  if (el.type === 'emoji') {
+    if (!el.emoji) return null;
+    const text = document.createElementNS(svgNS, 'text') as SVGElement;
+    text.setAttribute('x', `${x + w / 2}`);
+    text.setAttribute('y', `${y + h / 2 + h * 0.06}`);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'central');
+    text.setAttribute('font-size', `${emojiFontSize(el)}px`);
+    text.setAttribute('font-family', EMOJI_FONT_STACK);
+    text.textContent = el.emoji;
+    return text;
+  }
+
+  if (el.type === 'icon') {
+    const markup = el.iconName ? getIconSvgMarkup(el.iconName, el.strokeColor, Math.max(1, el.strokeWidth)) : null;
+    if (!markup) return null;
+    const parsed = new DOMParser().parseFromString(markup, 'image/svg+xml').documentElement;
+    const icon = document.importNode(parsed, true) as unknown as SVGElement;
+    const size = Math.min(w, h);
+    icon.setAttribute('x', `${x + (w - size) / 2}`);
+    icon.setAttribute('y', `${y + (h - size) / 2}`);
+    icon.setAttribute('width', `${size}`);
+    icon.setAttribute('height', `${size}`);
+    icon.removeAttribute('class');
+    return icon;
+  }
+
+  if (!el.imageSrc) return null;
+  const image = document.createElementNS(svgNS, 'image') as SVGElement;
+  image.setAttribute('href', getImageDataUrl(el.imageSrc));
+  image.setAttribute('x', `${x}`);
+  image.setAttribute('y', `${y}`);
+  image.setAttribute('width', `${w}`);
+  image.setAttribute('height', `${h}`);
+  image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  if (el.roundness) {
+    const id = `media-clip-${++mediaClipCounter}`;
+    const clip = document.createElementNS(svgNS, 'clipPath');
+    clip.setAttribute('id', id);
+    const r = document.createElementNS(svgNS, 'rect');
+    r.setAttribute('x', `${x}`);
+    r.setAttribute('y', `${y}`);
+    r.setAttribute('width', `${w}`);
+    r.setAttribute('height', `${h}`);
+    r.setAttribute('rx', `${Math.min(12, w / 4, h / 4)}`);
+    clip.appendChild(r);
+    defs.appendChild(clip);
+    image.setAttribute('clip-path', `url(#${id})`);
+  }
+  return image;
 }
 
 // Download SVG file directly in browser

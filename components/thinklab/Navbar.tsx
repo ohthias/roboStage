@@ -1,241 +1,196 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import {
-  Undo2,
-  Redo2,
-  ZoomIn,
-  ZoomOut,
-  Maximize2,
+  ChevronLeft,
   Download,
   LayoutTemplate,
   Trash2,
-  Grid3X3,
-  HelpCircle,
-  Palette,
-  FileCode2,
-  Layers,
-  Magnet,
+  Keyboard,
   PackageOpen,
   Database,
+  MoreHorizontal,
+  PanelLeft,
+  PanelRight,
+  Check,
+  Loader2,
+  AlertCircle,
+  Save,
 } from 'lucide-react';
+import { cn } from './editor-ui';
+
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 interface NavbarProps {
-  canUndo: boolean;
-  canRedo: boolean;
-  onUndo: () => void;
-  onRedo: () => void;
-  zoom: number;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onResetZoom: () => void;
-  gridType: 'dots' | 'lines' | 'none';
-  onToggleGrid: () => void;
-  onOpenTemplates: () => void;
+  /** Nome do ThinkLab exibido no breadcrumb. */
+  title?: string;
+  /** Destino do botão "Voltar". */
+  backHref?: string;
+  /** Slot central (ferramentas do canvas). */
+  children?: React.ReactNode;
+
+  saveStatus: SaveStatus;
+  onSave: () => void;
   onOpenExport: () => void;
-  onOpenDatabase?: () => void;
+  onOpenTemplates: () => void;
   onOpenShortcuts: () => void;
-  onClearCanvas: () => void;
-  currentTheme: string;
-  onThemeChange: (theme: string) => void;
-  elementCount: number;
-  onToggleLibrary?: () => void;
-  isLibraryOpen?: boolean;
-  smartSnapping?: boolean;
-  onToggleSmartSnapping?: () => void;
+  onOpenDatabase?: () => void;
   onOpenGraphicAssets?: () => void;
+  onClearCanvas: () => void;
+  elementCount: number;
+
+  isLibraryOpen: boolean;
+  onToggleLibrary: () => void;
+  isInspectorOpen: boolean;
+  onToggleInspector: () => void;
 }
 
-const THEMES = [
-  { id: 'light', label: 'Claro' },
-  { id: 'dark', label: 'Escuro' },
-  { id: 'retro', label: 'Retrô' },
-  { id: 'cyberpunk', label: 'Cyberpunk' },
-  { id: 'forest', label: 'Floresta' },
-  { id: 'synthwave', label: 'Synthwave' },
-  { id: 'nord', label: 'Nord' },
-];
+function SaveIndicator({ status }: { status: SaveStatus }) {
+  if (status === 'saving') {
+    return (
+      <span className="hidden md:flex items-center gap-1.5 text-xs text-base-content/50">
+        <Loader2 className="size-3.5 animate-spin" /> Salvando…
+      </span>
+    );
+  }
+  if (status === 'error') {
+    return (
+      <span className="hidden md:flex items-center gap-1.5 text-xs text-error">
+        <AlertCircle className="size-3.5" /> Não salvo
+      </span>
+    );
+  }
+  if (status === 'saved') {
+    return (
+      <span className="hidden md:flex items-center gap-1.5 text-xs text-base-content/50">
+        <Check className="size-3.5" /> Salvo
+      </span>
+    );
+  }
+  return null;
+}
 
 export function Navbar({
-  canUndo,
-  canRedo,
-  onUndo,
-  onRedo,
-  zoom,
-  onZoomIn,
-  onZoomOut,
-  onResetZoom,
-  gridType,
-  onToggleGrid,
-  onOpenTemplates,
+  title,
+  backHref = '/dashboard/thinklab',
+  children,
+  saveStatus,
+  onSave,
   onOpenExport,
+  onOpenTemplates,
   onOpenShortcuts,
-  onClearCanvas,
-  currentTheme,
-  onThemeChange,
-  elementCount,
-  onToggleLibrary,
-  isLibraryOpen,
-  smartSnapping = true,
-  onToggleSmartSnapping,
-  onOpenGraphicAssets,
   onOpenDatabase,
+  onOpenGraphicAssets,
+  onClearCanvas,
+  elementCount,
+  isLibraryOpen,
+  onToggleLibrary,
+  isInspectorOpen,
+  onToggleInspector,
 }: NavbarProps) {
   return (
-    <header className="min-h-16 h-auto px-2 sm:px-4 py-2 border-b border-base-300 bg-base-100 flex flex-wrap items-center justify-between gap-2 sm:gap-4 z-30 select-none shadow-xs">
-      <button onClick={() => window.history.back()} className="btn btn-sm btn-ghost gap-1.5 shrink-0">
-        Voltar
-      </button>
-      {/* Middle Zone: Canvas actions */}
-      <div className="order-3 sm:order-none basis-full sm:basis-auto flex-1 min-w-0 flex items-center justify-start gap-1 sm:gap-2 overflow-x-auto whitespace-nowrap pb-0.5">
-        {/* Undo / Redo */}
-        <div className="join shrink-0">
-          <button
-            onClick={onUndo}
-            disabled={!canUndo}
-            className="btn btn-sm btn-ghost join-item tooltip tooltip-bottom"
-            data-tip="Desfazer (Ctrl+Z)"
-            aria-label="Desfazer"
-          >
-            <Undo2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={onRedo}
-            disabled={!canRedo}
-            className="btn btn-sm btn-ghost join-item tooltip tooltip-bottom"
-            data-tip="Refazer (Ctrl+Y)"
-            aria-label="Refazer"
-          >
-            <Redo2 className="w-4 h-4" />
-          </button>
+    <header className="shrink-0 px-3 sm:px-4 py-2 lg:py-0 lg:h-16 border-b border-base-300 bg-base-100 grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-2 z-30 select-none">
+      {/* Esquerda: voltar + breadcrumb */}
+      <div className="flex items-center gap-3 min-w-0">
+        <Link href={backHref} className="btn btn-sm btn-outline border-base-300 gap-1 font-normal shrink-0">
+          <ChevronLeft className="size-4" />
+          <span className="hidden sm:inline">Voltar</span>
+        </Link>
+
+        <div className="hidden md:flex items-center gap-1.5 text-sm min-w-0">
+          <span className="text-base-content/45 shrink-0">ThinkLab /</span>
+          <span className="font-medium truncate">{title || 'Sem título'}</span>
         </div>
 
-        <div className="divider divider-horizontal mx-0 my-2 shrink-0" />
-
-        {/* Zoom Controls */}
-        <div className="join items-center shrink-0">
-          <button
-            onClick={onZoomOut}
-            className="btn btn-sm btn-ghost join-item tooltip tooltip-bottom"
-            data-tip="Diminuir Zoom (-)"
-            aria-label="Diminuir Zoom"
-          >
-            <ZoomOut className="w-4 h-4" />
-          </button>
-          <button
-            onClick={onResetZoom}
-            className="btn btn-sm btn-ghost join-item text-xs font-mono tabular-nums px-2"
-            title="Resetar Zoom para 100%"
-          >
-            {Math.round(zoom * 100)}%
-          </button>
-          <button
-            onClick={onZoomIn}
-            className="btn btn-sm btn-ghost join-item tooltip tooltip-bottom"
-            data-tip="Aumentar Zoom (+)"
-            aria-label="Aumentar Zoom"
-          >
-            <ZoomIn className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="divider divider-horizontal mx-0 my-2 shrink-0" />
-
-        {/* Grid Style Toggle */}
-        <button
-          onClick={onToggleGrid}
-          className={`btn btn-sm shrink-0 ${gridType !== 'none' ? 'btn-neutral' : 'btn-ghost'} tooltip tooltip-bottom`}
-          data-tip={`Grade: ${gridType === 'dots' ? 'Pontos' : gridType === 'lines' ? 'Linhas' : 'Sem Grade'}`}
-          aria-label="Alternar grade do canvas"
-        >
-          <Grid3X3 className="w-4 h-4" />
-          <span className="hidden md:inline capitalize text-xs">
-            {gridType === 'dots' ? 'Pontos' : gridType === 'lines' ? 'Linhas' : 'Sem grade'}
-          </span>
-        </button>
-
-        {/* Smart Snapping Toggle */}
-        {onToggleSmartSnapping && (
-          <button
-            onClick={onToggleSmartSnapping}
-            className={`btn btn-sm shrink-0 ${smartSnapping ? 'btn-neutral text-primary' : 'btn-ghost'} tooltip tooltip-bottom`}
-            data-tip={`Guias Inteligentes (Snap): ${smartSnapping ? 'Ativado (Alinhamento Automático)' : 'Desativado (Segure Alt)'}`}
-            aria-label="Alternar guias inteligentes de alinhamento"
-          >
-            <Magnet className="w-4 h-4" />
-            <span className="hidden lg:inline text-xs">Snap</span>
-          </button>
-        )}
-
-        {/* Templates Picker */}
-        <button
-          onClick={onOpenTemplates}
-          className="btn btn-sm btn-ghost shrink-0 tooltip tooltip-bottom"
-          data-tip="Modelos Prontos de Fluxogramas"
-          aria-label="Modelos prontos"
-        >
-          <LayoutTemplate className="w-4 h-4" />
-          <span className="hidden md:inline text-xs">Modelos</span>
-        </button>
-
-        {/* Component Library Toggle */}
-        {onToggleLibrary && (
+        {/* Alternadores dos painéis em telas menores */}
+        <div className="flex lg:hidden items-center gap-1 ml-auto">
           <button
             onClick={onToggleLibrary}
-            className={`btn btn-sm shrink-0 ${isLibraryOpen ? 'btn-primary' : 'btn-ghost'} tooltip tooltip-bottom`}
-            data-tip="Biblioteca de Formas & Componentes"
-            aria-label="Biblioteca de componentes"
+            className={cn('btn btn-sm btn-square btn-ghost', isLibraryOpen && 'bg-primary/10 text-primary')}
+            aria-label="Alternar painel de componentes"
+            aria-pressed={isLibraryOpen}
           >
-            <Layers className="w-4 h-4" />
-            <span className="hidden md:inline text-xs">Formas</span>
+            <PanelLeft className="size-4" />
           </button>
-        )}
-
-        {/* Graphic Assets Library Button */}
-        {onOpenGraphicAssets && (
-          <button
-            onClick={onOpenGraphicAssets}
-            className="btn btn-sm btn-ghost shrink-0 tooltip tooltip-bottom"
-            data-tip="Biblioteca de Elementos Gráficos Prontos (Uso Livre)"
-            aria-label="Elementos Gráficos Prontos"
-          >
-            <PackageOpen className="w-4 h-4 text-primary" />
-            <span className="hidden md:inline text-xs font-semibold">Gráficos</span>
-          </button>
-        )}
-
-        {/* Limpar Canvas */}
-        <button
-          onClick={onClearCanvas}
-          disabled={elementCount === 0}
-          className="btn btn-sm btn-ghost shrink-0 text-error/80 hover:text-error tooltip tooltip-bottom"
-          data-tip="Limpar Todo o Canvas"
-          aria-label="Limpar Canvas"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        </div>
       </div>
 
-      {/* Right Zone: Theme + Shortcuts + Export primary action */}
-      <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-auto">
-        {/* Shortcuts Guide */}
+      {/* Centro: ferramentas */}
+      <div className="col-span-2 row-start-2 lg:col-span-1 lg:row-start-1 lg:col-start-2 min-w-0 flex justify-start lg:justify-center overflow-x-auto [scrollbar-width:none]">
+        {children}
+      </div>
+
+      {/* Direita: ações */}
+      <div className="flex items-center justify-end gap-2 lg:col-start-3">
+        <SaveIndicator status={saveStatus} />
+
+        <div className="dropdown dropdown-end">
+          <button
+            tabIndex={0}
+            className="btn btn-sm btn-square btn-ghost"
+            aria-label="Mais ações"
+          >
+            <MoreHorizontal className="size-4" />
+          </button>
+          <ul
+            tabIndex={0}
+            className="dropdown-content menu menu-sm z-40 mt-2 w-60 rounded-box border border-base-300 bg-base-100 p-1.5 shadow-lg"
+          >
+            <li>
+              <button onClick={onOpenTemplates}>
+                <LayoutTemplate className="size-4" /> Modelos prontos
+              </button>
+            </li>
+            {onOpenGraphicAssets && (
+              <li>
+                <button onClick={onOpenGraphicAssets}>
+                  <PackageOpen className="size-4" /> Galeria de gráficos
+                </button>
+              </li>
+            )}
+            <li>
+              <button onClick={onOpenShortcuts}>
+                <Keyboard className="size-4" /> Atalhos do teclado
+              </button>
+            </li>
+            <li className="menu-title px-0 py-1">
+              <div className="h-px bg-base-300" />
+            </li>
+            <li className={cn(elementCount === 0 && 'menu-disabled')}>
+              <button onClick={onClearCanvas} disabled={elementCount === 0} className="text-error">
+                <Trash2 className="size-4" /> Limpar canvas
+              </button>
+            </li>
+          </ul>
+        </div>
+
         <button
-          onClick={onOpenShortcuts}
-          className="btn btn-sm btn-ghost btn-circle tooltip tooltip-bottom"
-          data-tip="Atalhos do Teclado"
-          aria-label="Atalhos"
+          onClick={onToggleInspector}
+          className={cn('btn btn-sm btn-square btn-ghost lg:hidden', isInspectorOpen && 'bg-primary/10 text-primary')}
+          aria-label="Alternar painel de propriedades"
+          aria-pressed={isInspectorOpen}
         >
-          <HelpCircle className="w-4 h-4" />
+          <PanelRight className="size-4" />
         </button>
 
-        {/* Export Modal Primary Button */}
         <button
           onClick={onOpenExport}
-          className="btn btn-sm btn-primary gap-1.5 shadow-sm text-xs"
-          data-tip="Exportar em SVG, PNG, PDF ou JSON"
+          className="btn btn-sm btn-outline border-base-300 font-normal"
+          title="Exportar em SVG, PNG, PDF ou JSON (Ctrl+E)"
         >
-          <Download className="w-4 h-4" />
-          <span>Exportar</span>
+          <Download className="size-4 sm:hidden" />
+          <span className="hidden sm:inline">Exportar</span>
+        </button>
+
+        <button
+          onClick={onSave}
+          disabled={saveStatus === 'saving'}
+          className="btn btn-sm btn-primary font-normal"
+          title="Salvar agora (Ctrl+S)"
+        >
+          <Save className="size-4 sm:hidden" />
+          <span className="hidden sm:inline">Salvar</span>
         </button>
       </div>
     </header>

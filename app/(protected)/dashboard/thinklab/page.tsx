@@ -10,6 +10,11 @@ import {
   updateThinkLabDetails,
 } from "./actions";
 import { ThinkLabThumbnail } from "@/components/thinklab/ThinkLabThumbnail";
+import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
+import { TagList } from "@/components/stagebook/labels/tag-chip";
+import { MilestoneChip } from "@/components/stagebook/labels/milestone-chip";
+import { getResourcesTags } from "@/utils/stagebook/actions/tags";
+import { listMilestones } from "@/utils/stagebook/actions/milestones";
 
 export default async function ThinkLabDashboard({
   searchParams,
@@ -17,6 +22,12 @@ export default async function ThinkLabDashboard({
   searchParams?: Promise<{ folderId?: string }>;
 }) {
   const thinkLabs = await listThinkLabsByUserId();
+  // Tags e milestones universais (mesmo catálogo de Kanban, StageBook, Calendário e LabTest).
+  const [tagsByBoard, milestoneList] = await Promise.all([
+    getResourcesTags("thinklab", thinkLabs.map((t) => t.id)),
+    listMilestones(),
+  ]);
+  const milestoneById = new Map(milestoneList.map((m) => [m.id, m]));
   const selectedFolderId = (await searchParams)?.folderId ?? null;
 
   async function create() {
@@ -127,6 +138,19 @@ export default async function ThinkLabDashboard({
                           <h2 className="break-words text-lg font-bold leading-snug">
                             {thinkLab.name}
                           </h2>
+
+                          {(() => {
+                            const boardTags = tagsByBoard[thinkLab.id] ?? [];
+                            const boardMilestone = thinkLab.milestoneId
+                              ? milestoneById.get(thinkLab.milestoneId)
+                              : undefined;
+                            return boardTags.length > 0 || boardMilestone ? (
+                              <div className="mt-2 flex flex-wrap items-center gap-1">
+                                {boardMilestone && <MilestoneChip milestone={boardMilestone} size="xs" />}
+                                <TagList tags={boardTags} />
+                              </div>
+                            ) : null;
+                          })()}
 
                           <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-base-content/60">
                             {thinkLab.description?.trim() ||
@@ -247,6 +271,19 @@ export default async function ThinkLabDashboard({
                                 className="textarea textarea-bordered min-h-28 w-full resize-y leading-relaxed focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
                               />
                             </label>
+                            <div className="form-control w-full">
+                              <span className="label pb-2">
+                                <span className="label-text font-semibold">Tags e milestone</span>
+                              </span>
+                              <ResourceLabels
+                                kind="thinklab"
+                                resourceId={thinkLab.id}
+                                initialTags={tagsByBoard[thinkLab.id] ?? []}
+                                initialMilestone={
+                                  thinkLab.milestoneId ? (milestoneById.get(thinkLab.milestoneId) ?? null) : null
+                                }
+                              />
+                            </div>
                           </div>
 
                           <div className="modal-action mt-8 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

@@ -1,14 +1,31 @@
-import { NotebookPen } from "lucide-react";
+import { desc } from "drizzle-orm";
+import { db } from "@/db/client";
+import { documents } from "@/db/schema";
+import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { scopeWhere } from "@/utils/stagebook/permissions";
+import { DocumentsHome, type HomeDocument } from "./documents-home";
 
-export default function NotebookIndexPage() {
-  return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
-      <NotebookPen size={40} className="text-base-content/30" />
-      <h1 className="text-lg font-semibold">Selecione ou crie uma página</h1>
-      <p className="max-w-sm text-sm text-base-content/60">
-        Use o menu à esquerda para abrir uma página existente, ou crie uma pasta e uma página
-        novas pelos botões no topo da árvore.
-      </p>
-    </div>
-  );
+export default async function NotebookIndexPage() {
+  const scope = await resolveStagebookScope();
+
+  const rows = await db
+    .select({
+      id: documents.id,
+      title: documents.title,
+      icon: documents.icon,
+      updatedAt: documents.updatedAt,
+    })
+    .from(documents)
+    .where(scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+    .orderBy(desc(documents.updatedAt))
+    .limit(40);
+
+  const docs: HomeDocument[] = rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    icon: r.icon,
+    updatedAt: new Date(r.updatedAt).toISOString(),
+  }));
+
+  return <DocumentsHome docs={docs} />;
 }

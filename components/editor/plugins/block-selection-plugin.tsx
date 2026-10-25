@@ -46,6 +46,7 @@ import {
 import {
   $deleteBlock,
   $duplicateBlock,
+  $getTopLevelBlock,
   $getBlockType,
   $insertParagraphAfter,
   $moveBlock,
@@ -83,6 +84,7 @@ type OpenMenu = {
   key: string;
   blockType: BlockType | null;
   isHeading: boolean;
+  label: string;
   top: number;
   left: number;
 };
@@ -150,17 +152,23 @@ export function BlockSelectionPlugin({
     const rect = e.currentTarget.getBoundingClientRect();
     let blockType: BlockType | null = null;
     let isHeading = false;
+    let label = "Bloco";
     editor.read(() => {
       const node = $getNodeByKey(key);
       if (!node) return;
       blockType = $getBlockType(node);
       isHeading = $isHeadingNode(node);
+      if (blockType) label = BLOCK_LABELS[blockType];
+      else if (node.getType() === "layout-container") label = "Seção de colunas";
+      else if (node.getType() === "divider") label = "Divisor";
+      else if (node.getType() === "table") label = "Tabela";
     });
     setShowTurnInto(false);
     setMenu({
       key,
       blockType,
       isHeading,
+      label,
       top: rect.top,
       left: rect.right + 8,
     });
@@ -230,10 +238,7 @@ export function BlockSelectionPlugin({
             if (item) {
               moved = $moveListItem(item.getKey(), dir);
             } else {
-              const top = $findMatchingParent(
-                anchor,
-                (n) => n.getParent()?.getType() === "root",
-              );
+              const top = $getTopLevelBlock(anchor);
               if (top) moved = $moveBlock(top.getKey(), dir, true);
             }
             e.preventDefault();
@@ -317,7 +322,7 @@ export function BlockSelectionPlugin({
             onMouseDown={(e) => e.preventDefault()}
           >
             <div className="px-2 pb-1 pt-1.5 text-xs font-medium uppercase tracking-wide text-base-content/40">
-              {menu.blockType ? BLOCK_LABELS[menu.blockType] : "Bloco"}
+              {menu.label}
             </div>
 
             {menu.blockType && (

@@ -20,6 +20,8 @@ export const editorTheme: EditorThemeClasses = {
     ulDepth: ["list-disc", "list-[circle]", "list-[square]"],
   },
   link: "cursor-pointer text-primary underline underline-offset-2",
+  layoutContainer: "editor-layout",
+  layoutItem: "editor-layout-item",
   hr: "my-6 h-px border-0 bg-base-content/15 [&.selected]:ring-2 [&.selected]:ring-primary/50",
   hrSelected: "ring-2 ring-primary/50",
   text: {

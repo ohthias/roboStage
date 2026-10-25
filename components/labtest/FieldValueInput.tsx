@@ -81,6 +81,7 @@ export function FieldValueInput({
           <input
             type="number"
             min={0}
+            step="any"
             value={typeof value === "number" ? value : ""}
             onChange={(e) =>
               onChange(e.target.value ? Number(e.target.value) : null)
@@ -98,6 +99,7 @@ export function FieldValueInput({
           <input
             type="number"
             min={0}
+            step="any"
             max={field.targetValue ?? undefined}
             placeholder="0"
             value={typeof value === "number" ? value : ""}

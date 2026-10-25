@@ -6,13 +6,13 @@
 
 import type { FieldDefinition, TestEntry } from "@/types/labtest.types";
 import { getFieldValue } from "@/types/labtest.types";
+import { toNumber } from "./chart-data";
 
 export function entryTotal(entry: TestEntry, fields: FieldDefinition[]): number {
   return fields
     .filter((f) => f.type === "number")
     .reduce((sum, f) => {
-      const v = getFieldValue(entry.values, f.fieldKey);
-      return sum + (typeof v === "number" ? v : 0);
+      return sum + (toNumber(getFieldValue(entry.values, f.fieldKey)) ?? 0);
     }, 0);
 }
 
@@ -23,8 +23,13 @@ export function maxPossibleTotal(fields: FieldDefinition[]): number {
 }
 
 export interface FieldStats {
+  /** Média com até 2 casas decimais (antes era arredondada para inteiro). */
   average?: number;
+  /** Maior valor (mantido por compatibilidade). */
   best?: number;
+  min?: number;
+  max?: number;
+  count?: number;
   completionRate?: number;
 }
 
@@ -44,12 +49,17 @@ export function computeFieldStats(
 
   if (field.type === "number" || field.type === "duration") {
     const values = entries
-      .map((e) => getFieldValue(e.values, field.fieldKey))
-      .filter((v): v is number => typeof v === "number");
+      .map((e) => toNumber(getFieldValue(e.values, field.fieldKey)))
+      .filter((v): v is number => v !== null);
     if (values.length === 0) return {};
+    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    const max = Math.max(...values);
     return {
-      average: Math.round(values.reduce((a, b) => a + b, 0) / values.length),
-      best: Math.max(...values),
+      average: Math.round(avg * 100) / 100,
+      best: max,
+      max,
+      min: Math.min(...values),
+      count: values.length,
     };
   }
 

@@ -1,21 +1,30 @@
-"use client";
 
 // ---------------------------------------------------------------------------
-// Peças pequenas reaproveitadas pelo Dashboard, pela View e pelo ResultForm.
-// Ficavam faltando — LabTestView e LabTestDashboard importavam daqui mas o
-// arquivo não existia, o que quebrava o build inteiro do módulo.
+// Peças pequenas reaproveitadas pelo LabTest (lista, detalhe, gráficos).
 // ---------------------------------------------------------------------------
 
 import type { LucideIcon } from "lucide-react";
 import type { AccentColor } from "@/utils/labtest/modes";
-import { ACCENT_STYLES } from "@/utils/labtest/modes";
 
 export function fmtDate(value: string | Date | null | undefined) {
   if (!value) return "—";
   const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) return "—";
   return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 
+// Classes estáticas (o Tailwind precisa enxergá-las por inteiro).
+const TONES: Record<
+  AccentColor,
+  { card: string; chip: string; text: string }
+> = {
+  primary: { card: "bg-primary/10", chip: "bg-primary/20 text-primary", text: "text-primary" },
+  secondary: { card: "bg-secondary/10", chip: "bg-secondary/20 text-secondary", text: "text-secondary" },
+  accent: { card: "bg-accent/15", chip: "bg-accent/30 text-accent-content", text: "text-accent-content" },
+  info: { card: "bg-info/10", chip: "bg-info/20 text-info", text: "text-info" },
+};
+
+/** Card de métrica em tom pastel, no estilo do dashboard de referência. */
 export function StatCard({
   label,
   value,
@@ -29,26 +38,26 @@ export function StatCard({
   icon: LucideIcon;
   accent: AccentColor;
 }) {
-  const style = ACCENT_STYLES[accent];
+  const tone = TONES[accent];
   return (
-    <div className="rounded-2xl border border-base-content/10 bg-base-100 p-4">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium uppercase tracking-wider text-base-content/45">
-          {label}
-        </p>
-        <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${style.bgSoft}`}>
-          <Icon className={`h-3.5 w-3.5 ${style.text}`} />
-        </div>
+    <div
+      className={`flex flex-col gap-3 rounded-tl-3xl rounded-tr-lg rounded-br-3xl rounded-bl-lg p-4 sm:p-5 ${tone.card}`}
+    >
+      <div className="flex items-center gap-2.5">
+        <span className={`flex size-8 items-center justify-center rounded-full ${tone.chip}`}>
+          <Icon className="size-4" />
+        </span>
+        <p className="truncate text-xs font-semibold text-base-content/70">{label}</p>
       </div>
-      <p className="mt-2 text-xl font-bold tracking-tight">{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-base-content/40">{sub}</p>}
+      <p className="text-2xl font-black tracking-tight sm:text-3xl">{value}</p>
+      {sub && <p className="-mt-1 truncate text-xs text-base-content/50">{sub}</p>}
     </div>
   );
 }
 
 export function SectionHeader({ label }: { label: string }) {
   return (
-    <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-base-content/60">
+    <h3 className="mb-4 text-sm font-bold tracking-tight text-base-content/80">
       {label}
     </h3>
   );
@@ -65,11 +74,15 @@ export function SectionDivider({ label }: { label: string }) {
   );
 }
 
-export function CustomTooltip({
-  active,
-  payload,
-  label,
-}: {
+export function EmptyState({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 px-5 py-10 text-center text-sm text-base-content/50">
+      {children}
+    </div>
+  );
+}
+
+export function CustomTooltip({ active, payload, label }: {
   active?: boolean;
   payload?: { name?: string; value?: number | string }[];
   label?: string;

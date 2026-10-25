@@ -5,7 +5,53 @@
  * pequenas e explícitas — suficiente para o formato dos dados do Stagebook.
  */
 
-export class ValidationError extends Error {}
+export class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ValidationError";
+  }
+}
+
+const upperFirst = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
+/** Texto obrigatório: erro claro (em vez de cair num fallback silencioso) quando vazio. */
+export function requireText(
+  value: unknown,
+  label: string,
+  { maxLength = 120, minLength = 1 }: { maxLength?: number; minLength?: number } = {}
+): string {
+  const str = typeof value === "string" ? value.trim().replace(/\s+/g, " ") : "";
+  if (str.length < minLength) {
+    throw new ValidationError(
+      minLength <= 1 ? `Informe ${label}.` : `${upperFirst(label)} precisa ter ao menos ${minLength} caracteres.`
+    );
+  }
+  if (str.length > maxLength) {
+    throw new ValidationError(`${upperFirst(label)} pode ter no máximo ${maxLength} caracteres.`);
+  }
+  return str;
+}
+
+export function requireOneOf<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+  label: string
+): T {
+  if (typeof value !== "string" || !(allowed as readonly string[]).includes(value)) {
+    throw new ValidationError(`${label} inválido.`);
+  }
+  return value as T;
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+export function requireEmail(value: unknown): string {
+  const email = typeof value === "string" ? value.trim().toLowerCase() : "";
+  if (email.length > 254 || !EMAIL_RE.test(email)) {
+    throw new ValidationError("Informe um e-mail válido.");
+  }
+  return email;
+}
 
 export function cleanText(
   value: unknown,

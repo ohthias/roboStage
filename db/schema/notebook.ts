@@ -12,6 +12,7 @@ import {
 import { sql } from "drizzle-orm";
 import { users } from "./users";
 import { teams } from "./teams";
+import { milestones } from "./milestones";
 
 /**
  * CORREÇÃO DE MODELAGEM (schema original): userId era NOT NULL e teamId era
@@ -41,6 +42,8 @@ export const folders = pgTable(
     parentId: uuid("parent_id"),
     name: text("name").notNull().default("Nova pasta"),
     icon: text("icon"), // emoji, ex: "📁"
+    // Cor de destaque da pasta (#rrggbb, da paleta do Stagebook). Null = padrão.
+    color: text("color"),
     // Ordenação dentro do mesmo parentId + scope. Ponto flutuante para permitir
     // inserir entre dois itens sem reescrever a posição dos vizinhos.
     position: doublePrecision("position").notNull().default(0),
@@ -66,6 +69,10 @@ export const folders = pgTable(
       table.parentId
     ),
     ownershipCheckConstraint: ownershipCheck(table.userId, table.teamId),
+    colorCheck: check(
+      "folders_color_hex",
+      sql`${table.color} is null or ${table.color} ~* '^#[0-9a-f]{6}$'`
+    ),
     // Ao excluir uma pasta, suas subpastas são excluídas em cascata (seção 42).
     parentFk: foreignKey({
       columns: [table.parentId],
@@ -114,6 +121,8 @@ export const documents = pgTable(
       .$type<Record<string, unknown>>()
       .notNull()
       .default({}),
+    // Milestone universal (opcional).
+    milestoneId: uuid("milestone_id"),
     // Ordenação dentro do mesmo (folderId, parentId) + scope.
     position: doublePrecision("position").notNull().default(0),
     createdBy: text("created_by").notNull(),
@@ -138,6 +147,12 @@ export const documents = pgTable(
       table.teamId,
       table.folderId
     ),
+    milestoneIdIdx: index("documents_milestone_id_idx").on(table.milestoneId),
+    milestoneFk: foreignKey({
+      columns: [table.milestoneId],
+      foreignColumns: [milestones.id],
+      name: "documents_milestone_id_fkey",
+    }).onDelete("set null"),
     ownershipCheckConstraint: ownershipCheck(table.userId, table.teamId),
     // Se a pasta for excluída, a página volta para a raiz (não é apagada).
     folderFk: foreignKey({

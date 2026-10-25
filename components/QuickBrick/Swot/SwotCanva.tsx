@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
+import { useChangeNotifier } from "@/hooks/useChangeNotifier";
 import html2canvas from "html2canvas-pro";
 import { useToast } from "@/app/context/ToastContext";
 import { Image, RotateCcw } from "lucide-react";
@@ -8,7 +9,13 @@ export const SWOTCanvas = ({
   missions,
   setMissions,
   selectedSeason,
+  initialSwot,
+  onSwotChange,
 }: {
+  /** Estado salvo (caderno do QuickBrick Studio). */
+  initialSwot?: Record<string, any[]>;
+  /** Avisado a cada mudança — usado para salvar no banco. */
+  onSwotChange?: (swot: Record<string, any[]>) => void;
   missions: any[];
   setMissions: (missions: any[]) => void;
   seasons: string[];
@@ -39,12 +46,13 @@ export const SWOTCanvas = ({
   ];
 
   const { addToast } = useToast();
-  const [swot, setSwot] = useState<Record<string, any[]>>({
-    strengths: [],
-    weaknesses: [],
-    opportunities: [],
-    threats: [],
-  });
+  const [swot, setSwot] = useState<Record<string, any[]>>(() => ({
+    strengths: initialSwot?.strengths ?? [],
+    weaknesses: initialSwot?.weaknesses ?? [],
+    opportunities: initialSwot?.opportunities ?? [],
+    threats: initialSwot?.threats ?? [],
+  }));
+  useChangeNotifier(swot, onSwotChange);
   const quadrantsRef = useRef<HTMLDivElement>(null);
 
   const handleDrop = (e: React.DragEvent, targetQuadrant: string) => {

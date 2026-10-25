@@ -17,14 +17,15 @@ import {
   getCardLinks,
   listEventsForCard,
   listPagesForCard,
-  listTags,
-  searchTags,
   toggleCardAssignee,
   toggleCardDocumentLink,
   toggleCardEventLink,
-  toggleCardTag,
   updateCard,
 } from "./actions";
+import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
+import { MilestoneSelector } from "@/components/stagebook/labels/milestone-selector";
+import { DocIcon } from "@/components/editor/doc-icon";
+import type { MilestoneDTO } from "@/types/labels";
 
 type Card = {
   id: string;
@@ -35,9 +36,9 @@ type Card = {
   milestoneId: string | null;
 };
 type Assignee = { userId: string; name: string | null; avatarUrl: string | null };
-type CardTag = { tagId: string; name: string };
+type CardTag = { tagId: string; name: string; color: string | null };
 type TeamMember = { userId: string; name: string | null; avatarUrl: string | null; role: string };
-type Milestone = { id: string; name: string; dueAt: string | Date | null };
+type Milestone = { id: string; name: string; color?: string | null; dueAt: string | Date | null };
 
 const PRIORITIES = [
   { value: "baixa", label: "Baixa" },
@@ -72,15 +73,18 @@ export function CardModal({
   const [priority, setPriority] = useState(card.priority);
   const [dueAt, setDueAt] = useState(card.dueAt ? card.dueAt.slice(0, 10) : "");
   const [milestoneId, setMilestoneId] = useState(card.milestoneId ?? "");
-  const [tagInput, setTagInput] = useState("");
-  const [tagSuggestions, setTagSuggestions] = useState<{ id: string; name: string }[]>([]);
   const [isPending, startTransition] = useTransition();
 
   const [availablePages, setAvailablePages] = useState<{ id: string; title: string; icon: string | null }[]>([]);
   const [availableEvents, setAvailableEvents] = useState<{ id: string; title: string; startAt: Date | string }[]>([]);
   const [linkedPageIds, setLinkedPageIds] = useState<string[]>([]);
   const [linkedEventIds, setLinkedEventIds] = useState<string[]>([]);
-  const selectedMilestone = milestones.find((milestone) => milestone.id === milestoneId);
+  const [milestone, setMilestone] = useState<MilestoneDTO | null>(() => {
+    const found = milestones.find((m) => m.id === (card.milestoneId ?? ""));
+    return found
+      ? { id: found.id, name: found.name, color: found.color ?? null, description: null, dueAt: found.dueAt ? new Date(found.dueAt).toISOString() : null }
+      : null;
+  });
 
   useEffect(() => {
     listPagesForCard().then(setAvailablePages);
@@ -90,25 +94,6 @@ export function CardModal({
       setLinkedEventIds(links.events.map((e) => e.id));
     });
   }, [card.id]);
-
-  useEffect(() => {
-    let active = true;
-    const query = tagInput.trim();
-    if (!query) {
-      listTags().then((results) => {
-        if (active) setTagSuggestions(results.filter((tag) => !tags.some((current) => current.tagId === tag.id)));
-      });
-      return () => {
-        active = false;
-      };
-    }
-    searchTags(query).then((results) => {
-      if (active) setTagSuggestions(results.filter((tag) => !tags.some((current) => current.tagId === tag.id)));
-    });
-    return () => {
-      active = false;
-    };
-  }, [tagInput, tags]);
 
   function save() {
     startTransition(async () => {
@@ -129,31 +114,6 @@ export function CardModal({
   function toggleAssignee(userId: string) {
     startTransition(async () => {
       await toggleCardAssignee(boardId, card.id, userId);
-      onChanged();
-    });
-  }
-
-  function addTag() {
-    const clean = tagInput.trim();
-    if (!clean) return;
-    startTransition(async () => {
-      await toggleCardTag(boardId, card.id, clean);
-      setTagInput("");
-      onChanged();
-    });
-  }
-
-  function selectTag(name: string) {
-    startTransition(async () => {
-      await toggleCardTag(boardId, card.id, name);
-      setTagInput("");
-      onChanged();
-    });
-  }
-
-  function removeTag(name: string) {
-    startTransition(async () => {
-      await toggleCardTag(boardId, card.id, name);
       onChanged();
     });
   }
@@ -246,38 +206,19 @@ export function CardModal({
               </div>
               <div>
                 <h3 className="text-sm font-semibold">Milestone</h3>
-                <p className="mt-0.5 text-xs text-base-content/55">Vincule esta tarefa a uma etapa importante do board.</p>
+                <p className="mt-0.5 text-xs text-base-content/55">Etapa importante do projeto — compartilhada com páginas, eventos, ThinkLab e LabTest.</p>
               </div>
             </div>
-            {selectedMilestone && (
-              <div className="mb-3 flex items-center justify-between rounded-lg border border-primary/20 bg-base-100 px-3 py-2">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{selectedMilestone.name}</p>
-                  <p className="text-xs text-base-content/50">
-                    {selectedMilestone.dueAt ? `Prazo: ${new Date(selectedMilestone.dueAt).toLocaleDateString("pt-BR")}` : "Sem prazo definido"}
-                  </p>
-                </div>
-                <Check size={16} className="shrink-0 text-success" />
-              </div>
-            )}
-            <select
-              className="select select-bordered select-sm w-full bg-base-100"
-              value={milestoneId}
-              onChange={(e) => {
-                setMilestoneId(e.target.value);
-                startTransition(async () => {
-                  await updateCard(boardId, card.id, { title, description, dueAt: dueAt || null, priority, milestoneId: e.target.value || null });
-                  onChanged();
-                });
+            <MilestoneSelector
+              value={milestone}
+              onChange={async (m) => {
+                setMilestone(m);
+                setMilestoneId(m?.id ?? "");
+                // updateCard valida as regras da coluna (ex.: milestone exigida).
+                await updateCard(boardId, card.id, { title, description, dueAt: dueAt || null, priority, milestoneId: m?.id ?? null });
+                onChanged();
               }}
-            >
-              <option value="">Sem milestone</option>
-              {milestones.map((milestone) => (
-                <option key={milestone.id} value={milestone.id}>
-                  {milestone.name}{milestone.dueAt ? ` — ${new Date(milestone.dueAt).toLocaleDateString("pt-BR")}` : ""}
-                </option>
-              ))}
-            </select>
+            />
           </section>
 
           <section>
@@ -303,36 +244,16 @@ export function CardModal({
             )}
 
             <div className="mt-3 rounded-xl border border-base-300 p-4">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <p className="text-xs font-medium text-base-content/60">Tags reutilizáveis</p>
-                <span className="text-[11px] text-base-content/40">{tags.length} vinculada(s)</span>
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {tags.map((t) => (
-                  <span key={t.tagId} className="badge badge-primary gap-1.5">
-                    {t.name}
-                    <button type="button" onClick={() => removeTag(t.name)} aria-label={`Remover tag ${t.name}`}><X size={11} /></button>
-                  </span>
-                ))}
-                <input className="input input-bordered input-xs w-36" placeholder="+ adicionar tag" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTag()} />
-              </div>
-              <div className="mt-3 rounded-lg bg-base-200/60 p-2">
-                <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-base-content/45">
-                  {tagInput.trim() ? "Tags encontradas" : "Tags existentes — clique para selecionar"}
-                </p>
-                <div className="flex max-h-24 flex-wrap gap-1.5 overflow-y-auto">
-                  {tagSuggestions.map((tag) => (
-                    <button key={tag.id} type="button" className="badge badge-outline cursor-pointer hover:border-primary hover:text-primary" onClick={() => selectTag(tag.name)}>
-                      {tag.name}
-                    </button>
-                  ))}
-                  {tagSuggestions.length === 0 && (
-                    <span className="text-xs text-base-content/45">
-                      {tagInput.trim() ? "Nenhuma tag encontrada." : "Nenhuma tag disponível."}
-                    </span>
-                  )}
-                </div>
-              </div>
+              <p className="mb-2 text-xs font-medium text-base-content/60">
+                Tags — as mesmas de páginas, calendário, ThinkLab e LabTest
+              </p>
+              <ResourceLabels
+                kind="kanban-card"
+                resourceId={card.id}
+                showMilestone={false}
+                initialTags={tags.map((t) => ({ id: t.tagId, name: t.name, color: t.color }))}
+                onChange={onChanged}
+              />
             </div>
           </section>
 
@@ -348,7 +269,10 @@ export function CardModal({
                   {availablePages.length === 0 ? <span className="text-xs text-base-content/40">Nenhuma página.</span> : availablePages.map((p) => (
                     <label key={p.id} className="flex items-center gap-2 rounded-md px-1 py-1 text-xs hover:bg-base-200">
                       <input type="checkbox" className="checkbox checkbox-xs" checked={linkedPageIds.includes(p.id)} onChange={() => togglePageLink(p.id)} />
-                      <span className="truncate">{p.icon ?? "📝"} {p.title}</span>
+                      <span className="flex min-w-0 items-center gap-1 truncate">
+                        <DocIcon value={p.icon} size={16} />
+                        <span className="truncate">{p.title}</span>
+                      </span>
                     </label>
                   ))}
                 </div>

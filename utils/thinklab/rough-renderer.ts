@@ -1,5 +1,8 @@
 import rough from 'roughjs';
 import { CanvasElement, Point } from '@/types/thinklab.types';
+import { getCachedImage } from './media-cache';
+import { getIconDataUrl } from './icon-library';
+import { EMOJI_FONT_STACK } from './emoji-library';
 
 // Helper to get roughjs options from an element
 export function getRoughOptions(element: CanvasElement) {
@@ -289,6 +292,13 @@ export function renderElementToCanvas(
       break;
     }
 
+    case 'emoji':
+    case 'icon':
+    case 'image': {
+      renderMediaElement(ctx, element);
+      break;
+    }
+
     default:
       break;
   }
@@ -379,4 +389,88 @@ export function findClosestPort(
     }
   }
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Elementos de mídia: emoji, ícone e imagem
+// ---------------------------------------------------------------------------
+
+function normalizedBox(element: CanvasElement) {
+  const x = Math.min(element.x, element.x + element.width);
+  const y = Math.min(element.y, element.y + element.height);
+  return { x, y, w: Math.abs(element.width), h: Math.abs(element.height) };
+}
+
+/** Retângulo "contain" de uma imagem com proporção `ratio` dentro da caixa. */
+export function containRect(box: { x: number; y: number; w: number; h: number }, ratio: number) {
+  if (!Number.isFinite(ratio) || ratio <= 0) return box;
+  let w = box.w;
+  let h = w / ratio;
+  if (h > box.h) {
+    h = box.h;
+    w = h * ratio;
+  }
+  return { x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w, h };
+}
+
+/** Fonte do emoji: ocupa ~85% do menor lado da caixa. */
+export function emojiFontSize(element: CanvasElement) {
+  const { w, h } = normalizedBox(element);
+  return Math.max(8, Math.min(w, h) * 0.85);
+}
+
+function drawPlaceholder(ctx: CanvasRenderingContext2D, box: { x: number; y: number; w: number; h: number }) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(148, 163, 184, 0.15)';
+  ctx.strokeStyle = 'rgba(148, 163, 184, 0.6)';
+  ctx.setLineDash([4, 4]);
+  ctx.lineWidth = 1;
+  ctx.fillRect(box.x, box.y, box.w, box.h);
+  ctx.strokeRect(box.x, box.y, box.w, box.h);
+  ctx.restore();
+}
+
+export function renderMediaElement(ctx: CanvasRenderingContext2D, element: CanvasElement) {
+  const box = normalizedBox(element);
+
+  if (element.type === 'emoji') {
+    if (!element.emoji) return;
+    ctx.save();
+    ctx.font = `${emojiFontSize(element)}px ${EMOJI_FONT_STACK}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#000';
+    // ~6% para baixo compensa a linha de base dos emojis coloridos
+    ctx.fillText(element.emoji, box.x + box.w / 2, box.y + box.h / 2 + box.h * 0.06);
+    ctx.restore();
+    return;
+  }
+
+  const src =
+    element.type === 'icon'
+      ? element.iconName
+        ? getIconDataUrl(element.iconName, element.strokeColor, Math.max(1, element.strokeWidth))
+        : null
+      : element.imageSrc ?? null;
+  if (!src) {
+    drawPlaceholder(ctx, box);
+    return;
+  }
+
+  const img = getCachedImage(src);
+  if (!img) {
+    if (element.type === 'image') drawPlaceholder(ctx, box);
+    return;
+  }
+
+  const rect = element.type === 'icon' ? containRect(box, 1) : containRect(box, img.naturalWidth / img.naturalHeight);
+  ctx.save();
+  if (element.type === 'image' && element.roundness) {
+    const r = Math.min(12, rect.w / 4, rect.h / 4);
+    ctx.beginPath();
+    ctx.roundRect(rect.x, rect.y, rect.w, rect.h, r);
+    ctx.clip();
+  }
+  ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h);
+  ctx.restore();
 }

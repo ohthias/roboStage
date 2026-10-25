@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react';
 import {
-  ChevronLeft,
-  ChevronRight,
   Copy,
   Trash2,
   BringToFront,
@@ -11,29 +9,32 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
-  Sliders,
   Group,
   Ungroup,
-  Layers,
+  Plus,
 } from 'lucide-react';
 import { CanvasElement, FillStyle, FontFamily, FontSize, StrokeStyle, TextAlign } from '@/types/thinklab.types';
+import { FieldLabel, PanelSection, Segmented, SuffixInput, cn } from './editor-ui';
+import { ELEMENT_TYPE_LABELS, elementDisplayName } from './LayersPanel';
+
+export interface DefaultStyles {
+  strokeColor: string;
+  backgroundColor: string;
+  fillStyle: FillStyle;
+  strokeWidth: number;
+  strokeStyle: StrokeStyle;
+  roughness: number;
+  opacity: number;
+  roundness: boolean;
+  fontSize: FontSize;
+  fontFamily: FontFamily;
+  textAlign: TextAlign;
+}
 
 interface PropertiesPanelProps {
   selectedElement: CanvasElement | null;
   selectedElements: CanvasElement[];
-  defaultStyles: {
-    strokeColor: string;
-    backgroundColor: string;
-    fillStyle: FillStyle;
-    strokeWidth: number;
-    strokeStyle: StrokeStyle;
-    roughness: number;
-    opacity: number;
-    roundness: boolean;
-    fontSize: FontSize;
-    fontFamily: FontFamily;
-    textAlign: TextAlign;
-  };
+  defaultStyles: DefaultStyles;
   onChangeStyle: (key: string, value: unknown) => void;
   onDuplicate: () => void;
   onDelete: () => void;
@@ -41,30 +42,99 @@ interface PropertiesPanelProps {
   onSendToBack: () => void;
   onGroup?: () => void;
   onUngroup?: () => void;
+  className?: string;
 }
 
-const STROKE_COLORS = [
-  '#1e293b', // Slate
-  '#dc2626', // Red
-  '#d97706', // Amber
-  '#059669', // Emerald
-  '#2563eb', // Blue
-  '#7c3aed', // Purple
-  '#db2777', // Pink
-  '#475569', // Gray
-];
+const STROKE_COLORS = ['#1e293b', '#dc2626', '#d97706', '#059669', '#2563eb', '#7c3aed', '#db2777'];
+const FILL_COLORS = ['transparent', '#ffffff', '#fee2e2', '#fef3c7', '#d1fae5', '#dbeafe', '#ede9fe'];
 
-const FILL_COLORS = [
-  'transparent',
-  '#ffffff',
-  '#fee2e2', // Light Red
-  '#fef3c7', // Light Amber
-  '#d1fae5', // Light Emerald
-  '#dbeafe', // Light Blue
-  '#ede9fe', // Light Purple
-  '#fce7f3', // Light Pink
-];
+const FILL_STYLE_LABELS: Record<FillStyle, string> = {
+  hachure: 'Hachura',
+  'cross-hatch': 'Hachura cruzada',
+  solid: 'Sólido',
+  dots: 'Pontos',
+  zigzag: 'Zigue-zague',
+  none: 'Sem preenchimento',
+};
 
+const TEXT_TYPES = new Set(['text']);
+const MEDIA_TYPES = new Set(['emoji', 'icon', 'image']);
+const POINT_BASED = new Set(['freedraw', 'path']);
+
+function Swatches({
+  colors,
+  value,
+  onChange,
+  label,
+}: {
+  colors: string[];
+  value: string;
+  onChange: (c: string) => void;
+  label: string;
+}) {
+  const isCustom = !colors.includes(value);
+  return (
+    <div className="grid grid-cols-8 gap-1.5">
+      {colors.map((c) => (
+        <button
+          key={c}
+          type="button"
+          onClick={() => onChange(c)}
+          className={cn(
+            'aspect-square rounded-full border border-base-300 grid place-items-center transition-shadow',
+            value === c && 'ring-2 ring-primary ring-offset-2 ring-offset-base-100',
+          )}
+          style={{ backgroundColor: c === 'transparent' ? 'transparent' : c }}
+          title={c === 'transparent' ? 'Transparente' : c}
+          aria-label={`${label} ${c === 'transparent' ? 'transparente' : c}`}
+          aria-pressed={value === c}
+        >
+          {c === 'transparent' && <span className="block w-full h-px bg-error rotate-45" />}
+        </button>
+      ))}
+      <label
+        className={cn(
+          'relative aspect-square rounded-full border border-dashed border-base-content/30 grid place-items-center cursor-pointer text-base-content/50 hover:text-base-content',
+          isCustom && 'ring-2 ring-primary ring-offset-2 ring-offset-base-100 border-solid',
+        )}
+        style={isCustom && value !== 'transparent' ? { backgroundColor: value } : undefined}
+        title="Cor personalizada"
+      >
+        {!isCustom && <Plus className="size-3" />}
+        <input
+          type="color"
+          className="absolute inset-0 opacity-0 cursor-pointer"
+          value={/^#[0-9a-f]{6}$/i.test(value) ? value : '#000000'}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label={`${label} personalizada`}
+        />
+      </label>
+    </div>
+  );
+}
+
+/** Edita o texto localmente e só registra no histórico ao sair do campo. */
+function TextField({ element, onCommit }: { element: CanvasElement; onCommit: (value: string) => void }) {
+  const [draft, setDraft] = useState(element.text ?? '');
+  return (
+    <textarea
+      className="textarea textarea-sm w-full bg-base-200 border-transparent shadow-none focus:border-primary/60 focus:outline-none resize-y min-h-16"
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => draft !== (element.text ?? '') && onCommit(draft)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) (e.target as HTMLTextAreaElement).blur();
+      }}
+      placeholder="Digite o texto do elemento"
+      aria-label="Texto do elemento"
+    />
+  );
+}
+
+/**
+ * Inspetor (coluna direita): título + contador, seções separadas por divisórias,
+ * campos com sufixo e alternadores — seguindo o painel "Promo Banner" da referência.
+ */
 export function PropertiesPanel({
   selectedElement,
   selectedElements,
@@ -76,383 +146,346 @@ export function PropertiesPanel({
   onSendToBack,
   onGroup,
   onUngroup,
+  className,
 }: PropertiesPanelProps) {
-  const [collapsed, setCollapsed] = useState(false);
-
-  const hasMultiple = selectedElements.length > 1;
-  const targetElement = selectedElement || (selectedElements.length > 0 ? selectedElements[0] : null);
-
+  const count = selectedElements.length;
+  const hasSelection = count > 0;
+  const target = selectedElement || (hasSelection ? selectedElements[0] : null);
   const hasGroup = selectedElements.some((e) => !!e.groupId);
-  const canGroup = selectedElements.length >= 2;
+  const canGroup = count >= 2;
 
-  // Active values (either from selected element or defaults)
-  const strokeColor = targetElement ? targetElement.strokeColor : defaultStyles.strokeColor;
-  const backgroundColor = targetElement ? targetElement.backgroundColor : defaultStyles.backgroundColor;
-  const fillStyle = targetElement ? targetElement.fillStyle : defaultStyles.fillStyle;
-  const strokeWidth = targetElement ? targetElement.strokeWidth : defaultStyles.strokeWidth;
-  const strokeStyle = targetElement ? targetElement.strokeStyle : defaultStyles.strokeStyle;
-  const roughness = targetElement ? targetElement.roughness : defaultStyles.roughness;
-  const opacity = targetElement ? targetElement.opacity : defaultStyles.opacity;
-  const roundness = targetElement ? !!targetElement.roundness : defaultStyles.roundness;
-  const fontSize = targetElement?.fontSize || defaultStyles.fontSize;
-  const fontFamily = targetElement?.fontFamily || defaultStyles.fontFamily;
-  const textAlign = targetElement?.textAlign || defaultStyles.textAlign;
+  const strokeColor = target?.strokeColor ?? defaultStyles.strokeColor;
+  const backgroundColor = target?.backgroundColor ?? defaultStyles.backgroundColor;
+  const fillStyle = target?.fillStyle ?? defaultStyles.fillStyle;
+  const strokeWidth = target?.strokeWidth ?? defaultStyles.strokeWidth;
+  const strokeStyle = target?.strokeStyle ?? defaultStyles.strokeStyle;
+  const roughness = target?.roughness ?? defaultStyles.roughness;
+  const opacity = target?.opacity ?? defaultStyles.opacity;
+  const roundness = target ? !!target.roundness : defaultStyles.roundness;
+  const fontSize = target?.fontSize || defaultStyles.fontSize;
+  const fontFamily = target?.fontFamily || defaultStyles.fontFamily;
+  const textAlign = target?.textAlign || defaultStyles.textAlign;
 
-  if (collapsed) {
-    return (
-      <button
-        onClick={() => setCollapsed(false)}
-        className="fixed top-20 left-3 sm:left-4 z-20 btn btn-sm btn-circle btn-neutral shadow-lg tooltip tooltip-right"
-        data-tip="Abrir Painel de Estilo"
-        aria-label="Expandir painel de estilo"
-      >
-        <Sliders className="w-4 h-4" />
-      </button>
-    );
-  }
+  const title = !hasSelection
+    ? 'Estilo padrão'
+    : count > 1
+      ? hasGroup
+        ? 'Grupo'
+        : 'Seleção múltipla'
+      : elementDisplayName(target!);
+
+  const badge = !hasSelection
+    ? 'Novo'
+    : count > 1
+      ? String(count)
+      : (ELEMENT_TYPE_LABELS[target!.type] ?? target!.type);
+
+  const showText = !!selectedElement && (selectedElement.text !== undefined || TEXT_TYPES.has(selectedElement.type));
+  const showTypography =
+    !hasSelection || (target && !MEDIA_TYPES.has(target.type) && (target.text !== undefined || target.type === 'text'));
+  const showRoundness = !target || target.type === 'rectangle' || target.type === 'image';
+  const roughnessPreset = roughness < 0.9 ? 0.5 : roughness < 1.9 ? 1.4 : 2.4;
+
+  // Mídia: emoji e imagem só têm opacidade/posição; ícone usa a cor e a espessura do traço.
+  const allMedia = hasSelection && selectedElements.every((e) => MEDIA_TYPES.has(e.type));
+  const allIcons = hasSelection && selectedElements.every((e) => e.type === 'icon');
+  const isImage = target?.type === 'image' && count === 1;
 
   return (
     <aside
-      aria-label="Painel de propriedades do elemento"
-      className="fixed top-20 left-2 sm:left-4 z-20 w-[calc(100vw-1rem)] max-w-64 max-h-[calc(100vh-6.5rem)] overflow-y-auto bg-base-100/95 backdrop-blur-md border border-base-300 rounded-2xl shadow-xl p-3 sm:p-3.5 space-y-3 sm:space-y-3.5 select-none text-xs"
+      aria-label="Propriedades do elemento"
+      className={cn('flex flex-col min-h-0 bg-base-100 border-l border-base-300 select-none', className)}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-base-200 pb-2">
-        <div className="flex items-center gap-1.5">
-          {hasGroup ? (
-            <Layers className="w-3.5 h-3.5 text-primary" />
-          ) : hasMultiple ? (
-            <Group className="w-3.5 h-3.5 text-primary" />
-          ) : null}
-          <span className="font-semibold text-base-content/80 text-[11px] uppercase tracking-wider">
-            {hasMultiple
-              ? hasGroup
-                ? `Grupo (${selectedElements.length} itens)`
-                : `${selectedElements.length} selecionados`
-              : targetElement
-              ? `Editar: ${targetElement.type}`
-              : 'Estilo Padrão'}
-          </span>
-        </div>
-        <button
-          onClick={() => setCollapsed(true)}
-          className="btn btn-ghost btn-xs btn-circle text-base-content/60"
-          title="Recolher painel"
-          aria-label="Recolher painel"
+      {/* Cabeçalho */}
+      <div className="h-14 shrink-0 px-4 flex items-center justify-between gap-2 border-b border-base-300">
+        <h2 className="text-[15px] font-medium truncate" title={title}>
+          {title}
+        </h2>
+        <span className="badge badge-sm bg-base-200 border-transparent text-base-content/70 shrink-0">{badge}</span>
+      </div>
+
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {!hasSelection && (
+          <p className="px-4 pt-4 text-xs text-base-content/55">
+            Nada selecionado. Estes estilos serão usados nos próximos elementos que você desenhar.
+          </p>
+        )}
+
+        {/* Imagem (como o bloco "Picture" da referência) */}
+        {isImage && target?.imageSrc && (
+          <PanelSection title="Imagem">
+            <div className="rounded-box border border-base-300 overflow-hidden">
+              <div className="h-32 bg-base-200 grid place-items-center p-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={target.imageSrc} alt="" className="max-h-full max-w-full object-contain" />
+              </div>
+              <p className="px-3 py-2 text-xs text-base-content/70 truncate border-t border-base-300">
+                {target.missionRef
+                  ? `${target.missionRef.league} · ${target.missionRef.season} · ${target.missionRef.code}`
+                  : target.imageSrc.split('/').pop()}
+              </p>
+            </div>
+          </PanelSection>
+        )}
+
+        {/* Texto */}
+        {showText && selectedElement && (
+          <PanelSection title="Conteúdo">
+            <TextField key={selectedElement.id} element={selectedElement} onCommit={(v) => onChangeStyle('text', v)} />
+          </PanelSection>
+        )}
+
+        {/* Camada */}
+        <PanelSection
+          title="Camada"
+          action={
+            hasSelection && (
+              <div className="flex items-center gap-0.5">
+                <button
+                  onClick={onBringToFront}
+                  className="btn btn-ghost btn-xs btn-square"
+                  title="Trazer para frente"
+                  aria-label="Trazer para frente"
+                >
+                  <BringToFront className="size-3.5" />
+                </button>
+                <button
+                  onClick={onSendToBack}
+                  className="btn btn-ghost btn-xs btn-square"
+                  title="Enviar para trás"
+                  aria-label="Enviar para trás"
+                >
+                  <SendToBack className="size-3.5" />
+                </button>
+              </div>
+            )
+          }
         >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Group / Ungroup Actions */}
-      {(canGroup || hasGroup) && (
-        <div className="bg-primary/10 border border-primary/20 rounded-xl p-2 flex items-center justify-between gap-2">
-          <span className="text-[11px] font-medium text-primary">
-            {hasGroup ? 'Elementos Agrupados' : 'Agrupar Seleção'}
-          </span>
-          <div className="flex items-center gap-1">
-            {canGroup && onGroup && (
-              <button
-                onClick={onGroup}
-                className="btn btn-xs btn-primary gap-1"
-                title="Agrupar elementos (Ctrl+G)"
-              >
-                <Group className="w-3 h-3" />
-                <span>Agrupar</span>
-              </button>
-            )}
-            {hasGroup && onUngroup && (
-              <button
-                onClick={onUngroup}
-                className="btn btn-xs btn-outline btn-neutral gap-1"
-                title="Desagrupar elementos (Ctrl+Shift+G)"
-              >
-                <Ungroup className="w-3 h-3" />
-                <span>Desagrupar</span>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Cor do Contorno (Stroke) */}
-      <div>
-        <label className="text-[11px] font-medium text-base-content/70 block mb-1.5">
-          Cor do Traço
-        </label>
-        <div className="grid grid-cols-4 gap-1.5">
-          {STROKE_COLORS.map((c) => (
-            <button
-              key={c}
-              onClick={() => onChangeStyle('strokeColor', c)}
-              className={`h-6 rounded-md border transition-all flex items-center justify-center ${
-                strokeColor === c ? 'ring-2 ring-primary ring-offset-1 scale-105' : 'border-base-300'
-              }`}
-              style={{ backgroundColor: c }}
-              title={c}
-              aria-label={`Cor do traço ${c}`}
+          <div className={cn('grid gap-2', allMedia ? 'grid-cols-[5.5rem]' : 'grid-cols-[5.5rem_1fr]')}>
+            <SuffixInput
+              value={Math.round(opacity * 100)}
+              suffix="%"
+              min={10}
+              max={100}
+              ariaLabel="Opacidade"
+              onChange={(v) => onChangeStyle('opacity', v / 100)}
             />
-          ))}
-        </div>
-      </div>
+            {!allMedia && (
+              <select
+                className="select select-sm w-full bg-base-200 border-transparent shadow-none"
+                value={fillStyle}
+                onChange={(e) => onChangeStyle('fillStyle', e.target.value as FillStyle)}
+                aria-label="Padrão de preenchimento"
+              >
+                {(Object.keys(FILL_STYLE_LABELS) as FillStyle[]).map((s) => (
+                  <option key={s} value={s}>
+                    {FILL_STYLE_LABELS[s]}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        </PanelSection>
 
-      {/* Cor de Fundo (Background) */}
-      <div>
-        <label className="text-[11px] font-medium text-base-content/70 block mb-1.5">
-          Preenchimento
-        </label>
-        <div className="grid grid-cols-4 gap-1.5">
-          {FILL_COLORS.map((c) => (
-            <button
-              key={c}
-              onClick={() => onChangeStyle('backgroundColor', c)}
-              className={`h-6 rounded-md border transition-all flex items-center justify-center relative ${
-                backgroundColor === c ? 'ring-2 ring-primary ring-offset-1 scale-105' : 'border-base-300'
-              }`}
-              style={{
-                backgroundColor: c === 'transparent' ? '#ffffff' : c,
-              }}
-              title={c === 'transparent' ? 'Transparente' : c}
-              aria-label={c === 'transparent' ? 'Preenchimento transparente' : `Cor de preenchimento ${c}`}
-            >
-              {c === 'transparent' && (
-                <span className="text-[9px] text-error font-bold">✕</span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
+        {/* Cores */}
+        {(!allMedia || allIcons) && (
+          <PanelSection title={allIcons ? 'Cor do ícone' : 'Cores'}>
+            <div>
+              {!allIcons && <FieldLabel>Traço</FieldLabel>}
+              <Swatches
+                colors={STROKE_COLORS}
+                value={strokeColor}
+                label="Cor do traço"
+                onChange={(c) => onChangeStyle('strokeColor', c)}
+              />
+            </div>
+            {!allIcons && (
+              <div>
+                <FieldLabel>Preenchimento</FieldLabel>
+                <Swatches
+                  colors={FILL_COLORS}
+                  value={backgroundColor}
+                  label="Cor de preenchimento"
+                  onChange={(c) => onChangeStyle('backgroundColor', c)}
+                />
+              </div>
+            )}
+          </PanelSection>
+        )}
 
-      {/* Estilo de Preenchimento (Fill Style) */}
-      <div>
-        <label className="text-[11px] font-medium text-base-content/70 block mb-1.5">
-          Padrão de Hachura
-        </label>
-        <div className="grid grid-cols-3 gap-1">
-          {(['hachure', 'cross-hatch', 'solid', 'dots', 'zigzag', 'none'] as FillStyle[]).map((style) => (
-            <button
-              key={style}
-              onClick={() => onChangeStyle('fillStyle', style)}
-              className={`btn btn-xs capitalize ${
-                fillStyle === style ? 'btn-primary' : 'btn-ghost border border-base-300'
-              }`}
-            >
-              {style === 'hachure'
-                ? 'Hachura'
-                : style === 'cross-hatch'
-                ? 'Cruzada'
-                : style === 'solid'
-                ? 'Sólido'
-                : style === 'dots'
-                ? 'Pontos'
-                : style === 'zigzag'
-                ? 'Zigue-zague'
-                : 'Nenhum'}
-            </button>
-          ))}
-        </div>
-      </div>
+        {/* Traço */}
+        {(!allMedia || allIcons) && (
+          <PanelSection title="Traço">
+            <div>
+              <FieldLabel>Espessura</FieldLabel>
+              <Segmented
+                ariaLabel="Espessura do traço"
+                value={strokeWidth}
+                onChange={(v) => onChangeStyle('strokeWidth', v)}
+                options={[
+                  { value: 1, label: 'Fino' },
+                  { value: 2, label: 'Médio' },
+                  { value: 4, label: 'Grosso' },
+                ]}
+              />
+            </div>
+            {!allIcons && (
+              <>
+                <div>
+                  <FieldLabel>Tipo de linha</FieldLabel>
+                  <Segmented
+                    ariaLabel="Tipo de linha"
+                    value={strokeStyle}
+                    onChange={(v) => onChangeStyle('strokeStyle', v)}
+                    options={[
+                      { value: 'solid', label: 'Contínua' },
+                      { value: 'dashed', label: 'Tracejada' },
+                      { value: 'dotted', label: 'Pontilhada' },
+                    ]}
+                  />
+                </div>
+                <div>
+                  <FieldLabel>Estilo do desenho</FieldLabel>
+                  <Segmented
+                    ariaLabel="Estilo do desenho"
+                    value={roughnessPreset}
+                    onChange={(v) => onChangeStyle('roughness', v)}
+                    options={[
+                      { value: 0.5, label: 'Arquiteto' },
+                      { value: 1.4, label: 'Artista' },
+                      { value: 2.4, label: 'Cartum' },
+                    ]}
+                  />
+                </div>
+              </>
+            )}
+          </PanelSection>
+        )}
 
-      {/* Espessura do Traço */}
-      <div>
-        <label className="text-[11px] font-medium text-base-content/70 block mb-1.5">
-          Espessura do Traço
-        </label>
-        <div className="join w-full">
-          {[1, 2, 4].map((width) => (
-            <button
-              key={width}
-              onClick={() => onChangeStyle('strokeWidth', width)}
-              className={`btn btn-xs join-item flex-1 ${
-                strokeWidth === width ? 'btn-primary' : 'btn-ghost border border-base-300'
-              }`}
-            >
-              {width === 1 ? 'Fino' : width === 2 ? 'Médio' : 'Grosso'}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Estilo da Linha (Solid, Dashed, Dotted) */}
-      <div>
-        <label className="text-[11px] font-medium text-base-content/70 block mb-1.5">
-          Tipo de Linha
-        </label>
-        <div className="join w-full">
-          {(['solid', 'dashed', 'dotted'] as StrokeStyle[]).map((style) => (
-            <button
-              key={style}
-              onClick={() => onChangeStyle('strokeStyle', style)}
-              className={`btn btn-xs join-item flex-1 ${
-                strokeStyle === style ? 'btn-primary' : 'btn-ghost border border-base-300'
-              }`}
-            >
-              {style === 'solid' ? 'Contínua' : style === 'dashed' ? 'Tracejada' : 'Pontilhada'}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Sloppiness / Roughness */}
-      <div>
-        <label className="text-[11px] font-medium text-base-content/70 block mb-1.5">
-          Estilo do Desenho (Sloppiness)
-        </label>
-        <div className="join w-full">
-          {[
-            { val: 0.5, label: 'Arquiteto' },
-            { val: 1.4, label: 'Artista' },
-            { val: 2.4, label: 'Cartum' },
-          ].map((item) => (
-            <button
-              key={item.val}
-              onClick={() => onChangeStyle('roughness', item.val)}
-              className={`btn btn-xs join-item flex-1 ${
-                Math.abs(roughness - item.val) < 0.3 ? 'btn-primary' : 'btn-ghost border border-base-300'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Cantos Arredondados */}
-      {(targetElement?.type === 'rectangle' || !targetElement) && (
-        <div className="flex items-center justify-between pt-1">
-          <span className="text-[11px] font-medium text-base-content/70">
-            Cantos Arredondados
-          </span>
-          <input
-            type="checkbox"
-            className="toggle toggle-primary toggle-sm"
-            checked={roundness}
-            onChange={(e) => onChangeStyle('roundness', e.target.checked)}
+        {/* Cantos arredondados */}
+        {showRoundness && (
+          <PanelSection
+            title="Cantos arredondados"
+            action={
+              <input
+                type="checkbox"
+                className="toggle toggle-sm toggle-primary"
+                checked={roundness}
+                onChange={(e) => onChangeStyle('roundness', e.target.checked)}
+                aria-label="Cantos arredondados"
+              />
+            }
           />
-        </div>
-      )}
+        )}
 
-      {/* Opacidade */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <label className="text-[11px] font-medium text-base-content/70">
-            Opacidade
-          </label>
-          <span className="text-[10px] font-mono text-base-content/60">
-            {Math.round(opacity * 100)}%
-          </span>
-        </div>
-        <input
-          type="range"
-          min="20"
-          max="100"
-          value={Math.round(opacity * 100)}
-          onChange={(e) => onChangeStyle('opacity', Number(e.target.value) / 100)}
-          className="range range-primary range-xs w-full"
-        />
+        {/* Posição e tamanho — só para um único elemento */}
+        {selectedElement && (
+          <PanelSection title="Posição e tamanho">
+            <div className="grid grid-cols-2 gap-2">
+              <SuffixInput
+                value={selectedElement.x}
+                suffix="X"
+                ariaLabel="Posição X"
+                onChange={(v) => onChangeStyle('x', v)}
+              />
+              <SuffixInput
+                value={selectedElement.y}
+                suffix="Y"
+                ariaLabel="Posição Y"
+                onChange={(v) => onChangeStyle('y', v)}
+              />
+              <SuffixInput
+                value={selectedElement.width}
+                suffix="L"
+                ariaLabel="Largura"
+                disabled={POINT_BASED.has(selectedElement.type)}
+                onChange={(v) => onChangeStyle('width', v)}
+              />
+              <SuffixInput
+                value={selectedElement.height}
+                suffix="A"
+                ariaLabel="Altura"
+                disabled={POINT_BASED.has(selectedElement.type)}
+                onChange={(v) => onChangeStyle('height', v)}
+              />
+            </div>
+          </PanelSection>
+        )}
+
+        {/* Tipografia */}
+        {showTypography && (
+          <PanelSection title="Tipografia">
+            <Segmented
+              ariaLabel="Fonte"
+              value={fontFamily}
+              onChange={(v) => onChangeStyle('fontFamily', v)}
+              options={(['Patrick Hand', 'Plus Jakarta Sans', 'Fira Code'] as FontFamily[]).map((f) => ({
+                value: f,
+                title: f,
+                label: (
+                  <span style={{ fontFamily: f }}>
+                    {f === 'Patrick Hand' ? 'Manuscrita' : f === 'Plus Jakarta Sans' ? 'Sans' : 'Código'}
+                  </span>
+                ),
+              }))}
+            />
+            <div className="grid grid-cols-[5.5rem_1fr] gap-2">
+              <SuffixInput
+                value={fontSize}
+                suffix="px"
+                min={8}
+                max={96}
+                ariaLabel="Tamanho da fonte"
+                onChange={(v) => onChangeStyle('fontSize', v)}
+              />
+              <Segmented
+                ariaLabel="Alinhamento do texto"
+                value={textAlign}
+                onChange={(v) => onChangeStyle('textAlign', v)}
+                options={[
+                  { value: 'left', label: <AlignLeft className="size-3.5" />, title: 'Alinhar à esquerda' },
+                  { value: 'center', label: <AlignCenter className="size-3.5" />, title: 'Centralizar' },
+                  { value: 'right', label: <AlignRight className="size-3.5" />, title: 'Alinhar à direita' },
+                ]}
+              />
+            </div>
+          </PanelSection>
+        )}
       </div>
 
-      {/* Propriedades de Texto (quando texto existe) */}
-      {(targetElement?.text !== undefined || targetElement?.type === 'text') && (
-        <div className="border-t border-base-200 pt-2 space-y-2">
-          <label className="text-[11px] font-semibold text-base-content/80 block">
-            Tipografia do Texto
-          </label>
-
-          {/* Fonte */}
-          <div className="grid grid-cols-3 gap-1">
-            {(['Patrick Hand', 'Plus Jakarta Sans', 'Fira Code'] as FontFamily[]).map((f) => (
-              <button
-                key={f}
-                onClick={() => onChangeStyle('fontFamily', f)}
-                className={`btn btn-xs ${
-                  fontFamily === f ? 'btn-primary' : 'btn-ghost border border-base-300'
-                }`}
-                style={{ fontFamily: f }}
-              >
-                {f === 'Patrick Hand' ? 'Manuscrita' : f === 'Plus Jakarta Sans' ? 'Sans' : 'Código'}
-              </button>
-            ))}
-          </div>
-
-          {/* Tamanho da Fonte */}
-          <div className="join w-full">
-            {([14, 18, 24, 32] as FontSize[]).map((size) => (
-              <button
-                key={size}
-                onClick={() => onChangeStyle('fontSize', size)}
-                className={`btn btn-xs join-item flex-1 ${
-                  fontSize === size ? 'btn-primary' : 'btn-ghost border border-base-300'
-                }`}
-              >
-                {size}px
-              </button>
-            ))}
-          </div>
-
-          {/* Alinhamento */}
-          <div className="join w-full">
-            {(['left', 'center', 'right'] as TextAlign[]).map((align) => (
-              <button
-                key={align}
-                onClick={() => onChangeStyle('textAlign', align)}
-                className={`btn btn-xs join-item flex-1 ${
-                  textAlign === align ? 'btn-primary' : 'btn-ghost border border-base-300'
-                }`}
-                title={`Alinhar ${align}`}
-                aria-label={`Alinhar ${align}`}
-              >
-                {align === 'left' ? (
-                  <AlignLeft className="w-3.5 h-3.5 mx-auto" />
-                ) : align === 'center' ? (
-                  <AlignCenter className="w-3.5 h-3.5 mx-auto" />
-                ) : (
-                  <AlignRight className="w-3.5 h-3.5 mx-auto" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Ações para elementos selecionados */}
-      {(targetElement || selectedElements.length > 0) && (
-        <div className="border-t border-base-200 pt-2 space-y-1.5">
-          <div className="grid grid-cols-2 gap-1.5">
-            <button
-              onClick={onBringToFront}
-              className="btn btn-xs btn-ghost border border-base-300 gap-1"
-              title="Trazer para Frente"
-            >
-              <BringToFront className="w-3.5 h-3.5" />
-              <span>Para Frente</span>
+      {/* Ações da seleção */}
+      {hasSelection && (
+        <div className="shrink-0 border-t border-base-300 p-3 flex items-center gap-2">
+          {canGroup && onGroup && !hasGroup && (
+            <button onClick={onGroup} className="btn btn-sm btn-ghost font-normal gap-1.5" title="Agrupar (Ctrl+G)">
+              <Group className="size-4" /> Agrupar
             </button>
+          )}
+          {hasGroup && onUngroup && (
             <button
-              onClick={onSendToBack}
-              className="btn btn-xs btn-ghost border border-base-300 gap-1"
-              title="Enviar para Trás"
+              onClick={onUngroup}
+              className="btn btn-sm btn-ghost font-normal gap-1.5"
+              title="Desagrupar (Ctrl+Shift+G)"
             >
-              <SendToBack className="w-3.5 h-3.5" />
-              <span>Para Trás</span>
+              <Ungroup className="size-4" /> Desagrupar
             </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-1.5">
+          )}
+          <div className="ml-auto flex items-center gap-1">
             <button
               onClick={onDuplicate}
-              className="btn btn-xs btn-ghost border border-base-300 gap-1"
+              className="btn btn-sm btn-square btn-ghost"
               title="Duplicar (Ctrl+D)"
+              aria-label="Duplicar"
             >
-              <Copy className="w-3.5 h-3.5" />
-              <span>Duplicar</span>
+              <Copy className="size-4" />
             </button>
             <button
               onClick={onDelete}
-              className="btn btn-xs btn-error btn-outline gap-1"
+              className="btn btn-sm btn-square btn-ghost text-error hover:bg-error/10"
               title="Excluir (Del)"
+              aria-label="Excluir"
             >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Excluir</span>
+              <Trash2 className="size-4" />
             </button>
           </div>
         </div>

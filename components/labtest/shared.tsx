@@ -81,3 +81,21 @@ export function EmptyState({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+export function CustomTooltip({ active, payload, label }: {
+  active?: boolean;
+  payload?: { name?: string; value?: number | string }[];
+  label?: string;
+}) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border border-base-content/10 bg-base-100 px-3 py-2 text-xs shadow-md">
+      <p className="font-medium text-base-content/70">{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} className="text-base-content/50">
+          {p.name}: <span className="font-semibold text-base-content">{p.value}</span>
+        </p>
+      ))}
+    </div>
+  );
+}

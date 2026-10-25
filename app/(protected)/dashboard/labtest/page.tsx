@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LabTestCard } from "@/components/labtest/LabTestCard";
 import { StatCard } from "@/components/labtest/shared";
 import { LabTestToolbar } from "@/components/labtest/LabTestToolbar";
+import { LabTestTabs } from "@/components/labtest/LabTestTabs";
 import { MODE_META, normalizeStatus, type ModeKey } from "@/utils/labtest/catalog";
 import { listTests } from "./new/actions";
 import { getResourcesTags } from "@/utils/stagebook/actions/tags";
@@ -78,14 +79,7 @@ export default async function LabTestPage({
       </section>
 
       <nav className="mt-8 flex flex-wrap items-center justify-between gap-3">
-        <div role="tablist" className="tabs tabs-box bg-base-100">
-          <Link role="tab" href="/dashboard/labtest" className="tab tab-active">
-            Geral
-          </Link>
-          <span role="tab" aria-disabled="true" className="tab tab-disabled">
-            Anatix · em breve
-          </span>
-        </div>
+        <LabTestTabs active="geral" />
 
         <div className="flex flex-wrap items-center gap-1.5" aria-label="Filtrar por modo">
           <Link

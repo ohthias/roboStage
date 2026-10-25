@@ -98,7 +98,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   };
 
   return (
-    <div className="modal modal-open">
+    <div className="modal modal-open modal-bottom sm:modal-middle">
       <div className="modal-box max-w-md relative bg-base-100">
         <button
           onClick={onClose}

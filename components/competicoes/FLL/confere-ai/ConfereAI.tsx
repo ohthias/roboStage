@@ -14,8 +14,17 @@ import ChecklistCard from "./ChecklistCard";
 import AddChecklistModal from "./AddChecklistModal";
 import ResetProgressModal from "./ResetProgressModal";
 import Header from "@/components/UI/Header";
+import {
+  CONFERE_AI_COMPETITIONS,
+  ConfereAICompetition,
+} from "@/utils/competitions/fll/confere-ai/types";
 
-export default function ConfereAI() {
+export default function ConfereAI({
+  competicao = "fll",
+}: {
+  competicao?: ConfereAICompetition;
+}) {
+  const info = CONFERE_AI_COMPETITIONS[competicao];
   const {
     status,
     config,
@@ -30,7 +39,7 @@ export default function ConfereAI() {
     removeCustomChecklist,
     resetProgress,
     restoreDefaults,
-  } = useConfereAI();
+  } = useConfereAI(competicao);
 
   const [addChecklistOpen, setAddChecklistOpen] = useState(false);
   const [resetModal, setResetModal] = useState<"progress" | "restore-defaults" | null>(null);
@@ -89,7 +98,7 @@ export default function ConfereAI() {
   return (
     <div className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
-      <Header name="Confia," highlight="mas Confira!" type="Cheklist" description="Organize sua equipe para os treinos e campeonatos da FLL. Adicione itens personalizados às suas checklists, e acompanhe o progresso de forma simples e eficiente. " />
+      <Header name="Confia," highlight="mas Confira!" type="Cheklist" description={info.description} />
 
       {/* Seleção de modo */}
       <ModeSelector modes={config.modes} activeMode={activeMode.id} onSelect={setActiveMode} />
@@ -100,7 +109,7 @@ export default function ConfereAI() {
             <span className="text-xs font-semibold uppercase tracking-wide text-accent">
               Campeonato
             </span>
-            <p className="text-base-content/70">Próxima missão: estar pronto.</p>
+            <p className="text-base-content/70">{info.nextStepLabel}</p>
           </div>
 
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

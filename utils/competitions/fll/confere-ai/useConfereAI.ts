@@ -3,6 +3,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  CONFERE_AI_COMPETITIONS,
+  ConfereAICompetition,
   ConfereAIConfig,
   ConfereAICustomChecklist,
   ConfereAIModeId,
@@ -12,7 +14,6 @@ import {
 import { getConfereAIState, resetConfereAIState, setConfereAIState } from "./storage";
 import { collectAllItemIdsForMode, generateId } from "./utils";
 
-const CONFIG_URL = "/data/confere-ai.json";
 
 type LoadStatus = "loading" | "error" | "ready";
 
@@ -36,7 +37,8 @@ export interface UseConfereAIResult {
   restoreDefaults: () => void;
 }
 
-export function useConfereAI(): UseConfereAIResult {
+export function useConfereAI(competition: ConfereAICompetition = "fll"): UseConfereAIResult {
+  const CONFIG_URL = CONFERE_AI_COMPETITIONS[competition].configUrl;
   const [status, setStatus] = useState<LoadStatus>("loading");
   const [config, setConfig] = useState<ConfereAIConfig | null>(null);
   const [state, setState] = useState<ConfereAIState>(() => createDefaultConfereAIState());
@@ -48,7 +50,7 @@ export function useConfereAI(): UseConfereAIResult {
   useEffect(() => {
     if (hydrated.current) return;
     hydrated.current = true;
-    setState(getConfereAIState());
+    setState(getConfereAIState(competition));
   }, []);
 
   const loadConfig = useCallback(() => {
@@ -65,7 +67,7 @@ export function useConfereAI(): UseConfereAIResult {
       .catch(() => {
         setStatus("error");
       });
-  }, []);
+  }, [CONFIG_URL]);
 
   useEffect(() => {
     loadConfig();
@@ -73,8 +75,8 @@ export function useConfereAI(): UseConfereAIResult {
 
   const persist = useCallback((next: ConfereAIState) => {
     setState(next);
-    setConfereAIState(next);
-  }, []);
+    setConfereAIState(next, competition);
+  }, [competition]);
 
   const setActiveMode = useCallback(
     (modeId: ConfereAIModeId) => {
@@ -205,9 +207,9 @@ export function useConfereAI(): UseConfereAIResult {
 
   /** Restaura tudo para o padrão de fábrica, removendo também personalizações. */
   const restoreDefaults = useCallback(() => {
-    const next = resetConfereAIState(state.activeMode);
+    const next = resetConfereAIState(state.activeMode, competition);
     setState(next);
-  }, [state.activeMode]);
+  }, [state.activeMode, competition]);
 
   return {
     status,

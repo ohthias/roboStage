@@ -13,12 +13,16 @@
 
 import {
   CONFERE_AI_STATE_VERSION,
+  ConfereAICompetition,
   ConfereAIState,
   createDefaultConfereAIState,
 } from "./types";
 
-const COOKIE_NAME = "confere-ai-state";
-const LOCAL_STORAGE_KEY = "confere-ai-state";
+// A FLL mantém a chave original para não perder dados já salvos.
+// Outras competições ganham sufixo próprio (ex.: `confere-ai-state-obr`).
+function storageKey(competition: ConfereAICompetition): string {
+  return competition === "fll" ? "confere-ai-state" : `confere-ai-state-${competition}`;
+}
 const COOKIE_MAX_AGE_DAYS = 365;
 // Limite conservador (a maioria dos navegadores aceita ~4096 bytes por cookie,
 // incluindo o nome). Deixamos margem para o restante do cabeçalho do cookie.
@@ -138,7 +142,9 @@ function isOverflowMarker(value: unknown): value is OverflowMarker {
  * Lê o estado persistido do dispositivo do usuário.
  * Nunca lança exceção — em qualquer cenário de erro, retorna um estado padrão.
  */
-export function getConfereAIState(): ConfereAIState {
+export function getConfereAIState(competition: ConfereAICompetition = "fll"): ConfereAIState {
+  const COOKIE_NAME = storageKey(competition);
+  const LOCAL_STORAGE_KEY = COOKIE_NAME;
   if (!isBrowser()) {
     return createDefaultConfereAIState();
   }
@@ -184,7 +190,12 @@ export function getConfereAIState(): ConfereAIState {
  * suficiente; caso contrário, guarda o conteúdo completo em localStorage e
  * mantém apenas um marcador leve no cookie.
  */
-export function setConfereAIState(state: ConfereAIState): void {
+export function setConfereAIState(
+  state: ConfereAIState,
+  competition: ConfereAICompetition = "fll"
+): void {
+  const COOKIE_NAME = storageKey(competition);
+  const LOCAL_STORAGE_KEY = COOKIE_NAME;
   if (!isBrowser()) return;
 
   const serialized = JSON.stringify(state);
@@ -208,7 +219,12 @@ export function setConfereAIState(state: ConfereAIState): void {
  * Apaga completamente os dados locais (cookie + localStorage) e retorna um
  * estado padrão novo. Usado pela ação "Restaurar padrão".
  */
-export function resetConfereAIState(activeMode?: string): ConfereAIState {
+export function resetConfereAIState(
+  activeMode?: string,
+  competition: ConfereAICompetition = "fll"
+): ConfereAIState {
+  const COOKIE_NAME = storageKey(competition);
+  const LOCAL_STORAGE_KEY = COOKIE_NAME;
   deleteCookie(COOKIE_NAME);
   removeLocalStorage(LOCAL_STORAGE_KEY);
   return createDefaultConfereAIState(activeMode);

@@ -636,6 +636,10 @@ export const FLL_QUESTIONS: Question[] = [
 
 export const FLL_MODE: FlashQAMode = {
   name: "FLL",
+  highlight: "Flashcards FLL",
+  description:
+    "Treine sua equipe para responder perguntas sobre a competição. Escolha o tema, a quantidade de perguntas e o tempo por pergunta.",
+  sampleQuestion: "Qual é o seu diferencial competitivo?",
   questions: FLL_QUESTIONS,
   categories: [
     Category.ALL,

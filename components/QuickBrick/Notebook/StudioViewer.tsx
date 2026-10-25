@@ -14,7 +14,7 @@ import { Box, ImageOff, Loader2 } from "lucide-react";
  * o resto do modelo continua aparecendo.
  */
 
-const STUDIO_ZIP_PASSWORD = "soho0909";
+const STUDIO_ZIP_PASSWORD = process.env.NEXT_PUBLIC_STUDIO_ZIP_PASSWORD ?? "";
 const LDRAW_LIBRARY =
   process.env.NEXT_PUBLIC_LDRAW_LIBRARY_URL ??
   "https://raw.githubusercontent.com/gkjohnson/ldraw-parts-library/master/";

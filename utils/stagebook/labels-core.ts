@@ -27,6 +27,7 @@ import {
   type MilestoneDTO,
   type TagDTO,
 } from "@/types/labels";
+import { quickbrickNotebooks, quickbrickNotebookTags } from "@/db/schema/quickbrick";
 
 /**
  * Núcleo do sistema UNIVERSAL de tags e milestones.
@@ -332,6 +333,64 @@ const ADAPTERS: Record<LabelableKind, Adapter> = {
         .from(tests)
         .where(inArray(tests.milestoneId, ids))
         .groupBy(tests.milestoneId);
+      return rows.flatMap((r) => (r.milestoneId ? [{ milestoneId: r.milestoneId, count: r.count }] : []));
+    },
+  },
+  quickbrick: {
+    async owner(id) {
+      const [row] = await db
+        .select({ userId: quickbrickNotebooks.userId, teamId: quickbrickNotebooks.teamId })
+        .from(quickbrickNotebooks)
+        .where(eq(quickbrickNotebooks.id, id))
+        .limit(1);
+      return row ? normalizeOwner(row) : null;
+    },
+    async tagsOf(ids) {
+      if (!ids.length) return [];
+      const rows = await db
+        .select({ resourceId: quickbrickNotebookTags.notebookId, ...tagColumns })
+        .from(quickbrickNotebookTags)
+        .innerJoin(tags, eq(tags.id, quickbrickNotebookTags.tagId))
+        .where(inArray(quickbrickNotebookTags.notebookId, ids))
+        .orderBy(tags.name);
+      return rows.map(({ resourceId, ...tag }) => ({ resourceId, tag }));
+    },
+    async addTag(id, tagId) {
+      await db.insert(quickbrickNotebookTags).values({ notebookId: id, tagId }).onConflictDoNothing();
+    },
+    async removeTag(id, tagId) {
+      await db
+        .delete(quickbrickNotebookTags)
+        .where(and(eq(quickbrickNotebookTags.notebookId, id), eq(quickbrickNotebookTags.tagId, tagId)));
+    },
+    async tagUsage(tagIds) {
+      if (!tagIds.length) return [];
+      return db
+        .select({ tagId: quickbrickNotebookTags.tagId, count: sql<number>`count(*)::int` })
+        .from(quickbrickNotebookTags)
+        .where(inArray(quickbrickNotebookTags.tagId, tagIds))
+        .groupBy(quickbrickNotebookTags.tagId);
+    },
+    async setMilestone(id, milestoneId) {
+      await db
+        .update(quickbrickNotebooks)
+        .set({ milestoneId, updatedAt: new Date() })
+        .where(eq(quickbrickNotebooks.id, id));
+    },
+    async milestoneOf(ids) {
+      if (!ids.length) return [];
+      return db
+        .select({ resourceId: quickbrickNotebooks.id, milestoneId: quickbrickNotebooks.milestoneId })
+        .from(quickbrickNotebooks)
+        .where(inArray(quickbrickNotebooks.id, ids));
+    },
+    async milestoneUsage(ids) {
+      if (!ids.length) return [];
+      const rows = await db
+        .select({ milestoneId: quickbrickNotebooks.milestoneId, count: sql<number>`count(*)::int` })
+        .from(quickbrickNotebooks)
+        .where(inArray(quickbrickNotebooks.milestoneId, ids))
+        .groupBy(quickbrickNotebooks.milestoneId);
       return rows.flatMap((r) => (r.milestoneId ? [{ milestoneId: r.milestoneId, count: r.count }] : []));
     },
   },

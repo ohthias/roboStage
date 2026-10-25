@@ -12,7 +12,7 @@
 
 export type AccessLevel = "full" | "simple" | "paused" | "soon";
 
-export type FeatureId = "runs" | "calibrabot" | "custom" | "anatix";
+export type FeatureId = "runs" | "calibrabot" | "custom" | "anatix" | "quickbrick";
 
 export const FEATURES: {
   id: FeatureId;
@@ -43,6 +43,12 @@ export const FEATURES: {
     label: "Testes em tempo real via Anatix",
     tool: "Anatix",
     description: "Testes com dados do robô em tempo real, via Anatix.",
+  },
+  {
+    id: "quickbrick",
+    label: "Caderno do robô",
+    tool: "QuickBrick Studio",
+    description: "Versões do robô, projeto 3D do Studio 2.0 e diagramas de estratégia e missões.",
   },
 ];
 
@@ -84,27 +90,27 @@ type Profile = {
 const PROFILES: Record<ProfileKey, Profile> = {
   fll: {
     key: "fll",
-    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "soon" },
+    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "soon", quickbrick: "full" },
     note: "Founders Edition com configuração completa de missões.",
   },
   "fll-future": {
     key: "fll-future",
-    access: { runs: "paused", calibrabot: "full", custom: "full", anatix: "soon" },
+    access: { runs: "paused", calibrabot: "full", custom: "full", anatix: "soon", quickbrick: "soon" },
     note: "Funciona de forma semelhante à FRC e à FTC, sem missões.",
   },
   "obr": {
     key: "obr",
-    access: { runs: "soon", calibrabot: "soon", custom: "soon", anatix: "soon" },
+    access: { runs: "soon", calibrabot: "soon", custom: "soon", anatix: "soon", quickbrick: "soon" },
     note: "Liga de robótica educacional brasileira, com missões próprias.",
   },
   "obr-resgate": {
     key: "obr-resgate",
-    access: { runs: "soon", calibrabot: "soon", custom: "soon", anatix: "soon" },
+    access: { runs: "soon", calibrabot: "soon", custom: "soon", anatix: "soon", quickbrick: "soon" },
     note: "Liga de robótica educacional brasileira, com missões próprias.",
   },
   generic: {
     key: "generic",
-    access: { runs: "soon", calibrabot: "full", custom: "full", anatix: "soon" },
+    access: { runs: "soon", calibrabot: "full", custom: "full", anatix: "soon", quickbrick: "soon" },
   },
 };
 
@@ -154,4 +160,14 @@ export function getLeagueAccess(league: {
       };
     }),
   };
+}
+
+/** Nível de acesso de um recurso numa liga. */
+export function featureLevel(league: { code: string; name: string }, feature: FeatureId): AccessLevel {
+  return PROFILES[resolveProfileKey(league)].access[feature];
+}
+
+/** O QuickBrick Studio (caderno do robô) só está liberado por completo na FLL Challenge. */
+export function supportsQuickbrick(league: { code: string; name: string }) {
+  return featureLevel(league, "quickbrick") === "full";
 }

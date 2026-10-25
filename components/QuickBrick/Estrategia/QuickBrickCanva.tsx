@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useChangeNotifier } from "@/hooks/useChangeNotifier";
 import { v4 as uuidv4 } from "uuid";
 import { ExportSummary, Layer, ToolType, CanvasHandle } from "@/types/CanvasType";
 import { CanvasBoard } from "./CanvasBoard";
@@ -6,28 +7,40 @@ import { Toolbar } from "./Toolbar";
 import { ExportPreviewModal } from "./ExportPreviewModal";
 import { useToast } from "@/app/context/ToastContext";
 
-export default function QuickBrickCanvas() {
+type QuickBrickCanvasProps = {
+  /** Camadas salvas (caderno do QuickBrick Studio). */
+  initialLayers?: Layer[];
+  /** Avisado sempre que as camadas mudam — usado para salvar no banco. */
+  onLayersChange?: (layers: Layer[]) => void;
+};
+
+const emptyLayer = (): Layer => ({
+  id: uuidv4(),
+  name: "Camada 1",
+  visible: true,
+  zonesVisible: true,
+  lines: [],
+  freePaths: [],
+  zones: [],
+  robots: [],
+});
+
+export default function QuickBrickCanvas({ initialLayers, onLayersChange }: QuickBrickCanvasProps = {}) {
   const [tool, setTool] = useState<ToolType>("hand");
   const [color, setColor] = useState("#ef4444"); // Default red
   const [eraserSize, setEraserSize] = useState(24);
-  const [layers, setLayers] = useState<Layer[]>([
-    {
-      id: uuidv4(),
-      name: "Camada 1",
-      visible: true,
-      zonesVisible: true,
-      lines: [],
-      freePaths: [],
-      zones: [],
-      robots: [],
-    },
-  ]);
+  const [layers, setLayers] = useState<Layer[]>(() =>
+    initialLayers && initialLayers.length > 0 ? initialLayers : [emptyLayer()],
+  );
   const [activeLayerId, setActiveLayerId] = useState<string>(layers[0].id);
   const backgroundImage = "/images/QuickBrick/Estrategia_fundo.png";
 
   // UI Toggles
   const [showLabels, setShowLabels] = useState(true);
   const [showZones, setShowZones] = useState(true);
+
+  // Notifica o pai (autosave do caderno).
+  useChangeNotifier(layers, onLayersChange);
 
   // --- Refs ---
   const canvasRef = useRef<CanvasHandle>(null);

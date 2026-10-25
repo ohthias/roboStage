@@ -9,7 +9,8 @@ export type LabelableKind =
   | "document"
   | "calendar-event"
   | "thinklab"
-  | "labtest";
+  | "labtest"
+  | "quickbrick";
 
 export const LABELABLE_KINDS: LabelableKind[] = [
   "kanban-card",
@@ -17,6 +18,7 @@ export const LABELABLE_KINDS: LabelableKind[] = [
   "calendar-event",
   "thinklab",
   "labtest",
+  "quickbrick",
 ];
 
 export const LABELABLE_LABELS: Record<LabelableKind, string> = {
@@ -25,6 +27,7 @@ export const LABELABLE_LABELS: Record<LabelableKind, string> = {
   "calendar-event": "Eventos",
   thinklab: "Quadros do ThinkLab",
   labtest: "Testes do LabTest",
+  quickbrick: "Cadernos do QuickBrick",
 };
 
 export type TagDTO = {

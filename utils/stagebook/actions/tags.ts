@@ -23,7 +23,7 @@ import type { LabelableKind, TagDTO, TagWithUsage } from "@/types/labels";
 
 /**
  * Tags UNIVERSAIS: as mesmas tags (nome + cor) valem para Kanban, páginas,
- * calendário, ThinkLab e LabTest dentro do mesmo espaço (pessoal ou equipe).
+ * calendário, ThinkLab, LabTest e QuickBrick dentro do mesmo espaço (pessoal ou equipe).
  */
 
 const tagColumns = { id: tags.id, name: tags.name, color: tags.color };
@@ -142,6 +142,7 @@ export async function mergeTags(fromId: string, intoId: string): Promise<void> {
     ["calendar_event_tags", "event_id"],
     ["thinklab_tags", "thinklab_id"],
     ["test_tags", "test_id"],
+    ["quickbrick_notebook_tags", "notebook_id"],
   ] as const;
   for (const [table, col] of links) {
     const t = sql.identifier(table);

@@ -31,3 +31,29 @@ export function getNews(slug: string) {
 
   return matter(file);
 }
+
+type NewsSummary = {
+  slug: string;
+  title: string;
+  description?: string;
+  date?: string;
+  category?: string;
+  cover?: string;
+  tags?: string[];
+  draft?: boolean;
+};
+
+// Últimas notícias publicadas. Com `preferTag`, as notícias com essa tag vêm
+// primeiro e o restante completa a lista pelas mais recentes.
+export function getLatestNews(limit = 3, preferTag?: string): NewsSummary[] {
+  try {
+    const all = (getAllNews() as NewsSummary[]).filter((n) => !n.draft && n.title);
+    if (!preferTag) return all.slice(0, limit);
+    const tag = preferTag.toLowerCase();
+    const tagged = all.filter((n) => n.tags?.some((t) => String(t).toLowerCase() === tag));
+    const rest = all.filter((n) => !tagged.includes(n));
+    return [...tagged, ...rest].slice(0, limit);
+  } catch {
+    return [];
+  }
+}

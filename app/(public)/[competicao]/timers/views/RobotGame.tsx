@@ -6,7 +6,6 @@ import { THEMES } from '../themes';
 
 const TOTAL_SECONDS = 2 * 60 + 30; // 2min30sQ
 const DEFAULT_WORD = 'LEGO!';
-const RADIUS = 120;
 
 type Status = 'idle' | 'intro' | 'running' | 'paused' | 'finished';
 type ThemeKey = keyof typeof THEMES;

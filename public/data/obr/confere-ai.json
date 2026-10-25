@@ -1,0 +1,359 @@
+{
+  "version": "1.0.0",
+  "modes": [
+    {
+      "id": "daily",
+      "name": "Treinos Diários",
+      "shortName": "Treinos",
+      "description": "Organize a preparação da equipe no dia a dia.",
+      "icon": "calendar",
+      "color": "primary",
+      "checklists": [
+        {
+          "id": "obr-daily-robot",
+          "title": "Robô",
+          "description": "Confira se o robô está pronto para treinar.",
+          "items": [
+            {
+              "id": "obr-daily-robot-01",
+              "text": "Baterias carregadas",
+              "important": true
+            },
+            {
+              "id": "obr-daily-robot-02",
+              "text": "Controlador liga e conecta"
+            },
+            {
+              "id": "obr-daily-robot-03",
+              "text": "Motores e rodas sem folga"
+            },
+            {
+              "id": "obr-daily-robot-04",
+              "text": "Sensores de cor/refletância limpos e firmes",
+              "important": true
+            },
+            {
+              "id": "obr-daily-robot-05",
+              "text": "Sensor de distância (obstáculo) funcionando"
+            },
+            {
+              "id": "obr-daily-robot-06",
+              "text": "Garra/mecanismo de resgate funcionando"
+            },
+            {
+              "id": "obr-daily-robot-07",
+              "text": "Cabos e conexões presos"
+            }
+          ]
+        },
+        {
+          "id": "obr-daily-arena",
+          "title": "Arena",
+          "description": "Confira se a pista de treino está pronta.",
+          "items": [
+            {
+              "id": "obr-daily-arena-01",
+              "text": "Ladrilhos montados e alinhados",
+              "important": true
+            },
+            {
+              "id": "obr-daily-arena-02",
+              "text": "Interseções com marcações verdes"
+            },
+            {
+              "id": "obr-daily-arena-03",
+              "text": "Gaps e becos sem saída"
+            },
+            {
+              "id": "obr-daily-arena-04",
+              "text": "Obstáculo, lombadas e gangorra posicionados"
+            },
+            {
+              "id": "obr-daily-arena-05",
+              "text": "Rampa encaixada"
+            },
+            {
+              "id": "obr-daily-arena-06",
+              "text": "Área de resgate com vítimas vivas e mortas",
+              "important": true
+            },
+            {
+              "id": "obr-daily-arena-07",
+              "text": "Áreas de evacuação verde e vermelha"
+            }
+          ]
+        },
+        {
+          "id": "obr-daily-programming",
+          "title": "Programação",
+          "description": "Confira se os programas estão prontos para rodar.",
+          "items": [
+            {
+              "id": "obr-daily-programming-01",
+              "text": "Programa principal carregado",
+              "important": true
+            },
+            {
+              "id": "obr-daily-programming-02",
+              "text": "Backup do código salvo"
+            },
+            {
+              "id": "obr-daily-programming-03",
+              "text": "Calibração de cor feita com a luz do local",
+              "important": true
+            },
+            {
+              "id": "obr-daily-programming-04",
+              "text": "Seguidor de linha testado em curvas e gaps"
+            },
+            {
+              "id": "obr-daily-programming-05",
+              "text": "Rotina da área de resgate testada"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pre-championship",
+      "name": "Pré-Etapa",
+      "shortName": "Pré-Etapa",
+      "description": "Prepare tudo antes de sair para a etapa da OBR.",
+      "icon": "clipboard-check",
+      "color": "secondary",
+      "checklists": [
+        {
+          "id": "obr-pre-robot",
+          "title": "Robô",
+          "description": "Tudo relacionado ao robô e seus acessórios.",
+          "items": [
+            {
+              "id": "obr-pre-robot-01",
+              "text": "Robô principal",
+              "important": true
+            },
+            {
+              "id": "obr-pre-robot-02",
+              "text": "Baterias reserva carregadas",
+              "important": true
+            },
+            {
+              "id": "obr-pre-robot-03",
+              "text": "Carregadores"
+            },
+            {
+              "id": "obr-pre-robot-04",
+              "text": "Controlador e cabo de programação"
+            },
+            {
+              "id": "obr-pre-robot-05",
+              "text": "Sensores e motores reserva"
+            },
+            {
+              "id": "obr-pre-robot-06",
+              "text": "Peças do mecanismo de resgate"
+            }
+          ]
+        },
+        {
+          "id": "obr-pre-strategy",
+          "title": "Estratégia",
+          "description": "Planejamento dos rounds.",
+          "items": [
+            {
+              "id": "obr-pre-strategy-01",
+              "text": "Regras da temporada revisadas",
+              "important": true
+            },
+            {
+              "id": "obr-pre-strategy-02",
+              "text": "Plano para cada desafio (gap, rampa, obstáculo, gangorra)"
+            },
+            {
+              "id": "obr-pre-strategy-03",
+              "text": "Plano para a área de resgate"
+            },
+            {
+              "id": "obr-pre-strategy-04",
+              "text": "Quando desistir de um checkpoint"
+            },
+            {
+              "id": "obr-pre-strategy-05",
+              "text": "Plano para falha de progresso"
+            },
+            {
+              "id": "obr-pre-strategy-06",
+              "text": "Programa B mais simples"
+            }
+          ]
+        },
+        {
+          "id": "obr-pre-materials",
+          "title": "Materiais",
+          "description": "Itens físicos que a equipe deve levar.",
+          "items": [
+            {
+              "id": "obr-pre-materials-01",
+              "text": "Notebook e carregador",
+              "important": true
+            },
+            {
+              "id": "obr-pre-materials-02",
+              "text": "Pen drive com backup do código"
+            },
+            {
+              "id": "obr-pre-materials-03",
+              "text": "Ferramentas (chaves, alicate)"
+            },
+            {
+              "id": "obr-pre-materials-04",
+              "text": "Fita, abraçadeiras e cola"
+            },
+            {
+              "id": "obr-pre-materials-05",
+              "text": "Extensão / filtro de linha"
+            },
+            {
+              "id": "obr-pre-materials-06",
+              "text": "Ladrilho ou papel para calibrar"
+            }
+          ]
+        },
+        {
+          "id": "obr-pre-team",
+          "title": "Equipe",
+          "description": "Documentação e itens da equipe.",
+          "items": [
+            {
+              "id": "obr-pre-team-01",
+              "text": "Inscrição confirmada no sistema da OBR",
+              "important": true
+            },
+            {
+              "id": "obr-pre-team-02",
+              "text": "Documento com foto de cada membro",
+              "important": true
+            },
+            {
+              "id": "obr-pre-team-03",
+              "text": "Autorizações dos responsáveis"
+            },
+            {
+              "id": "obr-pre-team-04",
+              "text": "Uniforme / identificação da equipe"
+            },
+            {
+              "id": "obr-pre-team-05",
+              "text": "Contato do técnico responsável"
+            },
+            {
+              "id": "obr-pre-team-06",
+              "text": "Lanche e água"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "championship",
+      "name": "Etapa",
+      "shortName": "Etapa",
+      "description": "Checklist rápido para o dia da competição.",
+      "icon": "trophy",
+      "color": "accent",
+      "checklists": [
+        {
+          "id": "obr-champ-before",
+          "title": "Antes do round",
+          "description": "Conferência rápida antes de cada round.",
+          "items": [
+            {
+              "id": "obr-champ-before-01",
+              "text": "Bateria carregada",
+              "important": true
+            },
+            {
+              "id": "obr-champ-before-02",
+              "text": "Programa correto carregado",
+              "important": true
+            },
+            {
+              "id": "obr-champ-before-03",
+              "text": "Calibração na arena oficial (2min)",
+              "important": true
+            },
+            {
+              "id": "obr-champ-before-04",
+              "text": "Robô sem peças soltas"
+            },
+            {
+              "id": "obr-champ-before-05",
+              "text": "Robô no ladrilho de saída"
+            },
+            {
+              "id": "obr-champ-before-06",
+              "text": "Quem vai reposicionar o robô definido"
+            }
+          ]
+        },
+        {
+          "id": "obr-champ-after",
+          "title": "Depois do round",
+          "description": "O que fazer logo após cada round.",
+          "items": [
+            {
+              "id": "obr-champ-after-01",
+              "text": "Conferir pontuação na súmula",
+              "important": true
+            },
+            {
+              "id": "obr-champ-after-02",
+              "text": "Anotar checkpoints, desistências e falhas"
+            },
+            {
+              "id": "obr-champ-after-03",
+              "text": "Registrar problemas do robô"
+            },
+            {
+              "id": "obr-champ-after-04",
+              "text": "Trocar/colocar bateria para carregar"
+            },
+            {
+              "id": "obr-champ-after-05",
+              "text": "Ajustar código para o próximo round"
+            }
+          ]
+        },
+        {
+          "id": "obr-champ-equipment",
+          "title": "Equipamentos",
+          "description": "Conferência geral na mesa da equipe.",
+          "items": [
+            {
+              "id": "obr-champ-equipment-01",
+              "text": "Robô",
+              "important": true
+            },
+            {
+              "id": "obr-champ-equipment-02",
+              "text": "Baterias",
+              "important": true
+            },
+            {
+              "id": "obr-champ-equipment-03",
+              "text": "Notebook"
+            },
+            {
+              "id": "obr-champ-equipment-04",
+              "text": "Cabo de programação"
+            },
+            {
+              "id": "obr-champ-equipment-05",
+              "text": "Ferramentas e peças"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

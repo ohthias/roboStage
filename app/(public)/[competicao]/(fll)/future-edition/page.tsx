@@ -1,5 +1,44 @@
-import { ArrowUpRight, Cpu, File, Leaf, NotepadText, TriangleAlert, Trophy, Users } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import {
+  ArrowDown,
+  ArrowRight,
+  Cpu,
+  Cuboid,
+  File,
+  Globe2,
+  Handshake,
+  Leaf,
+  NotepadText,
+  Plus,
+  TriangleAlert,
+  Trophy,
+  Users,
+  Wifi,
+} from "lucide-react";
+
+import RevealOnScroll from "@/components/UI/RevealOnScroll";
+import { AnimatedBackground, SectionTitle, toneClasses, type Tone } from "@/components/home/shared";
+import {
+  CtaBlock,
+  ToolCard,
+  cornerBtn,
+  type ToolItem,
+} from "@/components/competicoes/shared/CompetitionSections";
+import "@/components/home/home.css";
+
+type Params = { params: Promise<{ competicao: string }> };
+
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { competicao } = await params;
+  if (competicao !== "fll") return {};
+  return {
+    title: "Future Edition | FLL",
+    description:
+      "BIOGLOW™ Future Edition: kits LEGO® Education Computer Science & AI, hardware sem fio e partidas em alianças. Pontuador e rubricas do RoboStage.",
+  };
+}
 
 const heroBadges = [
   { label: "Kits Computer Science & AI", icon: Cpu },
@@ -7,190 +46,296 @@ const heroBadges = [
   { label: "Alianças cooperativas", icon: Users },
 ];
 
-const tools = [
+const pillars: { icon: typeof Cpu; tag: string; title: string; text: string; tone: Tone }[] = [
   {
-    href: "/fll/future-edition/score",
-    icon: Trophy,
-    title: "Pontuador",
-    description: "Simule partidas e calcule automaticamente sua pontuação.",
-    text: "text-secondary",
-    iconBg: "bg-secondary text-secondary-content",
-    iconGhost: "text-secondary",
-    bar: "bg-secondary",
+    icon: Cpu,
+    tag: "KIT",
+    title: "Computer Science & AI",
+    text: "As equipes usam os novos kits LEGO® Education Computer Science & AI para construir e programar.",
+    tone: "secondary",
   },
   {
-    href: "/fll/future-edition/rubric",
-    icon: NotepadText,
-    title: "Rúbrica de Avaliação",
-    description: "Ferramenta de avaliação das rúbricas de forma interativa.",
-    text: "text-secondary",
-    iconBg: "bg-secondary text-secondary-content",
-    iconGhost: "text-secondary",
-    bar: "bg-secondary",
+    icon: Wifi,
+    tag: "HARDWARE",
+    title: "Sem fio",
+    text: "Durante as partidas, o hardware sem fio é construído e programado para resolver os desafios.",
+    tone: "primary",
   },
   {
-    href: "/fll/docs",
-    icon: File,
-    title: "Documentação",
-    description: "Acesse a documentação oficial da Future Edition.",
-    text: "text-primary",
-    iconBg: "bg-primary text-primary-content",
-    iconGhost: "text-primary",
-    bar: "bg-primary",
+    icon: Handshake,
+    tag: "PARTIDAS",
+    title: "Alianças cooperativas",
+    text: "Um novo formato de jogo cooperativo, em que as equipes jogam em alianças.",
+    tone: "accent",
+  },
+  {
+    icon: Leaf,
+    tag: "PROJETO",
+    title: "Biodiversidade",
+    text: "O Projeto de Inovação investiga como a relação entre natureza e sociedade contribui para um planeta saudável.",
+    tone: "secondary",
   },
 ];
 
-export default function FutureEditionPage() {
+const tools: ToolItem[] = [
+  {
+    icon: Trophy,
+    tag: "PONTUAÇÃO",
+    title: "Pontuador",
+    description: "Simule partidas da Future Edition e calcule a pontuação automaticamente.",
+    href: "/fll/future-edition/score",
+    tone: "secondary",
+  },
+  {
+    icon: NotepadText,
+    tag: "AVALIAÇÃO",
+    title: "Rubrica de Avaliação",
+    description: "Avalie a equipe com as rubricas da Future Edition de forma interativa.",
+    href: "/fll/future-edition/rubric",
+    tone: "primary",
+  },
+  {
+    icon: File,
+    tag: "REGRAS",
+    title: "Documentação",
+    description: "Acesse a documentação oficial da Future Edition reunida no RoboStage.",
+    href: "/fll/docs",
+    tone: "accent",
+  },
+];
+
+const alsoFll = [
+  { icon: Trophy, title: "Pontuador da Challenge", text: "BIOGLOW na versão Challenge, com cronômetro de 2:30.", href: "/fll/score/bioglow" },
+  { icon: Cuboid, title: "QuickBrick Studio", text: "Estratégias, matrizes e simulações para a mesa.", href: "/fll/quickbrick" },
+  { icon: Globe2, title: "Roboticar", text: "Iniciativas de equipes e dados da robótica no Brasil.", href: "/roboticar" },
+];
+
+export default async function FutureEditionPage({ params }: Params) {
+  const { competicao } = await params;
+  // Página exclusiva da FLL.
+  if (competicao !== "fll") notFound();
+
   return (
-    <div className="min-h-screen bg-base-100">
-      {/* Hero */}
-      <header className="max-w-6xl mx-auto w-full px-6 pt-16 pb-10">
-        <div className="flex flex-col lg:flex-row items-center gap-16">
-          <div className="flex-1">
-            <h1 className="text-5xl font-black leading-[1.05] text-base-content">
+    <main className="overflow-x-clip bg-base-100 text-base-content">
+      <section className="relative isolate overflow-hidden px-6 pb-20 pt-14 sm:pt-20">
+        <AnimatedBackground />
+        <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
+          <div>
+            <nav aria-label="Trilha" className="font-mono text-xs tracking-[0.15em] text-base-content/45">
+              <Link href="/fll" className="hover:text-primary">/FLL</Link>
+              <span> / FUTURE EDITION</span>
+            </nav>
+            <h1 className="mt-5 text-5xl font-bold tracking-tight sm:text-7xl">
               Future{" "}
-              <span className="inline-block bg-secondary text-secondary-content px-3 py-1 italic -rotate-1">
+              <span className="inline-block -rotate-1 bg-secondary px-3 py-1 italic text-secondary-content">
                 Edition
               </span>
             </h1>
-            <p className="text-secondary font-semibold mt-4">
-              Baseado nos kits LEGO® Education Computer Science &amp; AI
+            <p className="mt-5 text-lg font-semibold text-secondary sm:text-xl">
+              Baseada nos kits LEGO® Education Computer Science &amp; AI
+            </p>
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-base-content/65 sm:text-lg">
+              Na BIOGLOW™ Future Edition, as equipes da FIRST LEGO League
+              participam de uma experiência sobre biodiversidade, com hardware
+              sem fio e partidas em um novo formato cooperativo baseado em
+              alianças.
             </p>
 
-            <div className="mt-6 space-y-4 text-base-content/75 text-sm leading-relaxed">
-              <p>
-                Na BIOGLOW™ Future Edition, as equipes da FIRST LEGO League
-                participam de uma experiência baseada na biodiversidade
-                utilizando os kits LEGO® Education Computer Science &amp; AI.
-              </p>
-              <p>
-                Durante as partidas, as equipes constroem e programam
-                hardware sem fio para resolver desafios em um novo formato de
-                jogo cooperativo baseado em alianças.
-              </p>
-              <p>
-                Além das missões do robô, o Projeto de Inovação incentiva a
-                investigação sobre biodiversidade e sobre como a relação
-                entre a natureza e a sociedade contribui para um planeta
-                saudável.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-2 mt-8">
+            <div className="mt-7 flex flex-wrap gap-2">
               {heroBadges.map(({ label, icon: Icon }) => (
                 <span
                   key={label}
-                  className="badge badge-outline badge-lg gap-2 py-4 border-base-300 text-base-content/70"
+                  className="inline-flex items-center gap-1.5 rounded-tl-md rounded-br-md border border-base-300 bg-base-100 px-2.5 py-1 font-mono text-xs text-base-content/70"
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon size={13} />
                   {label}
                 </span>
               ))}
             </div>
 
-            <Link href="#ferramentas" className="btn btn-secondary rounded-full mt-8 px-6">
-              Ver ferramentas
-              <ArrowUpRight className="w-4 h-4" />
-            </Link>
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <Link
+                href="/fll/future-edition/score"
+                className={`btn btn-secondary btn-lg ${cornerBtn} shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--color-base-content)]`}
+              >
+                <Trophy size={20} />
+                Pontuar uma partida
+              </Link>
+              <a href="#ferramentas" className="btn btn-ghost btn-lg">
+                Ver ferramentas
+                <ArrowDown size={18} />
+              </a>
+            </div>
           </div>
 
-          <div className="flex justify-center flex-1">
-            <div className="shadow-[16px_16px_0_theme(colors.secondary)] rounded-lg overflow-hidden">
+          {/* vídeo */}
+          <div className="relative">
+            <div aria-hidden="true" className="absolute -right-4 -top-4 size-24 rotate-12 rounded-tl-2xl rounded-br-2xl bg-accent" />
+            <div aria-hidden="true" className="absolute -bottom-5 -left-5 size-20 rounded-full border-2 border-dashed border-secondary/50" />
+            <figure className="relative overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 shadow-[8px_8px_0_0_var(--color-secondary)]">
+              <div className="flex items-center justify-between border-b border-base-300 px-5 py-3">
+                <span className="inline-flex items-center gap-2 font-mono text-xs text-base-content/60">
+                  <span className="size-2 rounded-full bg-primary" />
+                  Apresentação · BIOGLOW Future Edition
+                </span>
+                <span className="font-mono text-[10px] tracking-widest text-base-content/35">VÍDEO</span>
+              </div>
               <iframe
-                width="560"
-                height="315"
                 src="https://www.youtube.com/embed/vHT9L_x9P_E?si=YCe6R02B70qVlMEZ"
-                title="YouTube video player"
-                frameBorder="0"
+                title="Apresentação da BIOGLOW Future Edition"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
-                className="w-full max-w-[560px] aspect-video"
+                loading="lazy"
+                className="block aspect-video w-full border-0 bg-base-200"
               />
-            </div>
+            </figure>
           </div>
         </div>
-      </header>
+      </section>
 
-      {/* Aviso de conteúdo não oficial */}
-      <section className="max-w-6xl mx-auto px-6">
-        <div role="alert" className="alert alert-warning rounded-2xl items-start">
-          <TriangleAlert className="w-6 h-6 mt-0.5 shrink-0" />
+      {/* ============================================================ AVISO */}
+      <section className="px-6 pt-8">
+        <div
+          role="note"
+          className="mx-auto flex max-w-6xl items-start gap-4 rounded-tl-2xl rounded-br-2xl border border-warning/50 bg-warning/10 p-5 sm:p-6"
+        >
+          <span className="grid size-10 shrink-0 place-items-center rounded-tl-lg rounded-br-lg bg-warning text-warning-content">
+            <TriangleAlert size={20} />
+          </span>
           <div>
-            <h3 className="font-bold">Conteúdo não oficial</h3>
-            <p className="text-sm mt-1">
-              A Future Edition ainda não possui suporte oficial da FIRST LEGO
-              League no Brasil. As ferramentas disponibilizadas pela
-              RoboStage têm caráter educacional e experimental,
-              desenvolvidas para auxiliar equipes, técnicos e estudantes
-              interessados em conhecer o formato da competição.
+            <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-base-content/60">CONTEÚDO NÃO OFICIAL</p>
+            <p className="mt-1.5 text-sm leading-6 text-base-content/75">
+              A Future Edition é operada pela <a href="https://www.educacional.com.br" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Educacional</a>. As ferramentas do RoboStage têm caráter
+              educacional e experimental, feitas para ajudar equipes, técnicos e
+              estudantes interessados em conhecer o formato da competição.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Ferramentas */}
-      <section id="ferramentas" className="max-w-6xl mx-auto px-6 py-16">
-        <div className="mb-10">
-          <span className="badge badge-ghost bg-base-200 mb-3">Ferramentas</span>
-          <h2 className="text-3xl font-bold text-base-content">
-            Ferramentas disponíveis
-          </h2>
-          <p className="text-base-content/70 mt-2 max-w-md">
-            Recursos desenvolvidos para apoiar equipes durante a temporada.
-          </p>
-        </div>
+      {/* ======================================================= O QUE MUDA */}
+      <section className="px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <RevealOnScroll>
+            <SectionTitle
+              kicker="/ O QUE MUDA"
+              title="Uma nova geração"
+              highlight="para a FLL."
+              highlightClass="bg-secondary text-secondary-content"
+              description="Quatro ideias resumem a Future Edition. Além das missões do robô, o Projeto de Inovação também faz parte da temporada."
+            />
+          </RevealOnScroll>
 
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {tools.map(({ href, icon: Icon, title, description, text, iconBg, iconGhost, bar }) => (
-            <Link
-              key={href}
-              href={href}
-              className="card bg-base-200 border border-base-300 group relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-xl"
-            >
-              <Icon
-                size={112}
-                className={`absolute -top-2 -right-2 opacity-[0.06] ${iconGhost} group-hover:opacity-10 transition-opacity`}
-              />
-              <div className="card-body relative">
-                <div className={`inline-flex w-fit p-3 rounded-xl mb-2 ${iconBg}`}>
-                  <Icon size={28} />
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {pillars.map(({ icon: Icon, tag, title, text, tone }, i) => {
+              const c = toneClasses[tone];
+              return (
+                <RevealOnScroll key={title} delay={i * 0.06} className="h-full">
+                  <article className={`group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 ${c.hover}`}>
+                    <div aria-hidden="true" className={`pointer-events-none absolute -right-10 -top-10 size-28 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 ${c.ring}`} />
+                    <div className="relative flex items-center justify-between">
+                      <div className={`flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
+                        <Icon size={22} strokeWidth={1.8} />
+                      </div>
+                      <span className="font-mono text-xs text-base-content/35">/{String(i + 1).padStart(2, "0")}</span>
+                    </div>
+                    <p className={`relative mt-7 text-[10px] font-bold tracking-[0.18em] ${c.tag}`}>{tag}</p>
+                    <h3 className="relative mt-2 text-xl font-bold tracking-tight">{title}</h3>
+                    <p className="relative mt-3 text-sm leading-6 text-base-content/60">{text}</p>
+                  </article>
+                </RevealOnScroll>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================== FERRAMENTAS */}
+      <section id="ferramentas" className="scroll-mt-20 border-y border-base-300 bg-base-200/40 px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <RevealOnScroll>
+            <SectionTitle
+              kicker="/ FERRAMENTAS"
+              title="Prepare a equipe"
+              highlight="para o novo formato."
+              description="Recursos desenvolvidos para apoiar equipes durante a temporada."
+            />
+          </RevealOnScroll>
+
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {tools.map((tool, i) => (
+              <RevealOnScroll key={tool.href} delay={i * 0.06} className="h-full">
+                <ToolCard tool={tool} index={i} />
+              </RevealOnScroll>
+            ))}
+            <RevealOnScroll delay={0.18} className="h-full">
+              <div className="flex h-full flex-col justify-between rounded-tl-2xl rounded-br-2xl border border-dashed border-base-300 bg-base-100/50 p-6">
+                <span className="grid size-12 place-items-center rounded-tl-xl rounded-br-xl border border-dashed border-base-300 text-base-content/40">
+                  <Plus size={22} />
+                </span>
+                <div className="mt-7">
+                  <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-base-content/45">EM BREVE</p>
+                  <p className="mt-2 text-sm leading-6 text-base-content/60">
+                    Mais ferramentas chegam ao longo da temporada. Acompanhe pelas
+                    notícias.
+                  </p>
+                  <Link href="/news" className="mt-4 inline-flex items-center gap-1 text-sm font-bold hover:text-primary">
+                    Ver notícias
+                    <ArrowRight size={15} />
+                  </Link>
                 </div>
-                <h3 className={`card-title text-2xl ${text}`}>{title}</h3>
-                <p className="text-base-content/75">{description}</p>
               </div>
-              <div className={`absolute bottom-0 left-0 h-1 w-0 ${bar} group-hover:w-full transition-all duration-300`} />
-            </Link>
-          ))}
-
-          <div className="card bg-base-200/50 border border-dashed border-base-300">
-            <div className="card-body items-start justify-center text-center sm:text-left">
-              <p className="text-base-content/60 text-sm">
-                Mais ferramentas chegam ao longo da temporada. Volte em breve
-                para conferir novidades.
-              </p>
-            </div>
+            </RevealOnScroll>
           </div>
         </div>
       </section>
 
-      {/* Encerramento */}
-      <section className="max-w-6xl mx-auto px-6 pb-20">
-        <div className="rounded-3xl bg-neutral text-neutral-content px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <span className="badge badge-secondary mb-3">Vamos começar?</span>
-            <h3 className="text-2xl md:text-3xl font-bold max-w-md">
-              Explore as ferramentas e prepare sua equipe para a temporada
-            </h3>
+      {/* ===================================================== TAMBÉM NA FLL */}
+      <section className="px-6 py-24">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
+          <RevealOnScroll>
+            <SectionTitle
+              kicker="/ TAMBÉM NA FLL"
+              title="Compete na"
+              highlight="Challenge?"
+              highlightClass="bg-accent text-accent-content"
+              description="A BIOGLOW também tem a versão Challenge. Veja as ferramentas do RoboStage para ela."
+            />
+          </RevealOnScroll>
+          <div className="grid content-center gap-4">
+            {alsoFll.map(({ icon: Icon, title, text, href }, i) => (
+              <RevealOnScroll key={href} delay={i * 0.08}>
+                <Link
+                  href={href}
+                  className="group flex items-center gap-4 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-secondary/40 hover:shadow-[6px_6px_0_0_var(--color-secondary)]"
+                >
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl bg-secondary/10 text-secondary transition-colors group-hover:bg-secondary group-hover:text-secondary-content">
+                    <Icon size={21} strokeWidth={1.8} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold">{title}</h3>
+                    <p className="mt-1 text-sm leading-6 text-base-content/60">{text}</p>
+                  </div>
+                  <ArrowRight size={18} className="shrink-0 text-base-content/35 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </RevealOnScroll>
+            ))}
           </div>
-          <Link
-            href="#ferramentas"
-            className="btn btn-circle btn-lg bg-secondary text-secondary-content border-none hover:bg-secondary/90 shrink-0"
-          >
-            <ArrowUpRight className="w-6 h-6" />
-          </Link>
         </div>
       </section>
-    </div>
+
+      <CtaBlock
+        kicker="VAMOS COMEÇAR?"
+        icon={Trophy}
+        title="Explore as ferramentas e prepare sua equipe."
+        text="Pontue partidas, avalie a equipe com as rubricas e conheça de perto o formato da Future Edition."
+        actions={[
+          { label: "Pontuar uma partida", href: "/fll/future-edition/score", variant: "accent" },
+          { label: "Rubricas", href: "/fll/future-edition/rubric", variant: "ghost" },
+          { label: "Voltar para a FLL", href: "/fll", variant: "ghost" },
+        ]}
+      />
+    </main>
   );
 }

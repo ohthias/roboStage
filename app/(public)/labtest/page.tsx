@@ -1,753 +1,505 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
   Check,
   Download,
+  FileText,
   Gauge,
   LineChart,
   Microscope,
   Play,
+  Ruler,
+  Scale,
   SlidersHorizontal,
-  Sparkles,
   Target,
+  TestTube,
   Trophy,
-  Zap,
 } from "lucide-react";
-import Link from "next/link";
-import LabTestHeroPreview from "@/components/labtest/LabTestHeroPreview";
+
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
-import { motion, useReducedMotion } from "framer-motion";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
 import HeroSection from "@/components/UI/HeroSection";
+import { AnimatedBackground, SectionTitle, toneClasses, type Tone } from "@/components/home/shared";
+import { CtaBlock, cornerBtn } from "@/components/competicoes/shared/CompetitionSections";
+import "@/components/home/home.css";
 
-const modes = [
+/* -------------------------------------------------------------- dados */
+
+const cycle: { icon: typeof Play; title: string; text: string; tone: Tone }[] = [
+  { icon: TestTube, title: "Teste", text: "Execute seu robô em condições controladas.", tone: "primary" },
+  { icon: Ruler, title: "Meça", text: "Registre os resultados de cada execução.", tone: "secondary" },
+  { icon: Scale, title: "Compare", text: "Coloque configurações diferentes lado a lado.", tone: "accent" },
+  { icon: Target, title: "Decida", text: "Use os dados para escolher o próximo caminho.", tone: "primary" },
+];
+
+const benefits: { icon: typeof Play; title: string; text: string; tone: Tone }[] = [
+  { icon: Microscope, title: "Teste antes da competição", text: "Valide suas ideias no laboratório antes de colocá-las à prova na arena.", tone: "primary" },
+  { icon: BarChart3, title: "Transforme testes em dados", text: "Cada execução gera informações que ajudam a equipe a entender o que realmente está acontecendo.", tone: "secondary" },
+  { icon: Target, title: "Tome decisões melhores", text: "Escolha componentes, estratégias e configurações com base em evidências.", tone: "accent" },
+  { icon: Trophy, title: "Evolua continuamente", text: "Compare resultados ao longo do tempo e acompanhe a evolução do seu robô.", tone: "primary" },
+];
+
+const calibraTests = [
+  { key: "motores", label: "Motores", image: "/images/labTest/calibrabot_motores_individual.png", text: "Teste cada motor isolado e veja se ele entrega o mesmo comportamento a cada execução." },
+  { key: "dupla", label: "Motores em dupla", image: "/images/labTest/calibrabot_motores_duplas.png", text: "Compare combinações de motores e descubra qual par anda mais reto e mais consistente." },
+  { key: "gyro", label: "Giroscópio", image: "/images/labTest/calibrabot_gyro.png", text: "Meça a precisão dos giros e o quanto o sensor desvia ao longo das repetições." },
+  { key: "pid", label: "PID", image: "/images/labTest/calibrabot_PID.png", text: "Ajuste as constantes do controle e veja como o robô corrige a trajetória." },
+];
+
+const configs = [
+  { name: "Motor A + Motor C", value: 92 },
+  { name: "Motor C + Motor B", value: 86 },
+  { name: "Motor A + Motor B", value: 74 },
+];
+
+const modes: { icon: typeof Play; tag: string; title: string; text: string; features: string[]; tone: Tone }[] = [
   {
     icon: Play,
-    number: "01",
-    badge: "Análise de runs",
+    tag: "ANÁLISE DE RUNS",
     title: "Runs",
-    description:
-      "Analise suas execuções de competição, compare estratégias e descubra onde seu robô pode evoluir.",
-    features: [
-      "Análise por competição",
-      "Comparação de runs",
-      "Padrões de falha",
-      "Métricas de consistência",
-    ],
+    text: "Analise suas execuções de competição, compare estratégias e descubra onde seu robô pode evoluir.",
+    features: ["Análise por competição", "Comparação de runs", "Padrões de falha", "Métricas de consistência"],
+    tone: "secondary",
   },
   {
     icon: Gauge,
-    number: "02",
-    badge: "Para o robô",
+    tag: "PARA O ROBÔ",
     title: "CalibraBot",
-    description:
-      "Teste componentes e comportamentos do robô para encontrar a configuração que entrega o melhor desempenho.",
-    features: [
-      "Testes de motores",
-      "Sensores e atuadores",
-      "PID e giroscópio",
-      "Análise de precisão",
-    ],
+    text: "Teste componentes e comportamentos do robô para encontrar a configuração que entrega o melhor desempenho.",
+    features: ["Testes de motores", "Sensores e atuadores", "PID e giroscópio", "Análise de precisão"],
+    tone: "primary",
   },
   {
     icon: SlidersHorizontal,
-    number: "03",
-    badge: "Sob medida",
+    tag: "SOB MEDIDA",
     title: "Personalizado",
-    description:
-      "Crie testes específicos para aquilo que sua equipe precisa investigar.",
-    features: [
-      "Parâmetros personalizados",
-      "Métricas próprias",
-      "Testes experimentais",
-      "Resultados comparáveis",
-    ],
+    text: "Crie testes específicos para aquilo que sua equipe precisa investigar.",
+    features: ["Parâmetros personalizados", "Métricas próprias", "Testes experimentais", "Resultados comparáveis"],
+    tone: "accent",
   },
 ];
 
-const benefits = [
-  {
-    icon: Microscope,
-    title: "Teste antes da competição",
-    description:
-      "Valide suas ideias no laboratório antes de colocá-las à prova na arena.",
-  },
-  {
-    icon: BarChart3,
-    title: "Transforme testes em dados",
-    description:
-      "Cada execução gera informações que ajudam sua equipe a entender o que realmente está acontecendo.",
-  },
-  {
-    icon: Target,
-    title: "Tome decisões melhores",
-    description:
-      "Escolha componentes, estratégias e configurações com base em evidências.",
-  },
-  {
-    icon: Trophy,
-    title: "Evolua continuamente",
-    description:
-      "Compare resultados ao longo do tempo e acompanhe a evolução do seu robô.",
-  },
+const metrics = [
+  { label: "Execuções", value: "128", text: "testes registrados", tone: "primary" as Tone },
+  { label: "Consistência", value: "94,2%", text: "resultado observado", tone: "secondary" as Tone },
+  { label: "Configurações", value: "12", text: "possibilidades comparadas", tone: "accent" as Tone },
+  { label: "Evolução", value: "+18%", text: "comparação entre versões", tone: "primary" as Tone },
 ];
 
 const faqs = [
-  {
-    question: "O que posso testar no LabTest?",
-    answer:
-      "Você pode testar desde componentes individuais do robô, como motores e sensores, até execuções completas de estratégias de competição. O modo de teste depende daquilo que sua equipe deseja analisar.",
-  },
-  {
-    question: "O LabTest funciona para diferentes competições?",
-    answer:
-      "Sim. O modo Runs foi pensado para ser adaptável às diferentes competições e ligas de robótica. A análise pode considerar as particularidades de cada competição.",
-  },
-  {
-    question: "Preciso ter conhecimento de análise de dados?",
-    answer:
-      "Não. O LabTest organiza os dados coletados em gráficos, tabelas e indicadores para que a equipe consiga interpretar os resultados sem precisar construir suas próprias análises.",
-  },
-  {
-    question: "Posso exportar meus resultados?",
-    answer:
-      "Sim. Os resultados podem ser utilizados fora do LabTest, permitindo que sua equipe documente testes, compare experimentos e apresente dados durante avaliações e competições.",
-  },
-  {
-    question: "O LabTest substitui os testes práticos?",
-    answer:
-      "Não. Ele potencializa os testes práticos. O robô continua sendo testado fisicamente, enquanto o LabTest registra e transforma essas execuções em informações úteis para a equipe.",
-  },
+  { q: "O que posso testar no LabTest?", a: "Você pode testar desde componentes individuais do robô, como motores e sensores, até execuções completas de estratégias de competição. O modo de teste depende daquilo que sua equipe deseja analisar." },
+  { q: "O LabTest funciona para diferentes competições?", a: "Sim. O modo Runs foi pensado para ser adaptável às diferentes competições e ligas de robótica. A análise pode considerar as particularidades de cada competição." },
+  { q: "Preciso ter conhecimento de análise de dados?", a: "Não. O LabTest organiza os dados coletados em gráficos, tabelas e indicadores para que a equipe consiga interpretar os resultados sem precisar construir suas próprias análises." },
+  { q: "Posso exportar meus resultados?", a: "Sim. Os resultados podem ser utilizados fora do LabTest, permitindo que sua equipe documente testes, compare experimentos e apresente dados durante avaliações e competições." },
+  { q: "O LabTest substitui os testes práticos?", a: "Não. Ele potencializa os testes práticos. O robô continua sendo testado fisicamente, enquanto o LabTest registra e transforma essas execuções em informações úteis para a equipe." },
 ];
 
-export default function LabTestPage() {
-  const reduceMotion = useReducedMotion();
-  const ease = [0.22, 1, 0.36, 1] as const;
+/* --------------------------------------------------------------- partes */
 
+function ExperimentCard() {
+  const reduce = useReducedMotion();
+  return (
+    <div className="relative">
+      <div aria-hidden="true" className="absolute -right-4 -top-4 size-24 rotate-12 rounded-tl-2xl rounded-br-2xl bg-accent" />
+      <div aria-hidden="true" className="absolute -bottom-5 -left-5 size-20 rounded-full border-2 border-dashed border-secondary/50" />
+      <figure className="relative overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 shadow-[8px_8px_0_0_var(--color-secondary)]">
+        <div className="flex items-center justify-between border-b border-base-300 px-5 py-3">
+          <span className="inline-flex items-center gap-2 font-mono text-xs text-base-content/60">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-60 motion-reduce:hidden" />
+              <span className="relative size-2 rounded-full bg-success" />
+            </span>
+            CalibraBot · experimento
+          </span>
+          <span className="font-mono text-[10px] tracking-widest text-base-content/35">EXEMPLO</span>
+        </div>
+
+        <div className="p-5 sm:p-6">
+          <p className="text-[10px] font-bold tracking-[0.15em] text-primary">CONSISTÊNCIA DAS CONFIGURAÇÕES</p>
+          <div className="mt-6 space-y-6">
+            {configs.map((c, i) => (
+              <div key={c.name}>
+                <div className="mb-2 flex items-center justify-between font-mono text-xs">
+                  <span className={i === 0 ? "font-bold text-base-content" : "text-base-content/70"}>{c.name}</span>
+                  <span className="font-bold tabular-nums">{c.value}%</span>
+                </div>
+                <div className="h-3 overflow-hidden rounded-sm bg-base-200">
+                  <motion.div
+                    className={`h-full rounded-sm ${i === 0 ? "bg-primary" : "bg-secondary/60"}`}
+                    initial={{ width: reduce ? `${c.value}%` : "0%" }}
+                    whileInView={{ width: `${c.value}%` }}
+                    viewport={{ once: true, amount: 0.5 }}
+                    transition={{ delay: reduce ? 0 : i * 0.12, duration: reduce ? 0 : 0.8, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <figcaption className="bg-[#1f1c18] px-5 py-4 font-mono text-[11px] leading-6 text-[#f3ecdc] sm:text-xs">
+          <p className="opacity-60">$ labtest comparar --runs 30</p>
+          <p>
+            melhor: <span className="text-[#fabd32]">Motor A + Motor C</span>{" "}
+            <span className="text-[#9be15d]">✓ 92% de consistência</span>
+          </p>
+        </figcaption>
+      </figure>
+    </div>
+  );
+}
+
+function CalibraTabs() {
+  const [active, setActive] = useState(calibraTests[0].key);
+  const test = calibraTests.find((t) => t.key === active) ?? calibraTests[0];
+  return (
+    <div className="overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 shadow-[8px_8px_0_0_var(--color-primary)]">
+      <div role="tablist" aria-label="Testes do CalibraBot" className="flex gap-1 overflow-x-auto border-b border-base-300 p-2">
+        {calibraTests.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            role="tab"
+            aria-selected={active === t.key}
+            onClick={() => setActive(t.key)}
+            className={`shrink-0 rounded-tl-md rounded-br-md px-3 py-1.5 font-mono text-xs transition-colors ${
+              active === t.key ? "bg-base-content text-base-100" : "text-base-content/65 hover:bg-base-200"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <div className="grid items-center gap-6 p-6 sm:grid-cols-[180px_1fr]">
+        <div className="mx-auto aspect-square w-40 overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-white sm:w-full">
+          <img key={test.image} src={test.image} alt={`Ilustração do teste de ${test.label}`} className="h-full w-full object-contain" />
+        </div>
+        <div>
+          <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-primary">TESTE · {test.label.toUpperCase()}</p>
+          <p className="mt-2 text-base leading-7 text-base-content/70">{test.text}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------------------------------------------- página */
+
+export default function LabTestPage() {
   return (
     <>
       <Navbar />
 
       <HeroSection
+        kicker="LABTEST · LABORATÓRIO DE TESTES"
         title="Seu robô,"
         highlight="seus dados."
         description="Teste diferentes configurações, registre execuções e transforme o comportamento do seu robô em informações que ajudam sua equipe a tomar decisões melhores."
         images={["/images/index/banner_labtest.png"]}
-        primaryAction={{
-          label: "Abrir meu LabTest",
-          href: "/dashboard",
-        }}
-        secondaryAction={{
-          label: "Como funciona",
-          href: "/labtest#como-funciona",
-        }}
+        primaryAction={{ label: "Abrir meu LabTest", href: "/dashboard" }}
+        secondaryAction={{ label: "Como funciona", href: "/labtest#como-funciona" }}
+        badges={[
+          { label: "Runs", href: "#modos" },
+          { label: "CalibraBot", href: "#calibrabot" },
+          { label: "Personalizado", href: "#modos" },
+        ]}
+        scrollTarget="#como-funciona"
         ariaLabel="Apresentação do LabTest"
       />
 
-      <div className="min-h-screen overflow-hidden bg-base-100 text-base-content">
-        <main>
-          {/* =========================================================
-            INTRO
-        ========================================================= */}
+      <main className="overflow-x-clip bg-base-100 text-base-content">
+        {/* ========================================================= INTRO */}
+        <section id="como-funciona" className="relative isolate scroll-mt-20 overflow-hidden px-6 py-24">
+          <AnimatedBackground />
+          <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1.05fr_1fr] [&>*]:min-w-0">
+            <RevealOnScroll>
+              <SectionTitle
+                kicker="/ O LABORATÓRIO"
+                title="Pare de testar"
+                highlight="no escuro."
+                highlightClass="bg-accent text-accent-content"
+                description="Desenvolver um robô envolve dezenas de decisões. Qual configuração usar? Qual mecanismo é mais consistente? O que realmente melhorou depois daquele ajuste?"
+              />
+              <p className="mt-4 max-w-2xl text-base leading-7 text-base-content/60">
+                O LabTest transforma essas perguntas em experimentos,
+                resultados e evidências que sua equipe pode analisar.
+              </p>
+              <div className="mt-9 flex flex-wrap items-center gap-3">
+                <Link
+                  href="/dashboard"
+                  className={`btn btn-primary btn-lg ${cornerBtn} shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--color-base-content)]`}
+                >
+                  <TestTube size={20} />
+                  Criar um experimento
+                </Link>
+                <a href="#modos" className="btn btn-ghost btn-lg">
+                  Ver os modos
+                  <ArrowRight size={18} />
+                </a>
+              </div>
+            </RevealOnScroll>
+            <RevealOnScroll delay={0.1}>
+              <ExperimentCard />
+            </RevealOnScroll>
+          </div>
 
-          <section
-            id="como-funciona"
-            className="border-b border-base-300 bg-neutral text-neutral-content"
-          >
-            <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-32">
-              <RevealOnScroll>
-                <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-                  <div>
-                    <span className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
-                      O laboratório
-                    </span>
+          {/* ciclo */}
+          <div className="relative mx-auto mt-20 grid max-w-6xl gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div aria-hidden="true" className="absolute left-[12.5%] right-[12.5%] top-[2.9rem] hidden border-t-2 border-dashed border-base-300 lg:block" />
+            {cycle.map(({ icon: Icon, title, text, tone }, i) => {
+              const c = toneClasses[tone];
+              return (
+                <RevealOnScroll key={title} delay={i * 0.06} className="h-full">
+                  <article className={`group relative flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 ${c.hover}`}>
+                    <div className="flex items-center justify-between">
+                      <div className={`relative z-10 flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
+                        <Icon size={22} strokeWidth={1.8} />
+                      </div>
+                      <span className="font-mono text-xs tracking-widest text-base-content/40">ETAPA {String(i + 1).padStart(2, "0")}</span>
+                    </div>
+                    <h3 className="mt-6 text-2xl font-bold tracking-tight">{title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-base-content/60">{text}</p>
+                  </article>
+                </RevealOnScroll>
+              );
+            })}
+          </div>
+        </section>
 
-                    <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-                      Pare de testar{" "}
-                      <span className="inline-block bg-accent px-2 text-accent-content">
-                        no escuro
-                      </span>
-                      .
-                    </h2>
-                  </div>
+        {/* ===================================================== BENEFÍCIOS */}
+        <section className="border-y border-base-300 bg-base-200/40 px-6 py-24">
+          <div className="mx-auto max-w-6xl">
+            <RevealOnScroll>
+              <SectionTitle
+                kicker="/ POR QUE TESTAR?"
+                title="Transforme tentativa"
+                highlight="em aprendizado."
+                highlightClass="bg-secondary text-secondary-content"
+                description="Cada execução pode responder uma pergunta. O LabTest ajuda sua equipe a transformar essas respostas em informações que podem ser comparadas, registradas e usadas de novo."
+              />
+            </RevealOnScroll>
+            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {benefits.map(({ icon: Icon, title, text, tone }, i) => {
+                const c = toneClasses[tone];
+                return (
+                  <RevealOnScroll key={title} delay={i * 0.06} className="h-full">
+                    <article className={`group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 ${c.hover}`}>
+                      <div aria-hidden="true" className={`pointer-events-none absolute -right-10 -top-10 size-28 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 ${c.ring}`} />
+                      <div className="relative flex items-center justify-between">
+                        <div className={`flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
+                          <Icon size={22} strokeWidth={1.8} />
+                        </div>
+                        <span className="font-mono text-xs text-base-content/35">/{String(i + 1).padStart(2, "0")}</span>
+                      </div>
+                      <h3 className="relative mt-7 text-lg font-bold tracking-tight">{title}</h3>
+                      <p className="relative mt-2 text-sm leading-6 text-base-content/60">{text}</p>
+                    </article>
+                  </RevealOnScroll>
+                );
+              })}
+            </div>
+          </div>
+        </section>
 
-                  <div className="max-w-2xl">
-                    <p className="text-lg leading-8 text-neutral-content/65">
-                      Desenvolver um robô envolve dezenas de decisões. Qual
-                      configuração usar? Qual mecanismo é mais consistente? O
-                      que realmente melhorou depois daquele ajuste?
-                    </p>
-
-                    <p className="mt-5 text-lg leading-8 text-neutral-content/65">
-                      O LabTest transforma essas perguntas em experimentos,
-                      resultados e evidências que sua equipe pode analisar.
-                    </p>
-                  </div>
-                </div>
-              </RevealOnScroll>
-
-              {/* Core cycle */}
-              <div className="mt-16 grid gap-px overflow-hidden rounded-3xl border border-neutral-content/10 bg-neutral-content/10 md:grid-cols-4">
+        {/* ===================================================== CALIBRABOT */}
+        <section id="calibrabot" className="scroll-mt-20 px-6 py-24">
+          <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.1fr] [&>*]:min-w-0">
+            <RevealOnScroll>
+              <SectionTitle
+                kicker="/ NA PRÁTICA · CALIBRABOT"
+                title="Qual configuração"
+                highlight="realmente funciona?"
+                description="Em vez de escolher com base apenas em percepção, coloque diferentes configurações à prova. Com o CalibraBot, a equipe repete experimentos, compara resultados e identifica padrões."
+              />
+              <ul className="mt-8 space-y-3">
                 {[
-                  {
-                    number: "01",
-                    title: "Teste",
-                    description: "Execute seu robô em condições controladas.",
-                  },
-                  {
-                    number: "02",
-                    title: "Meça",
-                    description: "Registre os resultados de cada execução.",
-                  },
-                  {
-                    number: "03",
-                    title: "Compare",
-                    description:
-                      "Coloque configurações diferentes lado a lado.",
-                  },
-                  {
-                    number: "04",
-                    title: "Decida",
-                    description:
-                      "Use os dados para escolher o próximo caminho.",
-                  },
-                ].map((step) => (
-                  <div
-                    key={step.number}
-                    className="bg-neutral p-7 transition-colors hover:bg-neutral-content/5"
-                  >
-                    <span className="text-sm font-black tracking-widest text-primary">
-                      {step.number}
+                  "Repita o mesmo experimento",
+                  "Compare diferentes configurações",
+                  "Observe a consistência dos resultados",
+                  "Use os dados para justificar decisões",
+                ].map((item, i) => (
+                  <li key={item} className="flex items-center gap-3 text-sm sm:text-base">
+                    <span className="grid size-7 shrink-0 place-items-center rounded-tl-md rounded-br-md bg-success/15 text-success">
+                      <Check size={15} />
                     </span>
-
-                    <h3 className="mt-8 text-2xl font-black">{step.title}</h3>
-
-                    <p className="mt-3 text-sm leading-6 text-neutral-content/55">
-                      {step.description}
-                    </p>
-                  </div>
+                    <span className="mr-1 font-mono text-xs text-base-content/40">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="text-base-content/75">{item}</span>
+                  </li>
                 ))}
-              </div>
-            </div>
-          </section>
+              </ul>
+            </RevealOnScroll>
+            <RevealOnScroll delay={0.1}>
+              <CalibraTabs />
+            </RevealOnScroll>
+          </div>
+        </section>
 
-          {/* =========================================================
-            BENEFITS
-        ========================================================= */}
-
-          <section className="border-b border-base-300 bg-base-100">
-            <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-32">
-              <RevealOnScroll>
-                <div className="max-w-3xl">
-                  <span className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
-                    Por que testar?
-                  </span>
-
-                  <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-                    Transforme tentativa em aprendizado.
-                  </h2>
-
-                  <p className="mt-5 text-lg leading-8 text-base-content/60">
-                    Cada execução pode responder uma pergunta. O LabTest ajuda
-                    sua equipe a transformar essas respostas em informações que
-                    podem ser comparadas, registradas e utilizadas novamente.
-                  </p>
-                </div>
-              </RevealOnScroll>
-
-              <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                {benefits.map((benefit, index) => {
-                  const Icon = benefit.icon;
-
-                  return (
-                    <RevealOnScroll key={benefit.title} delay={index * 0.08}>
-                      <article className="card group h-full border border-base-300 bg-base-100 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg">
-                        <div className="card-body p-6">
-                          <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-content">
-                            <Icon size={21} />
-                          </div>
-
-                          <h3 className="mt-6 font-bold">{benefit.title}</h3>
-
-                          <p className="mt-2 text-sm leading-6 text-base-content/55">
-                            {benefit.description}
-                          </p>
-                        </div>
-                      </article>
-                    </RevealOnScroll>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
-          {/* =========================================================
-            CALIBRABOT
-        ========================================================= */}
-
-          <section className="border-b border-base-300 bg-base-200/50">
-            <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-32">
-              <div className="grid items-center gap-16 lg:grid-cols-2">
-                <RevealOnScroll>
-                  <div>
-                    <span className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
-                      Na prática
-                    </span>
-
-                    <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-                      Qual configuração realmente funciona?
-                    </h2>
-
-                    <p className="mt-6 text-lg leading-8 text-base-content/60">
-                      Em vez de escolher com base apenas em percepção, coloque
-                      diferentes configurações à prova.
-                    </p>
-
-                    <p className="mt-4 text-base leading-7 text-base-content/55">
-                      Com o{" "}
-                      <strong className="text-base-content">CalibraBot</strong>,
-                      sua equipe pode repetir experimentos, comparar resultados
-                      e identificar padrões de comportamento.
-                    </p>
-
-                    <div className="mt-8 space-y-4">
-                      {[
-                        "Repita o mesmo experimento",
-                        "Compare diferentes configurações",
-                        "Observe a consistência dos resultados",
-                        "Use os dados para justificar decisões",
-                      ].map((item) => (
-                        <div
-                          key={item}
-                          className="flex items-center gap-3 text-sm font-medium"
-                        >
-                          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
-                            <Check size={14} />
-                          </div>
-
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </RevealOnScroll>
-
-                {/* Data visualization */}
-                <RevealOnScroll delay={0.12}>
-                  <div className="card overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-xl">
-                    <div className="card-body p-5 sm:p-7">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-[0.15em] text-base-content/40">
-                            Experimento
-                          </p>
-
-                          <h3 className="mt-1 text-xl font-bold">
-                            Consistência das configurações
-                          </h3>
-                        </div>
-
-                        <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                          <BarChart3 size={20} />
-                        </div>
+        {/* ========================================================== MODOS */}
+        <section id="modos" className="scroll-mt-20 border-y border-base-300 bg-base-200/40 px-6 py-24">
+          <div className="mx-auto max-w-6xl">
+            <RevealOnScroll>
+              <SectionTitle
+                kicker="/ ESCOLHA SEU LABORATÓRIO"
+                title="Um laboratório para"
+                highlight="diferentes perguntas."
+                highlightClass="bg-accent text-accent-content"
+                description="Nem todo teste precisa responder à mesma pergunta. Escolha o formato que melhor representa o experimento que sua equipe quer realizar."
+              />
+            </RevealOnScroll>
+            <div className="mt-14 grid gap-5 lg:grid-cols-3">
+              {modes.map(({ icon: Icon, tag, title, text, features, tone }, i) => {
+                const c = toneClasses[tone];
+                const featured = i === 1;
+                return (
+                  <RevealOnScroll key={title} delay={i * 0.08} className="h-full">
+                    <article
+                      className={`group relative flex h-full flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border p-7 transition-all duration-300 hover:-translate-y-1 ${
+                        featured
+                          ? "border-primary bg-primary text-primary-content shadow-[8px_8px_0_0_var(--color-base-content)]"
+                          : `border-base-300 bg-base-100 ${c.hover}`
+                      }`}
+                    >
+                      <span aria-hidden="true" className={`absolute right-6 top-4 font-mono text-6xl font-bold ${featured ? "text-primary-content/15" : "text-base-content/[0.06]"}`}>
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <div className={`relative flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl ${featured ? "bg-primary-content/15" : c.icon}`}>
+                        <Icon size={22} strokeWidth={1.8} />
                       </div>
-
-                      <div className="mt-8 space-y-7">
-                        {[
-                          {
-                            name: "Motor A + Motor C",
-                            value: 92,
-                          },
-                          {
-                            name: "Motor C + Motor B",
-                            value: 86,
-                          },
-                          {
-                            name: "Motor A + Motor B",
-                            value: 74,
-                          },
-                        ].map((item, index) => (
-                          <div key={item.name}>
-                            <div className="mb-2 flex items-center justify-between text-sm">
-                              <span className="font-medium">{item.name}</span>
-
-                              <span className="font-black">{item.value}%</span>
-                            </div>
-
-                            <div className="h-3 overflow-hidden rounded-full bg-base-300">
-                              <motion.div
-                                className="h-full rounded-full bg-primary"
-                                initial={{ width: "0%" }}
-                                whileInView={{
-                                  width: `${item.value}%`,
-                                }}
-                                viewport={{
-                                  once: true,
-                                  amount: 0.5,
-                                }}
-                                transition={{
-                                  delay: reduceMotion ? 0 : index * 0.12,
-                                  duration: reduceMotion ? 0 : 0.8,
-                                  ease,
-                                }}
-                              />
-                            </div>
-                          </div>
+                      <p className={`relative mt-7 text-[10px] font-bold tracking-[0.18em] ${featured ? "text-primary-content/75" : c.tag}`}>{tag}</p>
+                      <h3 className="relative mt-2 text-2xl font-bold tracking-tight">{title}</h3>
+                      <p className={`relative mt-3 text-sm leading-6 ${featured ? "text-primary-content/80" : "text-base-content/60"}`}>{text}</p>
+                      <ul className={`relative mt-6 space-y-2.5 border-t pt-6 text-sm ${featured ? "border-primary-content/20" : "border-base-300"}`}>
+                        {features.map((f) => (
+                          <li key={f} className="flex items-center gap-2.5">
+                            <Check size={15} className={featured ? "text-primary-content" : c.tag} />
+                            {f}
+                          </li>
                         ))}
-                      </div>
-
-                      <div className="mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-4">
-                        <div className="flex items-start gap-3">
-                          <Target className="mt-0.5 text-primary" size={19} />
-
-                          <div>
-                            <p className="text-sm font-bold">
-                              Resultado do experimento
-                            </p>
-
-                            <p className="mt-1 text-xs leading-5 text-base-content/55">
-                              A configuração "Motor A + Motor C" apresentou maior consistência nas
-                              execuções realizadas.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </RevealOnScroll>
-              </div>
+                      </ul>
+                    </article>
+                  </RevealOnScroll>
+                );
+              })}
             </div>
-          </section>
+          </div>
+        </section>
 
-          <section className="border-b border-base-300 bg-base-100">
-            <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-32">
-              <RevealOnScroll>
-                <div className="max-w-3xl">
-                  <span className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
-                    Escolha seu laboratório
-                  </span>
-
-                  <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-                    Um laboratório para diferentes perguntas.
-                  </h2>
-
-                  <p className="mt-5 text-lg leading-8 text-base-content/60">
-                    Nem todo teste precisa responder à mesma pergunta. Escolha o
-                    formato que melhor representa o experimento que sua equipe
-                    quer realizar.
-                  </p>
-                </div>
-              </RevealOnScroll>
-
-              <div className="mt-14 grid gap-5 lg:grid-cols-3">
-                {modes.map((mode, index) => {
-                  const Icon = mode.icon;
-                  const isFeatured = index === 1;
-
+        {/* ===================================================== RESULTADOS */}
+        <section className="px-6 py-24">
+          <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.1fr] [&>*]:min-w-0">
+            <RevealOnScroll>
+              <SectionTitle
+                kicker="/ RESULTADOS"
+                title="Dados que contam"
+                highlight="uma história."
+                highlightClass="bg-secondary text-secondary-content"
+                description="Uma execução isolada mostra um resultado. Uma série de testes mostra comportamento. O LabTest ajuda a visualizar resultados, identificar padrões e acompanhar mudanças ao longo dos experimentos."
+              />
+            </RevealOnScroll>
+            <div>
+              <div className="grid grid-cols-2 gap-4">
+                {metrics.map(({ label, value, text, tone }, i) => {
+                  const c = toneClasses[tone];
                   return (
-                    <RevealOnScroll key={mode.title} delay={index * 0.1}>
-                      <article
-                        className={`group relative h-full overflow-hidden rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                          isFeatured
-                            ? "bg-primary text-primary-content shadow-lg"
-                            : "border border-base-300 bg-base-100"
-                        }`}
-                      >
-                        <div
-                          className={`absolute right-6 top-4 text-7xl font-black ${
-                            isFeatured
-                              ? "text-primary-content/10"
-                              : "text-base-content/[0.035]"
-                          }`}
-                        >
-                          {mode.number}
-                        </div>
-
-                        <div className="relative">
-                          <div
-                            className={`badge mb-7 ${
-                              isFeatured ? "badge-neutral" : "badge-ghost"
-                            }`}
-                          >
-                            {mode.badge}
-                          </div>
-
-                          <div
-                            className={`flex size-12 items-center justify-center rounded-xl ${
-                              isFeatured
-                                ? "bg-primary-content/15"
-                                : "bg-primary/10 text-primary"
-                            }`}
-                          >
-                            <Icon size={23} />
-                          </div>
-
-                          <h3 className="mt-7 text-2xl font-black">
-                            {mode.title}
-                          </h3>
-
-                          <p
-                            className={`mt-3 min-h-[80px] text-sm leading-6 ${
-                              isFeatured
-                                ? "text-primary-content/75"
-                                : "text-base-content/55"
-                            }`}
-                          >
-                            {mode.description}
-                          </p>
-
-                          <div
-                            className={`my-7 h-px ${
-                              isFeatured
-                                ? "bg-primary-content/20"
-                                : "bg-base-300"
-                            }`}
-                          />
-
-                          <ul className="space-y-3">
-                            {mode.features.map((feature) => (
-                              <li
-                                key={feature}
-                                className="flex items-center gap-3 text-sm"
-                              >
-                                <Check
-                                  size={16}
-                                  className={
-                                    isFeatured
-                                      ? "text-primary-content"
-                                      : "text-primary"
-                                  }
-                                />
-
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </article>
+                    <RevealOnScroll key={label} delay={i * 0.06} className="h-full">
+                      <div className={`group h-full rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-1 sm:p-6 ${c.hover}`}>
+                        <p className={`text-[10px] font-bold tracking-[0.15em] ${c.tag}`}>{label.toUpperCase()}</p>
+                        <p className="mt-3 font-mono text-3xl font-bold tabular-nums sm:text-4xl">{value}</p>
+                        <p className="mt-2 text-xs leading-5 text-base-content/50">{text}</p>
+                      </div>
                     </RevealOnScroll>
                   );
                 })}
               </div>
+              <p className="mt-3 text-right font-mono text-[10px] tracking-wide text-base-content/40">valores ilustrativos</p>
             </div>
-          </section>
+          </div>
+        </section>
 
-          <section className="border-b border-base-300 bg-base-200">
-            <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-32">
-              <div className="grid items-center gap-16 lg:grid-cols-2">
-                <RevealOnScroll>
-                  <div>
-                    <span className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
-                      Resultados
-                    </span>
-
-                    <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-                      Dados que contam uma história.
-                    </h2>
-
-                    <p className="mt-6 text-lg leading-8 text-base-content/60">
-                      Uma execução isolada pode mostrar um resultado. Uma série
-                      de testes mostra comportamento.
-                    </p>
-
-                    <p className="mt-4 text-base leading-7 text-base-content/55">
-                      O LabTest ajuda sua equipe a visualizar resultados,
-                      identificar padrões e acompanhar mudanças ao longo dos
-                      experimentos.
-                    </p>
-                  </div>
-                </RevealOnScroll>
-
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    {
-                      label: "Execuções",
-                      value: "128",
-                      description: "testes registrados",
-                    },
-                    {
-                      label: "Consistência",
-                      value: "94.2%",
-                      description: "resultado observado",
-                    },
-                    {
-                      label: "Configurações",
-                      value: "12",
-                      description: "possibilidades comparadas",
-                    },
-                    {
-                      label: "Evolução",
-                      value: "+18%",
-                      description: "comparação entre versões",
-                    },
-                  ].map((metric, index) => (
-                    <RevealOnScroll key={metric.label} delay={index * 0.08}>
-                      <div className="rounded-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg">
-                        <p className="text-sm font-medium text-base-content/45">
-                          {metric.label}
-                        </p>
-
-                        <p className="mt-3 text-3xl font-black text-primary sm:text-4xl">
-                          {metric.value}
-                        </p>
-
-                        <p className="mt-2 text-xs leading-5 text-base-content/45">
-                          {metric.description}
-                        </p>
-                      </div>
-                    </RevealOnScroll>
-                  ))}
-                </div>
+        {/* ===================================================== EXPORTAR */}
+        <section className="px-6 pb-24">
+          <RevealOnScroll>
+            <div className="relative mx-auto grid max-w-6xl items-center gap-10 overflow-hidden rounded-tl-[2.5rem] rounded-br-[2.5rem] border border-base-300 bg-base-200/60 p-8 sm:p-12 lg:grid-cols-[1.3fr_1fr] [&>*]:min-w-0">
+              <div aria-hidden="true" className="absolute -right-16 -top-16 size-48 rounded-full border border-secondary/20" />
+              <div className="relative">
+                <p className="font-mono text-xs tracking-[0.2em] text-base-content/45">/ DEPOIS DO LABORATÓRIO</p>
+                <h2 className="mt-3 text-2xl font-bold tracking-tight sm:text-4xl">
+                  O resultado do teste{" "}
+                  <span className="inline-block -rotate-1 bg-primary px-2 italic text-primary-content">continua.</span>
+                </h2>
+                <p className="mt-5 max-w-xl text-base leading-7 text-base-content/65">
+                  Use os resultados em reuniões, apresentações, cadernos de
+                  engenharia e avaliações. O dado continua fazendo parte da
+                  história do projeto.
+                </p>
               </div>
+              <ul className="relative grid gap-3">
+                {[
+                  { icon: BarChart3, label: "Gráficos", text: "para ver o comportamento" },
+                  { icon: LineChart, label: "Métricas", text: "para comparar versões" },
+                  { icon: Download, label: "Exportação", text: "para levar os dados adiante" },
+                  { icon: FileText, label: "Caderno de engenharia", text: "para mostrar aos juízes" },
+                ].map(({ icon: Icon, label, text }, i) => (
+                  <li key={label} className="flex items-center gap-4 rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 px-4 py-3">
+                    <span className={`grid size-9 shrink-0 place-items-center rounded-tl-lg rounded-br-lg ${toneClasses[(["primary", "secondary", "accent"] as Tone[])[i % 3]].icon}`}>
+                      <Icon size={17} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-bold">{label}</span>
+                      <span className="block text-xs text-base-content/55">{text}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </section>
+          </RevealOnScroll>
+        </section>
 
-          <section className="bg-base-100">
-            <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-32">
-              <RevealOnScroll>
-                <div className="overflow-hidden rounded-[2rem] border border-base-300 bg-base-200">
-                  <div className="grid items-center gap-12 p-8 sm:p-12 lg:grid-cols-[1fr_auto] lg:p-16">
-                    <div>
-                      <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                        <Download size={22} />
-                      </div>
-
-                      <h2 className="mt-7 text-3xl font-black sm:text-4xl">
-                        O resultado do teste continua depois do laboratório.
-                      </h2>
-
-                      <p className="mt-5 max-w-2xl text-base leading-7 text-base-content/55">
-                        Use os resultados em reuniões, apresentações, cadernos
-                        de engenharia e avaliações. O dado pode continuar
-                        fazendo parte da história do projeto.
-                      </p>
-
-                      <div className="mt-7 flex flex-wrap gap-3">
-                        <div className="badge badge-lg gap-2 border-base-300 bg-base-100">
-                          <BarChart3 size={14} />
-                          Gráficos
-                        </div>
-
-                        <div className="badge badge-lg gap-2 border-base-300 bg-base-100">
-                          <LineChart size={14} />
-                          Métricas
-                        </div>
-
-                        <div className="badge badge-lg gap-2 border-base-300 bg-base-100">
-                          <Download size={14} />
-                          Exportação
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="hidden lg:flex">
-                      <div className="flex size-40 rotate-3 items-center justify-center rounded-[2rem] border border-primary/20 bg-primary/5 transition-transform duration-300 hover:rotate-0">
-                        <div className="-rotate-3 text-center">
-                          <Download
-                            size={30}
-                            className="mx-auto text-primary"
-                          />
-
-                          <p className="mt-3 text-sm font-bold">Exportar</p>
-
-                          <p className="text-xs text-base-content/40">
-                            seus resultados
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </RevealOnScroll>
-            </div>
-          </section>
-
-          <section className="border-t border-base-300 bg-base-200/50">
-            <div className="mx-auto max-w-4xl px-6 py-24 lg:py-32">
-              <RevealOnScroll>
-                <div className="text-center">
-                  <span className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
-                    FAQ
-                  </span>
-
-                  <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-                    Perguntas frequentes
-                  </h2>
-
-                  <p className="mt-5 text-base text-base-content/55">
-                    Tudo o que você precisa saber antes de começar a testar.
-                  </p>
-                </div>
-              </RevealOnScroll>
-
-              <div className="mt-12 space-y-3">
-                {faqs.map((faq) => (
-                  <div
-                    key={faq.question}
-                    className="collapse collapse-arrow rounded-2xl border border-base-300 bg-base-100 transition-colors duration-200 hover:border-primary/30"
-                  >
-                    <input type="checkbox" />
-
-                    <div className="collapse-title pr-12 font-bold">
-                      {faq.question}
-                    </div>
-
-                    <div className="collapse-content">
-                      <p className="max-w-3xl pb-2 text-sm leading-7 text-base-content/60">
-                        {faq.answer}
-                      </p>
+        {/* ============================================================ FAQ */}
+        <section className="border-t border-base-300 bg-base-200/40 px-6 py-24">
+          <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
+            <RevealOnScroll>
+              <div className="lg:sticky lg:top-28">
+                <SectionTitle kicker="/ FAQ" title="Antes de" highlight="começar a testar." />
+                <p className="mt-6 text-sm leading-6 text-base-content/60">
+                  Tudo o que você precisa saber antes do primeiro experimento.
+                </p>
+              </div>
+            </RevealOnScroll>
+            <RevealOnScroll delay={0.1}>
+              <div className="space-y-3">
+                {faqs.map(({ q, a }, i) => (
+                  <div key={q} className="collapse collapse-plus rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100">
+                    <input type="radio" name="labtest_faq" defaultChecked={i === 0} aria-label={q} />
+                    <div className="collapse-title pr-12 font-semibold">{q}</div>
+                    <div className="collapse-content text-sm leading-7 text-base-content/70">
+                      <p>{a}</p>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          </section>
-          <section className="relative overflow-hidden bg-neutral text-neutral-content">
-            <div className="pointer-events-none absolute -right-32 -top-32 size-96 rounded-full border-[70px] border-primary/10" />
-            <div className="pointer-events-none absolute -bottom-40 -left-20 size-96 rounded-full border-[60px] border-secondary/10" />
-            <div className="relative mx-auto max-w-5xl px-6 py-28 text-center lg:px-8 lg:py-36">
-              <RevealOnScroll>
-                <span className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
-                  Seu próximo teste
-                </span>
+            </RevealOnScroll>
+          </div>
+        </section>
 
-                <h2 className="mt-4 text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">
-                  Troque o{" "}
-                  <span className="text-neutral-content/50">
-                    “acho que funciona”
-                  </span>{" "}
-                  por dados.
-                </h2>
-
-                <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-neutral-content/65">
-                  Teste, compare, aprenda e tome decisões com mais informação
-                  sobre o comportamento do seu robô.
-                </p>
-
-                <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
-                  <Link
-                    href="/dashboard"
-                    className="btn btn-primary rounded-2xl px-8"
-                  >
-                    Experimentar o LabTest
-                    <ArrowRight size={18} />
-                  </Link>
-
-                  <Link
-                    href="#como-funciona"
-                    className="btn btn-ghost rounded-2xl px-8 text-neutral-content"
-                  >
-                    Conhecer o laboratório
-                  </Link>
-                </div>
-              </RevealOnScroll>
-            </div>
-          </section>
-        </main>
-      </div>
+        <CtaBlock
+          kicker="SEU PRÓXIMO TESTE"
+          icon={TestTube}
+          title="Troque o “acho que funciona” por dados."
+          text="Teste, compare, aprenda e tome decisões com mais informação sobre o comportamento do seu robô."
+          actions={[
+            { label: "Experimentar o LabTest", href: "/dashboard", variant: "accent" },
+            { label: "Anatix para a OBR", href: "/obr/anatix", variant: "ghost" },
+            { label: "Conhecer o laboratório", href: "#como-funciona", variant: "ghost" },
+          ]}
+        />
+      </main>
 
       <Footer />
     </>

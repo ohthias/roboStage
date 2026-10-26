@@ -167,7 +167,6 @@ export const ferramentas: Ferramenta[] = [
     categoria: "Criar",
     icon: <Puzzle className="w-5 h-5" />,
     link: "/obr/quickbrick/criador-de-arenas",
-    badge: "Novo",
     customContent: null,
   },
 ];

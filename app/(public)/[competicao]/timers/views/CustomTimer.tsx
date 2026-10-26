@@ -33,7 +33,9 @@ const STATUS_DOT: Record<TimerStatus, string> = {
   finished: "bg-error animate-pulse",
 };
 
-export const CustomTimer: React.FC = () => {
+export const CustomTimer: React.FC<{ backHref?: string }> = ({
+  backHref = "/fll/timers",
+}) => {
   const [initialTime, setInitialTime] = useState(300);
   const [timeLeft, setTimeLeft] = useState(300);
   const [status, setStatus] = useState<TimerStatus>("idle");
@@ -118,8 +120,8 @@ export const CustomTimer: React.FC = () => {
       return;
     }
     clearAlarm();
-    window.location.href = "/fll/timers";
-  }, [status, clearAlarm]);
+    window.location.href = backHref;
+  }, [status, clearAlarm, backHref]);
 
   const toggle = useCallback(() => {
     if (status === "finished") {
@@ -209,13 +211,13 @@ export const CustomTimer: React.FC = () => {
         onConfirm={() => {
           setShowExitModal(false);
           clearAlarm();
-          window.location.href = "/fll/timers";
+          window.location.href = backHref;
         }}
       />
       <CompletionModal
         isOpen={status === "finished"}
         title="Tempo encerrado"
-        subTitle="Apresentação finalizada."
+        subTitle="Tempo finalizado."
         onReset={reset}
         onMenu={handleBack}
       />

@@ -64,6 +64,33 @@ export interface ConfereAIState {
 
 export const CONFERE_AI_STATE_VERSION = 1;
 
+/** Competições com checklist própria. Cada uma tem seu JSON e seu estado salvo. */
+export type ConfereAICompetition = "fll" | "obr";
+
+export const CONFERE_AI_COMPETITIONS: Record<
+  ConfereAICompetition,
+  { label: string; configUrl: string; description: string; nextStepLabel: string }
+> = {
+  fll: {
+    label: "FLL",
+    configUrl: "/data/confere-ai.json",
+    description:
+      "Organize sua equipe para os treinos e campeonatos da FLL. Adicione itens personalizados às suas checklists, e acompanhe o progresso de forma simples e eficiente. ",
+    nextStepLabel: "Próxima missão: estar pronto.",
+  },
+  obr: {
+    label: "OBR",
+    configUrl: "/data/obr/confere-ai.json",
+    description:
+      "Organize sua equipe para os treinos e etapas da OBR. Confira robô, sensores, calibração e materiais antes de cada round, e acompanhe o progresso de forma simples. ",
+    nextStepLabel: "Próximo round: robô calibrado e pronto.",
+  },
+};
+
+export function isConfereAICompetition(value: string): value is ConfereAICompetition {
+  return value in CONFERE_AI_COMPETITIONS;
+}
+
 export function createDefaultConfereAIState(activeMode: ConfereAIModeId = "daily"): ConfereAIState {
   return {
     version: CONFERE_AI_STATE_VERSION,

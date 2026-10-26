@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { FE_DEFAULT_MATCH_SECONDS } from "@/utils/labtest/future-edition";
+import { getKitPreset } from "@/utils/labtest/kit-ia";
 
 /* ------------------------------------------------------------------ */
 /* Tipos                                                               */
@@ -76,7 +78,7 @@ export interface CustomParam {
   max?: number;
 }
 
-export type CalibraMode = "motores" | "giroscópio" | "pid";
+export type CalibraMode = "motores" | "giroscópio" | "pid" | "kit-ia";
 export type CreateTestMode = "runs" | "calibrabot" | "custom";
 
 /* ------------------------------------------------------------------ */
@@ -102,6 +104,13 @@ function isFutureEditionCompetition(competition?: Competition | null) {
   );
 }
 
+/** Future Edition: missões fixas da temporada, jogadas em partida cronometrada. */
+const FUTURE_EDITION_RUN_CONFIG: CompetitionRunConfig = {
+  label: "Future Edition",
+  missionEndpoint: "/api/data/missions/future-edition",
+  fullRun: true,
+};
+
 const COMPETITION_RUN_CONFIG: Record<string, CompetitionRunConfig> = {
   FLL: {
     label: "FLL Challenge",
@@ -123,21 +132,8 @@ const COMPETITION_RUN_CONFIG: Record<string, CompetitionRunConfig> = {
     missionEndpoint: "/api/data/missions",
     missionIdPrefix: "M",
   },
-/*  FUTUREEDITION: {
-    label: "Future Edition",
-    missionEndpoint: "/api/data/missions/future-edition",
-    fullRun: true,
-  },
-  FLLFUTUREEDITION: {
-    label: "Future Edition",
-    missionEndpoint: "/api/data/missions/future-edition",
-    fullRun: true,
-  },
-  "FUTURE-EDITION": {
-    label: "Future Edition",
-    missionEndpoint: "/api/data/missions/future-edition",
-    fullRun: true,
-  },*/
+  FUTUREEDITION: FUTURE_EDITION_RUN_CONFIG,
+  FLLFUTUREEDITION: FUTURE_EDITION_RUN_CONFIG,
 };
 
 function normalizeCompetitionCode(code?: string | null) {
@@ -145,9 +141,13 @@ function normalizeCompetitionCode(code?: string | null) {
   return code.replace(/[^a-z0-9]/gi, "").toUpperCase();
 }
 
-function resolveCompetitionRunConfig(code?: string | null) {
-  if (!code) return undefined;
-  return COMPETITION_RUN_CONFIG[normalizeCompetitionCode(code)];
+function resolveCompetitionRunConfig(competition?: Competition | null) {
+  if (!competition) return undefined;
+  const byCode = competition.code
+    ? COMPETITION_RUN_CONFIG[normalizeCompetitionCode(competition.code)]
+    : undefined;
+  // Códigos diferentes de "FUTURE-EDITION" (ex.: "FLL-FE") são reconhecidos pelo nome/código.
+  return byCode ?? (isFutureEditionCompetition(competition) ? FUTURE_EDITION_RUN_CONFIG : undefined);
 }
 
 /**
@@ -225,6 +225,8 @@ export function useCreateTest() {
   const [selectedMissionIds, setSelectedMissionIds] = useState<string[]>([]);
   const [answers, setAnswers] = useState<Record<string, MissionAnswer>>({});
 
+  const [matchDuration, setMatchDuration] = useState(FE_DEFAULT_MATCH_SECONDS);
+
   /* ---------------- modo calibrabot ---------------- */
   const [calibraMode, setCalibraMode] = useState<CalibraMode>("motores");
   const [motorInput, setMotorInput] = useState("");
@@ -236,6 +238,8 @@ export function useCreateTest() {
   const [giroAnalysis, setGiroAnalysis] = useState<string[]>([]);
   const [pidDistance, setPidDistance] = useState(50);
   const [pidParams, setPidParams] = useState<string[]>([]);
+  const [kitPreset, setKitPresetId] = useState<string>("");
+  const [kitParams, setKitParams] = useState<string[]>([]);
 
   /* ---------------- modo custom ---------------- */
   const [customParams, setCustomParams] = useState<CustomParam[]>([]);
@@ -253,7 +257,7 @@ export function useCreateTest() {
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((data) => {
         if (Array.isArray(data) && data.length) {
-          setCompetitions(data.filter((item) => !isFutureEditionCompetition(item)));
+          setCompetitions(data);
         }
       })
       .catch(() => {
@@ -265,10 +269,10 @@ export function useCreateTest() {
   /* Competição selecionada -> endpoint de missões correspondente     */
   /* -------------------------------------------------------------- */
   const selectedCompetition = competitions.find((c) => c.id === competition);
-  const selectedCompetitionConfig = resolveCompetitionRunConfig(
-    selectedCompetition?.code,
-  );
+  const selectedCompetitionConfig = resolveCompetitionRunConfig(selectedCompetition);
   const missionEndpoint = selectedCompetitionConfig?.missionEndpoint;
+  const futureEditionActive = competitions.some(isFutureEditionCompetition);
+  const isFutureEdition = isFutureEditionCompetition(selectedCompetition);
   const isFullRun = selectedCompetitionConfig?.fullRun ?? false;
 
   const [missionsData, setMissionsData] = useState<Record<
@@ -336,7 +340,7 @@ export function useCreateTest() {
           setMissions(loadedMissions);
 
           if (isFullRun) {
-            if (typeof data.season === "string") setSeason(data.season);
+            if (typeof data.season === "string") setSeason(`${data.season}-FE`);
             setSelectedMissionIds(loadedMissions.map((mission) => mission.id));
             setAnswers(
               Object.fromEntries(
@@ -467,6 +471,19 @@ export function useCreateTest() {
   function togglePidParam(v: string) {
     setPidParams((a) => (a.includes(v) ? a.filter((x) => x !== v) : [...a, v]));
   }
+  function selectKitPreset(id: string) {
+    setKitPresetId(id);
+    setKitParams(
+      (getKitPreset(id)?.params ?? [])
+        .filter((param) => param.padrao)
+        .map((param) => param.nome),
+    );
+  }
+  function toggleKitParam(name: string) {
+    setKitParams((list) =>
+      list.includes(name) ? list.filter((x) => x !== name) : [...list, name],
+    );
+  }
   function motorPairs(): [string, string][] {
     const pairs: [string, string][] = [];
     for (let i = 0; i < motors.length; i++) {
@@ -536,6 +553,11 @@ export function useCreateTest() {
           targetDistance: pidDistance,
           params: pidParams,
         }),
+
+        ...(calibraMode === "kit-ia" && {
+          kitPreset,
+          params: kitParams,
+        }),
       };
     } else {
       payload = {
@@ -574,6 +596,10 @@ export function useCreateTest() {
     selectedCompetition,
     selectedCompetitionConfig,
     isFullRun,
+    isFutureEdition,
+    futureEditionActive,
+    matchDuration,
+    setMatchDuration,
     missionEndpoint,
     missions,
     loadingMissions,
@@ -607,6 +633,10 @@ export function useCreateTest() {
     setPidDistance,
     pidParams,
     togglePidParam,
+    kitPreset,
+    selectKitPreset,
+    kitParams,
+    toggleKitParam,
 
     // custom
     customParams,

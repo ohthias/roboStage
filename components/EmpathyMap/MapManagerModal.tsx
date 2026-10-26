@@ -42,7 +42,7 @@ export const MapManagerModal: React.FC<MapManagerModalProps> = ({
   };
 
   return (
-    <div className="modal modal-open">
+    <div className="modal modal-open modal-bottom sm:modal-middle">
       <div className="modal-box max-w-md relative bg-base-100">
         <button
           onClick={onClose}
@@ -81,7 +81,7 @@ export const MapManagerModal: React.FC<MapManagerModalProps> = ({
                 onChange={(e) => setNewTitle(e.target.value)}
                 required
                 placeholder="Ex: Novo Usuário Onboarding"
-                className="input input-bordered input-sm w-full text-xs"
+                className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
                 autoFocus
               />
             </div>
@@ -94,7 +94,7 @@ export const MapManagerModal: React.FC<MapManagerModalProps> = ({
                 value={newPersonaName}
                 onChange={(e) => setNewPersonaName(e.target.value)}
                 placeholder="Ex: Carlos Silva"
-                className="input input-bordered input-sm w-full text-xs"
+                className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
               />
             </div>
             <div className="flex justify-end gap-2 pt-1">
@@ -116,7 +116,7 @@ export const MapManagerModal: React.FC<MapManagerModalProps> = ({
         )}
 
         {/* Maps list */}
-        <div className="space-y-2 mb-4 max-h-56 overflow-y-auto">
+        <div className="space-y-2 mb-4 max-h-[40vh] sm:max-h-56 overflow-y-auto">
           {maps.map((m) => {
             const isActive = m.id === activeMapId;
             return (

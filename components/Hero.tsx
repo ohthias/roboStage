@@ -49,7 +49,7 @@ export default function Hero() {
 
       <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[1.05fr_0.95fr] md:gap-8 lg:gap-16">
         <div className="relative z-10 flex w-full flex-col items-center text-center md:items-start md:text-left">
-          <div className="inline-flex items-center gap-2 rounded-full bg-base-100/80 px-3 py-1.5 text-xs font-semibold text-base-content/70">
+          <div className="inline-flex items-center gap-2 rounded-tl-lg rounded-br-lg border border-base-content/15 bg-base-100/80 px-3 py-1.5 font-mono text-[11px] tracking-[0.15em] text-base-content/70">
             <span
               className="size-2 rounded-full"
               style={{ backgroundColor: hero.accent }}
@@ -78,14 +78,14 @@ export default function Hero() {
           <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row md:max-w-none">
             <Link
               href={hero.ctaPrimario.href}
-              className="btn btn-primary group min-h-12 rounded-tl-xl rounded-br-xl px-5 shadow-sm"
+              className="btn btn-primary group min-h-12 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none px-5 shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--color-base-content)]"
             >
               {hero.ctaPrimario.label}
             </Link>
 
             <Link
               href={hero.ctaSecundario.href}
-              className="btn btn-outline min-h-12 rounded-tl-xl rounded-br-xl border-base-300 px-5 transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+              className="btn btn-outline min-h-12 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none border-base-300 px-5 transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
             >
               {hero.ctaSecundario.label}
               <ArrowUpRight size={16} />

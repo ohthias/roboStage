@@ -21,7 +21,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal modal-open">
+    <div className="modal modal-open modal-bottom sm:modal-middle">
       <div className="modal-box max-w-2xl relative bg-base-100 p-6 sm:p-8 max-h-[90vh]">
         <button
           onClick={onClose}

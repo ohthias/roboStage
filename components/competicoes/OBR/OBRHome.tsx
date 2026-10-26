@@ -2,525 +2,465 @@ import Link from "next/link";
 import {
   ArrowRight,
   ArrowUpRight,
+  BookOpen,
   Braces,
-  Database,
+  Brain,
+  Code,
   FlaskConical,
-  Info,
+  Globe2,
+  Grid3x3,
   Map,
-  Route,
+  Palette,
+  ShieldAlert,
   Target,
+  Trophy,
 } from "lucide-react";
 
 import Hero from "@/components/Hero";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
+import ObrChart from "@/components/roboticar/ObrChart";
+import {
+  AnimatedBackground,
+  SectionTitle,
+  toneClasses,
+  type Tone,
+} from "@/components/home/shared";
+import { NewsSection } from "@/components/home/HomeSections";
+import {
+  CtaBlock,
+  StepsRow,
+  ToolGrid,
+  cornerBtn,
+  type ToolItem,
+} from "@/components/competicoes/shared/CompetitionSections";
+import { getLatestNews } from "@/utils/institutional/news";
+import "@/components/home/home.css";
 
-const tools = [
+/* -------------------------------------------------------------- dados */
+
+const modalities = [
   {
-    number: "01",
+    icon: Target,
+    title: "Prática",
+    text: "Robôs autônomos percorrem a arena de Resgate, superam obstáculos e identificam vítimas em cenários simulados.",
+    tone: "primary" as Tone,
+  },
+  {
+    icon: Brain,
+    title: "Teórica",
+    text: "Provas que exploram ciência, matemática, raciocínio lógico e fundamentos da robótica.",
+    tone: "secondary" as Tone,
+  },
+  {
+    icon: Palette,
+    title: "Artística",
+    text: "A modalidade mais nova da OBR, que une robótica, criatividade e expressão artística.",
+    tone: "accent" as Tone,
+    isNew: true,
+  },
+];
+
+const numbers = [
+  { value: "+1 mi", label: "estudantes desde 2007" },
+  { value: "198.297", label: "inscrições em 2023" },
+  { value: "+3 mil", label: "escolas representadas" },
+];
+
+const pillars = [
+  {
     icon: Map,
-    title: "Criador de arenas",
-    description:
-      "Explore percursos, identifique obstáculos e planeje rotas antes de levar seu robô para a pista. Transforme a leitura da arena em uma estratégia.",
+    tag: "ANÁLISE DA ARENA",
+    title: "Planeje sua rota",
+    description: "Explore a arena, identifique os desafios e organize o percurso antes de executar a estratégia.",
     href: "/obr/quickbrick/criador-de-arenas",
-    action: "Explorar arenas",
-    tag: "PLANEJAMENTO",
-    color: "bg-primary",
-    textColor: "text-primary-content",
+    link: "Criador de arenas",
+    tone: "primary" as Tone,
   },
   {
-    number: "02",
-    icon: Database,
-    title: "Integração com código",
-    description:
-      "Utilize informações estruturadas das arenas para conectar o planejamento à programação do robô e desenvolver estratégias com o Anatix.",
-    href: "/obr/anatix",
-    action: "Conhecer integração",
-    tag: "PROGRAMAÇÃO",
-    color: "bg-secondary",
-    textColor: "text-secondary-content",
+    icon: Braces,
+    tag: "DESENVOLVIMENTO",
+    title: "Transforme ideias em código",
+    description: "Estruture a lógica dos movimentos e acompanhe sensores e estados do robô em tempo real.",
+    href: "/anatix",
+    link: "Anatix",
+    tone: "secondary" as Tone,
   },
   {
-    number: "03",
     icon: FlaskConical,
-    title: "LabTest",
-    description:
-      "Registre execuções, compare resultados e investigue o comportamento do robô. Use os dados dos testes para encontrar ajustes mais consistentes.",
-    href: "/dashboard/labtest",
-    action: "Experimentar o LabTest",
+    tag: "ANÁLISE DE RESULTADOS",
+    title: "Aprenda com cada teste",
+    description: "Registre resultados, compare execuções e encontre oportunidades para melhorar o desempenho.",
+    href: "/labtest",
+    link: "LabTest",
+    tone: "accent" as Tone,
+  },
+];
+
+const tools: ToolItem[] = [
+  {
+    icon: Map,
+    tag: "PLANEJAMENTO",
+    title: "Criador de arenas",
+    description: "Monte percursos, identifique obstáculos e planeje rotas antes de levar o robô para a pista.",
+    href: "/obr/quickbrick/criador-de-arenas",
+    tone: "primary",
+  },
+  {
+    icon: Code,
+    tag: "TELEMETRIA",
+    title: "Anatix",
+    description: "Biblioteca aberta para ver distância, sensores, estados e tempos do robô enquanto ele roda.",
+    href: "/anatix",
+    tone: "secondary",
+  },
+  {
+    icon: FlaskConical,
     tag: "EXPERIMENTAÇÃO",
-    color: "bg-warning",
-    textColor: "text-warning-content",
+    title: "LabTest",
+    description: "Registre execuções, compare resultados e investigue o comportamento do robô com dados.",
+    href: "/labtest",
+    tone: "accent",
+  },
+  {
+    icon: Trophy,
+    tag: "PONTUAÇÃO",
+    title: "Pontuador",
+    description: "Acompanhe a pontuação da arena com multiplicadores e os desafios superados pelo robô.",
+    href: "/obr/score",
+    tone: "primary",
+  },
+  {
+    icon: ShieldAlert,
+    tag: "RISCOS",
+    title: "Matriz de risco",
+    description: "Identifique e avalie o que pode comprometer o desempenho do robô na arena.",
+    href: "/obr/quickbrick/matriz-de-risco",
+    tone: "secondary",
+  },
+  {
+    icon: BookOpen,
+    tag: "REGRAS",
+    title: "Documentação",
+    description: "Manuais e documentos da OBR reunidos para consulta rápida durante os treinos.",
+    href: "/obr/docs",
+    tone: "accent",
   },
 ];
 
 const steps = [
   {
-    number: "01",
     icon: Map,
     title: "Entenda a arena",
-    description:
-      "Observe o percurso, reconheça os obstáculos e identifique os desafios que o robô precisará superar.",
+    description: "Observe o percurso, reconheça os obstáculos e identifique os desafios que o robô precisará superar.",
     detail: "Observe antes de agir",
+    href: "/obr/quickbrick/criador-de-arenas",
+    link: "Montar arena",
   },
   {
-    number: "02",
     icon: Braces,
     title: "Construa a estratégia",
-    description:
-      "Defina rotas, organize os movimentos e transforme suas decisões em uma sequência lógica de instruções.",
+    description: "Defina rotas, organize os movimentos e transforme decisões em uma sequência lógica de instruções.",
     detail: "Planeje e programe",
+    href: "/anatix",
+    link: "Ver o Anatix",
   },
   {
-    number: "03",
     icon: FlaskConical,
     title: "Teste e evolua",
-    description:
-      "Execute tentativas, registre evidências e compare os resultados para descobrir o que funciona melhor.",
+    description: "Execute tentativas, registre evidências e compare os resultados para descobrir o que funciona melhor.",
     detail: "Aprenda com os dados",
+    href: "/labtest",
+    link: "Conhecer o LabTest",
   },
 ];
 
-const modalities = [
-  {
-    number: "01",
-    title: "Modalidade Teórica",
-    description:
-      "Questões que exploram ciência, matemática, raciocínio lógico e fundamentos da robótica.",
-  },
-  {
-    number: "02",
-    title: "Modalidade Prática",
-    description:
-      "Construção e programação de robôs para superar desafios, com destaque para a categoria de Resgate.",
-  },
+const anatixCode = [
+  "void loop() {",
+  "  ANX_UPDATE();",
+  "  float dist = lerUltrassom();",
+  '  ANX_VALUE("distancia_cm", dist);',
+  "  if (dist < 10) {",
+  '    ANX_STATE("modo", "desviando");',
+  '    ANX_EVENT("obstaculo");',
+  "  }",
+  "}",
 ];
+
+/* --------------------------------------------------------------- página */
 
 export default function OBRHome() {
+  const news = getLatestNews(3, "OBR");
+
   return (
-    <main className="mt-16 min-h-screen overflow-hidden bg-base-200 text-base-content">
+    <main className="mt-16 overflow-x-clip bg-base-100 text-base-content">
       <Hero />
-      <section className="w-full bg-neutral py-16 text-neutral-content md:py-20">
-        <div className="mx-auto flex max-w-7xl flex-col items-stretch gap-10 px-5 sm:px-8 md:flex-row md:items-center md:gap-14">
+
+      {/* ========================================================= SOBRE A OBR */}
+      <section className="relative isolate overflow-hidden px-6 py-24">
+        <AnimatedBackground />
+        <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
           <RevealOnScroll>
-            <div className="w-full md:flex-1">
-              <div className="relative">
-                <img
-                  src="https://obr.robocup.org.br/wp-content/uploads/2024/03/IMG_7744-scaled.jpg"
-                  alt="Estudantes participando de uma atividade de robótica"
-                  className="h-full w-full object-cover"
-                  style={{ boxShadow: "-10px -10px 0 #fabd32" }}
-                  loading="lazy"
-                />
-              </div>
-              <p className="mt-4 text-xs text-neutral-content/50">
+            <figure className="relative">
+              <div aria-hidden="true" className="absolute -right-4 -top-4 size-24 rotate-12 rounded-tl-2xl rounded-br-2xl bg-accent" />
+              <div aria-hidden="true" className="absolute -bottom-5 -left-5 size-20 rounded-full border-2 border-dashed border-secondary/50" />
+              <img
+                src="https://obr.robocup.org.br/wp-content/uploads/2024/03/IMG_7744-scaled.jpg"
+                alt="Estudantes participando de uma atividade de robótica"
+                className="relative aspect-[4/3] w-full rounded-tl-3xl rounded-br-3xl border border-base-300 object-cover shadow-[8px_8px_0_0_var(--color-secondary)]"
+                loading="lazy"
+              />
+              <figcaption className="mt-4 text-xs text-base-content/50">
                 Imagem: Olimpíada Brasileira de Robótica / RoboCup Brasil
-              </p>
-            </div>
+              </figcaption>
+            </figure>
           </RevealOnScroll>
 
+          <RevealOnScroll delay={0.1}>
+            <SectionTitle
+              kicker="/ SOBRE A OBR"
+              title="Ciência e tecnologia"
+              highlight="para todo o Brasil."
+              description="A Olimpíada Brasileira de Robótica é uma iniciativa pública e gratuita para estudantes de 6 a 19 anos, que aproxima a escola da ciência por meio de desafios de criatividade, lógica e resolução de problemas."
+            />
+            <dl className="mt-8 grid grid-cols-3 divide-x divide-base-300 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100">
+              {numbers.map(({ value, label }) => (
+                <div key={label} className="px-3 py-4 sm:px-5">
+                  <dt className="sr-only">{label}</dt>
+                  <dd className="font-mono text-lg font-bold tabular-nums sm:text-2xl">{value}</dd>
+                  <dd className="mt-1 text-[11px] leading-4 text-base-content/55 sm:text-xs">{label}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a
+                href="https://obr.robocup.org.br/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`btn btn-primary ${cornerBtn} shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5`}
+              >
+                Conhecer a competição
+                <ArrowUpRight size={17} />
+              </a>
+              <a href="#numeros" className="btn btn-ghost">
+                Ver a evolução
+                <ArrowRight size={17} />
+              </a>
+            </div>
+          </RevealOnScroll>
+        </div>
+
+        <div className="mx-auto mt-20 max-w-6xl">
           <RevealOnScroll>
-            <div className="w-full md:flex-1">
-              <h2 className="text-3xl font-black leading-tight tracking-tight sm:text-4xl">
-                Sobre a OBR
-              </h2>
-
-              <p className="mt-5 text-base leading-relaxed text-neutral-content/80 md:text-lg">
-                A Olimpíada Brasileira de Robótica (OBR) aproxima estudantes da
-                ciência e da tecnologia por meio de desafios que estimulam a
-                criatividade, o raciocínio lógico, a investigação e a resolução
-                de problemas.
-              </p>
-
-              <p className="mt-4 text-base leading-relaxed text-neutral-content/80 md:text-lg">
-                Na modalidade prática, as equipes projetam, constroem e
-                programam robôs autônomos para enfrentar desafios. Na categoria
-                de Resgate, os robôs precisam percorrer trajetos, superar
-                obstáculos e identificar vítimas em cenários simulados.
-              </p>
-
-              <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {modalities.map(({ number, title, description }) => (
-                  <article
-                    key={number}
-                    className="rounded-tl-2xl rounded-br-2xl border border-neutral-content/15 bg-neutral-content/[0.04] p-5 transition-colors duration-300 hover:border-neutral-content/60"
-                  >
-                    <span className="font-mono text-xs font-bold text-neutral-content/50">
-                      /{number}
-                    </span>
-
-                    <h3 className="mt-3 font-bold">{title}</h3>
-
-                    <p className="mt-2 text-sm leading-6 text-neutral-content/60">
-                      {description}
-                    </p>
+            <p className="font-mono text-xs tracking-[0.2em] text-base-content/45">/ MODALIDADES</p>
+          </RevealOnScroll>
+          <div className="mt-5 grid gap-5 md:grid-cols-3">
+            {modalities.map(({ icon: Icon, title, text, tone, isNew }, i) => {
+              const c = toneClasses[tone];
+              return (
+                <RevealOnScroll key={title} delay={i * 0.08} className="h-full">
+                  <article className={`group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 ${c.hover}`}>
+                    <div aria-hidden="true" className={`pointer-events-none absolute -right-10 -top-10 size-28 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 ${c.ring}`} />
+                    <div className="relative flex items-center justify-between">
+                      <div className={`flex size-11 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
+                        <Icon size={20} strokeWidth={1.8} />
+                      </div>
+                      {isNew ? (
+                        <span className="badge badge-primary badge-xs font-mono">NOVA</span>
+                      ) : (
+                        <span className="font-mono text-xs text-base-content/35">/{String(i + 1).padStart(2, "0")}</span>
+                      )}
+                    </div>
+                    <p className={`relative mt-6 text-[10px] font-bold tracking-[0.18em] ${c.tag}`}>MODALIDADE</p>
+                    <h3 className="relative mt-1 text-xl font-bold tracking-tight">{title}</h3>
+                    <p className="relative mt-3 text-sm leading-6 text-base-content/60">{text}</p>
                   </article>
-                ))}
-              </div>
+                </RevealOnScroll>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
-              <div className="mt-8">
+      {/* ========================================================== NÚMEROS */}
+      <section id="numeros" className="scroll-mt-20 border-y border-base-300 bg-base-200/40 px-6 py-24">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[0.9fr_1.2fr] [&>*]:min-w-0">
+          <RevealOnScroll>
+            <SectionTitle
+              kicker="/ A OBR EM NÚMEROS"
+              title="De 6.500 para quase"
+              highlight="200 mil inscrições."
+              highlightClass="bg-secondary text-secondary-content"
+              description="Desde 2007 a olimpíada cresceu cerca de 30 vezes. A queda de 2020 marca a pandemia, quando a etapa nacional foi virtual; em 2023 as inscrições voltaram para perto do recorde de 2019."
+            />
+            <Link
+              href="/roboticar#dados"
+              className="mt-8 inline-flex items-center gap-2 rounded-tl-lg rounded-br-lg border border-base-300 bg-base-100 px-4 py-2 text-sm font-semibold transition-colors hover:border-primary hover:text-primary"
+            >
+              <Globe2 size={16} />
+              Mais dados no Roboticar
+              <ArrowRight size={15} />
+            </Link>
+            <p className="mt-4 text-xs text-base-content/45">
+              Fonte: OBR, números por edição (obr.robocup.org.br).
+            </p>
+          </RevealOnScroll>
+          <RevealOnScroll delay={0.1}>
+            <ObrChart />
+          </RevealOnScroll>
+        </div>
+      </section>
+
+      {/* ============================================================ PILARES */}
+      <section className="px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <RevealOnScroll>
+            <SectionTitle
+              kicker="/ O ROBOSTAGE NA OBR"
+              title="Da ideia à pista,"
+              highlight="tudo faz parte do processo."
+              description="Um ambiente que conecta planejamento, programação e testes. Menos decisões no improviso, mais estratégia e evidências a cada tentativa."
+            />
+          </RevealOnScroll>
+          <div className="mt-14 grid gap-5 md:grid-cols-3">
+            {pillars.map(({ icon: Icon, tag, title, description, href, link, tone }, i) => {
+              const c = toneClasses[tone];
+              return (
+                <RevealOnScroll key={title} delay={i * 0.08} className="h-full">
+                  <Link
+                    href={href}
+                    className={`group relative flex h-full flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 p-7 transition-all duration-300 hover:-translate-y-1 ${
+                      tone === "primary"
+                        ? "hover:shadow-[8px_8px_0_0_var(--color-primary)]"
+                        : tone === "secondary"
+                          ? "hover:shadow-[8px_8px_0_0_var(--color-secondary)]"
+                          : "hover:shadow-[8px_8px_0_0_var(--color-accent)]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className={`flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
+                        <Icon size={22} strokeWidth={1.8} />
+                      </div>
+                      <span className="font-mono text-xs text-base-content/35">{String(i + 1).padStart(2, "0")} / 03</span>
+                    </div>
+                    <p className={`mt-8 text-[10px] font-bold tracking-[0.18em] ${c.tag}`}>{tag}</p>
+                    <h3 className="mt-2 text-2xl font-bold tracking-tight">{title}</h3>
+                    <p className="mt-3 flex-1 text-sm leading-6 text-base-content/60">{description}</p>
+                    <span className="mt-6 inline-flex items-center gap-2 border-t border-base-300 pt-4 text-sm font-bold">
+                      {link}
+                      <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </Link>
+                </RevealOnScroll>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================= ANATIX */}
+      <section className="px-6 pb-24">
+        <RevealOnScroll>
+          <div className="relative mx-auto grid max-w-6xl items-center gap-10 overflow-hidden rounded-tl-[2.5rem] rounded-br-[2.5rem] border border-base-300 bg-base-200/60 p-8 sm:p-12 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
+            <div aria-hidden="true" className="absolute -right-16 -top-16 size-48 rounded-full border border-secondary/20" />
+            <div className="relative">
+              <p className="font-mono text-xs tracking-[0.2em] text-base-content/45">/ ANATIX</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+                Seu robô,{" "}
+                <span className="inline-block -rotate-1 bg-accent px-2 text-accent-content">em tempo real.</span>
+              </h2>
+              <p className="mt-5 max-w-lg text-base leading-7 text-base-content/65">
+                Coloque algumas linhas no código, conecte o cabo USB e veja
+                sensores, decisões e tempos de execução enquanto o robô percorre
+                a arena. Biblioteca aberta, para Uno, Nano, Mega, ESP32 e mais.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href="/anatix"
+                  className={`btn btn-primary ${cornerBtn} shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5`}
+                >
+                  <Code size={18} />
+                  Conhecer o Anatix
+                </Link>
                 <a
-                  href="https://obr.robocup.org.br/"
+                  href="https://github.com/ohthias/Anatix_C"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn btn-outline"
+                  className="btn btn-ghost"
                 >
-                  Conhecer a competição
-                  <ArrowUpRight size={18} />
+                  Ver no GitHub
+                  <ArrowUpRight size={17} />
                 </a>
               </div>
             </div>
-          </RevealOnScroll>
-        </div>
-      </section>
-
-      {/* Apresentação do RoboStage */}
-      <section className="px-5 py-20 sm:px-8 md:py-24">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-10 lg:grid-cols-4 lg:items-stretch lg:gap-6 xl:gap-8">
-            <div className="flex flex-col justify-center lg:col-span-1 lg:py-6">
-              <h2 className="text-4xl font-black sm:text-5xl lg:text-4xl xl:text-5xl">
-                O que sua equipe pode fazer com o{" "}
-                <span className="text-primary">RoboStage?</span>
-              </h2>
-
-              <p className="mt-5 text-base leading-relaxed text-base-content/70">
-                Um ambiente que conecta planejamento, programação e testes para
-                apoiar o desenvolvimento de robôs na modalidade prática da OBR.
-              </p>
-
-              <p className="mt-3 text-sm leading-relaxed text-base-content/55">
-                Menos decisões no improviso. Mais estratégia, evidências e
-                aprendizado a cada tentativa.
-              </p>
-
-              <div className="mt-6 flex items-center gap-3 border-t border-base-content/10 pt-5">
-                <div className="flex -space-x-2">
-                  <span className="grid size-9 place-items-center rounded-full border-2 border-base-200 bg-primary text-primary-content">
-                    <Map size={16} />
-                  </span>
-
-                  <span className="grid size-9 place-items-center rounded-full border-2 border-base-200 bg-secondary text-secondary-content">
-                    <Braces size={16} />
-                  </span>
-
-                  <span className="grid size-9 place-items-center rounded-full border-2 border-base-200 bg-warning text-warning-content">
-                    <FlaskConical size={16} />
-                  </span>
-                </div>
-
-                <span className="text-xs font-semibold leading-relaxed text-base-content/60">
-                  Do planejamento ao teste.
-                  <span className="block text-base-content">
-                    Um processo conectado.
-                  </span>
-                </span>
-              </div>
-            </div>
-
-            {[
-              {
-                number: "01 / 03",
-                icon: Map,
-                title: "Planeje sua rota",
-                description:
-                  "Explore a arena, identifique os desafios e organize o percurso antes de executar a estratégia.",
-                label: "ANÁLISE DA ARENA",
-                color: "bg-primary",
-                text: "text-primary-content",
-                iconBg: "bg-white/15",
-              },
-              {
-                number: "02 / 03",
-                icon: Braces,
-                title: "Transforme ideias em código",
-                description:
-                  "Estruture a lógica dos movimentos e conecte as informações do planejamento à programação.",
-                label: "DESENVOLVIMENTO",
-                color: "bg-secondary",
-                text: "text-secondary-content",
-                iconBg: "bg-white/15",
-              },
-              {
-                number: "03 / 03",
-                icon: FlaskConical,
-                title: "Aprenda com cada teste",
-                description:
-                  "Registre resultados, compare execuções e encontre oportunidades para melhorar o desempenho.",
-                label: "ANÁLISE DE RESULTADOS",
-                color: "bg-warning",
-                text: "text-warning-content",
-                iconBg: "bg-black/5",
-              },
-            ].map(
-              ({
-                number,
-                icon: Icon,
-                title,
-                description,
-                label,
-                color,
-                text,
-                iconBg,
-              }) => (
-                <RevealOnScroll key={number}>
-                  <article
-                    className={`group relative flex h-full min-h-[310px] flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-content/5 ${color} ${text} p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7`}
-                  >
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full border-[24px] border-white/5 transition-transform duration-500 group-hover:scale-110"
-                    />
-
-                    <div className="relative flex items-center justify-between">
-                      <div
-                        className={`grid size-12 place-items-center rounded-xl ${iconBg}`}
-                      >
-                        <Icon size={23} strokeWidth={1.8} />
-                      </div>
-
-                      <span className="font-mono text-xs font-bold opacity-50">
-                        {number}
-                      </span>
-                    </div>
-
-                    <div className="relative mt-8">
-                      <h3 className="text-xl font-black leading-snug xl:text-2xl">
-                        {title}
-                      </h3>
-
-                      <p className="mt-3 text-sm leading-relaxed opacity-80">
-                        {description}
-                      </p>
-                    </div>
-
-                    <div className="relative mt-auto flex items-center justify-between gap-2 pt-7">
-                      <span className="text-[10px] font-bold tracking-[0.14em] opacity-70">
-                        {label}
-                      </span>
-
-                      <ArrowUpRight
-                        size={19}
-                        className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-                      />
-                    </div>
-                  </article>
-                </RevealOnScroll>
-              ),
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="relative w-full bg-base-100 px-5 py-20 sm:px-8 md:py-28">
-        <div className="mx-auto max-w-7xl">
-          <RevealOnScroll>
-            <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-              <h2 className="mt-5 text-4xl font-black leading-tight tracking-tight sm:text-5xl md:text-6xl">
-                Da ideia à pista!
-                <span className="mt-2 inline-block -rotate-1 bg-primary px-3 py-1 italic text-primary-content">
-                  Tudo faz parte do processo.
-                </span>
-              </h2>
-
-              <p className="mt-7 max-w-2xl text-base leading-7 text-base-content/60 sm:text-lg">
-                Conheça as ferramentas que ajudam sua equipe a planejar
-                estratégias, desenvolver soluções e transformar testes em
-                decisões melhores para a OBR Resgate.
-              </p>
-            </div>
-          </RevealOnScroll>
-
-          <div className="mt-14 grid gap-5 md:grid-cols-3">
-            {tools.map(
-              ({
-                number,
-                icon: Icon,
-                title,
-                description,
-                href,
-                action,
-                tag,
-              }) => (
-                <RevealOnScroll key={number}>
-                  <Link
-                    href={href}
-                    className="group relative flex h-full min-h-[340px] flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:bg-primary/[0.03] hover:shadow-xl hover:shadow-base-content/[0.04] sm:p-7"
-                  >
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute -right-10 -top-10 size-36 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 group-hover:border-primary/30"
-                    />
-
-                    <div className="relative flex items-center justify-between">
-                      <div className="flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-content">
-                        <Icon size={23} strokeWidth={1.8} />
-                      </div>
-
-                      <span className="font-mono text-xs text-base-content/35">
-                        /{number}
-                      </span>
-                    </div>
-
-                    <p className="relative mt-8 text-[10px] font-bold tracking-[0.18em] text-primary">
-                      {tag}
-                    </p>
-
-                    <h3 className="relative mt-2 text-xl font-bold tracking-tight">
-                      {title}
-                    </h3>
-
-                    <p className="relative mt-3 flex-1 text-sm leading-6 text-base-content/60">
-                      {description}
-                    </p>
-
-                    <div className="relative mt-7 flex items-center justify-between gap-3 border-t border-base-300 pt-4 text-sm font-semibold">
-                      <span className="transition-colors group-hover:text-primary">
-                        {action}
-                      </span>
-
-                      <ArrowRight
-                        size={18}
-                        className="shrink-0 text-base-content/40 transition-all duration-300 group-hover:translate-x-1 group-hover:text-primary"
-                      />
-                    </div>
-                  </Link>
-                </RevealOnScroll>
-              ),
-            )}
-          </div>
-
-          <div className="alert alert-soft alert-info mt-8 items-start rounded-tl-xl rounded-br-xl">
-            <Info size={20} className="mt-0.5 shrink-0" />
-
-            <div>
-              <h3 className="font-bold">Um ambiente em evolução</h3>
-              <p className="mt-1 text-sm leading-relaxed">
-                Novas ferramentas e possibilidades poderão ampliar o apoio às
-                equipes em outras modalidades e etapas da robótica educacional.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Fluxo de trabalho */}
-      <section className="border-t border-base-300 bg-base-200 px-5 py-20 sm:px-8 md:py-24">
-        <div className="mx-auto max-w-7xl">
-          <RevealOnScroll>
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-              <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-                Evolua a cada tentativa.
-              </h2>
-              <p className="max-w-md text-sm leading-6 text-base-content/60 sm:text-base">
-                Um bom resultado não depende apenas de acertar. Depende de
-                observar, testar, entender e ajustar.
-              </p>
-            </div>
-          </RevealOnScroll>
-
-          <div className="relative mt-12 grid gap-9 md:grid-cols-3 md:gap-0">
-            <div
-              aria-hidden="true"
-              className="absolute left-[16.66%] right-[16.66%] top-6 hidden h-px bg-base-300 md:block"
-            />
-
-            {steps.map(({ number, icon: Icon, title, description, detail }) => (
-              <RevealOnScroll key={number}>
-                <article className="group relative md:px-6 first:md:pl-0 last:md:pr-0">
-                  <div className="flex items-center gap-4 md:block">
-                    <div className="relative z-10 flex size-12 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 text-primary transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-content">
-                      <Icon size={21} strokeWidth={1.8} />
-                    </div>
-
-                    <span className="font-mono text-xs tracking-widest text-base-content/40">
-                      ETAPA {number}
-                    </span>
-                  </div>
-
-                  <h3 className="mt-5 text-xl font-bold tracking-tight">
-                    {title}
-                  </h3>
-
-                  <p className="mt-3 max-w-sm text-sm leading-6 text-base-content/60">
-                    {description}
-                  </p>
-
-                  <div className="mt-5 inline-flex items-center gap-2 text-xs font-bold text-primary">
-                    <span className="size-1.5 rounded-full bg-primary" />
-                    {detail}
-                  </div>
-                </article>
-              </RevealOnScroll>
-            ))}
-          </div>
-
-          <RevealOnScroll>
-            <div className="mt-16 grid gap-6 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 sm:p-8 md:grid-cols-[1fr_auto] md:items-center">
-              <div>
-                <div className="flex items-center gap-3">
-                  <div className="grid size-10 shrink-0 place-items-center rounded-tl-lg rounded-br-lg bg-primary/10 text-primary">
-                    <Target size={20} />
-                  </div>
-
-                  <h3 className="text-lg font-bold">
-                    O objetivo é melhorar com método.
-                  </h3>
-                </div>
-
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-base-content/60">
-                  Cada execução pode gerar informações úteis para a próxima
-                  decisão. Registre o que aconteceu, compare os resultados e use
-                  as evidências para orientar os próximos ajustes.
-                </p>
-              </div>
-
-              <Link
-                href="/dashboard/labtest"
-                className="btn btn-primary rounded-tl-xl rounded-br-xl"
-              >
-                Registrar um teste
-                <ArrowRight size={17} />
-              </Link>
-            </div>
-          </RevealOnScroll>
-        </div>
-      </section>
-
-      {/* Encerramento */}
-      <div className="h-10 w-full bg-gradient-to-t from-neutral to-base-200" />
-
-      <section className="w-full bg-neutral px-5 py-20 text-neutral-content sm:px-8 md:py-28">
-        <RevealOnScroll>
-          <div className="mx-auto max-w-5xl text-center">
-            <h2 className="mt-5 text-4xl font-black leading-tight tracking-tight sm:text-5xl md:text-6xl">
-              Seu robô.
-              <span className="block text-primary">Sua estratégia.</span>
-              Sua evolução.
-            </h2>
-
-            <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-neutral-content/70 sm:text-lg md:text-xl">
-              O RoboStage reúne ferramentas para apoiar o desenvolvimento de
-              robôs na OBR Resgate. Planeje percursos, estruture estratégias e
-              experimente soluções para transformar cada teste em aprendizado.
-            </p>
-
-            <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-              <Link
-                className="btn btn-primary rounded-tl-xl rounded-br-xl px-8"
-                href="/sign-up"
-              >
-                Criar conta grátis
-                <ArrowUpRight size={18} />
-              </Link>
-
-              <Link className="btn btn-soft btn-neutral" href="/obr/score">
-                Pontuar uma arena
-                <ArrowRight size={18} />
-              </Link>
+            <div className="mockup-code relative w-full overflow-x-auto rounded-tl-2xl rounded-br-2xl rounded-tr-none rounded-bl-none text-sm shadow-[8px_8px_0_0_var(--color-secondary)]">
+              {anatixCode.map((line, i) => (
+                <pre
+                  key={i}
+                  data-prefix={i + 1}
+                  className={line.includes("ANX_") ? "bg-primary/25 text-neutral-content" : undefined}
+                >
+                  <code>{line}</code>
+                </pre>
+              ))}
             </div>
           </div>
         </RevealOnScroll>
       </section>
+
+      {/* ======================================================= FERRAMENTAS */}
+      <section className="border-t border-base-300 bg-base-200/40 px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <RevealOnScroll>
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <SectionTitle
+                kicker="/ FERRAMENTAS DA OBR"
+                title="Para planejar, programar"
+                highlight="e testar."
+                highlightClass="bg-accent text-accent-content"
+              />
+              <Link
+                href="/obr/quickbrick"
+                className="group inline-flex items-center gap-2 rounded-tl-lg rounded-br-lg border border-base-300 bg-base-100 px-4 py-2 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
+              >
+                <Grid3x3 size={16} />
+                /obr/quickbrick
+                <ArrowUpRight size={15} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+          </RevealOnScroll>
+          <ToolGrid tools={tools} columns={3} />
+        </div>
+      </section>
+
+      {/* ============================================================ ETAPAS */}
+      <section className="px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <RevealOnScroll>
+            <SectionTitle
+              kicker="/ MÉTODO"
+              title="Evolua a"
+              highlight="cada tentativa."
+              highlightClass="bg-secondary text-secondary-content"
+              description="Um bom resultado não depende só de acertar. Depende de observar, testar, entender e ajustar."
+            />
+          </RevealOnScroll>
+          <StepsRow steps={steps} tone="primary" />
+        </div>
+      </section>
+
+      <NewsSection news={news} kicker="/ NOVIDADES" title="O que há de novo" highlight="no RoboStage." />
+
+      <CtaBlock
+        kicker="SEU ROBÔ · SUA ESTRATÉGIA"
+        icon={Target}
+        title="Seu robô. Sua estratégia. Sua evolução."
+        text="Planeje percursos, estruture estratégias e experimente soluções para transformar cada teste em aprendizado na OBR."
+        actions={[
+          { label: "Criar conta grátis", href: "/sign-up", variant: "accent" },
+          { label: "Pontuar uma arena", href: "/obr/score", variant: "ghost" },
+          { label: "Iniciativas de outras equipes", href: "/roboticar#iniciativas", variant: "ghost" },
+        ]}
+      />
     </main>
   );
 }

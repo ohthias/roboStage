@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   ChevronDown,
@@ -14,23 +14,37 @@ import {
   Trash2,
 } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
+import { DocIcon } from "@/components/editor/doc-icon";
+import { folderColorStyles } from "@/utils/stagebook/folder-colors";
 import { createFolder, deleteFolder, renameFolder } from "../documents/actions";
+import { FolderAppearanceMenu, type FolderAppearance } from "./folder-appearance-menu";
 
 export type FolderItem = {
   id: string;
   parentId: string | null;
   name: string;
   icon: string | null;
+  color: string | null;
   position: number;
   documentCount: number;
 };
 
-export function FoldersView({ folders }: { folders: FolderItem[] }) {
+export function FoldersView({ folders: serverFolders }: { folders: FolderItem[] }) {
   const { addToast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
+  // Personalizações aplicadas na hora (otimista) por cima dos dados do servidor.
+  const [overrides, setOverrides] = useState<Record<string, FolderAppearance>>({});
+  const folders = useMemo(
+    () => serverFolders.map((f) => (overrides[f.id] ? { ...f, ...overrides[f.id] } : f)),
+    [serverFolders, overrides],
+  );
+
+  function changeAppearance(id: string, next: FolderAppearance) {
+    setOverrides((prev) => ({ ...prev, [id]: next }));
+  }
 
   const childrenOf = (parentId: string | null) =>
     folders.filter((folder) => folder.parentId === parentId);
@@ -139,6 +153,7 @@ export function FoldersView({ folders }: { folders: FolderItem[] }) {
               onCancelRename={() => setEditingId(null)}
               onAdd={addFolder}
               onDelete={removeFolder}
+              onAppearance={changeAppearance}
               disabled={isPending}
             />
           ))}
@@ -160,6 +175,7 @@ function FolderRow({
   onCancelRename,
   onAdd,
   onDelete,
+  onAppearance,
   disabled,
 }: {
   folder: FolderItem;
@@ -173,11 +189,13 @@ function FolderRow({
   onCancelRename: () => void;
   onAdd: (parentId: string | null) => void;
   onDelete: (folder: FolderItem) => void;
+  onAppearance: (id: string, next: FolderAppearance) => void;
   disabled: boolean;
 }) {
   const [expanded, setExpanded] = useState(true);
   const children = childrenOf(folder.id);
   const editing = editingId === folder.id;
+  const colored = folderColorStyles(folder.color);
 
   return (
     <div>
@@ -185,12 +203,14 @@ function FolderRow({
         className="group relative flex min-h-[58px] items-center gap-2 rounded-lg rounded-tl-none border border-base-300 bg-base-100 px-3 py-2 pt-3 transition-all duration-200 hover:border-primary/40 hover:bg-base-200/50 hover:shadow-sm"
         style={{
           marginTop: "7px",
+          ...(colored?.card ?? {}),
         }}
       >
         {/* Aba superior da pasta */}
         <div
           aria-hidden="true"
           className="absolute -top-[7px] left-0 h-[7px] w-12 rounded-t-md border border-b-0 border-base-300 bg-base-100 transition-colors duration-200 group-hover:border-primary/40 group-hover:bg-base-200/50"
+          style={colored ? { ...colored.card, backgroundColor: colored.accent.backgroundColor } : undefined}
         />
 
         {/* Nome da pasta */}
@@ -211,17 +231,34 @@ function FolderRow({
             href={`/dashboard/folders/${folder.id}`}
             className="flex min-w-0 flex-1 items-center gap-2 truncate text-sm font-medium text-base-content/85 transition-colors hover:text-primary"
           >
-            <Folder
-              size={19}
-              strokeWidth={1.8}
-              className="shrink-0 text-primary"
-            />
+            {folder.icon ? (
+              <span
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
+                style={colored?.tile}
+              >
+                <DocIcon value={folder.icon} size={17} />
+              </span>
+            ) : (
+              <Folder
+                size={19}
+                strokeWidth={1.8}
+                className="shrink-0 text-primary"
+                style={colored ? { color: folder.color ?? undefined } : undefined}
+              />
+            )}
             <span className="truncate">{folder.name}</span>
           </Link>
         )}
 
         {/* Ações */}
         <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+          <FolderAppearanceMenu
+            folderId={folder.id}
+            icon={folder.icon}
+            color={folder.color}
+            onChange={(next) => onAppearance(folder.id, next)}
+          />
+
           <button
             type="button"
             className="btn btn-ghost btn-xs btn-square"
@@ -271,6 +308,7 @@ function FolderRow({
             onCancelRename={onCancelRename}
             onAdd={onAdd}
             onDelete={onDelete}
+            onAppearance={onAppearance}
             disabled={disabled}
           />
         ))}

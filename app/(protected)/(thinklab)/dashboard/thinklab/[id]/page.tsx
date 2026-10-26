@@ -2,15 +2,19 @@
 import { useParams } from 'next/navigation';
 import { getThinkLabById, saveThinkLab } from '../../../../dashboard/thinklab/actions';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Navbar } from '@/components/thinklab/Navbar';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { elementDisplayName } from '@/components/thinklab/LayersPanel';
+import { Navbar, SaveStatus } from '@/components/thinklab/Navbar';
 import { Toolbar } from '@/components/thinklab/Toolbar';
 import { PropertiesPanel } from '@/components/thinklab/PropertiesPanel';
 import { ExportModal } from '@/components/thinklab/ExportModal';
 import { DatabaseJsonbModal } from '@/components/thinklab/DatabaseJsonbModal';
 import { TemplatesModal } from '@/components/thinklab/TemplatesModal';
 import { ShortcutsModal } from '@/components/thinklab/ShortcutsModal';
-import { ComponentLibrary } from '@/components/thinklab/ComponentLibrary';
+import { EditorSidebar } from '@/components/thinklab/EditorSidebar';
+import { CanvasControls, SelectionActions } from '@/components/thinklab/CanvasControls';
+import { cn } from '@/components/thinklab/editor-ui';
+import { EditorLoader } from '@/components/thinklab/EditorLoader';
 import { GraphicAssetsModal } from '@/components/thinklab/GraphicAssetsModal';
 import { Canvas } from '@/components/thinklab/Canvas';
 import {
@@ -26,14 +30,29 @@ import {
   ViewportState,
 } from '@/types/thinklab.types';
 import { DIAGRAM_TEMPLATES } from '@/utils/thinklab/templates';
-import { Sparkles } from 'lucide-react';
 
 const STORAGE_KEY = 'excaliflow_saved_diagram_v1';
-const THEME_STORAGE_KEY = 'excaliflow_theme_v1';
+
+// Chaves de estilo que também viram o padrão dos próximos elementos desenhados
+const DEFAULT_STYLE_KEYS = new Set([
+  'strokeColor',
+  'backgroundColor',
+  'fillStyle',
+  'strokeWidth',
+  'strokeStyle',
+  'roughness',
+  'opacity',
+  'roundness',
+  'fontSize',
+  'fontFamily',
+  'textAlign',
+]);
 
 export default function ThinkLabCanvas() {
     const { id } = useParams<{ id: string }>();
-    const [databaseLoaded, setDatabaseLoaded] = useState(false);
+  const [databaseLoaded, setDatabaseLoaded] = useState(false);
+  const [title, setTitle] = useState<string>('');
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   // Elements state & history with lazy initialization
   const [elements, setElements] = useState<CanvasElement[]>(() => {
     if (typeof window !== 'undefined') {
@@ -80,25 +99,20 @@ export default function ThinkLabCanvas() {
   // Grid
   const [gridType, setGridType] = useState<'dots' | 'lines' | 'none'>('dots');
 
-  // Theme with lazy initialization
-  const [theme, setTheme] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(THEME_STORAGE_KEY) || 'light';
-    }
-    return 'light';
-  });
+  // Tema salvo no config do ThinkLab (mantido por compatibilidade; a UI segue o tema do app)
+  const [theme, setTheme] = useState<string>('light');
 
   // Modals & panels
   const [exportOpen, setExportOpen] = useState(false);
   const [databaseJsonbOpen, setDatabaseJsonbOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [isLibraryOpen, setIsLibraryOpen] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth >= 1024;
-    }
-    return false;
-  });
+  // Em telas grandes as duas colunas ficam sempre visíveis; estes estados controlam
+  // as gavetas sobrepostas em telas menores.
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
+  const [focusSearchSignal, setFocusSearchSignal] = useState(0);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [graphicAssetsOpen, setGraphicAssetsOpen] = useState(false);
   const [smartSnapping, setSmartSnapping] = useState(true);
 
@@ -109,6 +123,7 @@ export default function ThinkLabCanvas() {
     getThinkLabById(id)
       .then((thinkLab) => {
         if (cancelled) return;
+        if (thinkLab?.name) setTitle(thinkLab.name);
         const config = (thinkLab?.config ?? {}) as {
           elements?: CanvasElement[];
           viewport?: ViewportState;
@@ -130,15 +145,6 @@ export default function ThinkLabCanvas() {
       cancelled = true;
     };
   }, [id]);
-  useEffect(() => {
-    if (!databaseLoaded) return;
-    const timeout = window.setTimeout(() => {
-      saveThinkLab(id, { elements, viewport, gridType, theme }).catch(() => {
-        notify('Não foi possível salvar o ThinkLab no banco.');
-      });
-    }, 800);
-    return () => window.clearTimeout(timeout);
-  }, [databaseLoaded, elements, viewport, gridType, theme, id]);
 
   // Default styles
   const [defaultStyles, setDefaultStyles] = useState<{
@@ -175,17 +181,31 @@ export default function ThinkLabCanvas() {
     }, 3000);
   }, []);
 
-  // Sync data-theme attribute
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+  // Persistência no banco: salvamento automático (debounce) + botão "Salvar"
+  const persist = useCallback(async () => {
+    setSaveStatus('saving');
+    try {
+      await saveThinkLab(id, { elements, viewport, gridType, theme });
+      setSaveStatus('saved');
+      return true;
+    } catch {
+      setSaveStatus('error');
+      notify('Não foi possível salvar o ThinkLab no banco.');
+      return false;
+    }
+  }, [id, elements, viewport, gridType, theme, notify]);
 
-  // Sync theme attribute
-  const handleThemeChange = (newTheme: string) => {
-    setTheme(newTheme);
-    localStorage.setItem(THEME_STORAGE_KEY, newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-  };
+  useEffect(() => {
+    if (!databaseLoaded) return;
+    const timeout = window.setTimeout(() => {
+      void persist();
+    }, 800);
+    return () => window.clearTimeout(timeout);
+  }, [databaseLoaded, persist]);
+
+  const handleSaveNow = useCallback(async () => {
+    if (await persist()) notify('ThinkLab salvo.');
+  }, [persist, notify]);
 
   // Push to history
   const commitElements = useCallback(
@@ -335,25 +355,37 @@ export default function ThinkLabCanvas() {
 
     commitElements([...elements, newEl], true);
     setSelectedIds([newEl.id]);
-    notify(`Componente "${newEl.text ? newEl.text.split('\n')[0] : newEl.type}" adicionado!`);
+    notify(`"${elementDisplayName(newEl)}" adicionado!`);
   };
 
   // Helper to get true canvas center coordinates based on current window size and viewport
   const getCanvasCenter = useCallback(() => {
-    const screenW = typeof window !== 'undefined' ? window.innerWidth : 800;
-    const screenH = typeof window !== 'undefined' ? window.innerHeight : 600;
+    const w = canvasSize.width || 800;
+    const h = canvasSize.height || 600;
     return {
-      x: (screenW / 2 - viewport.panX) / viewport.zoom,
-      y: (screenH / 2 - 32 - viewport.panY) / viewport.zoom,
+      x: (w / 2 - viewport.panX) / viewport.zoom,
+      y: (h / 2 - viewport.panY) / viewport.zoom,
     };
-  }, [viewport]);
+  }, [viewport, canvasSize]);
+
+  // Inserções seguidas no mesmo centro descem em cascata para não se sobreporem
+  const lastInsertRef = useRef<{ x: number; y: number; count: number } | null>(null);
+  const getInsertPoint = useCallback(() => {
+    const center = getCanvasCenter();
+    const last = lastInsertRef.current;
+    const count =
+      last && Math.abs(last.x - center.x) < 1 && Math.abs(last.y - center.y) < 1 ? (last.count + 1) % 8 : 0;
+    lastInsertRef.current = { ...center, count };
+    const step = 32 / viewport.zoom;
+    return { x: center.x + count * step, y: center.y + count * step };
+  }, [getCanvasCenter, viewport.zoom]);
 
   // Click insert graphic asset
   const handleInsertGraphicAsset = (
     assetElements: GraphicAsset['elements'],
     assetName: string
   ) => {
-    const center = getCanvasCenter();
+    const center = getInsertPoint();
     const centerX = center.x;
     const centerY = center.y;
 
@@ -393,7 +425,7 @@ export default function ThinkLabCanvas() {
   const handleInsertComponent = (template: Record<string, unknown>) => {
     const width = (template.width as number) || 160;
     const height = (template.height as number) || 70;
-    const center = getCanvasCenter();
+    const center = getInsertPoint();
     const centerX = center.x;
     const centerY = center.y;
 
@@ -409,7 +441,7 @@ export default function ThinkLabCanvas() {
 
     commitElements([...elements, newEl], true);
     setSelectedIds([newEl.id]);
-    notify(`Componente "${newEl.text ? newEl.text.split('\n')[0] : newEl.type}" inserido!`);
+    notify(`"${elementDisplayName(newEl)}" inserido!`);
   };
 
   // Group multiple selected elements
@@ -513,10 +545,12 @@ export default function ThinkLabCanvas() {
       commitElements(updated, true);
     }
 
-    setDefaultStyles((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    if (DEFAULT_STYLE_KEYS.has(key)) {
+      setDefaultStyles((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+    }
   };
 
   // Keyboard Shortcuts Listener
@@ -566,6 +600,13 @@ export default function ThinkLabCanvas() {
         return;
       }
 
+      // Salvar (Ctrl+S)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        void handleSaveNow();
+        return;
+      }
+
       // Export (Ctrl+E)
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'e') {
         e.preventDefault();
@@ -577,6 +618,7 @@ export default function ThinkLabCanvas() {
       if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         setIsLibraryOpen(true);
+        setFocusSearchSignal((n) => n + 1);
         return;
       }
 
@@ -657,53 +699,130 @@ export default function ThinkLabCanvas() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleUndo, handleRedo, handleDuplicate, handleDelete, handleGroup, handleUngroup]);
+  }, [handleUndo, handleRedo, handleDuplicate, handleDelete, handleGroup, handleUngroup, handleSaveNow]);
 
   const selectedElements = elements.filter((e) => selectedIds.includes(e.id));
   const selectedElement = selectedElements.length === 1 ? selectedElements[0] : null;
 
-  return (
-    <main className="relative w-screen h-screen overflow-hidden bg-base-100 flex flex-col font-sans select-none">
-      {/* Top Navbar */}
-      <Navbar
-        canUndo={historyIndex > 0}
-        canRedo={historyIndex < history.length - 1}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        zoom={viewport.zoom}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onResetZoom={handleResetZoom}
-        gridType={gridType}
-        onToggleGrid={handleToggleGrid}
-        onOpenTemplates={() => setTemplatesOpen(true)}
-        onOpenExport={() => setExportOpen(true)}
-        onOpenDatabase={() => setDatabaseJsonbOpen(true)}
-        onOpenShortcuts={() => setShortcutsOpen(true)}
-        onClearCanvas={handleClearCanvas}
-        currentTheme={theme}
-        onThemeChange={handleThemeChange}
-        elementCount={elements.length}
-        onToggleLibrary={() => setIsLibraryOpen((v) => !v)}
-        isLibraryOpen={isLibraryOpen}
-        smartSnapping={smartSnapping}
-        onToggleSmartSnapping={() => {
-          setSmartSnapping((s) => !s);
-          notify(!smartSnapping ? 'Guias inteligentes ativadas!' : 'Guias inteligentes desativadas.');
-        }}
-        onOpenGraphicAssets={() => setGraphicAssetsOpen(true)}
-      />
+  const showSelectionActions = activeTool === 'select' && selectedElements.length > 0;
 
-      {/* Main Canvas Area */}
-      <div className="relative flex-1 w-full h-[calc(100vh-4rem)]">
-        {/* Floating Top Center Toolbar */}
-        <Toolbar
-          activeTool={activeTool}
-          onSelectTool={(tool) => setActiveTool(tool)}
+  // Enquanto o quadro vem do banco, mostra o loader (evita piscar o modelo padrão)
+  if (!databaseLoaded) {
+    return <EditorLoader />;
+  }
+
+  return (
+    <main className="w-full h-dvh overflow-hidden bg-base-200 flex flex-col font-sans select-none">
+      <Navbar
+        title={title}
+        saveStatus={saveStatus}
+        onSave={handleSaveNow}
+        onOpenExport={() => setExportOpen(true)}
+        onOpenTemplates={() => setTemplatesOpen(true)}
+        onOpenShortcuts={() => setShortcutsOpen(true)}
+        onOpenDatabase={() => setDatabaseJsonbOpen(true)}
+        onOpenGraphicAssets={() => setGraphicAssetsOpen(true)}
+        onClearCanvas={handleClearCanvas}
+        elementCount={elements.length}
+        isLibraryOpen={isLibraryOpen}
+        onToggleLibrary={() => {
+          setIsLibraryOpen((v) => !v);
+          setIsInspectorOpen(false);
+        }}
+        isInspectorOpen={isInspectorOpen}
+        onToggleInspector={() => {
+          setIsInspectorOpen((v) => !v);
+          setIsLibraryOpen(false);
+        }}
+      >
+        <Toolbar activeTool={activeTool} onSelectTool={(tool) => setActiveTool(tool)} />
+      </Navbar>
+
+      <div className="relative flex-1 min-h-0 flex">
+        {/* Coluna esquerda: Design / Camadas */}
+        <EditorSidebar
+          className={cn(
+            'w-72 shrink-0',
+            isLibraryOpen
+              ? 'flex absolute inset-y-0 left-0 z-30 shadow-xl lg:static lg:shadow-none'
+              : 'hidden lg:flex'
+          )}
+          elements={elements}
+          selectedIds={selectedIds}
+          onSelectIds={(ids) => {
+            setSelectedIds(ids);
+            setActiveTool('select');
+          }}
+          onInsertComponent={handleInsertComponent}
+          onInsertAsset={handleInsertGraphicAsset}
+          onOpenGraphicAssets={() => setGraphicAssetsOpen(true)}
+          onOpenTemplates={() => setTemplatesOpen(true)}
+          onOpenHelp={() => setShortcutsOpen(true)}
+          focusSearchSignal={focusSearchSignal}
         />
 
-        {/* Floating Left Properties Panel */}
+        {/* Coluna central: canvas */}
+        <section aria-label="Área de desenho" className="relative flex-1 min-w-0">
+          <Canvas
+            elements={elements}
+            onElementsChange={(newEls, record) => commitElements(newEls, record ?? false)}
+            selectedIds={selectedIds}
+            onSelectIds={(ids) => setSelectedIds(ids)}
+            activeTool={activeTool}
+            onToolUsed={() => setActiveTool('select')}
+            defaultStyles={defaultStyles}
+            viewport={viewport}
+            onViewportChange={setViewport}
+            gridType={gridType}
+            onDropComponent={handleDropComponent}
+            smartSnappingEnabled={smartSnapping}
+            onResize={setCanvasSize}
+          />
+
+          {showSelectionActions && (
+            <SelectionActions
+              selectedElements={selectedElements}
+              viewport={viewport}
+              containerSize={canvasSize}
+              onBringToFront={handleBringToFront}
+              onSendToBack={handleSendToBack}
+              onDuplicate={handleDuplicate}
+              onDelete={handleDelete}
+              onOpenInspector={() => {
+                setIsInspectorOpen(true);
+                setIsLibraryOpen(false);
+              }}
+            />
+          )}
+
+          <CanvasControls
+            canUndo={historyIndex > 0}
+            canRedo={historyIndex < history.length - 1}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            zoom={viewport.zoom}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onResetZoom={handleResetZoom}
+            gridType={gridType}
+            onToggleGrid={handleToggleGrid}
+            smartSnapping={smartSnapping}
+            onToggleSmartSnapping={() => {
+              setSmartSnapping((s) => !s);
+              notify(!smartSnapping ? 'Guias inteligentes ativadas!' : 'Guias inteligentes desativadas.');
+            }}
+            elementCount={elements.length}
+          />
+        </section>
+
+        {/* Coluna direita: propriedades */}
         <PropertiesPanel
+          className={cn(
+            'w-80 shrink-0',
+            isInspectorOpen
+              ? 'flex absolute inset-y-0 right-0 z-30 shadow-xl lg:static lg:shadow-none'
+              : 'hidden lg:flex'
+          )}
           selectedElement={selectedElement}
           selectedElements={selectedElements}
           defaultStyles={defaultStyles}
@@ -716,43 +835,25 @@ export default function ThinkLabCanvas() {
           onUngroup={handleUngroup}
         />
 
-        {/* Predefined Component Library Drawer/Panel */}
-        <ComponentLibrary
-          isOpen={isLibraryOpen}
-          onToggle={() => setIsLibraryOpen((v) => !v)}
-          onInsertComponent={handleInsertComponent}
-          onInsertAsset={handleInsertGraphicAsset}
-          onOpenGraphicAssetsModal={() => setGraphicAssetsOpen(true)}
-        />
-
-        {/* Interactive Drawing Canvas */}
-        <Canvas
-          elements={elements}
-          onElementsChange={(newEls, record) => commitElements(newEls, record ?? false)}
-          selectedIds={selectedIds}
-          onSelectIds={(ids) => setSelectedIds(ids)}
-          activeTool={activeTool}
-          onToolUsed={() => setActiveTool('select')}
-          defaultStyles={defaultStyles}
-          viewport={viewport}
-          onViewportChange={setViewport}
-          gridType={gridType}
-          onDropComponent={handleDropComponent}
-          smartSnappingEnabled={smartSnapping}
-        />
-
-        {/* Quick Helper Floating Footer Tip (Visible on sm+ screens to preserve mobile canvas space) */}
-        <footer aria-label="Dicas de atalhos e status" className="hidden sm:flex fixed bottom-4 left-1/2 -translate-x-1/2 z-10 bg-base-100/90 backdrop-blur-md border border-base-300 rounded-full px-4 py-1.5 shadow-md items-center gap-3 text-[11px] text-base-content/70 pointer-events-none">
-          <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-primary">Dica:</span>
-            <span>Snap Guias {smartSnapping ? 'Ativo (Alt ignora)' : 'Desligado'} · Shift+Clique para múltiplos · Ctrl+G Agrupar</span>
-          </div>
-          <span className="opacity-40">·</span>
-          <span>Espaço + Arrastar</span>
-          <span className="opacity-40">·</span>
-          <span className="font-mono">{elements.length} objetos</span>
-        </footer>
+        {/* Fundo das gavetas em telas menores */}
+        {(isLibraryOpen || isInspectorOpen) && (
+          <button
+            type="button"
+            aria-label="Fechar painel"
+            className="lg:hidden absolute inset-0 z-20 bg-base-content/20 cursor-default"
+            onClick={() => {
+              setIsLibraryOpen(false);
+              setIsInspectorOpen(false);
+            }}
+          />
+        )}
       </div>
+
+      {toastMessage && (
+        <div className="toast toast-bottom toast-center z-50 mb-16 pointer-events-none">
+          <div className="alert alert-soft py-2 px-4 text-sm shadow-md">{toastMessage}</div>
+        </div>
+      )}
 
       {/* Modals */}
       <ExportModal

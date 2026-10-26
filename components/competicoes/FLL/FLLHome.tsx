@@ -1,413 +1,504 @@
-"use client";
-import Hero from "../../Hero";
-import { ModuleCard } from "./Components/FLLModules";
-import {
-  Trophy,
-  MessageCircleQuestion,
-  Cuboid,
-  NotepadText,
-  ArrowUpRight,
-  CalendarDays,
-  Users,
-  Clock,
-  ListCheck,
-  MonitorDot,
-} from "lucide-react";
-import Banner from "@/components/Banner";
-import NoiseImage from "@/components/UI/NoiseImage";
 import Link from "next/link";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  BookCopy,
+  BookOpen,
+  Bot,
+  CalendarDays,
+  Clock,
+  Cuboid,
+  Globe2,
+  HeartHandshake,
+  Lightbulb,
+  ListCheck,
+  MessageCircleQuestion,
+  MonitorDot,
+  NotepadText,
+  School,
+  Telescope,
+  Trophy,
+  Users,
+} from "lucide-react";
+
+import Hero from "../../Hero";
 import FLLHighlightSeason from "./Components/FLLHighlightSeason";
 import RevealOnScroll from "@/components/UI/RevealOnScroll";
+import LivePreview from "@/components/home/LivePreview";
+import {
+  AnimatedBackground,
+  SectionTitle,
+  toneClasses,
+  type Tone,
+} from "@/components/home/shared";
+import { NewsSection, SeasonsSection } from "@/components/home/HomeSections";
+import {
+  CtaBlock,
+  ToolGrid,
+  cornerBtn,
+  type ToolItem,
+} from "@/components/competicoes/shared/CompetitionSections";
+import { getLatestNews } from "@/utils/institutional/news";
+import "@/components/home/home.css";
 
-const modules = [
+/* -------------------------------------------------------------- dados */
+
+const pillars = [
   {
-    title: "QuickBrick Studio",
+    icon: Users,
+    tag: "TREINAMENTO",
+    title: "Desenvolva sua equipe",
     description:
-      "Planeje estratégias de missões, analise mesas da temporada, registre soluções e desenvolva táticas para maximizar sua pontuação.",
-    color: "bg-red-600",
-    icon: <Cuboid size={96} strokeWidth={1.5} />,
+      "Treine a sala de avaliação, aplique rubricas e registre testes para transformar evolução em aprendizado contínuo.",
+    links: [
+      { label: "Recall", href: "/fll/recall" },
+      { label: "Rubrica", href: "/fll/rubric" },
+    ],
+    tone: "primary" as Tone,
   },
   {
-    title: "Pontuador",
+    icon: CalendarDays,
+    tag: "ORGANIZAÇÃO",
+    title: "Planeje sua temporada",
     description:
-      "Simule partidas, calcule pontuações rapidamente e avalie diferentes estratégias para otimizar o desempenho do robô.",
-    color: "bg-amber-500",
-    icon: <Trophy size={96} strokeWidth={1.5} />,
+      "Organize missões, estratégias de mesa e o projeto de inovação ao longo de toda a temporada.",
+    links: [
+      { label: "QuickBrick", href: "/fll/quickbrick" },
+      { label: "Documentações", href: "/fll/docs" },
+    ],
+    tone: "secondary" as Tone,
   },
   {
-    title: "Recall",
+    icon: Trophy,
+    tag: "COMPETIÇÃO",
+    title: "Chegue pronto ao torneio",
     description:
-      "Realize treinos de sessões de perguntas e respostas, prepare-se para entrevistas e desenvolva habilidades de comunicação para apresentações e avaliações.",
-    color: "bg-lime-600",
-    icon: <MessageCircleQuestion size={96} strokeWidth={1.5} />,
-  },
-  {
-    title: "Rubricas de Avaliação",
-    description:
-      "Crie e gerencie rubricas para avaliar o desempenho da sua equipe em diferentes categorias.",
-    color: "bg-emerald-500",
-    icon: <NotepadText size={96} strokeWidth={1.5} />,
-  },
-  {
-    title: "Mapa de Empatia",
-    description:
-      "Entenda melhor as necessidades e desejos do seu público-alvo, criando soluções mais eficazes e inovadoras.",
-    color: "bg-cyan-500",
-    icon: <Users size={96} strokeWidth={1.5} />,
-    featured: true,
-  },
-  {
-    title: "Timers",
-    description:
-      "Gerencie o tempo de atividades, treinos e apresentações com precisão, garantindo que sua equipe esteja sempre dentro do cronograma.",
-    color: "bg-yellow-500",
-    icon: <Clock size={96} strokeWidth={1.5} />,
-  },
-  {
-    title: "Partiu Mesa!",
-    description:
-      "Simulador de simples para teste de saídas. Para análise de desempenho do robô durante um teste de saída.",
-    color: "bg-violet-500",
-    icon: <MonitorDot size={96} strokeWidth={1.5} />,
-  },
-  {
-    title: "Confia, Mas Confira!",
-    description:
-      "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento.",
-    color: "bg-green-500",
-    icon: <ListCheck size={96} strokeWidth={1.5} />,
+      "Pontue rodadas com o cronômetro oficial, revise o checklist e simule saídas antes do dia da competição.",
+    links: [
+      { label: "Pontuador", href: "/fll/score" },
+      { label: "Checklist", href: "/fll/cheklist" },
+    ],
+    tone: "accent" as Tone,
   },
 ];
 
+const judgedAreas = [
+  {
+    icon: Bot,
+    title: "Robot Game",
+    text: "Rodadas de 2:30 em que o robô autônomo cumpre missões no tapete da temporada.",
+    tools: [
+      { label: "Pontuador", href: "/fll/score" },
+      { label: "Timers", href: "/fll/timers" },
+    ],
+    tone: "primary" as Tone,
+  },
+  {
+    icon: Cuboid,
+    title: "Design do Robô",
+    text: "Como a equipe projetou, construiu, programou e testou o robô e a estratégia.",
+    tools: [
+      { label: "QuickBrick", href: "/fll/quickbrick" },
+      { label: "Partiu Mesa!", href: "/fll/partiu-mesa" },
+    ],
+    tone: "secondary" as Tone,
+  },
+  {
+    icon: Lightbulb,
+    title: "Projeto de Inovação",
+    text: "Uma solução para um problema real ligado ao tema da temporada.",
+    tools: [
+      { label: "Mapa de Empatia", href: "/fll/empathy-map" },
+      { label: "Rubrica", href: "/fll/rubric" },
+    ],
+    tone: "accent" as Tone,
+  },
+  {
+    icon: HeartHandshake,
+    title: "Core Values",
+    text: "Trabalho em equipe, descoberta, inclusão e profissionalismo em tudo o que a equipe faz.",
+    tools: [
+      { label: "Recall", href: "/fll/recall" },
+      { label: "Rubrica", href: "/fll/rubric" },
+    ],
+    tone: "primary" as Tone,
+  },
+];
+
+const tools: ToolItem[] = [
+  {
+    icon: Cuboid,
+    tag: "ESTRATÉGIA",
+    title: "QuickBrick Studio",
+    description:
+      "Desenhe trajetórias no tapete, monte matrizes SWOT e de risco e simule saídas com o Sharks Simulator.",
+    href: "/fll/quickbrick",
+    tone: "primary",
+  },
+  {
+    icon: Trophy,
+    tag: "PONTUAÇÃO",
+    title: "Pontuador",
+    description:
+      "Simule missões ou rodadas completas com cronômetro de 2:30, temporada por temporada.",
+    href: "/fll/score",
+    tone: "accent",
+  },
+  {
+    icon: MessageCircleQuestion,
+    tag: "AVALIAÇÃO",
+    title: "Recall",
+    description:
+      "Perguntas cronometradas de Core Values, Projeto de Inovação e Design do Robô para treinar a sala de avaliação.",
+    href: "/fll/recall",
+    tone: "secondary",
+  },
+  {
+    icon: NotepadText,
+    tag: "RUBRICAS",
+    title: "Rubricas de Avaliação",
+    description:
+      "Avalie a equipe com as rubricas da competição e descubra onde estão os pontos de melhoria.",
+    href: "/fll/rubric",
+    tone: "primary",
+  },
+  {
+    icon: Users,
+    tag: "INOVAÇÃO",
+    title: "Mapa de Empatia",
+    description:
+      "Entenda o profissional e o público do seu projeto para criar soluções mais certeiras.",
+    href: "/fll/empathy-map",
+    tone: "secondary",
+    status: "Novo",
+  },
+  {
+    icon: Clock,
+    tag: "TEMPO",
+    title: "Timers",
+    description:
+      "Round do Robô, Sala de Avaliação e timer ajustável, com alertas sonoros e visuais.",
+    href: "/fll/timers",
+    tone: "accent",
+  },
+  {
+    icon: MonitorDot,
+    tag: "SIMULAÇÃO",
+    title: "Partiu Mesa!",
+    description:
+      "Simulador simples para testar saídas e analisar o desempenho do robô durante o teste.",
+    href: "/fll/partiu-mesa",
+    tone: "primary",
+  },
+  {
+    icon: ListCheck,
+    tag: "CHECKLIST",
+    title: "Confia, mas confira!",
+    description:
+      "Checklist de itens para a preparação antes do torneio e para a avaliação depois do evento.",
+    href: "/fll/cheklist",
+    tone: "secondary",
+  },
+];
+
+const resources = [
+  { icon: School, title: "Iniciantes da Challenge", text: "Primeiros passos para equipes que vão estrear na FLL Challenge.", href: "/fll/begins" },
+  { icon: Telescope, title: "Iniciantes da Explore", text: "Um guia para as equipes mais novas da FLL Explore.", href: "/fll/explore" },
+  { icon: BookOpen, title: "Documentações", text: "Regras e documentos das temporadas da liga, reunidos em um só lugar.", href: "/fll/docs" },
+  { icon: BookCopy, title: "Guia de Missões", text: "As missões da FLL Challenge explicadas uma a uma.", href: "/fll/docs/missions-guide" },
+];
+
+/* --------------------------------------------------------------- página */
+
 export default function FLLHome() {
+  const news = getLatestNews(3, "FLL");
+
   return (
-    <div className="min-h-screen bg-base-200 text-base-content">
-      <main className="mt-16">
-        <Hero />
-        <section className="py-12 md:pb-16 max-w-7xl mx-auto px-6 sm:px-8">
-          <div className="relative mt-12">
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-4 lg:items-stretch lg:gap-6 xl:gap-8">
-              <div className="flex flex-col justify-center lg:col-span-1 lg:py-6">
-                <h2 className="mt-5 text-4xl font-black leading-[1.05] tracking-tight text-base-content sm:text-5xl lg:text-4xl xl:text-5xl">
-                  O que é o <span className="text-primary">RoboStage?</span>
-                </h2>
-                <p className="mt-5 text-base leading-relaxed text-base-content/70">
-                  Um ambiente que conecta pessoas, ideias e tecnologia em todas
-                  as etapas da robótica educacional.
-                </p>
+    <main className="mt-16 overflow-x-clip bg-base-100 text-base-content">
+      <Hero />
 
-                <p className="mt-3 text-sm leading-relaxed text-base-content/60">
-                  Menos tempo organizando informações. Mais tempo construindo,
-                  testando e inovando.
-                </p>
-
-                <div className="mt-6 flex items-center gap-3 border-t border-base-content/10 pt-5">
-                  <div className="flex -space-x-2">
-                    <span className="grid size-8 place-items-center rounded-full border-2 border-base-100 bg-primary text-xs font-black text-primary-content">
-                      R
-                    </span>
-                    <span className="grid size-8 place-items-center rounded-full border-2 border-base-100 bg-secondary text-xs font-black text-secondary-content">
-                      S
-                    </span>
-                    <span className="grid size-8 place-items-center rounded-full border-2 border-base-100 bg-warning text-xs font-black text-warning-content">
-                      +
-                    </span>
-                  </div>
-
-                  <span className="text-xs font-semibold leading-relaxed text-base-content/60">
-                    Do planejamento à competição.
-                    <span className="block text-base-content">
-                      Tudo conectado em um só lugar.
-                    </span>
-                  </span>
-                </div>
-              </div>
-
-              {/* Card 01 — Vermelho */}
-              <RevealOnScroll>
-                <article className="group relative flex h-full min-h-[310px] flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-primary/20 bg-primary p-6 text-primary-content transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7">
-                  <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full border-[24px] border-white/5 transition-transform duration-500 group-hover:scale-110" />
-
-                  <div className="relative flex items-center justify-between">
-                    <div className="grid size-11 place-items-center rounded-xl bg-white/15">
-                      <Users size={22} />
-                    </div>
-                    <span className="font-mono text-xs font-bold text-white/50">
-                      01 / 03
-                    </span>
-                  </div>
-
-                  <div className="relative mt-8">
-                    <h3 className="text-xl font-black leading-snug xl:text-2xl">
-                      Desenvolva sua equipe
-                    </h3>
-
-                    <p className="mt-3 text-sm leading-relaxed text-white/80">
-                      Acompanhe integrantes, aplique testes e registre
-                      resultados para transformar evolução em aprendizado
-                      contínuo.
-                    </p>
-                  </div>
-
-                  <div className="relative mt-auto flex items-center justify-between gap-2 pt-7">
-                    <span className="text-xs font-bold uppercase tracking-wide text-white/70">
-                      Treinamento
-                    </span>
-                    <ArrowUpRight
-                      size={19}
-                      className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-                    />
-                  </div>
-                </article>
-              </RevealOnScroll>
-
-              {/* Card 02 — Azul */}
-              <RevealOnScroll>
-                <article className="group relative flex h-full min-h-[310px] flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-secondary/20 bg-secondary p-6 text-secondary-content transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7">
-                  <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full border-[24px] border-white/5 transition-transform duration-500 group-hover:scale-110" />
-
-                  <div className="relative flex items-center justify-between">
-                    <div className="grid size-11 place-items-center rounded-xl bg-white/15">
-                      <CalendarDays size={22} />
-                    </div>
-                    <span className="font-mono text-xs font-bold text-white/50">
-                      02 / 03
-                    </span>
-                  </div>
-
-                  <div className="relative mt-8">
-                    <h3 className="text-xl font-black leading-snug xl:text-2xl">
-                      Planeje sua temporada
-                    </h3>
-
-                    <p className="mt-3 text-sm leading-relaxed text-white/80">
-                      Organize missões, projetos de inovação, documentos e
-                      estratégias ao longo de toda a temporada.
-                    </p>
-                  </div>
-
-                  <div className="relative mt-auto flex items-center justify-between gap-2 pt-7">
-                    <span className="text-xs font-bold uppercase tracking-wide text-white/70">
-                      Organização
-                    </span>
-                    <ArrowUpRight
-                      size={19}
-                      className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-                    />
-                  </div>
-                </article>
-              </RevealOnScroll>
-
-              {/* Card 03 — Amarelo */}
-              <RevealOnScroll>
-                <article className="group relative flex h-full min-h-[310px] flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-warning/50 bg-warning p-6 text-warning-content transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7">
-                  <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full border-[24px] border-black/5 transition-transform duration-500 group-hover:scale-110" />
-
-                  <div className="relative flex items-center justify-between">
-                    <div className="grid size-11 place-items-center rounded-xl bg-black/5">
-                      <Trophy size={22} />
-                    </div>
-                    <span className="font-mono text-xs font-bold opacity-50">
-                      03 / 03
-                    </span>
-                  </div>
-
-                  <div className="relative mt-8">
-                    <h3 className="text-xl font-black leading-snug xl:text-2xl">
-                      Conecte-se às competições
-                    </h3>
-
-                    <p className="mt-3 text-sm leading-relaxed opacity-80">
-                      Consulte rankings, acompanhe informações e utilize
-                      ferramentas para preparar e organizar eventos.
-                    </p>
-                  </div>
-
-                  <div className="relative mt-auto flex items-center justify-between gap-2 pt-7">
-                    <span className="text-xs font-bold uppercase tracking-wide opacity-70">
-                      Competições
-                    </span>
-                    <ArrowUpRight
-                      size={19}
-                      className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-                    />
-                  </div>
-                </article>
-              </RevealOnScroll>
-            </div>
-          </div>
-        </section>
-        <section className="bg-neutral text-neutral-content w-full py-16 mt-8">
+      {/* ============================================== COMO O ROBOSTAGE AJUDA */}
+      <section className="relative isolate overflow-hidden px-6 py-24">
+        <AnimatedBackground />
+        <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1.05fr_1fr] [&>*]:min-w-0">
           <RevealOnScroll>
-            <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-stretch gap-8 md:gap-12">
-              <div className="flex-1 w-full">
-                <img
-                  src="/images/fll/fll_about.jpg"
-                  alt="Equipe participando da FIRST LEGO League"
-                  className="w-full h-full max-h-[400px] object-cover"
-                  style={{ boxShadow: "-10px -10px 0 #fabd32" }}
-                />
-
-                <p className="text-xs text-neutral-content/60 mt-2">
-                  Foto: LEGO® Education / FIRST® LEGO® League
-                </p>
-              </div>
-
-              <div className="flex-1">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  Sobre a FLL
-                </h2>
-
-                <p className="text-base md:text-lg leading-relaxed opacity-90">
-                  A FIRST LEGO League (FLL) é uma competição internacional de
-                  robótica educacional para crianças e adolescentes. O objetivo
-                  da FLL é inspirar jovens a se interessarem por ciência,
-                  tecnologia, engenharia e matemática (STEM) por meio de
-                  desafios práticos e criativos.
-                </p>
-
-                <p className="text-base md:text-lg leading-relaxed opacity-90 mt-4">
-                  Os participantes formam equipes para projetar, construir e
-                  programar robôs usando peças LEGO, além de desenvolver
-                  soluções inovadoras para problemas do mundo real.
-                </p>
-
-                <div className="mt-6">
-                  <button
-                    className="btn btn-outline"
-                    onClick={() =>
-                      window.open(
-                        "https://www.firstinspires.org/robotics/fll",
-                        "_blank",
-                      )
-                    }
-                  >
-                    Conhecer a Competição
-                  </button>
-                </div>
-              </div>
+            <SectionTitle
+              kicker="/ O ROBOSTAGE NA FLL"
+              title="Menos tempo organizando,"
+              highlight="mais tempo construindo."
+              description="Um ambiente que conecta pessoas, ideias e tecnologia em todas as etapas da temporada: do primeiro treino de mesa à sala de avaliação."
+            />
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <Link
+                href="/fll/score/bioglow"
+                className={`btn btn-primary btn-lg ${cornerBtn} shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--color-base-content)]`}
+              >
+                <Trophy size={20} />
+                Pontuar a BIOGLOW
+              </Link>
+              <a href="#ferramentas" className="btn btn-ghost btn-lg">
+                Ver ferramentas
+                <ArrowRight size={18} />
+              </a>
             </div>
           </RevealOnScroll>
-        </section>
-        <FLLHighlightSeason />
-        <section className="w-full py-16 bg-base-200">
-          <RevealOnScroll>
-            <div className="max-w-6xl mx-auto px-4">
-              <div className="flex flex-col items-center text-center mb-16">
-                <h2 className="text-4xl md:text-6xl font-black max-w-5xl leading-tight">
-                  Tudo que uma equipe FLL precisa{" "}
-                  <span className="inline-block bg-primary text-primary-content px-3 py-1 italic -rotate-1">
-                    Em um único lugar
-                  </span>
-                </h2>
-                <p className="mt-6 text-base-content/70 max-w-2xl text-lg">
-                  Planeje missões, acompanhe pontuações, desenvolva projetos de
-                  inovação, organize torneios e gerencie sua equipe sem precisar
-                  alternar entre várias ferramentas.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {modules.map((module) => (
-                  <ModuleCard
-                    key={module.title}
-                    title={module.title}
-                    description={module.description}
-                    color={module.color}
-                    featured={module.featured}
-                    icon={module.icon}
-                  />
-                ))}
-              </div>
-            </div>
+          <RevealOnScroll delay={0.1}>
+            <LivePreview />
           </RevealOnScroll>
-        </section>
-        <Banner />
-        <section
-          className="w-full overflow-hidden max-w-5xl mx-auto rounded-tl-3xl rounded-br-3xl my-16"
-          style={{ boxShadow: "20px 20px 0 #fabd32" }}
-        >
-          <NoiseImage
-            variant="animated"
-            noiseOpacity={0.12}
-            className="relative"
-          >
-            <div className="w-full">
-              <div className="group relative isolate mx-auto w-full overflow-hidden bg-[#6FA61C] text-white shadow-xl">
-                <div
-                  className="absolute inset-0 z-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-                  style={{
-                    backgroundImage:
-                      "url('https://www.bischoff-ag.ch/thumbnail/0f/a0/d5/1782169686/45834_Lifestyle_Cons_19_7d6229d67aa1ee63977a4f49a9682fb43b5dfc10_800x800.png?ts=1782173521&nocache=1')",
-                  }}
-                />
-                <div className="absolute inset-0 z-0 bg-black/35" />
-                <div className="absolute inset-0 z-0 bg-gradient-to-r from-black/85 via-black/60 to-black/15" />
-                <div className="absolute inset-0 z-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                <div className="pointer-events-none absolute -left-24 top-0 z-0 size-72 rounded-full bg-[#B8F34A]/20 blur-3xl" />
-                <div className="pointer-events-none absolute -right-24 bottom-0 z-0 size-72 rounded-full bg-[#B8F34A]/20 blur-3xl" />
-                <div className="relative z-10 flex items-center px-6 py-12 sm:px-10 sm:py-14 md:px-14 lg:px-16">
-                  <div className="max-w-4xl">
-                    <img
-                      src="https://www.firstinspires.org/hs-fs/hubfs/web/brand/season/2027/first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png?width=1436&height=484&name=first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png"
-                      alt="FIRST LEGO League BIOGLOW Future Edition"
-                      className="mb-7 h-auto w-44 max-w-full drop-shadow-lg sm:w-56"
-                    />
+        </div>
 
-                    <h2 className="max-w-2xl text-3xl font-black leading-[1.08] tracking-tight sm:text-4xl">
-                      Uma nova geração de possibilidades para a{" "}
-                      <span className="text-[#C8F77A]">FIRST LEGO League.</span>
-                    </h2>
-
-                    <p className="mt-5 max-w-2xl text-sm leading-relaxed text-white/85 sm:text-base">
-                      Conheça a BIOGLOW™ Future Edition, com os novos kits LEGO®
-                      Education Computer Science & AI, hardware sem fio e uma
-                      experiência colaborativa baseada em alianças.
-                    </p>
-
-                    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="mx-auto mt-20 grid max-w-6xl gap-5 md:grid-cols-3">
+          {pillars.map(({ icon: Icon, tag, title, description, links, tone }, i) => {
+            const c = toneClasses[tone];
+            return (
+              <RevealOnScroll key={title} delay={i * 0.08} className="h-full">
+                <article
+                  className={`group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 ${c.hover}`}
+                >
+                  <div aria-hidden="true" className={`pointer-events-none absolute -right-10 -top-10 size-32 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 ${c.ring}`} />
+                  <div className="relative flex items-center justify-between">
+                    <div className={`flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
+                      <Icon size={22} strokeWidth={1.8} />
+                    </div>
+                    <span className="font-mono text-xs text-base-content/35">{String(i + 1).padStart(2, "0")} / 03</span>
+                  </div>
+                  <p className={`relative mt-7 text-[10px] font-bold tracking-[0.18em] ${c.tag}`}>{tag}</p>
+                  <h3 className="relative mt-2 text-xl font-bold tracking-tight">{title}</h3>
+                  <p className="relative mt-3 flex-1 text-sm leading-6 text-base-content/60">{description}</p>
+                  <div className="relative mt-6 flex flex-wrap gap-2">
+                    {links.map((l) => (
                       <Link
-                        href="/fll/future-edition"
-                        className="btn rounded-tl-xl rounded-br-xl border-0 bg-[#C8F77A] px-6 text-sm font-bold text-[#20320C] shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#D8FFA0] hover:shadow-xl"
+                        key={l.href}
+                        href={l.href}
+                        className="inline-flex items-center gap-1 rounded-md bg-base-200 px-2.5 py-1 font-mono text-xs text-base-content/75 transition-colors hover:bg-base-content hover:text-base-100"
                       >
-                        Conheça a Future Edition
-                        <ArrowUpRight size={18} />
+                        {l.label}
+                        <ArrowRight size={12} />
                       </Link>
-                    </div>
+                    ))}
                   </div>
-                </div>
+                </article>
+              </RevealOnScroll>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ========================================================= SOBRE A FLL */}
+      <section className="border-y border-base-300 bg-base-200/40 px-6 py-24">
+        <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
+          <RevealOnScroll>
+            <figure className="relative">
+              <div aria-hidden="true" className="absolute -left-4 -top-4 size-24 -rotate-6 rounded-tl-2xl rounded-br-2xl bg-accent" />
+              <img
+                src="/images/fll/fll_about.jpg"
+                alt="Equipe participando da FIRST LEGO League"
+                className="relative aspect-[4/3] w-full rounded-tl-3xl rounded-br-3xl border border-base-300 object-cover shadow-[8px_8px_0_0_var(--color-primary)]"
+              />
+              <figcaption className="mt-4 text-xs text-base-content/50">
+                Foto: LEGO® Education / FIRST® LEGO® League
+              </figcaption>
+            </figure>
+          </RevealOnScroll>
+          <RevealOnScroll delay={0.1}>
+            <SectionTitle
+              kicker="/ SOBRE A FLL"
+              title="Robótica, ciência e"
+              highlight="trabalho em equipe."
+              highlightClass="bg-secondary text-secondary-content"
+            />
+            <p className="mt-6 text-base leading-7 text-base-content/65 sm:text-lg">
+              A FIRST LEGO League é uma competição internacional de robótica
+              educacional para crianças e adolescentes. As equipes projetam,
+              constroem e programam robôs com peças LEGO e desenvolvem soluções
+              para problemas do mundo real.
+            </p>
+            <p className="mt-4 text-base leading-7 text-base-content/60">
+              São mais de 650 mil estudantes em 77 países, e no Brasil os
+              torneios são organizados pelo SESI desde 2012.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a
+                href="https://www.firstinspires.org/robotics/fll"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`btn btn-outline ${cornerBtn} border-base-content/25 hover:border-secondary hover:bg-secondary hover:text-secondary-content`}
+              >
+                Conhecer a competição
+                <ArrowUpRight size={17} />
+              </a>
+              <Link href="/roboticar#dados" className="btn btn-ghost">
+                <Globe2 size={17} />
+                Dados da robótica no Brasil
+              </Link>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
+      {/* ===================================================== ÁREAS AVALIADAS */}
+      <section className="px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <RevealOnScroll>
+            <SectionTitle
+              kicker="/ COMO A EQUIPE É AVALIADA"
+              title="Quatro frentes,"
+              highlight="uma temporada."
+              highlightClass="bg-accent text-accent-content"
+              description="Na FLL Challenge a equipe é avaliada dentro e fora da mesa. Para cada frente, uma ferramenta do RoboStage ajuda a se preparar."
+            />
+          </RevealOnScroll>
+
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {judgedAreas.map(({ icon: Icon, title, text, tools: t, tone }, i) => {
+              const c = toneClasses[tone];
+              return (
+                <RevealOnScroll key={title} delay={i * 0.06} className="h-full">
+                  <article className={`group flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 ${c.hover}`}>
+                    <div className={`flex size-11 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
+                      <Icon size={20} strokeWidth={1.8} />
+                    </div>
+                    <h3 className="mt-6 text-lg font-bold tracking-tight">{title}</h3>
+                    <p className="mt-2 flex-1 text-sm leading-6 text-base-content/60">{text}</p>
+                    <div className="mt-5 border-t border-base-300 pt-4">
+                      <p className="font-mono text-[10px] tracking-[0.15em] text-base-content/40">PREPARE-SE COM</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {t.map((l) => (
+                          <Link
+                            key={l.href}
+                            href={l.href}
+                            className={`inline-flex items-center gap-1 text-sm font-semibold transition-colors hover:underline ${c.tag}`}
+                          >
+                            {l.label}
+                            <ArrowRight size={13} />
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </article>
+                </RevealOnScroll>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <FLLHighlightSeason />
+
+      {/* ========================================================= FERRAMENTAS */}
+      <section id="ferramentas" className="scroll-mt-20 px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <RevealOnScroll>
+            <SectionTitle
+              kicker="/ FERRAMENTAS DA FLL"
+              title="Tudo que uma equipe FLL precisa,"
+              highlight="num lugar só."
+              description="Planeje missões, acompanhe pontuações, desenvolva o projeto de inovação e prepare-se para o torneio sem alternar entre várias ferramentas."
+            />
+          </RevealOnScroll>
+          <ToolGrid tools={tools} />
+        </div>
+      </section>
+
+      <SeasonsSection />
+
+      {/* ============================================================ RECURSOS */}
+      <section className="px-6 py-24">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
+          <RevealOnScroll>
+            <div className="lg:sticky lg:top-28">
+              <SectionTitle
+                kicker="/ RECURSOS"
+                title="Primeira temporada?"
+                highlight="Comece por aqui."
+                highlightClass="bg-secondary text-secondary-content"
+                description="Guias e documentos para entender a liga, as missões e o caminho até o torneio."
+              />
+            </div>
+          </RevealOnScroll>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {resources.map(({ icon: Icon, title, text, href }, i) => (
+              <RevealOnScroll key={href} delay={i * 0.06} className="h-full">
+                <Link
+                  href={href}
+                  className="group flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-secondary/40 hover:shadow-[6px_6px_0_0_var(--color-secondary)]"
+                >
+                  <Icon size={20} className="text-secondary" />
+                  <h3 className="mt-4 font-bold">{title}</h3>
+                  <p className="mt-1 flex-1 text-sm leading-6 text-base-content/60">{text}</p>
+                  <span className="mt-4 inline-flex items-center gap-1 font-mono text-xs text-base-content/50 transition-colors group-hover:text-secondary">
+                    {href}
+                    <ArrowRight size={13} className="transition-transform group-hover:translate-x-1" />
+                  </span>
+                </Link>
+              </RevealOnScroll>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================== FUTURE EDITION */}
+      <section className="px-6 pb-24">
+        <RevealOnScroll>
+          <div className="group relative isolate mx-auto max-w-6xl overflow-hidden rounded-tl-[2.5rem] rounded-br-[2.5rem] bg-[#1d2a10] text-white shadow-[10px_10px_0_0_var(--color-accent)]">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 -z-20 bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.02]"
+              style={{
+                backgroundImage:
+                  "url('https://www.bischoff-ag.ch/thumbnail/0f/a0/d5/1782169686/45834_Lifestyle_Cons_19_7d6229d67aa1ee63977a4f49a9682fb43b5dfc10_800x800.png?ts=1782173521&nocache=1')",
+              }}
+            />
+            <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-black/90 via-black/65 to-black/20" />
+            <div className="px-8 py-14 sm:px-14">
+              <p className="font-mono text-xs tracking-[0.2em] text-white/60">/ FUTURE EDITION</p>
+              <img
+                src="https://www.firstinspires.org/hs-fs/hubfs/web/brand/season/2027/first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png?width=1436&height=484&name=first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png"
+                alt="FIRST LEGO League BIOGLOW Future Edition"
+                className="mt-6 h-auto w-48 max-w-full drop-shadow-lg sm:w-60"
+              />
+              <h2 className="mt-6 max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
+                Uma nova geração de possibilidades para a{" "}
+                <span className="text-[#C8F77A]">FIRST LEGO League.</span>
+              </h2>
+              <p className="mt-5 max-w-xl text-sm leading-7 text-white/80 sm:text-base">
+                Conheça a BIOGLOW™ Future Edition, com os novos kits LEGO®
+                Education Computer Science & AI, hardware sem fio e uma
+                experiência colaborativa baseada em alianças.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href="/fll/future-edition"
+                  className={`btn border-0 bg-[#C8F77A] px-6 font-bold text-[#20320C] ${cornerBtn} shadow-[4px_4px_0_0_#ffffff] transition-all hover:-translate-y-0.5 hover:bg-[#D8FFA0]`}
+                >
+                  Conheça a Future Edition
+                  <ArrowUpRight size={18} />
+                </Link>
+                <Link
+                  href="/fll/future-edition/score"
+                  className="btn btn-ghost text-white hover:bg-white/10"
+                >
+                  Pontuador da Future Edition
+                  <ArrowRight size={18} />
+                </Link>
               </div>
             </div>
-          </NoiseImage>
-        </section>
-        <div className="w-full h-10 bg-gradient-to-t from-neutral to-transparent " />
-        <section className="w-full bg-neutral text-neutral-content py-24 px-4">
-          <div className="max-w-5xl mx-auto text-center">
-            <h2 className="text-4xl md:text-6xl font-black leading-tight">
-              Sua próxima temporada de FLL começa aqui
-            </h2>
-            <p className="mt-6 text-lg md:text-xl text-neutral-content/70 max-w-3xl mx-auto">
-              Do planejamento ao torneio. Do primeiro teste à classificação.
-              Organize sua equipe, acompanhe o progresso e evolua durante toda a
-              temporada.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-              <Link
-                className="btn btn-primary rounded-2xl px-8"
-                href="/sign-up"
-              >
-                Criar conta grátis
-              </Link>
-              <Link
-                className="btn btn-ghost text-neutral-content rounded-2xl px-8"
-                href="/news"
-              >
-                Ver novidades da temporada
-              </Link>
-            </div>
           </div>
-        </section>
-      </main>
-    </div>
+        </RevealOnScroll>
+      </section>
+
+      <NewsSection news={news} kicker="/ NOVIDADES" title="O que há de novo" highlight="na FLL." />
+
+      <CtaBlock
+        kicker="SUA PRÓXIMA TEMPORADA"
+        icon={Trophy}
+        title="Sua próxima temporada de FLL começa aqui."
+        text="Do planejamento ao torneio. Do primeiro teste à classificação. Organize a equipe, acompanhe o progresso e evolua durante toda a temporada."
+        actions={[
+          { label: "Criar conta grátis", href: "/sign-up", variant: "accent" },
+          { label: "Iniciativas de outras equipes", href: "/roboticar#iniciativas", variant: "ghost" },
+        ]}
+      />
+    </main>
   );
 }

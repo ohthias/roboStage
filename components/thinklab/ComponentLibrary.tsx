@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Square,
   Diamond,
@@ -18,13 +18,11 @@ import {
   Spline,
   Circle,
   Pentagon,
-  ChevronRight,
-  GripHorizontal,
-  Plus,
+  ChevronDown,
+  GripVertical,
   Search,
   X,
   Sparkles,
-  PackageOpen,
   LayoutTemplate,
   Smartphone,
   Maximize2,
@@ -42,517 +40,407 @@ import {
   UserCheck,
   CheckCircle2,
   Star,
-  ExternalLink,
+  Workflow,
+  Shapes,
+  Users,
+  Award,
 } from 'lucide-react';
 import { COMPONENT_LIBRARY } from '@/utils/thinklab/component-library';
 import { GRAPHIC_ASSETS } from '@/utils/thinklab/graphic-assets';
+import { ICON_CATEGORIES, IconEntry } from '@/utils/thinklab/icon-library';
+import { EMOJI_CATEGORIES, EmojiEntry, EMOJI_FONT_STACK } from '@/utils/thinklab/emoji-library';
 import { PredefinedComponent, GraphicAsset } from '@/types/thinklab.types';
+import { IconBubble, cn } from './editor-ui';
 
 interface ComponentLibraryProps {
-  isOpen: boolean;
-  onToggle: () => void;
   onInsertComponent: (template: PredefinedComponent['template']) => void;
   onInsertAsset?: (elements: GraphicAsset['elements'], assetName: string) => void;
-  onOpenGraphicAssetsModal?: () => void;
+  /** Muda de valor para pedir foco no campo de busca (atalho "/"). */
+  focusSearchSignal?: number;
 }
 
-// Icon mapper helper
-function renderIcon(iconName: string) {
-  const iconProps = { className: 'w-4 h-4' };
-  switch (iconName) {
-    case 'Square':
-      return <Square {...iconProps} />;
-    case 'Diamond':
-      return <Diamond {...iconProps} />;
-    case 'CircleDot':
-      return <CircleDot {...iconProps} />;
-    case 'ChevronsRight':
-      return <ChevronsRight {...iconProps} />;
-    case 'FileText':
-      return <FileText {...iconProps} />;
-    case 'ArrowRight':
-      return <ArrowRight {...iconProps} />;
-    case 'Database':
-      return <Database {...iconProps} />;
-    case 'Layers':
-      return <Layers {...iconProps} />;
-    case 'Cloud':
-      return <Cloud {...iconProps} />;
-    case 'Box':
-      return <Box {...iconProps} />;
-    case 'StickyNote':
-      return <StickyNote {...iconProps} />;
-    case 'AlertCircle':
-      return <AlertCircle {...iconProps} />;
-    case 'Heading':
-      return <Heading {...iconProps} />;
-    case 'Spline':
-      return <Spline {...iconProps} />;
-    case 'Circle':
-      return <Circle {...iconProps} />;
-    case 'Pentagon':
-      return <Pentagon {...iconProps} />;
-    case 'LayoutTemplate':
-      return <LayoutTemplate {...iconProps} />;
-    case 'Smartphone':
-      return <Smartphone {...iconProps} />;
-    case 'Maximize2':
-      return <Maximize2 {...iconProps} />;
-    case 'Server':
-      return <Server {...iconProps} />;
-    case 'ShieldCheck':
-      return <ShieldCheck {...iconProps} />;
-    case 'Boxes':
-      return <Boxes {...iconProps} />;
-    case 'Filter':
-      return <Filter {...iconProps} />;
-    case 'BarChart3':
-      return <BarChart3 {...iconProps} />;
-    case 'Trophy':
-      return <Trophy {...iconProps} />;
-    case 'MessageSquare':
-      return <MessageSquare {...iconProps} />;
-    case 'Kanban':
-      return <Kanban {...iconProps} />;
-    case 'AlertTriangle':
-      return <AlertTriangle {...iconProps} />;
-    case 'Code':
-      return <Code {...iconProps} />;
-    case 'Palette':
-      return <Palette {...iconProps} />;
-    case 'UserCheck':
-      return <UserCheck {...iconProps} />;
-    case 'CheckCircle2':
-      return <CheckCircle2 {...iconProps} />;
-    case 'Star':
-      return <Star {...iconProps} />;
-    default:
-      return <Sparkles {...iconProps} />;
-  }
+const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  Square,
+  Diamond,
+  CircleDot,
+  ChevronsRight,
+  FileText,
+  ArrowRight,
+  Database,
+  Layers,
+  Cloud,
+  Box,
+  StickyNote,
+  AlertCircle,
+  Heading,
+  Spline,
+  Circle,
+  Pentagon,
+  LayoutTemplate,
+  Smartphone,
+  Maximize2,
+  Server,
+  ShieldCheck,
+  Boxes,
+  Filter,
+  BarChart3,
+  Trophy,
+  MessageSquare,
+  Kanban,
+  AlertTriangle,
+  Code,
+  Palette,
+  UserCheck,
+  CheckCircle2,
+  Star,
+};
+
+export function renderLibraryIcon(iconName: string, className = 'size-4') {
+  const Icon = ICONS[iconName] ?? Sparkles;
+  return <Icon className={className} />;
 }
 
-// Accent & diacritic remover for resilient Portuguese search
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  Fluxograma: Workflow,
+  Arquitetura: Server,
+  Anotações: StickyNote,
+  Formas: Shapes,
+  'UI & Wireframe': LayoutTemplate,
+  'Tecnologia & Cloud': Cloud,
+  'Negócios & Métricas': BarChart3,
+  'Gestão & Kanban': Kanban,
+  'Pessoas & Personas': Users,
+  'Selos & Destaques': Award,
+};
+
+const SHAPE_CATEGORIES: PredefinedComponent['category'][] = ['Fluxograma', 'Arquitetura', 'Anotações', 'Formas'];
+const GRAPHIC_CATEGORIES: GraphicAsset['category'][] = [
+  'UI & Wireframe',
+  'Tecnologia & Cloud',
+  'Negócios & Métricas',
+  'Gestão & Kanban',
+  'Pessoas & Personas',
+  'Selos & Destaques',
+];
+
+// Remove acentos para uma busca tolerante em português
 function normalizeText(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
+  return text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
-export function ComponentLibrary({
-  isOpen,
-  onToggle,
-  onInsertComponent,
-  onInsertAsset,
-  onOpenGraphicAssetsModal,
-}: ComponentLibraryProps) {
-  const [libraryTab, setLibraryTab] = useState<'shapes' | 'graphics'>('shapes');
-  const [activeCategory, setActiveCategory] = useState<string>('Todos');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const searchInputRef = useRef<HTMLInputElement>(null);
+function matches(
+  item: { name: string; description: string; category: string; tags?: string[] },
+  query: string,
+  extra?: string,
+) {
+  if (!query) return true;
+  return [item.name, item.description, item.category, extra ?? '', ...(item.tags ?? [])].some((s) =>
+    normalizeText(s).includes(query),
+  );
+}
 
-  const shapeCategories = ['Todos', 'Fluxograma', 'Arquitetura', 'Anotações', 'Formas'];
-  const graphicCategories = [
-    'Todos',
-    'UI & Wireframe',
-    'Tecnologia & Cloud',
-    'Negócios & Métricas',
-    'Gestão & Kanban',
-    'Pessoas & Personas',
-    'Selos & Destaques',
-  ];
+type LibraryItem =
+  | { kind: 'shape'; id: string; name: string; description: string; iconName: string; data: PredefinedComponent }
+  | { kind: 'asset'; id: string; name: string; description: string; iconName: string; data: GraphicAsset }
+  | { kind: 'icon'; id: string; name: string; description: string; iconName: string; data: IconEntry }
+  | { kind: 'emoji'; id: string; name: string; description: string; iconName: string; data: EmojiEntry };
 
-  const currentCategories = libraryTab === 'shapes' ? shapeCategories : graphicCategories;
+interface Section {
+  key: string;
+  title: string;
+  items: LibraryItem[];
+  layout?: 'list' | 'grid';
+  icon?: React.ReactNode;
+}
 
-  const normalizedQuery = useMemo(() => normalizeText(searchQuery.trim()), [searchQuery]);
+const MEDIA_BASE = {
+  backgroundColor: 'transparent',
+  fillStyle: 'none' as const,
+  strokeStyle: 'solid' as const,
+  roughness: 0,
+  opacity: 1,
+};
 
-  // Filter shapes
-  const filteredComponents = useMemo(() => {
-    return COMPONENT_LIBRARY.filter((item) => {
-      const matchesCategory =
-        activeCategory === 'Todos' || item.category === activeCategory;
-
-      if (!normalizedQuery) {
-        return matchesCategory;
-      }
-
-      const nameMatch = normalizeText(item.name).includes(normalizedQuery);
-      const descMatch = normalizeText(item.description).includes(normalizedQuery);
-      const catMatch = normalizeText(item.category).includes(normalizedQuery);
-      const typeMatch = normalizeText(item.template.type).includes(normalizedQuery);
-      const tagMatch =
-        item.tags &&
-        item.tags.some((tag: string) => normalizeText(tag).includes(normalizedQuery));
-
-      return matchesCategory && (nameMatch || descMatch || catMatch || typeMatch || tagMatch);
-    });
-  }, [activeCategory, normalizedQuery]);
-
-  // Filter graphics
-  const filteredGraphicAssets = useMemo(() => {
-    return GRAPHIC_ASSETS.filter((item) => {
-      const matchesCategory =
-        activeCategory === 'Todos' || item.category === activeCategory;
-
-      if (!normalizedQuery) {
-        return matchesCategory;
-      }
-
-      const nameMatch = normalizeText(item.name).includes(normalizedQuery);
-      const descMatch = normalizeText(item.description).includes(normalizedQuery);
-      const catMatch = normalizeText(item.category).includes(normalizedQuery);
-      const tagMatch =
-        item.tags &&
-        item.tags.some((tag: string) => normalizeText(tag).includes(normalizedQuery));
-
-      return matchesCategory && (nameMatch || descMatch || catMatch || tagMatch);
-    });
-  }, [activeCategory, normalizedQuery]);
-
-  const handleDragStartShape = (
-    e: React.DragEvent<HTMLDivElement>,
-    template: PredefinedComponent['template']
-  ) => {
-    e.dataTransfer.setData('application/json', JSON.stringify(template));
-    e.dataTransfer.effectAllowed = 'copy';
-  };
-
-  const handleDragStartAsset = (
-    e: React.DragEvent<HTMLDivElement>,
-    asset: GraphicAsset
-  ) => {
-    e.dataTransfer.setData(
-      'application/json',
-      JSON.stringify({
-        isGraphicAsset: true,
-        name: asset.name,
-        elements: asset.elements,
-      })
-    );
-    e.dataTransfer.effectAllowed = 'copy';
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  };
-
-  const handleTabChange = (newTab: 'shapes' | 'graphics') => {
-    setLibraryTab(newTab);
-    setActiveCategory('Todos');
-  };
-
-  if (!isOpen) {
-    return (
-      <button
-        onClick={onToggle}
-        className="fixed top-20 right-3 sm:right-4 z-20 btn btn-sm btn-neutral shadow-lg gap-1.5 tooltip tooltip-left"
-        data-tip="Biblioteca de Formas & Componentes"
-        aria-label="Abrir biblioteca de componentes"
-      >
-        <Layers className="w-4 h-4 text-primary" />
-        <span className="hidden sm:inline text-xs font-semibold">Biblioteca</span>
-      </button>
-    );
+/** Template de inserção para um ícone ou emoji do catálogo. */
+function mediaTemplate(item: LibraryItem): PredefinedComponent['template'] | null {
+  if (item.kind === 'icon') {
+    return {
+      ...MEDIA_BASE,
+      type: 'icon',
+      iconName: item.data.key,
+      width: 56,
+      height: 56,
+      strokeColor: '#1e293b',
+      strokeWidth: 2,
+    };
   }
+  if (item.kind === 'emoji') {
+    return {
+      ...MEDIA_BASE,
+      type: 'emoji',
+      emoji: item.data.char,
+      width: 64,
+      height: 64,
+      strokeColor: '#1e293b',
+      strokeWidth: 1,
+    };
+  }
+  return null;
+}
 
-  const currentCount =
-    libraryTab === 'shapes' ? filteredComponents.length : filteredGraphicAssets.length;
+/**
+ * Conteúdo da aba "Design": seções recolhíveis por categoria, cada item como
+ * uma linha "ícone + nome + alça de arraste". Clique insere no centro do canvas;
+ * arrastar solta na posição do cursor.
+ */
+export function ComponentLibrary({ onInsertComponent, onInsertAsset, focusSearchSignal }: ComponentLibraryProps) {
+  const [query, setQuery] = useState('');
+  const [openSections, setOpenSections] = useState<Set<string>>(() => new Set(['shape:Fluxograma']));
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (focusSearchSignal) searchRef.current?.focus();
+  }, [focusSearchSignal]);
+
+  const normalizedQuery = useMemo(() => normalizeText(query.trim()), [query]);
+
+  const groups = useMemo(() => {
+    const shapeSections: Section[] = SHAPE_CATEGORIES.map((cat) => ({
+      key: `shape:${cat}`,
+      title: cat,
+      items: COMPONENT_LIBRARY.filter(
+        (c) => c.category === cat && matches(c, normalizedQuery, normalizeText(c.template.type)),
+      ).map((c) => ({
+        kind: 'shape' as const,
+        id: c.id,
+        name: c.name,
+        description: c.description,
+        iconName: c.iconName,
+        data: c,
+      })),
+    }));
+    const assetSections: Section[] = GRAPHIC_CATEGORIES.map((cat) => ({
+      key: `asset:${cat}`,
+      title: cat,
+      items: GRAPHIC_ASSETS.filter((a) => a.category === cat && matches(a, normalizedQuery)).map((a) => ({
+        kind: 'asset' as const,
+        id: a.id,
+        name: a.name,
+        description: a.description,
+        iconName: a.iconName,
+        data: a,
+      })),
+    }));
+    const iconSections: Section[] = ICON_CATEGORIES.map((cat) => {
+      const FirstIcon = cat.icons[0].Icon;
+      return {
+        key: `icon:${cat.title}`,
+        title: cat.title,
+        layout: 'grid' as const,
+        icon: <FirstIcon className="size-4 text-base-content/70" />,
+        items: cat.icons
+          .filter((i) =>
+            matches({ name: i.label, description: i.key, category: cat.title, tags: i.tags }, normalizedQuery),
+          )
+          .map((i) => ({
+            kind: 'icon' as const,
+            id: `icon-${i.key}`,
+            name: i.label,
+            description: 'Ícone',
+            iconName: i.key,
+            data: i,
+          })),
+      };
+    });
+    const emojiSections: Section[] = EMOJI_CATEGORIES.map((cat) => ({
+      key: `emoji:${cat.title}`,
+      title: cat.title,
+      layout: 'grid' as const,
+      icon: <span className="text-base leading-none">{cat.emojis[0].char}</span>,
+      items: cat.emojis
+        .filter((e) => matches({ name: e.label, description: '', category: cat.title }, normalizedQuery))
+        .map((e) => ({
+          kind: 'emoji' as const,
+          id: `emoji-${e.char}`,
+          name: e.label,
+          description: 'Emoji',
+          iconName: '',
+          data: e,
+        })),
+    }));
+    return [
+      { label: 'Formas & nós', sections: shapeSections },
+      { label: 'Ícones', sections: iconSections },
+      { label: 'Emojis', sections: emojiSections },
+      { label: 'Gráficos prontos', sections: assetSections },
+    ];
+  }, [normalizedQuery]);
+
+  const totalResults = groups.reduce((n, g) => n + g.sections.reduce((m, s) => m + s.items.length, 0), 0);
+
+  const toggleSection = (key: string) =>
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  const insert = (item: LibraryItem) => {
+    const media = mediaTemplate(item);
+    if (media) onInsertComponent(media);
+    else if (item.kind === 'shape') onInsertComponent(item.data.template);
+    else if (item.kind === 'asset') onInsertAsset?.(item.data.elements, item.data.name);
+  };
+
+  const handleDragStart = (e: React.DragEvent<HTMLElement>, item: LibraryItem) => {
+    const payload =
+      mediaTemplate(item) ??
+      (item.kind === 'shape'
+        ? item.data.template
+        : item.kind === 'asset'
+          ? { isGraphicAsset: true, name: item.data.name, elements: item.data.elements }
+          : null);
+    if (!payload) return;
+    e.dataTransfer.setData('application/json', JSON.stringify(payload));
+    e.dataTransfer.effectAllowed = 'copy';
+  };
 
   return (
-    <aside
-      aria-label="Biblioteca de componentes e gráficos"
-      className="fixed top-20 right-2 sm:right-4 z-20 w-[calc(100vw-1rem)] sm:w-80 max-h-[calc(100vh-6.5rem)] flex flex-col bg-base-100/95 backdrop-blur-md border border-base-300 rounded-2xl shadow-2xl overflow-hidden select-none text-xs"
-    >
-      {/* Header */}
-      <div className="p-3 border-b border-base-200 flex items-center justify-between bg-base-200/40">
-        <div className="flex items-center gap-2">
-          <div className="p-1 rounded-md bg-primary/10 text-primary">
-            {libraryTab === 'shapes' ? (
-              <Layers className="w-4 h-4" />
-            ) : (
-              <PackageOpen className="w-4 h-4" />
-            )}
-          </div>
-          <div>
-            <div className="font-bold text-xs uppercase tracking-wider text-base-content/90">
-              {libraryTab === 'shapes' ? 'Formas & Nós' : 'Gráficos Prontos'}
-            </div>
-            <div className="text-[10px] text-base-content/50">
-              Arraste para o canvas ou clique no (+)
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1">
-          {onOpenGraphicAssetsModal && (
-            <button
-              onClick={onOpenGraphicAssetsModal}
-              className="btn btn-ghost btn-xs btn-circle text-base-content/60 hover:text-primary tooltip tooltip-bottom"
-              data-tip="Abrir Galeria em Tela Cheia"
-              aria-label="Abrir Galeria de Gráficos"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-            </button>
-          )}
-          <button
-            onClick={onToggle}
-            className="btn btn-ghost btn-xs btn-circle text-base-content/60 hover:text-base-content"
-            title="Recolher painel"
-            aria-label="Recolher painel"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Mode Switcher Tabs */}
-      <div className="px-3 pt-2.5 pb-1 flex gap-1">
-        <button
-          onClick={() => handleTabChange('shapes')}
-          className={`flex-1 py-1.5 rounded-lg font-semibold text-[11px] transition-all flex items-center justify-center gap-1.5 border ${
-            libraryTab === 'shapes'
-              ? 'bg-base-200 text-primary border-base-300 shadow-2xs'
-              : 'text-base-content/60 hover:bg-base-200/40 border-transparent'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span>Formas</span>
-          <span className="badge badge-xs badge-ghost font-mono">{COMPONENT_LIBRARY.length}</span>
-        </button>
-
-        <button
-          onClick={() => handleTabChange('graphics')}
-          className={`flex-1 py-1.5 rounded-lg font-semibold text-[11px] transition-all flex items-center justify-center gap-1.5 border ${
-            libraryTab === 'graphics'
-              ? 'bg-base-200 text-primary border-base-300 shadow-2xs'
-              : 'text-base-content/60 hover:bg-base-200/40 border-transparent'
-          }`}
-        >
-          <PackageOpen className="w-3.5 h-3.5" />
-          <span>Gráficos</span>
-          <span className="badge badge-xs badge-ghost font-mono">{GRAPHIC_ASSETS.length}</span>
-        </button>
-      </div>
-
-      {/* Search Input Bar */}
-      <div className="px-3 pt-1.5 pb-1.5">
-        <div className="relative flex items-center w-full">
-          <Search className="w-3.5 h-3.5 text-base-content/40 absolute left-2.5 pointer-events-none" />
+    <div className="flex flex-col min-h-0 flex-1">
+      {/* Busca */}
+      <div className="px-4 pt-4 pb-2">
+        <label className="input input-sm w-full bg-base-200 border-transparent shadow-none focus-within:border-primary/60 focus-within:outline-none">
+          <Search className="size-3.5 opacity-50" />
           <input
-            ref={searchInputRef}
+            ref={searchRef}
             type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                handleClearSearch();
-              }
-            }}
-            placeholder={
-              libraryTab === 'shapes'
-                ? 'Buscar formas, bancos, notas...'
-                : 'Buscar wireframes, servidores, kanban...'
-            }
-            className="input input-xs input-bordered w-full pl-8 pr-7 rounded-xl text-xs bg-base-200/50 focus:bg-base-100 focus:border-primary placeholder:text-base-content/40 transition-colors"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Escape' && setQuery('')}
+            placeholder="Buscar componentes"
+            className="grow"
+            aria-label="Buscar componentes e gráficos"
           />
-          {searchQuery ? (
-            <button
-              onClick={handleClearSearch}
-              className="absolute right-2 text-base-content/50 hover:text-base-content p-0.5 rounded-full hover:bg-base-300 transition-colors"
-              title="Limpar busca (Esc)"
-              aria-label="Limpar busca"
-            >
-              <X className="w-3.5 h-3.5" />
+          {query ? (
+            <button onClick={() => setQuery('')} className="opacity-50 hover:opacity-100" aria-label="Limpar busca">
+              <X className="size-3.5" />
             </button>
           ) : (
-            <span className="absolute right-2 text-[10px] text-base-content/30 pointer-events-none font-mono">
-              /
-            </span>
+            <kbd className="kbd kbd-xs">/</kbd>
           )}
-        </div>
-
-        {/* Counter and status */}
-        <div className="flex items-center justify-between mt-1 px-1 text-[10px] text-base-content/60">
-          <span>
-            {currentCount} {currentCount === 1 ? 'item' : 'itens'}{' '}
-            {normalizedQuery && 'encontrados'}
-          </span>
-          {normalizedQuery && activeCategory !== 'Todos' && (
-            <button
-              onClick={() => setActiveCategory('Todos')}
-              className="text-primary hover:underline font-medium"
-            >
-              Ver todas as categorias
-            </button>
-          )}
-        </div>
+        </label>
       </div>
 
-      {/* Category Pills */}
-      <div className="px-3 py-1 flex items-center gap-1 overflow-x-auto scrollbar-none border-b border-base-200/60 pb-2">
-        {currentCategories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`btn btn-xs rounded-lg text-[11px] whitespace-nowrap px-2.5 transition-all ${
-              activeCategory === cat
-                ? 'btn-primary shadow-xs'
-                : 'btn-ghost text-base-content/70 hover:bg-base-200'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      <div className="flex-1 min-h-0 overflow-y-auto pb-4">
+        {totalResults === 0 && (
+          <div className="px-6 py-10 text-center">
+            <p className="text-sm font-medium">Nada encontrado</p>
+            <p className="text-xs text-base-content/55 mt-1">
+              Tente &quot;decisão&quot;, &quot;banco&quot;, &quot;kanban&quot; ou &quot;post-it&quot;.
+            </p>
+          </div>
+        )}
 
-      {/* List content */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2 max-h-[calc(100vh-19rem)]">
-        {libraryTab === 'shapes' ? (
-          // SHAPES LIST
-          filteredComponents.length === 0 ? (
-            <div className="text-center py-10 px-4 space-y-2">
-              <div className="w-10 h-10 rounded-full bg-base-200 flex items-center justify-center mx-auto text-base-content/40">
-                <Search className="w-5 h-5" />
-              </div>
-              <div className="font-semibold text-xs text-base-content/80">
-                Nenhum componente encontrado
-              </div>
-              <p className="text-[11px] text-base-content/50">
-                Tente buscar termos como &quot;processo&quot;, &quot;decisão&quot;, &quot;banco&quot; ou &quot;post-it&quot;.
+        {groups.map((group) => {
+          const visible = group.sections.filter((s) => s.items.length > 0);
+          if (visible.length === 0) return null;
+          return (
+            <div key={group.label}>
+              <p className="px-4 pt-3 pb-1 text-[11px] font-medium uppercase tracking-wide text-base-content/40">
+                {group.label}
               </p>
-              {searchQuery && (
-                <button
-                  onClick={handleClearSearch}
-                  className="btn btn-xs btn-outline btn-primary mt-2"
-                >
-                  Limpar busca
-                </button>
-              )}
-            </div>
-          ) : (
-            filteredComponents.map((item) => (
-              <div
-                key={item.id}
-                draggable
-                onDragStart={(e) => handleDragStartShape(e, item.template)}
-                className="group p-2.5 rounded-xl border border-base-300 hover:border-primary/50 bg-base-200/40 hover:bg-base-200/80 transition-all cursor-grab active:cursor-grabbing flex items-center justify-between gap-3 shadow-xs"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
+              {visible.map((section) => {
+                const open = normalizedQuery ? true : openSections.has(section.key);
+                const CategoryIcon = CATEGORY_ICONS[section.title] ?? Sparkles;
+                const sectionIcon = section.icon ?? <CategoryIcon className="size-4 text-base-content/70" />;
+                return (
                   <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-base-300 shadow-2xs"
-                    style={{
-                      backgroundColor:
-                        item.template.backgroundColor !== 'transparent'
-                          ? item.template.backgroundColor
-                          : '#f1f5f9',
-                      color: item.template.strokeColor,
-                    }}
+                    key={section.key}
+                    className={cn(
+                      'collapse rounded-none border-b border-base-300/70',
+                      open ? 'collapse-open' : 'collapse-close',
+                    )}
                   >
-                    {renderIcon(item.iconName)}
-                  </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(section.key)}
+                      aria-expanded={open}
+                      className="collapse-title min-h-0 px-4 py-3.5 flex items-center gap-2.5 text-[15px] font-medium text-left"
+                    >
+                      <span className="size-4 grid place-items-center">{sectionIcon}</span>
+                      <span className="flex-1 truncate">{section.title}</span>
+                      <span className="text-xs text-base-content/40 tabular-nums">{section.items.length}</span>
+                      <ChevronDown
+                        className={cn(
+                          'size-4 transition-transform',
+                          open ? 'rotate-180 text-primary' : 'text-base-content/60',
+                        )}
+                      />
+                    </button>
 
-                  <div className="min-w-0">
-                    <div className="font-semibold text-xs text-base-content truncate group-hover:text-primary transition-colors">
-                      {item.name}
-                    </div>
-                    <div className="text-[10px] text-base-content/60 truncate">
-                      {item.description}
+                    <div className="collapse-content px-2 pb-2!">
+                      {section.layout === 'grid' ? (
+                        <ul className="grid grid-cols-6 gap-1 px-1">
+                          {section.items.map((item) => (
+                            <li key={item.id}>
+                              <button
+                                type="button"
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, item)}
+                                onClick={() => insert(item)}
+                                title={`${item.name} — clique para inserir ou arraste para o canvas`}
+                                aria-label={`Inserir ${item.description.toLowerCase()} ${item.name}`}
+                                className="aspect-square w-full rounded-field grid place-items-center hover:bg-base-200 cursor-grab active:cursor-grabbing focus-visible:outline-2 focus-visible:outline-primary"
+                              >
+                                {item.kind === 'emoji' ? (
+                                  <span className="text-[22px] leading-none" style={{ fontFamily: EMOJI_FONT_STACK }}>
+                                    {item.data.char}
+                                  </span>
+                                ) : item.kind === 'icon' ? (
+                                  <item.data.Icon className="size-5" />
+                                ) : null}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <ul className="space-y-0.5">
+                          {section.items.map((item) => (
+                            <li key={item.id}>
+                              <div
+                                role="button"
+                                tabIndex={0}
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, item)}
+                                onClick={() => insert(item)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    insert(item);
+                                  }
+                                }}
+                                title={`${item.description} — clique para inserir ou arraste para o canvas`}
+                                className="group flex items-center gap-3 rounded-field px-2 py-1.5 cursor-grab active:cursor-grabbing hover:bg-base-200 focus-visible:outline-2 focus-visible:outline-primary"
+                              >
+                                <IconBubble className="group-hover:bg-base-100">
+                                  {renderLibraryIcon(item.iconName)}
+                                </IconBubble>
+                                <span className="flex-1 min-w-0 truncate text-sm">{item.name}</span>
+                                <GripVertical className="size-4 text-base-content/30 group-hover:text-base-content/60" />
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   </div>
-                </div>
-
-                <button
-                  onClick={() => onInsertComponent(item.template)}
-                  className="btn btn-ghost btn-xs btn-circle opacity-80 group-hover:opacity-100 hover:bg-primary hover:text-primary-content transition-all shrink-0"
-                  title="Inserir no centro do canvas"
-                  aria-label={`Inserir ${item.name}`}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))
-          )
-        ) : (
-          // GRAPHIC ASSETS LIST
-          filteredGraphicAssets.length === 0 ? (
-            <div className="text-center py-10 px-4 space-y-2">
-              <div className="w-10 h-10 rounded-full bg-base-200 flex items-center justify-center mx-auto text-base-content/40">
-                <Search className="w-5 h-5" />
-              </div>
-              <div className="font-semibold text-xs text-base-content/80">
-                Nenhum gráfico encontrado
-              </div>
-              <p className="text-[11px] text-base-content/50">
-                Tente buscar &quot;wireframe&quot;, &quot;servidor&quot;, &quot;kanban&quot; ou &quot;troféu&quot;.
-              </p>
-              {searchQuery && (
-                <button
-                  onClick={handleClearSearch}
-                  className="btn btn-xs btn-outline btn-primary mt-2"
-                >
-                  Limpar busca
-                </button>
-              )}
+                );
+              })}
             </div>
-          ) : (
-            filteredGraphicAssets.map((asset) => (
-              <div
-                key={asset.id}
-                draggable
-                onDragStart={(e) => handleDragStartAsset(e, asset)}
-                className="group p-2.5 rounded-xl border border-base-300 hover:border-primary/50 bg-base-200/40 hover:bg-base-200/80 transition-all cursor-grab active:cursor-grabbing flex items-center justify-between gap-3 shadow-xs"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-base-300 bg-base-100 text-primary shadow-2xs">
-                    {renderIcon(asset.iconName)}
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="font-semibold text-xs text-base-content truncate group-hover:text-primary transition-colors">
-                      {asset.name}
-                    </div>
-                    <div className="text-[10px] text-base-content/60 truncate">
-                      {asset.description}
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    if (onInsertAsset) {
-                      onInsertAsset(asset.elements, asset.name);
-                    }
-                  }}
-                  className="btn btn-ghost btn-xs btn-circle opacity-80 group-hover:opacity-100 hover:bg-primary hover:text-primary-content transition-all shrink-0"
-                  title="Inserir no centro do canvas"
-                  aria-label={`Inserir ${asset.name}`}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))
-          )
-        )}
+          );
+        })}
       </div>
-
-      {/* Footer Helper */}
-      <div className="p-2.5 bg-base-200/40 border-t border-base-200 flex items-center justify-between text-[10px] text-base-content/60">
-        <div className="flex items-center gap-1">
-          <GripHorizontal className="w-3 h-3 text-base-content/40" />
-          <span>Arrastar para o canvas ativo</span>
-        </div>
-        {onOpenGraphicAssetsModal && (
-          <button
-            onClick={onOpenGraphicAssetsModal}
-            className="text-primary hover:underline font-semibold text-[10px]"
-          >
-            Galeria Completa →
-          </button>
-        )}
-      </div>
-    </aside>
+    </div>
   );
 }

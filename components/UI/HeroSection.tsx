@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, ChevronRight } from "lucide-react";
+import { ArrowDown, ArrowUpRight, ChevronRight } from "lucide-react";
 
 const heroImages = [
   "/images/index/hero_banner_fll.jpg",
@@ -15,7 +15,16 @@ type HeroAction = {
   href: string;
 };
 
+type HeroBadge = {
+  label: string;
+  href?: string;
+  soon?: boolean;
+};
+
 type HeroSectionProps = {
+  kicker?: string;
+  badges?: HeroBadge[];
+  scrollTarget?: string;
   images?: string[];
   title?: string;
   highlight?: string;
@@ -26,6 +35,9 @@ type HeroSectionProps = {
 };
 
 export default function HeroSection({
+  kicker,
+  badges,
+  scrollTarget,
   images = heroImages,
   title = "O palco onde a",
   highlight = "robótica acontece.",
@@ -54,7 +66,7 @@ export default function HeroSection({
     >
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-neutral via-neutral/70 to-neutral/20"
+        className="absolute inset-0 bg-gradient-to-t from-base-100 via-base-100/70 to-base-200/20"
       />
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-center px-5 py-24 sm:px-8 md:justify-start md:px-12 lg:py-24">
@@ -105,8 +117,47 @@ export default function HeroSection({
               />
             </Link>
           </div>
+
+          {badges && badges.length > 0 && (
+            <ul className="mt-8 flex flex-wrap justify-center gap-2 md:justify-start">
+              {badges.map(({ label, href, soon }) => {
+                const cls = `inline-flex items-center gap-1.5 rounded-tl-md rounded-br-md border px-2.5 py-1 font-mono text-xs backdrop-blur transition-colors ${
+                  soon
+                    ? "border-dashed border-base-content/25 bg-base-100/30 text-base-content/55"
+                    : "border-base-content/20 bg-base-100/60 text-base-content/80 hover:border-primary hover:text-primary"
+                }`;
+                return (
+                  <li key={label}>
+                    {href && !soon ? (
+                      <Link href={href} className={cls}>
+                        {label}
+                      </Link>
+                    ) : (
+                      <span className={cls}>
+                        {label}
+                        {soon && <span className="text-[10px]">· em breve</span>}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       </div>
+
+      {scrollTarget && (
+        <a
+          href={scrollTarget}
+          aria-label="Rolar para o conteúdo"
+          className="absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 font-mono text-[10px] tracking-[0.25em] text-base-content/60 transition-colors hover:text-primary md:flex"
+        >
+          ROLE
+          <span className="flex size-9 items-center justify-center rounded-full border border-base-content/25 motion-safe:animate-bounce">
+            <ArrowDown size={16} />
+          </span>
+        </a>
+      )}
     </header>
   );
 }

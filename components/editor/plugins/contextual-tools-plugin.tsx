@@ -21,8 +21,24 @@ import {
   $isTableSelection,
 } from "@lexical/table";
 import { $findMatchingParent, mergeRegister } from "@lexical/utils";
-import { $isHorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
+import { $getSelectionStyleValueForProperty, $patchStyleText } from "@lexical/selection";
 import {
+  $isDividerNode,
+  DIVIDER_STYLES,
+  DIVIDER_WEIGHTS,
+  DividerView,
+  type DividerStyle,
+  type DividerWeight,
+} from "../nodes/divider-node";
+import {
+  COMBOS,
+  DEFAULT_DIVIDER_COLOR,
+  SWATCHES,
+  bgVar,
+  textVar,
+} from "../editor-colors";
+import {
+  $getNodeByKey,
   $getSelection,
   $isNodeSelection,
   $isRangeSelection,
@@ -42,6 +58,7 @@ import {
   Italic,
   Link2,
   Link2Off,
+  Palette,
   Strikethrough,
   Trash2,
   Underline,
@@ -60,7 +77,7 @@ import {
   type BlockType,
 } from "../block-utils";
 
-type Kind = "text" | "code" | "table" | "node";
+type Kind = "text" | "code" | "table" | "divider";
 
 type ToolbarState = {
   kind: Kind;
@@ -74,6 +91,28 @@ type ToolbarState = {
   code: boolean;
   link: boolean;
   linkUrl: string;
+  textColor: string;
+  bgColor: string;
+  dividerStyle: DividerStyle;
+  dividerColor: string;
+  dividerWeight: DividerWeight;
+};
+
+const EMPTY_STATE = {
+  blockType: null,
+  blockKey: null,
+  bold: false,
+  italic: false,
+  underline: false,
+  strikethrough: false,
+  code: false,
+  link: false,
+  linkUrl: "",
+  textColor: "",
+  bgColor: "",
+  dividerStyle: "solid" as DividerStyle,
+  dividerColor: DEFAULT_DIVIDER_COLOR,
+  dividerWeight: "medium" as DividerWeight,
 };
 
 const TURN_INTO: BlockType[] = [
@@ -123,12 +162,124 @@ function ToolButton({
 
 const Divider = () => <span className="mx-1 h-5 w-px bg-base-300" />;
 
+function $getDivider(key: string | null) {
+  const n = key ? $getNodeByKey(key) : null;
+  return $isDividerNode(n) ? n : null;
+}
+
+const chip =
+  "flex h-6 w-6 items-center justify-center rounded-md border border-base-300 text-xs font-semibold transition-transform hover:scale-110";
+
+/** Painel de cores: combinações com contraste, cor do texto e cor de fundo. */
+function ColorPanel({
+  textColor,
+  bgColor,
+  onApply,
+}: {
+  textColor: string;
+  bgColor: string;
+  onApply: (patch: Record<string, string | null>) => void;
+}) {
+  const ring = (on: boolean) => (on ? "ring-2 ring-primary ring-offset-1 ring-offset-base-100" : "");
+  return (
+    <div
+      role="dialog"
+      aria-label="Cores"
+      className="absolute left-0 top-full z-10 mt-2 w-64 rounded-xl border border-base-300 bg-base-100 p-3 shadow-xl"
+    >
+      <div className="mb-1.5 text-xs font-medium uppercase tracking-wide text-base-content/40">
+        Combinações
+      </div>
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        {COMBOS.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            title={c.label}
+            aria-label={c.label}
+            className={`${chip} ${ring(bgColor === c.bg && textColor === c.color)}`}
+            style={{ background: c.bg, color: c.color }}
+            onClick={() => onApply({ color: c.color, "background-color": c.bg })}
+          >
+            Aa
+          </button>
+        ))}
+      </div>
+
+      <div className="mb-1.5 text-xs font-medium uppercase tracking-wide text-base-content/40">
+        Cor do texto
+      </div>
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          title="Padrão"
+          aria-label="Cor do texto padrão"
+          className={`${chip} ${ring(!textColor)}`}
+          onClick={() => onApply({ color: null })}
+        >
+          A
+        </button>
+        {SWATCHES.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            title={s.label}
+            aria-label={`Texto ${s.label}`}
+            className={`${chip} ${ring(textColor === textVar(s.id))}`}
+            style={{ color: textVar(s.id) }}
+            onClick={() => onApply({ color: textVar(s.id) })}
+          >
+            A
+          </button>
+        ))}
+      </div>
+
+      <div className="mb-1.5 text-xs font-medium uppercase tracking-wide text-base-content/40">
+        Cor de fundo
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          title="Sem fundo"
+          aria-label="Sem cor de fundo"
+          className={`${chip} ${ring(!bgColor)}`}
+          onClick={() => onApply({ "background-color": null })}
+        >
+          <X size={12} />
+        </button>
+        {SWATCHES.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            title={s.label}
+            aria-label={`Fundo ${s.label}`}
+            className={`${chip} ${ring(bgColor === bgVar(s.id))}`}
+            style={{ background: bgVar(s.id) }}
+            onClick={() => onApply({ "background-color": bgVar(s.id) })}
+          />
+        ))}
+      </div>
+
+      {(textColor || bgColor) && (
+        <button
+          type="button"
+          className="btn btn-ghost btn-xs mt-3 w-full"
+          onClick={() => onApply({ color: null, "background-color": null })}
+        >
+          Limpar cores
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function ContextualToolsPlugin() {
   const [editor] = useLexicalComposerContext();
   const [state, setState] = useState<ToolbarState | null>(null);
   const [pointerDown, setPointerDown] = useState(false);
   const [linkInput, setLinkInput] = useState<string | null>(null);
   const [showTurnInto, setShowTurnInto] = useState(false);
+  const [showColors, setShowColors] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const linkLocked = useRef(false);
@@ -144,24 +295,21 @@ export function ContextualToolsPlugin() {
 
       if (!root || !editor.isEditable()) return setState(null);
 
-      // Hr / outros nós selecionados como objeto
+      // Divisor selecionado (NodeSelection)
       if ($isNodeSelection(selection)) {
         const nodes = selection.getNodes();
-        if (nodes.length === 1 && $isHorizontalRuleNode(nodes[0])) {
-          const el = editor.getElementByKey(nodes[0].getKey());
+        if (nodes.length === 1 && $isDividerNode(nodes[0])) {
+          const d = nodes[0];
+          const el = editor.getElementByKey(d.getKey());
           if (el) {
             return setState({
-              kind: "node",
+              ...EMPTY_STATE,
+              kind: "divider",
               rect: rectOf(el.getBoundingClientRect()),
-              blockType: null,
-              blockKey: nodes[0].getKey(),
-              bold: false,
-              italic: false,
-              underline: false,
-              strikethrough: false,
-              code: false,
-              link: false,
-              linkUrl: "",
+              blockKey: d.getKey(),
+              dividerStyle: d.getDividerStyle(),
+              dividerColor: d.getColor(),
+              dividerWeight: d.getWeight(),
             });
           }
         }
@@ -181,17 +329,9 @@ export function ContextualToolsPlugin() {
               })()
             : cellEl.getBoundingClientRect();
           return setState({
+            ...EMPTY_STATE,
             kind: "table",
             rect: rectOf(r),
-            blockType: null,
-            blockKey: null,
-            bold: false,
-            italic: false,
-            underline: false,
-            strikethrough: false,
-            code: false,
-            link: false,
-            linkUrl: "",
           });
         }
         return setState(null);
@@ -233,6 +373,11 @@ export function ContextualToolsPlugin() {
         code: selection.hasFormat("code"),
         link: !!linkNode,
         linkUrl: linkNode ? linkNode.getURL() : "",
+        textColor: $getSelectionStyleValueForProperty(selection, "color", ""),
+        bgColor: $getSelectionStyleValueForProperty(selection, "background-color", ""),
+        dividerStyle: "solid",
+        dividerColor: DEFAULT_DIVIDER_COLOR,
+        dividerWeight: "medium",
       });
     });
   }, [editor]);
@@ -302,6 +447,7 @@ export function ContextualToolsPlugin() {
     if (!state) {
       setLinkInput(null);
       setShowTurnInto(false);
+      setShowColors(false);
     }
   }, [state]);
 
@@ -317,7 +463,7 @@ export function ContextualToolsPlugin() {
     let left = state.rect.left + state.rect.width / 2 - w / 2;
     left = Math.max(gap, Math.min(left, window.innerWidth - w - gap));
     setPos({ top, left });
-  }, [state, linkInput, showTurnInto]);
+  }, [state, linkInput, showTurnInto, showColors]);
 
   const format = (type: TextFormatType) =>
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, type);
@@ -335,6 +481,18 @@ export function ContextualToolsPlugin() {
     });
     setShowTurnInto(false);
   };
+
+  const applyStyle = (patch: Record<string, string | null>) =>
+    editor.update(() => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) $patchStyleText(selection, patch);
+    });
+
+  const patchDivider = (fn: (d: ReturnType<typeof $getDivider>) => void) =>
+    editor.update(() => {
+      const d = $getDivider(state?.blockKey ?? null);
+      if (d) fn(d);
+    });
 
   const applyLink = () => {
     const url = (linkInput ?? "").trim();
@@ -407,18 +565,79 @@ export function ContextualToolsPlugin() {
             <X size={15} />
           </ToolButton>
         </div>
-      ) : state.kind === "node" ? (
-        <ToolButton
-          label="Remover divisor"
-          danger
-          onClick={() =>
-            editor.update(() => {
-              if (state.blockKey) $deleteBlock(state.blockKey);
-            })
-          }
-        >
-          <Trash2 size={15} />
-        </ToolButton>
+      ) : state.kind === "divider" ? (
+        <div className="flex flex-col gap-2 p-1.5">
+          <div className="flex items-center gap-1">
+            {DIVIDER_STYLES.map((d) => (
+              <button
+                key={d.value}
+                type="button"
+                title={d.label}
+                aria-label={`Divisor ${d.label}`}
+                aria-pressed={state.dividerStyle === d.value}
+                onClick={() => patchDivider((n) => n?.setDividerStyle(d.value))}
+                className={`flex h-9 w-16 items-center rounded-lg border px-2 transition-colors ${
+                  state.dividerStyle === d.value
+                    ? "border-primary bg-primary/10"
+                    : "border-base-300 hover:bg-base-200"
+                }`}
+              >
+                <div className="w-full">
+                  <DividerView
+                    uid={`preview-${d.value}`}
+                    dividerStyle={d.value}
+                    color="currentColor"
+                    weight="thin"
+                  />
+                </div>
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1">
+            {DIVIDER_WEIGHTS.map((w) => (
+              <button
+                key={w.value}
+                type="button"
+                aria-pressed={state.dividerWeight === w.value}
+                onClick={() => patchDivider((n) => n?.setWeight(w.value))}
+                className={`btn btn-xs h-7 min-h-7 flex-1 font-normal ${
+                  state.dividerWeight === w.value ? "btn-primary" : "btn-ghost"
+                }`}
+              >
+                {w.label}
+              </button>
+            ))}
+            <ToolButton
+              label="Remover divisor"
+              danger
+              onClick={() => editor.update(() => state.blockKey && $deleteBlock(state.blockKey))}
+            >
+              <Trash2 size={15} />
+            </ToolButton>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              type="button"
+              title="Padrão"
+              aria-label="Cor padrão do divisor"
+              className={`${chip} ${state.dividerColor === DEFAULT_DIVIDER_COLOR ? "ring-2 ring-primary ring-offset-1 ring-offset-base-100" : ""}`}
+              onClick={() => patchDivider((n) => n?.setColor(DEFAULT_DIVIDER_COLOR))}
+            >
+              <span className="h-0.5 w-3 rounded bg-base-content/40" />
+            </button>
+            {SWATCHES.map((sw) => (
+              <button
+                key={sw.id}
+                type="button"
+                title={sw.label}
+                aria-label={`Divisor ${sw.label}`}
+                className={`${chip} ${state.dividerColor === textVar(sw.id) ? "ring-2 ring-primary ring-offset-1 ring-offset-base-100" : ""}`}
+                style={{ background: textVar(sw.id) }}
+                onClick={() => patchDivider((n) => n?.setColor(textVar(sw.id)))}
+              />
+            ))}
+          </div>
+        </div>
       ) : state.kind === "table" ? (
         <>
           <ToolButton
@@ -493,7 +712,10 @@ export function ContextualToolsPlugin() {
               className="btn btn-ghost btn-xs h-8 min-h-8 gap-1 px-2 font-normal"
               aria-haspopup="listbox"
               aria-expanded={showTurnInto}
-              onClick={() => setShowTurnInto((v) => !v)}
+              onClick={() => {
+                setShowTurnInto((v) => !v);
+                setShowColors(false);
+              }}
             >
               {state.kind === "code" ? "Código" : current}
               <ChevronDown size={13} />
@@ -572,6 +794,25 @@ export function ContextualToolsPlugin() {
               >
                 <Code size={15} />
               </ToolButton>
+              <div className="relative">
+                <ToolButton
+                  label="Cores do texto e do fundo"
+                  active={showColors || !!state.textColor || !!state.bgColor}
+                  onClick={() => {
+                    setShowColors((v) => !v);
+                    setShowTurnInto(false);
+                  }}
+                >
+                  <Palette size={15} />
+                </ToolButton>
+                {showColors && (
+                  <ColorPanel
+                    textColor={state.textColor}
+                    bgColor={state.bgColor}
+                    onApply={applyStyle}
+                  />
+                )}
+              </div>
               <Divider />
               {state.link ? (
                 <ToolButton

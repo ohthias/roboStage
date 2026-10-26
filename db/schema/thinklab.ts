@@ -1,6 +1,7 @@
 import { jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users } from "./users";
 import { teams } from "./teams";
+import { milestones } from "./milestones";
 import { folders } from "./notebook";
 
 export const thinklab = pgTable("thinklab", {
@@ -12,6 +13,9 @@ export const thinklab = pgTable("thinklab", {
     onDelete: "set null",
   }),
   folderId: uuid("folder_id").references(() => folders.id, {
+    onDelete: "set null",
+  }),
+  milestoneId: uuid("milestone_id").references(() => milestones.id, {
     onDelete: "set null",
   }),
   name: text("name").notNull(),

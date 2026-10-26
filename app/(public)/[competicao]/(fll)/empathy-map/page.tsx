@@ -220,7 +220,7 @@ export default function EmpathyMapPage() {
   };
 
   return (
-    <main className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col space-y-8 px-4 pt-8 pb-16 font-sans text-base-content">
+    <main className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col space-y-4 sm:space-y-8 px-4 pt-6 sm:pt-8 pb-16 font-sans text-base-content">
       <Header
         type="Diagramas"
         name="Mapa de Empatia"
@@ -238,7 +238,7 @@ export default function EmpathyMapPage() {
       />
 
       {/* Main Content */}
-      <section className="min-w-0 flex-1 space-y-6">
+      <section className="min-w-0 flex-1 space-y-4 sm:space-y-6">
         {currentView === "board" ? (
           <>
             {/* Persona and Search */}

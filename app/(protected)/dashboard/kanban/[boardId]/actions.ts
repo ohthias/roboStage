@@ -1,12 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq, ilike } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
   boards,
   boardColumns,
-  boardMilestones,
+  milestones,
   boardCards,
   boardCardAssignees,
   boardCardDocuments,
@@ -23,6 +23,12 @@ import { scopeWhere, assertSameScope } from "@/utils/stagebook/permissions";
 import { nextPosition, positionBetween } from "@/utils/stagebook/position";
 import { cleanText, optionalText, optionalDate, requireUuid } from "@/utils/stagebook/validation";
 import { notifyUser } from "@/utils/stagebook/actions/notifications";
+import {
+  milestoneColumns,
+  milestoneScope,
+  requireMilestoneInScope,
+  tagScope,
+} from "@/utils/stagebook/labels-core";
 
 type ColumnRules = {
   maxCards?: number | null;
@@ -57,9 +63,9 @@ async function requireColumnInBoard(boardId: string, columnId: string) {
 }
 
 export async function getBoardDetail(boardId: string) {
-  const { board } = await requireBoardInScope(boardId);
+  const { scope, board } = await requireBoardInScope(boardId);
 
-  const [columns, cards, assignees, cardTags, allTags, milestones] = await Promise.all([
+  const [columns, cards, assignees, cardTags, allTags, milestoneRows] = await Promise.all([
     db.select().from(boardColumns).where(eq(boardColumns.boardId, boardId)).orderBy(boardColumns.position),
     db.select().from(boardCards).where(eq(boardCards.boardId, boardId)).orderBy(boardCards.position),
     db
@@ -69,19 +75,26 @@ export async function getBoardDetail(boardId: string) {
       .innerJoin(boardCards, eq(boardCards.id, boardCardAssignees.cardId))
       .where(eq(boardCards.boardId, boardId)),
     db
-      .select({ cardId: boardCardTags.cardId, tagId: tags.id, name: tags.name })
+      .select({ cardId: boardCardTags.cardId, tagId: tags.id, name: tags.name, color: tags.color })
       .from(boardCardTags)
       .innerJoin(tags, eq(tags.id, boardCardTags.tagId))
       .innerJoin(boardCards, eq(boardCards.id, boardCardTags.cardId))
       .where(eq(boardCards.boardId, boardId)),
-    db.select({ id: tags.id, name: tags.name }).from(tags).orderBy(tags.name),
-    db.select({ id: boardMilestones.id, name: boardMilestones.name, dueAt: boardMilestones.dueAt })
-      .from(boardMilestones)
-      .where(eq(boardMilestones.boardId, boardId))
-      .orderBy(boardMilestones.dueAt, boardMilestones.name),
+    // Tags e milestones são universais: o catálogo é o do espaço (pessoal/equipe),
+    // o mesmo usado por páginas, calendário, ThinkLab e LabTest.
+    db.select({ id: tags.id, name: tags.name, color: tags.color }).from(tags).where(tagScope(scope)).orderBy(tags.name),
+    db.select(milestoneColumns).from(milestones).where(milestoneScope(scope)).orderBy(milestones.dueAt, milestones.name),
   ]);
 
-  return { board, columns, cards, assignees, cardTags, allTags, milestones };
+  return {
+    board,
+    columns,
+    cards,
+    assignees,
+    cardTags,
+    allTags,
+    milestones: milestoneRows.map((m) => ({ ...m, dueAt: m.dueAt ? m.dueAt.toISOString() : null })),
+  };
 }
 
 export async function listTeamMembersForAssignment(teamId: string) {
@@ -134,7 +147,7 @@ export async function updateColumnColor(boardId: string, columnId: string, color
 }
 
 export async function updateColumnRules(boardId: string, columnId: string, rules: ColumnRules) {
-  await requireBoardInScope(boardId);
+  const { scope } = await requireBoardInScope(boardId);
   const cleanRules: ColumnRules = {
     maxCards: rules.maxCards && rules.maxCards > 0 ? Math.floor(rules.maxCards) : null,
     allowedPriorities: (rules.allowedPriorities ?? []).filter((priority) =>
@@ -145,24 +158,12 @@ export async function updateColumnRules(boardId: string, columnId: string, rules
     milestoneId: rules.milestoneId || null,
   };
   if (cleanRules.milestoneId) {
-    const [milestone] = await db.select({ id: boardMilestones.id }).from(boardMilestones)
-      .where(and(eq(boardMilestones.id, cleanRules.milestoneId), eq(boardMilestones.boardId, boardId))).limit(1);
-    if (!milestone) throw new Error("Milestone não pertence a este board.");
+    requireUuid(cleanRules.milestoneId, "milestone");
+    await requireMilestoneInScope(scope, cleanRules.milestoneId);
   }
   await db.update(boardColumns).set({ rules: cleanRules })
     .where(and(eq(boardColumns.id, columnId), eq(boardColumns.boardId, boardId)));
   revalidatePath(boardPath(boardId), "layout");
-}
-
-export async function createMilestone(boardId: string, name: string, dueAt: string | null) {
-  await requireBoardInScope(boardId);
-  const [milestone] = await db.insert(boardMilestones).values({
-    boardId,
-    name: cleanText(name, { fallback: "Nova milestone", maxLength: 100 }),
-    dueAt: optionalDate(dueAt),
-  }).returning({ id: boardMilestones.id, name: boardMilestones.name, dueAt: boardMilestones.dueAt });
-  revalidatePath(boardPath(boardId), "layout");
-  return milestone;
 }
 
 function validateColumnRules(
@@ -251,6 +252,10 @@ export async function updateCard(
   if (!current) throw new Error("Card não encontrado.");
   const [column] = await db.select().from(boardColumns).where(eq(boardColumns.id, current.columnId)).limit(1);
   const milestoneId = input.milestoneId === undefined ? current.milestoneId : input.milestoneId;
+  if (milestoneId && milestoneId !== current.milestoneId) {
+    requireUuid(milestoneId, "milestone");
+    await requireMilestoneInScope(scope, milestoneId);
+  }
   const dueAt = optionalDate(input.dueAt);
   const priority = input.priority || current.priority;
   const updateRules = column?.rules ? { ...column.rules, maxCards: null } : undefined;
@@ -350,84 +355,9 @@ export async function toggleCardAssignee(boardId: string, cardId: string, userId
   revalidatePath(boardPath(boardId), "layout");
 }
 
-// ---------------------------------------------------------------------------
-// Tags
-// ---------------------------------------------------------------------------
-
-export async function searchTags(query: string) {
-  const clean = query.trim();
-  if (!clean) return db.select().from(tags).orderBy(tags.name).limit(20);
-  return db.select().from(tags).where(ilike(tags.name, `%${clean}%`)).orderBy(tags.name).limit(20);
-}
-
-export async function listTags() {
-  await resolveStagebookScope();
-  return db.select({ id: tags.id, name: tags.name }).from(tags).orderBy(tags.name);
-}
-
-export async function createTag(name: string) {
-  await resolveStagebookScope();
-  const clean = cleanText(name, { maxLength: 40 });
-  if (!clean) throw new Error("Informe um nome para a tag.");
-
-  const [existing] = await db.select({ id: tags.id }).from(tags).where(ilike(tags.name, clean)).limit(1);
-  if (existing) throw new Error("Já existe uma tag com esse nome.");
-
-  const [created] = await db
-    .insert(tags)
-    .values({ name: clean })
-    .returning({ id: tags.id, name: tags.name });
-  revalidatePath("/dashboard/kanban", "layout");
-  return created;
-}
-
-export async function renameTag(tagId: string, name: string) {
-  await resolveStagebookScope();
-  const clean = cleanText(name, { maxLength: 40 });
-  if (!clean) throw new Error("Informe um nome para a tag.");
-
-  const [existing] = await db
-    .select({ id: tags.id })
-    .from(tags)
-    .where(eq(tags.id, tagId))
-    .limit(1);
-  if (!existing) throw new Error("Tag não encontrada.");
-
-  const conflicts = await db.select({ id: tags.id }).from(tags).where(ilike(tags.name, clean)).limit(2);
-  if (conflicts.some((tag) => tag.id !== tagId)) throw new Error("Já existe uma tag com esse nome.");
-
-  const [updated] = await db
-    .update(tags)
-    .set({ name: clean })
-    .where(eq(tags.id, tagId))
-    .returning({ id: tags.id, name: tags.name });
-  revalidatePath("/dashboard/kanban", "layout");
-  return updated;
-}
-
-export async function toggleCardTag(boardId: string, cardId: string, tagName: string) {
-  await requireBoardInScope(boardId);
-  const clean = cleanText(tagName, { maxLength: 40 });
-  if (!clean) return;
-
-  let [tag] = await db.select().from(tags).where(ilike(tags.name, clean)).limit(1);
-  if (!tag) {
-    [tag] = await db.insert(tags).values({ name: clean }).returning();
-  }
-
-  const existing = await db
-    .select()
-    .from(boardCardTags)
-    .where(and(eq(boardCardTags.cardId, cardId), eq(boardCardTags.tagId, tag.id)))
-    .limit(1);
-
-  if (existing.length > 0) {
-    await db.delete(boardCardTags).where(and(eq(boardCardTags.cardId, cardId), eq(boardCardTags.tagId, tag.id)));
-  } else {
-    await db.insert(boardCardTags).values({ cardId, tagId: tag.id });
-  }
-  revalidatePath(boardPath(boardId), "layout");
-}
+// Tags e milestones agora são universais — veja
+// utils/stagebook/actions/tags.ts e utils/stagebook/actions/milestones.ts
+// (toggleResourceTag("kanban-card", cardId, tagId) etc.).
 
 // ---------------------------------------------------------------------------
 // Linking to Pages / Calendar

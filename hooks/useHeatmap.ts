@@ -100,8 +100,21 @@ function reducer(state: State, action: Action): State {
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
-export function useHeatmap() {
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+export type HeatmapInitial = { points?: HeatPoint[]; config?: Partial<HeatmapConfig> };
+
+function initState(initial?: HeatmapInitial): State {
+  if (!initial) return INITIAL_STATE;
+  const points = Array.isArray(initial.points) ? initial.points : [];
+  return {
+    ...INITIAL_STATE,
+    points,
+    config: { ...INITIAL_STATE.config, ...initial.config },
+    stats: points.length ? computeStats(points) : INITIAL_STATS,
+  };
+}
+
+export function useHeatmap(initial?: HeatmapInitial) {
+  const [state, dispatch] = useReducer(reducer, initial, initState);
   const historyRef = useRef<HeatPoint[][]>([]);
 
   const addPoint = useCallback((x: number, y: number) => {

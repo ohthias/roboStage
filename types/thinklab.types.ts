@@ -15,7 +15,11 @@ export type ToolType =
   | 'path'
   | 'freedraw'
   | 'text'
-  | 'eraser';
+  | 'eraser'
+  // Elementos de mídia (inseridos pela biblioteca, sem ferramenta de desenho)
+  | 'emoji'
+  | 'icon'
+  | 'image';
 
 export type FillStyle = 'none' | 'solid' | 'hachure' | 'cross-hatch' | 'dots' | 'zigzag';
 export type StrokeStyle = 'solid' | 'dashed' | 'dotted';
@@ -56,6 +60,12 @@ export interface CanvasElement {
   fontSize?: FontSize;
   fontFamily?: FontFamily;
   textAlign?: TextAlign;
+  // Mídia: emoji (caractere), ícone (chave do catálogo, cor = strokeColor) e imagem (URL ou data URL)
+  emoji?: string;
+  iconName?: string;
+  imageSrc?: string;
+  // Origem de um cartão de missão (liga/temporada/código), para referência futura
+  missionRef?: { league: string; season: string; code: string };
   // Flowchart connectivity
   startBindingId?: string;
   endBindingId?: string;

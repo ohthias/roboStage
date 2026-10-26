@@ -15,6 +15,7 @@ import { users } from "./users";
 import { teams } from "./teams";
 import { documents } from "./notebook";
 import { calendarEvents } from "./calendar";
+import { milestones } from "./milestones";
 
 const ownershipCheck = (userIdCol: any, teamIdCol: any) =>
   check(
@@ -89,25 +90,6 @@ export const boardColumns = pgTable(
   })
 );
 
-export const boardMilestones = pgTable(
-  "board_milestones",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    boardId: uuid("board_id").notNull(),
-    name: text("name").notNull(),
-    dueAt: timestamp("due_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => ({
-    boardIdIdx: index("board_milestones_board_id_idx").on(table.boardId),
-    boardFk: foreignKey({
-      columns: [table.boardId],
-      foreignColumns: [boards.id],
-      name: "board_milestones_board_id_fkey",
-    }).onDelete("cascade"),
-  })
-);
-
 /** Cards de um Board (seção 22). */
 export const boardCards = pgTable(
   "board_cards",
@@ -148,7 +130,7 @@ export const boardCards = pgTable(
     }).onDelete("cascade"),
     milestoneFk: foreignKey({
       columns: [table.milestoneId],
-      foreignColumns: [boardMilestones.id],
+      foreignColumns: [milestones.id],
       name: "board_cards_milestone_id_fkey",
     }).onDelete("set null"),
   })
@@ -257,7 +239,5 @@ export type BoardRow = typeof boards.$inferSelect;
 export type NewBoardRow = typeof boards.$inferInsert;
 export type BoardColumnRow = typeof boardColumns.$inferSelect;
 export type NewBoardColumnRow = typeof boardColumns.$inferInsert;
-export type BoardMilestoneRow = typeof boardMilestones.$inferSelect;
-export type NewBoardMilestoneRow = typeof boardMilestones.$inferInsert;
 export type BoardCardRow = typeof boardCards.$inferSelect;
 export type NewBoardCardRow = typeof boardCards.$inferInsert;

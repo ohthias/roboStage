@@ -25,6 +25,7 @@ import {
 } from "@lexical/list";
 import { $createCodeNode } from "@lexical/code";
 import { $findMatchingParent } from "@lexical/utils";
+import { $isLayoutItemNode } from "./nodes/layout-nodes";
 
 /** Tipos de bloco que o editor sabe criar / converter. */
 export type BlockType =
@@ -71,11 +72,16 @@ function createTextBlock(type: BlockType): ElementNode {
   }
 }
 
-/** Retorna o bloco de primeiro nível (filho direto do root) que contém o nó. */
+/**
+ * Retorna o bloco que contém o nó: filho direto do root ou, dentro de uma
+ * seção de colunas, filho direto da coluna.
+ */
+const isBlockParent = (p: LexicalNode | null) => $isRootNode(p) || $isLayoutItemNode(p);
+
 export function $getTopLevelBlock(node: LexicalNode): LexicalNode | null {
-  const top = $findMatchingParent(node, (p) => $isRootNode(p.getParent()));
+  const top = $findMatchingParent(node, (p) => isBlockParent(p.getParent()));
   if (top) return top;
-  return $isRootNode(node.getParent()) ? node : null;
+  return isBlockParent(node.getParent()) ? node : null;
 }
 
 /** Descobre o tipo atual de um bloco de primeiro nível. */
@@ -86,6 +92,8 @@ export function $getBlockType(node: LexicalNode): BlockType | null {
     return t === "bullet" ? "bullet" : t === "number" ? "number" : "check";
   }
   switch (node.getType()) {
+    case "layout-container":
+      return null;
     case "paragraph":
       return "paragraph";
     case "quote":

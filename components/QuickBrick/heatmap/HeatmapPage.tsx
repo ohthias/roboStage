@@ -1,6 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
+import type { HeatmapConfig, HeatPoint } from "@/types/heatmap";
+import type { HeatmapInitial } from "@/hooks/useHeatmap";
+import { useChangeNotifier } from "@/hooks/useChangeNotifier";
 import { useHeatmap } from "@/hooks/useHeatmap";
 import HeatmapCanvas, { HeatmapCanvasRef } from "./HeatmapCanvas";
 import HeatmapControls from "./HeatmapControls";
@@ -9,7 +12,16 @@ import { useToast } from "@/app/context/ToastContext";
 import HeaderTool from "../HeaderTool";
 import { Flame } from "lucide-react";
 
-export default function HeatmapPage() {
+type HeatmapPageProps = {
+  /** Pontos/configuração salvos (caderno do QuickBrick Studio). */
+  initialData?: HeatmapInitial;
+  /** Avisado a cada mudança — usado para salvar no banco. */
+  onDataChange?: (data: { points: HeatPoint[]; config: HeatmapConfig }) => void;
+  /** Esconde o cabeçalho da ferramenta (uso dentro do caderno). */
+  embedded?: boolean;
+};
+
+export default function HeatmapPage({ initialData, onDataChange, embedded = false }: HeatmapPageProps = {}) {
   const {
     points,
     config,
@@ -22,7 +34,10 @@ export default function HeatmapPage() {
     setMode,
     setConfig,
     imagePath,
-  } = useHeatmap();
+  } = useHeatmap(initialData);
+
+  const snapshot = useMemo(() => ({ points, config }), [points, config]);
+  useChangeNotifier(snapshot, onDataChange);
 
   const { addToast } = useToast();
   const canvasRef = useRef<HeatmapCanvasRef>(null);
@@ -56,14 +71,14 @@ export default function HeatmapPage() {
   }
 
   return (
-    <div className="px-4 md:px-8">
-      <HeaderTool
+    <div className={embedded ? "" : "px-4 md:px-8"}>
+      {!embedded && <HeaderTool
         NameTool="Mapa de Calor"
         DescriptionTool="Visualize e analise a distribuição de pontos na arena do FIRST LEGO League Challenge. Adicione pontos de interesse, ajuste a intensidade e exporte seu heatmap para compartilhar insights valiosos com sua equipe."
         IconTool={Flame}
-      />
+      />}
 
-      <div className="flex justify-center mt-8 mb-16 h-[560px]">
+      <div className={`flex justify-center h-[560px] ${embedded ? "" : "mt-8 mb-16"}`}>
         <aside className="w-64 flex flex-col bg-base-200 border-r border-base-300 p-4 rounded-md gap-4 overflow-y-auto">
           <HeatmapControls
             config={config}

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
+import { useChangeNotifier } from "@/hooks/useChangeNotifier";
 import html2canvas from "html2canvas-pro";
 import { useToast } from "@/app/context/ToastContext";
 import { Image, RotateCcw, Plus, Pencil, Trash2, Check, X } from "lucide-react";
@@ -11,7 +12,17 @@ type SwotItem = {
 
 type QuadrantId = "strengths" | "weaknesses" | "opportunities" | "threats";
 
-export const SWOTCanvasDefault = () => {
+export type SwotDefaultState = Record<QuadrantId, SwotItem[]>;
+
+export const SWOTCanvasDefault = ({
+  initialSwot,
+  onSwotChange,
+}: {
+  /** Estado salvo (caderno do QuickBrick Studio). */
+  initialSwot?: Partial<SwotDefaultState>;
+  /** Avisado a cada mudança — usado para salvar no banco. */
+  onSwotChange?: (swot: SwotDefaultState) => void;
+} = {}) => {
   const quadrants: {
     id: QuadrantId;
     label: string;
@@ -41,12 +52,13 @@ export const SWOTCanvasDefault = () => {
 
   const { addToast } = useToast();
 
-  const [swot, setSwot] = useState<Record<QuadrantId, SwotItem[]>>({
-    strengths: [],
-    weaknesses: [],
-    opportunities: [],
-    threats: [],
-  });
+  const [swot, setSwot] = useState<Record<QuadrantId, SwotItem[]>>(() => ({
+    strengths: initialSwot?.strengths ?? [],
+    weaknesses: initialSwot?.weaknesses ?? [],
+    opportunities: initialSwot?.opportunities ?? [],
+    threats: initialSwot?.threats ?? [],
+  }));
+  useChangeNotifier(swot, onSwotChange);
 
   // texto do input principal
   const [draft, setDraft] = useState("");

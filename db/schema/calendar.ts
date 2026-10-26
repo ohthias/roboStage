@@ -13,6 +13,7 @@ import { sql } from "drizzle-orm";
 import { users } from "./users";
 import { teams } from "./teams";
 import { documents } from "./notebook";
+import { milestones } from "./milestones";
 
 const ownershipCheck = (userIdCol: any, teamIdCol: any) =>
   check(
@@ -43,6 +44,8 @@ export const calendarEvents = pgTable(
     status: text("status").notNull().default("confirmado"),
     color: text("color"),
     location: text("location"),
+    // Milestone universal (opcional).
+    milestoneId: uuid("milestone_id"),
     createdBy: text("created_by").notNull(),
     updatedBy: text("updated_by"),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -64,6 +67,12 @@ export const calendarEvents = pgTable(
       table.teamId,
       table.startAt
     ),
+    milestoneIdIdx: index("calendar_events_milestone_id_idx").on(table.milestoneId),
+    milestoneFk: foreignKey({
+      columns: [table.milestoneId],
+      foreignColumns: [milestones.id],
+      name: "calendar_events_milestone_id_fkey",
+    }).onDelete("set null"),
     ownershipCheckConstraint: ownershipCheck(table.userId, table.teamId),
     userFk: foreignKey({
       columns: [table.userId],

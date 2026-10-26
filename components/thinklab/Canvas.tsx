@@ -2,6 +2,10 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import rough from 'roughjs';
+import { subscribeMediaLoaded } from '@/utils/thinklab/media-cache';
+
+// Elementos de mídia não recebem texto pelo duplo clique
+const MEDIA_TYPES = new Set(['emoji', 'icon', 'image']);
 import {
   CanvasElement,
   Point,
@@ -31,6 +35,8 @@ interface CanvasProps {
   gridType: 'dots' | 'lines' | 'none';
   onDropComponent?: (template: Record<string, unknown>, dropPoint: Point) => void;
   smartSnappingEnabled?: boolean;
+  /** Notificado quando a área do canvas muda de tamanho (painéis abrindo/fechando, janela). */
+  onResize?: (size: { width: number; height: number }) => void;
 }
 
 export function Canvas({
@@ -46,9 +52,35 @@ export function Canvas({
   gridType,
   onDropComponent,
   smartSnappingEnabled = true,
+  onResize,
 }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Redesenha quando o container muda de tamanho (o canvas ocupa a coluna central do editor)
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  // Redesenha quando imagens/ícones terminam de carregar
+  const [mediaTick, setMediaTick] = useState(0);
+  useEffect(() => subscribeMediaLoaded(() => setMediaTick((n) => n + 1)), []);
+  const onResizeRef = useRef(onResize);
+  useEffect(() => {
+    onResizeRef.current = onResize;
+  }, [onResize]);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) => {
+      const size = {
+        width: Math.round(entry.contentRect.width),
+        height: Math.round(entry.contentRect.height),
+      };
+      setContainerSize(size);
+      onResizeRef.current?.(size);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Interaction states
   const [isPanning, setIsPanning] = useState(false);
@@ -566,6 +598,8 @@ export function Canvas({
     hoveredPort,
     selectionBox,
     snapGuides,
+    containerSize,
+    mediaTick,
   ]);
 
   // Pointer Down
@@ -1205,6 +1239,10 @@ export function Canvas({
 
     const pt = screenToCanvas(e.clientX, e.clientY);
     const hit = getElementAtPosition(pt);
+    if (hit && MEDIA_TYPES.has(hit.type)) {
+      onSelectIds([hit.id]);
+      return;
+    }
     if (hit) {
       setEditingElementId(hit.id);
       setEditingText(hit.text || '');

@@ -1,6 +1,9 @@
 "use client";
 import FerramentasSection from "../../../../components/QuickBrick/FerramentasSection";
 import Header from "@/components/UI/Header";
+import RevealOnScroll from "@/components/UI/RevealOnScroll";
+import { ArrowRight, Cuboid } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 
 const seasonLogos: Record<string, { name: string; image: string }> = {
@@ -65,6 +68,62 @@ export default function QuickBrickHome() {
         seasons={seasons}
         seasonLogos={seasonLogos}
       />
+      <section className="px-6 py-16">
+        <RevealOnScroll>
+          <div className="relative mx-auto max-w-6xl overflow-hidden rounded-tl-[2.5rem] rounded-br-[2.5rem] bg-secondary px-8 py-14 text-secondary-content sm:px-14">
+            {/* formas */}
+            <div
+              aria-hidden="true"
+              className="absolute -right-16 -top-16 size-64 rounded-full border-[28px] border-accent/90"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute -bottom-10 right-40 size-24 rotate-12 rounded-tl-2xl rounded-br-2xl bg-primary"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute bottom-8 right-12 size-10 rounded-full border-2 border-dashed border-secondary-content/40"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 opacity-[0.08] bg-[radial-gradient(currentColor_1px,transparent_1px)] bg-[size:22px_22px]"
+            />
+
+            <div className="relative max-w-2xl">
+              <div className="inline-flex items-center gap-2 font-mono text-xs tracking-[0.2em] text-secondary-content/70">
+                <Cuboid size={14} />
+                Suas estratégias, salvas no seu perfil
+              </div>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
+                Projete, teste e registre sua evolução.
+              </h2>
+              <p className="mt-5 max-w-xl text-secondary-content/80">
+                Ao acessar o QuickBrick Studio pela sua conta RoboStage, você
+                pode criar e simular estratégias, explorar modelos 3D e gerar
+                relatórios detalhados do seu robô. Registre testes, documente
+                alterações e acompanhe a evolução dos seus projetos ao longo de
+                toda a temporada.
+              </p>
+              <div className="mt-9 flex flex-wrap gap-3">
+                <Link
+                  href="/dashboard/quickbrick"
+                  className="btn btn-primary btn-lg"
+                >
+                  Acessar o QuickBrick Studio
+                  <ArrowRight size={18} />
+                </Link>
+                <Link
+                  href="/signup"
+                  className="btn btn-ghost btn-lg text-secondary-content hover:bg-secondary-content/10"
+                >
+                  Crie sua primeira estratégia
+                  <ArrowRight size={18} />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </RevealOnScroll>
+      </section>
     </main>
   );
 }

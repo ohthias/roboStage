@@ -13,103 +13,12 @@ import {
   Heart,
 } from "lucide-react";
 
-const tools = [
-  {
-    name: "QuickBrick Studio",
-    description: "Planeje suas missões e estratégias.",
-    href: "/fll/quickbrick",
-    icon: Cuboid,
-  },
-  {
-    name: "LabTest",
-    description: "Teste, analise e evolua seu robô.",
-    href: "/labtest",
-    icon: FlaskConical,
-  },
-  {
-    name: "Pontuadores",
-    description: "Acompanhe e simule sua pontuação.",
-    href: "/fll/score",
-    icon: Trophy,
-  },
-  {
-    name: "Timers",
-    description: "Gerencie seu tempo durante as competições.",
-    href: "/fll/timers",
-    icon: Clock,
-  },
-  {
-    name: "Recall",
-    description: "Treine para perguntas e entrevistas.",
-    href: "/fll/recall",
-    icon: MessageSquare,
-  },
-];
-
 export function Footer() {
   return (
     <footer className="border-t border-base-300 bg-base-100">
-      {/* Ferramentas */}
-      <section className="relative overflow-hidden border border-base-300 bg-base-200/50 ">
-        {/* Decorative grid */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-[0.035] z-1"
-          style={{
-            backgroundImage:
-              "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
-        <div className="mx-auto max-w-7xl px-6 py-16 z-2 relative">
-          <div className="mb-8 flex flex-col gap-2">
-            <span className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-primary">
-              Ferramentas da temporada
-            </span>
-
-            <h2 className="text-2xl font-semibold tracking-tight">
-              Tudo em um só lugar.
-            </h2>
-
-            <p className="max-w-2xl text-sm leading-relaxed text-base-content/60">
-              Um conjunto de ferramentas para acompanhar sua equipe desde o
-              planejamento até o torneio.
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {tools.map((tool) => (
-              <Link
-                key={tool.name}
-                href={tool.href}
-                className="group rounded-2xl border border-base-300 bg-base-100 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-base-200"
-              >
-                <div className="mb-5 flex size-9 items-center justify-center rounded-xl bg-base-200 text-base-content/70 transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-                  <tool.icon className="text-sm" />
-                </div>
-
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-medium">{tool.name}</h3>
-
-                    <p className="mt-1.5 text-xs leading-relaxed text-base-content/55">
-                      {tool.description}
-                    </p>
-                  </div>
-
-                  <i className="fi fi-rr-arrow-small-right mt-0.5 shrink-0 text-xs text-base-content/30 transition-transform group-hover:translate-x-1 group-hover:text-primary" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Navegação principal */}
       <section>
         <div className="mx-auto max-w-7xl px-6 py-16">
           <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
-            {/* Brand */}
             <div className="max-w-sm">
               <Link href="/" className="inline-flex items-center gap-3">
                 <Image
@@ -179,7 +88,7 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/obr/anatix" className="link link-hover">
+                  <Link href="/anatix" className="link link-hover">
                     Anatix
                   </Link>
                 </li>
@@ -249,6 +158,11 @@ export function Footer() {
                 <li>
                   <Link href="/news" className="link link-hover">
                     Notícias
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/roboticar" className="link link-hover">
+                    Roboticar
                   </Link>
                 </li>
                 <li>

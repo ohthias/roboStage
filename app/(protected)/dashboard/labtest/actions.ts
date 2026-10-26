@@ -11,6 +11,7 @@ import type {
   TestRecord,
 } from "@/types/labtest.types";
 import { createTestExecution as createTestExecutionAction } from "./new/actions";
+import { normalizeFEResult } from "@/utils/labtest/future-edition";
 
 export async function createTestExecution(input: {
   testId: string;
@@ -217,10 +218,17 @@ function buildFieldsFromConfig(
           : (param as Record<string, unknown>);
       const key =
         typeof item.nome === "string" ? item.nome : `parametro_${index + 1}`;
+      const options = Array.isArray(item.opcoes)
+        ? (item.opcoes as unknown[]).flatMap((option) =>
+            typeof option === "string" ? [{ value: option, label: option }] : [],
+          )
+        : null;
       defs.push({
         fieldKey: key,
-        label: toFieldLabel(key),
+        label: typeof item.rotulo === "string" && item.rotulo ? item.rotulo : toFieldLabel(key),
         description: typeof item.descricao === "string" ? item.descricao : null,
+        options: options && options.length > 0 ? options : null,
+        targetValue: typeof item.meta === "number" ? item.meta : null,
         type:
           item.tipo === "boolean" ||
           item.tipo === "text" ||
@@ -281,10 +289,21 @@ export async function getLabTestViewData(testId: string) {
   const entries: TestEntry[] = executionRows.map((execution) => {
     const normalized = normalizeResults(execution.results);
 
-    const values = Object.entries(normalized).map(([fieldKey, value]) => ({
-      fieldKey,
-      value: normalizeScalar(value),
-    }));
+    // Partida da Future Edition: os valores genéricos (usados pelo histórico,
+    // exportação e gráficos básicos) são a pontuação de cada missão.
+    const futureEdition = normalizeFEResult(
+      (execution.results as Record<string, unknown> | null)?.futureEdition,
+    );
+
+    const values = futureEdition
+      ? Object.entries(futureEdition.scores.byMission).map(([fieldKey, value]) => ({
+          fieldKey,
+          value,
+        }))
+      : Object.entries(normalized).map(([fieldKey, value]) => ({
+          fieldKey,
+          value: normalizeScalar(value),
+        }));
 
     const results = execution.results as FllExecutionResults | null;
 
@@ -296,7 +315,8 @@ export async function getLabTestViewData(testId: string) {
       notes: execution.notes,
       createdAt: execution.createdAt.toISOString(),
       values,
-      fllAnswers: normalizeFllAnswers(execution.results),
+      fllAnswers: futureEdition ? undefined : normalizeFllAnswers(execution.results),
+      futureEdition,
 
       precisionDiscs: precisionDiscs
         ? {

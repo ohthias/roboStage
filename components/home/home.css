@@ -1,0 +1,68 @@
+/* Fundo animado no estilo da página do Anatix, usado nas seções da home. */
+.rs-background {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.rs-glow {
+  position: absolute;
+  width: 55vw;
+  max-width: 820px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.14;
+  will-change: transform;
+}
+
+.rs-glow-one {
+  top: -35%;
+  left: -15%;
+  background: var(--color-primary);
+  animation: rs-glow-one 12s ease-in-out infinite alternate;
+}
+
+.rs-glow-two {
+  right: -15%;
+  bottom: -45%;
+  background: var(--color-secondary);
+  animation: rs-glow-two 16s ease-in-out infinite alternate;
+}
+
+.rs-grid {
+  position: absolute;
+  inset: -100%;
+  color: var(--color-base-content);
+  background-image: radial-gradient(currentColor 0.8px, transparent 0.8px);
+  background-size: 30px 30px;
+  opacity: 0.1;
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 60%);
+  animation: rs-grid 35s linear infinite;
+}
+
+@keyframes rs-glow-one {
+  0% { transform: translate(-5%, -5%) scale(0.9); }
+  50% { transform: translate(35%, 25%) scale(1.2); }
+  100% { transform: translate(15%, 45%) scale(1); }
+}
+
+@keyframes rs-glow-two {
+  0% { transform: translate(10%, 0) scale(1); }
+  50% { transform: translate(-35%, -30%) scale(1.25); }
+  100% { transform: translate(-15%, -10%) scale(0.9); }
+}
+
+@keyframes rs-grid {
+  from { transform: translate(0, 0); }
+  to { transform: translate(60px, 60px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rs-glow,
+  .rs-grid {
+    animation: none;
+  }
+}

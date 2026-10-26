@@ -927,7 +927,7 @@ export function NewsSection({
         <div className="mt-12 grid gap-5 lg:grid-cols-[1.3fr_1fr]">
           <RevealOnScroll className="h-full">
             <Link
-              href={`/news/${first.slug}`}
+              href={`/news/${encodeURIComponent(first.slug)}`}
               className="group flex h-full flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-[8px_8px_0_0_var(--color-primary)]"
             >
               {first.cover && (
@@ -961,7 +961,7 @@ export function NewsSection({
             {rest.map((n, i) => (
               <RevealOnScroll key={n.slug} delay={(i + 1) * 0.08} className="flex-1">
                 <Link
-                  href={`/news/${n.slug}`}
+                  href={`/news/${encodeURIComponent(n.slug)}`}
                   className="group flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-secondary/40"
                 >
                   <NewsMeta date={n.date} category={n.category} />

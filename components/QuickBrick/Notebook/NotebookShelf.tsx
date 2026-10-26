@@ -51,7 +51,7 @@ export function NotebookShelf({
   });
 
   return (
-    <div className="qb-paper min-h-full px-4 py-8 sm:px-6 lg:px-8">
+    <div className="qb-paper h-screen px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-7">
         <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>

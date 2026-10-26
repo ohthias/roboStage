@@ -84,7 +84,7 @@ export function DiagramEditor({ diagram }: { diagram: DiagramDetail }) {
   };
 
   return (
-    <div className="qb-paper min-h-full px-4 py-6 sm:px-6 lg:px-8">
+    <div className="qb-paper h-screen px-4 py-6 sm:px-6 lg:px-8">
       <header className="mx-auto mb-6 flex max-w-[1400px] flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <Link

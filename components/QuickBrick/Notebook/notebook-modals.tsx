@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { ArrowLeftRight, ImagePlus } from "lucide-react";
 import { Modal } from "@/components/stagebook/modal";
 import { formatBytes } from "@/utils/format-bytes";
@@ -88,8 +89,14 @@ export function PhotoUploadModal({
         <figure className="qb-polaroid relative self-start">
           <span className="qb-tape" aria-hidden />
           {preview && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={preview} alt="Pré-visualização" className="aspect-square w-full rounded object-cover" />
+            <Image
+              src={preview}
+              alt="Pré-visualização"
+              width={200}
+              height={200}
+              unoptimized
+              className="aspect-square w-full rounded object-cover"
+            />
           )}
           <figcaption className="qb-hand mt-1 truncate text-center text-base text-base-content/60">
             {file ? formatBytes(file.size) : ""}

@@ -228,7 +228,7 @@ export function NotebookStudio({ detail }: { detail: NotebookDetail }) {
         : "Nenhuma foto ainda";
 
   return (
-    <div className="qb-paper min-h-full px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+    <div className="qb-paper h-full px-4 pb-10 pt-6 sm:px-6 lg:px-8 min-h-screen">
       {/* Cabeçalho */}
       <header className="mx-auto mb-6 flex max-w-[1500px] flex-wrap items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-4">

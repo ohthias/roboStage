@@ -1,586 +1,442 @@
-import {
-  Check,
-  Download,
-  ExternalLink,
-  FileArchive,
-  Image as ImageIcon,
-  Maximize2,
-  Type,
-} from "lucide-react";
+import type { Metadata } from "next";
+import Image from "next/image";
+import { ArrowDown, Check, Download, FileArchive, Image as ImageIcon, Printer, Monitor, Type, X } from "lucide-react";
+
 import { Footer } from "@/components/UI/Footer";
 import { Navbar } from "@/components/UI/Navbar";
-import ColorCard from "./ColorCard";
-import Image from "next/image";
-import { useToast } from "@/app/context/ToastContext";
+import RevealOnScroll from "@/components/UI/RevealOnScroll";
+import PageHero, { heroBtn } from "@/components/UI/PageHero";
+import { SectionTitle } from "@/components/home/shared";
+import { CtaBlock } from "@/components/competicoes/shared/CompetitionSections";
+import ColorCard, { CopyPaletteButton, type BrandColor } from "./ColorCard";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Assets",
-  description: "Assets públicos do RoboStage.",
+  description: "Logos, ícones, cores e tipografia oficiais do RoboStage para baixar e usar.",
 };
 
-const colors = [
-  {
-    name: "Brasa",
-    value: "#CF2A2A",
-    description: "A energia que transforma ideias em movimento robótico.",
-    className: "bg-[#CF2A2A]",
-    textClass: "text-white",
-  },
-  {
-    name: "Oceano",
-    value: "#1E459F",
-    description: "A profundidade do conhecimento que guia cada projeto.",
-    className: "bg-[#1e459f]",
-    textClass: "text-white",
-  },
-  {
-    name: "Sol",
-    value: "#FABD32",
-    description: "A criatividade que ilumina novas soluções tecnológicas.",
-    className: "bg-[#FABD32]",
-    textClass: "text-black",
-  },
-  {
-    name: "Fundação",
-    value: "#DED6C4",
-    description: "A base sólida para construir, testar e inovar.",
-    className: "bg-[#ded6c4]",
-    textClass: "text-black",
-  },
+const colors: BrandColor[] = [
+  { name: "Brasa", token: "primary", value: "#CF2A2A", description: "A energia que transforma ideias em movimento robótico.", dark: false },
+  { name: "Oceano", token: "secondary", value: "#1E459F", description: "A profundidade do conhecimento que guia cada projeto.", dark: false },
+  { name: "Sol", token: "accent", value: "#FABD32", description: "A criatividade que ilumina novas soluções tecnológicas.", dark: true },
+  { name: "Fundação", token: "neutral", value: "#DED6C4", description: "A base sólida para construir, testar e inovar.", dark: true },
 ];
 
-const assets = [
+const downloads = [
   {
-    name: "Logo principal",
-    description: "Símbolo + wordmark do RoboStage.",
-    format: "PNG",
-    href: "/assets/logo/full_logo_primary.png",
-  },
-  {
-    name: "Logo outline",
-    description: "Wordmark do RoboStage em versão outline.",
-    format: "PNG",
-    href: "/assets/logo/logo_outline_colorido.png",
-  },
-  {
-    name: "Kit de Ícone",
-    description: "Símbolo do RoboStage sem o wordmark.",
-    format: "ZIP",
-    href: "/assets/logo/robostage-icones.zip",
+    name: "Pacote completo",
+    text: "Logos e ícones em todas as versões, para tela e para impressão.",
+    href: "/assets/downloads/robostage-assets.zip",
+    size: "3,8 MB",
+    files: "73 arquivos",
+    featured: true,
   },
   {
     name: "Kit de logos",
-    description: "Todas as principais variações da identidade.",
-    format: "ZIP",
+    text: "Logo principal, versão clara, outline e símbolo com e sem fundo.",
     href: "/assets/downloads/robostage-logos.zip",
+    size: "3,3 MB",
+    files: "45 arquivos",
+  },
+  {
+    name: "Kit de ícones",
+    text: "Símbolo do RoboStage nas versões padrão, inversa e outline.",
+    href: "/assets/downloads/robostage-icones.zip",
+    size: "556 KB",
+    files: "27 arquivos",
   },
 ];
+
+const jump = [
+  { href: "#logos", label: "01 Logos" },
+  { href: "#icone", label: "02 Ícone" },
+  { href: "#cores", label: "03 Cores" },
+  { href: "#tipografia", label: "04 Tipografia" },
+  { href: "#downloads", label: "05 Downloads" },
+  { href: "#uso", label: "06 Uso" },
+];
+
+function DownloadButton({ href, label = "Baixar" }: { href: string; label?: string }) {
+  return (
+    <a
+      href={href}
+      download
+      className="btn btn-sm rounded-tl-lg rounded-br-lg rounded-tr-none rounded-bl-none border-base-300 bg-base-100 hover:border-primary hover:bg-primary hover:text-primary-content"
+    >
+      <Download size={15} />
+      {label}
+    </a>
+  );
+}
+
+function Checker({ dark = false, className = "", children }: { dark?: boolean; className?: string; children: React.ReactNode }) {
+  return (
+    <div
+      className={`relative grid place-items-center overflow-hidden rounded-tl-2xl rounded-br-2xl border p-8 ${dark ? "border-neutral bg-[#1f1c18]" : "border-base-300 bg-[#f7f4ec]"} ${className}`}
+    >
+      <div
+        aria-hidden="true"
+        className={`absolute inset-0 opacity-[0.08] [background-image:radial-gradient(currentColor_0.8px,transparent_0.8px)] [background-size:16px_16px] ${dark ? "text-white" : "text-black"}`}
+      />
+      <div className="relative">{children}</div>
+    </div>
+  );
+}
 
 export default function BrandPage() {
   return (
     <>
       <Navbar />
-      <header className="relative isolate w-full overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)\_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)\_1px,transparent_1px)] bg-[size:24px_24px]" />
-        <div className="absolute -right-40 top-1/4 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute -left-40 bottom-10 h-96 w-96 rounded-full bg-secondary/10 blur-3xl" />
-        <div className="relative mx-auto flex min-h-[min(760px,calc(100svh-5rem))] max-w-7xl flex-col items-center justify-center gap-10 px-5 py-24 sm:px-8 md:flex-row md:justify-between md:gap-12 md:px-12 lg:py-28">
-          <div className="z-10 flex w-full max-w-2xl flex-col justify-center gap-5 text-center md:text-left">
-            <h1 className="text-4xl font-black leading-[0.98] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              Assets do{" "}
-              <span className="inline-block bg-primary px-2 py-1 text-primary-content sm:px-3 -rotate-1">
-                RoboStage
-              </span>
-            </h1>
-            <p className="mx-auto max-w-xl text-base leading-relaxed text-base-content/70 sm:text-lg md:mx-0">
-              Recursos oficiais da identidade visual do RoboStage para uso em
-              projetos, apresentações, documentos, eventos e materiais digitais.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3 pt-2 md:justify-start">
-              <a href="#logos" className="btn btn-primary">
+      <main className="overflow-x-clip bg-base-100 text-base-content">
+        <PageHero
+          kicker="/ IDENTIDADE VISUAL"
+          title="Assets"
+          highlight="a marca, pronta para usar."
+          description="Recursos oficiais da identidade visual do RoboStage para projetos, apresentações, documentos, eventos e materiais digitais."
+          actions={
+            <>
+              <a href="/assets/downloads/robostage-assets.zip" download className={heroBtn}>
+                <FileArchive size={20} />
+                Baixar pacote completo
+              </a>
+              <a href="#logos" className="btn btn-ghost btn-lg">
                 Explorar assets
-                <ExternalLink size={18} />
+                <ArrowDown size={18} />
               </a>
+            </>
+          }
+          aside={
+            <>
+              <div className="flex items-center justify-between border-b border-base-300 px-5 py-3">
+                <span className="font-mono text-xs text-base-content/60">robostage-assets.zip</span>
+                <span className="font-mono text-[10px] tracking-widest text-base-content/35">3,8 MB</span>
+              </div>
+              <div className="grid place-items-center bg-[#f7f4ec] p-8">
+                <Image src="/images/logos/logo_padrao.png" alt="Símbolo do RoboStage" width={180} height={180} className="h-auto w-36 sm:w-44" priority />
+              </div>
+              <div className="flex h-3">
+                {colors.map((c) => (
+                  <span key={c.name} className="flex-1" style={{ backgroundColor: c.value }} />
+                ))}
+              </div>
+              <div className="bg-[#1f1c18] px-5 py-3 font-mono text-[11px] leading-6 text-[#f3ecdc] sm:text-xs">
+                <p>
+                  <span className="text-[#fabd32]">RGB</span> <span className="opacity-60">para telas ·</span>{" "}
+                  <span className="text-[#9be15d]">CMYK</span> <span className="opacity-60">para impressão</span>
+                </p>
+                <p className="opacity-60">formatos: SVG · PNG · PDF</p>
+              </div>
+            </>
+          }
+        />
 
-              <a href="#download" className="btn btn-outline">
-                Baixar kit completo
-                <Download size={18} />
-              </a>
+        <nav aria-label="Seções" className="sticky top-0 z-20 border-y border-base-300 bg-base-100/85 px-6 py-3 backdrop-blur">
+          <ul className="mx-auto flex max-w-6xl gap-2 overflow-x-auto">
+            {jump.map(({ href, label }) => (
+              <li key={href} className="shrink-0">
+                <a href={href} className="inline-block rounded-tl-md rounded-br-md border border-base-300 bg-base-100 px-3 py-1 font-mono text-xs text-base-content/70 transition-colors hover:border-base-content hover:bg-base-content hover:text-base-100">
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* ============================================================ LOGOS */}
+        <section id="logos" className="scroll-mt-32 px-6 py-24">
+          <div className="mx-auto max-w-6xl">
+            <RevealOnScroll>
+              <SectionTitle
+                kicker="/ 01 · IDENTIDADE"
+                title="Logos para"
+                highlight="cada contexto."
+                description="A identidade do RoboStage tem configurações diferentes para se adaptar a cada aplicação."
+              />
+            </RevealOnScroll>
+            <div className="mt-14 grid gap-5 lg:grid-cols-3">
+              <RevealOnScroll className="h-full lg:col-span-2">
+                <article className="flex h-full flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 shadow-[8px_8px_0_0_var(--color-primary)]">
+                  <div className="flex items-start justify-between gap-3 p-6">
+                    <div>
+                      <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-primary">PRINCIPAL</p>
+                      <h3 className="mt-1 text-2xl font-bold">Logo principal</h3>
+                      <p className="mt-1 text-sm text-base-content/60">Símbolo acompanhado do nome RoboStage. Use sempre que possível.</p>
+                    </div>
+                    <DownloadButton href="/assets/logo/full_logo_primary.png" label="PNG" />
+                  </div>
+                  <div className="flex flex-1 flex-col px-6 pb-6">
+                    <Checker className="min-h-64 flex-1">
+                      <Image src="/images/logos/full_logo_primary.png" alt="Logo principal do RoboStage" width={520} height={132} className="h-auto w-full max-w-md" />
+                    </Checker>
+                  </div>
+                </article>
+              </RevealOnScroll>
+              <div className="grid gap-5">
+                {[
+                  { title: "Versão clara", text: "Para fundos escuros.", href: "/assets/logo/full_logo_secondary.png", img: "/images/logos/full_logo_secondary.png", dark: true },
+                  { title: "Versão outline", text: "Alternativa com contorno colorido.", href: "/assets/logo/logo_outline_colorido.png", img: "/images/logos/logo_outline_colorido.png", dark: false },
+                ].map((l, i) => (
+                  <RevealOnScroll key={l.title} delay={0.08 * (i + 1)} className="h-full">
+                    <article className="flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="font-bold">{l.title}</h3>
+                          <p className="text-sm text-base-content/60">{l.text}</p>
+                        </div>
+                        <ImageIcon size={18} className="text-base-content/40" />
+                      </div>
+                      <div className="mt-4 flex-1">
+                        <Checker dark={l.dark}>
+                          <Image src={l.img} alt={`${l.title} do logo`} width={260} height={66} className="h-auto w-full max-w-[220px]" />
+                        </Checker>
+                      </div>
+                      <div className="mt-4">
+                        <DownloadButton href={l.href} label="Baixar PNG" />
+                      </div>
+                    </article>
+                  </RevealOnScroll>
+                ))}
+              </div>
             </div>
           </div>
+        </section>
 
-          <div className="relative mx-auto w-full max-w-md flex-1 md:max-w-xl">
-            <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full" />
-            <img
-              src="/images/logos/logo_padrao.png"
-              alt="Logo do RoboStage"
-              className="relative z-10 h-auto w-full object-contain"
-            />
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-5 sm:px-8 md:px-12">
-        <section id="logos" className="scroll-mt-24 py-16 sm:py-20 lg:py-24">
-          <SectionHeader
-            eyebrow="01 — Identidade"
-            title="Logos"
-            description="A identidade do RoboStage possui diferentes configurações para se adaptar a diferentes contextos de aplicação."
-          />
-          <div className="grid lg:grid-cols-3 gap-6 mt-12">
-            <div className="group relative lg:col-span-2 card rounded-tl-2xl rounded-br-2xl bg-base-200 border border-base-content/10 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-base-content/5">
-              <div
-                className="absolute left-0 top-0 h-1 w-20 bg-primary"
-                aria-hidden="true"
+        {/* ============================================================ ÍCONE */}
+        <section id="icone" className="scroll-mt-32 border-y border-base-300 bg-base-200/40 px-6 py-24">
+          <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-2 [&>*]:min-w-0">
+            <RevealOnScroll>
+              <div className="relative grid aspect-square w-full max-w-md place-items-center justify-self-center rounded-tl-3xl rounded-br-3xl border border-base-300 bg-[#f7f4ec] p-12">
+                <div aria-hidden="true" className="absolute inset-8 rounded-tl-2xl rounded-br-2xl border-2 border-dashed border-primary/40" />
+                <span aria-hidden="true" className="absolute left-8 top-3 font-mono text-[10px] tracking-widest text-primary/70">ÁREA DE PROTEÇÃO</span>
+                <Image src="/images/logos/logo_padrao.png" alt="Ícone do RoboStage" width={260} height={260} className="relative h-auto w-3/5" />
+              </div>
+            </RevealOnScroll>
+            <RevealOnScroll delay={0.1}>
+              <SectionTitle
+                kicker="/ 02 · SÍMBOLO"
+                title="Dê espaço para"
+                highlight="a marca respirar."
+                highlightClass="bg-secondary text-secondary-content"
+                description="O símbolo pode ser usado sozinho quando o contexto já deixa clara a relação com o RoboStage. Mantenha uma área livre ao redor dele, sem textos, gráficos ou outros logos."
               />
+              <dl className="mt-8 grid grid-cols-2 gap-3">
+                {[
+                  { l: "FORMATOS", v: "SVG · PNG · PDF" },
+                  { l: "USO MÍNIMO", v: "24 × 24 px" },
+                  { l: "PROPORÇÃO", v: "1 : 1" },
+                  { l: "COR PRINCIPAL", v: "#CF2A2A" },
+                ].map(({ l, v }) => (
+                  <div key={l} className="rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 p-4">
+                    <dt className="font-mono text-[10px] tracking-[0.15em] text-base-content/45">{l}</dt>
+                    <dd className="mt-1 font-mono font-bold">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="mt-6">
+                <DownloadButton href="/assets/downloads/robostage-icones.zip" label="Baixar kit de ícones" />
+              </div>
+            </RevealOnScroll>
+          </div>
+        </section>
 
-              <div className="card-body">
-                <div className="flex items-start justify-between">
+        {/* ============================================================ CORES */}
+        <section id="cores" className="scroll-mt-32 px-6 py-24">
+          <div className="mx-auto max-w-6xl">
+            <RevealOnScroll>
+              <div className="flex flex-wrap items-end justify-between gap-6">
+                <SectionTitle
+                  kicker="/ 03 · SISTEMA VISUAL"
+                  title="Paleta"
+                  highlight="de cores."
+                  highlightClass="bg-accent text-accent-content"
+                  description="Vermelho e azul como cores principais, amarelo para destaques e um neutro quente como base. Clique numa cor para copiar."
+                />
+                <CopyPaletteButton colors={colors} />
+              </div>
+            </RevealOnScroll>
+            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {colors.map((c, i) => (
+                <RevealOnScroll key={c.name} delay={i * 0.06} className="h-full">
+                  <ColorCard color={c} index={i} />
+                </RevealOnScroll>
+              ))}
+            </div>
+            <RevealOnScroll>
+              <div className="mt-8 flex flex-col gap-5 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-200/50 p-6 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-base-content/55">USO RECOMENDADO</p>
+                  <p className="mt-1 text-sm text-base-content/70">
+                    Equilibre vermelho e azul e use o amarelo só como destaque.
+                  </p>
+                </div>
+                <div className="flex h-12 w-full max-w-sm overflow-hidden rounded-tl-lg rounded-br-lg font-mono text-[10px]">
+                  <span className="flex-[4] bg-[#CF2A2A]" />
+                  <span className="flex-[3] bg-[#1E459F]" />
+                  <span className="flex-[2] bg-[#DED6C4]" />
+                  <span className="flex-[1] bg-[#FABD32]" />
+                </div>
+              </div>
+            </RevealOnScroll>
+          </div>
+        </section>
+
+        {/* ======================================================= TIPOGRAFIA */}
+        <section id="tipografia" className="scroll-mt-32 border-y border-base-300 bg-base-200/40 px-6 py-24">
+          <div className="mx-auto max-w-6xl">
+            <RevealOnScroll>
+              <SectionTitle
+                kicker="/ 04 · TIPOGRAFIA"
+                title="Roboto,"
+                highlight="do título à legenda."
+                description="A família Roboto foi escolhida pela legibilidade, neutralidade e versatilidade. Ela é gratuita no Google Fonts."
+              />
+            </RevealOnScroll>
+            <RevealOnScroll>
+              <div className="mt-14 overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 shadow-[8px_8px_0_0_var(--color-secondary)]">
+                <div className="grid gap-8 border-b border-base-300 p-8 md:grid-cols-[auto_1fr] md:items-end md:p-12">
+                  <p className="text-8xl font-black leading-none tracking-tight sm:text-9xl">Aa</p>
                   <div>
-                    <h3 className="card-title text-2xl">Logo principal</h3>
-                    <p className="text-base-content/60 mt-1">
-                      Símbolo acompanhado do nome RoboStage.
+                    <p className="inline-flex items-center gap-2 font-mono text-xs text-base-content/55">
+                      <Type size={14} /> Roboto · Sans Serif
+                    </p>
+                    <p className="mt-3 text-2xl font-light md:text-3xl">Regular · Medium · Bold · Black</p>
+                    <p className="mt-3 break-all font-mono text-sm text-base-content/50">
+                      ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789
                     </p>
                   </div>
-
-                  <span className="badge badge-primary">Principal</span>
                 </div>
-
-                <div className="relative min-h-[260px] sm:min-h-[320px] mt-8 rounded-tl-2xl rounded-br-2xl bg-base-100 border border-base-content/10 flex items-center justify-center overflow-hidden p-6 sm:p-10">
-                  <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,theme(colors.base-content)\_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)\_1px,transparent_1px)] bg-[size:20px_20px]" />
-
-                  <div className="relative flex items-center gap-4">
-                    <Image
-                      src="/images/logos/full_logo_primary.png"
-                      alt="Logo do RoboStage"
-                      className="relative z-10 object-contain"
-                      width={500}
-                      height={100}
-                    />
-                  </div>
-                </div>
-
-                <div className="card-actions justify-between items-center mt-5">
-                  <span className="text-sm font-mono text-base-content/50">
-                    robostage.png
-                  </span>
-
-                  <a
-                    href="/assets/logo/full_logo_primary.png"
-                    download
-                    className="btn btn-sm btn-primary"
-                  >
-                    <Download size={16} />
-                    PNG
-                  </a>
+                <div className="grid divide-y divide-base-300 md:grid-cols-4 md:divide-x md:divide-y-0">
+                  {[
+                    { l: "DISPLAY", c: "text-4xl font-black xl:text-5xl", s: "Black · 48px" },
+                    { l: "TÍTULO", c: "text-3xl font-bold", s: "Bold · 30px" },
+                    { l: "TEXTO", c: "text-xl font-medium", s: "Medium · 20px" },
+                    { l: "LEGENDA", c: "text-sm", s: "Regular · 14px" },
+                  ].map(({ l, c, s }) => (
+                    <div key={l} className="p-6 md:p-8">
+                      <p className="font-mono text-[10px] tracking-[0.15em] text-base-content/45">{l}</p>
+                      <p className={`mt-4 ${c}`}>RoboStage</p>
+                      <p className="mt-3 font-mono text-[11px] text-base-content/45">{s}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-            <div className="space-y-6">
-              <LogoVariation
-                title="Versão clara"
-                description="Para fundos escuros."
-                dark
-                href="/assets/logo/full_logo_secondary.png"
-              />
-
-              <LogoVariation
-                title="Versão Alternativa"
-                description="Uma versão alternativa do logo."
-                href="/assets/logo/logo_outline_colorido.png"
-              />
-            </div>
-          </div>
-        </section>
-        <section
-          id="icon"
-          className="scroll-mt-24 border-t border-base-content/10 py-16 sm:py-20 lg:py-24"
-        >
-          <SectionHeader
-            eyebrow="02 — Símbolo"
-            title="Ícone"
-            description="O símbolo pode ser utilizado de forma independente quando o contexto já estabelece a relação com o RoboStage."
-          />
-          <div className="grid md:grid-cols-2 gap-8 mt-12">
-            <div className="group relative rounded-tl-2xl rounded-br-2xl bg-base-200 border border-base-content/10 p-8 md:p-12 flex items-center justify-center min-h-[280px] sm:min-h-[360px] md:min-h-[420px] overflow-hidden">
-              <div
-                className="absolute left-0 top-0 h-1 w-16 bg-secondary"
-                aria-hidden="true"
-              />
-              <div
-                className="absolute inset-6 rounded-tl-xl rounded-br-xl border border-dashed border-base-content/15"
-                aria-hidden="true"
-              />
-
-              <div className="relative">
-                <img
-                  src="/images/logos/logo_padrao.png"
-                  alt="Ícone do RoboStage"
-                  className="relative z-10 object-contain"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col justify-center">
-              <span className="badge badge-outline mb-5 w-fit">
-                Área de proteção
-              </span>
-
-              <h3 className="text-2xl font-black sm:text-3xl">
-                Dê espaço para a marca respirar.
-              </h3>
-
-              <p className="mt-4 text-base-content/60 leading-relaxed">
-                Mantenha uma área livre ao redor do ícone para garantir
-                legibilidade e reconhecimento. Evite posicionar elementos
-                gráficos, textos ou outros logotipos dentro dessa área.
-              </p>
-
-              <div className="grid grid-cols-2 gap-4 mt-8">
-                <InfoBox label="Formato" value="SVG / PNG" />
-                <InfoBox label="Uso mínimo" value="24 × 24 px" />
-                <InfoBox label="Proporção" value="1 : 1" />
-                <InfoBox label="Cor principal" value="#CF2A2A" />
-              </div>
-            </div>
-          </div>
-        </section>
-        <section
-          id="colors"
-          className="scroll-mt-24 border-t border-base-content/10 py-16 sm:py-20 lg:py-24"
-        >
-          <SectionHeader
-            eyebrow="03 — Sistema visual"
-            title="Paleta de cores"
-            description="As cores do RoboStage combinam vermelho e azul como elementos principais, com amarelo e neutros para suporte e destaque."
-          />
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mt-12">
-            {colors.map((color) => (
-              <ColorCard key={color.name} {...color} />
-            ))}
-          </div>
-          <div className="relative mt-8 overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-200 p-6 md:p-8">
-            <div
-              className="absolute left-0 top-0 h-full w-1 bg-[#FABD32]"
-              aria-hidden="true"
-            />
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-              <div>
-                <h3 className="font-bold text-lg">Uso recomendado</h3>
-
-                <p className="text-sm text-base-content/60 mt-1">
-                  Priorize as cores da marca em proporções equilibradas e use o
-                  amarelo como elemento de destaque.
-                </p>
-              </div>
-              <div className="flex h-12 overflow-hidden rounded-xl">
-                <div className="w-28 bg-[#CF2A2A]" />
-                <div className="w-20 bg-[#1E459F]" />
-                <div className="w-14 bg-[#FABD32]" />
-                <div className="w-12 bg-[#E1DCCA]" />
-              </div>
-            </div>
-          </div>
-        </section>
-        <section
-          id="typography"
-          className="scroll-mt-24 border-t border-base-content/10 py-16 sm:py-20 lg:py-24"
-        >
-          <SectionHeader
-            eyebrow="04 — Tipografia"
-            title="Roboto"
-            description="A tipografia principal do RoboStage é a família Roboto, escolhida por sua legibilidade, neutralidade e versatilidade."
-          />
-
-          <div className="relative mt-12 rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-200 overflow-hidden">
-            <div
-              className="absolute right-0 top-0 h-1 w-24 bg-secondary"
-              aria-hidden="true"
-            />
-            <div className="p-8 md:p-12 border-b border-base-content/10">
-              <div className="flex items-center gap-3 mb-8">
-                <Type size={22} />
-                <span className="font-bold">Roboto</span>
-                <span className="badge badge-ghost">Sans Serif</span>
-              </div>
-              <div className="text-6xl sm:text-7xl md:text-9xl font-black tracking-tight">
-                Aa
-              </div>
-              <p className="mt-8 text-2xl md:text-4xl font-light">
-                Roboto Regular · Medium · Bold · Black
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-base-content/10">
-              <TypeSample size="text-5xl" weight="font-black" label="Display" />
-              <TypeSample size="text-3xl" weight="font-bold" label="Heading" />
-              <TypeSample size="text-xl" weight="font-medium" label="Body" />
-              <TypeSample size="text-sm" weight="font-normal" label="Caption" />
-            </div>
-          </div>
-        </section>
-
-        <section
-          id="download"
-          className="scroll-mt-24 border-t border-base-content/10 py-16 sm:py-20 lg:py-24"
-        >
-          <SectionHeader
-            eyebrow="05 — Downloads"
-            title="Baixar assets"
-            description="Encontre os arquivos necessários para utilizar a identidade do RoboStage."
-          />
-          <div className="mt-12 grid md:grid-cols-2 gap-5">
-            {assets.map((asset) => (
-              <AssetCard key={asset.name} {...asset} />
-            ))}
-          </div>
-          <div className="mt-8 rounded-tl-2xl rounded-br-2xl bg-primary text-primary-content p-8 md:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-            <div>
-              <h3 className="text-2xl font-black">
-                Precisa de tudo de uma vez?
-              </h3>
-              <p className="mt-2 opacity-80 max-w-xl">
-                Baixe o pacote completo com logos, ícones e arquivos necessários
-                para aplicações digitais e impressas.
-              </p>
-            </div>
+            </RevealOnScroll>
             <a
-              href="/assets/downloads/robostage-assets.zip"
-              download
-              className="btn bg-white text-black border-none hover:bg-white/90"
+              href="https://fonts.google.com/specimen/Roboto"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold hover:text-primary"
             >
-              <FileArchive size={18} />
-              Baixar pacote
+              <Download size={15} /> Baixar a Roboto no Google Fonts
             </a>
           </div>
         </section>
-        <section className="py-28 border-t border-base-content/10">
-          <SectionHeader
-            eyebrow="06 — Aplicação"
-            title="Use a marca corretamente"
-            description="Os assets são públicos, mas preservar a identidade visual é essencial para manter consistência."
-          />
-          <div className="grid md:grid-cols-2 gap-6 mt-12">
-            <RuleCard
-              type="do"
-              title="Faça"
-              items={[
-                "Mantenha as proporções originais.",
-                "Use as versões adequadas para cada fundo.",
-                "Respeite a área de proteção.",
-                "Prefira os arquivos vetoriais quando possível.",
-              ]}
-            />
-            <RuleCard
-              type="dont"
-              title="Evite"
-              items={[
-                "Distorcer ou esticar o logotipo.",
-                "Alterar as cores oficiais.",
-                "Adicionar sombras ou efeitos não previstos.",
-                "Usar o logo sobre fundos que prejudiquem sua leitura.",
-              ]}
-            />
-          </div>
-        </section>
-        <section className="pb-20 sm:pb-24 lg:pb-28">
-          <div className="relative overflow-hidden rounded-[2rem] bg-base-200 border border-base-content/10 p-10 md:p-16">
-            <div className="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-secondary/10 blur-3xl" />
-            <div className="relative max-w-3xl">
-              <h2 className="mt-5 text-3xl sm:text-4xl md:text-6xl font-black tracking-tight">
-                Construindo experiências
-                <span className="text-primary"> para a robótica.</span>
-              </h2>
-              <p className="mt-5 text-lg text-base-content/60 max-w-2xl">
-                Leve o RoboStage para o seu projeto, evento ou apresentação com os assets oficiais da marca. Use-os de forma responsável e preserve a identidade visual.
-              </p>
+
+        {/* ======================================================== DOWNLOADS */}
+        <section id="downloads" className="scroll-mt-32 px-6 py-24">
+          <div className="mx-auto max-w-6xl">
+            <RevealOnScroll>
+              <SectionTitle
+                kicker="/ 05 · DOWNLOADS"
+                title="Baixe o que"
+                highlight="precisa."
+                description="Todos os pacotes trazem os arquivos em RGB, para telas, e em CMYK, para impressão."
+              />
+            </RevealOnScroll>
+            <div className="mt-14 grid gap-5 lg:grid-cols-3">
+              {downloads.map(({ name, text, href, size, files, featured }, i) => (
+                <RevealOnScroll key={href} delay={i * 0.08} className="h-full">
+                  <article
+                    className={`flex h-full flex-col rounded-tl-3xl rounded-br-3xl border p-7 transition-all duration-300 hover:-translate-y-1 ${
+                      featured
+                        ? "border-primary bg-primary text-primary-content shadow-[8px_8px_0_0_var(--color-base-content)]"
+                        : "border-base-300 bg-base-100 hover:shadow-[6px_6px_0_0_var(--color-base-content)]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`grid size-12 place-items-center rounded-tl-xl rounded-br-xl ${featured ? "bg-primary-content/15" : "bg-primary/10 text-primary"}`}>
+                        <FileArchive size={22} />
+                      </span>
+                      <span className={`font-mono text-xs ${featured ? "text-primary-content/75" : "text-base-content/45"}`}>ZIP · {size}</span>
+                    </div>
+                    <h3 className="mt-6 text-2xl font-bold">{name}</h3>
+                    <p className={`mt-2 flex-1 text-sm leading-6 ${featured ? "text-primary-content/80" : "text-base-content/60"}`}>{text}</p>
+                    <ul className={`mt-5 flex flex-wrap gap-1.5 font-mono text-[11px] ${featured ? "text-primary-content/85" : "text-base-content/65"}`}>
+                      {[files, "RGB + CMYK", "SVG · PNG · PDF"].map((t) => (
+                        <li key={t} className={`rounded-md px-2 py-0.5 ${featured ? "bg-primary-content/15" : "bg-base-200"}`}>{t}</li>
+                      ))}
+                    </ul>
+                    <a
+                      href={href}
+                      download
+                      className={`btn mt-6 rounded-tl-lg rounded-br-lg rounded-tr-none rounded-bl-none ${featured ? "border-none bg-base-100 text-base-content hover:bg-base-200" : "btn-primary"}`}
+                    >
+                      <Download size={16} />
+                      Baixar
+                    </a>
+                  </article>
+                </RevealOnScroll>
+              ))}
+            </div>
+            <div className="mt-6 flex flex-wrap gap-4 font-mono text-xs text-base-content/55">
+              <span className="inline-flex items-center gap-1.5"><Monitor size={14} /> RGB · site, slides, redes sociais</span>
+              <span className="inline-flex items-center gap-1.5"><Printer size={14} /> CMYK · banners, camisetas, impressos</span>
             </div>
           </div>
         </section>
-      </main>
 
+        {/* ============================================================== USO */}
+        <section id="uso" className="scroll-mt-32 border-t border-base-300 bg-base-200/40 px-6 py-24">
+          <div className="mx-auto max-w-6xl">
+            <RevealOnScroll>
+              <SectionTitle
+                kicker="/ 06 · APLICAÇÃO"
+                title="Use a marca"
+                highlight="corretamente."
+                highlightClass="bg-secondary text-secondary-content"
+                description="Os assets são públicos, mas preservar a identidade visual é essencial para manter a consistência."
+              />
+            </RevealOnScroll>
+            <div className="mt-14 grid gap-5 md:grid-cols-2">
+              {[
+                { type: "do", title: "Faça", items: ["Mantenha as proporções originais.", "Use a versão adequada para cada fundo.", "Respeite a área de proteção.", "Prefira os arquivos SVG quando possível."] },
+                { type: "dont", title: "Evite", items: ["Distorcer ou esticar o logotipo.", "Alterar as cores oficiais.", "Adicionar sombras ou efeitos não previstos.", "Usar o logo sobre fundos que prejudiquem a leitura."] },
+              ].map(({ type, title, items }, i) => (
+                <RevealOnScroll key={title} delay={i * 0.08} className="h-full">
+                  <article className={`h-full rounded-tl-2xl rounded-br-2xl border-2 bg-base-100 p-7 ${type === "do" ? "border-success/50" : "border-error/50"}`}>
+                    <div className="flex items-center gap-3">
+                      <span className={`grid size-10 place-items-center rounded-tl-lg rounded-br-lg ${type === "do" ? "bg-success text-success-content" : "bg-error text-error-content"}`}>
+                        {type === "do" ? <Check size={20} /> : <X size={20} />}
+                      </span>
+                      <h3 className="text-xl font-bold">{title}</h3>
+                    </div>
+                    <ul className="mt-6 space-y-3">
+                      {items.map((it) => (
+                        <li key={it} className="flex gap-3 text-sm leading-6 text-base-content/75">
+                          <span className={`mt-2 size-1.5 shrink-0 rounded-sm ${type === "do" ? "bg-success" : "bg-error"}`} />
+                          {it}
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                </RevealOnScroll>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <CtaBlock
+          kicker="LEVE O ROBOSTAGE COM VOCÊ"
+          icon={Download}
+          title="Construindo experiências para a robótica."
+          text="Use os assets oficiais no seu projeto, evento ou apresentação, de forma responsável e preservando a identidade visual."
+          actions={[
+            { label: "Ir para os downloads", href: "#downloads", variant: "accent" },
+            { label: "Apoie o projeto", href: "/sponsors", variant: "ghost" },
+          ]}
+        />
+      </main>
       <Footer />
     </>
-  );
-}
-
-function SectionHeader({
-  eyebrow,
-  title,
-  description,
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="max-w-3xl">
-      <div className="text-xs font-bold uppercase tracking-[0.18em] text-primary sm:text-sm">
-        {eyebrow}
-      </div>
-      <h2 className="mt-3 text-2xl font-black sm:text-3xl tracking-tight sm:text-4xl md:text-5xl">
-        {title}
-      </h2>
-      <p className="mt-4 max-w-2xl text-base leading-relaxed text-base-content/60 sm:mt-5 sm:text-lg">
-        {description}
-      </p>
-    </div>
-  );
-}
-
-function LogoVariation({
-  title,
-  description,
-  dark = false,
-  href,
-}: {
-  title: string;
-  description: string;
-  dark?: boolean;
-  href: string;
-}) {
-  return (
-    <div
-      className={`rounded-tl-2xl rounded-br-2xl p-6 border ${
-        dark
-          ? "bg-neutral text-neutral-content border-neutral"
-          : "bg-base-200 border-base-content/10"
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-bold">{title}</h3>
-          <p className="text-sm opacity-60">{description}</p>
-        </div>
-        <ImageIcon size={18} className="opacity-50" />
-      </div>
-      <div className="h-28 flex items-center justify-center">
-        <Image
-          src={href.replace("/assets/logo/", "/images/logos/")}
-          alt={title}
-          className="object-contain"
-          width={300}
-          height={100}
-        />
-      </div>
-      <a href={href} download className="btn btn-sm btn-outline w-full">
-        <Download size={15} />
-        Baixar
-      </a>
-    </div>
-  );
-}
-
-function InfoBox({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl bg-base-200 border border-base-content/10 p-5">
-      <div className="text-xs uppercase tracking-wider text-base-content/40 font-bold">
-        {label}
-      </div>
-      <div className="mt-2 font-mono font-bold">{value}</div>
-    </div>
-  );
-}
-
-function TypeSample({
-  label,
-  size,
-  weight,
-}: {
-  label: string;
-  size: string;
-  weight: string;
-}) {
-  return (
-    <div className="p-8">
-      <div className="text-xs uppercase tracking-widest text-base-content/40 font-bold">
-        {label}
-      </div>
-      <div className={`mt-5 ${size} ${weight}`}>RoboStage</div>
-    </div>
-  );
-}
-
-function AssetCard({
-  name,
-  description,
-  format,
-  href,
-}: {
-  name: string;
-  description: string;
-  format: string;
-  href: string;
-}) {
-  return (
-    <div className="group rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-200 p-6 hover:border-primary/40 transition-colors">
-      <div className="flex items-start justify-between gap-5">
-        <div className="flex gap-4">
-          <div className="h-12 w-12 rounded-xl bg-base-100 border border-base-content/10 flex items-center justify-center">
-            {format === "ZIP" ? (
-              <FileArchive size={20} />
-            ) : (
-              <ImageIcon size={20} />
-            )}
-          </div>
-          <div>
-            <h3 className="font-bold text-lg">{name}</h3>
-            <p className="text-sm text-base-content/50 mt-1">{description}</p>
-          </div>
-        </div>
-        <span className="badge badge-outline h-full text-center">{format}</span>
-      </div>
-      <div className="flex justify-end mt-6">
-        <a href={href} download className="btn btn-sm btn-primary">
-          <Download size={16} />
-          Baixar
-        </a>
-      </div>
-    </div>
-  );
-}
-
-function RuleCard({
-  type,
-  title,
-  items,
-}: {
-  type: "do" | "dont";
-  title: string;
-  items: string[];
-}) {
-  return (
-    <div className="rounded-tl-2xl rounded-br-2xl border border-base-content/10 bg-base-200 p-8">
-      <div className="flex items-center gap-3">
-        <div
-          className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-            type === "do"
-              ? "bg-success/15 text-success"
-              : "bg-error/15 text-error"
-          }`}
-        >
-          {type === "do" ? (
-            <Check size={20} />
-          ) : (
-            <Maximize2 size={20} className="rotate-45" />
-          )}
-        </div>
-        <h3 className="text-xl font-black">{title}</h3>
-      </div>
-
-      <ul className="mt-7 space-y-4">
-        {items.map((item) => (
-          <li key={item} className="flex gap-3 text-base-content/70">
-            <span
-              className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${
-                type === "do" ? "bg-success" : "bg-error"
-              }`}
-            />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }

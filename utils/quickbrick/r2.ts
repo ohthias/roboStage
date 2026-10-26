@@ -25,12 +25,17 @@ function config() {
   const accountId = process.env.R2_ACCOUNT_ID;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+  console.log("R2_ACCOUNT_ID", accountId);
+  console.log("R2_ACCESS_KEY_ID", accessKeyId);
+  console.log("R2_SECRET_ACCESS_KEY", secretAccessKey);
+
   if (!accountId || !accessKeyId || !secretAccessKey) {
     throw new Error(
       "Armazenamento R2 não configurado (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY).",
     );
   }
   const bucket = process.env.R2_BUCKET || DEFAULT_BUCKET;
+  console.log("R2_BUCKET", bucket);
   if (!client) {
     client = new AwsClient({ accessKeyId, secretAccessKey, service: "s3", region: "auto" });
   }

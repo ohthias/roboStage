@@ -13,39 +13,6 @@ import {
   Heart,
 } from "lucide-react";
 
-const tools = [
-  {
-    name: "QuickBrick Studio",
-    description: "Planeje suas missões e estratégias.",
-    href: "/fll/quickbrick",
-    icon: Cuboid,
-  },
-  {
-    name: "LabTest",
-    description: "Teste, analise e evolua seu robô.",
-    href: "/labtest",
-    icon: FlaskConical,
-  },
-  {
-    name: "Pontuadores",
-    description: "Acompanhe e simule sua pontuação.",
-    href: "/fll/score",
-    icon: Trophy,
-  },
-  {
-    name: "Timers",
-    description: "Gerencie seu tempo durante as competições.",
-    href: "/fll/timers",
-    icon: Clock,
-  },
-  {
-    name: "Recall",
-    description: "Treine para perguntas e entrevistas.",
-    href: "/fll/recall",
-    icon: MessageSquare,
-  },
-];
-
 export function Footer() {
   return (
     <footer className="border-t border-base-300 bg-base-100">
@@ -121,7 +88,7 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/obr/anatix" className="link link-hover">
+                  <Link href="/anatix" className="link link-hover">
                     Anatix
                   </Link>
                 </li>

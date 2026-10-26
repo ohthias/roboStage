@@ -1,13 +1,13 @@
 [
   {
     "name": "QuickBrick Studio",
-    "competitions": ["fll"],
+    "competitions": ["fll", "obr"],
     "category": "planning",
-    "description": "Conjunto de ferramentas para criar, simular e documentar as estratégias do robô ao longo da temporada da FLL. Reúne editores visuais, matrizes de análise e simuladores de trajetória em um único ambiente, ajudando a equipe a planejar, testar e registrar decisões técnicas.",
+    "description": "Conjunto de ferramentas para criar, simular e documentar as estratégias do robô ao longo da temporada. Reúne editores visuais, matrizes de análise, simuladores de trajetória e o caderno do robô, ajudando a equipe a planejar, testar e registrar decisões técnicas.",
     "details": [
       {
         "title": "Quais ferramentas fazem parte do QuickBrick Studio?",
-        "content": "Estratégias: desenhe diretamente sobre a imagem do tapete e planeje cada movimento do robô.\nMatriz SWOT das Missões: organize as missões da temporada em Forças, Fraquezas, Oportunidades e Ameaças.\nMapa de Calor de Missões: visualize as regiões mais problemáticas do tapete de forma interativa.\nSharks Simulator: simule trajetórias definindo movimentos retos e giros sobre o tapete (desenvolvido pela equipe Sharks).\nMatriz de Risco: identifique e avalie riscos que podem comprometer o desempenho do robô.\nMatriz SWOT: analise o robô como um todo, indo além das missões.\nTabela de Análise de Missões: organize e analise as missões da temporada UNEARTHED de forma prática."
+        "content": "Estratégias: desenhe diretamente sobre a imagem do tapete e planeje cada movimento do robô.\nMatriz SWOT das Missões: organize as missões da temporada em Forças, Fraquezas, Oportunidades e Ameaças.\nMapa de Calor de Missões: visualize as regiões mais problemáticas do tapete de forma interativa.\nSharks Simulator: simule trajetórias com waypoints, controle de velocidade e configuração do robô, inclusive no celular (desenvolvido pela equipe Sharks).\nMatriz de Risco: identifique e avalie riscos que podem comprometer o desempenho do robô.\nMatriz SWOT: analise o robô como um todo, indo além das missões.\nTabela de Análise de Missões: organize e analise as missões de cada temporada de forma prática.\nCriador de Arenas (OBR): monte o percurso e a sala de resgate da modalidade prática.\nCaderno do Robô: registre as versões do robô, projetos 3D do Studio 2.0 e diagramas de estratégia no Dashboard."
       },
       {
         "title": "Para que serve?",
@@ -15,27 +15,55 @@
       },
       {
         "title": "Preciso de algo especial para usar?",
-        "content": "Algumas funcionalidades funcionam apenas em telas maiores. Para a melhor experiência, acesse pelo notebook ou desktop em vez do celular."
+        "content": "Algumas funcionalidades funcionam apenas em telas maiores. Para a melhor experiência, acesse pelo notebook ou desktop em vez do celular. O Caderno do Robô exige uma conta no RoboStage."
+      }
+    ]
+  },
+  {
+    "name": "Caderno do Robô (QuickBrick Studio)",
+    "competitions": ["fll", "obr"],
+    "category": "documentation",
+    "description": "Área do QuickBrick Studio dentro do Dashboard para documentar a evolução do robô: versões, projetos 3D do BrickLink Studio 2.0 e diagramas de estratégia e missões, vinculados à liga da equipe.",
+    "details": [
+      {
+        "title": "O que posso guardar no caderno?",
+        "content": "Versões do robô com suas descrições, arquivos de projeto do BrickLink Studio 2.0 (.io) e diagramas de estratégia e missões criados no editor do próprio caderno."
+      },
+      {
+        "title": "Como funciona o visualizador 3D?",
+        "content": "Ao enviar um arquivo .io do Studio 2.0, o RoboStage monta o modelo em 3D usando a biblioteca de peças LDraw. É possível girar, aproximar e analisar o robô diretamente no navegador, sem instalar programas."
+      },
+      {
+        "title": "Posso organizar os cadernos?",
+        "content": "Sim. Cada caderno pertence a uma liga e pode receber etiquetas, o que facilita encontrar versões e projetos ao longo da temporada."
+      },
+      {
+        "title": "Como acesso?",
+        "content": "Entre no Dashboard e abra o QuickBrick Studio. É necessário estar conectado a uma conta, e o recurso precisa estar liberado para a liga da sua equipe."
       }
     ]
   },
   {
     "name": "Recall",
-    "competitions": ["fll"],
+    "competitions": ["fll", "obr"],
     "category": "training",
-    "description": "Plataforma de perguntas e respostas para simular a sala de avaliação da FLL. Permite treinar a equipe com perguntas de Core Values, Projeto de Inovação e Design do Robô, com tempo cronometrado por pergunta, tornando o treino mais rápido, dinâmico e realista.",
+    "description": "Ferramenta de perguntas e flashcards para treinar a equipe a explicar o próprio trabalho. Na FLL, simula a sala de avaliação; na OBR, prepara a equipe para falar sobre o robô, a pista e a estratégia de prova, com tempo cronometrado por pergunta.",
     "details": [
       {
         "title": "Como funciona?",
-        "content": "Você escolhe a área de avaliação (Todas, Core Values, Projeto de Inovação ou Design do Robô), define a quantidade de perguntas (10, 20 ou mais) e o tempo por pergunta (30s, 60s, 90s ou 120s) e clica em Iniciar para começar a sessão."
+        "content": "Escolha a competição e a área das perguntas, defina a quantidade de perguntas e o tempo por pergunta e clique em Iniciar. Cada pergunta pode trazer uma dica. Ao final, a tela de resultados mostra a taxa de acerto da sessão."
+      },
+      {
+        "title": "Quais áreas estão disponíveis?",
+        "content": "FLL: Core Values, Projeto de Inovação, Design do Robô e BIOGLOW (biodiversidade, pesquisa e impacto do projeto).\nOBR: Mecânica e Estrutura, Sensores, Programação, Desafios da Pista, Área de Resgate e Estratégia de Prova."
       },
       {
         "title": "Para que serve?",
-        "content": "O Recall prepara a equipe para o momento de perguntas dos juízes, simulando a pressão do tempo e cobrindo os três pilares avaliados na FLL: Core Values, Projeto de Inovação e Design do Robô."
+        "content": "O Recall prepara a equipe para responder com clareza e dentro do tempo, seja diante dos juízes da FLL ou ao explicar as decisões do robô na OBR."
       },
       {
         "title": "Posso personalizar o treino?",
-        "content": "Sim. É possível customizar a sessão escolhendo a área de avaliação específica, a quantidade de perguntas e o tempo de resposta antes de iniciar."
+        "content": "Sim. É possível escolher uma área específica ou todas, a quantidade de perguntas e o tempo de resposta antes de iniciar."
       }
     ]
   },
@@ -60,34 +88,46 @@
     ]
   },
   {
-    "name": "Pontuador",
+    "name": "Pontuador OBR",
     "competitions": ["obr"],
     "category": "competition",
-    "description": "Ferramenta para acompanhar a pontuação da arena. Permitindo o acompanhamento completo de rounds com multiplicadores de pontos e os desafios superados pelo robô, auxiliando tanto em treinos quanto em competições oficiais de forma prática e confiável.",
+    "description": "Pontuador da modalidade prática de Resgate da OBR, com cronômetro de round integrado e cálculo automático da pontuação, incluindo perigos do trajeto, checkpoints, vítimas resgatadas, multiplicadores e falhas de progresso.",
     "details": [
       {
-        "title": "Quais modos existem?",
-        "content": "Modo simples: registre apenas a pontuação das missões, ideal para treinos rápidos ou revisões pontuais."
+        "title": "O que é registrado?",
+        "content": "Perigos superados no trajeto, ladrilho de início, checkpoints (com pontos por ladrilho conforme a tentativa: 1ª, 2ª, 3ª ou 4ª em diante), vítimas vivas na área verde, vítimas mortas na área vermelha, vítimas na área invertida, ladrilho de chegada, falhas de progresso e tempo de execução."
+      },
+      {
+        "title": "Como funciona o cronômetro?",
+        "content": "O cronômetro do round pode preencher automaticamente o tempo de execução com o tempo corrido. O tempo máximo do round é de 5:00."
+      },
+      {
+        "title": "Como a pontuação é calculada?",
+        "content": "A pontuação do trajeto é somada em um subtotal e combinada com os multiplicadores das vítimas resgatadas. O pontuador mostra o detalhamento de cada parte para que a equipe entenda de onde vêm os pontos."
       },
       {
         "title": "Para que serve?",
-        "content": "O Pontuador ajuda equipes a testar estratégias de mesa, avaliar desempenhos em treinos e cronometrar rounds completos, garantindo maior realismo nas simulações."
+        "content": "O Pontuador ajuda equipes a avaliar o desempenho do robô em treinos, comparar rounds e simular a dinâmica de uma etapa oficial."
       }
     ]
   },
   {
     "name": "Timers",
-    "competitions": ["fll"],
+    "competitions": ["fll", "obr"],
     "category": "training",
-    "description": "Conjunto de temporizadores pensados para a realidade das equipes de FLL, do treino à competição. Ajuda a controlar com precisão o tempo do Robot Game, das etapas da sala de avaliação e de qualquer outra atividade cronometrada.",
+    "description": "Conjunto de temporizadores pensados para a realidade das equipes de robótica, do treino à competição. Ajuda a controlar com precisão o tempo dos rounds, das etapas da sala de avaliação e de qualquer outra atividade cronometrada.",
     "details": [
       {
-        "title": "Quais timers existem?",
-        "content": "Round do Robô: timer de rodada oficial para competições, com contagem regressiva de 2:30, alertas sonoros e visuais.\nSala de Avaliação: controle completo do tempo de Entrada, Apresentação, Perguntas e Feedback durante o judging.\nTimer Ajustável: cronômetro personalizável para treinos, apresentações ou qualquer outra necessidade da equipe."
+        "title": "Quais timers existem na FLL?",
+        "content": "Round do Robô: timer de rodada oficial, com contagem regressiva de 2:30, alertas sonoros e visuais.\nSala de Avaliação: controle completo do tempo de Entrada, Apresentação, Perguntas e Feedback durante o judging.\nTimer Ajustável: cronômetro personalizável para treinos, apresentações ou qualquer outra necessidade da equipe."
+      },
+      {
+        "title": "Quais timers existem na OBR?",
+        "content": "Round de Competição: 2 minutos de calibração seguidos de 5 minutos de round, com registro de desistências de checkpoint.\nTimer Ajustável: cronômetro personalizável para qualquer atividade da equipe."
       },
       {
         "title": "Para que serve?",
-        "content": "Os Timers garantem que treinos e simulações sigam os mesmos tempos oficiais da competição, ajudando a equipe a se acostumar com o ritmo do Robot Game e das etapas da sala de avaliação."
+        "content": "Os Timers garantem que treinos e simulações sigam os mesmos tempos oficiais da competição, ajudando a equipe a se acostumar com o ritmo dos rounds e das demais etapas."
       }
     ]
   },
@@ -99,11 +139,27 @@
     "details": [
       {
         "title": "Como funciona?",
-        "content": "O timer conta regressivamente os 2 minutos e 30 segundos de uma rodada oficial, disparando alertas sonoros e visuais em momentos-chave (como os segundos finais) para simular a pressão real de uma competição."
+        "content": "O timer conta regressivamente os 2 minutos e 30 segundos de uma rodada oficial, disparando alertas sonoros e visuais em momentos-chave (como os segundos finais) para simular a pressão real de uma competição. A contagem regressiva inicial pode ser personalizada."
       },
       {
         "title": "Para que serve?",
         "content": "Ajuda a equipe a treinar o ritmo de execução das missões dentro do tempo oficial, evitando surpresas durante o Robot Game em competições."
+      }
+    ]
+  },
+  {
+    "name": "Timer: Round de Competição (OBR)",
+    "competitions": ["obr"],
+    "category": "competition",
+    "description": "Temporizador do round da modalidade prática de Resgate da OBR, com 2 minutos de calibração seguidos de 5 minutos de round e controle das desistências de checkpoint.",
+    "details": [
+      {
+        "title": "Como funciona?",
+        "content": "O timer começa pela fase de calibração (2:00). Ao final dela, ou ao pular a calibração, inicia o round de 5:00. Cada desistência de checkpoint registrada retira 1 minuto do tempo restante, e a última desistência pode ser desfeita em caso de engano. Os alertas sonoros podem ser silenciados."
+      },
+      {
+        "title": "Para que serve?",
+        "content": "Ajuda a equipe a treinar a calibração dentro do tempo e a tomar decisões sobre desistências sob a mesma pressão de uma etapa oficial."
       }
     ]
   },
@@ -125,13 +181,13 @@
   },
   {
     "name": "Timer Ajustável",
-    "competitions": ["fll"],
+    "competitions": ["fll", "obr"],
     "category": "training",
     "description": "Cronômetro totalmente personalizável, sem tempos fixos, para ser usado em treinos, apresentações ou qualquer outra atividade da equipe que precise de controle de tempo.",
     "details": [
       {
         "title": "Como funciona?",
-        "content": "Basta definir o tempo desejado conforme a necessidade do momento — não segue um padrão fixo de competição, como os timers de Round do Robô ou Sala de Avaliação."
+        "content": "Basta definir o tempo desejado conforme a necessidade do momento — não segue um padrão fixo de competição, como os timers de round ou de Sala de Avaliação."
       },
       {
         "title": "Para que serve?",
@@ -183,7 +239,7 @@
       },
       {
         "title": "Quais ferramentas estão disponíveis?",
-        "content": "Pontuador: simule partidas da BIOGLOW Future Edition e calcule automaticamente a pontuação.\nDocumentação: acesse a documentação oficial da Future Edition na seção de Documentações do site. \nRúbrica de Avaliação: utilize a rúbrica para avaliar o desempenho das equipes de forma consistente."
+        "content": "Pontuador: simule partidas da BIOGLOW Future Edition e calcule automaticamente a pontuação.\nLabTest: registre partidas cronometradas e analise o desempenho da equipe.\nDocumentação: acesse a documentação oficial da Future Edition na seção de Documentações do site.\nRúbrica de Avaliação: utilize a rúbrica para avaliar o desempenho das equipes de forma consistente."
       }
     ]
   },
@@ -199,11 +255,15 @@
       },
       {
         "title": "Como funciona o cronômetro?",
-        "content": "O pontuador inclui um cronômetro de partida de 2:30, com botões para Iniciar e Pausar, reproduzindo o tempo oficial de uma rodada."
+        "content": "O pontuador inclui um cronômetro de partida de 2:30, com botões para Iniciar e Pausar e alertas sonoros, reproduzindo o tempo oficial de uma rodada."
       },
       {
         "title": "Como a pontuação é calculada?",
         "content": "Cada missão tem seus próprios critérios (quantidade de espécies-chave, recursos entregues, bônus e penalidades) e a pontuação total é somada automaticamente conforme os valores são preenchidos. É possível reiniciar o pontuador a qualquer momento."
+      },
+      {
+        "title": "Posso guardar as partidas?",
+        "content": "O pontuador serve para simulações rápidas. Para salvar partidas e acompanhar a evolução da equipe, use o modo Future Edition do LabTest."
       }
     ]
   },
@@ -223,27 +283,27 @@
       },
       {
         "title": "Quando devo usar essa ferramenta?",
-        "content": "É indicada para as sessões de treino na mesa, quando a equipe quer ter um controle mais preciso de quantas saídas já foram feitas, quais funcionaram e onde é preciso ajustar a estratégia ou o robô."
+        "content": "É indicada para as sessões de treino na mesa, quando a equipe quer ter um controle mais preciso de quantas saídas já foram feitas, quais funcionaram e onde é preciso ajustar a estratégia ou o robô. Para guardar os testes na conta e analisá-los com gráficos, use o LabTest."
       }
     ]
   },
   {
     "name": "Confia, mas confira! (Checklist)",
-    "competitions": ["fll"],
+    "competitions": ["fll", "obr"],
     "category": "planning",
-    "description": "Checklist digital para verificação de itens antes e depois das competições de FLL, útil tanto na preparação da equipe para o evento quanto na avaliação pós-torneio.",
+    "description": "Checklist digital para verificação de itens antes, durante e depois das competições, com listas próprias para a FLL e para a OBR, útil tanto na preparação da equipe quanto na avaliação pós-torneio.",
     "details": [
       {
         "title": "Para que serve?",
         "content": "Ajuda a equipe a não esquecer itens importantes na hora de ir para a competição (como robô, peças de reposição, materiais de apresentação, documentos) e também serve como checklist de avaliação pós-evento, para revisar o que funcionou bem e o que pode melhorar."
       },
       {
-        "title": "Quando devo usar?",
-        "content": "Antes da competição, para conferir se tudo o que a equipe precisa está pronto e separado; e depois da competição, como um checklist de avaliação para registrar aprendizados e pontos de melhoria para o próximo evento."
+        "title": "O que muda na OBR?",
+        "content": "A OBR tem listas próprias, divididas em Treinos Diários (robô, arena e programação), Pré-Etapa (robô, estratégia, materiais e equipe) e Etapa (antes do round, depois do round e equipamentos)."
       },
       {
         "title": "Como funciona?",
-        "content": "A equipe percorre a lista de itens de verificação e marca o que já foi conferido ou concluído, garantindo que nenhuma etapa importante da preparação (ou da revisão pós-torneio) seja esquecida."
+        "content": "A equipe percorre a lista de itens de verificação, marca o que já foi conferido ou concluído e pode adicionar itens próprios. O progresso fica salvo no navegador, separado para cada competição."
       }
     ]
   },
@@ -268,6 +328,26 @@
     ]
   },
   {
+    "name": "Guias para Iniciantes (Challenge e Explore)",
+    "competitions": ["fll"],
+    "category": "documentation",
+    "description": "Guias para equipes que estão começando na FLL Challenge e na FLL Explore, com os primeiros passos da temporada e um checklist para acompanhar o progresso da equipe.",
+    "details": [
+      {
+        "title": "O que encontro nos guias?",
+        "content": "Uma visão geral de cada categoria (faixa etária, tamanho da equipe e formato das rodadas), as frentes avaliadas, o que a equipe precisa ter em mãos, dicas de como pensar cada etapa e links para os canais oficiais da FIRST LEGO League."
+      },
+      {
+        "title": "Como funciona o checklist?",
+        "content": "Cada guia traz um checklist com os primeiros passos. A equipe marca o que já fez e acompanha o que ainda falta."
+      },
+      {
+        "title": "Para quem é indicado?",
+        "content": "Equipes, técnicos e mentores que estão na primeira temporada ou que querem revisar o básico antes de começar."
+      }
+    ]
+  },
+  {
     "name": "QuickBrick Studio - Criador de Arenas",
     "competitions": ["obr"],
     "category": "planning",
@@ -275,7 +355,7 @@
     "details": [
       {
         "title": "O que posso fazer?",
-        "content": "Crie o percurso da arena usando peças de caminho, configure áreas de resgate e obstáculos e selecione elementos para ajustar o layout da simulação."
+        "content": "Monte o percurso com peças de caminho, configure a sala de resgate com vítimas e áreas de entrega, posicione perigos e obstáculos e acompanhe as estatísticas da arena. A ferramenta avisa quando há colisões entre elementos."
       },
       {
         "title": "Para que serve?",
@@ -283,23 +363,55 @@
       },
       {
         "title": "Meu projeto fica salvo?",
-        "content": "O projeto é salvo localmente no navegador enquanto você trabalha. Use a opção de exportação para guardar uma cópia e compartilhar ou consultar a arena depois."
+        "content": "O projeto é salvo localmente no navegador enquanto você trabalha. Use a exportação em PNG do percurso ou da sala de resgate para guardar uma cópia e compartilhar a arena."
+      },
+      {
+        "title": "Funciona no celular?",
+        "content": "Sim. A ferramenta tem uma interface adaptada para telas menores, mas o notebook ou desktop oferece mais espaço para editar arenas grandes."
       }
     ]
   },
   {
-    "name": "Anatix - Em Desenvolvimento",
+    "name": "Anatix",
     "competitions": ["obr"],
-    "category": "planning",
-    "description": "Ferramenta de apoio à OBR para transformar informações da arena em dados estruturados e facilitar a integração entre o planejamento do percurso e o código do robô.",
+    "category": "training",
+    "description": "Ferramenta para ver, em tempo real, o que acontece dentro do código do robô. Conectado por USB, o Anatix transforma sensores, estados e tempos de execução em gráficos e registros que podem ser analisados no LabTest.",
     "details": [
       {
-        "title": "Como o Anatix ajuda a equipe?",
-        "content": "Ele organiza as informações do percurso e da arena para que a equipe consiga transformar o planejamento visual em uma estratégia mais clara para programação e testes."
+        "title": "O que o Anatix mostra?",
+        "content": "Valores ao vivo: distância, leitura dos sensores, erro do PID, velocidade dos motores ou qualquer número do seu código.\nMomentos: marcações na linha do tempo, como quando o robô perdeu a linha ou entrou na área de resgate.\nEstados: a máquina de estados do robô (seguindo linha, desviando, resgatando).\nTempo: quanto cada trecho do código leva para executar."
+      },
+      {
+        "title": "Do que preciso para usar?",
+        "content": "Instale a biblioteca do Anatix no código do robô (github.com/ohthias/Anatix_C), conecte o robô ao computador por USB e use um navegador com suporte à Web Serial API, como Chrome ou Edge."
+      },
+      {
+        "title": "Os dados ficam salvos?",
+        "content": "Sim. No LabTest, os Labs Anatix guardam as sessões com gráficos, mapas e tabelas para comparar o comportamento do robô entre um teste e outro. É necessário estar conectado a uma conta."
       },
       {
         "title": "Para quem é indicado?",
-        "content": "É indicado para equipes da modalidade prática de Resgate que desejam conectar o planejamento da arena ao desenvolvimento do código do robô."
+        "content": "Equipes da modalidade prática de Resgate que querem entender por que o robô se comporta de determinada forma e encontrar o que está deixando o código lento."
+      }
+    ]
+  },
+  {
+    "name": "Bastidores",
+    "competitions": ["obr"],
+    "category": "documentation",
+    "description": "Biblioteca de materiais para a equipe se preparar para a OBR, com livros, vídeos, cursos, sites e ferramentas sobre lógica, programação, Arduino e a própria competição.",
+    "details": [
+      {
+        "title": "O que encontro nos Bastidores?",
+        "content": "Materiais selecionados para o desenvolvimento do robô e da equipe, organizados por tema (Lógica, Programação, Arduino e OBR) e por tipo (Livro, Vídeo, Curso, Site e Ferramenta), além de atalhos para as ferramentas do RoboStage para a OBR."
+      },
+      {
+        "title": "É possível filtrar os materiais?",
+        "content": "Sim. Use a busca e os filtros por tema e tipo para encontrar rapidamente o que a equipe precisa estudar."
+      },
+      {
+        "title": "Os materiais são do RoboStage?",
+        "content": "Não. Os Bastidores reúnem materiais de outros autores e organizações. Os links abrem o conteúdo no site original."
       }
     ]
   },
@@ -311,27 +423,39 @@
     "details": [
       {
         "title": "Como funciona?",
-        "content": "Crie um mapa, registre notas no mural e organize informações sobre o que a pessoa pensa, sente, fala, faz, ouve e observa. Alterne entre o mural e a visão de análise para identificar padrões."
+        "content": "Crie um mapa, registre notas adesivas no mural e organize informações sobre o que a pessoa pensa, sente, fala, faz, ouve e observa. As notas podem mudar de cor e receber votos. Alterne entre o mural e a visão de análise, que gera uma análise heurística para ajudar a identificar padrões."
       },
       {
         "title": "Posso criar mais de um mapa?",
-        "content": "Sim. O gerenciador permite alternar entre mapas e personas, mantendo diferentes pesquisas organizadas para a equipe."
+        "content": "Sim. O gerenciador permite criar, duplicar, alternar e excluir mapas, e cada mapa tem sua persona, com informações e foto."
       },
       {
         "title": "É possível exportar o resultado?",
-        "content": "Sim. Use a opção de baixar imagem para exportar o mural e registrar o resultado da pesquisa da equipe."
+        "content": "Sim. O mapa pode ser exportado como imagem (PNG), Markdown ou CSV para registrar a pesquisa da equipe."
       }
     ]
   },
   {
     "name": "LabTest",
-    "competitions": ["fll"],
+    "competitions": ["fll", "obr"],
     "category": "general",
     "description": "O LabTest é uma ferramenta de análise de desempenho por meio de testes, seja em partes do robô ou em cenários das ligas/competições disponíveis. Permite que as equipes identifiquem problemas e otimizem o desempenho antes das competições, comprovando com dados, gráficos e relatórios detalhados.",
     "details": [
       {
+        "title": "Quais tipos de teste existem?",
+        "content": "Testes de Runs: vinculados às missões da competição e da temporada.\nCalibraBot: calibração de motores, giroscópio e PID.\nTestes personalizados: parâmetros e indicadores definidos pela equipe.\nKit LEGO Education CS & AI: predefinições para o kit usado na Future Edition.\nFuture Edition: partidas cronometradas com registro de eventos e pontuação.\nLabs Anatix: dados do robô em tempo real, recebidos por USB."
+      },
+      {
+        "title": "Que análises estão disponíveis?",
+        "content": "Histórico das execuções, gráficos de desempenho, análise de consistência e comparação de resultados. Nas partidas da Future Edition, também é possível ver a evolução da pontuação, o desempenho por missão e o ritmo da partida."
+      },
+      {
         "title": "Quando devo usar?",
-        "content": "Durante os treinos e preparações para as competições, pois permite identificar problemas e otimizar o desempenho do robô antes de participar das competições. Além de, também pode ser usado para avaliar o desempenho em diferentes cenários e missões."
+        "content": "Durante os treinos e preparações para as competições, pois permite identificar problemas e otimizar o desempenho do robô antes de participar das competições. Também pode ser usado para avaliar o desempenho em diferentes cenários e missões."
+      },
+      {
+        "title": "Preciso de uma conta?",
+        "content": "Sim. O LabTest fica no Dashboard e os tipos de teste disponíveis dependem da liga escolhida. Os testes podem ser exportados e usados como gráficos dentro dos documentos do Stagebook."
       }
     ]
   },
@@ -339,15 +463,119 @@
     "name": "StageBook",
     "competitions": ["fll", "obr"],
     "category": "general",
-    "description": "O StageBook é uma ferramenta que permite às equipes registrarem e organizarem informações sobre suas atividades, estratégias e desempenhos durante a temporada da FLL, facilitando o acompanhamento e a análise de progresso.",
+    "description": "O StageBook é o espaço de organização e documentação da equipe. Reúne documentos, pastas, equipes, etiquetas e marcos, e conecta as demais ferramentas do RoboStage, como Kanban, Calendário, ThinkLab, LabTest e QuickBrick Studio.",
     "details": [
       {
         "title": "Para que serve?",
         "content": "O StageBook ajuda as equipes a manterem um registro detalhado de suas atividades, estratégias e desempenhos, permitindo uma melhor organização e análise de progresso ao longo da temporada."
       },
       {
+        "title": "O que posso fazer nos documentos?",
+        "content": "Criar páginas com capas (cores, gradientes ou imagens) e ícones (emojis ou ícones vetoriais), usar tabelas, mover blocos arrastando e inserir, pelo menu /, cartões do Kanban, eventos do calendário, gráficos do LabTest e quadros do ThinkLab. A página inicial mostra os documentos acessados recentemente."
+      },
+      {
+        "title": "Como organizo o conteúdo?",
+        "content": "Use pastas com cores, a árvore de documentos e as etiquetas e marcos compartilhados entre as ferramentas."
+      },
+      {
         "title": "Quando devo usar?",
         "content": "Durante toda a temporada, para registrar informações relevantes sobre as missões, treinos e competições, garantindo que todos os detalhes importantes sejam capturados e possam ser revisados posteriormente."
+      }
+    ]
+  },
+  {
+    "name": "Equipes e Perfis de Uso",
+    "competitions": ["fll", "obr"],
+    "category": "general",
+    "description": "Recursos do Stagebook para trabalhar em equipe: perfis de uso, equipes com cargos e permissões, convites e um Dashboard que se adapta à forma como cada pessoa usa o RoboStage.",
+    "details": [
+      {
+        "title": "Quais perfis de uso existem?",
+        "content": "Competidor: participa de equipes existentes, por convite, e não cria equipes.\nMentor técnico: orienta equipes e pode criar espaços de equipe como técnico responsável.\nEntusiasta: acompanha e estuda robótica, pode criar equipes e ser convidado para outras.\nOrganizador: organiza eventos e competições e pode criar equipes."
+      },
+      {
+        "title": "Como funcionam os cargos da equipe?",
+        "content": "Técnicos e mentores administram a equipe, os membros e os marcos. Apenas um técnico pode excluir a equipe, conceder o cargo de técnico ou alterar outro técnico. Os demais membros têm acesso aos recursos da equipe conforme o cargo."
+      },
+      {
+        "title": "Posso controlar meus dados?",
+        "content": "Sim. Nas Configurações é possível alterar o perfil de uso, escolher se aceita convites para equipes, ver o painel de uso de dados pessoais e das equipes e limpar dados pessoais por categoria."
+      }
+    ]
+  },
+  {
+    "name": "Ligas",
+    "competitions": ["fll", "obr"],
+    "category": "general",
+    "description": "Página do Dashboard que mostra as competições disponíveis no RoboStage e quais recursos cada uma libera para a equipe.",
+    "details": [
+      {
+        "title": "Para que servem as ligas?",
+        "content": "Cada liga representa uma competição. Ela define quais recursos aparecem para a equipe, como testes de runs, CalibraBot, testes personalizados, Labs Anatix e o Caderno do Robô do QuickBrick Studio."
+      },
+      {
+        "title": "O que aparece em todas as ligas?",
+        "content": "Os recursos gerais, como Stagebook, ThinkLab, Kanban e Calendário, ficam disponíveis independentemente da competição."
+      },
+      {
+        "title": "O que significam os níveis de acesso?",
+        "content": "Um recurso pode estar completo, em versão simplificada, pausado ou marcado como em breve para cada liga."
+      }
+    ]
+  },
+  {
+    "name": "Etiquetas e Marcos",
+    "competitions": ["fll", "obr"],
+    "category": "general",
+    "description": "Sistema único de etiquetas (tags) e marcos (milestones) compartilhado entre Kanban, Calendário, ThinkLab, LabTest e QuickBrick Studio, para organizar o trabalho da equipe da mesma forma em todas as ferramentas.",
+    "details": [
+      {
+        "title": "Qual a diferença entre etiqueta e marco?",
+        "content": "Etiquetas classificam recursos por assunto (por exemplo, \"robô\", \"inovação\" ou \"programação\"). Marcos representam metas e momentos da temporada, como uma etapa da competição ou a entrega de uma versão do robô."
+      },
+      {
+        "title": "Onde gerencio as etiquetas e os marcos?",
+        "content": "Na página Etiquetas do Dashboard, onde é possível criar, editar, mudar a cor e excluir. Também é possível criá-los diretamente ao editar um cartão, evento ou recurso."
+      },
+      {
+        "title": "Quem pode criar marcos da equipe?",
+        "content": "Nas equipes, apenas técnicos e mentores criam e editam os marcos. No espaço pessoal, você gerencia os seus próprios."
+      }
+    ]
+  },
+  {
+    "name": "Kanban",
+    "competitions": ["fll", "obr"],
+    "category": "general",
+    "description": "Quadros para organizar as tarefas da equipe em um fluxo visual de trabalho, com colunas, cartões, responsáveis, etiquetas, marcos e documentos vinculados.",
+    "details": [
+      {
+        "title": "Como funciona?",
+        "content": "Crie quadros com colunas e mova os cartões conforme as tarefas avançam. Cada cartão pode ter descrição, prioridade, prazo, responsáveis, etiquetas, marcos, documentos vinculados e um histórico de atividades."
+      },
+      {
+        "title": "O que são as regras de colunas?",
+        "content": "As colunas podem ter regras que automatizam o fluxo do quadro, como associar marcos aos cartões que chegam a uma etapa."
+      },
+      {
+        "title": "Para que serve?",
+        "content": "Ajuda a acompanhar as tarefas de robô, Projeto de Inovação, pesquisa, documentação e preparação para a competição em um só lugar."
+      }
+    ]
+  },
+  {
+    "name": "Calendário",
+    "competitions": ["fll", "obr"],
+    "category": "general",
+    "description": "Calendário da equipe para organizar treinos, reuniões, competições, prazos e outros eventos, com etiquetas, marcos e documentos vinculados.",
+    "details": [
+      {
+        "title": "O que posso registrar?",
+        "content": "Eventos de diferentes tipos, de um dia, de vários dias ou sem data final, com documentos do Stagebook, etiquetas e marcos vinculados."
+      },
+      {
+        "title": "Posso ver os eventos de mais de uma equipe?",
+        "content": "Sim. Use o filtro de equipes para ver os eventos de uma ou várias equipes das quais você participa. A visão do dia mostra rapidamente o que está programado para hoje."
       }
     ]
   },
@@ -359,11 +587,51 @@
     "details": [
       {
         "title": "Como funciona?",
-        "content": "As equipes podem criar quadros de ideias, adicionar notas, organizar por categorias e priorizar as ideias mais relevantes, promovendo um ambiente colaborativo para o desenvolvimento de soluções criativas."
+        "content": "As equipes criam quadros, adicionam notas, formas, emojis, ícones, imagens e cartões de missões, organizam por categorias e priorizam as ideias mais relevantes. Os quadros podem ser guardados em pastas e exportados em SVG."
+      },
+      {
+        "title": "Existem modelos prontos?",
+        "content": "Sim. Há modelos de diagramas como Ishikawa, matriz 5W2H, mapa de empatia, fluxogramas e diagramas de arquitetura."
       },
       {
         "title": "Para que serve?",
         "content": "O ThinkLab ajuda as equipes a capturar e organizar suas ideias de forma eficiente, promovendo a criatividade e facilitando o desenvolvimento de soluções inovadoras para os desafios da temporada."
+      }
+    ]
+  },
+  {
+    "name": "Roboticar",
+    "competitions": ["fll", "obr"],
+    "category": "documentation",
+    "description": "Página com iniciativas de equipes do Brasil e do mundo e os números da robótica educacional brasileira, reunindo dados de competições como OBR, FIRST e RoboCup.",
+    "details": [
+      {
+        "title": "O que encontro no Roboticar?",
+        "content": "Números da robótica educacional no Brasil, um gráfico com o histórico de inscrições da OBR (em gráfico ou tabela) e um explorador de sites, ferramentas, guias e comunidades criados por equipes e organizações."
+      },
+      {
+        "title": "É possível filtrar as iniciativas?",
+        "content": "Sim. O explorador permite filtrar as iniciativas por região e categoria. Todos os links abrem o site original."
+      }
+    ]
+  },
+  {
+    "name": "ShowLive",
+    "competitions": ["fll"],
+    "category": "competition",
+    "description": "Ferramenta para organizadores de eventos e competições, origem do RoboStage. Está em reformulação para permitir eventos customizados, com regras, critérios e rubricas próprias para diferentes formatos de competição.",
+    "details": [
+      {
+        "title": "O que o ShowLive fazia?",
+        "content": "Na versão anterior, voltada para a FLL Challenge, oferecia ranking em tempo real, mesa do robô para os juízes e códigos de acesso para voluntários e visitantes."
+      },
+      {
+        "title": "O que vem na próxima versão?",
+        "content": "Eventos configurados de acordo com cada competição, com estrutura, etapas, equipes, regras e rubricas definidas pelo organizador."
+      },
+      {
+        "title": "Posso sugerir recursos?",
+        "content": "Sim. A página do ShowLive tem um atalho para enviar sugestões pelo GitHub do RoboStage."
       }
     ]
   }

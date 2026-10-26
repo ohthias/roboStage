@@ -11,6 +11,153 @@ Exemplo: `2026.1` corresponde à primeira atualização oficial de 2026.
 
 ---
 
+## [2026.5] — Um ecossistema para cada competição
+
+**Data:** 26/10/2026
+
+A quinta atualização de 2026 consolida o RoboStage como uma plataforma para mais de uma competição. A OBR ganha ferramentas próprias, o Anatix passa a enviar dados do robô em tempo real para o LabTest, o QuickBrick Studio se torna o caderno do robô dentro do Dashboard e o Stagebook recebe etiquetas e marcos universais, ligas, perfis de uso e uma nova gestão de equipes.
+
+### OBR — Olimpíada Brasileira de Robótica
+
+* Adicionado o suporte à OBR no **Confia, mas confira!**, com checklists próprios da competição.
+* Adicionado cronômetro ao Pontuador OBR e aprimorada a lógica de pontuação.
+* Adicionado o modo **Round OBR** aos Timers.
+* Adicionado o modo OBR ao **Recall**, com perguntas e categorias específicas.
+* Criada a página **Bastidores**, com uma biblioteca de materiais de estudo e preparação para a OBR.
+* Adicionado o componente `LibraryExplorer` para busca e filtragem dos materiais.
+* Reformulada a página inicial das competições com as seções de ferramentas, etapas e chamadas para ação (`CompetitionSections`).
+* Adicionado o `LivePreview`, uma prévia em tempo real do treino com cronômetro, pontuação e registro das missões.
+
+### Anatix
+
+* Adicionada a conexão USB com robôs através da Web Serial API (`useAnatixSerial`).
+* Implementada a decodificação do protocolo do Anatix e o acúmulo dos dados recebidos.
+* Adicionados os **Labs Anatix** ao LabTest, com criação, gerenciamento e histórico das sessões.
+* Adicionados gráficos de valores ao vivo, marcações na linha do tempo, estados do robô e medição do tempo de execução de trechos do código.
+* Adicionados mapas e tabelas para análise dos dados coletados.
+* A página pública do Anatix passou para `/anatix`, independente da competição.
+
+### LabTest
+
+* Adicionado suporte à **FLL Future Edition**, com partidas cronometradas, registro de eventos, pontuação por submissão e efeitos sonoros.
+* Adicionada a análise das partidas da Future Edition, com evolução da pontuação, desempenho por missão e ritmo da partida.
+* Adicionados predefinições do kit **LEGO Education CS & AI**.
+* Adicionada a seção **CalibraBot** para calibração de motores, giroscópio e PID.
+* Reorganizada a criação de testes em seções (Runs, CalibraBot, personalizados, Kit IA e detalhes do teste).
+* Adicionados novos gráficos e o componente `CustomTooltip` para visualização dos dados.
+* Aprimorados os cálculos estatísticos com novas métricas.
+* Removida a página antiga de Analytics, substituída pelas análises dentro de cada teste.
+
+### QuickBrick Studio
+
+* Integrado o QuickBrick Studio ao Dashboard, com uma área própria de cadernos do robô.
+* Adicionados cadernos com versões do robô, vinculados à liga da equipe.
+* Adicionado o visualizador 3D de projetos do **BrickLink Studio 2.0** (`.io`), construído com three.js e a biblioteca LDraw.
+* Adicionados diagramas de estratégia e missões dentro dos cadernos, com editor dedicado.
+* Adicionado envio de arquivos para armazenamento no Cloudflare R2.
+* Adicionada a ferramenta **Matriz de Risco**.
+* Adicionado suporte a etiquetas nos cadernos do QuickBrick.
+* O mapa de calor passou a aceitar um estado inicial, permitindo salvar e retomar o trabalho.
+
+### Stagebook
+
+#### Etiquetas e marcos universais
+
+* Criado um sistema único de **etiquetas (tags)** e **marcos (milestones)** compartilhado entre Kanban, Calendário, ThinkLab, LabTest e QuickBrick.
+* Adicionada a página **Etiquetas** no Dashboard, com o `LabelsManager` para criar, editar e excluir etiquetas e marcos.
+* Adicionados seletores, chips e controle de cores para etiquetas e marcos.
+* Calendário e Kanban passaram a exibir e filtrar etiquetas e marcos.
+
+#### Documentos e pastas
+
+* Adicionadas capas para documentos, com cores, gradientes e imagens (geométrico, montanhas e oceano).
+* Adicionados ícones de página com emojis ou ícones vetoriais, fundos e formatos personalizáveis.
+* Adicionados **embeds** no editor: cartões do Kanban, eventos do calendário, gráficos do LabTest e quadros do ThinkLab, inseridos pelo menu `/`.
+* A página inicial do Stagebook passou a mostrar os documentos recentes.
+* Melhorada a árvore de documentos, com dicas de contexto e arrastar e soltar mais confiável.
+* Adicionadas cores de pastas para uma identidade visual consistente.
+* Melhorado o explorador de pastas.
+
+#### Equipes, permissões e ligas
+
+* Adicionados **perfis de uso**: Competidor, Mentor técnico, Entusiasta e Organizador.
+* As regras de criação de equipes passaram a depender do perfil do usuário.
+* Adicionada uma matriz de permissões por cargo, com mensagens claras quando uma ação não é permitida.
+* Reformulada a área de equipes, com navegação lateral, recursos da equipe, avatares e selos de cargo.
+* Adicionada a página **Ligas**, que mostra as competições disponíveis e os recursos liberados em cada uma.
+* Adicionado o catálogo de recursos por liga, que define o que cada competição libera dentro do Stagebook.
+* Removidas as configurações de organização e o formulário antigo de criação de equipes.
+
+#### Dashboard e configurações
+
+* Adicionadas páginas iniciais do Dashboard adaptadas a cada perfil (competidor, mentor e explorador).
+* Reorganizada a página de Configurações em seções: perfil, perfil de uso, preferências, segurança e dados.
+* Adicionado o painel de uso, mostrando o consumo de dados pessoais e das equipes.
+* Adicionada a limpeza de dados pessoais por categoria.
+* Adicionada a preferência de recebimento de convites para equipes.
+
+### ThinkLab
+
+* Adicionados emojis, ícones e imagens como elementos do quadro.
+* Adicionadas bibliotecas de emojis por categoria e de ícones Lucide.
+* Adicionado cache de imagens para melhorar o desempenho da renderização.
+* Adicionados cartões de missões com imagem e texto.
+* A exportação em SVG passou a incluir os elementos de mídia.
+* Adicionados novos componentes de painel para o editor.
+
+### Roboticar
+
+* Criada a página **Roboticar**, com iniciativas de equipes do Brasil e do mundo.
+* Adicionados os números da robótica educacional brasileira, incluindo OBR, FIRST, RoboCup e outras competições.
+* Adicionado o gráfico de inscrições da OBR, com visualização em gráfico e tabela.
+* Adicionado o explorador de iniciativas com filtros por região e categoria.
+
+### FLL
+
+* Adicionados guias para equipes iniciantes da FLL Challenge e da FLL Explore.
+* Adicionado o `GuideChecklist` para acompanhar os primeiros passos da equipe.
+
+### Mapa de Empatia
+
+* Melhorada a responsividade e a usabilidade dos componentes em telas menores.
+
+### Páginas institucionais
+
+* Reformulada a página **Apoie o RoboStage**, com formas de contribuir com e sem código, divulgação e espaço para o futuro apoio financeiro.
+* Adicionada a lista de pessoas que contribuíram com o projeto.
+* Adicionada a página de **Changelog**, que lê as releases do GitHub e usa o `CHANGELOG.md` como alternativa.
+* Reformulada a página do **ShowLive**, com o histórico da ferramenta e os planos para a próxima versão.
+
+### Interface e experiência
+
+* Reorganizada a navegação principal, com selos para itens novos e atualizados.
+* Melhorado o `MenuCard`, com número, etiqueta e ação.
+* Adicionado fundo animado à página inicial.
+* Removida a seção de ferramentas do Footer.
+* Melhorada a tela de resultados do Recall, com taxa de acerto e mensagens de acordo com o desempenho.
+* Corrigida a formatação de datas no calendário.
+* Melhorias de acessibilidade e responsividade em diferentes páginas.
+
+### Correções
+
+* Corrigidos os links da seção de notícias, que agora codificam corretamente os identificadores das matérias.
+* Corrigidas as referências de etiquetas nos filtros e na exibição.
+* Ajustada a altura dos componentes do caderno do QuickBrick.
+
+### Banco de dados e infraestrutura
+
+* Consolidadas as migrações do Drizzle em uma nova sequência.
+* Adicionadas tabelas para marcos, preferências do usuário, Labs Anatix e cadernos do QuickBrick.
+* Adicionada a associação dos cadernos do QuickBrick às ligas, com os cadernos existentes vinculados à FLL Challenge.
+* Adicionados scripts SQL manuais para a configuração dos novos recursos.
+* A senha dos arquivos ZIP do Studio passou a ser lida de uma variável de ambiente.
+* Adicionadas as dependências `three`, `@zip.js/zip.js` e `aws4fetch`.
+* Atualizados Next.js para 16.4 e React para 19.3.
+
+> **A v2026.5 leva o RoboStage além de uma única competição: OBR, FLL e Anatix passam a conviver no mesmo espaço, com dados em tempo real, cadernos do robô e uma organização de equipes pensada para cada perfil.**
+
+---
+
 ## [2026.4] — Novas ferramentas, novas possibilidades
 
 **Data:** 19/10/2026
@@ -841,15 +988,18 @@ O RoboStage evoluiu de uma plataforma inicialmente voltada ao gerenciamento de e
 
 Atualmente, a plataforma reúne ferramentas como:
 
-* **QuickBrick Studio** — planejamento estratégico e documentação técnica.
-* **LabTest** — testes e análise de desempenho.
-* **InnoLab** — brainstorming, pesquisa e diagramas.
+* **Stagebook** — documentos, pastas, equipes, etiquetas e marcos.
+* **QuickBrick Studio** — planejamento estratégico, cadernos do robô e documentação técnica.
+* **LabTest** — testes, calibração e análise de desempenho.
+* **Anatix** — dados do robô em tempo real via USB.
+* **ThinkLab** — brainstorming, pesquisa e diagramas.
+* **Kanban** e **Calendário** — organização de tarefas e do tempo da equipe.
+* **ArenaBuilder** — criação de arenas de robótica.
 * **ShowLive** — gerenciamento de torneios e eventos.
-* **styleLab** — criação e personalização visual.
 * **Timers** — cronômetros para diferentes atividades.
-* **Flash Q&A** — treinamento por perguntas e flashcards.
+* **Recall** — revisão por perguntas e flashcards (antigo Flash Q&A).
 
-O foco atual é a **FIRST® LEGO® League Challenge**, com suporte futuro planejado para outras competições de robótica.
+A plataforma atende à **FIRST® LEGO® League** e à **Olimpíada Brasileira de Robótica (OBR)**, com estrutura preparada para outras competições.
 
 ---
 
@@ -859,3 +1009,7 @@ A partir da versão **2026.1**, o RoboStage passa a utilizar o formato:
 
 ```text
 YYYY.N
+```
+
+* `YYYY` — ano da atualização.
+* `N` — ordem da atualização dentro do ano.

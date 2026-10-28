@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useUndoable, useUndoShortcuts } from "@/hooks/useUndoable";
 import { analyzePath, analyzeRescue } from "@/utils/quickbrick/ArenaBuilder/analysis";
 import { download, svgToPng } from "@/utils/quickbrick/ArenaBuilder/export";
 import { defaultProject, sampleProject, sanitizeProject } from "@/utils/quickbrick/ArenaBuilder/project";
@@ -15,19 +16,23 @@ import { useToast } from "@/app/context/ToastContext";
 const STORAGE_KEY = "obr-arena-builder:v1";
 
 export default function ArenaBuilder() {
-  const [project, setProject] = useState<Project>(defaultProject);
+  const {
+    value: project,
+    live: setProject,
+    live,
+    commit,
+    checkpoint,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useUndoable<Project>(defaultProject);
   const [tab, setTab] = useState<"path" | "rescue">("path");
   const [selection, setSelection] = useState<Selection | null>(null);
   const [mode, setMode] = useState<Mode>("select");
   const [brush, setBrush] = useState<Tile>({ ...emptyTile(), shape: "straight" });
   const [ready, setReady] = useState(false);
   const { addToast } = useToast();
-
-  const projectRef = useRef(project);
-  projectRef.current = project;
-  const past = useRef<Project[]>([]);
-  const future = useRef<Project[]>([]);
-  const [, bump] = useState(0);
 
   const pathSvg = useRef<SVGSVGElement | null>(null);
   const rescueSvg = useRef<SVGSVGElement | null>(null);
@@ -44,7 +49,7 @@ export default function ArenaBuilder() {
       /* armazenamento indisponível */
     }
     setReady(true);
-  }, []);
+  }, [setProject]);
 
   useEffect(() => {
     if (!ready) return;
@@ -56,55 +61,7 @@ export default function ArenaBuilder() {
   }, [project, ready]);
 
   /* ------------------------------ histórico ------------------------------ */
-  const checkpoint = useCallback(() => {
-    past.current.push(projectRef.current);
-    if (past.current.length > 100) past.current.shift();
-    future.current = [];
-    bump((n) => n + 1);
-  }, []);
-
-  const live = useCallback((p: Project) => setProject(p), []);
-
-  const commit = useCallback(
-    (p: Project) => {
-      checkpoint();
-      setProject(p);
-    },
-    [checkpoint],
-  );
-
-  const undo = useCallback(() => {
-    const prev = past.current.pop();
-    if (!prev) return;
-    future.current.push(projectRef.current);
-    setProject(prev);
-    bump((n) => n + 1);
-  }, []);
-
-  const redo = useCallback(() => {
-    const next = future.current.pop();
-    if (!next) return;
-    past.current.push(projectRef.current);
-    setProject(next);
-    bump((n) => n + 1);
-  }, []);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const el = e.target as HTMLElement;
-      if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
-        e.preventDefault();
-        if (e.shiftKey) redo();
-        else undo();
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
-        e.preventDefault();
-        redo();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [undo, redo]);
+  useUndoShortcuts(undo, redo);
 
   /* ------------------------------- ações ------------------------------- */
   const slug = project.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "arena";
@@ -189,7 +146,7 @@ export default function ArenaBuilder() {
             <button
               className="btn btn-sm join-item"
               onClick={undo}
-              disabled={!past.current.length}
+              disabled={!canUndo}
               title="Desfazer (Ctrl+Z)"
             >
               <Undo2 size={16} />
@@ -197,7 +154,7 @@ export default function ArenaBuilder() {
             <button
               className="btn btn-sm join-item"
               onClick={redo}
-              disabled={!future.current.length}
+              disabled={!canRedo}
               title="Refazer (Ctrl+Shift+Z)"
             >
               <Redo2 size={16} />

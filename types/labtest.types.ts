@@ -1,4 +1,5 @@
 import type { FEExecutionResult } from "@/utils/labtest/future-edition";
+import type { ObrRoundResult } from "@/utils/labtest/obr";
 
 // ---------------------------------------------------------------------------
 // Tipos genéricos do LabTest.
@@ -26,6 +27,11 @@ export interface FieldDefinition {
   options?: FieldOption[] | null;
   required?: boolean;
   source?: FieldSource;
+  /** Limites para campos numéricos (ex.: parâmetros personalizados). */
+  min?: number | null;
+  max?: number | null;
+  /** Campo calculado (presets): fórmula de `utils/labtest/calc.ts`. */
+  calc?: string | null;
 }
 
 export interface FieldValue {
@@ -53,6 +59,11 @@ export interface TestEntry {
   };
   /** Partida cronometrada da FLL Future Edition (modo runs). */
   futureEdition?: FEExecutionResult;
+  /** Rodada da OBR Resgate (modo runs). */
+  obrRound?: ObrRoundResult;
+  /** Modo "Round 2:30": placar completo (missões + inspeção + tokens). */
+  roundTotal?: number;
+  roundSeconds?: number;
 }
 
 export interface TestRecord {
@@ -112,5 +123,9 @@ export type FllExecutionResults = {
     total?: number;
     remaining?: number;
     used?: number;
+  };
+  round?: {
+    total?: number;
+    seconds?: number;
   };
 };

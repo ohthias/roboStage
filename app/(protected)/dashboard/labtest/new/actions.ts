@@ -12,7 +12,11 @@ import {
   scoreAt,
   type FEData,
 } from "@/utils/labtest/future-edition";
-import { KIT_IA_ID, getKitPreset } from "@/utils/labtest/kit-ia";
+import { KIT_IA_ID, getKitPreset, type KitPreset } from "@/utils/labtest/kit-ia";
+import { OBR_LEAGUE, getObrPreset } from "@/utils/labtest/obr-presets";
+import { OBR_EDITION, getObrArena, isObrConfig, validateObrResult } from "@/utils/labtest/obr";
+import { calcInputs, computeCalc, isValidCalc } from "@/utils/labtest/calc";
+import { sanitizeProject } from "@/utils/quickbrick/ArenaBuilder/project";
 import { folders } from "@/db/schema/notebook";
 import { tests, testExecutions } from "@/db/schema/labtest";
 import { revalidatePath } from "next/cache";
@@ -39,10 +43,17 @@ type RunsPayload = {
   competitionId: string;
   competitionName?: string | null;
   season?: string | null;
+  runMode?: string | null; // modo dentro da competição (ex.: "round")
+  competitionCode?: string | null; // ex.: "FLL" (usado no ícone do card)
   missionOrder: string[]; // t.orderedSelected.map(m => m.id) — ordem definida pelo usuário
   answers: Record<string, MissionAnswer>; // t.answers
-  /** "future-edition" => partida cronometrada (missões fixas da temporada). */
+  /**
+   * "future-edition" => partida cronometrada (missões fixas da temporada).
+   * "obr-resgate"    => rodada da OBR Resgate (sem missões; pontuação do Pontuador).
+   */
   edition?: string;
+  /** OBR: cópia da arena do Criador de Arenas (opcional). */
+  arena?: unknown;
   /** Duração da partida em segundos (Future Edition). */
   matchDuration?: number;
 };
@@ -76,11 +87,20 @@ type CalibrabotKitPayload = {
   kitParams: string[]; // nomes dos parâmetros escolhidos dentro do preset
 };
 
+/** Testes prontos do CalibraBot para a OBR Resgate (só com a liga OBR ativa). */
+type CalibrabotObrPayload = {
+  mode: "calibrabot";
+  calibraMode: "obr";
+  obrPreset: string;
+  obrParams: string[];
+};
+
 type CalibrabotPayload =
   | CalibrabotMotoresPayload
   | CalibrabotGiroPayload
   | CalibrabotPidPayload
-  | CalibrabotKitPayload;
+  | CalibrabotKitPayload
+  | CalibrabotObrPayload;
 
 type CustomParamPayload = {
   id: string;
@@ -123,14 +143,50 @@ function buildMotorPairs(motores: string[]): [string, string][] {
  *  - calibrabot -> { tipo, modo, ... } (motores | giroscópio | pid)
  *  - custom    -> { parametros: [{ nome, obrigatorio, descricao, tipo, min, max }] }
  */
+/**
+ * Parâmetros escolhidos de um preset, na ordem do preset. Um campo calculado
+ * leva junto os campos de que depende (senão nunca teria valor).
+ */
+function presetParams(preset: KitPreset, chosen: string[]) {
+  const names = new Set(chosen);
+  for (const param of preset.params) {
+    if (param.calc && names.has(param.nome)) calcInputs(param.calc).forEach((n) => names.add(n));
+  }
+  return preset.params
+    .filter((param) => names.has(param.nome))
+    .map((param) => ({
+      nome: param.nome,
+      rotulo: param.rotulo,
+      descricao: param.descricao,
+      tipo: param.tipo,
+      ...(param.unidade ? { unidade: param.unidade } : {}),
+      ...(param.opcoes ? { opcoes: param.opcoes } : {}),
+      ...(param.meta !== undefined ? { meta: param.meta } : {}),
+      ...(param.calc ? { calc: param.calc } : {}),
+    }));
+}
+
 function buildConfig(input: CreateTestInput) {
   switch (input.mode) {
     case "runs": {
+      // OBR Resgate: rodada sem missões; a arena é opcional.
+      if (input.edition === OBR_EDITION) {
+        const arena = input.arena ? sanitizeProject(input.arena) : null;
+        return {
+          edition: OBR_EDITION,
+          ...(input.competitionId ? { competitionId: input.competitionId } : {}),
+          ...(input.competitionName ? { competitionName: input.competitionName } : {}),
+          ...(input.competitionCode ? { competitionCode: input.competitionCode } : {}),
+          ...(arena ? { arena } : {}),
+        };
+      }
       return {
         missions: input.missionOrder,
         answers: input.answers,
         ...(input.competitionId ? { competitionId: input.competitionId } : {}),
         ...(input.competitionName ? { competitionName: input.competitionName } : {}),
+        ...(input.runMode ? { runMode: input.runMode } : {}),
+        ...(input.competitionCode ? { competitionCode: input.competitionCode } : {}),
         ...(input.edition === FE_EDITION
           ? { edition: FE_EDITION, matchDuration: getMatchDuration({ matchDuration: input.matchDuration }) }
           : {}),
@@ -149,6 +205,17 @@ function buildConfig(input: CreateTestInput) {
           modo: input.motorTestType,
           motores: input.motores,
           ...(pares ? { pares } : {}),
+        };
+      }
+
+      if (input.calibraMode === "obr") {
+        const preset = getObrPreset(input.obrPreset)!;
+        return {
+          tipo: "obr",
+          preset: preset.id,
+          presetNome: preset.label,
+          liga: OBR_LEAGUE,
+          parametros: presetParams(preset, input.obrParams),
         };
       }
 
@@ -207,6 +274,12 @@ function buildConfig(input: CreateTestInput) {
 }
 
 function validateCreateInput(input: CreateTestInput) {
+  if (input.mode === "runs" && input.edition === OBR_EDITION) {
+    if (input.arena && !sanitizeProject(input.arena)) {
+      throw new Error("A arena importada é inválida.");
+    }
+    return;
+  }
   if (input.mode === "runs") {
     if (
       !Array.isArray(input.missionOrder) ||
@@ -227,6 +300,19 @@ function validateCreateInput(input: CreateTestInput) {
       (!Array.isArray(input.motores) || input.motores.length === 0)
     ) {
       throw new Error("Adicione ao menos um motor.");
+    }
+    if (input.calibraMode === "obr") {
+      const preset = getObrPreset(input.obrPreset);
+      if (!preset) throw new Error("Escolha um teste da OBR.");
+      const valid = new Set(preset.params.map((param) => param.nome));
+      if (
+        !Array.isArray(input.obrParams) ||
+        input.obrParams.length === 0 ||
+        input.obrParams.some((name) => !valid.has(name))
+      ) {
+        throw new Error("Selecione ao menos uma medição válida do teste.");
+      }
+      return;
     }
     if (input.calibraMode === "kit-ia") {
       const preset = getKitPreset(input.kitPreset);
@@ -352,6 +438,9 @@ function validateExecutionResults(
     });
   }
 
+  const isEmpty = (v: unknown) =>
+    v === null || v === undefined || (typeof v === "string" && !v.trim());
+
   const resultKeys = Object.keys(results);
   if (
     configuredFields.size === 0 ||
@@ -359,6 +448,24 @@ function validateExecutionResults(
     resultKeys.some((fieldKey) => !configuredFields.has(fieldKey))
   ) {
     throw new Error("A execução contém campos inválidos para este teste.");
+  }
+
+  if (resultKeys.every((key) => isEmpty(results[key]))) {
+    throw new Error("Preencha ao menos um campo da execução.");
+  }
+
+  // Parâmetros personalizados marcados como obrigatórios.
+  if (Array.isArray(config.parametros)) {
+    const missing = config.parametros
+      .filter(
+        (p): p is { nome: string; obrigatorio?: boolean } =>
+          !!p && typeof p === "object" && typeof (p as { nome?: unknown }).nome === "string",
+      )
+      .filter((p) => p.obrigatorio === true && isEmpty(results[p.nome]))
+      .map((p) => p.nome);
+    if (missing.length) {
+      throw new Error(`Preencha os campos obrigatórios: ${missing.join(", ")}.`);
+    }
   }
 }
 
@@ -377,16 +484,25 @@ function resolveTestMode(
   return input.mode;
 }
 
-/** A liga Future Edition está entre as ligas/competições do usuário? */
-async function userHasFutureEdition(userId: string) {
-  const rows = await db
+async function userLeagues(userId: string) {
+  return db
     .select({ code: leagues.code, name: leagues.name })
     .from(userLeagueInterests)
     .innerJoin(leagues, eq(userLeagueInterests.leagueId, leagues.id))
     .where(eq(userLeagueInterests.userId, userId));
+}
 
-  return rows.some(
+/** A liga Future Edition está entre as ligas/competições do usuário? */
+async function userHasFutureEdition(userId: string) {
+  return (await userLeagues(userId)).some(
     (row) => /future/i.test(row.code) || /future edition/i.test(row.name),
+  );
+}
+
+/** A OBR está entre as ligas/competições do usuário? */
+async function userHasObr(userId: string) {
+  return (await userLeagues(userId)).some((row) =>
+    /\bobr\b|olimp[ií]ada brasileira de rob[oó]tica/i.test(`${row.code} ${row.name}`),
   );
 }
 
@@ -412,6 +528,15 @@ export async function createTest(input: CreateTestInput) {
     throw new Error(
       "Ative a liga FLL Future Edition em Ligas e Competições para criar este teste.",
     );
+  }
+
+  // Rodadas e presets da OBR só para quem tem a liga OBR ativa.
+  const needsObr =
+    (input.mode === "runs" && input.edition === OBR_EDITION) ||
+    (input.mode === "calibrabot" && input.calibraMode === "obr");
+
+  if (needsObr && !(await userHasObr(scope.userId))) {
+    throw new Error("Ative a liga OBR em Ligas e Competições para criar este teste.");
   }
 
   if (input.folderId) {
@@ -515,12 +640,33 @@ export async function createTestExecution(input: {
     throw new Error("Teste não encontrado ou sem permissão.");
   }
 
-  const results = input.results ?? {};
+  let results = input.results ?? {};
   const ownedConfig = owned.config as Record<string, unknown>;
 
   if (ownedConfig.edition === FE_EDITION) {
     await validateFutureEditionResults(results);
+  } else if (isObrConfig(ownedConfig)) {
+    // Rodada OBR: só o pacote `obrRound`, coerente e com o placar recalculado.
+    const extra = Object.keys(results).filter((key) => key !== "obrRound");
+    if (extra.length > 0) throw new Error("Rodada inválida: campos desconhecidos.");
+    results = { obrRound: validateObrResult(results.obrRound, getObrArena(ownedConfig)) };
   } else {
+    // Campos calculados (presets) são refeitos aqui, não confiados ao cliente.
+    if (Array.isArray(ownedConfig.parametros)) {
+      const calcs = (ownedConfig.parametros as unknown[]).flatMap((param) => {
+        const p = param as { nome?: unknown; calc?: unknown };
+        return typeof p?.nome === "string" && isValidCalc(p.calc) ? [{ nome: p.nome, calc: p.calc }] : [];
+      });
+      if (calcs.length) {
+        const next = { ...results };
+        for (const { nome, calc } of calcs) {
+          const value = computeCalc(calc, results);
+          if (value === null) delete next[nome];
+          else next[nome] = value;
+        }
+        results = next;
+      }
+    }
     validateExecutionResults(ownedConfig, results);
   }
 

@@ -238,7 +238,7 @@ export const exploreGuide: BeginnerGuideData = {
   ],
   tools: [
     { icon: Clock, tag: "ENCONTROS", title: "Timers", description: "Timer ajustável para organizar o tempo de cada sessão da equipe.", href: "/fll/timers", tone: "primary" },
-    { icon: BookOpen, tag: "DOCUMENTOS", title: "Documentações", description: "Documentos das temporadas da liga reunidos em um só lugar.", href: "/fll/docs", tone: "secondary" },
+    { icon: BookOpen, tag: "DOCUMENTOS", title: "Documentações", description: "Documentos das temporadas da liga reunidos em um só lugar.", href: "/fll/docs#bioglow-explore", tone: "secondary" },
     { icon: Globe2, tag: "COMUNIDADE", title: "Roboticar", description: "Iniciativas de outras equipes e dados da robótica no Brasil.", href: "/roboticar", tone: "accent" },
   ],
   faq: [

@@ -40,10 +40,10 @@ export const NAVIGATION = {
         label: "Ferramentas",
         icon: ToolCase,
         items: [
-          { nome: "Recall", path: "recall", icon: MessageSquare, description: "Reavaliação de conceitos por meio de flashcards", update: true },
+          { nome: "Recall", path: "recall", icon: MessageSquare, description: "Reavaliação de conceitos por meio de flashcards", update: false },
           { nome: "Rúbrica de Avaliação", path: "rubric", icon: NotepadText, description: "Ferramenta de avaliação interativa para competições de robótica" },
-          { nome: "Mapa de Empatia", path: "empathy-map", icon: UserSearch, description: "Ferramenta para análise de empatia com o profissional alvo", new: false, update: true },
-          { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para auxiliar na gestão do tempo durante os treinos", update: true },
+          { nome: "Mapa de Empatia", path: "empathy-map", icon: UserSearch, description: "Ferramenta para análise de empatia com o profissional alvo", new: false, update: false },
+          { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para auxiliar na gestão do tempo durante os treinos", update: false },
           { nome: "Partiu Mesa!", path: "partiu-mesa", icon: MonitorDot, description: "Simulador de simples para teste de saídas. Para análise de desempenho do robô durante um teste de saída." },
           { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento." },
         ],
@@ -53,7 +53,7 @@ export const NAVIGATION = {
         label: "Recursos",
         icon: BookOpen,
         items: [
-          { nome: "Documentações", path: "docs", icon: BookOpen, description: "Documentação das temporadas da liga" },
+          { nome: "Documentações", path: "docs", icon: BookOpen, description: "Documentação das temporadas da liga", update: true },
           { nome: "Guia de Missões", path: "docs/missions-guide", icon: BookCopy, description: "Guia de missões da FLL Challenge", new: false },
           { nome: "Iniciantes da Challenge", path: "begins", icon: School, description: "FLL para equipes iniciantes" },
           { nome: "Iniciantes da Explore", path: "explore", icon: Telescope, description: "FLL Explore para equipes iniciantes" },
@@ -80,9 +80,9 @@ export const NAVIGATION = {
         label: "Ferramentas",
         icon: ToolCase,
         items: [
-          { nome: "Recall", path: "recall", icon: MessageSquare, description: "Reavaliação de conceitos por meio de flashcards", update: true },
-          { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para auxiliar na gestão do tempo durante os treinos", update: true },
-          { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento.", update: true },
+          { nome: "Recall", path: "recall", icon: MessageSquare, description: "Reavaliação de conceitos por meio de flashcards", update: false },
+          { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para auxiliar na gestão do tempo durante os treinos", update: false },
+          { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento.", update: false },
         ],
       },
       {
@@ -90,8 +90,8 @@ export const NAVIGATION = {
         label: "Recursos",
         icon: BookOpen,
         items: [
-          { nome: "Documentações", path: "docs", icon: BookOpen, description: "Documentos e materiais de apoio para competição." },
-          { nome: "Bastidores", path: "bastidores", icon: Clapperboard, description: "O que sua equipe precisa para brilhar no palco. Recursos que auxiliam no desenvolvimento do seu robô.", new: true },
+          { nome: "Documentações", path: "docs", icon: BookOpen, description: "Documentos e materiais de apoio para competição.", update: true },
+          { nome: "Bastidores", path: "bastidores", icon: Clapperboard, description: "O que sua equipe precisa para brilhar no palco. Recursos que auxiliam no desenvolvimento do seu robô.", new: false },
         ],
       },
     ] satisfies NavMenuGroup[],
@@ -102,9 +102,9 @@ export const NAVIGATION = {
 export const NAVIGATION_MAIN_LINKS = [
   { href: "/about", label: "Sobre", new: false },
   { href: "/anatix", label: "Anatix", new: false },
-  { href: "/roboticar", label: "Roboticar", new: true },
-  { href: "/news", label: "Notícias", icon: NotepadText, new: false },
-  { href: "/help", label: "Ajuda", icon: MessageSquare, new: false, update: true },
+  { href: "/roboticar", label: "Roboticar", new: false },
+  { href: "/news", label: "Notícias", icon: NotepadText, new: false, update: true },
+  { href: "/help", label: "Ajuda", icon: MessageSquare, new: false },
 ];
 
 export const NAVIGATION_MAIN_MENUS: NavLinkGroup[] = [

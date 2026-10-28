@@ -24,6 +24,11 @@ export interface KitParam {
   meta?: number;
   /** Já vem marcado ao escolher o preset. */
   padrao: boolean;
+  /**
+   * Campo calculado a partir de outros (não é digitado). Formatos em
+   * `utils/labtest/calc.ts`: "ratio:a/b", "per:a/b", "mingap:a,b,c".
+   */
+  calc?: string;
 }
 
 export interface KitPreset {

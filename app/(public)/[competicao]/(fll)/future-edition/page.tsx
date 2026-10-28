@@ -99,7 +99,7 @@ const tools: ToolItem[] = [
     tag: "REGRAS",
     title: "Documentação",
     description: "Acesse a documentação oficial da Future Edition reunida no RoboStage.",
-    href: "/fll/docs",
+    href: "/fll/docs#bioglow-future-edition",
     tone: "accent",
   },
 ];

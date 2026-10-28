@@ -1,9 +1,9 @@
 {
   "Nacional 2026" : [
     {
-      "title": "Livro de Regras",
+      "title": "Manual de Regras e Instruções - Resgate",
       "description": "Contém todas as regras oficiais da temporada, incluindo pontuação e restrições dos robôs.",
-      "url": "https://obr.robocup.org.br/wp-content/uploads/2026/07/OBR2026_REGIONAL_ESTADUAL_MANUAL-DE-REGRAS-E-INSTRUCOES_v1.2.pdf",
+      "url": "https://obr.robocup.org.br/wp-content/uploads/2026/10/OBR2026_NACIONAL_MANUAL-DE-REGRAS-E-INSTRUCOES_RESGATE.pdf",
       "category": "geral"
     },
     {
@@ -16,6 +16,18 @@
       "title": "Site da OBR",
       "description": "Site oficial da Olimpíada Brasileira de Robótica, com informações sobre inscrições, regulamentos e resultados.",
       "url": "https://obr.robocup.org.br/",
+      "category": "geral"
+    },
+    {
+      "title": "Manual de Regras e Instruções - Artística",
+      "description": "Contém todas as regras oficiais da temporada, incluindo pontuação e restrições dos robôs para a modalidade artística.",
+      "url": "https://obr.robocup.org.br/wp-content/uploads/2026/10/OBR2026_-Manual-de-Regras-e-Instrucoes-_Etapa-Nacional_-Robotica-Artistica.pptx-1.pdf",
+      "category": "geral"
+    },
+    {
+      "title": "Manual de Regras e InstruçõeÁrea de Competição - Artística",
+      "description": "Guia detalhado sobre a área de competição para a modalidade artística, incluindo dimensões e posicionamento de desafios.",
+      "url": "https://obr.robocup.org.br/wp-content/uploads/2026/03/OBR2026_Area-de-competicao-_-robotica-artistica.pptx.pdf",
       "category": "geral"
     }
   ]

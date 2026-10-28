@@ -1,45 +1,15 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
-
-const DATA_PATH = path.join(
-  process.cwd(),
-  "public",
-  "data",
-  "obrDocs.json",
-);
+import { readRawDocs } from "@/utils/competitions/docs";
 
 export async function GET() {
   try {
-    const raw = await fs.readFile(DATA_PATH, "utf-8");
-    const data = JSON.parse(raw);
-
-    return NextResponse.json(data);
+    return NextResponse.json(await readRawDocs("obr"));
   } catch (err) {
     console.error("Erro ao carregar documentação da OBR:", err);
-
-    if (
-      typeof err === "object" &&
-      err !== null &&
-      "code" in err &&
-      err.code === "ENOENT"
-    ) {
-      return NextResponse.json(
-        { error: "Arquivo de documentação da OBR não encontrado." },
-        { status: 500 },
-      );
-    }
-
-    if (err instanceof SyntaxError) {
-      return NextResponse.json(
-        { error: "O arquivo obrDocs.json contém JSON inválido." },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json(
-      { error: "Não foi possível carregar as missões." },
-      { status: 500 },
-    );
+    const message =
+      err instanceof SyntaxError
+        ? "O arquivo obrDocs.json contém JSON inválido."
+        : "Não foi possível carregar a documentação da OBR.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

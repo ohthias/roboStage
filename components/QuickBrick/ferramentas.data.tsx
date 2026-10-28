@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { BookText, Puzzle, FlaskConical } from "lucide-react";
+import { BookText, Puzzle, FlaskConical, Theater } from "lucide-react";
 
 export interface SeasonLogo {
   name: string;
@@ -169,9 +169,20 @@ export const ferramentas: Ferramenta[] = [
     link: "/obr/quickbrick/criador-de-arenas",
     customContent: null,
   },
+  {
+    id: 9,
+    titulo: "Mapa de palco",
+    descricao:
+      "Planeje a apresentação da OBR Artística: marcações no chão, desenhos livres, pistas de seguidor de linha e as trajetórias de robôs e atores em cada cena, com animação quadro a quadro e aviso de colisões.",
+    categoria: "Criar",
+    icon: <Theater className="w-5 h-5" />,
+    link: "/obr/quickbrick/mapa-de-palco",
+    badge: "Novo",
+    customContent: null,
+  },
 ];
 
 export const ferramentasPorCompeticao: Record<string, number[]> = {
   fll: [1, 2, 3, 4, 5, 6, 7],
-  obr: [8, 5, 6],
+  obr: [8, 9, 5, 6],
 };

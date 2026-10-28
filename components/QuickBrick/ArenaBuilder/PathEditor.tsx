@@ -39,13 +39,21 @@ interface Props {
   brush: Tile;
   setBrush: (t: Tile) => void;
   svgRef: React.RefObject<SVGSVGElement | null>;
-  onEditRescue: () => void;
+  onEditRescue?: () => void;
+  /** exibe a sala de resgate no espaço de trabalho (padrão: sim). O Mapa de palco usa `false`. */
+  showRoom?: boolean;
+  /** rótulo das peças 3×3 (padrão: "Tablado") */
+  boardLabel?: string;
+  /** destaca uma área a partir da origem (em cm), ex.: o palco do Mapa de palco */
+  area?: { w: number; h: number; label: string };
 }
 
 const PAD_TOP = 16;
 
 export default function PathEditor(props: Props) {
   const { project, commit, live, checkpoint, selection, setSelection, mode, setMode, brush, setBrush, svgRef, onEditRescue } = props;
+  const showRoom = props.showRoom ?? true;
+  const boardLabel = props.boardLabel ?? "Tablado";
   const drag = useRef<{ key: string; dx: number; dy: number } | null>(null);
   const [hover, setHover] = useState<string | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
@@ -107,7 +115,7 @@ export default function PathEditor(props: Props) {
       return !collides(project, { col, row, w: rW, h: rH });
     }
     if (col < 0 || row < 0 || col + 3 > COLS || row + 3 > ROWS) return false;
-    return !collides(project, { col, row, w: 3, h: 3 }, { ignoreBoard: Number(key.slice(1)), checkRoom: true });
+    return !collides(project, { col, row, w: 3, h: 3 }, { ignoreBoard: Number(key.slice(1)), checkRoom: showRoom });
   }
 
   function place(key: string, col: number, row: number): Project {
@@ -286,7 +294,7 @@ export default function PathEditor(props: Props) {
             {mode === "paint"
               ? "Escolha a peça abaixo e clique (ou arraste) sobre os ladrilhos para pintar."
               : selection
-                ? `Editando: Tablado ${selection.boardId} · linha ${Math.floor(selection.idx / 3) + 1}, coluna ${(selection.idx % 3) + 1}`
+                ? `Editando: ${boardLabel} ${selection.boardId} · linha ${Math.floor(selection.idx / 3) + 1}, coluna ${(selection.idx % 3) + 1}`
                 : "Clique em um ladrilho para editá-lo. Duplo clique gira 90°."}
           </p>
 
@@ -428,7 +436,27 @@ export default function PathEditor(props: Props) {
                 quadrícula = 30 cm
               </text>
 
+              {props.area && (
+                <g pointerEvents="none">
+                  <rect
+                    x="0"
+                    y="0"
+                    width={Math.min(W, props.area.w)}
+                    height={Math.min(H, props.area.h)}
+                    fill="#0ea5e9"
+                    fillOpacity=".06"
+                    stroke="#0ea5e9"
+                    strokeWidth=".8"
+                    strokeDasharray="4 2"
+                  />
+                  <text x={Math.min(W, props.area.w) - 2} y={Math.min(H, props.area.h) - 2} textAnchor="end" fontSize="4" fontWeight="700" fill="#0284c7">
+                    {props.area.label}
+                  </text>
+                </g>
+              )}
+
               {/* sala de resgate */}
+              {showRoom && (
               <g
                 transform={`translate(${project.roomPos.col * CELL} ${project.roomPos.row * CELL})`}
                 onPointerEnter={() => setHover("room")}
@@ -451,10 +479,11 @@ export default function PathEditor(props: Props) {
                     width: roomW(project.rescue) + WALL_T * 2,
                     title: "Sala de resgate",
                     sub: `${roomW(project.rescue)}×${roomH(project.rescue)} cm`,
-                    action: { label: "✎ editar", run: onEditRescue },
+                    action: { label: "✎ editar", run: () => onEditRescue?.() },
                   })}
                 </g>
               </g>
+              )}
 
               {project.boards.map((b) => {
                 const key = `b${b.id}`;
@@ -522,14 +551,16 @@ export default function PathEditor(props: Props) {
                       );
                     })}
                     <g className="no-export">
-                      {renderHandle({ k: key, y: -7.4, width: 90, title: `Tablado ${b.id}`, sub: `${b.col * 30}, ${b.row * 30} cm` })}
+                      {renderHandle({ k: key, y: -7.4, width: 90, title: `${boardLabel} ${b.id}`, sub: `${b.col * 30}, ${b.row * 30} cm` })}
                     </g>
                   </g>
                 );
               })}
             </svg>
             <p className="text-center text-[11px] absolute bottom-2 left-0 w-full pointer-events-none z-10 text-slate-500">
-              Passe o mouse sobre um tablado ou sobre a sala para ver a legenda e arrastá-lo (encaixa a cada 30 cm).
+              {showRoom
+                ? "Passe o mouse sobre um tablado ou sobre a sala para ver a legenda e arrastá-lo (encaixa a cada 30 cm)."
+                : "Passe o mouse sobre uma peça para ver a legenda e arrastá-la (encaixa a cada 30 cm)."}
             </p>
           </div>
         </div>
@@ -540,7 +571,7 @@ export default function PathEditor(props: Props) {
             <div key={b.id} className="card card-border bg-base-100">
               <div className="card-body gap-2 p-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold">Tablado {b.id} · 3×3</h3>
+                  <h3 className="text-sm font-bold">{boardLabel} {b.id} · 3×3</h3>
                   <span className="badge badge-ghost badge-sm">
                     {b.col * 30}, {b.row * 30} cm
                   </span>
@@ -559,6 +590,7 @@ export default function PathEditor(props: Props) {
               </div>
             </div>
           ))}
+          {showRoom && (
           <div className="card card-border bg-base-100">
             <div className="card-body gap-2 p-3">
               <div className="flex items-center justify-between">
@@ -580,6 +612,7 @@ export default function PathEditor(props: Props) {
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>

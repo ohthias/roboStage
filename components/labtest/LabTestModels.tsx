@@ -15,14 +15,15 @@ export function LabTestModels({
 }: LabTestModelsProps) {
   const activeCount = Math.min(Math.max(value, 0), total);
 
+  // Tocar no último disco aceso apaga ele (assim dá para chegar a 0).
   const handleModelChange = (index: number) => {
-    onChange(index + 1);
+    onChange(index + 1 === activeCount ? index : index + 1);
   };
 
   return (
     <section
       aria-label="Discos de Precisão restantes"
-      className="rounded-2xl border border-base-content/10 bg-base-200/20 p-4"
+      className="rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-4"
     >
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
@@ -31,7 +32,7 @@ export function LabTestModels({
           </p>
 
           <p className="mt-0.5 text-xs text-base-content/50">
-            Informe quantos discos restaram ao final do lançamento.
+            Quantos discos sobraram no fim. Toque no último aceso para apagar.
           </p>
         </div>
 
@@ -89,4 +90,4 @@ export function LabTestModels({
       </div>
     </section>
   );
-}
+}

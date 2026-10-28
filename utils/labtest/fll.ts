@@ -106,5 +106,8 @@ export function scoreFllExecution(
   missions: FllMissionDefinition[],
   answers: Record<string, FllAnswer> | undefined,
 ) {
-  return missions.reduce((total, mission) => total + scoreFllMission(mission, answers?.[mission.id]), 0);
+  // GP (Gracious Professionalism) não entra no placar do robô.
+  return missions
+    .filter((mission) => mission.id !== "GP")
+    .reduce((total, mission) => total + scoreFllMission(mission, answers?.[mission.id]), 0);
 }

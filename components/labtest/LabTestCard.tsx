@@ -11,7 +11,9 @@ import { MilestoneChip } from "@/components/stagebook/labels/milestone-chip";
 import type { MilestoneDTO, TagDTO } from "@/types/labels";
 import {
   getModeMeta,
+  getRunVariant,
   getTestImage,
+  type RunVariant,
   normalizeStatus,
   STATUS_META,
   summarizeConfig,
@@ -74,7 +76,7 @@ export function TestImagePreview({
           alt=""
           fill
           sizes="(max-width: 640px) 160px, 224px"
-          className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.04]"
+          className="object-contain transition-transform duration-300 group-hover:scale-[1.04]"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-base-300/20 to-transparent" />
       </>
@@ -90,6 +92,44 @@ export function TestImagePreview({
   );
 }
 
+/**
+ * Prévia dos modos especiais de run: logo da temporada (ou as imagens do
+ * teste, quando não há logo) + selo com o ícone do modo.
+ */
+function RunVariantPreview({
+  variant,
+  image,
+  modeIcon,
+}: {
+  variant: RunVariant;
+  image: TestImage;
+  modeIcon: LucideIcon;
+}) {
+  const Icon = variant.icon;
+  return (
+    <div className="relative flex h-full w-full items-center justify-center">
+      {variant.logo ? (
+        <Image
+          src={variant.logo}
+          alt=""
+          fill
+          sizes="(max-width: 640px) 160px, 224px"
+          className="object-contain p-6 opacity-90 transition-transform duration-300 group-hover:scale-[1.04]"
+        />
+      ) : (
+        <TestImagePreview image={image} modeIcon={modeIcon} />
+      )}
+      <span
+        className="absolute bottom-2 left-2 z-10 inline-flex items-center gap-1.5 rounded-tl-lg rounded-br-lg bg-primary px-2 py-1 text-[11px] font-semibold text-primary-content shadow-sm"
+        title={`${variant.competition} · ${variant.label}`}
+      >
+        <Icon className="size-3.5" strokeWidth={2.2} />
+        <span className="max-sm:sr-only">{variant.label}</span>
+      </span>
+    </div>
+  );
+}
+
 export function LabTestCard({
   test,
   viewMode,
@@ -100,6 +140,7 @@ export function LabTestCard({
   const modeMeta = getModeMeta(test.mode);
   const ModeIcon = modeMeta.icon;
   const testImage = getTestImage(test);
+  const runVariant = getRunVariant(test);
   const configSummary = summarizeConfig(test.mode, test.config);
 
   const createdAt = new Date(test.createdAt);
@@ -148,7 +189,11 @@ export function LabTestCard({
             : "min-h-full w-28 border-r border-base-300 sm:w-40"
         }`}
       >
-        <TestImagePreview image={testImage} modeIcon={ModeIcon} />
+        {runVariant ? (
+          <RunVariantPreview variant={runVariant} image={testImage} modeIcon={ModeIcon} />
+        ) : (
+          <TestImagePreview image={testImage} modeIcon={ModeIcon} />
+        )}
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-5">

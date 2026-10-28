@@ -2,61 +2,75 @@
 
 // ---------------------------------------------------------------------------
 // Renderiza o input certo (número, sim/não, texto, seleção...) para um
-// FieldDefinition. Usado pelo ResultForm em qualquer modo — é o que permite
-// o modo Personalizado registrar lançamentos sem nenhum código específico.
+// FieldDefinition. Usado pela execução e pelo ResultForm em qualquer modo —
+// é o que permite o modo Personalizado registrar lançamentos sem nenhum
+// código específico.
 // ---------------------------------------------------------------------------
 
-import { CheckCircle2, XCircle } from "lucide-react";
 import type { FieldDefinition, FieldValue } from "@/types/labtest.types";
+
+const segBase =
+  "cursor-pointer rounded-tl-lg rounded-br-lg px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
 export function FieldValueInput({
   field,
   value,
   onChange,
+  id,
+  invalid = false,
 }: {
   field: FieldDefinition;
   value: FieldValue["value"];
   onChange: (value: FieldValue["value"]) => void;
+  id?: string;
+  invalid?: boolean;
 }) {
+  const invalidCls = invalid ? "input-error" : "";
+
   switch (field.type) {
     case "boolean":
       return (
-        <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={() => onChange(true)}
-            className={`btn btn-xs gap-1 rounded-lg transition-all ${
-              value === true
-                ? "btn-success text-success-content"
-                : "btn-ghost text-base-content/40 hover:bg-success/10 hover:text-success"
-            }`}
-          >
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            Sim
-          </button>
-          <button
-            type="button"
-            onClick={() => onChange(false)}
-            className={`btn btn-xs gap-1 rounded-lg transition-all ${
-              value === false
-                ? "btn-error text-error-content"
-                : "btn-ghost text-base-content/40 hover:bg-error/10 hover:text-error"
-            }`}
-          >
-            <XCircle className="h-3.5 w-3.5" />
-            Não
-          </button>
+        <div
+          role="radiogroup"
+          aria-label={field.label}
+          className="inline-flex gap-1 rounded-tl-xl rounded-br-xl border border-base-300 bg-base-200/50 p-1"
+        >
+          {[
+            { v: true, label: "Sim" },
+            { v: false, label: "Não" },
+          ].map((o) => {
+            const active = value === o.v;
+            return (
+              <button
+                key={o.label}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => onChange(active ? null : o.v)}
+                className={`${segBase} ${
+                  active
+                    ? o.v
+                      ? "bg-success text-success-content"
+                      : "bg-base-content text-base-100"
+                    : "text-base-content/55 hover:text-base-content"
+                }`}
+              >
+                {o.label}
+              </button>
+            );
+          })}
         </div>
       );
 
     case "select":
       return (
         <select
-          className="select select-bordered select-sm w-full focus:select-primary"
+          id={id}
+          className={`select w-full ${invalid ? "select-error" : ""}`}
           value={typeof value === "string" ? value : ""}
           onChange={(e) => onChange(e.target.value)}
         >
-          <option value="">Selecione...</option>
+          <option value="">Selecione…</option>
           {(field.options ?? []).map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
@@ -68,53 +82,52 @@ export function FieldValueInput({
     case "text":
       return (
         <input
+          id={id}
           type="text"
           value={typeof value === "string" ? value : ""}
           onChange={(e) => onChange(e.target.value)}
-          className="input input-bordered input-sm w-full focus:input-primary"
+          className={`input w-full ${invalidCls}`}
+          placeholder="Escreva aqui"
         />
       );
 
     case "duration":
-      return (
-        <div className="flex items-center gap-1.5">
-          <input
-            type="number"
-            min={0}
-            step="any"
-            value={typeof value === "number" ? value : ""}
-            onChange={(e) =>
-              onChange(e.target.value ? Number(e.target.value) : null)
-            }
-            className="input input-bordered input-sm w-24 focus:input-primary"
-          />
-          <span className="text-xs text-base-content/40">{field.unit ?? "s"}</span>
-        </div>
-      );
-
     case "number":
-    default:
+    default: {
+      const min = field.type === "duration" ? 0 : (field.min ?? undefined);
+      const max = field.max ?? undefined;
+      const unit = field.unit ?? (field.type === "duration" ? "s" : null);
       return (
-        <div className="flex items-center gap-1.5">
-          <input
-            type="number"
-            min={0}
-            step="any"
-            max={field.targetValue ?? undefined}
-            placeholder="0"
-            value={typeof value === "number" ? value : ""}
-            onChange={(e) =>
-              onChange(e.target.value ? Number(e.target.value) : null)
-            }
-            className="input input-bordered input-sm w-28 focus:input-primary"
-          />
-          {field.unit && (
-            <span className="text-xs text-base-content/40">{field.unit}</span>
-          )}
+        <div className="flex flex-wrap items-center gap-2">
+          <label className={`input w-full max-w-56 ${invalidCls}`}>
+            <input
+              id={id}
+              type="number"
+              inputMode="decimal"
+              step="any"
+              min={min}
+              max={max}
+              placeholder={
+                min !== undefined && max !== undefined ? `${min} a ${max}` : "0"
+              }
+              value={typeof value === "number" ? value : ""}
+              onChange={(e) =>
+                onChange(e.target.value === "" ? null : Number(e.target.value))
+              }
+              className="grow tabular-nums"
+            />
+            {unit && (
+              <span className="text-xs text-base-content/45">{unit}</span>
+            )}
+          </label>
           {field.targetValue != null && (
-            <span className="text-xs text-base-content/40">/ {field.targetValue}</span>
+            <span className="font-mono text-xs text-base-content/50">
+              meta {field.targetValue}
+              {unit ? ` ${unit}` : ""}
+            </span>
           )}
         </div>
       );
+    }
   }
 }

@@ -1,24 +1,39 @@
 "use client";
 
 // ---------------------------------------------------------------------------
-// Formulário de página cheia para registrar uma execução (lançamento) de um
-// teste e enviar direto ao banco (test_executions), usado pela rota
-// /dashboard/labtest/[id]/execute. Diferente do ResultForm (modal, múltiplos
-// rascunhos de uma vez), esta tela registra UMA execução por envio — pensada
-// para ser aberta rapidamente antes/depois de rodar o teste no robô.
+// Registro de execuções de um teste (/dashboard/labtest/[id]/execute).
+// Uma ou mais execuções podem ser preenchidas de uma vez; cada uma vira uma
+// linha em test_executions. Funciona para todos os modos:
+//  - Runs (FLL): pontua cada missão com o mesmo motor do pontuador público
+//    (resposta = índice da opção), mais discos de precisão.
+//  - Calibrabot · Motores: rotação/tempo por motor (ou por dupla escolhida).
+//  - Calibrabot · Giroscópio / PID e Personalizado: campos do config,
+//    com obrigatórios e limites mínimo/máximo.
+// O modo "Round 2:30" tem tela própria (FllRoundExecution).
 // ---------------------------------------------------------------------------
-import { useEffect, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FlaskConical, Plus, Save, Trash2 } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Circle,
+  Loader2,
+  Plus,
+  Save,
+  Trash2,
+} from "lucide-react";
 
 import type { FieldDefinition, FieldValue } from "@/types/labtest.types";
-import { emptyValueForType } from "@/types/labtest.types";
-import { getModeDefinition, ACCENT_STYLES } from "@/utils/labtest/modes";
-import { FieldValueInput } from "./FieldValueInput";
-import { SectionDivider } from "./shared";
+import { getModeMeta } from "@/utils/labtest/catalog";
+import { getSubMissionKey } from "@/utils/labtest/fll";
+import { computeMissionBreakdown } from "@/utils/scores";
+import { MissionCard } from "@/components/FormMission/MissionCard";
 import { createTestExecution } from "@/app/(protected)/dashboard/labtest/actions";
-import { LabTestModels } from "./LabTestModels";
 import { updateLabTestStatus } from "@/app/(protected)/dashboard/labtest/new/actions";
+import { FieldValueInput } from "./FieldValueInput";
+import { computeCalc } from "@/utils/labtest/calc";
+import { LabTestModels } from "./LabTestModels";
 
 interface ExecuteTestFormProps {
   testId: string;
@@ -28,34 +43,65 @@ interface ExecuteTestFormProps {
   fields: FieldDefinition[];
   nextExecutionNumber: number;
   isMotorPairs?: boolean;
+  config?: Record<string, unknown> | null;
 }
 
-interface ExecutionDraft {
+type Value = FieldValue["value"];
+
+interface Draft {
   id: number;
-  selectedPair: string;
-  values: FieldValue[];
-  missionAnswers: Record<string, MissionAnswerDraft>;
-  precisionDiscsRemaining: number;
+  pair: string;
+  values: Record<string, Value>;
+  responses: Record<string, Record<number, number>>;
+  discs: number;
   notes: string;
 }
 
-interface MissionAnswerDraft {
-  value: number;
-  subAnswers: Record<string, number>;
-}
-
-interface RawMission {
-  id: string;
-  name: string;
-  type?: [string, ...(string | number | null)[]];
-  "sub-mission"?: Array<{
-    id?: string;
-    submission: string;
-    type?: [string, ...(string | number | null)[]];
-  }>;
-}
-
+const DISCS = 6;
 let nextDraftId = 1;
+
+const isFilled = (v: Value | undefined) =>
+  v !== null && v !== undefined && !(typeof v === "string" && !v.trim());
+
+/** Agrupa campos de motor (base__rotacao, base__tempo) por motor/dupla. */
+function groupMotorFields(fields: FieldDefinition[]) {
+  const groups = new Map<string, FieldDefinition[]>();
+  for (const f of fields) {
+    const base = f.fieldKey.replace(/__(rotacao|tempo)$/, "");
+    groups.set(base, [...(groups.get(base) ?? []), f]);
+  }
+  return [...groups.entries()].map(([base, list]) => ({
+    base,
+    title: list[0]?.label.split(" · ")[0] ?? base,
+    fields: list,
+  }));
+}
+
+function contextLine(
+  mode: string,
+  season: string | null | undefined,
+  config: Record<string, unknown> | null | undefined,
+  fieldCount: number,
+) {
+  const c = config ?? {};
+  if (mode === "runs") {
+    const parts = [season ? season.toUpperCase() : null];
+    if (c.runMode === "run-completa") parts.push("Run completa");
+    parts.push(`${fieldCount} ${fieldCount === 1 ? "missão" : "missões"}`);
+    return parts.filter(Boolean).join(" · ");
+  }
+  if (c.tipo === "motores")
+    return `Motores · ${c.modo === "duplas" ? "duplas" : "individual"}`;
+  if (c.tipo === "giroscopio")
+    return `Giroscópio · ângulo alvo ${c.anguloAlvo ?? "?"}°`;
+  if (c.tipo === "obr")
+    return `OBR Resgate · ${typeof c.presetNome === "string" ? c.presetNome : "teste"}`;
+  if (c.tipo === "kit-ia")
+    return `Kit Ciência e IA · ${typeof c.presetNome === "string" ? c.presetNome : "teste"}`;
+  if (c.tipo === "pid")
+    return `PID · distância alvo ${c.distanciaAlvo ?? "?"} cm`;
+  return `${fieldCount} ${fieldCount === 1 ? "parâmetro" : "parâmetros"}`;
+}
 
 export default function ExecuteTestForm({
   testId,
@@ -65,572 +111,587 @@ export default function ExecuteTestForm({
   fields,
   nextExecutionNumber,
   isMotorPairs = false,
+  config,
 }: ExecuteTestFormProps) {
   const router = useRouter();
-  const modeDef = getModeDefinition(
-    mode as Parameters<typeof getModeDefinition>[0],
-  );
-  const Icon = modeDef.icon;
-  const accent = ACCENT_STYLES[modeDef.accent];
+  const modeLabel = getModeMeta(mode).label;
   const isFllRuns = mode === "runs" && Boolean(season);
-  const [missionCatalog, setMissionCatalog] = useState<RawMission[]>([]);
+  const isMotor = config?.tipo === "motores";
+
+  /* ------------------------- catálogo FLL (runs) ------------------------- */
+  const [catalog, setCatalog] = useState<Mission[] | null>(null);
+  const [catalogError, setCatalogError] = useState(false);
 
   useEffect(() => {
     if (!isFllRuns) return;
-
     let active = true;
     fetch("/api/data/missions")
-      .then((response) => response.json())
-      .then((data: Record<string, RawMission[]>) => {
-        if (active)
-          setMissionCatalog(
-            Array.isArray(data[season ?? ""]) ? data[season ?? ""] : [],
-          );
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data: Record<string, Mission[]>) => {
+        if (!active) return;
+        const list = Array.isArray(data[season ?? ""])
+          ? data[season ?? ""]
+          : [];
+        if (!list.length) throw new Error();
+        setCatalog(list);
       })
-      .catch(() => {
-        if (active) setMissionCatalog([]);
-      });
-
+      .catch(() => active && setCatalogError(true));
     return () => {
       active = false;
     };
   }, [isFllRuns, season]);
 
-  const pairFields = isMotorPairs
-    ? fields.filter(
-        (field) =>
-          field.fieldKey.endsWith("__rotacao") ||
-          field.fieldKey.endsWith("__tempo"),
-      )
-    : [];
-  const pairOptions = Array.from(
-    new Set(
-      pairFields.map((field) =>
-        field.fieldKey.replace(/__(rotacao|tempo)$/, ""),
-      ),
-    ),
+  const fllMissions = useMemo(
+    () =>
+      fields
+        .map((f) => catalog?.find((m) => m.id === f.fieldKey))
+        .filter((m): m is Mission => Boolean(m)),
+    [fields, catalog],
   );
-  const makeDraft = (): ExecutionDraft => ({
-    id: nextDraftId++,
-    selectedPair: pairOptions[0] ?? "",
-    values: fields.map((f) => ({
-      fieldKey: f.fieldKey,
-      value: emptyValueForType(f.type),
-    })),
-    missionAnswers: Object.fromEntries(
-      fields.map((field) => {
-        const mission = missionCatalog.find(
-          (item) => item.id === field.fieldKey,
-        );
 
-        return [
-          field.fieldKey,
-          {
-            value: 0,
-            subAnswers: Object.fromEntries(
-              (mission?.["sub-mission"] ?? []).map((sub, index) => [
-                sub.id ?? `${field.fieldKey}-sub-${index}`,
-                0,
-              ]),
-            ),
-          },
-        ];
-      }),
-    ),
-    precisionDiscsRemaining: 6,
+  /* ------------------------------ duplas ------------------------------ */
+  const pairOptions = useMemo(
+    () => (isMotorPairs ? groupMotorFields(fields) : []),
+    [isMotorPairs, fields],
+  );
+
+  /* ------------------------------ rascunhos ------------------------------ */
+  const makeDraft = (): Draft => ({
+    id: nextDraftId++,
+    pair: pairOptions[0]?.base ?? "",
+    values: {},
+    responses: {},
+    discs: DISCS,
     notes: "",
   });
-  const [drafts, setDrafts] = useState<ExecutionDraft[]>(() => [makeDraft()]);
+
+  const [drafts, setDrafts] = useState<Draft[]>(() => [makeDraft()]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showErrors, setShowErrors] = useState(false);
 
-  const fllMissions = fields
-    .map((field) =>
-      missionCatalog.find((mission) => mission.id === field.fieldKey),
-    )
-    .filter((mission): mission is RawMission => Boolean(mission));
-
-  const updateMissionValue = (
-    draftId: number,
-    missionId: string,
-    value: number,
-  ) =>
+  const patchDraft = (id: number, patch: (d: Draft) => Partial<Draft>) =>
     setDrafts((prev) =>
-      prev.map((draft) =>
-        draft.id === draftId
-          ? {
-              ...draft,
-              missionAnswers: {
-                ...draft.missionAnswers,
-                [missionId]: { ...draft.missionAnswers[missionId], value },
-              },
-              values: draft.values.map((item) =>
-                item.fieldKey === missionId ? { ...item, value } : item,
-              ),
-            }
-          : draft,
-      ),
+      prev.map((d) => (d.id === id ? { ...d, ...patch(d) } : d)),
     );
 
-  const updateSubAnswer = (
-    draftId: number,
-    missionId: string,
-    subId: string,
-    value: number,
-  ) =>
-    setDrafts((prev) =>
-      prev.map((draft) =>
-        draft.id === draftId
-          ? {
-              ...draft,
-              missionAnswers: {
-                ...draft.missionAnswers,
-                [missionId]: {
-                  ...draft.missionAnswers[missionId],
-                  subAnswers: {
-                    ...draft.missionAnswers[missionId]?.subAnswers,
-                    [subId]: value,
-                  },
-                },
-              },
-            }
-          : draft,
-      ),
+  const fieldsFor = (d: Draft) =>
+    pairOptions.length
+      ? (pairOptions.find((p) => p.base === d.pair)?.fields ?? [])
+      : fields;
+
+  /** Problemas que impedem salvar um rascunho (lista vazia = ok). */
+  const problemsOf = (d: Draft): { message: string; keys: string[] }[] => {
+    if (isFllRuns) {
+      if (catalogError || !catalog)
+        return [{ message: "Missões não carregadas", keys: [] }];
+      return [];
+    }
+    // Campos calculados não são digitados.
+    const list = fieldsFor(d).filter((f) => !f.calc);
+    const out: { message: string; keys: string[] }[] = [];
+    if (!list.some((f) => isFilled(d.values[f.fieldKey]))) {
+      out.push({ message: "Preencha ao menos um campo", keys: [] });
+    }
+    const missing = list.filter(
+      (f) => f.required && !isFilled(d.values[f.fieldKey]),
     );
-
-  const renderMissionInput = (
-    type: RawMission["type"],
-    value: number,
-    onChange: (value: number) => void,
-  ) => {
-    const kind = type?.[0];
-
-    const namedOptions =
-      type
-        ?.slice(1)
-        .filter(
-          (item): item is string => typeof item === "string" && item.length > 0,
-        ) ?? [];
-
-    const options =
-      kind === "range"
-        ? Array.from(
-            {
-              length: Number(type?.[2] ?? 0) - Number(type?.[1] ?? 0) + 1,
-            },
-            (_, index) => String(Number(type?.[1] ?? 0) + index),
-          )
-        : namedOptions.map((label, index) => ({
-            label,
-            value: String(index + 1),
-          }));
-
-    const visibleOptions = options.filter((option) => {
-      const optionValue = typeof option === "string" ? option : option.value;
-
-      // No FLL Challenge, "Não" e "Não realizado"
-      // representam a mesma resposta.
-      if (
-        kind === "switch" &&
-        typeof option !== "string" &&
-        option.label.toLowerCase() === "não"
-      ) {
-        return false;
-      }
-
-      return optionValue !== "0";
-    });
-
-    const allOptions = [
-      {
-        label: "Não realizado",
-        value: 0,
-      },
-      ...visibleOptions.map((option) => ({
-        value: Number(typeof option === "string" ? option : option.value),
-        label: typeof option === "string" ? option : option.label,
-      })),
-    ];
-
-    if (kind === "switch" && namedOptions.length === 0) {
-      allOptions.push({
-        label: "Cumprido",
-        value: 1,
+    if (missing.length) {
+      out.push({
+        message: `Obrigatório: ${missing.map((f) => f.label).join(", ")}`,
+        keys: missing.map((f) => f.fieldKey),
       });
     }
+    const outOfRange = list.filter((f) => {
+      const v = d.values[f.fieldKey];
+      if (typeof v !== "number") return false;
+      return (f.min != null && v < f.min) || (f.max != null && v > f.max);
+    });
+    for (const f of outOfRange) {
+      out.push({
+        message: `${f.label} deve ficar entre ${f.min ?? "−∞"} e ${f.max ?? "∞"}`,
+        keys: [f.fieldKey],
+      });
+    }
+    return out;
+  };
 
-    return (
-      <div className="flex flex-wrap gap-2">
-        {allOptions.map((option) => {
-          const selected = value === option.value;
+  // GP (Gracious Professionalism) não soma no placar do robô.
+  const fllPoints = (d: Draft) =>
+    fllMissions
+      .filter((m) => m.id !== "GP")
+      .reduce(
+        (sum, m) => sum + computeMissionBreakdown(m, d.responses[m.id]).total,
+        0,
+      );
 
-          return (
-            <button
-              key={`${option.label}-${option.value}`}
-              type="button"
-              onClick={() => onChange(option.value)}
-              className={[
-                "btn btn-sm",
-                "min-w-24",
-                "transition-all duration-200",
-                selected
-                  ? "btn-primary shadow-sm"
-                  : "btn-outline border-base-content/15 bg-base-100 hover:border-primary/40 hover:bg-primary/5",
-              ].join(" ")}
-              aria-pressed={selected}
-            >
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
+  const inputFields = (d: Draft) => fieldsFor(d).filter((f) => !f.calc);
+  const filledCount = (d: Draft) =>
+    inputFields(d).filter((f) => isFilled(d.values[f.fieldKey])).length;
+
+  const allProblems = drafts.map(problemsOf);
+  const readyCount = allProblems.filter((p) => p.length === 0).length;
+
+  /* -------------------------------- salvar -------------------------------- */
+  const buildResults = (d: Draft): Record<string, unknown> => {
+    if (isFllRuns) {
+      return {
+        answers: Object.fromEntries(
+          fllMissions.map((mission, order) => {
+            const r = d.responses[mission.id] ?? {};
+            return [
+              mission.id,
+              {
+                missionId: mission.id,
+                order,
+                value: r[0] ?? 0,
+                subAnswers: Object.fromEntries(
+                  (mission["sub-mission"] ?? []).map((sub, i) => [
+                    getSubMissionKey(mission, sub, i),
+                    r[i + 1] ?? 0,
+                  ]),
+                ),
+                objectiveAnswers: {},
+              },
+            ];
+          }),
+        ),
+        missions: fllMissions.map((m) => m.id),
+        precisionDiscs: {
+          total: DISCS,
+          remaining: d.discs,
+          used: DISCS - d.discs,
+        },
+      };
+    }
+    // Só os campos preenchidos (e, em duplas, só os da dupla escolhida).
+    // Calculados entram com o valor da fórmula (o servidor recalcula).
+    return Object.fromEntries(
+      fieldsFor(d).flatMap((f) => {
+        if (f.calc) {
+          const v = computeCalc(f.calc, d.values);
+          return v === null ? [] : [[f.fieldKey, v]];
+        }
+        return isFilled(d.values[f.fieldKey])
+          ? [[f.fieldKey, d.values[f.fieldKey]]]
+          : [];
+      }),
     );
   };
 
-  const updateValue = (
-    draftId: number,
-    fieldKey: string,
-    value: FieldValue["value"],
-  ) =>
-    setDrafts((prev) =>
-      prev.map((draft) =>
-        draft.id === draftId
-          ? {
-              ...draft,
-              values: draft.values.map((v) =>
-                v.fieldKey === fieldKey ? { ...v, value } : v,
-              ),
-            }
-          : draft,
-      ),
-    );
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
+  const handleSave = async () => {
     setError(null);
+    if (allProblems.some((p) => p.length)) {
+      setShowErrors(true);
+      const idx = allProblems.findIndex((p) => p.length);
+      document
+        .getElementById(`draft-${drafts[idx].id}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      setError(
+        drafts.length > 1
+          ? `Execução ${idx + 1}: ${allProblems[idx][0].message}.`
+          : `${allProblems[idx][0].message}.`,
+      );
+      return;
+    }
 
+    setSubmitting(true);
+    let saved = 0;
     try {
-      for (const [draftIndex, draft] of drafts.entries()) {
-        const fieldsForExecution = pairOptions.length
-          ? fields.filter((field) =>
-              field.fieldKey.startsWith(`${draft.selectedPair}__`),
-            )
-          : fields;
-
-        const results = Object.fromEntries(
-          draft.values
-            .filter((value) =>
-              fieldsForExecution.some(
-                (field) => field.fieldKey === value.fieldKey,
-              ),
-            )
-            .map((value) => [value.fieldKey, value.value]),
-        );
-
-        const executionResults = isFllRuns
-          ? {
-              answers: Object.fromEntries(
-                fllMissions.map((mission, missionIndex) => {
-                  const answer = draft.missionAnswers[mission.id] ?? {
-                    value: 0,
-                    subAnswers: {},
-                  };
-
-                  return [
-                    mission.id,
-                    {
-                      order: missionIndex,
-                      value: answer.value,
-                      missionId: mission.id,
-                      subAnswers: answer.subAnswers,
-                      objectiveAnswers: {},
-                    },
-                  ];
-                }),
-              ),
-
-              missions: fllMissions.map((mission) => mission.id),
-
-              precisionDiscs: {
-                total: 6,
-                remaining: draft.precisionDiscsRemaining,
-                used: 6 - draft.precisionDiscsRemaining,
-              },
-            }
-          : results;
-
+      for (const d of drafts) {
         await createTestExecution({
           testId,
-          notes: draft.notes.trim() || undefined,
-          results: executionResults,
+          notes: d.notes.trim() || undefined,
+          results: buildResults(d),
         });
-
-        // O primeiro lançamento altera o status do teste.
-        if (nextExecutionNumber === 1 && draftIndex === 0) {
-          await updateLabTestStatus({
-            testId,
-            status: "em_andamento",
-          });
+        saved += 1;
+        // Tira da tela o que já foi salvo: tentar de novo não duplica.
+        setDrafts((prev) => prev.filter((x) => x.id !== d.id));
+        if (nextExecutionNumber === 1 && saved === 1) {
+          await updateLabTestStatus({ testId, status: "em_andamento" }).catch(
+            () => {},
+          );
         }
       }
-
       router.push(`/dashboard/labtest/${testId}`);
       router.refresh();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Erro ao salvar a execução.",
-      );
+      const raw = err instanceof Error ? err.message : "";
+      const msg =
+        !raw || /failed to fetch|network/i.test(raw)
+          ? "Sem conexão com o servidor. Tente de novo."
+          : raw;
+      setError(saved ? `${saved} salva(s). As demais falharam: ${msg}` : msg);
       setSubmitting(false);
     }
   };
 
+  /* --------------------------------- tela --------------------------------- */
+  const btnShape =
+    "rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none";
+  const saveLabel =
+    drafts.length > 1 ? `Salvar ${drafts.length} execuções` : "Salvar execução";
+
+  const renderFields = (
+    d: Draft,
+    list: FieldDefinition[],
+    badKeys: Set<string>,
+  ) => (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {list.map((f) => {
+        const inputId = `f-${d.id}-${f.fieldKey}`;
+        return (
+          <div key={f.fieldKey} className="min-w-0">
+            <label
+              htmlFor={f.type === "boolean" ? undefined : inputId}
+              className="mb-1.5 flex items-baseline gap-1.5 text-sm font-medium text-base-content/80"
+            >
+              {isMotor ? f.label.split(" · ").pop() : f.label}
+              {f.required && (
+                <span className="text-error" aria-label="obrigatório">
+                  *
+                </span>
+              )}
+            </label>
+            {f.description && (
+              <p className="-mt-1 mb-1.5 text-xs text-base-content/50">
+                {f.description}
+              </p>
+            )}
+            {f.calc ? (
+              <div
+                id={inputId}
+                className="flex h-10 w-full max-w-56 items-center justify-between rounded-tl-lg rounded-br-lg border border-dashed border-base-300 bg-base-200/40 px-3"
+                aria-live="polite"
+              >
+                <span className="font-mono tabular-nums">
+                  {(() => {
+                    const v = computeCalc(f.calc, d.values);
+                    return v === null
+                      ? "—"
+                      : `${v}${f.unit ? ` ${f.unit}` : ""}`;
+                  })()}
+                </span>
+                <span className="font-mono text-[10px] uppercase text-primary">
+                  auto
+                </span>
+              </div>
+            ) : (
+              <FieldValueInput
+                id={inputId}
+                field={f}
+                value={d.values[f.fieldKey] ?? null}
+                invalid={badKeys.has(f.fieldKey)}
+                onChange={(v) =>
+                  patchDraft(d.id, (x) => ({
+                    values: { ...x.values, [f.fieldKey]: v },
+                  }))
+                }
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <div className="flex items-start gap-3 rounded-2xl border border-base-content/10 bg-base-100 p-5">
-        <div
-          className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${accent.bgSoft}`}
-        >
-          <FlaskConical className={`h-5 w-5 ${accent.text}`} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="mb-0.5 text-xs font-medium uppercase tracking-widest text-base-content/45">
-            Registrar execução #{nextExecutionNumber}
-          </p>
-          <h2 className="truncate text-base font-semibold leading-tight">
-            {testName}
-          </h2>
-        </div>
-        <span
-          className={`badge badge-outline hidden items-center gap-1.5 py-3 sm:flex ${accent.text}`}
-        >
-          <Icon className="h-3.5 w-3.5" />
-          {modeDef.label}
-        </span>
-      </div>
+    <div className="flex flex-col gap-6 pb-28 lg:pb-0">
+      {/* Cabeçalho */}
+      <header>
+        <p className="font-mono text-xs tracking-[0.2em] text-base-content/45">
+          / {modeLabel.toUpperCase()} · EXECUÇÃO #{nextExecutionNumber}
+        </p>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+          {testName}
+        </h1>
+        <p className="mt-1 text-sm text-base-content/60">
+          {contextLine(mode, season, config, fields.length)}
+        </p>
+      </header>
 
       {fields.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-base-content/15 bg-base-100 py-10 text-center text-sm text-base-content/45">
-          Este teste ainda não tem parâmetros configurados para registrar.
+        <div className="rounded-tl-3xl rounded-br-3xl border border-dashed border-base-300 bg-base-100 px-6 py-12 text-center text-sm text-base-content/55">
+          Este teste não tem campos para registrar. Confira a configuração dele.
         </div>
       ) : (
-        <div className="rounded-2xl border border-base-content/10 bg-base-100 p-5">
-          <div className="flex items-center justify-between gap-3">
-            <SectionDivider label={`Execuções (${drafts.length})`} />
-          </div>
-          <div className="mt-4 flex flex-col gap-4">
-            {drafts.map((draft, index) => {
-              const fieldsForExecution = pairOptions.length
-                ? fields.filter((field) =>
-                    field.fieldKey.startsWith(`${draft.selectedPair}__`),
-                  )
-                : fields;
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
+          <div className="flex flex-col gap-5">
+            {isFllRuns && catalogError && (
+              <div className="flex items-start gap-2 rounded-tl-2xl rounded-br-2xl border border-error/40 bg-base-100 p-4 text-sm text-error">
+                <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                Não foi possível carregar as missões da temporada. Recarregue a
+                página.
+              </div>
+            )}
+
+            {drafts.map((d, index) => {
+              const problems = showErrors ? allProblems[index] : [];
+              const badKeys = new Set(problems.flatMap((p) => p.keys));
+              const number = nextExecutionNumber + index;
               return (
-                <div
-                  key={draft.id}
-                  className="rounded-xl border border-base-content/10 bg-base-200/30 p-4"
+                <section
+                  key={d.id}
+                  id={`draft-${d.id}`}
+                  aria-labelledby={`draft-title-${d.id}`}
+                  className={`scroll-mt-24 rounded-tl-3xl rounded-br-3xl border bg-base-100 p-5 sm:p-6 ${
+                    problems.length ? "border-error/50" : "border-base-300"
+                  }`}
                 >
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-base-content/50">
-                      Execução {index + 1}
+                  <div className="mb-5 flex items-center gap-3">
+                    <span className="flex size-8 items-center justify-center rounded-tl-lg rounded-br-lg bg-primary font-mono text-xs font-bold text-primary-content">
+                      {String(number).padStart(2, "0")}
                     </span>
+                    <h2
+                      id={`draft-title-${d.id}`}
+                      className="flex-1 text-base font-semibold"
+                    >
+                      Execução #{number}
+                    </h2>
+                    {isFllRuns && catalog && (
+                      <span className="font-mono text-sm tabular-nums text-primary">
+                        {fllPoints(d)} pts
+                      </span>
+                    )}
                     {drafts.length > 1 && (
                       <button
                         type="button"
                         onClick={() =>
-                          setDrafts((prev) =>
-                            prev.filter((item) => item.id !== draft.id),
-                          )
+                          setDrafts((prev) => prev.filter((x) => x.id !== d.id))
                         }
-                        className="btn btn-ghost btn-xs text-error"
-                        aria-label={`Remover execução ${index + 1}`}
+                        className="btn btn-ghost btn-sm btn-square text-base-content/45 hover:text-error"
+                        aria-label={`Remover execução #${number}`}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="size-4" />
                       </button>
                     )}
                   </div>
-                  {pairOptions.length > 0 && (
-                    <select
-                      value={draft.selectedPair}
-                      onChange={(e) =>
-                        setDrafts((prev) =>
-                          prev.map((item) =>
-                            item.id === draft.id
-                              ? { ...item, selectedPair: e.target.value }
-                              : item,
-                          ),
-                        )
-                      }
-                      className="select select-bordered select-sm mb-3 w-full"
-                      required
-                    >
-                      {pairOptions.map((pair) => {
-                        const pairField = pairFields.find((field) =>
-                          field.fieldKey.startsWith(`${pair}__`),
-                        );
-                        return (
-                          <option key={pair} value={pair}>
-                            {pairField?.label.split(" · ")[0] ?? pair}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  )}
-                  <div className="flex flex-col gap-4">
-                    {isFllRuns && fllMissions.length > 0
-                      ? fllMissions.map((mission) => {
-                          const answer = draft.missionAnswers[mission.id] ?? {
-                            value: 0,
-                            subAnswers: {},
-                          };
-                          return (
-                            <div
+
+                  {/* Runs FLL */}
+                  {isFllRuns ? (
+                    !catalog ? (
+                      !catalogError && (
+                        <p className="flex items-center gap-2 text-sm text-base-content/55">
+                          <span className="loading loading-spinner loading-xs" />
+                          Carregando missões…
+                        </p>
+                      )
+                    ) : (
+                      <div className="flex flex-col gap-4">
+                        <div className="[&_.card]:mb-3 [&_.card]:rounded-tl-2xl [&_.card]:rounded-br-2xl [&_.card]:rounded-tr-md [&_.card]:rounded-bl-md [&_.card]:border-base-300">
+                          {fllMissions.map((mission) => (
+                            <MissionCard
                               key={mission.id}
-                              className="form-control gap-1 border-b border-base-content/10 pb-2"
-                            >
-                              <label className="label-text text-xs font-medium">
-                                {mission.id} · {mission.name}
-                              </label>
-                              {renderMissionInput(
-                                mission.type,
-                                answer.value,
-                                (value) =>
-                                  updateMissionValue(
-                                    draft.id,
-                                    mission.id,
-                                    value,
-                                  ),
-                              )}
-                              {(mission["sub-mission"] ?? []).map(
-                                (sub, subIndex) => {
-                                  const subId =
-                                    sub.id ?? `${mission.id}-sub-${subIndex}`;
-                                  return (
-                                    <div key={subId} className="ml-4 my-2">
-                                      <label className="label-text text-xs text-base-content/50">
-                                        {sub.submission}
-                                      </label>
-                                      {renderMissionInput(
-                                        sub.type,
-                                        answer.subAnswers[subId] ?? 0,
-                                        (value) =>
-                                          updateSubAnswer(
-                                            draft.id,
-                                            mission.id,
-                                            subId,
-                                            value,
-                                          ),
-                                      )}
-                                    </div>
-                                  );
-                                },
-                              )}
-                            </div>
-                          );
-                        })
-                      : fieldsForExecution.map((field) => {
-                          const fv = draft.values.find(
-                            (v) => v.fieldKey === field.fieldKey,
-                          );
-                          return (
-                            <div
-                              key={field.fieldKey}
-                              className="form-control gap-1"
-                            >
-                              <label className="label py-0">
-                                <span className="label-text text-xs font-medium">
-                                  {field.label}
-                                </span>
-                              </label>
-                              {field.description && (
-                                <p className="text-xs text-base-content/55">
-                                  {field.description}
-                                </p>
-                              )}
-                              <FieldValueInput
-                                field={field}
-                                value={fv?.value ?? null}
-                                onChange={(value) =>
-                                  updateValue(draft.id, field.fieldKey, value)
-                                }
-                              />
-                            </div>
-                          );
-                        })}
-                  </div>
+                              mission={mission}
+                              responses={d.responses[mission.id]}
+                              imagesEnabled={false}
+                              onSelect={(missionId, i, idx) =>
+                                patchDraft(d.id, (x) => ({
+                                  responses: {
+                                    ...x.responses,
+                                    [missionId]: {
+                                      ...x.responses[missionId],
+                                      [i]: idx,
+                                    },
+                                  },
+                                }))
+                              }
+                            />
+                          ))}
+                        </div>
+                        <LabTestModels
+                          total={DISCS}
+                          value={d.discs}
+                          onChange={(v) =>
+                            patchDraft(d.id, () => ({ discs: v }))
+                          }
+                        />
+                      </div>
+                    )
+                  ) : isMotor ? (
+                    /* Motores */
+                    <div className="flex flex-col gap-4">
+                      {pairOptions.length > 0 && (
+                        <div>
+                          <p className="mb-1.5 text-sm font-medium text-base-content/80">
+                            Dupla testada
+                          </p>
+                          <div
+                            role="radiogroup"
+                            aria-label="Dupla testada"
+                            className="flex flex-wrap gap-2"
+                          >
+                            {pairOptions.map((p) => {
+                              const active = p.base === d.pair;
+                              return (
+                                <button
+                                  key={p.base}
+                                  type="button"
+                                  role="radio"
+                                  aria-checked={active}
+                                  onClick={() =>
+                                    patchDraft(d.id, () => ({ pair: p.base }))
+                                  }
+                                  className={`cursor-pointer rounded-tl-lg rounded-br-lg border px-3 py-1.5 font-mono text-xs transition-colors ${
+                                    active
+                                      ? "border-primary bg-primary/10 text-primary"
+                                      : "border-base-300 hover:border-base-content/30"
+                                  }`}
+                                >
+                                  {p.title}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      {groupMotorFields(fieldsFor(d)).map((g) => (
+                        <div
+                          key={g.base}
+                          className="rounded-tl-2xl rounded-br-2xl border border-base-300 p-4"
+                        >
+                          <p className="mb-3 font-mono text-xs font-semibold text-base-content/70">
+                            {g.title}
+                          </p>
+                          {renderFields(d, g.fields, badKeys)}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    /* Giroscópio, PID e Personalizado */
+                    renderFields(d, fieldsFor(d), badKeys)
+                  )}
+
                   <textarea
                     rows={2}
                     placeholder="Observações (opcional)"
-                    value={draft.notes}
+                    value={d.notes}
                     onChange={(e) =>
-                      setDrafts((prev) =>
-                        prev.map((item) =>
-                          item.id === draft.id
-                            ? { ...item, notes: e.target.value }
-                            : item,
-                        ),
-                      )
+                      patchDraft(d.id, () => ({ notes: e.target.value }))
                     }
-                    className="textarea textarea-bordered textarea-sm mt-3 w-full resize-none text-sm"
+                    className="textarea mt-5 w-full resize-none text-sm"
+                    aria-label={`Observações da execução #${number}`}
                   />
-                  {isFllRuns && (
-                    <div className="my-4">
-                      <LabTestModels
-                        value={draft.precisionDiscsRemaining}
-                        onChange={(value) =>
-                          setDrafts((prev) =>
-                            prev.map((item) =>
-                              item.id === draft.id
-                                ? {
-                                    ...item,
-                                    precisionDiscsRemaining: value,
-                                  }
-                                : item,
-                            ),
-                          )
-                        }
-                      />
-                    </div>
+
+                  {problems.length > 0 && (
+                    <ul className="mt-3 space-y-1 border-l-2 border-error pl-3 text-sm text-error">
+                      {problems.map((p) => (
+                        <li key={p.message}>{p.message}</li>
+                      ))}
+                    </ul>
                   )}
-                </div>
+                </section>
               );
             })}
-          </div>
-          <div className="my-4">
+
             <button
               type="button"
               onClick={() => setDrafts((prev) => [...prev, makeDraft()])}
-              className="btn btn-ghost btn-sm gap-1"
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-tl-2xl rounded-br-2xl border border-dashed border-base-300 py-4 text-sm text-base-content/60 transition-colors hover:border-primary hover:text-primary"
             >
-              <Plus className="h-4 w-4" /> Adicionar
+              <Plus className="size-4" />
+              Adicionar outra execução
+            </button>
+          </div>
+
+          {/* Resumo */}
+          <aside className="hidden lg:sticky lg:top-24 lg:block">
+            <div className="rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 p-5">
+              <p className="font-mono text-[11px] tracking-[0.2em] text-base-content/45">
+                / RESUMO
+              </p>
+              <ul className="mt-3 space-y-2 text-sm">
+                {drafts.map((d, i) => {
+                  const ok = allProblems[i].length === 0;
+                  return (
+                    <li
+                      key={d.id}
+                      className="flex items-center justify-between gap-2"
+                    >
+                      <span className="flex items-center gap-2">
+                        {ok ? (
+                          <CheckCircle2 className="size-4 text-success" />
+                        ) : (
+                          <Circle className="size-4 text-base-content/35" />
+                        )}
+                        Execução #{nextExecutionNumber + i}
+                      </span>
+                      <span className="font-mono text-xs text-base-content/55">
+                        {isFllRuns
+                          ? catalog
+                            ? `${fllPoints(d)} pts`
+                            : "—"
+                          : `${filledCount(d)}/${inputFields(d).length}`}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="my-4 h-px bg-base-300" />
+              <p className="text-xs text-base-content/55">
+                {readyCount} de {drafts.length} pronta
+                {drafts.length > 1 ? "s" : ""}
+              </p>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={submitting || drafts.length === 0}
+                className={`btn btn-primary mt-3 w-full ${btnShape}`}
+              >
+                {submitting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Save className="size-4" />
+                )}
+                {submitting ? "Salvando…" : saveLabel}
+              </button>
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="btn btn-ghost btn-sm mt-2 w-full text-base-content/55"
+              >
+                Cancelar
+              </button>
+              {error && (
+                <p
+                  className="mt-3 border-l-2 border-error pl-3 text-sm text-error"
+                  role="alert"
+                >
+                  {error}
+                </p>
+              )}
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* Barra fixa (celular / tablet) */}
+      {fields.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-base-300 bg-base-100/95 px-4 py-3 backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-3xl items-center gap-3">
+            <p
+              className={`min-w-0 flex-1 truncate text-sm ${error ? "text-error" : "text-base-content/60"}`}
+              aria-live="polite"
+            >
+              {error ??
+                `${readyCount} de ${drafts.length} pronta${drafts.length > 1 ? "s" : ""}`}
+            </p>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={submitting || drafts.length === 0}
+              className={`btn btn-primary shrink-0 ${btnShape}`}
+            >
+              {submitting ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Save className="size-4" />
+              )}
+              {drafts.length > 1 ? `Salvar (${drafts.length})` : "Salvar"}
             </button>
           </div>
         </div>
       )}
-
-      {error && (
-        <div className="rounded-xl border border-error/20 bg-error/5 p-3 text-xs text-error">
-          {error}
-        </div>
-      )}
-
-      <div className="flex items-center justify-end gap-3">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="btn btn-ghost gap-2 text-base-content/50"
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          disabled={submitting}
-          className="btn btn-primary gap-2"
-        >
-          <Save className="h-4 w-4" />
-          {submitting ? "Salvando..." : "Salvar execução"}
-        </button>
-      </div>
-    </form>
+    </div>
   );
 }

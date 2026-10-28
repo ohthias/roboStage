@@ -16,8 +16,11 @@ import { ArrowLeft } from "lucide-react";
 
 import type { FieldDefinition } from "@/types/labtest.types";
 import ExecuteTestForm from "@/components/labtest/ExecuteTestForm";
+import FllRoundExecution from "@/components/labtest/FllRoundExecution";
 import FutureEditionMatch from "@/components/labtest/future-edition/FutureEditionMatch";
 import { getMatchDuration, isFutureEditionConfig } from "@/utils/labtest/future-edition";
+import ObrRoundExecution from "@/components/labtest/obr/ObrRoundExecution";
+import { getObrArena, isObrConfig } from "@/utils/labtest/obr";
 import { getLabTestViewData } from "../../actions";
 
 export default function ExecuteTestPage() {
@@ -58,44 +61,68 @@ export default function ExecuteTestPage() {
   }, [testId]);
 
   return (
-    <div className="min-h-screen bg-base-200/40 px-4 py-8">
-      <div className={`mx-auto flex flex-col gap-6 ${test && isFutureEditionConfig(test.config) ? "max-w-6xl" : "max-w-3xl"}`}>
-        <Link
-          href={`/dashboard/labtest/${testId}`}
-          className="flex w-fit items-center gap-1.5 text-sm text-base-content/50 hover:text-base-content"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Voltar para o teste
-        </Link>
+    <div className="mx-auto w-full max-w-6xl px-4 pb-12 pt-6 md:px-8">
+      <Link
+        href={`/dashboard/labtest/${testId}`}
+        className="group mb-4 inline-flex items-center gap-1.5 text-sm text-base-content/55 hover:text-base-content"
+      >
+        <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
+        {test?.name ?? "Voltar ao teste"}
+      </Link>
 
-        {loading ? (
-          <div className="flex items-center justify-center rounded-3xl border border-base-content/10 bg-base-100 p-10">
-            <span className="loading loading-spinner loading-lg" />
-          </div>
-        ) : error || !test ? (
-          <div className="rounded-3xl border border-error/20 bg-base-100 p-6">
-            <p className="font-semibold text-error">Não foi possível carregar o teste.</p>
-            <p className="mt-2 text-sm text-base-content/60">{error ?? "Teste não encontrado."}</p>
-          </div>
-        ) : isFutureEditionConfig(test.config) ? (
-          <FutureEditionMatch
-            testId={test.id}
-            testName={test.name}
-            nextExecutionNumber={nextExecutionNumber}
-            durationSec={getMatchDuration(test.config)}
-          />
-        ) : (
-          <ExecuteTestForm
-            testId={test.id}
-            mode={test.mode}
-            season={test.season}
-            testName={test.name}
-            fields={fields}
-            nextExecutionNumber={nextExecutionNumber}
-            isMotorPairs={test.config?.modo === "duplas"}
-          />
-        )}
-      </div>
+      {loading ? (
+        <div className="flex flex-col gap-4" aria-busy="true" aria-label="Carregando teste">
+          <div className="h-4 w-40 animate-pulse rounded bg-base-300/70" />
+          <div className="h-8 w-72 animate-pulse rounded bg-base-300/70" />
+          <div className="mt-4 h-64 animate-pulse rounded-tl-3xl rounded-br-3xl bg-base-300/50" />
+        </div>
+      ) : error || !test ? (
+        <div className="rounded-tl-3xl rounded-br-3xl border border-error/40 bg-base-100 p-6">
+          <p className="font-semibold text-error">Não foi possível carregar o teste.</p>
+          <p className="mt-2 text-sm text-base-content/60">{error ?? "Teste não encontrado."}</p>
+        </div>
+      ) : isObrConfig(test.config) ? (
+        <ObrRoundExecution
+          testId={test.id}
+          testName={test.name}
+          nextExecutionNumber={nextExecutionNumber}
+          arena={getObrArena(test.config)}
+        />
+      ) : isFutureEditionConfig(test.config) ? (
+        <FutureEditionMatch
+          testId={test.id}
+          testName={test.name}
+          nextExecutionNumber={nextExecutionNumber}
+          durationSec={getMatchDuration(test.config)}
+        />
+      ) : test.mode === "runs" &&
+        test.config?.runMode === "round" &&
+        test.season ? (
+        <FllRoundExecution
+          testId={test.id}
+          testName={test.name}
+          season={test.season}
+          missionIds={
+            Array.isArray(test.config?.missions)
+              ? test.config.missions.filter(
+                  (m: unknown): m is string => typeof m === "string",
+                )
+              : []
+          }
+          nextExecutionNumber={nextExecutionNumber}
+        />
+      ) : (
+        <ExecuteTestForm
+          testId={test.id}
+          mode={test.mode}
+          season={test.season}
+          testName={test.name}
+          fields={fields}
+          nextExecutionNumber={nextExecutionNumber}
+          isMotorPairs={test.config?.modo === "duplas"}
+          config={test.config}
+        />
+      )}
     </div>
   );
 }

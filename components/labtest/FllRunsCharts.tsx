@@ -239,7 +239,11 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
   }, [season, requiredMissionIds]);
 
   const scores = useMemo(
-    () => entries.map((entry) => scoreFllExecution(missions, entry.fllAnswers)),
+    // Round 2:30 já guarda o placar completo (com inspeção e tokens).
+    () =>
+      entries.map(
+        (entry) => entry.roundTotal ?? scoreFllExecution(missions, entry.fllAnswers),
+      ),
     [entries, missions],
   );
 

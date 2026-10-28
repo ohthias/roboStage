@@ -351,10 +351,13 @@ function EntryHistory({
             entry.fllAnswers &&
             Object.keys(entry.fllAnswers).length > 0;
 
+          // Round 2:30 já guarda o placar completo (com inspeção e tokens).
           const fllScore =
-            hasFllAnswers && missions.length > 0
-              ? scoreFllExecution(missions, entry.fllAnswers)
-              : null;
+            typeof entry.roundTotal === "number"
+              ? entry.roundTotal
+              : hasFllAnswers && missions.length > 0
+                ? scoreFllExecution(missions, entry.fllAnswers)
+                : null;
 
           const isOpen = expanded === entry.id;
           const num = entries.length - ri;

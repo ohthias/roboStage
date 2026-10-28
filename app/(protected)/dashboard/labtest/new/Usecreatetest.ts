@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { FE_DEFAULT_MATCH_SECONDS } from "@/utils/labtest/future-edition";
 import { getKitPreset } from "@/utils/labtest/kit-ia";
+import { getObrPreset } from "@/utils/labtest/obr-presets";
+import type { Project } from "@/utils/quickbrick/ArenaBuilder/types";
 
 /* ------------------------------------------------------------------ */
 /* Tipos                                                               */
@@ -78,7 +80,7 @@ export interface CustomParam {
   max?: number;
 }
 
-export type CalibraMode = "motores" | "giroscópio" | "pid" | "kit-ia";
+export type CalibraMode = "motores" | "giroscópio" | "pid" | "kit-ia" | "obr";
 export type CreateTestMode = "runs" | "calibrabot" | "custom";
 
 /* ------------------------------------------------------------------ */
@@ -90,12 +92,40 @@ export type CreateTestMode = "runs" | "calibrabot" | "custom";
  * O objetivo é manter o restante do fluxo inalterado, sem espalhar ifs por
  * toda a UI.
  */
-type CompetitionRunConfig = {
+/**
+ * Um "modo" é uma forma de montar a run dentro da mesma competição
+ * (ex.: escolher missões avulsas ou fazer a run completa da temporada).
+ * Quando a competição tem mais de um modo, a tela mostra um seletor.
+ */
+export type RunModeConfig = {
+  value: string;
   label: string;
+  description: string;
   missionEndpoint?: string;
   missionIdPrefix?: string;
+  /** Já seleciona todas as missões ao carregar. */
   fullRun?: boolean;
+  /**
+   * Só monta a lista de missões (a estratégia), sem metas por missão.
+   * A pontuação acontece na execução, como um round de verdade.
+   */
+  strategyOnly?: boolean;
+  /** Missões que sempre entram na run, no início, e não podem sair. */
+  requiredMissionIds?: string[];
+  /** Sufixo da temporada vinda do endpoint (Future Edition: "-FE"). */
+  seasonSuffix?: string;
 };
+
+type CompetitionRunConfig = {
+  label: string;
+  modes: RunModeConfig[];
+};
+
+/** OBR (Olimpíada Brasileira de Robótica), identificada pelo código/nome. */
+export function isObrCompetition(competition?: Competition | null) {
+  const text = `${competition?.code ?? ""} ${competition?.name ?? ""}`;
+  return /\bobr\b|olimp[ií]ada brasileira de rob[oó]tica/i.test(text);
+}
 
 function isFutureEditionCompetition(competition?: Competition | null) {
   return Boolean(
@@ -104,36 +134,78 @@ function isFutureEditionCompetition(competition?: Competition | null) {
   );
 }
 
-/** Future Edition: missões fixas da temporada, jogadas em partida cronometrada. */
-const FUTURE_EDITION_RUN_CONFIG: CompetitionRunConfig = {
-  label: "Future Edition",
-  missionEndpoint: "/api/data/missions/future-edition",
-  fullRun: true,
+const FLL_CHALLENGE: CompetitionRunConfig = {
+  label: "FLL Challenge",
+  modes: [
+    {
+      value: "missoes",
+      label: "Missões escolhidas",
+      description: "Você escolhe quais missões entram e em que ordem.",
+      missionEndpoint: "/api/data/missions",
+      missionIdPrefix: "M",
+    },
+    {
+      value: "run-completa",
+      label: "Run completa",
+      description:
+        "Todas as missões da temporada já entram. Você só ajusta a ordem.",
+      missionEndpoint: "/api/data/missions",
+      missionIdPrefix: "M",
+      fullRun: true,
+    },
+    {
+      value: "round",
+      label: "Round 2:30",
+      description:
+        "Uma partida completa. Escolha as missões da sua estratégia; a pontuação é feita em cada execução, com cronômetro.",
+      missionEndpoint: "/api/data/missions",
+      missionIdPrefix: "M",
+      strategyOnly: true,
+      // Inspeção de equipamentos faz parte de todo round oficial.
+      requiredMissionIds: ["EL"],
+    },
+  ],
 };
 
+/** OBR Resgate: rodada pontuada como no Pontuador, sem lista de missões. */
+const OBR_RESGATE: CompetitionRunConfig = {
+  label: "OBR Resgate",
+  modes: [
+    {
+      value: "rodada",
+      label: "Rodada de resgate",
+      description:
+        "Cada execução é uma rodada: cronômetro, perigos, checkpoints, falhas e sala de resgate.",
+    },
+  ],
+};
+
+/** Future Edition: missões fixas da temporada, jogadas em partida cronometrada. */
+const FUTURE_EDITION: CompetitionRunConfig = {
+  label: "Future Edition",
+  modes: [
+    {
+      value: "partida",
+      label: "Partida cronometrada",
+      description:
+        "Todas as missões e penalidades da temporada. Você pontua durante a partida.",
+      missionEndpoint: "/api/data/missions/future-edition",
+      fullRun: true,
+      seasonSuffix: "-FE",
+    },
+  ],
+};
+
+/** Para adicionar uma competição, registre o código e os seus modos. */
 const COMPETITION_RUN_CONFIG: Record<string, CompetitionRunConfig> = {
-  FLL: {
-    label: "FLL Challenge",
-    missionEndpoint: "/api/data/missions",
-    missionIdPrefix: "M",
-  },
-  FLLC: {
-    label: "FLL Challenge",
-    missionEndpoint: "/api/data/missions",
-    missionIdPrefix: "M",
-  },
-  FLLCHALLENGE: {
-    label: "FLL Challenge",
-    missionEndpoint: "/api/data/missions",
-    missionIdPrefix: "M",
-  },
-  CHALLENGE: {
-    label: "FLL Challenge",
-    missionEndpoint: "/api/data/missions",
-    missionIdPrefix: "M",
-  },
-  FUTUREEDITION: FUTURE_EDITION_RUN_CONFIG,
-  FLLFUTUREEDITION: FUTURE_EDITION_RUN_CONFIG,
+  FLL: FLL_CHALLENGE,
+  FLLC: FLL_CHALLENGE,
+  FLLCHALLENGE: FLL_CHALLENGE,
+  CHALLENGE: FLL_CHALLENGE,
+  FUTUREEDITION: FUTURE_EDITION,
+  FLLFUTUREEDITION: FUTURE_EDITION,
+  OBR: OBR_RESGATE,
+  OBRRESGATE: OBR_RESGATE,
 };
 
 function normalizeCompetitionCode(code?: string | null) {
@@ -147,7 +219,9 @@ function resolveCompetitionRunConfig(competition?: Competition | null) {
     ? COMPETITION_RUN_CONFIG[normalizeCompetitionCode(competition.code)]
     : undefined;
   // Códigos diferentes de "FUTURE-EDITION" (ex.: "FLL-FE") são reconhecidos pelo nome/código.
-  return byCode ?? (isFutureEditionCompetition(competition) ? FUTURE_EDITION_RUN_CONFIG : undefined);
+  if (byCode) return byCode;
+  if (isFutureEditionCompetition(competition)) return FUTURE_EDITION;
+  return isObrCompetition(competition) ? OBR_RESGATE : undefined;
 }
 
 /**
@@ -240,6 +314,10 @@ export function useCreateTest() {
   const [pidParams, setPidParams] = useState<string[]>([]);
   const [kitPreset, setKitPresetId] = useState<string>("");
   const [kitParams, setKitParams] = useState<string[]>([]);
+  const [obrPreset, setObrPresetId] = useState<string>("");
+  const [obrParams, setObrParams] = useState<string[]>([]);
+  /** OBR: arena do Criador de Arenas ligada à rodada (opcional). */
+  const [arena, setArena] = useState<Project | null>(null);
 
   /* ---------------- modo custom ---------------- */
   const [customParams, setCustomParams] = useState<CustomParam[]>([]);
@@ -270,10 +348,19 @@ export function useCreateTest() {
   /* -------------------------------------------------------------- */
   const selectedCompetition = competitions.find((c) => c.id === competition);
   const selectedCompetitionConfig = resolveCompetitionRunConfig(selectedCompetition);
-  const missionEndpoint = selectedCompetitionConfig?.missionEndpoint;
   const futureEditionActive = competitions.some(isFutureEditionCompetition);
   const isFutureEdition = isFutureEditionCompetition(selectedCompetition);
-  const isFullRun = selectedCompetitionConfig?.fullRun ?? false;
+  const isObr = isObrCompetition(selectedCompetition);
+  const obrActive = competitions.some(isObrCompetition);
+  const runModes = selectedCompetitionConfig?.modes ?? [];
+  const [runModeValue, setRunModeValue] = useState("");
+  const selectedRunMode =
+    runModes.find((m) => m.value === runModeValue) ?? runModes[0];
+  const runMode = selectedRunMode?.value ?? "";
+  const missionEndpoint = selectedRunMode?.missionEndpoint;
+  const missionIdPrefix = selectedRunMode?.missionIdPrefix;
+  const isFullRun = selectedRunMode?.fullRun ?? false;
+  const seasonSuffix = selectedRunMode?.seasonSuffix ?? "";
 
   const [missionsData, setMissionsData] = useState<Record<
     string,
@@ -301,9 +388,56 @@ export function useCreateTest() {
     }
   };
 
+  /** Missões que pertencem ao modo (filtro por prefixo do id). */
+  const byPrefix = (list: AnyMission[], prefix?: string) =>
+    prefix
+      ? list.filter((m) =>
+          String(m.id).toUpperCase().startsWith(prefix.toUpperCase()),
+        )
+      : list;
+
+  /** Coloca todas as missões na run, na ordem original. */
+  const selectAllMissions = (list: AnyMission[]) => {
+    setSelectedMissionIds(list.map((m) => m.id));
+    setAnswers(
+      Object.fromEntries(
+        list.map((mission, order) => [
+          mission.id,
+          {
+            missionId: mission.id,
+            order,
+            value: 0,
+            subAnswers: {},
+            objectiveAnswers: {},
+          },
+        ]),
+      ),
+    );
+  };
+
   const handleCompetitionChange = (nextCompetition: string) => {
     setCompetition(nextCompetition);
+    setRunModeValue("");
     resetRunMissionState();
+  };
+
+  const handleRunModeChange = (nextValue: string) => {
+    const next = runModes.find((m) => m.value === nextValue);
+    if (!next || next.value === runMode) return;
+    setRunModeValue(next.value);
+
+    // Outro endpoint: recarrega tudo (o efeito busca as missões).
+    if (next.missionEndpoint !== missionEndpoint) {
+      resetRunMissionState();
+      return;
+    }
+
+    // Mesmo endpoint: mantém temporada e missões carregadas.
+    setSelectedMissionIds([]);
+    setAnswers({});
+    if (next.fullRun) {
+      selectAllMissions(byPrefix(missions, next.missionIdPrefix));
+    }
   };
 
   const handleSeasonChange = (nextSeason: string) => {
@@ -315,7 +449,9 @@ export function useCreateTest() {
       return;
     }
     const selected = missionsData[nextSeason];
-    setMissions(Array.isArray(selected) ? (selected as AnyMission[]) : []);
+    const list = Array.isArray(selected) ? (selected as AnyMission[]) : [];
+    setMissions(list);
+    if (isFullRun) selectAllMissions(byPrefix(list, missionIdPrefix));
   };
 
   useEffect(() => {
@@ -340,22 +476,9 @@ export function useCreateTest() {
           setMissions(loadedMissions);
 
           if (isFullRun) {
-            if (typeof data.season === "string") setSeason(`${data.season}-FE`);
-            setSelectedMissionIds(loadedMissions.map((mission) => mission.id));
-            setAnswers(
-              Object.fromEntries(
-                loadedMissions.map((mission, order) => [
-                  mission.id,
-                  {
-                    missionId: mission.id,
-                    order,
-                    value: 0,
-                    subAnswers: {},
-                    objectiveAnswers: {},
-                  },
-                ]),
-              ),
-            );
+            if (typeof data.season === "string")
+              setSeason(`${data.season}${seasonSuffix}`);
+            selectAllMissions(byPrefix(loadedMissions, missionIdPrefix));
           }
         }
       })
@@ -363,7 +486,7 @@ export function useCreateTest() {
         setMissionsError(err.message ?? "Erro ao buscar as missões"),
       )
       .finally(() => setLoadingMissions(false));
-  }, [isFullRun, mode, missionEndpoint]);
+  }, [isFullRun, mode, missionEndpoint, missionIdPrefix, seasonSuffix]);
 
   const readyToFetchMissions =
     Boolean(missionEndpoint) &&
@@ -441,14 +564,22 @@ export function useCreateTest() {
 
   const availableMissions = missions.filter((m) => {
     const id = String(m.id).toUpperCase();
-    const prefix = selectedCompetitionConfig?.missionIdPrefix?.toUpperCase();
+    const prefix = missionIdPrefix?.toUpperCase();
 
     if (prefix && !id.startsWith(prefix)) return false;
     return !selectedMissionIds.includes(m.id);
   });
-  const orderedSelected = selectedMissionIds
+  const requiredMissionIds = selectedRunMode?.requiredMissionIds ?? [];
+  const requiredMissions = requiredMissionIds
     .map((id) => missions.find((m) => m.id === id))
     .filter(Boolean) as AnyMission[];
+  const orderedSelected = [
+    ...requiredMissions,
+    ...(selectedMissionIds
+      .filter((id) => !requiredMissionIds.includes(id))
+      .map((id) => missions.find((m) => m.id === id))
+      .filter(Boolean) as AnyMission[]),
+  ];
 
   /* -------------------------------------------------------------- */
   /* Helpers - calibrabot                                            */
@@ -477,6 +608,19 @@ export function useCreateTest() {
       (getKitPreset(id)?.params ?? [])
         .filter((param) => param.padrao)
         .map((param) => param.nome),
+    );
+  }
+  function selectObrPreset(id: string) {
+    setObrPresetId(id);
+    setObrParams(
+      (getObrPreset(id)?.params ?? [])
+        .filter((param) => param.padrao)
+        .map((param) => param.nome),
+    );
+  }
+  function toggleObrParam(name: string) {
+    setObrParams((list) =>
+      list.includes(name) ? list.filter((x) => x !== name) : [...list, name],
     );
   }
   function toggleKitParam(name: string) {
@@ -595,9 +739,17 @@ export function useCreateTest() {
     needsSeasonPick,
     selectedCompetition,
     selectedCompetitionConfig,
+    runModes,
+    runMode,
+    requiredMissionIds,
+    setRunMode: handleRunModeChange,
     isFullRun,
     isFutureEdition,
     futureEditionActive,
+    isObr,
+    obrActive,
+    arena,
+    setArena,
     matchDuration,
     setMatchDuration,
     missionEndpoint,
@@ -637,6 +789,10 @@ export function useCreateTest() {
     selectKitPreset,
     kitParams,
     toggleKitParam,
+    obrPreset,
+    selectObrPreset,
+    obrParams,
+    toggleObrParam,
 
     // custom
     customParams,

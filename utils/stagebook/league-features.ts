@@ -95,18 +95,18 @@ const PROFILES: Record<ProfileKey, Profile> = {
   },
   "fll-future": {
     key: "fll-future",
-    access: { runs: "paused", calibrabot: "full", custom: "full", anatix: "soon", quickbrick: "soon" },
+    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "soon", quickbrick: "soon" },
     note: "Funciona de forma semelhante à FRC e à FTC, sem missões.",
   },
   "obr": {
     key: "obr",
-    access: { runs: "soon", calibrabot: "soon", custom: "soon", anatix: "soon", quickbrick: "soon" },
-    note: "Liga de robótica educacional brasileira, com missões próprias.",
+    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "full", quickbrick: "soon" },
+    note: "Rodadas de resgate com a pontuação do Pontuador, mapa de falhas e testes de CalibraBot próprios.",
   },
   "obr-resgate": {
     key: "obr-resgate",
-    access: { runs: "soon", calibrabot: "soon", custom: "soon", anatix: "soon", quickbrick: "soon" },
-    note: "Liga de robótica educacional brasileira, com missões próprias.",
+    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "full", quickbrick: "soon" },
+    note: "Rodadas de resgate com a pontuação do Pontuador, mapa de falhas e testes de CalibraBot próprios.",
   },
   generic: {
     key: "generic",
@@ -156,7 +156,12 @@ export function getLeagueAccess(league: {
         label: feature.label,
         tool: feature.tool,
         level,
-        detail: feature.id === "runs" ? RUNS_DETAIL[level] : feature.description,
+        detail:
+          feature.id === "runs"
+            ? profile.key.startsWith("obr") && level === "full"
+              ? "Rodadas com pontuação, falhas no percurso e sala de resgate"
+              : RUNS_DETAIL[level]
+            : feature.description,
       };
     }),
   };

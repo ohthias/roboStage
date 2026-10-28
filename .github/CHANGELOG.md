@@ -11,6 +11,57 @@ Exemplo: `2026.1` corresponde à primeira atualização oficial de 2026.
 
 ---
 
+## [2026.6] — OBR Resgate no laboratório
+
+**Data:** 28/10/2026
+
+A sexta atualização de 2026 aprofunda o suporte à OBR. A modalidade Resgate chega ao LabTest com pontuação, registro de falhas e presets próprios, os testes passam a ser editáveis sem perder o histórico, o QuickBrick Studio ganha a base do StageMap para apresentações de arena e as páginas de documentação e notícias ficam mais fáceis de explorar.
+
+### OBR Resgate
+
+* Adicionado o suporte à modalidade **OBR Resgate**, com lógica de pontuação, registro de falhas e log de resgates.
+* Adicionados presets OBR para sensores de cor, seguidor de linha e detecção de vítimas.
+* Adicionado o modo `obr` ao `CalibraMode`, integrando presets e tipos OBR aos fluxos de configuração e execução.
+* Atualizados os níveis de acesso da OBR e da OBR Resgate no catálogo de recursos por liga.
+
+### LabTest
+
+* Adicionada a página de **edição de testes**, que permite alterar nome, descrição, pasta, etiquetas e marco sem mexer na configuração do teste nem invalidar execuções anteriores.
+* A página de execução passou a carregar dinamicamente o fluxo de cada competição, com `ObrRoundExecution` para a OBR e `FllRoundExecution` para a FLL.
+* Os resultados das rodadas OBR passaram a ser normalizados e exibidos no histórico de execuções e na visualização do teste, junto aos demais tipos.
+* Adicionados **campos calculados**, com fórmulas, campos obrigatórios e valores mínimo e máximo.
+* Adicionado o mapa `KNOWN_FIELDS`, que padroniza rótulos, unidades e tipos dos campos, com atenção especial aos parâmetros de PID e giroscópio.
+* Adicionadas novas imagens para as configurações de calibração e de runs.
+* Melhorados os estados de carregamento e erro na execução de testes.
+
+### QuickBrick Studio
+
+* Criado o módulo **StageMap**, base para montar apresentações de arena com atores, cenas, frames e marcações.
+* Adicionados utilitários para criar frames, cenas e atores, com um documento de exemplo.
+* Adicionados os tipos `Actor`, `Scene`, `Frame` e `Marking`.
+* Adicionadas constantes para as regras da OBR e as propriedades dos atores.
+
+### Documentação e notícias
+
+* Adicionado o componente `DocsSearch` para filtrar os documentos exibidos.
+* Adicionado o `NewsUI`, com categorias e metadados das notícias.
+* Adicionado o `ArticleClient`, com barra de progresso de leitura e compartilhamento das matérias.
+* Adicionados utilitários para buscar, filtrar e formatar notícias.
+* Adicionados novos documentos à biblioteca da OBR.
+* Atualizados os links de documentos nos guias da FLL.
+* Reorganizada a navegação das seções de recursos e ferramentas.
+
+### Correções
+
+* Corrigidas as URLs dos documentos da OBR em `obrDocs.json`.
+
+### Infraestrutura
+
+* As rotas de documentação da FLL e da OBR passaram a usar um utilitário comum de leitura, em vez de ler os arquivos diretamente.
+* Adicionados testes para a funcionalidade OBR e para os métodos de cálculo.
+
+> **A v2026.6 leva a OBR Resgate para dentro do laboratório: da calibração dos sensores à pontuação de cada rodada, a equipe testa, registra e analisa tudo no mesmo lugar.**
+
 ## [2026.5] — Um ecossistema para cada competição
 
 **Data:** 26/10/2026

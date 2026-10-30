@@ -1,6 +1,6 @@
+import { IS_PRODUCTION_DEPLOY, SITE_URL } from "@/utils/competitions/site";
 import type { MetadataRoute } from "next";
 
-import { IS_PRODUCTION_DEPLOY, SITE_URL } from "@/utils/institutional/site";
 
 export default function robots(): MetadataRoute.Robots {
   // Deploys de preview/desenvolvimento não devem aparecer nos buscadores.

@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 import { getAllLegalDocuments } from "@/utils/institutional/legal";
 import { getPublishedNews, newsHref } from "@/utils/institutional/news";
-import { SITE_URL } from "@/utils/institutional/site";
 import { NAVIGATION } from "@/utils/competitions/navigation";
 import { TIMERS_BY_COMPETITION } from "@/app/(public)/[competicao]/timers/config";
+import { SITE_URL } from "@/utils/competitions/site";
 
 type Entry = MetadataRoute.Sitemap[number];
 type Competition = keyof typeof NAVIGATION;

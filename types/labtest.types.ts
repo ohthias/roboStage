@@ -114,6 +114,10 @@ export type FllExecutionResults = {
       order?: number;
       value: number;
       missionId?: string;
+      /** Segundo do round em que a missão recebeu a primeira marcação. */
+      firstMarkSeconds?: number | null;
+      /** Primeira marcação feita depois do fim dos 2:30. */
+      markedAfterTime?: boolean;
       subAnswers: Record<string, number>;
       objectiveAnswers?: Record<string, unknown>;
     }
@@ -127,5 +131,6 @@ export type FllExecutionResults = {
   round?: {
     total?: number;
     seconds?: number;
+    firstMarks?: Record<string, { seconds: number; afterTime: boolean }>;
   };
 };

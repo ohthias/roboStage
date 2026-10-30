@@ -15,6 +15,7 @@ import {
   type AnatixViewKey,
 } from "@/types/anatix.types";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 const VIEW_OPTIONS: { key: AnatixViewKey; label: string; hint: string; icon: typeof BarChart3 }[] = [
   { key: "charts", label: "Gráficos", hint: "Métricas no tempo, loop, seções e eventos", icon: BarChart3 },
   { key: "maps", label: "Mapas", hint: "Mapa XY, mapa de calor e mapa de estados", icon: MapIcon },
@@ -44,8 +45,8 @@ export function AnatixLabForm({
     startTransition(async () => {
       try {
         const saved = lab
-          ? await updateAnatixLab({ labId: lab.id, name, description, config })
-          : await createAnatixLab({ name, description, config });
+          ? unwrapAction(await updateAnatixLab({ labId: lab.id, name, description, config }))
+          : unwrapAction(await createAnatixLab({ name, description, config }));
         onDone?.(saved);
         if (!lab) router.push(`/dashboard/labtest/anatix/${saved.id}`);
         else router.refresh();

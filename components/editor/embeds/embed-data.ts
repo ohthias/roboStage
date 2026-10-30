@@ -74,17 +74,3 @@ export function useEmbedData<K extends EmbedKind>(kind: K, id: string) {
 
   return { ...state, refresh };
 }
-
-/** Carrega o catálogo de missões FLL uma única vez (usado pelo resumo de Runs). */
-let missionsPromise: Promise<Record<string, unknown>> | null = null;
-export function loadMissionCatalog() {
-  if (!missionsPromise) {
-    missionsPromise = fetch("/api/data/missions")
-      .then((r) => r.json() as Promise<Record<string, unknown>>)
-      .catch((err) => {
-        missionsPromise = null;
-        throw err;
-      });
-  }
-  return missionsPromise;
-}

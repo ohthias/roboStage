@@ -1,5 +1,6 @@
 "use client";
 
+import { loadMissionCatalog } from "@/utils/data/missions-client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Pause, Play, RotateCcw, Trash2 } from "lucide-react";
 
@@ -71,9 +72,7 @@ export default function MissionTimer() {
     setLoadStatus("loading");
     setLoadError(null);
     try {
-      const response = await fetch("/data/missions.json");
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data: unknown = await response.json();
+      const data: unknown = await loadMissionCatalog();
       const normalized = normalizeMissionsData(data);
       setSeasons(normalized);
       setLoadStatus("ready");

@@ -4,7 +4,7 @@ import { db } from "@/db/client";
 import { documents, folders } from "@/db/schema";
 import { tests } from "@/db/schema/labtest";
 import { thinklab } from "@/db/schema/thinklab";
-import { scopeWhere } from "@/utils/stagebook/permissions";
+import { creatorScopeWhere, scopeWhere } from "@/utils/stagebook/permissions";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { getResourcesTags } from "@/utils/stagebook/actions/tags";
 import type { TagDTO } from "@/types/labels";
@@ -26,14 +26,11 @@ export default async function FolderPage({
     userId: documents.userId,
     teamId: documents.teamId,
   });
-  const testScope =
-    scope.type === "team"
-      ? eq(tests.teamId, scope.teamId)
-      : and(eq(tests.userId, scope.userId), isNull(tests.teamId));
-  const thinkLabScope =
-    scope.type === "team"
-      ? eq(thinklab.teamId, scope.teamId)
-      : and(eq(thinklab.userId, scope.userId), isNull(thinklab.teamId));
+  const testScope = creatorScopeWhere(scope, { userId: tests.userId, teamId: tests.teamId });
+  const thinkLabScope = creatorScopeWhere(scope, {
+    userId: thinklab.userId,
+    teamId: thinklab.teamId,
+  });
 
   // Todas as pastas do scope (leves): usadas para achar a pasta atual e o
   // caminho de ancestrais exibido na barra de endereço.

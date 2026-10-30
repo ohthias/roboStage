@@ -49,6 +49,16 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Sem sessão: redireciona para o sign-in antes de acessar rotas protegidas.
   if (!userId) {
+    // Redirect só funciona para navegação (GET). Em /api/* e em POSTs
+    // (Server Actions, fetch com method POST) o 307 preserva o método e
+    // manda um POST para /sign-in, que é uma página -> 405 Method Not Allowed.
+    // Nesses casos devolvemos 401 em JSON para o cliente tratar.
+    const isApi = req.nextUrl.pathname.startsWith("/api/");
+    const isNavigation = req.method === "GET" || req.method === "HEAD";
+    if (isApi || !isNavigation) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
+
     const url = req.nextUrl.clone();
 
     url.pathname = "/sign-in";

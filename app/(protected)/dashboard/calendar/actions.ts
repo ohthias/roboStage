@@ -6,7 +6,15 @@ import { db } from "@/db/client";
 import { calendarEvents, calendarEventDocuments, documents, teamMembers } from "@/db/schema";
 import { resolveStagebookScope, scopeOwnership } from "@/utils/stagebook/scope";
 import { scopeWhere, assertSameScope } from "@/utils/stagebook/permissions";
-import { cleanText, optionalText, requireDate, optionalDate, requireUuid } from "@/utils/stagebook/validation";
+import {
+  ValidationError,
+  cleanText,
+  optionalText,
+  requireDate,
+  optionalDate,
+  requireUuid,
+} from "@/utils/stagebook/validation";
+import { runAction } from "@/utils/stagebook/action-result";
 
 const PATH = "/dashboard/calendar";
 
@@ -70,32 +78,34 @@ export async function createEvent(input: {
   color?: string | null;
   location?: string | null;
 }) {
-  const scope = await resolveStagebookScope();
-  const startAt = requireDate(input.startAt, "data de início");
-  const endAt = optionalDate(input.endAt);
-  if (endAt && endAt < startAt) {
-    throw new Error("A data de fim não pode ser anterior à data de início.");
-  }
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    const startAt = requireDate(input.startAt, "data de início");
+    const endAt = optionalDate(input.endAt);
+    if (endAt && endAt < startAt) {
+      throw new ValidationError("A data de fim não pode ser anterior à data de início.");
+    }
 
-  const [created] = await db
-    .insert(calendarEvents)
-    .values({
-      ...scopeOwnership(scope),
-      title: cleanText(input.title, { fallback: "Novo evento", maxLength: 200 }),
-      description: optionalText(input.description, 2000),
-      startAt,
-      endAt,
-      allDay: Boolean(input.allDay),
-      type: input.type || "evento",
-      status: input.status || "confirmado",
-      color: optionalText(input.color, 20),
-      location: optionalText(input.location, 200),
-      createdBy: scope.userId,
-    })
-    .returning({ id: calendarEvents.id });
+    const [created] = await db
+      .insert(calendarEvents)
+      .values({
+        ...scopeOwnership(scope),
+        title: cleanText(input.title, { fallback: "Novo evento", maxLength: 200 }),
+        description: optionalText(input.description, 2000),
+        startAt,
+        endAt,
+        allDay: Boolean(input.allDay),
+        type: input.type || "evento",
+        status: input.status || "confirmado",
+        color: optionalText(input.color, 20),
+        location: optionalText(input.location, 200),
+        createdBy: scope.userId,
+      })
+      .returning({ id: calendarEvents.id });
 
-  revalidatePath(PATH, "layout");
-  return created;
+    revalidatePath(PATH, "layout");
+    return created;
+  });
 }
 
 export async function updateEvent(
@@ -112,43 +122,47 @@ export async function updateEvent(
     location?: string | null;
   }
 ) {
-  const scope = await resolveStagebookScope();
-  const startAt = requireDate(input.startAt, "data de início");
-  const endAt = optionalDate(input.endAt);
-  if (endAt && endAt < startAt) {
-    throw new Error("A data de fim não pode ser anterior à data de início.");
-  }
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    const startAt = requireDate(input.startAt, "data de início");
+    const endAt = optionalDate(input.endAt);
+    if (endAt && endAt < startAt) {
+      throw new ValidationError("A data de fim não pode ser anterior à data de início.");
+    }
 
-  await db
-    .update(calendarEvents)
-    .set({
-      title: cleanText(input.title, { fallback: "Novo evento", maxLength: 200 }),
-      description: optionalText(input.description, 2000),
-      startAt,
-      endAt,
-      allDay: Boolean(input.allDay),
-      type: input.type || "evento",
-      status: input.status || "confirmado",
-      color: optionalText(input.color, 20),
-      location: optionalText(input.location, 200),
-      updatedBy: scope.userId,
-      updatedAt: new Date(),
-    })
-    .where(
-      and(eq(calendarEvents.id, id), scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId }))
-    );
+    await db
+      .update(calendarEvents)
+      .set({
+        title: cleanText(input.title, { fallback: "Novo evento", maxLength: 200 }),
+        description: optionalText(input.description, 2000),
+        startAt,
+        endAt,
+        allDay: Boolean(input.allDay),
+        type: input.type || "evento",
+        status: input.status || "confirmado",
+        color: optionalText(input.color, 20),
+        location: optionalText(input.location, 200),
+        updatedBy: scope.userId,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(eq(calendarEvents.id, id), scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId }))
+      );
 
-  revalidatePath(PATH, "layout");
+    revalidatePath(PATH, "layout");
+  });
 }
 
 export async function deleteEvent(id: string) {
-  const scope = await resolveStagebookScope();
-  await db
-    .delete(calendarEvents)
-    .where(
-      and(eq(calendarEvents.id, id), scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId }))
-    );
-  revalidatePath(PATH, "layout");
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    await db
+      .delete(calendarEvents)
+      .where(
+        and(eq(calendarEvents.id, id), scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId }))
+      );
+    revalidatePath(PATH, "layout");
+  });
 }
 
 /** Lista Pages do scope atual, para o seletor de "anexar página ao evento". */
@@ -162,49 +176,53 @@ export async function listPagesForLinking() {
 }
 
 export async function linkDocumentToEvent(eventId: string, documentId: string) {
-  const scope = await resolveStagebookScope();
-  requireUuid(eventId, "evento");
-  requireUuid(documentId, "página");
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    requireUuid(eventId, "evento");
+    requireUuid(documentId, "página");
 
-  const [event] = await db
-    .select({ userId: calendarEvents.userId, teamId: calendarEvents.teamId })
-    .from(calendarEvents)
-    .where(
-      and(eq(calendarEvents.id, eventId), scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId }))
-    )
-    .limit(1);
-  if (!event) throw new Error("Evento não encontrado.");
+    const [event] = await db
+      .select({ userId: calendarEvents.userId, teamId: calendarEvents.teamId })
+      .from(calendarEvents)
+      .where(
+        and(eq(calendarEvents.id, eventId), scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId }))
+      )
+      .limit(1);
+    if (!event) throw new ValidationError("Evento não encontrado.");
 
-  const [page] = await db
-    .select({ userId: documents.userId, teamId: documents.teamId })
-    .from(documents)
-    .where(eq(documents.id, documentId))
-    .limit(1);
-  if (!page) throw new Error("Página não encontrada.");
+    const [page] = await db
+      .select({ userId: documents.userId, teamId: documents.teamId })
+      .from(documents)
+      .where(eq(documents.id, documentId))
+      .limit(1);
+    if (!page) throw new ValidationError("Página não encontrada.");
 
-  assertSameScope(event, page);
+    assertSameScope(event, page);
 
-  await db
-    .insert(calendarEventDocuments)
-    .values({ eventId, documentId })
-    .onConflictDoNothing();
+    await db
+      .insert(calendarEventDocuments)
+      .values({ eventId, documentId })
+      .onConflictDoNothing();
 
-  revalidatePath(PATH, "layout");
+    revalidatePath(PATH, "layout");
+  });
 }
 
 export async function unlinkDocumentFromEvent(eventId: string, documentId: string) {
-  const scope = await resolveStagebookScope();
-  const [event] = await db
-    .select({ id: calendarEvents.id })
-    .from(calendarEvents)
-    .where(
-      and(eq(calendarEvents.id, eventId), scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId }))
-    )
-    .limit(1);
-  if (!event) throw new Error("Evento não encontrado.");
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    const [event] = await db
+      .select({ id: calendarEvents.id })
+      .from(calendarEvents)
+      .where(
+        and(eq(calendarEvents.id, eventId), scopeWhere(scope, { userId: calendarEvents.userId, teamId: calendarEvents.teamId }))
+      )
+      .limit(1);
+    if (!event) throw new ValidationError("Evento não encontrado.");
 
-  await db
-    .delete(calendarEventDocuments)
-    .where(and(eq(calendarEventDocuments.eventId, eventId), eq(calendarEventDocuments.documentId, documentId)));
-  revalidatePath(PATH, "layout");
+    await db
+      .delete(calendarEventDocuments)
+      .where(and(eq(calendarEventDocuments.eventId, eventId), eq(calendarEventDocuments.documentId, documentId)));
+    revalidatePath(PATH, "layout");
+  });
 }

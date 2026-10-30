@@ -38,6 +38,7 @@ import { LabelColorPicker } from "./color-picker";
 import { MilestoneChip } from "./milestone-chip";
 import { TagChip } from "./tag-chip";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 const norm = (v: string) => v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 function UsageSummary({ usage, total }: { usage: Record<LabelableKind, number>; total: number }) {
@@ -115,10 +116,10 @@ export function LabelsManager({
     if (!newName.trim()) return;
     run(async () => {
       if (tab === "tags") {
-        await createTag(newName, newColor);
+        unwrapAction(await createTag(newName, newColor));
         await reloadTags();
       } else {
-        await createMilestone({ name: newName, color: newColor, dueAt: newDue || null });
+        unwrapAction(await createMilestone({ name: newName, color: newColor, dueAt: newDue || null }));
         await reloadMilestones();
       }
       setNewName("");
@@ -256,7 +257,7 @@ export function LabelsManager({
                           onClick={() => {
                             if (!window.confirm(`Excluir a tag “${tag.name}”? Ela será removida de ${tag.total} item(ns).`)) return;
                             run(async () => {
-                              await deleteTag(tag.id);
+                              unwrapAction(await deleteTag(tag.id));
                               await reloadTags();
                             });
                           }}
@@ -275,7 +276,7 @@ export function LabelsManager({
                       onSubmit={(e) => {
                         e.preventDefault();
                         run(async () => {
-                          await updateTag(tag.id, { name: editName });
+                          unwrapAction(await updateTag(tag.id, { name: editName }));
                           await reloadTags();
                         });
                       }}
@@ -294,13 +295,13 @@ export function LabelsManager({
                       value={tag.color ?? resolveLabelColor(null, tag.name)}
                       onChange={(hex) =>
                         run(async () => {
-                          await updateTag(tag.id, { color: hex });
+                          unwrapAction(await updateTag(tag.id, { color: hex }));
                           await reloadTags();
                         })
                       }
                       onReset={() =>
                         run(async () => {
-                          await updateTag(tag.id, { color: null });
+                          unwrapAction(await updateTag(tag.id, { color: null }));
                           await reloadTags();
                         })
                       }
@@ -318,7 +319,7 @@ export function LabelsManager({
                         const target = e.target.value;
                         if (!target) return;
                         run(async () => {
-                          await mergeTags(tag.id, target);
+                          unwrapAction(await mergeTags(tag.id, target));
                           setMergeId(null);
                           await reloadTags();
                         });
@@ -378,7 +379,7 @@ export function LabelsManager({
                         onClick={() => {
                           if (!window.confirm(`Excluir a milestone “${m.name}”? Os ${m.total} item(ns) ficarão sem milestone.`)) return;
                           run(async () => {
-                            await deleteMilestone(m.id);
+                            unwrapAction(await deleteMilestone(m.id));
                             await reloadMilestones();
                           });
                         }}
@@ -396,7 +397,7 @@ export function LabelsManager({
                       onSubmit={(e) => {
                         e.preventDefault();
                         run(async () => {
-                          await updateMilestone(m.id, { name: editName, dueAt: editDue || null });
+                          unwrapAction(await updateMilestone(m.id, { name: editName, dueAt: editDue || null }));
                           await reloadMilestones();
                         });
                       }}
@@ -421,13 +422,13 @@ export function LabelsManager({
                       value={m.color ?? resolveLabelColor(null, m.name)}
                       onChange={(hex) =>
                         run(async () => {
-                          await updateMilestone(m.id, { color: hex });
+                          unwrapAction(await updateMilestone(m.id, { color: hex }));
                           await reloadMilestones();
                         })
                       }
                       onReset={() =>
                         run(async () => {
-                          await updateMilestone(m.id, { color: null });
+                          unwrapAction(await updateMilestone(m.id, { color: null }));
                           await reloadMilestones();
                         })
                       }

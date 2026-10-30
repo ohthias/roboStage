@@ -6,7 +6,7 @@ import type {
   MissionFilterKey,
   MissionGuideEditorialFile,
   MissionGuideMission,
-  MissionsBySeasonFile,
+  RawMission,
 } from "@/utils/competitions/fll/mission-guide/types";
 import { matchesFilter, matchesSearch } from "@/utils/competitions/fll/mission-guide/utils";
 import { MissionFilters } from "./MissionFilters";
@@ -15,6 +15,7 @@ import { MissionCardSkeletonGrid } from "./MissionCardSkeleton";
 import { MissionModal } from "./MissionModal";
 import { MissionSearch } from "./MissionSearch";
 import Header from "@/components/UI/Header";
+import { loadSeasonMissions } from "@/utils/data/missions-client";
 
 // Only BIOGLOW™ Future Edition ships in this first version. The season key is
 // isolated here so a future season selector only needs to change this value
@@ -27,17 +28,10 @@ type LoadState =
   | { status: "ready"; missions: MissionGuideMission[] };
 
 async function loadMissionGuideData(): Promise<MissionGuideMission[]> {
-  const [missionsRes, editorialRes] = await Promise.all([
-    fetch("/data/missions.json"),
-    fetch("/data/fll/mission-guide/bioglow.json"),
+  const [rawMissions, editorialRes] = await Promise.all([
+    loadSeasonMissions<RawMission>(SEASON),
+    fetch(`/data/fll/mission-guide/${SEASON}.json`),
   ]);
-
-  if (!missionsRes.ok) {
-    throw new Error("Failed to load missions.json");
-  }
-
-  const missionsFile = (await missionsRes.json()) as MissionsBySeasonFile;
-  const rawMissions = missionsFile[SEASON] ?? [];
 
   // Editorial content is optional — if it's missing or fails to load, the UI
   // simply falls back to hiding mechanism/strategy/tips sections per mission.

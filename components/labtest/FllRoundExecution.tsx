@@ -25,8 +25,10 @@ import { computeMissionBreakdown, computePoints } from "@/utils/scores";
 import { getSubMissionKey } from "@/utils/labtest/fll";
 import { createTestExecution } from "@/app/(protected)/dashboard/labtest/actions";
 import { updateLabTestStatus } from "@/app/(protected)/dashboard/labtest/new/actions";
+import { loadSeasonMissions } from "@/utils/data/missions-client";
 import { LabTestModels } from "./LabTestModels";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 const ROUND_SECONDS = 150;
 const DISCS = 6;
 const INSPECTION_ID = "EL";
@@ -67,11 +69,9 @@ export default function FllRoundExecution({
   /* ------------------------- catálogo da temporada ------------------------- */
   useEffect(() => {
     let active = true;
-    fetch("/api/data/missions")
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((data: Record<string, Mission[]>) => {
+    loadSeasonMissions<Mission>(season)
+      .then((list) => {
         if (!active) return;
-        const list = Array.isArray(data[season]) ? data[season] : [];
         if (!list.length) throw new Error();
         setCatalog(list);
       })
@@ -210,7 +210,7 @@ export default function FllRoundExecution({
         });
       }
 
-      await createTestExecution({
+      unwrapAction(await createTestExecution({
         testId,
         notes: notes.trim() || undefined,
         results: {
@@ -233,12 +233,11 @@ export default function FllRoundExecution({
             seconds: elapsed,
           },
         },
-      });
+      }));
 
       if (nextExecutionNumber === 1) {
-        await updateLabTestStatus({ testId, status: "em_andamento" }).catch(
-          () => {},
-        );
+        // Melhor esforço: falhar aqui não impede o lançamento já salvo.
+          await updateLabTestStatus({ testId, status: "em_andamento" }).catch(() => undefined);
       }
 
       router.push(`/dashboard/labtest/${testId}`);

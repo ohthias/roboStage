@@ -3,13 +3,14 @@
 import { db } from "@/db/client";
 import { thinklab } from "@/db/schema/thinklab";
 import { folders } from "@/db/schema/notebook";
-import {
-  resolveStagebookScope,
-} from "@/utils/stagebook/scope";
-import { scopeWhere } from "@/utils/stagebook/permissions";
-import { and, eq, isNull } from "drizzle-orm";
+import { resolveStagebookScope, StagebookAuthError } from "@/utils/stagebook/scope";
+import { canDeleteResource } from "@/utils/stagebook/team-permissions";
+import { creatorScopeWhere, scopeWhere } from "@/utils/stagebook/permissions";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { ValidationError } from "@/utils/stagebook/validation";
+import { runAction } from "@/utils/stagebook/action-result";
 
 export type ThinkLabConfig = {
   elements?: unknown[];
@@ -18,10 +19,9 @@ export type ThinkLabConfig = {
   theme?: string;
 };
 
+/** ThinkLabs do scope atual (o criador fica em `userId` mesmo na equipe). */
 function thinkLabScope(scope: Awaited<ReturnType<typeof resolveStagebookScope>>) {
-  return scope.type === "team"
-    ? eq(thinklab.teamId, scope.teamId)
-    : and(eq(thinklab.userId, scope.userId), isNull(thinklab.teamId));
+  return creatorScopeWhere(scope, { userId: thinklab.userId, teamId: thinklab.teamId });
 }
 
 export async function createThinkLab(
@@ -44,7 +44,7 @@ export async function createThinkLab(
       )
       .limit(1);
 
-    if (!folder) throw new Error("Pasta inválida ou sem permissão.");
+    if (!folder) throw new ValidationError("Pasta inválida ou sem permissão.");
   }
 
   const [created] = await db
@@ -83,24 +83,41 @@ export async function getThinkLabById(id: string) {
 }
 
 export async function saveThinkLab(id: string, config: ThinkLabConfig) {
-  const scope = await resolveStagebookScope();
-  const [updated] = await db
-    .update(thinklab)
-    .set({ config, updatedAt: new Date(), lastAccessAt: new Date() })
-    .where(
-      and(
-        eq(thinklab.id, id),
-        thinkLabScope(scope),
-      ),
-    )
-    .returning({ id: thinklab.id, updatedAt: thinklab.updatedAt });
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    const [updated] = await db
+      .update(thinklab)
+      .set({ config, updatedAt: new Date(), lastAccessAt: new Date() })
+      .where(
+        and(
+          eq(thinklab.id, id),
+          thinkLabScope(scope),
+        ),
+      )
+      .returning({ id: thinklab.id, updatedAt: thinklab.updatedAt });
 
-  if (!updated) throw new Error("ThinkLab não encontrado.");
-  return updated;
+    if (!updated) throw new ValidationError("ThinkLab não encontrado.");
+    return updated;
+  });
 }
 
 export async function deleteThinkLabById(id: string) {
   const scope = await resolveStagebookScope();
+
+  // Na equipe, membros excluem só o que criaram; técnicos e mentores, qualquer quadro.
+  if (scope.type === "team") {
+    const [existing] = await db
+      .select({ creatorId: thinklab.userId })
+      .from(thinklab)
+      .where(and(eq(thinklab.id, id), thinkLabScope(scope)))
+      .limit(1);
+    if (existing && !canDeleteResource(scope.role, existing.creatorId, scope.userId)) {
+      throw new StagebookAuthError(
+        "Só técnicos e mentores podem excluir quadros criados por outras pessoas.",
+      );
+    }
+  }
+
   const [deleted] = await db
     .delete(thinklab)
     .where(
@@ -114,9 +131,8 @@ export async function deleteThinkLabById(id: string) {
 }
 
 export async function deleteThinkLabAction(id: string) {
-  confirm(
-    "Tem certeza que deseja excluir este ThinkLab? Esta ação não pode ser desfeita.",
-  );
+  // A confirmação acontece no navegador (ConfirmSubmitButton): `confirm()` não
+  // existe no servidor e quebrava a exclusão com ReferenceError.
   await deleteThinkLabById(id);
 
   revalidatePath("/dashboard/thinklab");
@@ -141,15 +157,15 @@ export async function updateThinkLabDetails(id: string, formData: FormData) {
   const description = String(formData.get("description") ?? "").trim();
 
   if (!name) {
-    throw new Error("O nome do quadro é obrigatório.");
+    throw new ValidationError("O nome do quadro é obrigatório.");
   }
 
   if (name.length > 100) {
-    throw new Error("O nome deve ter no máximo 100 caracteres.");
+    throw new ValidationError("O nome deve ter no máximo 100 caracteres.");
   }
 
   if (description.length > 1000) {
-    throw new Error("A descrição deve ter no máximo 1000 caracteres.");
+    throw new ValidationError("A descrição deve ter no máximo 1000 caracteres.");
   }
 
   const [updated] = await db
@@ -168,7 +184,7 @@ export async function updateThinkLabDetails(id: string, formData: FormData) {
     .returning({ id: thinklab.id });
 
   if (!updated) {
-    throw new Error("Quadro não encontrado ou sem permissão para editá-lo.");
+    throw new ValidationError("Quadro não encontrado ou sem permissão para editá-lo.");
   }
 
   revalidatePath("/dashboard/thinklab");

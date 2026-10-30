@@ -47,6 +47,19 @@ export function creatorScopeWhere(
 }
 
 /**
+ * Versão em memória de `creatorScopeWhere`, para um dono já carregado:
+ * pessoal = do usuário e sem equipe; equipe = da equipe (seja quem for o criador).
+ */
+export function isOwnedByScope(
+  scope: StagebookScope,
+  owner: { userId: string | null; teamId: string | null }
+): boolean {
+  return scope.type === "personal"
+    ? owner.userId === scope.userId && owner.teamId === null
+    : owner.teamId === scope.teamId;
+}
+
+/**
  * Seção 29: papéis existem (owner/mentor/competidor/colaborador) mas a spec
  * pede explicitamente para não montar uma ACL complexa agora. `requireRole`
  * cobre o essencial: no espaço pessoal o dono pode tudo; no espaço de

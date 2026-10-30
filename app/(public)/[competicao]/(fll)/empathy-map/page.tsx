@@ -23,24 +23,35 @@ const STORAGE_KEY = "mapa_empatia_simple_v2";
 const ACTIVE_MAP_KEY = "mapa_empatia_active_v2";
 
 export default function EmpathyMapPage() {
-  const [maps, setMaps] = useState<EmpathyMap[]>(() => {
+  // Começa sempre com o mapa inicial (igual ao HTML do servidor) e só depois
+  // carrega o que estiver salvo neste navegador — ler o localStorage no
+  // inicializador do useState gerava erro de hidratação.
+  const [maps, setMaps] = useState<EmpathyMap[]>(INITIAL_MAPS);
+  const [activeMapId, setActiveMapId] = useState<string>(INITIAL_MAPS[0].id);
+  const [storageLoaded, setStorageLoaded] = useState(false);
+
+  useEffect(() => {
+    let savedMaps: EmpathyMap[] | null = null;
+    let savedId: string | null = null;
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) savedMaps = parsed;
       }
+      savedId = localStorage.getItem(ACTIVE_MAP_KEY);
     } catch {}
-    return INITIAL_MAPS;
-  });
 
-  const [activeMapId, setActiveMapId] = useState<string>(() => {
-    try {
-      const savedId = localStorage.getItem(ACTIVE_MAP_KEY);
-      if (savedId && maps.some((m) => m.id === savedId)) return savedId;
-    } catch {}
-    return maps[0]?.id || INITIAL_MAPS[0].id;
-  });
+    const loadedMaps = savedMaps ?? INITIAL_MAPS;
+    // O localStorage só existe no navegador: carregar logo após a hidratação
+    // é justamente o objetivo deste efeito.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    if (savedMaps) setMaps(savedMaps);
+    if (savedId && loadedMaps.some((m) => m.id === savedId)) setActiveMapId(savedId);
+    else setActiveMapId(loadedMaps[0]?.id || INITIAL_MAPS[0].id);
+    setStorageLoaded(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
 
   const [currentView, setCurrentView] = useState<ViewMode>("board");
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,18 +65,20 @@ export default function EmpathyMapPage() {
   // Capture ref for PNG exports
   const boardRef = useRef<HTMLDivElement | null>(null);
 
-  // Save to localStorage
+  // Save to localStorage (só depois de carregar, para não sobrescrever o salvo)
   useEffect(() => {
+    if (!storageLoaded) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(maps));
     } catch {}
-  }, [maps]);
+  }, [maps, storageLoaded]);
 
   useEffect(() => {
+    if (!storageLoaded) return;
     try {
       localStorage.setItem(ACTIVE_MAP_KEY, activeMapId);
     } catch {}
-  }, [activeMapId]);
+  }, [activeMapId, storageLoaded]);
 
   const activeMap = useMemo(() => {
     return maps.find((m) => m.id === activeMapId) || maps[0] || INITIAL_MAPS[0];

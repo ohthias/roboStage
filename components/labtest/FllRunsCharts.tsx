@@ -1,5 +1,6 @@
 "use client";
 
+import { loadSeasonMissions } from "@/utils/data/missions-client";
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { Award, BarChart3, Disc3, Hash, TrendingUp } from "lucide-react";
@@ -27,10 +28,6 @@ interface FllRunsChartsProps {
   season: string;
   entries: TestEntry[];
   accent: AccentColor;
-}
-
-interface MissionsResponse {
-  [season: string]: FllMissionDefinition[];
 }
 
 type Definition = FllMissionDefinition | FllSubMissionDefinition;
@@ -221,11 +218,9 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
   useEffect(() => {
     let active = true;
 
-    fetch("/api/data/missions")
-      .then((response) => response.json() as Promise<MissionsResponse>)
-      .then((data) => {
+    loadSeasonMissions<FllMissionDefinition>(season)
+      .then((seasonMissions) => {
         if (!active) return;
-        const seasonMissions = Array.isArray(data[season]) ? data[season] : [];
         const required = new Set(requiredMissionIds);
         setMissions(seasonMissions.filter((mission) => required.has(mission.id)));
       })

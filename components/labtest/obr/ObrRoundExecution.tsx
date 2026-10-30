@@ -55,6 +55,7 @@ import { createTestExecution } from "@/app/(protected)/dashboard/labtest/actions
 import { updateLabTestStatus } from "@/app/(protected)/dashboard/labtest/new/actions";
 import ArenaMap from "./ArenaMap";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 const MAX_DEPOSITS = MAX_VIVAS + MAX_MORTAS;
 
 function Panel({
@@ -207,15 +208,14 @@ export default function ObrRoundExecution({
         rescue: { entrySec, captureAttempts, deposits },
         elapsedSec: elapsed,
       });
-      await createTestExecution({
+      unwrapAction(await createTestExecution({
         testId,
         notes: notes.trim() || undefined,
         results: { obrRound },
-      });
+      }));
       if (nextExecutionNumber === 1) {
-        await updateLabTestStatus({ testId, status: "em_andamento" }).catch(
-          () => {},
-        );
+        // Melhor esforço: falhar aqui não impede o lançamento já salvo.
+          await updateLabTestStatus({ testId, status: "em_andamento" }).catch(() => undefined);
       }
       router.push(`/dashboard/labtest/${testId}`);
       router.refresh();

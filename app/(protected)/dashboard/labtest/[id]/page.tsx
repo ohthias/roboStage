@@ -41,6 +41,7 @@ import { FllRunsCharts } from "@/components/labtest/FllRunsCharts";
 import FutureEditionAnalysis from "@/components/labtest/future-edition/FutureEditionAnalysis";
 import { formatClock, isFutureEditionConfig } from "@/utils/labtest/future-edition";
 import { normalizeStatus } from "@/utils/labtest/catalog";
+import { loadSeasonMissions } from "@/utils/data/missions-client";
 import { SeriesChartPanel } from "@/components/labtest/charts/SeriesChart";
 import type { FieldDefinition, ModeId, TestEntry } from "@/types/labtest.types";
 import { getLabTestViewData } from "../actions";
@@ -57,6 +58,7 @@ import {
 } from "@/utils/labtest/fll";
 import { deleteTest } from "../new/actions";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 const STATUS_LABEL: Record<string, { label: string; badge: string }> = {
   planejamento: { label: "Planejamento", badge: "badge-ghost" },
   em_andamento: { label: "Em andamento", badge: "badge-warning" },
@@ -294,14 +296,9 @@ function EntryHistory({
 
     let active = true;
 
-    fetch("/api/data/missions")
-      .then((response) => response.json())
-      .then((data) => {
-        if (!active) return;
-
-        const seasonMissions = Array.isArray(data[season]) ? data[season] : [];
-
-        setMissions(seasonMissions);
+    loadSeasonMissions<FllMissionDefinition>(season)
+      .then((seasonMissions) => {
+        if (active) setMissions(seasonMissions);
       })
       .catch(() => {
         if (active) {
@@ -815,7 +812,7 @@ export default function LabTestView() {
 
   const handleDelete = async () => {
     if (!confirm("Tem certeza que deseja excluir este teste?")) return;
-    await deleteTest(test.id);
+    unwrapAction(await deleteTest(test.id));
     router.push("/dashboard/labtest");
   };
 

@@ -49,6 +49,7 @@ import { SeriesChartPanel } from "../charts/SeriesChart";
 import { createTestExecution } from "@/app/(protected)/dashboard/labtest/actions";
 import { updateLabTestStatus } from "@/app/(protected)/dashboard/labtest/new/actions";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 type Status = "idle" | "running" | "paused" | "finished";
 
 function beep(frequency: number, ms: number) {
@@ -389,13 +390,13 @@ export default function FutureEditionMatch({
         finishedBy === "time" ? durationSec : elapsedRef.current,
         finishedBy,
       );
-      await createTestExecution({
+      unwrapAction(await createTestExecution({
         testId,
         notes: notes.trim() || undefined,
         results: { futureEdition: result },
-      });
+      }));
       if (matchNumber === 1) {
-        await updateLabTestStatus({ testId, status: "em_andamento" });
+        unwrapAction(await updateLabTestStatus({ testId, status: "em_andamento" }));
       }
       setSavedNumber(matchNumber);
     } catch (err) {

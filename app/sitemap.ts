@@ -1,17 +1,19 @@
 import type { MetadataRoute } from "next";
 
 import { getAllLegalDocuments } from "@/utils/institutional/legal";
-import { getAllNews } from "@/utils/institutional/news";
-import { COMPETICOES } from "@/utils/competitions/competicoes";
+import { getPublishedNews, newsHref } from "@/utils/institutional/news";
+import { SITE_URL } from "@/utils/institutional/site";
+import { NAVIGATION } from "@/utils/competitions/navigation";
+import { TIMERS_BY_COMPETITION } from "@/app/(public)/[competicao]/timers/config";
 
-const siteUrl = "https://robostage.com.br";
-const fllSeasons = ["bioglow", "unearthed", "submerged", "masterpiece"];
-const timerModes = ["robot-game", "judging", "custom"];
+type Entry = MetadataRoute.Sitemap[number];
+type Competition = keyof typeof NAVIGATION;
 
-const publicRoutes = [
-  "/",
-  "/showlive",
+/** Páginas institucionais (fora das competições). */
+const INSTITUTIONAL_ROUTES = [
   "/about",
+  "/anatix",
+  "/roboticar",
   "/news",
   "/help",
   "/universe",
@@ -22,133 +24,124 @@ const publicRoutes = [
   "/sponsors",
   "/stagebook",
   "/labtest",
+  "/showlive",
   "/legal",
-  "/fll",
-  "/fll/docs",
-  "/fll/docs/missions-guide",
-  "/fll/cheklist",
-  "/fll/begins",
-  "/fll/future-edition",
-  "/fll/future-edition/score",
-  "/fll/future-edition/rubric",
-  "/fll/explore",
-  "/fll/partiu-mesa",
-  "/fll/quickbrick",
-  "/fll/quickbrick/estrategia",
-  "/fll/quickbrick/heatmap",
-  "/fll/quickbrick/matriz-de-risco",
-  "/fll/quickbrick/matriz-swot",
-  "/fll/quickbrick/sharks-simulator",
-  "/fll/quickbrick/tabela-de-missoes",
-  "/fll/score",
-  "/fll/recall",
-  "/fll/timers",
-  "/fll/flash-qa",
-  "/obr",
-  "/obr/docs",
-  "/obr/anatix",
-  "/obr/quickbrick",
-  "/obr/quickbrick/criador-de-arena",
-  "/obr/quickbrick/matriz-de-risco",
-  "/obr/quickbrick/matriz-swot",
-  "/obr/score",
 ];
 
-function toSitemapUrl(pathname: string) {
-  return `${siteUrl}${pathname}`;
+/**
+ * Ferramentas do QuickBrick por competição (espelha `ferramentasPorCompeticao`
+ * em components/QuickBrick/ferramentas.data.tsx). Cada competição só lista as
+ * ferramentas que de fato oferece.
+ */
+const QUICKBRICK_TOOLS: Record<Competition, string[]> = {
+  fll: [
+    "estrategia",
+    "heatmap",
+    "sharks-simulator",
+    "matriz-de-risco",
+    "matriz-swot",
+    "tabela-de-missoes",
+  ],
+  obr: ["criador-de-arenas", "mapa-de-palco", "matriz-de-risco", "matriz-swot"],
+};
+
+/** Rotas por temporada (só a FLL tem temporadas). */
+const SEASON_TOOLS = ["score", "quickbrick/matriz-swot", "quickbrick/tabela-de-missoes"];
+
+/**
+ * Links do menu que ainda não têm página (geravam 404 no sitemap).
+ * Remova daqui quando a página existir.
+ */
+const MISSING_PAGES = new Set(["/fll/docs/missions-guide"]);
+
+/** Páginas exclusivas da FLL que não estão no menu. */
+const FLL_EXTRA_ROUTES = ["/fll/future-edition/score", "/fll/future-edition/rubric"];
+
+function competitionRoutes(competition: Competition): string[] {
+  const nav = NAVIGATION[competition];
+  const base = `/${competition}`;
+
+  const fromNav = [
+    nav.scorePath,
+    ...nav.options.map((o) => o.path),
+    ...nav.menus.flatMap((m) => m.items.map((i) => i.path)),
+  ].map((p) => `${base}/${p}`);
+
+  const quickbrick = QUICKBRICK_TOOLS[competition].map((t) => `${base}/quickbrick/${t}`);
+
+  const timers = (TIMERS_BY_COMPETITION[competition] ?? []).map((t) => `${base}/timers/${t.slug}`);
+
+  const seasons =
+    "seasons" in nav
+      ? nav.seasons.flatMap((s) => SEASON_TOOLS.map((tool) => `${base}/${tool}/${s.key}`))
+      : [];
+
+  const extras = competition === "fll" ? FLL_EXTRA_ROUTES : [];
+
+  return [base, ...fromNav, ...quickbrick, ...timers, ...seasons, ...extras];
 }
 
-function sanitizeNewsSlug(slug: unknown) {
-  if (typeof slug !== "string") return "";
-
-  return slug
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9-_]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
+/** Prioridade por profundidade: hubs pesam mais que páginas internas. */
+function priorityFor(pathname: string): number {
+  if (pathname === "/") return 1;
+  const depth = pathname.split("/").filter(Boolean).length;
+  if (depth === 1) return 0.9;
+  if (depth === 2) return 0.7;
+  return 0.5;
 }
 
-function validDate(value: unknown) {
+function toEntry(pathname: string, overrides: Partial<Entry> = {}): Entry {
+  return {
+    url: `${SITE_URL}${pathname === "/" ? "" : pathname}`,
+    changeFrequency: pathname === "/" ? "daily" : "weekly",
+    priority: priorityFor(pathname),
+    ...overrides,
+  };
+}
+
+function validDate(value: unknown): Date | undefined {
   if (!value) return undefined;
-
-  const date = new Date(String(value));
-
+  // Datas "AAAA-MM-DD" do frontmatter: meio-dia evita voltar um dia por fuso.
+  const raw = String(value);
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T12:00:00` : raw);
   return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const competitionRoutes = Object.keys(COMPETICOES).flatMap((competition) => [
-    `/${competition}`,
-    `/${competition}/docs`,
-    `/${competition}/docs/missions-guide`,
-    `/${competition}/cheklist`,
-    `/${competition}/begins`,
-    `/${competition}/future-edition`,
-    `/${competition}/future-edition/score`,
-    `/${competition}/future-edition/rubric`,
-    `/${competition}/explore`,
-    `/${competition}/partiu-mesa`,
-    `/${competition}/quickbrick`,
-    `/${competition}/quickbrick/estrategia`,
-    `/${competition}/quickbrick/heatmap`,
-    `/${competition}/quickbrick/matriz-de-risco`,
-    `/${competition}/quickbrick/matriz-swot`,
-    `/${competition}/quickbrick/sharks-simulator`,
-    `/${competition}/quickbrick/tabela-de-missoes`,
-    `/${competition}/score`,
-    `/${competition}/recall`,
-    `/${competition}/timers`,
-    `/${competition}/flash-qa`,
-  ]);
+  const news = getPublishedNews();
+  const latestNewsDate = news.map((n) => validDate(n.date)).find(Boolean);
 
-  const seasonRoutes = Object.keys(COMPETICOES).flatMap((competition) =>
-    fllSeasons.flatMap((season) => [
-      `/${competition}/score/${season}`,
-      `/${competition}/quickbrick/matriz-swot/${season}`,
-      `/${competition}/quickbrick/tabela-de-missoes/${season}`,
+  // Set elimina duplicatas (a lista antiga repetia todas as rotas da FLL).
+  const staticPaths = [
+    ...new Set([
+      "/",
+      ...INSTITUTIONAL_ROUTES,
+      ...(Object.keys(NAVIGATION) as Competition[]).flatMap(competitionRoutes),
     ]),
+  ].filter((p) => !MISSING_PAGES.has(p));
+
+  const staticEntries = staticPaths.map((pathname) =>
+    toEntry(
+      pathname,
+      pathname === "/news" && latestNewsDate ? { lastModified: latestNewsDate, changeFrequency: "daily" } : {},
+    ),
   );
 
-  const timerRoutes = Object.keys(COMPETICOES).flatMap((competition) =>
-    timerModes.map((mode) => `/${competition}/timers/${mode}`),
+  const newsEntries = news.flatMap((article) => {
+    const href = newsHref(article.slug);
+    if (href === "/news") return [];
+    return [
+      toEntry(href, {
+        lastModified: validDate(article.date),
+        changeFrequency: "monthly",
+        priority: 0.6,
+      }),
+    ];
+  });
+
+  const legalEntries = (await getAllLegalDocuments()).map(({ slug }) =>
+    toEntry(`/legal/${encodeURIComponent(slug)}`, { changeFrequency: "yearly", priority: 0.3 }),
   );
-
-  const staticEntries = [
-    ...publicRoutes,
-    ...competitionRoutes,
-    ...seasonRoutes,
-    ...timerRoutes,
-  ].map((pathname) => ({
-    url: toSitemapUrl(pathname),
-    changeFrequency: pathname === "/" ? "daily" : "weekly",
-    priority: pathname === "/" ? 1 : 0.7,
-  }) satisfies MetadataRoute.Sitemap[number]);
-
-  const newsEntries = (getAllNews() as Array<Record<string, unknown>>).flatMap(
-    (article) => {
-      if (article.draft) return [];
-
-      const slug = sanitizeNewsSlug(article.slug);
-
-      if (!slug) return [];
-
-      return [
-        {
-          url: toSitemapUrl(`/news/${encodeURIComponent(slug)}`),
-          lastModified: validDate(article.date),
-          changeFrequency: "monthly" as const,
-          priority: 0.7,
-        } satisfies MetadataRoute.Sitemap[number],
-      ];
-    },
-  );
-
-  const legalEntries = (await getAllLegalDocuments()).map(({ slug }) => ({
-    url: toSitemapUrl(`/legal/${encodeURIComponent(slug)}`),
-    changeFrequency: "yearly" as const,
-    priority: 0.5,
-  }) satisfies MetadataRoute.Sitemap[number]);
 
   return [...staticEntries, ...newsEntries, ...legalEntries];
 }

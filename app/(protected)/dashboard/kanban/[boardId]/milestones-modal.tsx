@@ -5,6 +5,7 @@ import { CalendarClock, Flag, Milestone as MilestoneIcon, Plus, Search, X } from
 import { createMilestone } from "@/utils/stagebook/actions/milestones";
 import { MilestoneChip } from "@/components/stagebook/labels/milestone-chip";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 type Milestone = { id: string; name: string; color?: string | null; dueAt: string | Date | null };
 
 function isPast(dueAt: string | Date | null) {
@@ -35,7 +36,7 @@ export function MilestonesModal({
   function addMilestone() {
     if (!name.trim()) return;
     startTransition(async () => {
-      await createMilestone({ name, dueAt: dueAt || null });
+      unwrapAction(await createMilestone({ name, dueAt: dueAt || null }));
       setName("");
       setDueAt("");
       onChanged();

@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { cache } from "react";
 
 import { COMPETICOES } from "@/utils/competitions/competicoes";
 
@@ -60,14 +61,23 @@ function describeUrl(url: string) {
 }
 
 /**
- * Lê public/data/<competicao>Docs.json e devolve as temporadas já agrupadas
- * por categoria, na ordem do arquivo (a primeira é a mais recente).
+ * Lê public/data/<competicao>Docs.json. Única leitura do arquivo: a página, o
+ * `generateMetadata` e a rota /api/data/<competicao>Docs passam por aqui, e
+ * `cache()` faz página + metadata lerem uma vez só por render.
  */
-export async function getCompetitionDocs(competicao: Competicao): Promise<DocSeason[]> {
+export const readRawDocs = cache(async (competicao: Competicao) => {
   const file = path.join(process.cwd(), "public", "data", `${competicao}Docs.json`);
+  return JSON.parse(await fs.readFile(file, "utf-8")) as Record<string, RawDoc[]>;
+});
+
+/**
+ * Temporadas de <competicao>Docs.json já agrupadas por categoria, na ordem do
+ * arquivo (a primeira é a mais recente).
+ */
+export const getCompetitionDocs = cache(async (competicao: Competicao): Promise<DocSeason[]> => {
   let raw: Record<string, RawDoc[]>;
   try {
-    raw = JSON.parse(await fs.readFile(file, "utf-8"));
+    raw = await readRawDocs(competicao);
   } catch (err) {
     console.error(`Erro ao carregar ${competicao}Docs.json:`, err);
     return [];
@@ -88,7 +98,9 @@ export async function getCompetitionDocs(competicao: Competicao): Promise<DocSea
       used.add(id);
 
       const item: DocItem = { ...doc, id, ...describeUrl(doc.url ?? "") };
-      groups.set(key, [...(groups.get(key) ?? []), item]);
+      const group = groups.get(key);
+      if (group) group.push(item);
+      else groups.set(key, [item]);
     }
 
     const rank = (k: string) => (CATEGORY_ORDER.includes(k) ? CATEGORY_ORDER.indexOf(k) : CATEGORY_ORDER.length);
@@ -106,10 +118,4 @@ export async function getCompetitionDocs(competicao: Competicao): Promise<DocSea
       })),
     };
   });
-}
-
-/** Lê o JSON bruto (usado pela rota /api/data/<competicao>Docs). */
-export async function readRawDocs(competicao: Competicao) {
-  const file = path.join(process.cwd(), "public", "data", `${competicao}Docs.json`);
-  return JSON.parse(await fs.readFile(file, "utf-8")) as Record<string, RawDoc[]>;
-}
+});

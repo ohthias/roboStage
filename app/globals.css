@@ -1,5 +1,7 @@
 /*/global.css*/
-@import "@flaticon/flaticon-uicons/css/all/all.css";
+/* Só os ícones de marca (GitHub e Instagram no Footer): o pacote "all" tinha
+   1,2 MB de CSS e entrava, bloqueando a renderização, em todas as páginas. */
+@import "@flaticon/flaticon-uicons/css/brands/all.css";
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @plugin "daisyui/theme" {
@@ -116,4 +118,17 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+/* Toasts (app/context/ToastContext.tsx) */
+@keyframes toast-enter {
+  from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes toast-leave {
+  to { opacity: 0; transform: translateY(-10px) scale(0.95); }
+}
+.toast-enter { animation: toast-enter 200ms ease-out both; }
+.toast-leave { animation: toast-leave 150ms ease-in both; }
+@media (prefers-reduced-motion: reduce) {
+  .toast-enter, .toast-leave { animation-duration: 1ms; }
 }

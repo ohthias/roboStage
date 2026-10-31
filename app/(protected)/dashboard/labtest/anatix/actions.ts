@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, asc, count, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
+import { creatorScopeWhere } from "@/utils/stagebook/permissions";
 import { db } from "@/db/client";
 import {
   ANATIX_MAX_LABS,
@@ -17,6 +18,8 @@ import type {
   AnatixSessionRecord,
   AnatixSessionSummary,
 } from "@/types/anatix.types";
+import { ValidationError } from "@/utils/stagebook/validation";
+import { runAction } from "@/utils/stagebook/action-result";
 
 const BASE_PATH = "/dashboard/labtest/anatix";
 const MAX_FRAMES_PER_BATCH = 2000;
@@ -29,10 +32,7 @@ const FRAME_KINDS = new Set(["H", "V", "E", "S", "T", "L", "M"]);
 
 async function scopeFilter() {
   const scope = await resolveStagebookScope();
-  const where =
-    scope.type === "team"
-      ? eq(anatixLabs.teamId, scope.teamId)
-      : and(eq(anatixLabs.userId, scope.userId), isNull(anatixLabs.teamId));
+  const where = creatorScopeWhere(scope, { userId: anatixLabs.userId, teamId: anatixLabs.teamId });
   return { scope, where };
 }
 
@@ -43,7 +43,7 @@ async function requireLab(labId: string) {
     .from(anatixLabs)
     .where(and(eq(anatixLabs.id, labId), where))
     .limit(1);
-  if (!lab) throw new Error("Laboratório Anatix não encontrado.");
+  if (!lab) throw new ValidationError("Laboratório Anatix não encontrado.");
   return { scope, lab };
 }
 
@@ -53,7 +53,7 @@ async function requireSession(sessionId: string) {
     .from(anatixSessions)
     .where(eq(anatixSessions.id, sessionId))
     .limit(1);
-  if (!session) throw new Error("Sessão Anatix não encontrada.");
+  if (!session) throw new ValidationError("Sessão Anatix não encontrada.");
   const { scope, lab } = await requireLab(session.labId);
   return { scope, lab, session };
 }
@@ -66,9 +66,9 @@ function cleanText(value: unknown, max: number) {
 
 /** jsonb não aceita NaN/Infinity: troca por null e remove campos estranhos. */
 function sanitizeFrames(raw: unknown): AnatixFrame[] {
-  if (!Array.isArray(raw)) throw new Error("Lote de frames inválido.");
+  if (!Array.isArray(raw)) throw new ValidationError("Lote de frames inválido.");
   if (raw.length > MAX_FRAMES_PER_BATCH) {
-    throw new Error(`Lote maior que ${MAX_FRAMES_PER_BATCH} frames.`);
+    throw new ValidationError(`Lote maior que ${MAX_FRAMES_PER_BATCH} frames.`);
   }
   return raw.flatMap((item) => {
     if (!item || typeof item !== "object") return [];
@@ -146,31 +146,33 @@ export async function createAnatixLab(input: {
   description?: string | null;
   config?: unknown;
 }) {
-  const { scope, where } = await scopeFilter();
-  const name = cleanText(input.name, 80);
-  if (!name) throw new Error("Dê um nome ao laboratório.");
+  return runAction(async () => {
+    const { scope, where } = await scopeFilter();
+    const name = cleanText(input.name, 80);
+    if (!name) throw new ValidationError("Dê um nome ao laboratório.");
 
-  const [{ total }] = await db
-    .select({ total: count() })
-    .from(anatixLabs)
-    .where(where);
-  if (Number(total) >= ANATIX_MAX_LABS) {
-    throw new Error(`Limite de ${ANATIX_MAX_LABS} laboratórios Anatix atingido.`);
-  }
+    const [{ total }] = await db
+      .select({ total: count() })
+      .from(anatixLabs)
+      .where(where);
+    if (Number(total) >= ANATIX_MAX_LABS) {
+      throw new ValidationError(`Limite de ${ANATIX_MAX_LABS} laboratórios Anatix atingido.`);
+    }
 
-  const [lab] = await db
-    .insert(anatixLabs)
-    .values({
-      userId: scope.userId,
-      teamId: scope.type === "team" ? scope.teamId : null,
-      name,
-      description: cleanText(input.description, 400),
-      config: normalizeAnatixConfig(input.config),
-    })
-    .returning();
+    const [lab] = await db
+      .insert(anatixLabs)
+      .values({
+        userId: scope.userId,
+        teamId: scope.type === "team" ? scope.teamId : null,
+        name,
+        description: cleanText(input.description, 400),
+        config: normalizeAnatixConfig(input.config),
+      })
+      .returning();
 
-  revalidatePath(BASE_PATH);
-  return toLabRecord(lab);
+    revalidatePath(BASE_PATH);
+    return toLabRecord(lab);
+  });
 }
 
 export async function updateAnatixLab(input: {
@@ -179,36 +181,40 @@ export async function updateAnatixLab(input: {
   description?: string | null;
   config?: unknown;
 }) {
-  const { lab } = await requireLab(input.labId);
-  const name = input.name !== undefined ? cleanText(input.name, 80) : lab.name;
-  if (!name) throw new Error("Dê um nome ao laboratório.");
+  return runAction(async () => {
+    const { lab } = await requireLab(input.labId);
+    const name = input.name !== undefined ? cleanText(input.name, 80) : lab.name;
+    if (!name) throw new ValidationError("Dê um nome ao laboratório.");
 
-  const [updated] = await db
-    .update(anatixLabs)
-    .set({
-      name,
-      description:
-        input.description !== undefined
-          ? cleanText(input.description, 400)
-          : lab.description,
-      config:
-        input.config !== undefined
-          ? normalizeAnatixConfig(input.config)
-          : lab.config,
-      updatedAt: new Date(),
-    })
-    .where(eq(anatixLabs.id, lab.id))
-    .returning();
+    const [updated] = await db
+      .update(anatixLabs)
+      .set({
+        name,
+        description:
+          input.description !== undefined
+            ? cleanText(input.description, 400)
+            : lab.description,
+        config:
+          input.config !== undefined
+            ? normalizeAnatixConfig(input.config)
+            : lab.config,
+        updatedAt: new Date(),
+      })
+      .where(eq(anatixLabs.id, lab.id))
+      .returning();
 
-  revalidatePath(BASE_PATH);
-  revalidatePath(`${BASE_PATH}/${lab.id}`);
-  return toLabRecord(updated);
+    revalidatePath(BASE_PATH);
+    revalidatePath(`${BASE_PATH}/${lab.id}`);
+    return toLabRecord(updated);
+  });
 }
 
 export async function deleteAnatixLab(labId: string) {
-  const { lab } = await requireLab(labId);
-  await db.delete(anatixLabs).where(eq(anatixLabs.id, lab.id));
-  revalidatePath(BASE_PATH);
+  return runAction(async () => {
+    const { lab } = await requireLab(labId);
+    await db.delete(anatixLabs).where(eq(anatixLabs.id, lab.id));
+    revalidatePath(BASE_PATH);
+  });
 }
 
 export async function getAnatixLab(labId: string) {
@@ -238,37 +244,39 @@ export async function startAnatixSession(input: {
   protocolVersion?: number | null;
   baudRate?: number | null;
 }) {
-  const { scope, lab } = await requireLab(input.labId);
-  const robotName = cleanText(input.robotName, 80);
-  const board = cleanText(input.board, 80);
-  const now = new Date();
+  return runAction(async () => {
+    const { scope, lab } = await requireLab(input.labId);
+    const robotName = cleanText(input.robotName, 80);
+    const board = cleanText(input.board, 80);
+    const now = new Date();
 
-  const [session] = await db
-    .insert(anatixSessions)
-    .values({
-      labId: lab.id,
-      userId: scope.userId,
-      robotName,
-      board,
-      protocolVersion: Number.isFinite(input.protocolVersion)
-        ? Number(input.protocolVersion)
-        : null,
-      baudRate: Number.isFinite(input.baudRate) ? Number(input.baudRate) : null,
-      startedAt: now,
-    })
-    .returning();
+    const [session] = await db
+      .insert(anatixSessions)
+      .values({
+        labId: lab.id,
+        userId: scope.userId,
+        robotName,
+        board,
+        protocolVersion: Number.isFinite(input.protocolVersion)
+          ? Number(input.protocolVersion)
+          : null,
+        baudRate: Number.isFinite(input.baudRate) ? Number(input.baudRate) : null,
+        startedAt: now,
+      })
+      .returning();
 
-  await db
-    .update(anatixLabs)
-    .set({
-      robotName: robotName ?? lab.robotName,
-      board: board ?? lab.board,
-      lastConnectedAt: now,
-      updatedAt: now,
-    })
-    .where(eq(anatixLabs.id, lab.id));
+    await db
+      .update(anatixLabs)
+      .set({
+        robotName: robotName ?? lab.robotName,
+        board: board ?? lab.board,
+        lastConnectedAt: now,
+        updatedAt: now,
+      })
+      .where(eq(anatixLabs.id, lab.id));
 
-  return { sessionId: session.id };
+    return { sessionId: session.id };
+  });
 }
 
 export async function appendAnatixFrames(input: {
@@ -276,18 +284,20 @@ export async function appendAnatixFrames(input: {
   batch: number;
   frames: unknown;
 }) {
-  const { session } = await requireSession(input.sessionId);
-  if (session.endedAt) throw new Error("Sessão já encerrada.");
-  const batch = Math.trunc(Number(input.batch));
-  if (!Number.isFinite(batch) || batch < 0 || batch >= MAX_BATCHES_PER_SESSION) {
-    throw new Error("Número de lote inválido.");
-  }
+  return runAction(async () => {
+    const { session } = await requireSession(input.sessionId);
+    if (session.endedAt) throw new ValidationError("Sessão já encerrada.");
+    const batch = Math.trunc(Number(input.batch));
+    if (!Number.isFinite(batch) || batch < 0 || batch >= MAX_BATCHES_PER_SESSION) {
+      throw new ValidationError("Número de lote inválido.");
+    }
 
-  const frames = sanitizeFrames(input.frames);
-  if (frames.length === 0) return { saved: 0 };
+    const frames = sanitizeFrames(input.frames);
+    if (frames.length === 0) return { saved: 0 };
 
-  await db.insert(anatixFrames).values({ sessionId: session.id, batch, frames });
-  return { saved: frames.length };
+    await db.insert(anatixFrames).values({ sessionId: session.id, batch, frames });
+    return { saved: frames.length };
+  });
 }
 
 export async function endAnatixSession(input: {
@@ -297,29 +307,31 @@ export async function endAnatixSession(input: {
   droppedFrames: number;
   summary: AnatixSessionSummary;
 }) {
-  const { lab, session } = await requireSession(input.sessionId);
-  const int = (v: unknown) =>
-    Number.isFinite(Number(v)) ? Math.max(0, Math.trunc(Number(v))) : 0;
+  return runAction(async () => {
+    const { lab, session } = await requireSession(input.sessionId);
+    const int = (v: unknown) =>
+      Number.isFinite(Number(v)) ? Math.max(0, Math.trunc(Number(v))) : 0;
 
-  // Passa o resumo pelo JSON para descartar NaN/Infinity.
-  const summary = JSON.parse(
-    JSON.stringify(input.summary ?? {}, (_k, v) =>
-      typeof v === "number" && !Number.isFinite(v) ? null : v,
-    ),
-  );
+    // Passa o resumo pelo JSON para descartar NaN/Infinity.
+    const summary = JSON.parse(
+      JSON.stringify(input.summary ?? {}, (_k, v) =>
+        typeof v === "number" && !Number.isFinite(v) ? null : v,
+      ),
+    );
 
-  await db
-    .update(anatixSessions)
-    .set({
-      frameCount: int(input.frameCount),
-      invalidFrames: int(input.invalidFrames),
-      droppedFrames: int(input.droppedFrames),
-      summary,
-      endedAt: new Date(),
-    })
-    .where(eq(anatixSessions.id, session.id));
+    await db
+      .update(anatixSessions)
+      .set({
+        frameCount: int(input.frameCount),
+        invalidFrames: int(input.invalidFrames),
+        droppedFrames: int(input.droppedFrames),
+        summary,
+        endedAt: new Date(),
+      })
+      .where(eq(anatixSessions.id, session.id));
 
-  revalidatePath(`${BASE_PATH}/${lab.id}`);
+    revalidatePath(`${BASE_PATH}/${lab.id}`);
+  });
 }
 
 /** Recarrega os frames de uma sessão salva para reanalisar nos gráficos. */
@@ -338,7 +350,9 @@ export async function getAnatixSessionFrames(sessionId: string) {
 }
 
 export async function deleteAnatixSession(sessionId: string) {
-  const { lab, session } = await requireSession(sessionId);
-  await db.delete(anatixSessions).where(eq(anatixSessions.id, session.id));
-  revalidatePath(`${BASE_PATH}/${lab.id}`);
+  return runAction(async () => {
+    const { lab, session } = await requireSession(sessionId);
+    await db.delete(anatixSessions).where(eq(anatixSessions.id, session.id));
+    revalidatePath(`${BASE_PATH}/${lab.id}`);
+  });
 }

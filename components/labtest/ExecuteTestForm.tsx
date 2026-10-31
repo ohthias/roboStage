@@ -26,6 +26,7 @@ import {
 
 import type { FieldDefinition, FieldValue } from "@/types/labtest.types";
 import { getModeMeta } from "@/utils/labtest/catalog";
+import { loadSeasonMissions } from "@/utils/data/missions-client";
 import { getSubMissionKey } from "@/utils/labtest/fll";
 import { computeMissionBreakdown } from "@/utils/scores";
 import { MissionCard } from "@/components/FormMission/MissionCard";
@@ -35,6 +36,7 @@ import { FieldValueInput } from "./FieldValueInput";
 import { computeCalc } from "@/utils/labtest/calc";
 import { LabTestModels } from "./LabTestModels";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 interface ExecuteTestFormProps {
   testId: string;
   mode: string;
@@ -125,13 +127,9 @@ export default function ExecuteTestForm({
   useEffect(() => {
     if (!isFllRuns) return;
     let active = true;
-    fetch("/api/data/missions")
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((data: Record<string, Mission[]>) => {
+    loadSeasonMissions<Mission>(season ?? "")
+      .then((list) => {
         if (!active) return;
-        const list = Array.isArray(data[season ?? ""])
-          ? data[season ?? ""]
-          : [];
         if (!list.length) throw new Error();
         setCatalog(list);
       })
@@ -299,18 +297,17 @@ export default function ExecuteTestForm({
     let saved = 0;
     try {
       for (const d of drafts) {
-        await createTestExecution({
+        unwrapAction(await createTestExecution({
           testId,
           notes: d.notes.trim() || undefined,
           results: buildResults(d),
-        });
+        }));
         saved += 1;
         // Tira da tela o que já foi salvo: tentar de novo não duplica.
         setDrafts((prev) => prev.filter((x) => x.id !== d.id));
         if (nextExecutionNumber === 1 && saved === 1) {
-          await updateLabTestStatus({ testId, status: "em_andamento" }).catch(
-            () => {},
-          );
+          // Melhor esforço: falhar aqui não impede o lançamento já salvo.
+          await updateLabTestStatus({ testId, status: "em_andamento" }).catch(() => undefined);
         }
       }
       router.push(`/dashboard/labtest/${testId}`);

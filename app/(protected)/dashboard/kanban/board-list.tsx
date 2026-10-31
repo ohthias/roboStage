@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { createBoard, deleteBoard, renameBoard } from "./actions";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 type Board = {
   id: string;
   name: string;
@@ -88,7 +89,7 @@ export function BoardList({ boards }: { boards: Board[] }) {
     const clean = name.trim();
     if (!clean) return;
     startTransition(async () => {
-      const board = await createBoard(clean);
+      const board = unwrapAction(await createBoard(clean));
       setName("");
       setCreating(false);
       if (board) router.push(`/dashboard/kanban/${board.id}`);
@@ -103,7 +104,7 @@ export function BoardList({ boards }: { boards: Board[] }) {
     )
       return;
     startTransition(async () => {
-      await deleteBoard(id);
+      unwrapAction(await deleteBoard(id));
       router.refresh();
     });
   }
@@ -131,7 +132,7 @@ export function BoardList({ boards }: { boards: Board[] }) {
       return;
 
     startTransition(async () => {
-      await renameBoard(editingBoard.id, clean, description, editedIcon);
+      unwrapAction(await renameBoard(editingBoard.id, clean, description, editedIcon));
       setEditingBoard(null);
       router.refresh();
     });

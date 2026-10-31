@@ -11,7 +11,13 @@ import {
 } from "@/utils/stagebook/scope";
 import { scopeWhere } from "@/utils/stagebook/permissions";
 import { nextPosition } from "@/utils/stagebook/position";
-import { cleanText, optionalText, optionalUuid } from "@/utils/stagebook/validation";
+import {
+  ValidationError,
+  cleanText,
+  optionalText,
+  optionalUuid,
+} from "@/utils/stagebook/validation";
+import { runAction } from "@/utils/stagebook/action-result";
 import { sanitizeDocIcon } from "@/utils/stagebook/doc-icon";
 import { sanitizeDocCover } from "@/utils/stagebook/doc-cover";
 import { sanitizeFolderColor } from "@/utils/stagebook/folder-colors";
@@ -47,49 +53,53 @@ async function nextDocumentPosition(
 // ---------------------------------------------------------------------------
 
 export async function createFolder(parentId: string | null = null) {
-  const scope = await resolveStagebookScope();
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
 
-  if (parentId) {
-    const [parent] = await db
-      .select({ id: folders.id })
-      .from(folders)
-      .where(
-        and(
-          eq(folders.id, parentId),
-          scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId })
+    if (parentId) {
+      const [parent] = await db
+        .select({ id: folders.id })
+        .from(folders)
+        .where(
+          and(
+            eq(folders.id, parentId),
+            scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId })
+          )
         )
-      )
-      .limit(1);
-    if (!parent) throw new Error("Pasta pai inválida.");
-  }
+        .limit(1);
+      if (!parent) throw new ValidationError("Pasta pai inválida.");
+    }
 
-  const position = await nextFolderPosition(scope, parentId);
+    const position = await nextFolderPosition(scope, parentId);
 
-  const [created] = await db
-    .insert(folders)
-    .values({
-      ...scopeOwnership(scope),
-      parentId,
-      name: "Nova pasta",
-      createdBy: scope.userId,
-      position,
-    })
-    .returning({ id: folders.id });
+    const [created] = await db
+      .insert(folders)
+      .values({
+        ...scopeOwnership(scope),
+        parentId,
+        name: "Nova pasta",
+        createdBy: scope.userId,
+        position,
+      })
+      .returning({ id: folders.id });
 
-  PATHS.forEach((path) => revalidatePath(path, "layout"));
-  return created;
+    PATHS.forEach((path) => revalidatePath(path, "layout"));
+    return created;
+  });
 }
 
 export async function renameFolder(id: string, name: string) {
-  const scope = await resolveStagebookScope();
-  const clean = cleanText(name, { fallback: "Nova pasta", maxLength: 120 });
-  await db
-    .update(folders)
-    .set({ name: clean, updatedAt: new Date() })
-    .where(
-      and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
-    );
-  PATHS.forEach((path) => revalidatePath(path, "layout"));
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    const clean = cleanText(name, { fallback: "Nova pasta", maxLength: 120 });
+    await db
+      .update(folders)
+      .set({ name: clean, updatedAt: new Date() })
+      .where(
+        and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
+      );
+    PATHS.forEach((path) => revalidatePath(path, "layout"));
+  });
 }
 
 /** Atualiza o ícone (mesmo formato dos ícones de página) e/ou a cor da pasta. */
@@ -97,31 +107,35 @@ export async function updateFolderAppearance(
   id: string,
   patch: { icon?: string | null; color?: string | null }
 ) {
-  const scope = await resolveStagebookScope();
-  const values: { icon?: string | null; color?: string | null; updatedAt: Date } = {
-    updatedAt: new Date(),
-  };
-  if ("icon" in patch) values.icon = sanitizeDocIcon(patch.icon ?? null);
-  if ("color" in patch) values.color = sanitizeFolderColor(patch.color);
-  await db
-    .update(folders)
-    .set(values)
-    .where(
-      and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
-    );
-  PATHS.forEach((path) => revalidatePath(path, "layout"));
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    const values: { icon?: string | null; color?: string | null; updatedAt: Date } = {
+      updatedAt: new Date(),
+    };
+    if ("icon" in patch) values.icon = sanitizeDocIcon(patch.icon ?? null);
+    if ("color" in patch) values.color = sanitizeFolderColor(patch.color);
+    await db
+      .update(folders)
+      .set(values)
+      .where(
+        and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
+      );
+    PATHS.forEach((path) => revalidatePath(path, "layout"));
+  });
 }
 
 export async function deleteFolder(id: string) {
-  const scope = await resolveStagebookScope();
-  // Pages dentro da pasta não são apagadas: a FK folder_id tem onDelete "set
-  // null", então elas voltam pra raiz do Stagebook (seção 42).
-  await db
-    .delete(folders)
-    .where(
-      and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
-    );
-  PATHS.forEach((path) => revalidatePath(path, "layout"));
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    // Pages dentro da pasta não são apagadas: a FK folder_id tem onDelete "set
+    // null", então elas voltam pra raiz do Stagebook (seção 42).
+    await db
+      .delete(folders)
+      .where(
+        and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
+      );
+    PATHS.forEach((path) => revalidatePath(path, "layout"));
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -132,98 +146,102 @@ export async function createDocument(
   folderId: string | null = null,
   parentId: string | null = null
 ) {
-  const scope = await resolveStagebookScope();
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
 
-  if (folderId) {
-    const [folder] = await db
-      .select({ id: folders.id })
-      .from(folders)
-      .where(
-        and(
-          eq(folders.id, folderId),
-          scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId })
+    if (folderId) {
+      const [folder] = await db
+        .select({ id: folders.id })
+        .from(folders)
+        .where(
+          and(
+            eq(folders.id, folderId),
+            scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId })
+          )
         )
-      )
-      .limit(1);
-    if (!folder) throw new Error("Pasta inválida.");
-  }
+        .limit(1);
+      if (!folder) throw new ValidationError("Pasta inválida.");
+    }
 
-  if (parentId) {
-    const [parent] = await db
-      .select({ id: documents.id })
-      .from(documents)
-      .where(
-        and(
-          eq(documents.id, parentId),
-          scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId })
+    if (parentId) {
+      const [parent] = await db
+        .select({ id: documents.id })
+        .from(documents)
+        .where(
+          and(
+            eq(documents.id, parentId),
+            scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId })
+          )
         )
-      )
-      .limit(1);
-    if (!parent) throw new Error("Página pai inválida.");
-  }
+        .limit(1);
+      if (!parent) throw new ValidationError("Página pai inválida.");
+    }
 
-  const position = await nextDocumentPosition(scope, folderId, parentId);
+    const position = await nextDocumentPosition(scope, folderId, parentId);
 
-  const [created] = await db
-    .insert(documents)
-    .values({
-      ...scopeOwnership(scope),
-      folderId,
-      parentId,
-      title: "Sem título",
-      createdBy: scope.userId,
-      position,
-    })
-    .returning({ id: documents.id });
+    const [created] = await db
+      .insert(documents)
+      .values({
+        ...scopeOwnership(scope),
+        folderId,
+        parentId,
+        title: "Sem título",
+        createdBy: scope.userId,
+        position,
+      })
+      .returning({ id: documents.id });
 
-  revalidatePath(PATH, "layout");
-  return created;
+    revalidatePath(PATH, "layout");
+    return created;
+  });
 }
 
 export async function duplicateDocument(id: string) {
-  const scope = await resolveStagebookScope();
-  const [source] = await db
-    .select({
-      title: documents.title,
-      icon: documents.icon,
-      cover: documents.cover,
-      description: documents.description,
-      folderId: documents.folderId,
-      parentId: documents.parentId,
-      content: documents.content,
-      properties: documents.properties,
-      milestoneId: documents.milestoneId,
-    })
-    .from(documents)
-    .where(
-      and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-    )
-    .limit(1);
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    const [source] = await db
+      .select({
+        title: documents.title,
+        icon: documents.icon,
+        cover: documents.cover,
+        description: documents.description,
+        folderId: documents.folderId,
+        parentId: documents.parentId,
+        content: documents.content,
+        properties: documents.properties,
+        milestoneId: documents.milestoneId,
+      })
+      .from(documents)
+      .where(
+        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+      )
+      .limit(1);
 
-  if (!source) throw new Error("Página não encontrada.");
+    if (!source) throw new ValidationError("Página não encontrada.");
 
-  const position = await nextDocumentPosition(scope, source.folderId, source.parentId);
+    const position = await nextDocumentPosition(scope, source.folderId, source.parentId);
 
-  const [created] = await db
-    .insert(documents)
-    .values({
-      ...scopeOwnership(scope),
-      folderId: source.folderId,
-      parentId: source.parentId,
-      title: `${source.title} (cópia)`,
-      icon: source.icon,
-      cover: source.cover,
-      description: source.description,
-      content: source.content,
-      properties: source.properties,
-      milestoneId: source.milestoneId,
-      createdBy: scope.userId,
-      position,
-    })
-    .returning({ id: documents.id });
+    const [created] = await db
+      .insert(documents)
+      .values({
+        ...scopeOwnership(scope),
+        folderId: source.folderId,
+        parentId: source.parentId,
+        title: `${source.title} (cópia)`,
+        icon: source.icon,
+        cover: source.cover,
+        description: source.description,
+        content: source.content,
+        properties: source.properties,
+        milestoneId: source.milestoneId,
+        createdBy: scope.userId,
+        position,
+      })
+      .returning({ id: documents.id });
 
-  revalidatePath(PATH, "layout");
-  return created;
+    revalidatePath(PATH, "layout");
+    return created;
+  });
 }
 
 /**
@@ -237,180 +255,196 @@ export async function moveNotebookItem(
   id: string,
   target: { folderId?: string | null; parentPageId?: string | null } = {}
 ) {
-  const scope = await resolveStagebookScope();
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
 
-  if (type === "document") {
-    const folderId = target.folderId ?? null;
-    const parentPageId = target.parentPageId ?? null;
+    if (type === "document") {
+      const folderId = target.folderId ?? null;
+      const parentPageId = target.parentPageId ?? null;
 
-    if (parentPageId === id) {
-      throw new Error("Uma página não pode ser subpage de si mesma.");
-    }
+      if (parentPageId === id) {
+        throw new ValidationError("Uma página não pode ser subpage de si mesma.");
+      }
 
-    if (parentPageId) {
-      // Impede ciclos: a página-alvo não pode ser descendente da que está sendo movida.
-      const scopedDocs = await db
-        .select({ id: documents.id, parentId: documents.parentId })
-        .from(documents)
-        .where(scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }));
-      const byId = new Map(scopedDocs.map((d) => [d.id, d]));
-      let cursor: string | null = byId.get(parentPageId)?.parentId ?? null;
+      if (parentPageId) {
+        // Impede ciclos: a página-alvo não pode ser descendente da que está sendo movida.
+        const scopedDocs = await db
+          .select({ id: documents.id, parentId: documents.parentId })
+          .from(documents)
+          .where(scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }));
+        const byId = new Map(scopedDocs.map((d) => [d.id, d]));
+        let cursor: string | null = byId.get(parentPageId)?.parentId ?? null;
+        while (cursor) {
+          if (cursor === id) {
+            throw new ValidationError("Uma página não pode ser movida para dentro de uma de suas próprias subpages.");
+          }
+          cursor = byId.get(cursor)?.parentId ?? null;
+        }
+      }
+
+      const position = await nextDocumentPosition(scope, parentPageId ? null : folderId, parentPageId);
+
+      await db
+        .update(documents)
+        .set({ folderId: parentPageId ? null : folderId, parentId: parentPageId, position, updatedAt: new Date() })
+        .where(
+          and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+        );
+    } else {
+      const targetFolderId = target.folderId ?? null;
+      if (targetFolderId === id) {
+        throw new ValidationError("Uma pasta não pode conter a si mesma.");
+      }
+
+      const scopedFolders = await db
+        .select({ id: folders.id, parentId: folders.parentId })
+        .from(folders)
+        .where(scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }));
+      const byId = new Map(scopedFolders.map((f) => [f.id, f]));
+
+      if (targetFolderId && !byId.has(targetFolderId)) {
+        throw new ValidationError("Pasta de destino inválida.");
+      }
+
+      let cursor = targetFolderId ? byId.get(targetFolderId)?.parentId ?? null : null;
       while (cursor) {
         if (cursor === id) {
-          throw new Error("Uma página não pode ser movida para dentro de uma de suas próprias subpages.");
+          throw new ValidationError("Uma pasta não pode ser movida para dentro de si mesma.");
         }
         cursor = byId.get(cursor)?.parentId ?? null;
       }
+
+      const position = await nextFolderPosition(scope, targetFolderId);
+
+      await db
+        .update(folders)
+        .set({ parentId: targetFolderId, position, updatedAt: new Date() })
+        .where(
+          and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
+        );
     }
 
-    const position = await nextDocumentPosition(scope, parentPageId ? null : folderId, parentPageId);
-
-    await db
-      .update(documents)
-      .set({ folderId: parentPageId ? null : folderId, parentId: parentPageId, position, updatedAt: new Date() })
-      .where(
-        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-      );
-  } else {
-    const targetFolderId = target.folderId ?? null;
-    if (targetFolderId === id) {
-      throw new Error("Uma pasta não pode conter a si mesma.");
-    }
-
-    const scopedFolders = await db
-      .select({ id: folders.id, parentId: folders.parentId })
-      .from(folders)
-      .where(scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }));
-    const byId = new Map(scopedFolders.map((f) => [f.id, f]));
-
-    if (targetFolderId && !byId.has(targetFolderId)) {
-      throw new Error("Pasta de destino inválida.");
-    }
-
-    let cursor = targetFolderId ? byId.get(targetFolderId)?.parentId ?? null : null;
-    while (cursor) {
-      if (cursor === id) {
-        throw new Error("Uma pasta não pode ser movida para dentro de si mesma.");
-      }
-      cursor = byId.get(cursor)?.parentId ?? null;
-    }
-
-    const position = await nextFolderPosition(scope, targetFolderId);
-
-    await db
-      .update(folders)
-      .set({ parentId: targetFolderId, position, updatedAt: new Date() })
-      .where(
-        and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
-      );
-  }
-
-  revalidatePath(PATH, "layout");
+    revalidatePath(PATH, "layout");
+  });
 }
 
 export async function renameDocument(id: string, title: string) {
-  const scope = await resolveStagebookScope();
-  const clean = cleanText(title, { fallback: "Sem título", maxLength: 200 });
-  await db
-    .update(documents)
-    .set({ title: clean, updatedBy: scope.userId, updatedAt: new Date() })
-    .where(
-      and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-    );
-  revalidatePath(PATH, "layout");
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    const clean = cleanText(title, { fallback: "Sem título", maxLength: 200 });
+    await db
+      .update(documents)
+      .set({ title: clean, updatedBy: scope.userId, updatedAt: new Date() })
+      .where(
+        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+      );
+    revalidatePath(PATH, "layout");
+  });
 }
 
 export async function updateDocumentIcon(id: string, icon: string | null) {
-  const scope = await resolveStagebookScope();
-  await db
-    .update(documents)
-    .set({ icon: sanitizeDocIcon(icon), updatedBy: scope.userId, updatedAt: new Date() })
-    .where(
-      and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-    );
-  revalidatePath(PATH, "layout");
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    await db
+      .update(documents)
+      .set({ icon: sanitizeDocIcon(icon), updatedBy: scope.userId, updatedAt: new Date() })
+      .where(
+        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+      );
+    revalidatePath(PATH, "layout");
+  });
 }
 
 export async function updateDocumentCover(id: string, cover: string | null) {
-  const scope = await resolveStagebookScope();
-  await db
-    .update(documents)
-    .set({ cover: sanitizeDocCover(cover), updatedBy: scope.userId, updatedAt: new Date() })
-    .where(
-      and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-    );
-  revalidatePath(PATH, "layout");
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    await db
+      .update(documents)
+      .set({ cover: sanitizeDocCover(cover), updatedBy: scope.userId, updatedAt: new Date() })
+      .where(
+        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+      );
+    revalidatePath(PATH, "layout");
+  });
 }
 
 export async function updateDocumentDescription(id: string, description: string) {
-  const scope = await resolveStagebookScope();
-  await db
-    .update(documents)
-    .set({
-      description: optionalText(description, 500),
-      updatedBy: scope.userId,
-      updatedAt: new Date(),
-    })
-    .where(
-      and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-    );
-  revalidatePath(PATH, "layout");
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    await db
+      .update(documents)
+      .set({
+        description: optionalText(description, 500),
+        updatedBy: scope.userId,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+      );
+    revalidatePath(PATH, "layout");
+  });
 }
 
 export async function updateDocumentProperty(id: string, key: string, value: unknown) {
-  const scope = await resolveStagebookScope();
-  const safeKey = cleanText(key, { maxLength: 60 });
-  if (!safeKey) throw new Error("Nome de propriedade inválido.");
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    const safeKey = cleanText(key, { maxLength: 60 });
+    if (!safeKey) throw new ValidationError("Nome de propriedade inválido.");
 
-  const [current] = await db
-    .select({ properties: documents.properties })
-    .from(documents)
-    .where(
-      and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-    )
-    .limit(1);
-  if (!current) throw new Error("Página não encontrada.");
+    const [current] = await db
+      .select({ properties: documents.properties })
+      .from(documents)
+      .where(
+        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+      )
+      .limit(1);
+    if (!current) throw new ValidationError("Página não encontrada.");
 
-  const nextProperties = { ...(current.properties ?? {}) };
-  if (value === null || value === "") {
-    delete nextProperties[safeKey];
-  } else {
-    nextProperties[safeKey] = value;
-  }
+    const nextProperties = { ...(current.properties ?? {}) };
+    if (value === null || value === "") {
+      delete nextProperties[safeKey];
+    } else {
+      nextProperties[safeKey] = value;
+    }
 
-  await db
-    .update(documents)
-    .set({ properties: nextProperties, updatedBy: scope.userId, updatedAt: new Date() })
-    .where(eq(documents.id, id));
-  revalidatePath(PATH, "layout");
+    await db
+      .update(documents)
+      .set({ properties: nextProperties, updatedBy: scope.userId, updatedAt: new Date() })
+      .where(eq(documents.id, id));
+    revalidatePath(PATH, "layout");
+  });
 }
 
 // Chamada a cada autosave do editor — não revalida a árvore da sidebar
 // (título/ícone não mudam aqui), só grava o conteúdo.
 export async function updateDocumentContent(id: string, content: unknown) {
-  const scope = await resolveStagebookScope();
-  await db
-    .update(documents)
-    .set({
-      content: content as Record<string, unknown>,
-      updatedBy: scope.userId,
-      updatedAt: new Date(),
-    })
-    .where(
-      and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-    );
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    await db
+      .update(documents)
+      .set({
+        content: content as Record<string, unknown>,
+        updatedBy: scope.userId,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+      );
+  });
 }
 
 export async function deleteDocument(id: string) {
-  const scope = await resolveStagebookScope();
-  // Subpages não são apagadas junto: a FK parent_id tem onDelete "set null",
-  // então elas sobem um nível em vez de sumir (seção 42).
-  await db
-    .delete(documents)
-    .where(
-      and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-    );
-  revalidatePath(PATH, "layout");
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    // Subpages não são apagadas junto: a FK parent_id tem onDelete "set null",
+    // então elas sobem um nível em vez de sumir (seção 42).
+    await db
+      .delete(documents)
+      .where(
+        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+      );
+    revalidatePath(PATH, "layout");
+  });
 }
 
 // Tags e milestones de páginas: veja utils/stagebook/actions/{tags,milestones}.ts

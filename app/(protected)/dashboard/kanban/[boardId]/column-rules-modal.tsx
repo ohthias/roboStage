@@ -5,6 +5,7 @@ import { CalendarClock, Check, Milestone as MilestoneIcon, Settings2, X } from "
 import { updateColumnRules } from "./actions";
 import { createMilestone } from "@/utils/stagebook/actions/milestones";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 export type ColumnRules = {
   maxCards?: number | null;
   allowedPriorities?: string[];
@@ -46,7 +47,7 @@ export function ColumnRulesModal({
 
   function save() {
     startTransition(async () => {
-      await updateColumnRules(boardId, columnId, rules);
+      unwrapAction(await updateColumnRules(boardId, columnId, rules));
       onChanged();
       onClose();
     });
@@ -55,7 +56,7 @@ export function ColumnRulesModal({
   function addMilestone() {
     if (!name.trim()) return;
     startTransition(async () => {
-      await createMilestone({ name, dueAt: dueAt || null });
+      unwrapAction(await createMilestone({ name, dueAt: dueAt || null }));
       setName("");
       setDueAt("");
       onChanged();

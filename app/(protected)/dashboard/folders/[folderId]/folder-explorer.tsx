@@ -39,6 +39,7 @@ import {
   type ViewMode,
 } from "./explorer-types";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 type TypeFilter = "all" | Exclude<EntryKind, "folder">;
 type SortKey = "name" | "updated";
 type SortDir = "asc" | "desc";
@@ -245,7 +246,7 @@ export function FolderExplorer({
   function addSubfolder() {
     startTransition(async () => {
       try {
-        await createFolder(folderId);
+        unwrapAction(await createFolder(folderId));
         addToast("Subpasta criada.", "success");
         router.refresh();
       } catch (error) {
@@ -260,7 +261,7 @@ export function FolderExplorer({
   function addDocument() {
     startTransition(async () => {
       try {
-        const created = await createDocument(folderId);
+        const created = unwrapAction(await createDocument(folderId));
         router.push(`/dashboard/documents/${created.id}`);
       } catch (error) {
         addToast(

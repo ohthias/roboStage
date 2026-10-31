@@ -1,16 +1,13 @@
 "use server";
 
-import { promises as fs } from "fs";
-import path from "path";
-import { asc, eq } from "drizzle-orm";
-import { db } from "@/db/client";
-import { leagues, userLeagueInterests } from "@/db/schema";
+import { FUTURE_EDITION_DATA, MISSIONS_CATALOG } from "@/utils/data/static-data";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { getUserLeagues } from "@/utils/stagebook/user-leagues";
 import { resolveProfileKey, type ProfileKey } from "@/utils/stagebook/league-features";
 import type { MissionPack, MissionSeason, MissionSummary } from "@/utils/thinklab/mission-cards";
 
 /* ------------------------------------------------------------------ */
-/* Fontes de dados (as mesmas usadas pelo LabTest em /api/data/missions) */
+/* Fontes de dados: utils/data/static-data (as mesmas de /api/data/missions) */
 /* ------------------------------------------------------------------ */
 
 type ChallengeMission = {
@@ -43,19 +40,8 @@ const CHALLENGE_SEASONS: { key: string; label: string }[] = [
   { key: "masterpiece", label: "MASTERPIECE" },
 ];
 
-async function readJson<T>(...segments: string[]): Promise<T | null> {
-  try {
-    const raw = await fs.readFile(path.join(process.cwd(), "public", "data", ...segments), "utf-8");
-    return JSON.parse(raw) as T;
-  } catch (err) {
-    console.error(`ThinkLab: não foi possível ler ${segments.join("/")}`, err);
-    return null;
-  }
-}
-
 async function loadChallengeSeasons(): Promise<MissionSeason[]> {
-  const data = await readJson<Record<string, ChallengeMission[]>>("missions.json");
-  if (!data) return [];
+  const data = MISSIONS_CATALOG as Record<string, ChallengeMission[]>;
   return CHALLENGE_SEASONS.filter((s) => Array.isArray(data[s.key])).map((season) => ({
     key: season.key,
     label: season.label,
@@ -72,10 +58,11 @@ async function loadChallengeSeasons(): Promise<MissionSeason[]> {
 }
 
 async function loadFutureEditionSeasons(): Promise<MissionSeason[]> {
-  const data = await readJson<{ season?: string; title?: string; missions?: FutureMission[] }>(
-    "fll",
-    "future-edition.json",
-  );
+  const data = FUTURE_EDITION_DATA as unknown as {
+    season?: string;
+    title?: string;
+    missions?: FutureMission[];
+  };
   if (!data?.missions) return [];
   return [
     {
@@ -121,18 +108,10 @@ const normalize = (value?: string | null) =>
 export async function getThinkLabMissionPacks(): Promise<MissionPack[]> {
   const scope = await resolveStagebookScope();
 
-  const rows = await db
-    .select({
-      leagueId: leagues.id,
-      code: leagues.code,
-      name: leagues.name,
-      relation: userLeagueInterests.relationType,
-      season: userLeagueInterests.season,
-    })
-    .from(userLeagueInterests)
-    .innerJoin(leagues, eq(leagues.id, userLeagueInterests.leagueId))
-    .where(eq(userLeagueInterests.userId, scope.userId))
-    .orderBy(asc(leagues.code));
+  const rows = (await getUserLeagues(scope.userId)).map((row) => ({
+    ...row,
+    relation: row.relationType,
+  }));
 
   // Cada fonte de dados é lida no máximo uma vez, mesmo com várias ligas do mesmo perfil.
   const loaded = new Map<ProfileKey, Promise<MissionSeason[]>>();

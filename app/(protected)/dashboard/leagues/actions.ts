@@ -5,6 +5,8 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { leagues, userLeagueInterests } from "@/db/schema";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { ValidationError } from "@/utils/stagebook/validation";
+import { runAction } from "@/utils/stagebook/action-result";
 
 const RELATIONS = ["participante", "interessado"] as const;
 export type LeagueRelation = (typeof RELATIONS)[number];
@@ -28,52 +30,56 @@ export async function saveLeagueInterest(input: {
   teamName?: string | null;
   season?: string | null;
 }) {
-  const scope = await resolveStagebookScope();
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
 
-  if (!UUID.test(input.leagueId)) throw new Error("Liga inválida.");
-  if (!RELATIONS.includes(input.relationType)) throw new Error("Relação inválida.");
+    if (!UUID.test(input.leagueId)) throw new ValidationError("Liga inválida.");
+    if (!RELATIONS.includes(input.relationType)) throw new ValidationError("Relação inválida.");
 
-  const [league] = await db
-    .select({ id: leagues.id })
-    .from(leagues)
-    .where(eq(leagues.id, input.leagueId))
-    .limit(1);
-  if (!league) throw new Error("Liga não encontrada.");
+    const [league] = await db
+      .select({ id: leagues.id })
+      .from(leagues)
+      .where(eq(leagues.id, input.leagueId))
+      .limit(1);
+    if (!league) throw new ValidationError("Liga não encontrada.");
 
-  // Equipe e temporada só fazem sentido para quem participa.
-  const participates = input.relationType === "participante";
-  const teamName = participates ? clean(input.teamName, 80) : null;
-  const season = participates ? clean(input.season, 40) : null;
+    // Equipe e temporada só fazem sentido para quem participa.
+    const participates = input.relationType === "participante";
+    const teamName = participates ? clean(input.teamName, 80) : null;
+    const season = participates ? clean(input.season, 40) : null;
 
-  await db
-    .insert(userLeagueInterests)
-    .values({
-      userId: scope.userId,
-      leagueId: input.leagueId,
-      relationType: input.relationType,
-      teamName,
-      season,
-    })
-    .onConflictDoUpdate({
-      target: [userLeagueInterests.userId, userLeagueInterests.leagueId],
-      set: { relationType: input.relationType, teamName, season },
-    });
+    await db
+      .insert(userLeagueInterests)
+      .values({
+        userId: scope.userId,
+        leagueId: input.leagueId,
+        relationType: input.relationType,
+        teamName,
+        season,
+      })
+      .onConflictDoUpdate({
+        target: [userLeagueInterests.userId, userLeagueInterests.leagueId],
+        set: { relationType: input.relationType, teamName, season },
+      });
 
-  revalidate();
+    revalidate();
+  });
 }
 
 export async function removeLeagueInterest(leagueId: string) {
-  const scope = await resolveStagebookScope();
-  if (!UUID.test(leagueId)) throw new Error("Liga inválida.");
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    if (!UUID.test(leagueId)) throw new ValidationError("Liga inválida.");
 
-  await db
-    .delete(userLeagueInterests)
-    .where(
-      and(
-        eq(userLeagueInterests.userId, scope.userId),
-        eq(userLeagueInterests.leagueId, leagueId),
-      ),
-    );
+    await db
+      .delete(userLeagueInterests)
+      .where(
+        and(
+          eq(userLeagueInterests.userId, scope.userId),
+          eq(userLeagueInterests.leagueId, leagueId),
+        ),
+      );
 
-  revalidate();
+    revalidate();
+  });
 }

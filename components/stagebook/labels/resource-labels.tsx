@@ -10,6 +10,7 @@ import type { LabelableKind, MilestoneDTO, TagDTO } from "@/types/labels";
 import { MilestoneSelector } from "./milestone-selector";
 import { TagSelector } from "./tag-selector";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 /**
  * Tags + milestone de um item JÁ EXISTENTE de qualquer ferramenta. Persistir é
  * automático (server actions universais); `onChange` avisa o pai para
@@ -47,7 +48,7 @@ export function ResourceLabels({
         value={tags}
         disabled={disabled}
         onAdd={async (tag) => commit(await toggleOn(kind, resourceId, tag, tags))}
-        onRemove={async (tag) => commit(await removeResourceTag(kind, resourceId, tag.id))}
+        onRemove={async (tag) => commit(unwrapAction(await removeResourceTag(kind, resourceId, tag.id)))}
         onTagUpdated={(updated) => commit(tags.map((t) => (t.id === updated.id ? updated : t)))}
       />
       {showMilestone && (
@@ -55,7 +56,7 @@ export function ResourceLabels({
           value={milestone}
           disabled={disabled}
           onChange={async (m) => {
-            const saved = await setResourceMilestone(kind, resourceId, m?.id ?? null);
+            const saved = unwrapAction(await setResourceMilestone(kind, resourceId, m?.id ?? null));
             commit(tags, saved);
           }}
         />
@@ -67,6 +68,6 @@ export function ResourceLabels({
 // `toggle` só adiciona quando a tag ainda não está no item (evita remover sem querer).
 async function toggleOn(kind: LabelableKind, id: string, tag: TagDTO, current: TagDTO[]) {
   if (current.some((t) => t.id === tag.id)) return current;
-  return toggleResourceTag(kind, id, tag.id);
+  return unwrapAction(await toggleResourceTag(kind, id, tag.id));
 }
 

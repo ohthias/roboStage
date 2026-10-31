@@ -8,6 +8,8 @@ import MasterpieceLogo from "@/public/images/logos/fll/seasons/Masterpiece.png";
 import UnearthedLogo from "@/public/images/logos/fll/seasons/Unearthed.webp";
 import BioglowLogo from "@/public/images/logos/fll/seasons/bioglow_logo.png";
 import { useParams } from "next/navigation";
+import Image, { type StaticImageData } from "next/image";
+import { loadSeasonMissions } from "@/utils/data/missions-client";
 import Timer from "@/components/FormMission/Timer";
 
 interface SubMission {
@@ -34,12 +36,18 @@ type ResponseType = {
   };
 };
 
+const SEASON_LOGOS: Record<string, StaticImageData> = {
+  bioglow: BioglowLogo,
+  unearthed: UnearthedLogo,
+  submerged: SubmergedLogo,
+  masterpiece: MasterpieceLogo,
+};
+
 export default function Page() {
   const [missions, setMissions] = useState<MissionType[]>([]);
   const [responses, setResponses] = useState<ResponseType>({});
   const [loading, setLoading] = useState<boolean>(true);
   const params = useParams();
-  const [background, setBackground] = useState<string>("#ffffff");
 
   const totalPoints = sumAllMissions(
     missions.filter((m) => m.id !== "GP"),
@@ -50,41 +58,20 @@ export default function Page() {
     setResponses({});
   };
 
+  const seasonKey = Array.isArray(params.season) ? params.season[0] : params.season;
+  const seasonLogo = seasonKey ? SEASON_LOGOS[seasonKey] : undefined;
+
   useEffect(() => {
-    if (!params.season) return;
+    if (!seasonKey) return;
     setLoading(true);
 
-    fetch("/api/data/missions")
-      .then((res) => {
-        if (!res.ok) throw new Error("Erro ao buscar as missões");
-        return res.json();
-      })
-      .then((data) => {
-        const seasonKey = Array.isArray(params.season)
-          ? params.season[0]
-          : params.season;
-        const selected = seasonKey
-          ? data[seasonKey] || data.submerged
-          : data.submerged;
+    loadSeasonMissions<MissionType>(seasonKey)
+      .then(async (list) =>
+        list.length ? list : loadSeasonMissions<MissionType>("submerged"),
+      )
+      .then((selected) => {
         setMissions(selected);
         setResponses({});
-
-        switch (params.season) {
-          case "bioglow":
-            setBackground(BioglowLogo.src);
-            break;
-          case "unearthed":
-            setBackground(UnearthedLogo.src);
-            break;
-          case "submerged":
-            setBackground(SubmergedLogo.src);
-            break;
-          case "masterpiece":
-            setBackground(MasterpieceLogo.src);
-            break;
-          default:
-            setBackground("#ffffff");
-        }
 
         setLoading(false);
       })
@@ -92,7 +79,7 @@ export default function Page() {
         console.error("Erro:", error);
         setLoading(false);
       });
-  }, [params.season]);
+  }, [seasonKey]);
 
   const handleSelect = (
     missionId: string,
@@ -123,11 +110,15 @@ export default function Page() {
           <section className="flex flex-row items-center justify-between gap-4 bg-base-100/80 backdrop-blur-md px-8 py-4 rounded-box shadow-md border border-base-300">
             {/* IDENTIDADE */}
             <div className="flex flex-1 items-center gap-4 text-left">
-              <img
-                src={background}
-                className="w-20 h-20 object-contain hidden sm:block"
-                alt="Logo da temporada FLL"
-              />
+              {seasonLogo && (
+                <Image
+                  src={seasonLogo}
+                  className="w-20 h-20 object-contain hidden sm:block"
+                  alt="Logo da temporada FLL"
+                  sizes="80px"
+                  priority
+                />
+              )}
 
               <div className="flex flex-col">
                 <h1 className="text-sm font-semibold text-base-content opacity-70">
@@ -174,9 +165,11 @@ export default function Page() {
         >
           <div className="flex flex-col sm:flex-row items-start gap-4 bg-info/10 backdrop-blur px-6 py-4 rounded-2xl border border-info/30 shadow-sm">
             <figure className="flex items-center gap-3">
-              <img
+              <Image
                 src="/images/icons/NoEquip.png"
                 alt="Ícone de sem restrição de equipamento"
+                width={48}
+                height={48}
                 className="w-12 h-12 object-contain"
               />
 

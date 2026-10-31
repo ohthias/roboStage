@@ -2,7 +2,7 @@
 
 // ---------------------------------------------------------------------------
 // Renderiza o input certo (número, sim/não, texto, seleção...) para um
-// FieldDefinition. Usado pela execução e pelo ResultForm em qualquer modo —
+// FieldDefinition. Usado pela execução em qualquer modo —
 // é o que permite o modo Personalizado registrar lançamentos sem nenhum
 // código específico.
 // ---------------------------------------------------------------------------

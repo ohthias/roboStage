@@ -1,6 +1,6 @@
 "use server";
 
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
   boards,
@@ -23,7 +23,7 @@ import {
   resolveStagebookScope,
   type StagebookScope,
 } from "@/utils/stagebook/scope";
-import { assertSameScope, scopeWhere } from "@/utils/stagebook/permissions";
+import { assertSameScope, creatorScopeWhere, scopeWhere } from "@/utils/stagebook/permissions";
 import { requireUuid } from "@/utils/stagebook/validation";
 import type { CanvasElement } from "@/types/thinklab.types";
 import type {
@@ -53,9 +53,7 @@ const iso = (value: Date | string | null | undefined) =>
   value ? new Date(value).toISOString() : null;
 
 function thinkLabScope(scope: StagebookScope) {
-  return scope.type === "team"
-    ? eq(thinklab.teamId, scope.teamId)
-    : and(eq(thinklab.userId, scope.userId), isNull(thinklab.teamId));
+  return creatorScopeWhere(scope, { userId: thinklab.userId, teamId: thinklab.teamId });
 }
 
 // ---------------------------------------------------------------------------

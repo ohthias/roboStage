@@ -1,6 +1,20 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { clerkClient } from "@clerk/nextjs/server";
+import { unstable_cache } from "next/cache";
+
+const getOrgLogoUrl = unstable_cache(
+  async (organizationId: string): Promise<string | null> => {
+    try {
+      const organization = await (await clerkClient()).organizations.getOrganization({ organizationId });
+      return organization.hasImage ? organization.imageUrl : null;
+    } catch {
+      return null;
+    }
+  },
+  ["team-org-logo"],
+  { revalidate: 600 },
+);
 import {
   FlaskConical,
   Flag,
@@ -94,17 +108,9 @@ export async function TeamContent({
   }
 
   // O logo é só enfeite: se o Clerk falhar, a página continua funcionando.
-  let logoUrl: string | null = null;
-  if (team.clerkOrgId) {
-    try {
-      const organization = await (await clerkClient()).organizations.getOrganization({
-        organizationId: team.clerkOrgId,
-      });
-      logoUrl = organization.hasImage ? organization.imageUrl : null;
-    } catch {
-      logoUrl = null;
-    }
-  }
+  // Cacheado por 10 min: o LiveRefresh re-renderiza esta página periodicamente
+  // e cada render chamava a Backend API do Clerk (fonte comum de 429).
+  const logoUrl = team.clerkOrgId ? await getOrgLogoUrl(team.clerkOrgId) : null;
 
   const canManageMembers = roleCan(scope.role, "team.members.manage");
   const canEditTeam = roleCan(scope.role, "team.edit");

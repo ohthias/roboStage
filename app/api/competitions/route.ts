@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
-
-import { leagues, userLeagueInterests } from "@/db/schema/leagues";
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@/db/client";
-import { leagueRelationEnum } from "@/db/schema/enums";
+import { getUserLeagues } from "@/utils/stagebook/user-leagues";
 
 const RELATION_TYPES = ["participante", "interessado"] as const;
 type RelationType = (typeof RELATION_TYPES)[number];
@@ -34,31 +30,11 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const conditions = relationType
-    ? and(
-        eq(userLeagueInterests.userId, userId),
-        eq(
-          userLeagueInterests.relationType,
-          relationType as (typeof leagueRelationEnum.enumValues)[number],
-        ),
-      )
-    : eq(userLeagueInterests.userId, userId);
-
   try {
-    const rows = await db
-      .select({
-        id: leagues.id,
-        code: leagues.code,
-        name: leagues.name,
-        description: leagues.description,
-        relationType: userLeagueInterests.relationType,
-        teamName: userLeagueInterests.teamName,
-        season: userLeagueInterests.season,
-      })
-      .from(userLeagueInterests)
-      .innerJoin(leagues, eq(userLeagueInterests.leagueId, leagues.id))
-      .where(conditions)
-      .orderBy(leagues.name);
+    const rows = (await getUserLeagues(userId))
+      .filter((row) => !relationType || row.relationType === relationType)
+      .map(({ leagueId, ...row }) => ({ id: leagueId, ...row }))
+      .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
 
     return NextResponse.json(rows);
   } catch (err) {

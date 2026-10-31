@@ -9,16 +9,11 @@ import {
   Timer,
   type LucideIcon,
 } from "lucide-react";
-import missionsCatalog from "@/public/data/missions.json";
+import { MISSION_IMAGES } from "./mission-images";
 import { FE_EDITION, formatClock, getMatchDuration } from "./future-edition";
 import { getKitPreset } from "./kit-ia";
 import { getObrPreset } from "./obr-presets";
 import { OBR_EDITION } from "./obr";
-
-export type MissionCatalogEntry = {
-  id: string;
-  image?: string;
-};
 
 export const MODE_META = {
   runs: {
@@ -251,15 +246,13 @@ function getRunImages(season: string | null, config: unknown): string[] {
   const selectedMissionIds = (config as Record<string, unknown>).missions;
   if (!Array.isArray(selectedMissionIds)) return [];
 
-  const missions = (missionsCatalog as Record<string, MissionCatalogEntry[]>)[season] ?? [];
-  const missionsById = new Map(missions.map((mission) => [mission.id, mission]));
+  const images = MISSION_IMAGES[season] ?? {};
 
   return selectedMissionIds
     .filter((missionId): missionId is string => typeof missionId === "string")
-    .map((missionId) => missionsById.get(missionId))
-    .filter((mission): mission is MissionCatalogEntry => Boolean(mission?.image))
-    .slice(0, 4)
-    .map((mission) => mission.image as string);
+    .map((missionId) => images[missionId])
+    .filter((image): image is string => Boolean(image))
+    .slice(0, 4);
 }
 
 export function getTestImage(test: {

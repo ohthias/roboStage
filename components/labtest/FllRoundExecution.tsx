@@ -7,12 +7,20 @@
 // missões da estratégia + inspeção de equipamentos + tokens de precisão.
 // O formato salvo é o mesmo das outras runs (answers/missions/precisionDiscs),
 // então os gráficos da tela do teste continuam funcionando.
+//
+// Regras de tempo:
+// - As missões só podem ser pontuadas com o cronômetro rodando.
+// - Ao fim dos 2:30, missões que já receberam marcação ficam travadas; só as
+//   que não tiveram nada marcado ainda podem ser preenchidas.
+// - Guardamos o segundo da primeira marcação de cada missão (firstMarks).
 // ---------------------------------------------------------------------------
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Clock,
   Loader2,
+  Lock,
   Pause,
   Play,
   RotateCcw,
@@ -32,6 +40,9 @@ const DISCS = 6;
 const INSPECTION_ID = "EL";
 
 type Responses = Record<string, Record<number, number>>;
+
+/** Primeira marcação de uma missão: segundo do round e se foi após o tempo. */
+type FirstMark = { seconds: number; afterTime: boolean };
 
 interface FllRoundExecutionProps {
   testId: string;
@@ -57,6 +68,7 @@ export default function FllRoundExecution({
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [responses, setResponses] = useState<Responses>({});
+  const [firstMarks, setFirstMarks] = useState<Record<string, FirstMark>>({});
   const [inspection, setInspection] = useState<number | undefined>(undefined);
   const [discsRemaining, setDiscsRemaining] = useState(DISCS);
   const [notes, setNotes] = useState("");
@@ -113,12 +125,6 @@ export default function FllRoundExecution({
     : 0;
   const total = missionsTotal + inspectionPoints + precisionPoints;
 
-  const onSelect = (missionId: string, index: number, idx: number) =>
-    setResponses((prev) => ({
-      ...prev,
-      [missionId]: { ...prev[missionId], [index]: idx },
-    }));
-
   /* ------------------------------- cronômetro ------------------------------ */
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
@@ -152,17 +158,57 @@ export default function FllRoundExecution({
     if (!running && elapsed === 0) startAudio.current?.play().catch(() => {});
     setRunning((r) => !r);
   };
-  const resetTimer = () => {
-    setRunning(false);
-    setElapsed(0);
-  };
   const remaining = ROUND_SECONDS - elapsed;
 
   const resetScore = () => {
     setResponses({});
+    setFirstMarks({});
     setInspection(undefined);
     setDiscsRemaining(DISCS);
   };
+
+  // Zerar o cronômetro reinicia o round inteiro: os tempos das marcações
+  // deixariam de fazer sentido com as pontuações antigas.
+  const hasMarks = Object.keys(firstMarks).length > 0;
+  const resetTimer = () => {
+    if (
+      hasMarks &&
+      !window.confirm("Zerar o cronômetro também limpa a pontuação do round. Continuar?")
+    )
+      return;
+    setRunning(false);
+    setElapsed(0);
+    resetScore();
+  };
+
+  /* ------------------------ trava de pontuação por tempo ------------------------ */
+  // Durante o round: tudo liberado. Antes de iniciar ou pausado: travado.
+  // Após o fim: só missões sem nenhuma marcação feita durante o round.
+  const markedDuringRound = (missionId: string) =>
+    Boolean(firstMarks[missionId] && !firstMarks[missionId].afterTime);
+  const canScore = (missionId: string) =>
+    ticking || (finished && !markedDuringRound(missionId));
+
+  const onSelect = (missionId: string, index: number, idx: number) => {
+    if (!canScore(missionId)) return;
+    setResponses((prev) => ({
+      ...prev,
+      [missionId]: { ...prev[missionId], [index]: idx },
+    }));
+    setFirstMarks((prev) =>
+      prev[missionId]
+        ? prev
+        : { ...prev, [missionId]: { seconds: elapsed, afterTime: finished } },
+    );
+  };
+
+  const lockMessage = finished
+    ? "Tempo esgotado: só é possível pontuar missões que não tiveram nada marcado."
+    : elapsed === 0
+      ? "Inicie o cronômetro para começar a pontuar."
+      : ticking
+        ? null
+        : "Cronômetro pausado: a pontuação está travada.";
 
   /* --------------------------------- salvar -------------------------------- */
   const handleSave = async () => {
@@ -186,6 +232,8 @@ export default function FllRoundExecution({
               missionId: mission.id,
               order,
               value: r[0] ?? 0,
+              firstMarkSeconds: firstMarks[mission.id]?.seconds ?? null,
+              markedAfterTime: firstMarks[mission.id]?.afterTime ?? false,
               subAnswers: Object.fromEntries(
                 (mission["sub-mission"] ?? []).map((sub, i) => [
                   getSubMissionKey(mission, sub, i),
@@ -231,6 +279,7 @@ export default function FllRoundExecution({
             precisionPoints,
             perMission: Object.fromEntries(perMission.map((m) => [m.id, m.points])),
             seconds: elapsed,
+            firstMarks,
           },
         },
       });
@@ -331,9 +380,10 @@ export default function FllRoundExecution({
             <button
               type="button"
               onClick={resetScore}
+              disabled={finished}
               className="btn btn-ghost btn-sm btn-square"
               aria-label="Limpar pontuação"
-              title="Limpar pontuação"
+              title={finished ? "Tempo esgotado: zere o cronômetro para refazer o round" : "Limpar pontuação"}
             >
               <RotateCcw className="size-4" />
             </button>
@@ -347,6 +397,15 @@ export default function FllRoundExecution({
             style={{ width: `${(remaining / ROUND_SECONDS) * 100}%` }}
           />
         </div>
+        {lockMessage && (
+          <p
+            className={`mt-3 flex items-center gap-2 text-xs ${finished ? "text-warning" : "text-base-content/60"}`}
+            role="status"
+          >
+            <Lock className="size-3.5 shrink-0" />
+            {lockMessage}
+          </p>
+        )}
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
@@ -362,15 +421,39 @@ export default function FllRoundExecution({
               </span>
             </div>
             <div className="rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 p-2 sm:p-4 [&_.card]:mb-3 [&_.card:last-child]:mb-0">
-              {strategy.map((mission) => (
-                <MissionCard
-                  key={mission.id}
-                  mission={mission}
-                  responses={responses[mission.id]}
-                  onSelect={onSelect}
-                  imagesEnabled={false}
-                />
-              ))}
+              {strategy.map((mission) => {
+                const locked = !canScore(mission.id);
+                const mark = firstMarks[mission.id];
+                return (
+                  <div key={mission.id} className="relative">
+                    {mark && (
+                      <span
+                        className={`badge badge-sm absolute right-4 top-4 z-10 gap-1 font-mono ${
+                          mark.afterTime ? "badge-warning" : "badge-ghost"
+                        }`}
+                        title="Momento da primeira marcação da missão"
+                      >
+                        <Clock className="size-3" />
+                        {mark.afterTime
+                          ? "após o tempo"
+                          : `${formatTime(mark.seconds)} · min ${Math.floor(mark.seconds / 60) + 1}`}
+                      </span>
+                    )}
+                    <fieldset
+                      disabled={locked}
+                      aria-disabled={locked}
+                      className={`min-w-0 transition-opacity ${locked ? "opacity-50" : ""}`}
+                    >
+                      <MissionCard
+                        mission={mission}
+                        responses={responses[mission.id]}
+                        onSelect={onSelect}
+                        imagesEnabled={false}
+                      />
+                    </fieldset>
+                  </div>
+                );
+              })}
             </div>
           </section>
 
@@ -457,7 +540,14 @@ export default function FllRoundExecution({
                     <span className="font-mono text-xs text-base-content/45">{m.id}</span>{" "}
                     {m.name.toLowerCase()}
                   </span>
-                  <span className="font-mono tabular-nums">{m.points}</span>
+                  <span className="flex shrink-0 items-baseline gap-2">
+                    {firstMarks[m.id] && (
+                      <span className="font-mono text-[10px] text-base-content/45">
+                        {firstMarks[m.id].afterTime ? "pós" : formatTime(firstMarks[m.id].seconds)}
+                      </span>
+                    )}
+                    <span className="font-mono tabular-nums">{m.points}</span>
+                  </span>
                 </li>
               ))}
               <li className="flex justify-between gap-2 border-t border-base-300 pt-1.5">

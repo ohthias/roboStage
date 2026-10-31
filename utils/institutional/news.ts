@@ -42,7 +42,15 @@ function toTime(date?: string) {
   return Number.isNaN(t) ? 0 : t;
 }
 
-export function getAllNews(): NewsSummary[] {
+// O conteúdo de content/news só muda a cada deploy: em produção o índice e as
+// notícias lidas ficam em memória. `/news` é dinâmica (lê `searchParams`) e,
+// sem isso, cada visita fazia readdir + parse de todos os MDX. Em dev, sempre
+// relê do disco para refletir edições na hora.
+const memoize = process.env.NODE_ENV === "production";
+let newsIndex: NewsSummary[] | null = null;
+const newsBySlug = new Map<string, matter.GrayMatterFile<string> | null>();
+
+function readAllNews(): NewsSummary[] {
   const files = fs.readdirSync(newsDirectory).filter((f) => f.endsWith(".mdx"));
 
   return files
@@ -53,6 +61,12 @@ export function getAllNews(): NewsSummary[] {
       return { slug, ...data } as NewsSummary;
     })
     .sort((a, b) => toTime(b.date) - toTime(a.date));
+}
+
+export function getAllNews(): NewsSummary[] {
+  if (!memoize) return readAllNews();
+  newsIndex ??= readAllNews();
+  return [...newsIndex];
 }
 
 /** Notícias públicas: sem rascunho e com título. */
@@ -67,9 +81,14 @@ export function getPublishedNews(): NewsSummary[] {
 /** Lê uma notícia. Retorna null se o slug for inválido ou não existir. */
 export function getNews(slug: string) {
   if (!SLUG_RE.test(slug)) return null;
+  if (memoize && newsBySlug.has(slug)) return newsBySlug.get(slug) ?? null;
   const file = path.join(newsDirectory, `${slug}.mdx`);
-  if (path.dirname(file) !== newsDirectory || !fs.existsSync(file)) return null;
-  return matter(fs.readFileSync(file, "utf8"));
+  const article =
+    path.dirname(file) !== newsDirectory || !fs.existsSync(file)
+      ? null
+      : matter(fs.readFileSync(file, "utf8"));
+  if (memoize) newsBySlug.set(slug, article);
+  return article;
 }
 
 // Últimas notícias publicadas. Com `preferTag`, as notícias com essa tag vêm

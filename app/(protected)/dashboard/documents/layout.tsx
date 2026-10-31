@@ -5,14 +5,8 @@ import { folders, documents } from "@/db/schema";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { scopeWhere } from "@/utils/stagebook/permissions";
 import { NotebookTree, type TreeNode } from "./notebook-tree";
+import type { FolderRow } from "@/types/folders";
 
-type FolderRow = {
-  id: string;
-  parentId: string | null;
-  name: string;
-  icon: string | null;
-  position: number;
-};
 type DocumentRow = {
   id: string;
   folderId: string | null;

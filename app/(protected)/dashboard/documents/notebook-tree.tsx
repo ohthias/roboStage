@@ -29,6 +29,7 @@ import {
 } from "./actions";
 import { useToast } from "@/app/context/ToastContext";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 export type TreeNode =
   | {
       type: "folder";
@@ -153,7 +154,7 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
     setDragOverRoot(false);
     startTransition(async () => {
       try {
-        await moveNotebookItem(type, id, target);
+        unwrapAction(await moveNotebookItem(type, id, target));
           addToast("Item movido com sucesso.", "success");
           router.refresh();
       } catch (error) {
@@ -165,7 +166,7 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
   function handleNewFolder() {
     startTransition(async () => {
         try {
-          await createFolder(null);
+          unwrapAction(await createFolder(null));
           addToast("Pasta criada com sucesso.", "success");
           router.refresh();
         } catch (error) {
@@ -177,7 +178,7 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
   function handleNewDocument() {
     startTransition(async () => {
         try {
-          const created = await createDocument(null, null);
+          const created = unwrapAction(await createDocument(null, null));
           addToast("Página criada com sucesso.", "success");
           router.refresh();
           if (created) router.push(`/dashboard/documents/${created.id}`);
@@ -411,9 +412,9 @@ function TreeItem({
     }
     startTransition(async () => {
       if (node.type === "folder") {
-        await renameFolder(node.id, value);
+        unwrapAction(await renameFolder(node.id, value));
       } else {
-        await renameDocument(node.id, value);
+        unwrapAction(await renameDocument(node.id, value));
       }
       router.refresh();
     });
@@ -428,9 +429,9 @@ function TreeItem({
     if (!window.confirm(`Excluir ${label}? ${extra} Isso não pode ser desfeito.`)) return;
     startTransition(async () => {
       if (node.type === "folder") {
-        await deleteFolder(node.id);
+        unwrapAction(await deleteFolder(node.id));
       } else {
-        await deleteDocument(node.id);
+        unwrapAction(await deleteDocument(node.id));
       }
       if (isActive) router.push("/dashboard/documents");
       router.refresh();
@@ -441,7 +442,7 @@ function TreeItem({
     if (node.type !== "folder") return;
     setExpanded(true);
     startTransition(async () => {
-      await createFolder(node.id);
+      unwrapAction(await createFolder(node.id));
       router.refresh();
     });
   }
@@ -451,8 +452,8 @@ function TreeItem({
     startTransition(async () => {
       const created =
         node.type === "folder"
-          ? await createDocument(node.id, null)
-          : await createDocument(null, node.id);
+          ? unwrapAction(await createDocument(node.id, null))
+          : unwrapAction(await createDocument(null, node.id));
       router.refresh();
       if (created) router.push(`/dashboard/documents/${created.id}`);
     });

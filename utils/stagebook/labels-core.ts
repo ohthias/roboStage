@@ -18,7 +18,7 @@ import {
   thinklabTags,
 } from "@/db/schema";
 import { scopeOwnership, type StagebookScope } from "./scope";
-import { scopeWhere } from "./permissions";
+import { isOwnedByScope, scopeWhere } from "./permissions";
 import { resolveLabelColor } from "./label-colors";
 import { ValidationError } from "./validation";
 import {
@@ -398,21 +398,16 @@ const ADAPTERS: Record<LabelableKind, Adapter> = {
 
 export function assertKind(kind: unknown): asserts kind is LabelableKind {
   if (!LABELABLE_KINDS.includes(kind as LabelableKind)) {
-    throw new Error("Tipo de item inválido.");
+    throw new ValidationError("Tipo de item inválido.");
   }
 }
 
 export const adapterFor = (kind: LabelableKind) => ADAPTERS[kind];
 
-const ownedBy = (scope: StagebookScope, owner: Owner) =>
-  scope.type === "personal"
-    ? owner.userId === scope.userId && owner.teamId === null
-    : owner.teamId === scope.teamId;
-
 /** Garante que o item existe e pertence ao scope atual. */
 export async function requireResourceInScope(scope: StagebookScope, kind: LabelableKind, id: string) {
   const owner = await ADAPTERS[kind].owner(id);
-  if (!owner || !ownedBy(scope, owner)) throw new Error("Item não encontrado.");
+  if (!owner || !isOwnedByScope(scope, owner)) throw new ValidationError("Item não encontrado.");
 }
 
 // ---------------------------------------------------------------------------
@@ -439,7 +434,7 @@ export async function requireTagInScope(scope: StagebookScope, tagId: string): P
     .from(tags)
     .where(and(eq(tags.id, tagId), tagScope(scope)))
     .limit(1);
-  if (!row) throw new Error("Tag não encontrada.");
+  if (!row) throw new ValidationError("Tag não encontrada.");
   return row;
 }
 
@@ -459,7 +454,7 @@ export async function getOrCreateTag(
     .onConflictDoNothing();
 
   const created = await findTagByName(scope, name);
-  if (!created) throw new Error("Não foi possível criar a tag.");
+  if (!created) throw new ValidationError("Não foi possível criar a tag.");
   return created;
 }
 

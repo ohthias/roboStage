@@ -39,8 +39,12 @@ import { EmptyState, SectionHeader, StatCard, fmtDate } from "@/components/labte
 import { LabTestModeCharts } from "@/components/labtest/LabTestModeCharts";
 import { FllRunsCharts } from "@/components/labtest/FllRunsCharts";
 import FutureEditionAnalysis from "@/components/labtest/future-edition/FutureEditionAnalysis";
+import ObrRoundAnalysis from "@/components/labtest/obr/ObrRoundAnalysis";
+import ObrEntryDetails from "@/components/labtest/obr/ObrEntryDetails";
+import { getObrArena, isObrConfig } from "@/utils/labtest/obr";
 import { formatClock, isFutureEditionConfig } from "@/utils/labtest/future-edition";
 import { normalizeStatus } from "@/utils/labtest/catalog";
+import { loadSeasonMissions } from "@/utils/data/missions-client";
 import { SeriesChartPanel } from "@/components/labtest/charts/SeriesChart";
 import type { FieldDefinition, ModeId, TestEntry } from "@/types/labtest.types";
 import { getLabTestViewData } from "../actions";
@@ -57,6 +61,7 @@ import {
 } from "@/utils/labtest/fll";
 import { deleteTest } from "../new/actions";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 const STATUS_LABEL: Record<string, { label: string; badge: string }> = {
   planejamento: { label: "Planejamento", badge: "badge-ghost" },
   em_andamento: { label: "Em andamento", badge: "badge-warning" },
@@ -262,6 +267,7 @@ function EntryHistory({
   mode,
   season,
   futureEdition = false,
+  obr = false,
 }: {
   fields: FieldDefinition[];
   entries: TestEntry[];
@@ -269,13 +275,15 @@ function EntryHistory({
   mode: ModeId;
   season?: string;
   futureEdition?: boolean;
+  /** Rodada da OBR Resgate: placar vem de `entry.obrRound`, não dos campos. */
+  obr?: boolean;
 }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [missions, setMissions] = useState<FllMissionDefinition[]>([]);
 
   const style = ACCENT_STYLES[accent];
 
-  const isFll = mode === "runs" && Boolean(season) && !futureEdition;
+  const isFll = mode === "runs" && Boolean(season) && !futureEdition && !obr;
 
   const showScore = mode === "runs" || mode === "individual";
 
@@ -294,14 +302,9 @@ function EntryHistory({
 
     let active = true;
 
-    fetch("/api/data/missions")
-      .then((response) => response.json())
-      .then((data) => {
-        if (!active) return;
-
-        const seasonMissions = Array.isArray(data[season]) ? data[season] : [];
-
-        setMissions(seasonMissions);
+    loadSeasonMissions<FllMissionDefinition>(season)
+      .then((seasonMissions) => {
+        if (active) setMissions(seasonMissions);
       })
       .catch(() => {
         if (active) {
@@ -338,11 +341,13 @@ function EntryHistory({
         {[...entries].reverse().map((entry, ri) => {
           const total =
             showScore && !isFll
-              ? (entry.futureEdition?.scores.total ?? entryTotal(entry, fields))
+              ? (entry.obrRound?.scores.total ??
+                entry.futureEdition?.scores.total ??
+                entryTotal(entry, fields))
               : null;
 
           const pct =
-            showScore && !isFll && maxTotal > 0 && total !== null
+            showScore && !isFll && !obr && maxTotal > 0 && total !== null
               ? Math.round((total / maxTotal) * 100)
               : null;
 
@@ -414,7 +419,24 @@ function EntryHistory({
                     Pontuação normal
                     ----------------------------------------------------------------- */}
 
-                {!isFll && showScore && hasNumericFields && total !== null && (
+                {obr && entry.obrRound && (
+                  <div className="flex shrink-0 flex-col items-end">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-base-content/40">
+                      Pontuação OBR
+                    </span>
+
+                    <span className={`text-lg font-black leading-tight ${style.text}`}>
+                      {entry.obrRound.scores.total}
+                      <span className="ml-1 text-xs font-bold">pts</span>
+                    </span>
+
+                    <span className="text-xs text-base-content/40">
+                      ×{entry.obrRound.scores.multiplier.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} · {entry.obrRound.round.falhas} falha(s)
+                    </span>
+                  </div>
+                )}
+
+                {!isFll && !obr && showScore && hasNumericFields && total !== null && (
                   <div className="flex shrink-0 flex-col items-end">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-base-content/40">
                       Resultado
@@ -602,6 +624,9 @@ function EntryHistory({
 
                 isOpen && (
                   <div className="border-t border-base-content/8 bg-base-200/20 px-5 py-5">
+                    {entry.obrRound ? (
+                      <ObrEntryDetails result={entry.obrRound} accentText={style.text} />
+                    ) : (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       {fields.map((field) => {
                         const raw = getFieldValue(entry.values, field.fieldKey);
@@ -689,6 +714,7 @@ function EntryHistory({
                         );
                       })}
                     </div>
+                    )}
 
                     {entry.futureEdition && (
                       <div className="mt-4 flex flex-wrap gap-2">
@@ -811,11 +837,12 @@ export default function LabTestView() {
   const isFE = isFutureEditionConfig(test.config);
   const hasNumericFields = fields.some((f) => f.type === "number");
   const numericFieldCount = fields.filter((f) => f.type === "number").length;
-  const isFllRuns = test.mode === "runs" && Boolean(test.season) && !isFE;
+  const isObr = test.mode === "runs" && isObrConfig(test.config);
+  const isFllRuns = test.mode === "runs" && Boolean(test.season) && !isFE && !isObr;
 
   const handleDelete = async () => {
     if (!confirm("Tem certeza que deseja excluir este teste?")) return;
-    await deleteTest(test.id);
+    unwrapAction(await deleteTest(test.id));
     router.push("/dashboard/labtest");
   };
 
@@ -876,7 +903,7 @@ export default function LabTestView() {
         </header>
 
         {/* Resumo (FLL já traz os próprios cards dentro dos gráficos) */}
-        {!isFllRuns && !isFE && <OverviewStats mode={test.mode} fields={fields} entries={entries} />}
+        {!isFllRuns && !isFE && !isObr && <OverviewStats mode={test.mode} fields={fields} entries={entries} />}
 
         <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
           {/* Coluna principal */}
@@ -891,6 +918,8 @@ export default function LabTestView() {
 
               {isFE ? (
                 <FutureEditionAnalysis entries={entries} />
+              ) : isObr ? (
+                <ObrRoundAnalysis entries={entries} arena={getObrArena(test.config)} />
               ) : isFllRuns ? (
                 <FllRunsCharts season={test.season} entries={entries} accent={modeDef.accent} />
               ) : test.mode === "runs" ? (
@@ -931,6 +960,7 @@ export default function LabTestView() {
                 mode={test.mode}
                 season={test.season}
                 futureEdition={isFE}
+                obr={isObr}
               />
             </section>
           </div>
@@ -938,21 +968,23 @@ export default function LabTestView() {
           {/* Coluna lateral */}
           <aside className="flex flex-col gap-4 xl:sticky xl:top-20">
             <div className="rounded-tl-3xl rounded-tr-lg rounded-br-3xl rounded-bl-lg bg-primary p-6 text-primary-content shadow-md">
-              {isFE ? <Play className="mb-4 size-8 opacity-80" /> : <ClipboardList className="mb-4 size-8 opacity-80" />}
+              {isFE || isObr ? <Play className="mb-4 size-8 opacity-80" /> : <ClipboardList className="mb-4 size-8 opacity-80" />}
               <h3 className="text-xl font-black leading-tight">
-                {isFE ? "Jogar uma nova partida" : "Registrar nova execução"}
+                {isFE ? "Jogar uma nova partida" : isObr ? "Jogar uma nova rodada" : "Registrar nova execução"}
               </h3>
               <p className="mt-2 text-sm opacity-80">
                 {isFE
                   ? "Cronômetro, pontuação ao vivo e análise em gráficos ao fim de cada partida."
-                  : "Cada execução alimenta os gráficos e o histórico deste teste."}
+                  : isObr
+                    ? "Cronômetro, perigos, falhas e sala de resgate: cada rodada alimenta a análise."
+                    : "Cada execução alimenta os gráficos e o histórico deste teste."}
               </p>
               <Link
                 href={`/dashboard/labtest/${test.id}/execute`}
                 className="btn mt-5 w-full rounded-full border-0 bg-base-100 text-base-content hover:bg-base-200"
               >
-                {isFE ? <Play className="size-4" /> : <Plus className="size-4" />}
-                {isFE ? "Nova partida" : "Nova execução"}
+                {isFE || isObr ? <Play className="size-4" /> : <Plus className="size-4" />}
+                {isFE ? "Nova partida" : isObr ? "Nova rodada" : "Nova execução"}
               </Link>
             </div>
 

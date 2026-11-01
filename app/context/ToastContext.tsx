@@ -7,9 +7,9 @@ import {
   useCallback,
   useRef,
   useEffect,
+  useMemo,
   type ReactNode,
 } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
   CheckCircle2,
@@ -26,7 +26,12 @@ interface Toast {
   message: string;
   type: ToastType;
   duration: number;
+  /** Saindo: a animação de saída roda antes de remover. */
+  leaving?: boolean;
 }
+
+/** Igual à duração de `toast-leave` em globals.css. */
+const LEAVE_MS = 150;
 
 interface ToastContextType {
   addToast: (message: string, type?: ToastType, duration?: number) => void;
@@ -66,12 +71,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const timeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
     const timeout = timeoutsRef.current.get(id);
-    if (timeout) {
-      clearTimeout(timeout);
-      timeoutsRef.current.delete(id);
-    }
+    if (timeout) clearTimeout(timeout);
+    // Marca como saindo (animação em CSS) e remove depois.
+    setToasts((prev) => prev.map((toast) => (toast.id === id ? { ...toast, leaving: true } : toast)));
+    timeoutsRef.current.set(
+      id,
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((toast) => toast.id !== id));
+        timeoutsRef.current.delete(id);
+      }, LEAVE_MS),
+    );
   }, []);
 
   const addToast = useCallback(
@@ -99,66 +109,51 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const timeouts = timeoutsRef.current;
     return () => {
-      timeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+      timeouts.forEach((timeout) => clearTimeout(timeout));
     };
   }, []);
 
+  // Valor estável: abrir/fechar um toast não re-renderiza todo consumidor de useToast().
+  const value = useMemo(
+    () => ({ addToast, removeToast, clearToasts }),
+    [addToast, removeToast, clearToasts],
+  );
+
   return (
-    <ToastContext.Provider
-      value={{
-        addToast,
-        removeToast,
-        clearToasts,
-      }}
-    >
+    <ToastContext.Provider value={value}>
       {children}
 
-      <div className="pointer-events-none fixed top-4 right-4 z-[9999] flex w-full max-w-sm flex-col gap-3">
-        <AnimatePresence mode="popLayout">
-          {toasts.map((toast) => {
-            const style = TOAST_STYLES[toast.type];
-            return (
-              <motion.div
-                key={toast.id}
-                layout
-                initial={{
-                  opacity: 0,
-                  y: -20,
-                  scale: 0.95,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                  scale: 1,
-                }}
-                exit={{
-                  opacity: 0,
-                  y: -10,
-                  scale: 0.95,
-                }}
-                transition={{
-                  duration: 0.2,
-                  ease: "easeOut",
-                }}
-                className={`pointer-events-auto flex items-start gap-3 rounded-2xl border p-4 shadow-xl backdrop-blur ${style.className}`}
+      {/* Animações em CSS (globals.css): antes o framer-motion entrava no
+          bundle de TODAS as páginas só por causa deste provider. */}
+      <div
+        className="pointer-events-none fixed top-4 right-4 z-[9999] flex w-full max-w-sm flex-col gap-3"
+        role="status"
+        aria-live="polite"
+      >
+        {toasts.map((toast) => {
+          const style = TOAST_STYLES[toast.type];
+          return (
+            <div
+              key={toast.id}
+              className={`${toast.leaving ? "toast-leave" : "toast-enter"} pointer-events-auto flex items-start gap-3 rounded-2xl border p-4 shadow-xl backdrop-blur ${style.className}`}
+            >
+              <div className="mt-0.5 shrink-0">{style.icon}</div>
+              <div className="flex-1 text-sm leading-relaxed">
+                {toast.message}
+              </div>
+              <button
+                type="button"
+                onClick={() => removeToast(toast.id)}
+                className="btn btn-ghost btn-xs h-6 min-h-6 w-6 p-0 opacity-70 transition hover:opacity-100"
+                aria-label="Fechar toast"
               >
-                <div className="mt-0.5 shrink-0">{style.icon}</div>
-                <div className="flex-1 text-sm leading-relaxed">
-                  {toast.message}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeToast(toast.id)}
-                  className="btn btn-ghost btn-xs h-6 min-h-6 w-6 p-0 opacity-70 transition hover:opacity-100"
-                  aria-label="Fechar toast"
-                >
-                  <X size={14} />
-                </button>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+                <X size={14} />
+              </button>
+            </div>
+          );
+        })}
       </div>
     </ToastContext.Provider>
   );

@@ -22,6 +22,7 @@ import { toggleResourceTag } from "@/utils/stagebook/actions/tags";
 import { setResourceMilestone } from "@/utils/stagebook/actions/milestones";
 import type { MilestoneDTO, TagDTO } from "@/types/labels";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 function toLocalInput(iso: string) {
   const date = new Date(iso);
   const offset = date.getTimezoneOffset();
@@ -80,11 +81,11 @@ export function EventModal({
         location,
       };
       if (mode === "edit" && event) {
-        await updateEvent(event.id, payload);
+        unwrapAction(await updateEvent(event.id, payload));
       } else {
-        const created = await createEvent(payload);
-        for (const tag of draftTags) await toggleResourceTag("calendar-event", created.id, tag.id);
-        if (draftMilestone) await setResourceMilestone("calendar-event", created.id, draftMilestone.id);
+        const created = unwrapAction(await createEvent(payload));
+        for (const tag of draftTags) unwrapAction(await toggleResourceTag("calendar-event", created.id, tag.id));
+        if (draftMilestone) unwrapAction(await setResourceMilestone("calendar-event", created.id, draftMilestone.id));
       }
       onSaved();
     });
@@ -94,7 +95,7 @@ export function EventModal({
     if (!event) return;
     if (!window.confirm("Excluir este evento?")) return;
     startTransition(async () => {
-      await deleteEvent(event.id);
+      unwrapAction(await deleteEvent(event.id));
       onSaved();
     });
   }
@@ -105,9 +106,9 @@ export function EventModal({
     setLinkedPageIds((prev) => (isLinked ? prev.filter((id) => id !== pageId) : [...prev, pageId]));
     startTransition(async () => {
       if (isLinked) {
-        await unlinkDocumentFromEvent(event.id, pageId);
+        unwrapAction(await unlinkDocumentFromEvent(event.id, pageId));
       } else {
-        await linkDocumentToEvent(event.id, pageId);
+        unwrapAction(await linkDocumentToEvent(event.id, pageId));
       }
     });
   }

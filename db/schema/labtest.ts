@@ -77,4 +77,8 @@ export const testExecutions = pgTable("test_executions", {
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
-});
+}, (t) => [
+  // Dois lançamentos simultâneos (duas abas) não podem receber o mesmo número.
+  // `createTestExecution` conta com esta constraint para detectar a corrida.
+  unique("test_executions_test_number_unique").on(t.testId, t.executionNumber),
+]);

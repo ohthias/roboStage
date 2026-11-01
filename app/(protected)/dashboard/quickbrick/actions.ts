@@ -3,11 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import {
-  leagues,
-  userLeagueInterests,
-} from "@/db/schema";
+import { leagues } from "@/db/schema";
 import { supportsQuickbrick } from "@/utils/stagebook/league-features";
+import { getUserLeagues } from "@/utils/stagebook/user-leagues";
 import { resolveStagebookScope, type StagebookScope } from "@/utils/stagebook/scope";
 import { creatorScopeWhere, requireRole } from "@/utils/stagebook/permissions";
 import { runAction, type ActionResult } from "@/utils/stagebook/action-result";
@@ -112,20 +110,16 @@ const iso = (d: Date | string) => new Date(d).toISOString();
 /** Ligas que o usuário acompanha, marcando quais têm o QuickBrick liberado. */
 export async function listQuickbrickLeagues(): Promise<QuickbrickLeague[]> {
   const scope = await resolveStagebookScope();
-  const rows = await db
-    .select({
-      id: leagues.id,
-      code: leagues.code,
-      name: leagues.name,
-      relation: userLeagueInterests.relationType,
-      season: userLeagueInterests.season,
-    })
-    .from(userLeagueInterests)
-    .innerJoin(leagues, eq(leagues.id, userLeagueInterests.leagueId))
-    .where(eq(userLeagueInterests.userId, scope.userId))
-    .orderBy(asc(leagues.code));
+  const rows = await getUserLeagues(scope.userId);
   return rows
-    .map((r) => ({ ...r, supported: supportsQuickbrick(r) }))
+    .map((r) => ({
+      id: r.leagueId,
+      code: r.code,
+      name: r.name,
+      relation: r.relationType,
+      season: r.season,
+      supported: supportsQuickbrick(r),
+    }))
     .sort((a, b) => Number(b.supported) - Number(a.supported));
 }
 
@@ -136,12 +130,8 @@ export async function listQuickbrickLeagues(): Promise<QuickbrickLeague[]> {
 async function requireSupportedLeague(scope: StagebookScope, leagueId: unknown) {
   if (!leagueId) throw new ValidationError("Escolha a competição do caderno.");
   const id = requireUuid(leagueId, "competição");
-  const [row] = await db
-    .select({ id: leagues.id, code: leagues.code, name: leagues.name })
-    .from(userLeagueInterests)
-    .innerJoin(leagues, eq(leagues.id, userLeagueInterests.leagueId))
-    .where(and(eq(userLeagueInterests.userId, scope.userId), eq(userLeagueInterests.leagueId, id)))
-    .limit(1);
+  const league = (await getUserLeagues(scope.userId)).find((l) => l.leagueId === id);
+  const row = league && { id: league.leagueId, code: league.code, name: league.name };
   if (!row) {
     throw new ValidationError("Adicione esta competição em Ligas e Competições antes de criar o caderno.");
   }
@@ -412,6 +402,53 @@ const extFrom = (fileName: string, fallback: string) => {
   return (m?.[1] ?? fallback).toLowerCase();
 };
 
+/**
+ * Envio direto ao R2 em duas etapas, igual para fotos e projeto do Studio:
+ * `prepareR2Upload` valida o tamanho e devolve a chave + URL pré-assinada;
+ * depois do PUT no navegador, `verifyR2Upload` confere a chave, se o objeto
+ * existe e o tamanho real (apagando o que passar do limite).
+ */
+const R2_UPLOADS = {
+  photo: {
+    folder: "photos",
+    maxBytes: PHOTO_MAX_BYTES,
+    tooLarge: "A foto pode ter no máximo 12 MB.",
+    incomplete: "O envio da foto não foi concluído. Tente novamente.",
+  },
+  studio: {
+    folder: "studio",
+    maxBytes: STUDIO_MAX_BYTES,
+    tooLarge: "O arquivo do Studio pode ter no máximo 60 MB.",
+    incomplete: "O envio do arquivo não foi concluído. Tente novamente.",
+  },
+} as const;
+
+type R2UploadKind = keyof typeof R2_UPLOADS;
+
+const r2UploadPrefix = (kind: R2UploadKind, notebookId: string) =>
+  `notebooks/${notebookId}/${R2_UPLOADS[kind].folder}/`;
+
+async function prepareR2Upload(kind: R2UploadKind, notebookId: string, size: number, ext: string) {
+  if (!(size > 0) || size > R2_UPLOADS[kind].maxBytes) {
+    throw new ValidationError(R2_UPLOADS[kind].tooLarge);
+  }
+  const key = `${r2UploadPrefix(kind, notebookId)}${crypto.randomUUID()}.${ext}`;
+  return { key, uploadUrl: await presignUpload(key) };
+}
+
+async function verifyR2Upload(kind: R2UploadKind, notebookId: string, key: unknown) {
+  if (typeof key !== "string" || !key.startsWith(r2UploadPrefix(kind, notebookId))) {
+    throw new ValidationError("Arquivo inválido.");
+  }
+  const head = await headObject(key);
+  if (!head) throw new ValidationError(R2_UPLOADS[kind].incomplete);
+  if (head.size > R2_UPLOADS[kind].maxBytes) {
+    await deleteObject(key);
+    throw new ValidationError(R2_UPLOADS[kind].tooLarge);
+  }
+  return { key, size: head.size };
+}
+
 export async function requestPhotoUpload(
   notebookId: string,
   file: { fileName: string; contentType: string; size: number },
@@ -423,9 +460,6 @@ export async function requestPhotoUpload(
     if (!(PHOTO_TYPES as readonly string[]).includes(file.contentType)) {
       throw new ValidationError("Envie uma imagem JPG, PNG ou WEBP.");
     }
-    if (!(file.size > 0) || file.size > PHOTO_MAX_BYTES) {
-      throw new ValidationError("A foto pode ter no máximo 12 MB.");
-    }
     const [{ n }] = await db
       .select({ n: sql<number>`count(*)::int` })
       .from(quickbrickPhotos)
@@ -433,8 +467,7 @@ export async function requestPhotoUpload(
     if (n >= NOTEBOOK_MAX_PHOTOS) {
       throw new ValidationError(`Este caderno já tem ${NOTEBOOK_MAX_PHOTOS} fotos. Remova uma para enviar outra.`);
     }
-    const key = `notebooks/${notebookId}/photos/${crypto.randomUUID()}.${extFrom(file.fileName, "jpg")}`;
-    return { key, uploadUrl: await presignUpload(key) };
+    return prepareR2Upload("photo", notebookId, file.size, extFrom(file.fileName, "jpg"));
   });
 }
 
@@ -446,15 +479,7 @@ export async function confirmPhotoUpload(
     requireR2();
     const scope = await resolveStagebookScope();
     await requireNotebook(scope, notebookId);
-    if (typeof input.key !== "string" || !input.key.startsWith(`notebooks/${notebookId}/photos/`)) {
-      throw new ValidationError("Arquivo inválido.");
-    }
-    const head = await headObject(input.key);
-    if (!head) throw new ValidationError("O envio da foto não foi concluído. Tente novamente.");
-    if (head.size > PHOTO_MAX_BYTES) {
-      await deleteObject(input.key);
-      throw new ValidationError("A foto pode ter no máximo 12 MB.");
-    }
+    const head = await verifyR2Upload("photo", notebookId, input.key);
 
     const [{ n }] = await db
       .select({ n: sql<number>`count(*)::int` })
@@ -543,11 +568,7 @@ export async function requestStudioUpload(
     const scope = await resolveStagebookScope();
     await requireNotebookSupported(await requireNotebook(scope, notebookId));
     if (!/\.io$/i.test(file.fileName)) throw new ValidationError("Envie um arquivo .io do BrickLink Studio 2.0.");
-    if (!(file.size > 0) || file.size > STUDIO_MAX_BYTES) {
-      throw new ValidationError("O arquivo do Studio pode ter no máximo 60 MB.");
-    }
-    const key = `notebooks/${notebookId}/studio/${crypto.randomUUID()}.io`;
-    return { key, uploadUrl: await presignUpload(key) };
+    return prepareR2Upload("studio", notebookId, file.size, "io");
   });
 }
 
@@ -559,15 +580,7 @@ export async function confirmStudioUpload(
     requireR2();
     const scope = await resolveStagebookScope();
     const notebook = await requireNotebook(scope, notebookId);
-    if (typeof input.key !== "string" || !input.key.startsWith(`notebooks/${notebookId}/studio/`)) {
-      throw new ValidationError("Arquivo inválido.");
-    }
-    const head = await headObject(input.key);
-    if (!head) throw new ValidationError("O envio do arquivo não foi concluído. Tente novamente.");
-    if (head.size > STUDIO_MAX_BYTES) {
-      await deleteObject(input.key);
-      throw new ValidationError("O arquivo do Studio pode ter no máximo 60 MB.");
-    }
+    const head = await verifyR2Upload("studio", notebookId, input.key);
     const now = new Date();
     const fileName = requireText(input.fileName, "o nome do arquivo", { maxLength: 200 });
     await db

@@ -34,6 +34,7 @@ import { LiveRefresh } from "@/components/stagebook/live-refresh";
 import { BoardAlternativeViews, VIEW_OPTIONS } from "./board-view-modes";
 import Link from "next/link";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 type Column = { id: string; name: string; position: number; color: string | null; rules: ColumnRules };
 type Card = {
   id: string;
@@ -164,7 +165,7 @@ export function BoardView({
     const clean = newColumnName.trim();
     if (!clean) return;
     startTransition(async () => {
-      await createColumn(boardId, clean);
+      unwrapAction(await createColumn(boardId, clean));
       setNewColumnName("");
       setAddingColumn(false);
       refresh();
@@ -177,7 +178,7 @@ export function BoardView({
 
   function handleAddCard(columnId: string) {
     startTransition(async () => {
-      const card = await createCard(boardId, columnId, "Novo card");
+      const card = unwrapAction(await createCard(boardId, columnId, "Novo card"));
       refresh();
       if (card) setSelectedCardId(card.id);
     });
@@ -187,14 +188,14 @@ export function BoardView({
     const next = window.prompt("Nome da coluna", column.name);
     if (!next || !next.trim() || next.trim() === column.name) return;
     startTransition(async () => {
-      await renameColumn(boardId, column.id, next.trim());
+      unwrapAction(await renameColumn(boardId, column.id, next.trim()));
       refresh();
     });
   }
 
   function handleColumnColor(column: Column, color: string | null) {
     startTransition(async () => {
-      await updateColumnColor(boardId, column.id, color);
+      unwrapAction(await updateColumnColor(boardId, column.id, color));
       refresh();
     });
   }
@@ -202,7 +203,7 @@ export function BoardView({
   function handleDeleteColumn(columnId: string) {
     if (!window.confirm("Excluir esta coluna? Os cards dentro dela também serão apagados.")) return;
     startTransition(async () => {
-      await deleteColumn(boardId, columnId);
+      unwrapAction(await deleteColumn(boardId, columnId));
       refresh();
     });
   }
@@ -212,7 +213,7 @@ export function BoardView({
     const columnCards = cardsByColumn.get(columnId) ?? [];
     const last = columnCards[columnCards.length - 1];
     startTransition(async () => {
-      await moveCard(boardId, draggedCardId, columnId, last?.position ?? null, null);
+      unwrapAction(await moveCard(boardId, draggedCardId, columnId, last?.position ?? null, null));
       setDraggedCardId(null);
       refresh();
     });
@@ -224,7 +225,7 @@ export function BoardView({
     const idx = columnCards.findIndex((c) => c.id === targetCard.id);
     const prev = columnCards[idx - 1];
     startTransition(async () => {
-      await moveCard(boardId, draggedCardId, columnId, prev?.position ?? null, targetCard.position);
+      unwrapAction(await moveCard(boardId, draggedCardId, columnId, prev?.position ?? null, targetCard.position));
       setDraggedCardId(null);
       refresh();
     });

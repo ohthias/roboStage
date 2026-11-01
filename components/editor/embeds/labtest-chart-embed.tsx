@@ -23,7 +23,8 @@ import { FllRunsCharts } from "@/components/labtest/FllRunsCharts";
 import { LabTestModeCharts } from "@/components/labtest/LabTestModeCharts";
 import { CustomTooltip } from "@/components/labtest/shared";
 import { EmbedShell, EmbedSkeleton } from "./embed-shell";
-import { loadMissionCatalog, useEmbedData } from "./embed-data";
+import { useEmbedData } from "./embed-data";
+import { loadSeasonMissions } from "@/utils/data/missions-client";
 import { EMBED_HREF, type LabTestChartOptions } from "./embed-types";
 
 // Mesma paleta de LabTestModeCharts.
@@ -57,10 +58,9 @@ function useSummary(
   useEffect(() => {
     if (!isFll || !season) return;
     let active = true;
-    loadMissionCatalog()
-      .then((all) => {
-        const list = all[season];
-        if (active) setMissions(Array.isArray(list) ? (list as FllMissionDefinition[]) : []);
+    loadSeasonMissions<FllMissionDefinition>(season)
+      .then((list) => {
+        if (active) setMissions(list);
       })
       .catch(() => active && setMissions([]));
     return () => {

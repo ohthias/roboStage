@@ -31,6 +31,7 @@ import {
 } from '@/types/thinklab.types';
 import { DIAGRAM_TEMPLATES } from '@/utils/thinklab/templates';
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 const STORAGE_KEY = 'excaliflow_saved_diagram_v1';
 
 // Chaves de estilo que também viram o padrão dos próximos elementos desenhados
@@ -185,7 +186,7 @@ export default function ThinkLabCanvas() {
   const persist = useCallback(async () => {
     setSaveStatus('saving');
     try {
-      await saveThinkLab(id, { elements, viewport, gridType, theme });
+      unwrapAction(await saveThinkLab(id, { elements, viewport, gridType, theme }));
       setSaveStatus('saved');
       return true;
     } catch {

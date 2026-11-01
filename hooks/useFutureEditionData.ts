@@ -2,23 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { FEData } from "@/utils/labtest/future-edition";
-
-let cache: Promise<FEData> | null = null;
-
-function load(): Promise<FEData> {
-  if (!cache) {
-    cache = fetch("/api/data/missions/future-edition")
-      .then((response) => {
-        if (!response.ok) throw new Error("Não foi possível carregar a Future Edition.");
-        return response.json() as Promise<FEData>;
-      })
-      .catch((error) => {
-        cache = null; // permite tentar de novo
-        throw error;
-      });
-  }
-  return cache;
-}
+import { loadFutureEditionData } from "@/utils/data/missions-client";
 
 /** Carrega (uma vez) as missões e a tabela de penalidades da Future Edition. */
 export function useFutureEditionData() {
@@ -27,7 +11,7 @@ export function useFutureEditionData() {
 
   useEffect(() => {
     let active = true;
-    load()
+    loadFutureEditionData()
       .then((result) => active && setData(result))
       .catch((err) => active && setError(err instanceof Error ? err.message : "Erro ao carregar dados."));
     return () => {

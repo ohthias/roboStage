@@ -29,6 +29,7 @@ import { CalibrabotSection } from "./components/CalibrabotSection";
 import { CustomSection } from "./components/CustomSection";
 import { Note, Step } from "./components/FormBits";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 type CustomParamMeta = {
   required: boolean;
   description: string;
@@ -257,7 +258,7 @@ export default function CreateTest() {
 
     startSaving(async () => {
       try {
-        const created = await createTest(payload);
+        const created = unwrapAction(await createTest(payload));
         addToast(`Teste "${created.name}" criado.`, "success");
         router.push(`/dashboard/labtest/${created.id}`);
       } catch (err) {

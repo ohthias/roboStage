@@ -19,16 +19,9 @@ import { folderColorStyles } from "@/utils/stagebook/folder-colors";
 import { createFolder, deleteFolder, renameFolder } from "../documents/actions";
 import { FolderAppearanceMenu, type FolderAppearance } from "./folder-appearance-menu";
 
-export type FolderItem = {
-  id: string;
-  parentId: string | null;
-  name: string;
-  icon: string | null;
-  color: string | null;
-  position: number;
-  documentCount: number;
-};
+import type { FolderItem } from "@/types/folders";
 
+import { unwrapAction, type ActionResult } from "@/utils/stagebook/action-result";
 export function FoldersView({ folders: serverFolders }: { folders: FolderItem[] }) {
   const { addToast } = useToast();
   const router = useRouter();
@@ -49,10 +42,10 @@ export function FoldersView({ folders: serverFolders }: { folders: FolderItem[] 
   const childrenOf = (parentId: string | null) =>
     folders.filter((folder) => folder.parentId === parentId);
 
-  function runAction(action: () => Promise<void>, success: string) {
+  function runFolderAction(action: () => Promise<ActionResult<unknown>>, success: string) {
     startTransition(async () => {
       try {
-        await action();
+        unwrapAction(await action());
         addToast(success, "success");
         router.refresh();
       } catch (error) {
@@ -67,10 +60,7 @@ export function FoldersView({ folders: serverFolders }: { folders: FolderItem[] 
   }
 
   function addFolder(parentId: string | null) {
-    runAction(
-      () => createFolder(parentId).then(() => undefined),
-      "Pasta criada.",
-    );
+    runFolderAction(() => createFolder(parentId), "Pasta criada.");
   }
 
   function startRename(folder: FolderItem) {
@@ -82,7 +72,7 @@ export function FoldersView({ folders: serverFolders }: { folders: FolderItem[] 
     const name = draftName.trim();
     if (!name) return;
     setEditingId(null);
-    runAction(() => renameFolder(folder.id, name), "Pasta renomeada.");
+    runFolderAction(() => renameFolder(folder.id, name), "Pasta renomeada.");
   }
 
   function removeFolder(folder: FolderItem) {
@@ -92,7 +82,7 @@ export function FoldersView({ folders: serverFolders }: { folders: FolderItem[] 
       )
     )
       return;
-    runAction(() => deleteFolder(folder.id), "Pasta excluída.");
+    runFolderAction(() => deleteFolder(folder.id), "Pasta excluída.");
   }
 
   return (

@@ -8,6 +8,7 @@ import { DocIconPicker } from "@/components/editor/doc-icon-picker";
 import { FOLDER_COLORS } from "@/utils/stagebook/folder-colors";
 import { updateFolderAppearance } from "../documents/actions";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 export type FolderAppearance = { icon: string | null; color: string | null };
 
 /**
@@ -41,7 +42,7 @@ export function FolderAppearanceMenu({
     onChange(next);
     startTransition(async () => {
       try {
-        await updateFolderAppearance(folderId, patch);
+        unwrapAction(await updateFolderAppearance(folderId, patch));
       } catch (error) {
         onChange(previous);
         addToast(

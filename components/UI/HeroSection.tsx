@@ -8,6 +8,8 @@ const heroImages = [
   "/images/index/hero_banner_fll_2.jpg",
   "/images/index/hero_banner_obr.png",
   "/images/index/hero_banner_obr_2.png",
+  "/images/index/hero_banner_obr_art.png",
+  "/images/index/hero_banner_obr_art_2.png",
 ];
 
 type HeroAction = {

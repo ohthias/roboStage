@@ -5,6 +5,7 @@ import { SWOTCanvas } from "@/components/QuickBrick/Swot/SwotCanva";
 import { SwotMobile } from "@/components/QuickBrick/Swot/SwotMobile";
 import HeaderTool from "@/components/QuickBrick/HeaderTool";
 import { LayoutGrid } from "lucide-react";
+import { loadMissionCatalog, loadSeasonMissions } from "@/utils/data/missions-client";
 
 const seasons: Record<string, { name: string }> = {
   bioglow: {
@@ -36,8 +37,9 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
   }, []);
 
   useEffect(() => {
-    fetch("/api/data/missions")
-      .then((res) => res.json())
+    // Catálogo inteiro só aqui (para saber quais temporadas têm imagens);
+    // a requisição é memorizada e não se repete a cada troca de temporada.
+    loadMissionCatalog()
       .then((data) => {
         const availableSeasons: string[] = [];
         Object.entries(data).forEach(([seasonId, seasonMissions]: any) => {
@@ -55,15 +57,9 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
 
   useEffect(() => {
     if (!selectedSeason) return;
-    fetch("/api/data/missions")
-      .then((res) => res.json())
-      .then((data) => {
-        const seasonKey = Array.isArray(selectedSeason)
-          ? selectedSeason[0]
-          : selectedSeason;
-        const seasonMissions = data[seasonKey] || [];
-        setMissions(seasonMissions.filter((m: any) => m.image));
-      });
+    loadSeasonMissions<any>(selectedSeason).then((seasonMissions) => {
+      setMissions(seasonMissions.filter((m) => m.image));
+    });
   }, [selectedSeason]);
 
   return (

@@ -51,6 +51,7 @@ import { AnatixTables } from "./AnatixTables";
 import { AnatixLabForm } from "./AnatixLabForm";
 import { AnatixModal } from "./AnatixLabSlots";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 const FLUSH_MS = 2000;
 const BATCH_SIZE = 1500;
 const UI_TICK_MS = 250;
@@ -116,7 +117,7 @@ export function AnatixLabView({
       while (pendingRef.current.length) {
         const chunk = pendingRef.current.splice(0, BATCH_SIZE);
         try {
-          await appendAnatixFrames({ sessionId, batch: batchRef.current++, frames: chunk });
+          unwrapAction(await appendAnatixFrames({ sessionId, batch: batchRef.current++, frames: chunk }));
           setSaveInfo((s) => ({ ...s, saved: s.saved + chunk.length }));
         } catch (err) {
           setSaveInfo((s) => ({ ...s, failed: s.failed + chunk.length }));
@@ -156,7 +157,7 @@ export function AnatixLabView({
         protocolVersion: hello?.version ?? null,
         baudRate: config.baudRate,
       })
-        .then((r) => r.sessionId)
+        .then((r) => unwrapAction(r).sessionId)
         .catch((err) => {
           setSaveError(err instanceof Error ? err.message : "Não foi possível criar a sessão.");
           return null;
@@ -173,13 +174,13 @@ export function AnatixLabView({
       setSaveInfo((s) => ({ ...s, active: false }));
       if (!sessionId) return;
       try {
-        await endAnatixSession({
+        unwrapAction(await endAnatixSession({
           sessionId,
           frameCount: live.frameCount,
           invalidFrames: live.invalidFrames,
           droppedFrames: live.droppedByRobot,
           summary: live.summary(),
-        });
+        }));
         router.refresh();
       } catch (err) {
         setSaveError(err instanceof Error ? err.message : "Não foi possível encerrar a sessão.");
@@ -221,7 +222,7 @@ export function AnatixLabView({
     setConfig(next);
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(() => {
-      void updateAnatixLab({ labId: lab.id, config: next }).catch(() => {});
+      void updateAnatixLab({ labId: lab.id, config: next }).catch(() => undefined);
     }, 800);
   }
 
@@ -245,7 +246,7 @@ export function AnatixLabView({
     if (!confirm("Excluir esta sessão gravada?")) return;
     if (source.kind === "saved" && source.session.id === session.id) setSource({ kind: "live" });
     startTransition(async () => {
-      await deleteAnatixSession(session.id);
+      unwrapAction(await deleteAnatixSession(session.id));
       router.refresh();
     });
   }
@@ -254,7 +255,7 @@ export function AnatixLabView({
     if (!confirm(`Excluir "${lab.name}" e todas as sessões gravadas?`)) return;
     startTransition(async () => {
       await serial.disconnect();
-      await deleteAnatixLab(lab.id);
+      unwrapAction(await deleteAnatixLab(lab.id));
       router.push("/dashboard/labtest/anatix");
     });
   }

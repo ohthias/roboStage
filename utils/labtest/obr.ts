@@ -24,6 +24,7 @@ import {
 import type { Hazards, Round } from "@/utils/competitions/obr/types";
 import { sanitizeProject } from "@/utils/quickbrick/ArenaBuilder/project";
 import type { Project } from "@/utils/quickbrick/ArenaBuilder/types";
+import { ValidationError } from "@/utils/stagebook/validation";
 
 export const OBR_EDITION = "obr-resgate";
 
@@ -297,15 +298,15 @@ export function normalizeObrResult(raw: unknown): ObrRoundResult | undefined {
  */
 export function validateObrResult(raw: unknown, arena: Project | null): ObrRoundResult {
   const fe = normalizeObrResult(raw);
-  if (!fe) throw new Error("Rodada inválida: resultado da OBR ausente.");
+  if (!fe) throw new ValidationError("Rodada inválida: resultado da OBR ausente.");
   const sent = raw as { scores?: { total?: unknown }; round?: { falhas?: unknown } };
 
   if (sent.scores?.total !== fe.scores.total) {
-    throw new Error("A pontuação enviada não confere com a rodada.");
+    throw new ValidationError("A pontuação enviada não confere com a rodada.");
   }
   const falhas = fe.failures.filter((f) => f.kind === "falha").length;
   if (fe.round.falhas !== falhas) {
-    throw new Error("O número de falhas não confere com as falhas registradas.");
+    throw new ValidationError("O número de falhas não confere com as falhas registradas.");
   }
   const v = victimsFromDeposits(fe.rescue.deposits);
   if (
@@ -313,11 +314,11 @@ export function validateObrResult(raw: unknown, arena: Project | null): ObrRound
     fe.round.mortasVermelha !== v.mortasVermelha ||
     fe.round.invertidas !== v.invertidas
   ) {
-    throw new Error("As vítimas do placar não conferem com os depósitos registrados.");
+    throw new ValidationError("As vítimas do placar não conferem com os depósitos registrados.");
   }
   for (const f of fe.failures) {
     if (f.tile && !tileInArena(arena, f.tile)) {
-      throw new Error("Uma falha aponta para um ladrilho que não existe na arena.");
+      throw new ValidationError("Uma falha aponta para um ladrilho que não existe na arena.");
     }
   }
   return fe;

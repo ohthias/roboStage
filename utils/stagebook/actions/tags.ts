@@ -6,7 +6,11 @@ import { db } from "@/db/client";
 import { tags } from "@/db/schema";
 import { resolveStagebookScope } from "../scope";
 import { requireRole } from "../permissions";
-import { cleanText, requireUuid } from "../validation";
+import {
+  ValidationError,
+  cleanText,
+  requireUuid,
+} from "../validation";
 import { normalizeHexColor } from "../label-colors";
 import {
   adapterFor,
@@ -20,6 +24,7 @@ import {
   tagsForResources,
 } from "../labels-core";
 import type { LabelableKind, TagDTO, TagWithUsage } from "@/types/labels";
+import { runAction, type ActionResult } from "@/utils/stagebook/action-result";
 
 /**
  * Tags UNIVERSAIS: as mesmas tags (nome + cor) valem para Kanban, páginas,
@@ -36,13 +41,13 @@ function refresh() {
 function parseColor(color: unknown): string | null {
   if (color === null || color === undefined || color === "") return null;
   const hex = normalizeHexColor(color);
-  if (!hex) throw new Error("Cor inválida. Use o formato #rrggbb.");
+  if (!hex) throw new ValidationError("Cor inválida. Use o formato #rrggbb.");
   return hex;
 }
 
 function parseName(name: unknown) {
   const clean = cleanText(name, { maxLength: 40 });
-  if (!clean) throw new Error("Informe um nome para a tag.");
+  if (!clean) throw new ValidationError("Informe um nome para a tag.");
   return clean;
 }
 
@@ -77,83 +82,91 @@ export async function listTagsWithUsage(): Promise<TagWithUsage[]> {
   });
 }
 
-export async function createTag(name: string, color?: string | null): Promise<TagDTO> {
-  const scope = await resolveStagebookScope();
-  const clean = parseName(name);
-  if (await findTagByName(scope, clean)) throw new Error("Já existe uma tag com esse nome.");
-  const tag = await getOrCreateTag(scope, clean, parseColor(color));
-  refresh();
-  return tag;
+export async function createTag(name: string, color?: string | null): Promise<ActionResult<TagDTO>> {
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    const clean = parseName(name);
+    if (await findTagByName(scope, clean)) throw new ValidationError("Já existe uma tag com esse nome.");
+    const tag = await getOrCreateTag(scope, clean, parseColor(color));
+    refresh();
+    return tag;
+  });
 }
 
 /** Renomeia e/ou troca a cor. `color: null` volta para a cor automática. */
 export async function updateTag(
   tagId: string,
   input: { name?: string; color?: string | null },
-): Promise<TagDTO> {
-  const scope = await resolveStagebookScope();
-  requireUuid(tagId, "tag");
-  await requireTagInScope(scope, tagId);
+): Promise<ActionResult<TagDTO>> {
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    requireUuid(tagId, "tag");
+    await requireTagInScope(scope, tagId);
 
-  const patch: { name?: string; color?: string | null; updatedAt: Date } = { updatedAt: new Date() };
+    const patch: { name?: string; color?: string | null; updatedAt: Date } = { updatedAt: new Date() };
 
-  if (input.name !== undefined) {
-    const clean = parseName(input.name);
-    const clash = await findTagByName(scope, clean);
-    if (clash && clash.id !== tagId) throw new Error("Já existe uma tag com esse nome.");
-    patch.name = clean;
-  }
-  if (input.color !== undefined) patch.color = parseColor(input.color);
+    if (input.name !== undefined) {
+      const clean = parseName(input.name);
+      const clash = await findTagByName(scope, clean);
+      if (clash && clash.id !== tagId) throw new ValidationError("Já existe uma tag com esse nome.");
+      patch.name = clean;
+    }
+    if (input.color !== undefined) patch.color = parseColor(input.color);
 
-  const [updated] = await db
-    .update(tags)
-    .set(patch)
-    .where(and(eq(tags.id, tagId), tagScope(scope)))
-    .returning(tagColumns);
-  refresh();
-  return updated;
+    const [updated] = await db
+      .update(tags)
+      .set(patch)
+      .where(and(eq(tags.id, tagId), tagScope(scope)))
+      .returning(tagColumns);
+    refresh();
+    return updated;
+  });
 }
 
 /** Exclui a tag de TODAS as ferramentas (os vínculos caem em cascata). */
-export async function deleteTag(tagId: string): Promise<void> {
-  const scope = await resolveStagebookScope();
-  requireRole(scope, ["owner", "mentor"]);
-  requireUuid(tagId, "tag");
-  await requireTagInScope(scope, tagId);
-  await db.delete(tags).where(and(eq(tags.id, tagId), tagScope(scope)));
-  refresh();
+export async function deleteTag(tagId: string): Promise<ActionResult<void>> {
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    requireRole(scope, ["owner", "mentor"]);
+    requireUuid(tagId, "tag");
+    await requireTagInScope(scope, tagId);
+    await db.delete(tags).where(and(eq(tags.id, tagId), tagScope(scope)));
+    refresh();
+  });
 }
 
 /** Junta `fromId` em `intoId`: itens com a primeira passam a ter a segunda. */
-export async function mergeTags(fromId: string, intoId: string): Promise<void> {
-  const scope = await resolveStagebookScope();
-  requireRole(scope, ["owner", "mentor"]);
-  requireUuid(fromId, "tag");
-  requireUuid(intoId, "tag");
-  if (fromId === intoId) return;
-  await requireTagInScope(scope, fromId);
-  await requireTagInScope(scope, intoId);
+export async function mergeTags(fromId: string, intoId: string): Promise<ActionResult<void>> {
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    requireRole(scope, ["owner", "mentor"]);
+    requireUuid(fromId, "tag");
+    requireUuid(intoId, "tag");
+    if (fromId === intoId) return;
+    await requireTagInScope(scope, fromId);
+    await requireTagInScope(scope, intoId);
 
-  // ON CONFLICT não existe em UPDATE: primeiro removemos os itens que já têm a
-  // tag de destino, depois movemos o restante. Um par de comandos por tabela.
-  const links = [
-    ["board_card_tags", "card_id"],
-    ["document_tags", "document_id"],
-    ["calendar_event_tags", "event_id"],
-    ["thinklab_tags", "thinklab_id"],
-    ["test_tags", "test_id"],
-    ["quickbrick_notebook_tags", "notebook_id"],
-  ] as const;
-  for (const [table, col] of links) {
-    const t = sql.identifier(table);
-    const c = sql.identifier(col);
-    await db.execute(
-      sql`DELETE FROM ${t} a USING ${t} b WHERE a.tag_id = ${fromId} AND b.tag_id = ${intoId} AND a.${c} = b.${c}`,
-    );
-    await db.execute(sql`UPDATE ${t} SET tag_id = ${intoId} WHERE tag_id = ${fromId}`);
-  }
-  await db.delete(tags).where(and(eq(tags.id, fromId), tagScope(scope)));
-  refresh();
+    // ON CONFLICT não existe em UPDATE: primeiro removemos os itens que já têm a
+    // tag de destino, depois movemos o restante. Um par de comandos por tabela.
+    const links = [
+      ["board_card_tags", "card_id"],
+      ["document_tags", "document_id"],
+      ["calendar_event_tags", "event_id"],
+      ["thinklab_tags", "thinklab_id"],
+      ["test_tags", "test_id"],
+      ["quickbrick_notebook_tags", "notebook_id"],
+    ] as const;
+    for (const [table, col] of links) {
+      const t = sql.identifier(table);
+      const c = sql.identifier(col);
+      await db.execute(
+        sql`DELETE FROM ${t} a USING ${t} b WHERE a.tag_id = ${fromId} AND b.tag_id = ${intoId} AND a.${c} = b.${c}`,
+      );
+      await db.execute(sql`UPDATE ${t} SET tag_id = ${intoId} WHERE tag_id = ${fromId}`);
+    }
+    await db.delete(tags).where(and(eq(tags.id, fromId), tagScope(scope)));
+    refresh();
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -199,21 +212,23 @@ export async function toggleResourceTag(
   kind: LabelableKind,
   id: string,
   tagId: string,
-): Promise<TagDTO[]> {
-  assertKind(kind);
-  requireUuid(id, "item");
-  requireUuid(tagId, "tag");
-  const scope = await resolveStagebookScope();
-  await requireResourceInScope(scope, kind, id);
-  await requireTagInScope(scope, tagId);
+): Promise<ActionResult<TagDTO[]>> {
+  return runAction(async () => {
+    assertKind(kind);
+    requireUuid(id, "item");
+    requireUuid(tagId, "tag");
+    const scope = await resolveStagebookScope();
+    await requireResourceInScope(scope, kind, id);
+    await requireTagInScope(scope, tagId);
 
-  const adapter = adapterFor(kind);
-  const current = (await tagsForResources(kind, [id])).get(id) ?? [];
-  if (current.some((t) => t.id === tagId)) await adapter.removeTag(id, tagId);
-  else await adapter.addTag(id, tagId);
+    const adapter = adapterFor(kind);
+    const current = (await tagsForResources(kind, [id])).get(id) ?? [];
+    if (current.some((t) => t.id === tagId)) await adapter.removeTag(id, tagId);
+    else await adapter.addTag(id, tagId);
 
-  refresh();
-  return (await tagsForResources(kind, [id])).get(id) ?? [];
+    refresh();
+    return (await tagsForResources(kind, [id])).get(id) ?? [];
+  });
 }
 
 /** Aplica uma tag pelo nome, criando-a no catálogo se ainda não existir. */
@@ -222,29 +237,33 @@ export async function addResourceTagByName(
   id: string,
   name: string,
   color?: string | null,
-): Promise<{ tags: TagDTO[]; tag: TagDTO }> {
-  assertKind(kind);
-  requireUuid(id, "item");
-  const scope = await resolveStagebookScope();
-  await requireResourceInScope(scope, kind, id);
+): Promise<ActionResult<{ tags: TagDTO[]; tag: TagDTO }>> {
+  return runAction(async () => {
+    assertKind(kind);
+    requireUuid(id, "item");
+    const scope = await resolveStagebookScope();
+    await requireResourceInScope(scope, kind, id);
 
-  const tag = await getOrCreateTag(scope, parseName(name), parseColor(color));
-  await adapterFor(kind).addTag(id, tag.id);
-  refresh();
-  return { tags: (await tagsForResources(kind, [id])).get(id) ?? [], tag };
+    const tag = await getOrCreateTag(scope, parseName(name), parseColor(color));
+    await adapterFor(kind).addTag(id, tag.id);
+    refresh();
+    return { tags: (await tagsForResources(kind, [id])).get(id) ?? [], tag };
+  });
 }
 
 export async function removeResourceTag(
   kind: LabelableKind,
   id: string,
   tagId: string,
-): Promise<TagDTO[]> {
-  assertKind(kind);
-  requireUuid(id, "item");
-  requireUuid(tagId, "tag");
-  const scope = await resolveStagebookScope();
-  await requireResourceInScope(scope, kind, id);
-  await adapterFor(kind).removeTag(id, tagId);
-  refresh();
-  return (await tagsForResources(kind, [id])).get(id) ?? [];
+): Promise<ActionResult<TagDTO[]>> {
+  return runAction(async () => {
+    assertKind(kind);
+    requireUuid(id, "item");
+    requireUuid(tagId, "tag");
+    const scope = await resolveStagebookScope();
+    await requireResourceInScope(scope, kind, id);
+    await adapterFor(kind).removeTag(id, tagId);
+    refresh();
+    return (await tagsForResources(kind, [id])).get(id) ?? [];
+  });
 }

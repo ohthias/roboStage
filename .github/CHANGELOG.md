@@ -11,6 +11,87 @@ Exemplo: `2026.1` corresponde à primeira atualização oficial de 2026.
 
 ---
 
+## [2026.7] — Evolua e Conecte
+
+**Data:** 01/11/2026
+
+A sétima atualização de 2026 é sobre fundação. O RoboStage ganha uma suíte de testes automatizados, as notícias dão lugar ao **NECTA**, um sistema reformulado em que as equipes também podem contribuir, o Dashboard fica muito mais confortável no celular e o round da FLL no LabTest passa a seguir as regras de tempo da mesa. Por baixo, as ações do Stagebook ganham tratamento de erro padronizado, as páginas públicas ficam mais leves e o site passa a ser indexado de forma correta pelos buscadores.
+
+### LabTest
+
+* O round da FLL agora segue as **regras de tempo da mesa**: as missões só podem ser pontuadas com o cronômetro rodando, ficam travadas com ele pausado e, após os 2:30, só as missões que ainda não tinham marcação podem ser preenchidas.
+* Registrado o **segundo da primeira marcação** de cada missão (`firstMarks`), indicando se ela aconteceu depois do fim do tempo.
+* Zerar o cronômetro agora também limpa a pontuação do round, com confirmação antes de apagar marcações.
+* Adicionado o `ObrEntryDetails`: cada rodada da **OBR Resgate** no histórico mostra o placar por parte, perigos superados × tentativas, falhas, desistências, checkpoints e os tempos da sala de resgate.
+* Adicionada a análise das rodadas OBR (`ObrRoundAnalysis`) na página do teste.
+* Os números de execução passaram a ser **únicos por teste**: duas abas salvando ao mesmo tempo não geram mais execuções com o mesmo número.
+* As mensagens de validação ao criar e executar testes ficaram mais claras e consistentes.
+
+### NECTA — Notícias, Eventos, Comunidade, Tutoriais e Atualizações
+
+* O sistema de notícias foi reformulado e passou a se chamar **NECTA**, reunindo notícias, eventos, comunidade, tutoriais e atualizações da plataforma.
+* As **equipes agora podem contribuir** com conteúdo, e não apenas a equipe do RoboStage.
+* As publicações passaram a ser escritas no editor do NECTA e lidas do Supabase, substituindo os arquivos `.mdx` em `content/news`.
+* Rascunhos nunca chegam ao site: só publicações aprovadas e publicadas são exibidas.
+* Adicionada a rota `/api/revalidate/news`, chamada pelo editor ao salvar ou excluir uma publicação para atualizar o site na hora.
+* Adicionado o campo `updatedAt`, usado no sitemap para informar a última edição de cada publicação.
+
+### Dashboard
+
+* **Layout reformulado para celular**: barra lateral e barra de navegação responsivas, com menu suspenso para as opções no mobile.
+* O menu lateral fecha automaticamente ao navegar no celular e mostra com mais clareza a página ativa.
+* Melhorada a acessibilidade dos elementos de navegação.
+* A exclusão de quadros do ThinkLab passou a pedir confirmação no navegador, com o novo `ConfirmSubmitButton`.
+* No ThinkLab da equipe, membros excluem apenas os quadros que criaram; técnicos e mentores podem excluir qualquer quadro.
+* As notificações (toasts) ganharam animação em CSS e são anunciadas por leitores de tela.
+
+### FLL
+
+* Adicionada a página **Guia de Missões** (`/fll/docs/missions-guide`), com as missões da temporada explicadas uma a uma.
+* O Pontuador da Future Edition passou a receber os dados direto do servidor, já no HTML da página.
+* Corrigido o erro de hidratação do **Mapa de Empatia** ao carregar dados salvos no navegador.
+
+### Site
+
+* Página de **Changelog** reformulada, mais legível e responsiva, com nova hierarquia visual.
+* Novas imagens de destaque na página inicial, incluindo artes da OBR.
+* Novas imagens do ArenaBuilder e do StageMap no QuickBrick Studio.
+
+### Desempenho
+
+* O `framer-motion` deixou de ser carregado em todas as páginas: as animações das notificações passaram para CSS.
+* As páginas públicas do **Anatix** e do **LabTest** passaram a ser renderizadas no servidor, com apenas as partes interativas no cliente.
+* O catálogo de missões passou a ser servido por temporada (`/api/data/missions/[season]`), em rotas estáticas.
+* Os cards do LabTest deixaram de importar o `missions.json` inteiro: as imagens das missões vêm de um módulo gerado (`mission-images.ts`).
+* As consultas de usuário, equipe e ligas passaram a ser memorizadas por requisição, evitando repetições no mesmo render.
+* O `LiveRefresh` passou a atualizar a cada 30 segundos, sem empilhar atualizações e com atualização imediata ao voltar para a aba.
+* O logo da organização na página da equipe passou a ser cacheado por 10 minutos, reduzindo chamadas ao Clerk.
+
+### SEO
+
+* Criada uma lista única de rotas públicas (`utils/competitions/routes.ts`), usada pelo sitemap e pelo controle de acesso — competições novas ficam públicas automaticamente e o sitemap não lista mais URLs inexistentes.
+* Definido um domínio canônico único (`utils/competitions/site.ts`) para metadados, sitemap e robots.
+* O `robots.txt` passou a bloquear a área logada e as APIs internas, liberando os dados públicos que as páginas usam.
+* Deploys de preview deixaram de ser indexados pelos buscadores.
+
+### Correções
+
+* Requisições sem sessão para APIs ou Server Actions agora recebem `401` em JSON, em vez de um redirecionamento que terminava em `405 Method Not Allowed`.
+* Corrigida a exclusão de quadros do ThinkLab, que falhava por chamar `confirm()` no servidor.
+* Corrigido o espaçamento da estante do caderno no QuickBrick Studio.
+
+### Infraestrutura
+
+* Adicionada a suíte de testes com **Vitest** e **PGlite**, cobrindo rotas públicas, unificação de escopo, ações do Calendário e de Documentos, execuções do LabTest e imagens das missões.
+* As ações do Stagebook (Documentos, Kanban, Calendário, ThinkLab, LabTest, QuickBrick, Ligas, etiquetas e marcos) passaram a usar `runAction`, com tratamento de erro padronizado.
+* Adicionados `unwrapAction`, `isOwnedByScope`, `requireTeamAccess` e `getUserLeagues` para centralizar resultado de ações, posse de recursos, acesso à equipe e ligas do usuário.
+* Adicionada a migração `0005_test_execution_number_unique`, que renumera duplicados existentes e cria a constraint de unicidade.
+* Adicionados os scripts `test`, `data:mission-images`, `perf:first-load` e `perf:lighthouse`.
+* Removidos o formulário antigo do LabTest (`LabTestForm`, `ResultForm`, `useLabTests`) e a rota `/api/labtest`.
+* Removida a dependência `gray-matter`.
+
+> **A v2026.7 não muda a cara do RoboStage — muda o chão onde ele pisa: testes, regras de tempo de verdade no round e um Dashboard que cabe no bolso.**
+
 ## [2026.6] — OBR Resgate no laboratório
 
 **Data:** 28/10/2026

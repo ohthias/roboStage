@@ -9,6 +9,7 @@ import { fmtDate } from "@/components/labtest/shared";
 import type { AnatixLabRecord } from "@/types/anatix.types";
 import { AnatixLabForm } from "./AnatixLabForm";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 const VIEW_LABEL = { charts: "Gráficos", maps: "Mapas", tables: "Tabelas" } as const;
 
 export function AnatixModal({
@@ -40,7 +41,7 @@ function LabCard({ lab }: { lab: AnatixLabRecord }) {
   function remove() {
     if (!confirm(`Excluir "${lab.name}" e todas as sessões gravadas?`)) return;
     startTransition(async () => {
-      await deleteAnatixLab(lab.id);
+      unwrapAction(await deleteAnatixLab(lab.id));
       router.refresh();
     });
   }

@@ -8,6 +8,7 @@ import type { MilestoneDTO } from "@/types/labels";
 import { MilestoneChip, fmtMilestoneDate } from "./milestone-chip";
 import { usePopover } from "./use-popover";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 /**
  * Seletor do catálogo UNIVERSAL de milestones. O pai persiste a escolha
  * (`onChange`), então vale para qualquer ferramenta ou formulário.
@@ -70,7 +71,7 @@ export function MilestoneSelector({
   function create() {
     if (!name.trim()) return;
     run(async () => {
-      const m = await createMilestone({ name, dueAt: dueAt || null, color });
+      const m = unwrapAction(await createMilestone({ name, dueAt: dueAt || null, color }));
       setCatalog((prev) => [...(prev ?? []), m]);
       setName("");
       setDueAt("");

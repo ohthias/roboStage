@@ -1,5 +1,6 @@
 "use client";
 
+import { loadSeasonMissions } from "@/utils/data/missions-client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, CloudOff, Loader2, Pencil } from "lucide-react";
@@ -235,15 +236,6 @@ function DesktopOnly({ children }: { children: React.ReactNode }) {
 // SWOT de missões: carrega as missões da temporada e tira as já posicionadas.
 // ---------------------------------------------------------------------------
 
-const MISSIONS_ENDPOINT = "/api/data/missions";
-
-async function fetchSeasonMissions(season: string): Promise<RawMission[]> {
-  const res = await fetch(MISSIONS_ENDPOINT);
-  if (!res.ok) throw new Error(`Falha ao buscar missões (${res.status})`);
-  const data = await res.json();
-  return (data?.[season] ?? []) as RawMission[];
-}
-
 function MissionSwot({
   season,
   initial,
@@ -259,7 +251,7 @@ function MissionSwot({
   useEffect(() => {
     let cancelled = false;
     const placed = new Set(Object.values(initial ?? {}).flat().map((m) => m.id));
-    fetchSeasonMissions(season)
+    loadSeasonMissions<RawMission>(season)
       .then((list) => {
         if (cancelled) return;
         setMissions(
@@ -313,7 +305,7 @@ function MissionTableDiagram({
   useEffect(() => {
     if (hasSaved) return;
     let cancelled = false;
-    fetchSeasonMissions(season)
+    loadSeasonMissions<RawMission>(season)
       .then((list) => {
         if (!cancelled) setMissions(missionsFromRaw(list.filter((m) => m.id?.includes("M"))));
       })

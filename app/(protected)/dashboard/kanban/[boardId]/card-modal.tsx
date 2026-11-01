@@ -27,6 +27,7 @@ import { MilestoneSelector } from "@/components/stagebook/labels/milestone-selec
 import { DocIcon } from "@/components/editor/doc-icon";
 import type { MilestoneDTO } from "@/types/labels";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 type Card = {
   id: string;
   title: string;
@@ -97,7 +98,7 @@ export function CardModal({
 
   function save() {
     startTransition(async () => {
-      await updateCard(boardId, card.id, { title, description, dueAt: dueAt || null, priority, milestoneId: milestoneId || null });
+      unwrapAction(await updateCard(boardId, card.id, { title, description, dueAt: dueAt || null, priority, milestoneId: milestoneId || null }));
       onChanged();
     });
   }
@@ -105,7 +106,7 @@ export function CardModal({
   function handleDelete() {
     if (!window.confirm("Excluir este card?")) return;
     startTransition(async () => {
-      await deleteCard(boardId, card.id);
+      unwrapAction(await deleteCard(boardId, card.id));
       onChanged();
       onClose();
     });
@@ -113,7 +114,7 @@ export function CardModal({
 
   function toggleAssignee(userId: string) {
     startTransition(async () => {
-      await toggleCardAssignee(boardId, card.id, userId);
+      unwrapAction(await toggleCardAssignee(boardId, card.id, userId));
       onChanged();
     });
   }
@@ -122,7 +123,7 @@ export function CardModal({
     const isLinked = linkedPageIds.includes(pageId);
     setLinkedPageIds((prev) => (isLinked ? prev.filter((id) => id !== pageId) : [...prev, pageId]));
     startTransition(async () => {
-      await toggleCardDocumentLink(boardId, card.id, pageId);
+      unwrapAction(await toggleCardDocumentLink(boardId, card.id, pageId));
     });
   }
 
@@ -130,7 +131,7 @@ export function CardModal({
     const isLinked = linkedEventIds.includes(eventId);
     setLinkedEventIds((prev) => (isLinked ? prev.filter((id) => id !== eventId) : [...prev, eventId]));
     startTransition(async () => {
-      await toggleCardEventLink(boardId, card.id, eventId);
+      unwrapAction(await toggleCardEventLink(boardId, card.id, eventId));
     });
   }
 
@@ -181,7 +182,7 @@ export function CardModal({
                   onChange={(e) => {
                     setPriority(e.target.value);
                     startTransition(async () => {
-                      await updateCard(boardId, card.id, { title, description, dueAt: dueAt || null, priority: e.target.value, milestoneId: milestoneId || null });
+                      unwrapAction(await updateCard(boardId, card.id, { title, description, dueAt: dueAt || null, priority: e.target.value, milestoneId: milestoneId || null }));
                       onChanged();
                     });
                   }}
@@ -215,7 +216,7 @@ export function CardModal({
                 setMilestone(m);
                 setMilestoneId(m?.id ?? "");
                 // updateCard valida as regras da coluna (ex.: milestone exigida).
-                await updateCard(boardId, card.id, { title, description, dueAt: dueAt || null, priority, milestoneId: m?.id ?? null });
+                unwrapAction(await updateCard(boardId, card.id, { title, description, dueAt: dueAt || null, priority, milestoneId: m?.id ?? null }));
                 onChanged();
               }}
             />

@@ -18,6 +18,7 @@ import {
   updateDocumentIcon,
 } from "./actions";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 export type HomeDocument = {
   id: string;
   title: string;
@@ -71,14 +72,15 @@ export function DocumentsHome({ docs }: { docs: HomeDocument[] }) {
     if (creating) return;
     setCreating(tpl?.id ?? "blank");
     try {
-      const created = await createDocument(null, null);
+      const created = unwrapAction(await createDocument(null, null));
       if (!created) throw new Error("Não foi possível criar a página.");
       if (tpl) {
-        await Promise.all([
+        const results = await Promise.all([
           renameDocument(created.id, tpl.title),
           updateDocumentIcon(created.id, tpl.emoji),
           updateDocumentContent(created.id, templateToEditorState(tpl)),
         ]);
+        results.forEach(unwrapAction);
       }
       router.refresh();
       router.push(`/dashboard/documents/${created.id}`);

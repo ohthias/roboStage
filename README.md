@@ -11,7 +11,7 @@
 <br>
 
 ![Status](https://img.shields.io/badge/status-active-brightgreen.svg)
-![Version](https://img.shields.io/badge/version-v2026.5-informational.svg)
+![Version](https://img.shields.io/badge/version-v2026.7-informational.svg)
 ![Next.js](https://img.shields.io/badge/Next.js_16-000000?logo=next.js\&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-61DAFB?logo=react\&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript\&logoColor=white)
@@ -38,15 +38,20 @@ A plataforma é gratuita e atende à **FIRST® LEGO® League (FLL)** e à **Olim
 
 <br />
 
-## ✨ Novidades da v2026.5
+## ✨ Novidades da v2026.7
 
-* **OBR completa:** checklists, cronômetro do pontuador, Round OBR nos Timers, Recall OBR e a nova página **Bastidores**.
-* **Anatix no LabTest:** conecte o robô por USB e acompanhe sensores, estados e tempos de execução em tempo real.
-* **Caderno do robô:** o QuickBrick Studio chegou ao Dashboard, com versões do robô, visualização 3D de projetos do Studio 2.0 e diagramas.
-* **Etiquetas e marcos universais** em Kanban, Calendário, ThinkLab, LabTest e QuickBrick.
-* **Ligas, perfis de uso e permissões por cargo** para organizar equipes de qualquer competição.
-* **FLL Future Edition no LabTest**, com partidas cronometradas e análise de desempenho.
-* **Roboticar:** iniciativas de equipes e os números da robótica educacional brasileira.
+* **Round da FLL com regras de tempo:** no LabTest, as missões só são pontuadas com o cronômetro rodando, travam ao fim dos 2:30 e o segundo de cada marcação fica registrado.
+* **OBR Resgate no histórico:** cada rodada mostra placar por parte, perigos superados × tentativas, falhas e tempos da sala de resgate.
+* **Dashboard no celular:** barra lateral, navegação e menus redesenhados para telas pequenas.
+* **Guia de Missões da FLL:** as missões da temporada explicadas uma a uma.
+* **NECTA — Notícias, Eventos, Comunidade, Tutoriais e Atualizações:** o sistema de notícias foi reformulado e agora as equipes também podem contribuir.
+* **Mais leve e mais estável:** páginas públicas mais rápidas, testes automatizados e erros tratados de forma consistente em todo o Stagebook.
+
+### Na v2026.6
+
+* **OBR Resgate no LabTest**, com pontuação, registro de falhas e presets de sensores.
+* **Edição de testes** sem perder o histórico de execuções.
+* Base do **StageMap** no QuickBrick Studio.
 
 [**Ver o changelog completo →**](.github/CHANGELOG.md)
 
@@ -114,6 +119,7 @@ O **QuickBrick Studio** reúne ferramentas para planejamento estratégico e prep
 * Estratégias de mesa, zonas e robôs.
 * Mapas de calor.
 * Matriz SWOT e Matriz de Risco.
+* StageMap: apresentações de arena com atores, cenas e marcações.
 
 ## 🧪 LabTest
 
@@ -124,6 +130,8 @@ O **LabTest** transforma treinos em dados que podem ser analisados depois.
 * Testes de runs vinculados à competição e à temporada.
 * CalibraBot: calibração de motores, giroscópio e PID.
 * Testes personalizados e predefinições do kit LEGO Education CS & AI.
+* Rounds da FLL com cronômetro e regras de tempo da mesa.
+* Rodadas da OBR Resgate com pontuação, falhas e sala de resgate.
 * Partidas cronometradas da FLL Future Edition.
 * Labs Anatix com dados do robô em tempo real.
 * Histórico, gráficos, análise de consistência e comparação de resultados.
@@ -187,6 +195,17 @@ Biblioteca para o robô: [ohthias/Anatix_C](https://github.com/ohthias/Anatix_C)
 * Áreas de resgate, vítimas, peças e perigos.
 * Exportação em PNG.
 
+## 📰 NECTA
+
+### Notícias, Eventos, Comunidade, Tutoriais e Atualizações.
+
+O **NECTA** é o espaço de conteúdo do RoboStage, aberto à contribuição das equipes.
+
+* Notícias e atualizações da plataforma e das competições.
+* Divulgação de eventos e iniciativas da comunidade.
+* Tutoriais escritos por quem vive a robótica.
+* Publicação na hora, com revisão antes de chegar ao público.
+
 ## 🎥 ShowLive
 
 ### Gerencie torneios e eventos.
@@ -226,11 +245,11 @@ Simulador de trajetórias com waypoints, controle de velocidade, configuração 
 | **SUBMERGED℠**   | 2024/2025 |
 | **MASTERPIECE℠** | 2023/2024 |
 
-Inclui FLL Challenge, FLL Future Edition e guias para equipes iniciantes da Challenge e da Explore.
+Inclui FLL Challenge, FLL Future Edition, o Guia de Missões da temporada e guias para equipes iniciantes da Challenge e da Explore.
 
 ### Olimpíada Brasileira de Robótica
 
-Pontuador com cronômetro, Round OBR, checklists, Recall, ArenaBuilder e a biblioteca de materiais **Bastidores**.
+Pontuador com cronômetro, Round OBR, OBR Resgate no LabTest, checklists, Recall, ArenaBuilder e a biblioteca de materiais **Bastidores**.
 
 A plataforma possui estrutura preparada para receber novas temporadas e outras competições de robótica.
 
@@ -286,9 +305,32 @@ O RoboStage é um projeto de software aberto desenvolvido com tecnologias modern
 * **Framer Motion** e **Anime.js**
 * **MDX / React Markdown**
 * **jsPDF** e **html2canvas**
+* **Supabase** — conteúdo do NECTA
+* **Vitest** e **PGlite** — testes automatizados
 * **Vercel Analytics** e **Speed Insights**
 
 O projeto utiliza uma arquitetura baseada em Next.js App Router, com áreas separadas para aplicação, componentes, banco de dados, conteúdo, hooks, tipos e utilitários.
+
+### Scripts
+
+| Comando                       | O que faz                                                         |
+| ----------------------------- | ----------------------------------------------------------------- |
+| `npm run dev`                 | Inicia o ambiente de desenvolvimento                              |
+| `npm test`                    | Roda a suíte de testes (Vitest + PGlite)                          |
+| `npm run db:migrate`          | Aplica as migrações do banco (Drizzle)                            |
+| `npm run data:mission-images` | Regenera as imagens das missões após editar `missions.json`       |
+| `npm run perf:first-load`     | Mede o JavaScript de primeira carga de páginas (build local)      |
+| `npm run perf:lighthouse`     | Roda o Lighthouse e mostra a mediana das métricas (build local)   |
+
+### Variáveis de ambiente do NECTA
+
+| Variável                 | Uso                                                       |
+| ------------------------ | --------------------------------------------------------- |
+| `NEWS_SUPABASE_URL`      | URL do projeto Supabase com a tabela `news`               |
+| `NEWS_SUPABASE_ANON_KEY` | Chave pública (anon) para leitura das notícias publicadas |
+| `NEWS_REVALIDATE_SECRET` | Segredo que autoriza o NECTA a atualizar o cache do site  |
+
+Sem as duas primeiras, o site funciona normalmente, mas nenhuma publicação do NECTA é exibida.
 
 <br />
 

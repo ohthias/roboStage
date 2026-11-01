@@ -17,13 +17,15 @@ import { DocIcon } from "@/components/editor/doc-icon";
 import { folderColorStyles } from "@/utils/stagebook/folder-colors";
 import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
 import type { MilestoneDTO, TagDTO } from "@/types/labels";
-import { updateTestDetails, type EditFolderOption } from "../../actions";
+import { updateTestDetails } from "../../actions";
+import type { FolderOption as EditFolderOption } from "@/types/folders";
 import {
   CharCount,
   FieldLabel,
   Note,
 } from "../../new/components/FormBits";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 type EditableTest = {
   id: string;
   name: string;
@@ -138,11 +140,11 @@ export function EditTestForm({
     }
     startSaving(async () => {
       try {
-        await updateTestDetails(test.id, {
+        unwrapAction(await updateTestDetails(test.id, {
           name,
           description,
           folderId: folderMissing ? null : folderId,
-        });
+        }));
         addToast("Teste atualizado.", "success");
         router.push(backHref);
         router.refresh();

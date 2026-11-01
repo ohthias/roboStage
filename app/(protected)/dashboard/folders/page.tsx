@@ -3,7 +3,8 @@ import { db } from "@/db/client";
 import { documents, folders } from "@/db/schema";
 import { scopeWhere } from "@/utils/stagebook/permissions";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { FoldersView, type FolderItem } from "./folders-view";
+import { FoldersView } from "./folders-view";
+import type { FolderItem } from "@/types/folders";
 
 export default async function FoldersPage() {
   const scope = await resolveStagebookScope();

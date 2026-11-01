@@ -5,6 +5,7 @@ import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import type { EditorState } from "lexical";
 import { updateDocumentContent } from "@/app/(protected)/dashboard/documents/actions";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 type SaveState = "idle" | "saving" | "saved";
 
 export function AutosavePlugin({
@@ -26,10 +27,10 @@ export function AutosavePlugin({
     pending.current = null;
     onStatusChange?.("saving");
     try {
-      await updateDocumentContent(
+      unwrapAction(await updateDocumentContent(
         documentId,
         state.toJSON() as unknown as Record<string, unknown>,
-      );
+      ));
       onStatusChange?.("saved");
       if (resetTimer.current) clearTimeout(resetTimer.current);
       resetTimer.current = setTimeout(() => onStatusChange?.("idle"), 1500);

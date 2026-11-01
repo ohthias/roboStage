@@ -27,6 +27,7 @@ import {
   type LeagueRelation,
 } from "./actions";
 
+import { unwrapAction, type ActionResult } from "@/utils/stagebook/action-result";
 export type LeagueItem = {
   id: string;
   code: string;
@@ -135,10 +136,10 @@ export function LeaguesView({ leagues: serverLeagues }: { leagues: LeagueItem[] 
     setItems((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)));
   }
 
-  function run(action: () => Promise<void>, success: string, rollback: () => void) {
+  function run(action: () => Promise<ActionResult>, success: string, rollback: () => void) {
     startTransition(async () => {
       try {
-        await action();
+        unwrapAction(await action());
         addToast(success, "success");
       } catch (error) {
         rollback();

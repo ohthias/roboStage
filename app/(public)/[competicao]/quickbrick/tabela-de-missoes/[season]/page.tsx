@@ -12,8 +12,7 @@ import ModalConfirm, {
 } from "@/components/UI/Modal/ModalConfirm";
 import HeaderTool from "@/components/QuickBrick/HeaderTool";
 import { missionsFromRaw, RawMission } from "@/utils/quickbrick/scoring";
-
-const MISSIONS_ENDPOINT = "/api/data/missions";
+import { loadSeasonMissions } from "@/utils/data/missions-client";
 
 function MissionTablePage() {
   const params = useParams();
@@ -49,11 +48,8 @@ function MissionTablePage() {
           return;
         }
 
-        const res = await fetch(MISSIONS_ENDPOINT);
-        if (!res.ok) throw new Error(`Falha ao buscar missões (${res.status})`);
-        const data = await res.json();
-        const seasonData: RawMission[] = (data?.[season] || []).filter(
-          (mission: RawMission) => mission.id?.includes("M")
+        const seasonData = (await loadSeasonMissions<RawMission>(season)).filter(
+          (mission) => mission.id?.includes("M")
         );
 
         const built =
@@ -88,11 +84,8 @@ function MissionTablePage() {
       "Tem certeza que deseja restaurar os dados da tabela? Isso irá apagar todas as suas alterações.",
       async () => {
         try {
-          const res = await fetch(MISSIONS_ENDPOINT);
-          if (!res.ok) throw new Error(`Falha ao buscar missões (${res.status})`);
-          const data = await res.json();
-          const seasonData: RawMission[] = (data?.[season] || []).filter(
-            (mission: RawMission) => mission.id?.includes("M")
+          const seasonData = (await loadSeasonMissions<RawMission>(season)).filter(
+            (mission) => mission.id?.includes("M")
           );
 
           const built =

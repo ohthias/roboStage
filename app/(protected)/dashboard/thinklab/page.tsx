@@ -10,6 +10,7 @@ import {
   updateThinkLabDetails,
 } from "./actions";
 import { ThinkLabThumbnail } from "@/components/thinklab/ThinkLabThumbnail";
+import { ConfirmSubmitButton } from "./confirm-submit-button";
 import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
 import { TagList } from "@/components/stagebook/labels/tag-chip";
 import { MilestoneChip } from "@/components/stagebook/labels/milestone-chip";
@@ -162,14 +163,14 @@ export default async function ThinkLabDashboard({
                       <div className="mt-auto flex items-center justify-between border-t border-base-300/70 pt-4">
                         <div className="flex items-center gap-1">
                           <form action={deleteAction}>
-                            <button
-                              type="submit"
+                            <ConfirmSubmitButton
+                              message="Tem certeza que deseja excluir este ThinkLab? Esta ação não pode ser desfeita."
                               className="btn btn-square btn-sm btn-ghost text-error hover:bg-error/10"
                               aria-label={`Excluir ${thinkLab.name}`}
                               title="Excluir quadro"
                             >
                               <Trash size={16} />
-                            </button>
+                            </ConfirmSubmitButton>
                           </form>
 
                           <label

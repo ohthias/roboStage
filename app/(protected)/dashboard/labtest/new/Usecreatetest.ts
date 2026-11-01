@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import {
+  FUTURE_EDITION_URL,
+  loadMissionSource,
+  MISSIONS_URL,
+} from "@/utils/data/missions-client";
 import { FE_DEFAULT_MATCH_SECONDS } from "@/utils/labtest/future-edition";
 import { getKitPreset } from "@/utils/labtest/kit-ia";
 import { getObrPreset } from "@/utils/labtest/obr-presets";
@@ -141,7 +146,7 @@ const FLL_CHALLENGE: CompetitionRunConfig = {
       value: "missoes",
       label: "Missões escolhidas",
       description: "Você escolhe quais missões entram e em que ordem.",
-      missionEndpoint: "/api/data/missions",
+      missionEndpoint: MISSIONS_URL,
       missionIdPrefix: "M",
     },
     {
@@ -149,7 +154,7 @@ const FLL_CHALLENGE: CompetitionRunConfig = {
       label: "Run completa",
       description:
         "Todas as missões da temporada já entram. Você só ajusta a ordem.",
-      missionEndpoint: "/api/data/missions",
+      missionEndpoint: MISSIONS_URL,
       missionIdPrefix: "M",
       fullRun: true,
     },
@@ -158,7 +163,7 @@ const FLL_CHALLENGE: CompetitionRunConfig = {
       label: "Round 2:30",
       description:
         "Uma partida completa. Escolha as missões da sua estratégia; a pontuação é feita em cada execução, com cronômetro.",
-      missionEndpoint: "/api/data/missions",
+      missionEndpoint: MISSIONS_URL,
       missionIdPrefix: "M",
       strategyOnly: true,
       // Inspeção de equipamentos faz parte de todo round oficial.
@@ -189,7 +194,7 @@ const FUTURE_EDITION: CompetitionRunConfig = {
       label: "Partida cronometrada",
       description:
         "Todas as missões e penalidades da temporada. Você pontua durante a partida.",
-      missionEndpoint: "/api/data/missions/future-edition",
+      missionEndpoint: FUTURE_EDITION_URL,
       fullRun: true,
       seasonSuffix: "-FE",
     },
@@ -460,11 +465,7 @@ export function useCreateTest() {
     setLoadingMissions(true);
     setMissionsError(null);
 
-    fetch(missionEndpoint)
-      .then((res) => {
-        if (!res.ok) throw new Error("Erro ao buscar as missões");
-        return res.json();
-      })
+    loadMissionSource<any>(missionEndpoint)
       .then((data) => {
         setMissionsData(data);
         const seasons = deriveSeasons(data);

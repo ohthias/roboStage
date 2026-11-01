@@ -35,7 +35,6 @@ The following dependencies are identified as distributed under the MIT License, 
 - `drizzle-orm` — Drizzle Team and contributors
 - `file-saver` — Eli Grey
 - `framer-motion` — Motion contributors
-- `gray-matter` — Jon Schlinkert and contributors
 - `html2canvas-pro` — Yorick Shan
 - `jspdf` — jsPDF contributors
 - `jspdf-autotable` — Simon Bengtsson and contributors
@@ -291,7 +290,6 @@ The following upstream repositories provide starting points for reviewing packag
 - Drizzle ORM: https://github.com/drizzle-team/drizzle-orm
 - FileSaver.js: https://github.com/eligrey/FileSaver.js
 - Motion / Framer Motion: https://github.com/motiondivision/motion
-- gray-matter: https://github.com/jonschlinkert/gray-matter
 - html2canvas-pro: https://github.com/yorickshan/html2canvas-pro
 - jsPDF: https://github.com/parallax/jsPDF
 - jsPDF-AutoTable: https://github.com/simonbengtsson/jsPDF-AutoTable

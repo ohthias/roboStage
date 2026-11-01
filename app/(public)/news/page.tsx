@@ -42,7 +42,7 @@ export default async function NewsPage({
   const { categoria } = await searchParams;
   const active = typeof categoria === "string" ? categoria : "";
 
-  const all = getPublishedNews();
+  const all = await getPublishedNews();
   const categories = Array.from(
     all.reduce((m, n) => {
       if (n.category) m.set(n.category, (m.get(n.category) ?? 0) + 1);

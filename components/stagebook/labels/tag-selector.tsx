@@ -13,6 +13,7 @@ import { LabelColorPicker } from "./color-picker";
 import { TagChip } from "./tag-chip";
 import { usePopover } from "./use-popover";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 const norm = (v: string) => v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /**
@@ -90,7 +91,7 @@ export function TagSelector({
   function create() {
     if (!trimmed) return;
     run(async () => {
-      const tag = await createTag(trimmed, newColor);
+      const tag = unwrapAction(await createTag(trimmed, newColor));
       setCatalog((prev) => [...(prev ?? []), tag].sort((a, b) => a.name.localeCompare(b.name)));
       setQuery("");
       setNewColor(null);
@@ -100,7 +101,7 @@ export function TagSelector({
 
   function patch(tag: TagDTO, input: { name?: string; color?: string | null }) {
     run(async () => {
-      const updated = await updateTag(tag.id, input);
+      const updated = unwrapAction(await updateTag(tag.id, input));
       setCatalog((prev) => (prev ?? []).map((t) => (t.id === updated.id ? updated : t)));
       onTagUpdated?.(updated);
     });

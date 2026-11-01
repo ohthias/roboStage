@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
@@ -72,6 +71,7 @@ import {
 import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
 import type { MilestoneDTO, TagDTO } from "@/types/labels";
 
+import { unwrapAction } from "@/utils/stagebook/action-result";
 // "---" / "***" / "___" viram um divisor.
 const HR_TRANSFORMER: ElementTransformer = {
   dependencies: [HorizontalRuleNode],
@@ -178,14 +178,14 @@ export function NotebookEditor({
     const value = title.trim() || "Sem título";
     setTitle(value);
     startTransition(async () => {
-      await renameDocument(documentId, value);
+      unwrapAction(await renameDocument(documentId, value));
       router.refresh();
     });
   }
 
   function commitDescription() {
     startTransition(async () => {
-      await updateDocumentDescription(documentId, description);
+      unwrapAction(await updateDocumentDescription(documentId, description));
       router.refresh();
     });
   }
@@ -193,7 +193,7 @@ export function NotebookEditor({
   function pickIcon(next: string | null) {
     setIcon(next);
     startTransition(async () => {
-      await updateDocumentIcon(documentId, next);
+      unwrapAction(await updateDocumentIcon(documentId, next));
       router.refresh();
     });
   }
@@ -201,7 +201,7 @@ export function NotebookEditor({
   function pickCover(next: string | null) {
     setCover(next);
     startTransition(async () => {
-      await updateDocumentCover(documentId, next);
+      unwrapAction(await updateDocumentCover(documentId, next));
       router.refresh();
     });
   }
@@ -211,7 +211,7 @@ export function NotebookEditor({
     if (!key) return;
     setProperties((prev) => ({ ...prev, [key]: newPropValue.trim() }));
     startTransition(async () => {
-      await updateDocumentProperty(documentId, key, newPropValue.trim());
+      unwrapAction(await updateDocumentProperty(documentId, key, newPropValue.trim()));
     });
     setNewPropKey("");
     setNewPropValue("");
@@ -224,7 +224,7 @@ export function NotebookEditor({
       return next;
     });
     startTransition(async () => {
-      await updateDocumentProperty(documentId, key, null);
+      unwrapAction(await updateDocumentProperty(documentId, key, null));
     });
   }
 
@@ -239,7 +239,7 @@ export function NotebookEditor({
 
   function handleDuplicate() {
     startTransition(async () => {
-      const duplicated = await duplicateDocument(documentId);
+      const duplicated = unwrapAction(await duplicateDocument(documentId));
       if (duplicated) router.push(`/dashboard/documents/${duplicated.id}`);
     });
   }
@@ -248,19 +248,19 @@ export function NotebookEditor({
     startTransition(async () => {
       try {
         if (moveTarget === "root") {
-          await moveNotebookItem("document", documentId, {
+          unwrapAction(await moveNotebookItem("document", documentId, {
             folderId: null,
             parentPageId: null,
-          });
+          }));
         } else if (moveTarget.startsWith("folder:")) {
-          await moveNotebookItem("document", documentId, {
+          unwrapAction(await moveNotebookItem("document", documentId, {
             folderId: moveTarget.slice("folder:".length),
             parentPageId: null,
-          });
+          }));
         } else if (moveTarget.startsWith("page:")) {
-          await moveNotebookItem("document", documentId, {
+          unwrapAction(await moveNotebookItem("document", documentId, {
             parentPageId: moveTarget.slice("page:".length),
-          });
+          }));
         }
         setShowMoveDialog(false);
           addToast("Página movida com sucesso.", "success");
@@ -280,7 +280,7 @@ export function NotebookEditor({
     if (!window.confirm("Excluir esta página? Isso não pode ser desfeito."))
       return;
     startTransition(async () => {
-      await deleteDocument(documentId);
+      unwrapAction(await deleteDocument(documentId));
       router.push("/dashboard/documents");
     });
   }

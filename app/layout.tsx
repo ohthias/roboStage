@@ -14,8 +14,10 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://robostage.com.br"),
+  // "./" = a própria URL de cada página. Com "/" toda página declarava a home
+  // como canônica, e os buscadores tratavam o resto do site como duplicata.
   alternates: {
-    canonical: "/",
+    canonical: "./",
   },
   title: {
     default: "RoboStage",

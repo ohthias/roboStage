@@ -1,6 +1,7 @@
 import Header from "@/components/UI/Header";
 import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import PontuadorOBR from "@/components/competicoes/OBR/score/Pontuador";
 
 export async function generateMetadata({
@@ -99,10 +100,13 @@ export default async function ScorePage({
               <div className="card bg-base-100 rounded-none rounded-tl-[30px] rounded-br-[30px] shadow-md flex flex-col overflow-hidden relative hover:scale-105 transition-all duration-300 hover:shadow-[10px_10px_0_theme(colors.primary)] cursor-default select-none h-full">
                 {/* Image */}
                 <figure className="relative h-56 overflow-hidden">
-                  <img
+                  <Image
                     src={season.image}
                     alt={season.title}
-                    className="object-contain max-h-36 transition-transform duration-500 group-hover:scale-105"
+                    width={288}
+                    height={144}
+                    sizes="288px"
+                    className="object-contain w-auto max-h-36 transition-transform duration-500 group-hover:scale-105"
                   />
                 </figure>
 

@@ -5,12 +5,12 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { milestones } from "@/db/schema";
 import {
-  requireStagebookAccess,
+  requireTeamAccess,
   resolveStagebookScope,
   scopeOwnership,
   type StagebookScope,
 } from "../scope";
-import { requireCapability, requireTeamScope } from "../permissions";
+import { requireCapability } from "../permissions";
 import { runAction, type ActionResult } from "../action-result";
 import { roleCan } from "../team-permissions";
 import {
@@ -147,16 +147,22 @@ export async function createMilestone(input: {
   dueAt?: string | null;
   color?: string | null;
   description?: string | null;
-}): Promise<MilestoneDTO> {
-  return insertMilestone(await resolveStagebookScope(), input);
+}): Promise<ActionResult<MilestoneDTO>> {
+  return runAction(async () => {
+    return insertMilestone(await resolveStagebookScope(), input);
+  });
 }
 
-export async function updateMilestone(id: string, input: MilestoneInput): Promise<MilestoneDTO> {
-  return patchMilestone(await resolveStagebookScope(), id, input);
+export async function updateMilestone(id: string, input: MilestoneInput): Promise<ActionResult<MilestoneDTO>> {
+  return runAction(async () => {
+    return patchMilestone(await resolveStagebookScope(), id, input);
+  });
 }
 
-export async function deleteMilestone(id: string): Promise<void> {
-  return removeMilestone(await resolveStagebookScope(), id);
+export async function deleteMilestone(id: string): Promise<ActionResult<void>> {
+  return runAction(async () => {
+    return removeMilestone(await resolveStagebookScope(), id);
+  });
 }
 
 /** O usuário pode criar/editar milestones no espaço ativo? (para esconder botões na UI) */
@@ -171,17 +177,11 @@ export async function getMilestoneAccess(): Promise<{ canManage: boolean }> {
 // `ActionResult` para a mensagem de erro chegar à UI em produção.
 // ---------------------------------------------------------------------------
 
-async function teamScope(teamId: string) {
-  const scope = await requireStagebookAccess(requireUuid(teamId, "equipe"));
-  requireTeamScope(scope);
-  return scope;
-}
-
 export async function createTeamMilestone(
   teamId: string,
   input: MilestoneInput & { name: string },
 ): Promise<ActionResult<MilestoneDTO>> {
-  return runAction(async () => insertMilestone(await teamScope(teamId), input));
+  return runAction(async () => insertMilestone(await requireTeamAccess(teamId), input));
 }
 
 export async function updateTeamMilestone(
@@ -189,11 +189,11 @@ export async function updateTeamMilestone(
   id: string,
   input: MilestoneInput,
 ): Promise<ActionResult<MilestoneDTO>> {
-  return runAction(async () => patchMilestone(await teamScope(teamId), id, input));
+  return runAction(async () => patchMilestone(await requireTeamAccess(teamId), id, input));
 }
 
 export async function deleteTeamMilestone(teamId: string, id: string): Promise<ActionResult> {
-  return runAction(async () => removeMilestone(await teamScope(teamId), id));
+  return runAction(async () => removeMilestone(await requireTeamAccess(teamId), id));
 }
 
 export async function getResourceMilestone(
@@ -212,18 +212,20 @@ export async function setResourceMilestone(
   kind: LabelableKind,
   id: string,
   milestoneId: string | null,
-): Promise<MilestoneDTO | null> {
-  assertKind(kind);
-  requireUuid(id, "item");
-  const scope = await resolveStagebookScope();
-  await requireResourceInScope(scope, kind, id);
+): Promise<ActionResult<MilestoneDTO | null>> {
+  return runAction(async () => {
+    assertKind(kind);
+    requireUuid(id, "item");
+    const scope = await resolveStagebookScope();
+    await requireResourceInScope(scope, kind, id);
 
-  let milestone: MilestoneDTO | null = null;
-  if (milestoneId) {
-    requireUuid(milestoneId, "milestone");
-    milestone = await requireMilestoneInScope(scope, milestoneId);
-  }
-  await adapterFor(kind).setMilestone(id, milestone?.id ?? null);
-  refresh();
-  return milestone;
+    let milestone: MilestoneDTO | null = null;
+    if (milestoneId) {
+      requireUuid(milestoneId, "milestone");
+      milestone = await requireMilestoneInScope(scope, milestoneId);
+    }
+    await adapterFor(kind).setMilestone(id, milestone?.id ?? null);
+    refresh();
+    return milestone;
+  });
 }

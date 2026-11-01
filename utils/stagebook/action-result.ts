@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { StagebookAuthError } from "./scope-errors";
 import { ValidationError } from "./validation";
 
@@ -16,10 +17,21 @@ export async function runAction<T>(fn: () => Promise<T>): Promise<ActionResult<T
   try {
     return { ok: true, data: await fn() };
   } catch (error) {
+    // redirect()/notFound() são exceções de controle do Next: seguem adiante.
+    unstable_rethrow(error);
     if (error instanceof StagebookAuthError || error instanceof ValidationError) {
       return { ok: false, error: error.message };
     }
     console.error("[stagebook] ação falhou:", error);
     return { ok: false, error: "Não foi possível concluir a ação. Tente novamente." };
   }
+}
+
+/**
+ * Lado do cliente: devolve o dado ou lança um `Error` com a mensagem já
+ * amigável. Para quem prefere manter o fluxo de try/catch.
+ */
+export function unwrapAction<T>(result: ActionResult<T>): T {
+  if (!result.ok) throw new Error(result.error);
+  return result.data;
 }

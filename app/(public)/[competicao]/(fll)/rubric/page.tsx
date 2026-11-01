@@ -110,16 +110,18 @@ export default function Home() {
             className="tabs tabs-box bg-base-200/70 mb-4 no-print w-fit flex-wrap"
           >
             {tabs.map((tab) => (
-              <a
+              <button
                 key={tab.id}
+                type="button"
                 role="tab"
+                aria-selected={activeTab === tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`tab font-mono-tech text-xs sm:text-sm gap-2 ${
                   activeTab === tab.id ? "tab-active" : ""
                 }`}
               >
                 {tab.label}
-              </a>
+              </button>
             ))}
           </div>
 

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MDXRemote } from "next-mdx-remote/rsc";
+import { compileMDX } from "next-mdx-remote/rsc";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
   ArrowLeft,
@@ -33,24 +34,23 @@ import {
   headingId,
   newsHref,
   readingMinutes,
-  type NewsSummary,
 } from "@/utils/institutional/news";
 
 type Params = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return getPublishedNews().map((n) => ({ slug: n.slug }));
+export async function generateStaticParams() {
+  return (await getPublishedNews()).map((n) => ({ slug: n.slug }));
 }
 
-function load(slug: string) {
-  const file = getNews(decodeURIComponent(slug));
-  if (!file || file.data.draft || !file.data.title) return null;
-  return { content: file.content, data: { ...file.data, slug } as NewsSummary };
+async function load(slug: string) {
+  const article = await getNews(decodeURIComponent(slug));
+  if (!article || article.data.draft) return null;
+  return article;
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const article = load(slug);
+  const article = await load(slug);
   if (!article) return { title: "Notícia não encontrada" };
   const { data } = article;
   return {
@@ -124,18 +124,42 @@ const mdx = {
   hr: () => <hr className="border-dashed border-base-300" />,
 };
 
+/**
+ * Renderiza o corpo como MDX. Se o texto não for MDX válido (ex.: um "{" ou "<"
+ * solto escrito no editor), cai para Markdown puro em vez de quebrar a página.
+ */
+async function renderBody(source: string) {
+  try {
+    const { content } = await compileMDX({
+      source,
+      components: mdx,
+      options: { mdxOptions: { remarkPlugins: [remarkGfm] } },
+    });
+    return content;
+  } catch (err) {
+    console.warn("[news] Conteúdo não é MDX válido, exibindo como Markdown.", err);
+    return (
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdx as Components}>
+        {source}
+      </ReactMarkdown>
+    );
+  }
+}
+
 /* ------------------------------------------------------------------- página */
 
 export default async function Article({ params }: Params) {
   const { slug } = await params;
-  const article = load(slug);
+  const article = await load(slug);
   if (!article) notFound();
 
   const { content, data } = article;
+  const all = await getPublishedNews();
+  const body = await renderBody(content);
   const minutes = readingMinutes(content);
   const headings = extractHeadings(content);
-  const { newer, older } = getAdjacentNews(data.slug);
-  const related = getRelatedNews(data);
+  const { newer, older } = getAdjacentNews(all, data.slug);
+  const related = getRelatedNews(all, data);
   const { tone, icon: CatIcon } = categoryStyle(data.category);
   const c = toneClasses[tone];
 
@@ -224,7 +248,7 @@ export default async function Article({ params }: Params) {
               id="artigo"
               className="prose prose-base max-w-none sm:prose-lg prose-headings:font-bold prose-headings:tracking-tight prose-h2:mt-14 prose-h2:border-b prose-h2:border-base-300 prose-h2:pb-3 prose-a:font-semibold prose-a:text-primary prose-a:underline-offset-4 prose-strong:text-base-content prose-code:rounded prose-code:bg-base-200 prose-code:px-1.5 prose-code:py-0.5 prose-code:font-normal prose-code:before:content-none prose-code:after:content-none prose-li:marker:text-primary"
             >
-              <MDXRemote source={content} components={mdx} options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }} />
+              {body}
 
               {Array.isArray(data.tags) && data.tags.length > 0 && (
                 <div className="not-prose mt-14 flex flex-wrap items-center gap-2 border-t border-dashed border-base-300 pt-6">

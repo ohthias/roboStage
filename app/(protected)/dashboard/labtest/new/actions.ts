@@ -546,78 +546,80 @@ async function insertNextExecution(values: {
  * createTest — action principal, chamada pelo botão "Gerar teste"
  * ========================================================================= */
 
+async function createTestRecord(input: CreateTestInput) {
+  const scope = await resolveStagebookScope();
+
+  if (!input.name?.trim()) {
+    throw new ValidationError("Informe um nome para o teste.");
+  }
+
+  validateCreateInput(input);
+
+  // Future Edition (partidas e testes do kit) só para quem tem a liga ativa.
+  const needsFutureEdition =
+    (input.mode === "runs" && input.edition === FE_EDITION) ||
+    (input.mode === "calibrabot" && input.calibraMode === "kit-ia");
+
+  if (needsFutureEdition && !(await userHasFutureEdition(scope.userId))) {
+    throw new ValidationError(
+      "Ative a liga FLL Future Edition em Ligas e Competições para criar este teste.",
+    );
+  }
+
+  // Rodadas e presets da OBR só para quem tem a liga OBR ativa.
+  const needsObr =
+    (input.mode === "runs" && input.edition === OBR_EDITION) ||
+    (input.mode === "calibrabot" && input.calibraMode === "obr");
+
+  if (needsObr && !(await userHasObr(scope.userId))) {
+    throw new ValidationError("Ative a liga OBR em Ligas e Competições para criar este teste.");
+  }
+
+  if (input.folderId) {
+    const [folder] = await db
+      .select({ id: folders.id })
+      .from(folders)
+      .where(
+        and(
+          eq(folders.id, input.folderId),
+          scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }),
+        ),
+      )
+      .limit(1);
+
+    if (!folder) throw new ValidationError("Pasta inválida ou sem permissão.");
+  }
+
+  const config = buildConfig(input);
+  const mode = resolveTestMode(input);
+
+  // "season: se tiver a da fll registra o nome da temporada em minúsculo"
+  const season =
+    "season" in input && input.season ? input.season.toLowerCase() : null;
+
+  const [created] = await db
+    .insert(tests)
+    .values({
+      userId: scope.userId,
+      teamId: scope.type === "team" ? scope.teamId : null,
+      folderId: input.folderId ?? null,
+      name: input.name.trim(),
+      description: input.description ?? null,
+      mode,
+      season,
+      status: "planejamento", // "começa com planejamento"
+      config,
+    })
+    .returning();
+
+  revalidatePath("/dashboard/labtest");
+  revalidatePath("/dashboard/folders", "layout");
+
+  return created;
+}
+
 export async function createTest(input: CreateTestInput) {
-  return runAction(async () => {
-    const scope = await resolveStagebookScope();
-
-    if (!input.name?.trim()) {
-      throw new ValidationError("Informe um nome para o teste.");
-    }
-
-    validateCreateInput(input);
-
-    // Future Edition (partidas e testes do kit) só para quem tem a liga ativa.
-    const needsFutureEdition =
-      (input.mode === "runs" && input.edition === FE_EDITION) ||
-      (input.mode === "calibrabot" && input.calibraMode === "kit-ia");
-
-    if (needsFutureEdition && !(await userHasFutureEdition(scope.userId))) {
-      throw new ValidationError(
-        "Ative a liga FLL Future Edition em Ligas e Competições para criar este teste.",
-      );
-    }
-
-    // Rodadas e presets da OBR só para quem tem a liga OBR ativa.
-    const needsObr =
-      (input.mode === "runs" && input.edition === OBR_EDITION) ||
-      (input.mode === "calibrabot" && input.calibraMode === "obr");
-
-    if (needsObr && !(await userHasObr(scope.userId))) {
-      throw new ValidationError("Ative a liga OBR em Ligas e Competições para criar este teste.");
-    }
-
-    if (input.folderId) {
-      const [folder] = await db
-        .select({ id: folders.id })
-        .from(folders)
-        .where(
-          and(
-            eq(folders.id, input.folderId),
-            scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }),
-          ),
-        )
-        .limit(1);
-
-      if (!folder) throw new ValidationError("Pasta inválida ou sem permissão.");
-    }
-
-    const config = buildConfig(input);
-    const mode = resolveTestMode(input);
-
-    // "season: se tiver a da fll registra o nome da temporada em minúsculo"
-    const season =
-      "season" in input && input.season ? input.season.toLowerCase() : null;
-
-    const [created] = await db
-      .insert(tests)
-      .values({
-        userId: scope.userId,
-        teamId: scope.type === "team" ? scope.teamId : null,
-        folderId: input.folderId ?? null,
-        name: input.name.trim(),
-        description: input.description ?? null,
-        mode,
-        season,
-        status: "planejamento", // "começa com planejamento"
-        config,
-      })
-      .returning();
-
-    revalidatePath("/dashboard/labtest");
-    revalidatePath("/dashboard/folders", "layout");
-
-    return created;
-  });
+  return runAction(() => createTestRecord(input));
 }
 
 /* =========================================================================
@@ -649,29 +651,30 @@ export async function updateTestStatus(testId: string, status: string) {
  * deleteTest
  * ========================================================================= */
 
+async function deleteTestRecord(testId: string) {
+  const scope = await resolveStagebookScope();
+
+  const [existing] = await db
+    .select({ creatorId: tests.userId })
+    .from(tests)
+    .where(and(eq(tests.id, testId), testScope(scope)))
+    .limit(1);
+
+  if (!existing) throw new ValidationError("Teste não encontrado ou sem permissão.");
+
+  // Na equipe, membros excluem só o que criaram; técnicos e mentores, qualquer teste.
+  if (scope.type === "team" && !canDeleteResource(scope.role, existing.creatorId, scope.userId)) {
+    throw new StagebookAuthError(
+      "Só técnicos e mentores podem excluir testes criados por outras pessoas.",
+    );
+  }
+
+  await db.delete(tests).where(and(eq(tests.id, testId), testScope(scope)));
+  revalidatePath("/dashboard/labtest");
+}
+
 export async function deleteTest(testId: string) {
-  return runAction(async () => {
-    const scope = await resolveStagebookScope();
-
-    const [existing] = await db
-      .select({ creatorId: tests.userId })
-      .from(tests)
-      .where(and(eq(tests.id, testId), testScope(scope)))
-      .limit(1);
-
-    if (!existing) throw new ValidationError("Teste não encontrado ou sem permissão.");
-
-    // Na equipe, membros excluem só o que criaram; técnicos e mentores, qualquer teste.
-    if (scope.type === "team" && !canDeleteResource(scope.role, existing.creatorId, scope.userId)) {
-      throw new StagebookAuthError(
-        "Só técnicos e mentores podem excluir testes criados por outras pessoas.",
-      );
-    }
-
-    await db.delete(tests).where(and(eq(tests.id, testId), testScope(scope)));
-
-    revalidatePath("/dashboard/labtest");
-  });
+  return runAction(() => deleteTestRecord(testId));
 }
 
 /* =========================================================================

@@ -101,18 +101,9 @@ const normalize = (value?: string | null) =>
     .replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9]/g, "");
 
-/**
- * Missões que o usuário pode usar no ThinkLab: uma coleção por liga em que ele
- * participa ou demonstrou interesse (tabela `user_league_interests`).
- */
-export async function getThinkLabMissionPacks(): Promise<MissionPack[]> {
-  const scope = await resolveStagebookScope();
+type UserLeagueRow = Awaited<ReturnType<typeof getUserLeagues>>[number];
 
-  const rows = (await getUserLeagues(scope.userId)).map((row) => ({
-    ...row,
-    relation: row.relationType,
-  }));
-
+async function buildMissionPacks(rows: UserLeagueRow[]): Promise<MissionPack[]> {
   // Cada fonte de dados é lida no máximo uma vez, mesmo com várias ligas do mesmo perfil.
   const loaded = new Map<ProfileKey, Promise<MissionSeason[]>>();
 
@@ -135,7 +126,7 @@ export async function getThinkLabMissionPacks(): Promise<MissionPack[]> {
         leagueId: row.leagueId,
         leagueCode: row.code,
         leagueName: row.name,
-        relation: row.relation,
+        relation: row.relationType,
         status: seasons.length > 0 ? "available" : "soon",
         note: source.note,
         seasons,
@@ -146,4 +137,13 @@ export async function getThinkLabMissionPacks(): Promise<MissionPack[]> {
 
   // Ligas em que o usuário participa aparecem primeiro.
   return packs.sort((a, b) => Number(b.relation === "participante") - Number(a.relation === "participante"));
+}
+
+/**
+ * Missões que o usuário pode usar no ThinkLab: uma coleção por liga em que ele
+ * participa ou demonstrou interesse (tabela `user_league_interests`).
+ */
+export async function getThinkLabMissionPacks(): Promise<MissionPack[]> {
+  const scope = await resolveStagebookScope();
+  return buildMissionPacks(await getUserLeagues(scope.userId));
 }

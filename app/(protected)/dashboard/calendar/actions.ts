@@ -18,6 +18,38 @@ import { runAction } from "@/utils/stagebook/action-result";
 
 const PATH = "/dashboard/calendar";
 
+type EventInput = {
+  title: string;
+  description?: string;
+  startAt: string;
+  endAt?: string | null;
+  allDay?: boolean;
+  type?: string;
+  status?: string;
+  color?: string | null;
+  location?: string | null;
+};
+
+function normalizeEventInput(input: EventInput) {
+  const startAt = requireDate(input.startAt, "data de início");
+  const endAt = optionalDate(input.endAt);
+  if (endAt && endAt < startAt) {
+    throw new ValidationError("A data de fim não pode ser anterior à data de início.");
+  }
+
+  return {
+    title: cleanText(input.title, { fallback: "Novo evento", maxLength: 200 }),
+    description: optionalText(input.description, 2000),
+    startAt,
+    endAt,
+    allDay: Boolean(input.allDay),
+    type: input.type || "evento",
+    status: input.status || "confirmado",
+    color: optionalText(input.color, 20),
+    location: optionalText(input.location, 200),
+  };
+}
+
 export async function listEventsInRange(rangeStart: Date, rangeEnd: Date, additionalTeamIds: string[] = []) {
   const scope = await resolveStagebookScope();
   const validAdditionalTeamIds = additionalTeamIds.length
@@ -67,38 +99,16 @@ export async function getEventWithDocuments(id: string) {
   return { ...event, documents: linkedDocuments };
 }
 
-export async function createEvent(input: {
-  title: string;
-  description?: string;
-  startAt: string;
-  endAt?: string | null;
-  allDay?: boolean;
-  type?: string;
-  status?: string;
-  color?: string | null;
-  location?: string | null;
-}) {
+export async function createEvent(input: EventInput) {
   return runAction(async () => {
     const scope = await resolveStagebookScope();
-    const startAt = requireDate(input.startAt, "data de início");
-    const endAt = optionalDate(input.endAt);
-    if (endAt && endAt < startAt) {
-      throw new ValidationError("A data de fim não pode ser anterior à data de início.");
-    }
+    const eventData = normalizeEventInput(input);
 
     const [created] = await db
       .insert(calendarEvents)
       .values({
         ...scopeOwnership(scope),
-        title: cleanText(input.title, { fallback: "Novo evento", maxLength: 200 }),
-        description: optionalText(input.description, 2000),
-        startAt,
-        endAt,
-        allDay: Boolean(input.allDay),
-        type: input.type || "evento",
-        status: input.status || "confirmado",
-        color: optionalText(input.color, 20),
-        location: optionalText(input.location, 200),
+        ...eventData,
         createdBy: scope.userId,
       })
       .returning({ id: calendarEvents.id });
@@ -110,38 +120,16 @@ export async function createEvent(input: {
 
 export async function updateEvent(
   id: string,
-  input: {
-    title: string;
-    description?: string;
-    startAt: string;
-    endAt?: string | null;
-    allDay?: boolean;
-    type?: string;
-    status?: string;
-    color?: string | null;
-    location?: string | null;
-  }
+  input: EventInput
 ) {
   return runAction(async () => {
     const scope = await resolveStagebookScope();
-    const startAt = requireDate(input.startAt, "data de início");
-    const endAt = optionalDate(input.endAt);
-    if (endAt && endAt < startAt) {
-      throw new ValidationError("A data de fim não pode ser anterior à data de início.");
-    }
+    const eventData = normalizeEventInput(input);
 
     await db
       .update(calendarEvents)
       .set({
-        title: cleanText(input.title, { fallback: "Novo evento", maxLength: 200 }),
-        description: optionalText(input.description, 2000),
-        startAt,
-        endAt,
-        allDay: Boolean(input.allDay),
-        type: input.type || "evento",
-        status: input.status || "confirmado",
-        color: optionalText(input.color, 20),
-        location: optionalText(input.location, 200),
+        ...eventData,
         updatedBy: scope.userId,
         updatedAt: new Date(),
       })

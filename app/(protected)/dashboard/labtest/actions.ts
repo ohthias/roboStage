@@ -311,26 +311,10 @@ function resolveFields(test: TestRecord): FieldDefinition[] {
   return Array.from(seen.values()).sort((a, b) => a.order - b.order);
 }
 
-export async function getLabTestViewData(testId: string) {
-  const scope = await resolveStagebookScope();
-
-  const test = await db.query.tests.findFirst({
-    where: and(
-      eq(tests.id, testId),
-      creatorScopeWhere(scope, { userId: tests.userId, teamId: tests.teamId }),
-    ),
-  });
-
-  if (!test) {
-    throw new ValidationError("Teste não encontrado.");
-  }
-
-  const executionRows = await db
-    .select()
-    .from(testExecutions)
-    .where(eq(testExecutions.testId, testId))
-    .orderBy(testExecutions.executionNumber);
-
+function buildLabTestViewData(
+  test: typeof tests.$inferSelect,
+  executionRows: (typeof testExecutions.$inferSelect)[],
+) {
   const entries: TestEntry[] = executionRows.map((execution) => {
     const normalized = normalizeResults(execution.results);
 
@@ -422,6 +406,29 @@ export async function getLabTestViewData(testId: string) {
     entries,
     nextExecutionNumber,
   };
+}
+
+export async function getLabTestViewData(testId: string) {
+  const scope = await resolveStagebookScope();
+
+  const test = await db.query.tests.findFirst({
+    where: and(
+      eq(tests.id, testId),
+      creatorScopeWhere(scope, { userId: tests.userId, teamId: tests.teamId }),
+    ),
+  });
+
+  if (!test) {
+    throw new ValidationError("Teste não encontrado.");
+  }
+
+  const executionRows = await db
+    .select()
+    .from(testExecutions)
+    .where(eq(testExecutions.testId, testId))
+    .orderBy(testExecutions.executionNumber);
+
+  return buildLabTestViewData(test, executionRows);
 }
 
 // ---------------------------------------------------------------------------

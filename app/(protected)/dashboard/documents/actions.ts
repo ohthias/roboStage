@@ -52,36 +52,97 @@ async function nextDocumentPosition(
 // Folders
 // ---------------------------------------------------------------------------
 
+async function insertFolder(scope: StagebookScope, parentId: string | null) {
+  if (parentId) {
+    const [parent] = await db
+      .select({ id: folders.id })
+      .from(folders)
+      .where(
+        and(
+          eq(folders.id, parentId),
+          scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId })
+        )
+      )
+      .limit(1);
+    if (!parent) throw new ValidationError("Pasta pai inválida.");
+  }
+
+  const position = await nextFolderPosition(scope, parentId);
+
+  const [created] = await db
+    .insert(folders)
+    .values({
+      ...scopeOwnership(scope),
+      parentId,
+      name: "Nova pasta",
+      createdBy: scope.userId,
+      position,
+    })
+    .returning({ id: folders.id });
+
+  return created;
+}
+
+async function setFolderName(scope: StagebookScope, id: string, name: string) {
+  await db
+    .update(folders)
+    .set({ name, updatedAt: new Date() })
+    .where(
+      and(
+        eq(folders.id, id),
+        scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId })
+      )
+    );
+}
+
+async function setDocumentTitle(scope: StagebookScope, id: string, title: string) {
+  await db
+    .update(documents)
+    .set({ title, updatedBy: scope.userId, updatedAt: new Date() })
+    .where(
+      and(
+        eq(documents.id, id),
+        scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId })
+      )
+    );
+}
+
+async function setDocumentContent(
+  scope: StagebookScope,
+  id: string,
+  content: Record<string, unknown>
+) {
+  await db
+    .update(documents)
+    .set({ content, updatedBy: scope.userId, updatedAt: new Date() })
+    .where(
+      and(
+        eq(documents.id, id),
+        scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId })
+      )
+    );
+}
+
+async function setDocumentIcon(scope: StagebookScope, id: string, icon: string | null) {
+  await db
+    .update(documents)
+    .set({ icon: sanitizeDocIcon(icon), updatedBy: scope.userId, updatedAt: new Date() })
+    .where(
+      and(
+        eq(documents.id, id),
+        scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId })
+      )
+    );
+}
+
+function revalidateDocumentPaths() {
+  PATHS.forEach((path) => revalidatePath(path, "layout"));
+}
+
 export async function createFolder(parentId: string | null = null) {
   return runAction(async () => {
     const scope = await resolveStagebookScope();
-
-    if (parentId) {
-      const [parent] = await db
-        .select({ id: folders.id })
-        .from(folders)
-        .where(
-          and(
-            eq(folders.id, parentId),
-            scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId })
-          )
-        )
-        .limit(1);
-      if (!parent) throw new ValidationError("Pasta pai inválida.");
-    }
-
-    const position = await nextFolderPosition(scope, parentId);
-
-    const [created] = await db
-      .insert(folders)
-      .values({
-        ...scopeOwnership(scope),
-        parentId,
-        name: "Nova pasta",
-        createdBy: scope.userId,
-        position,
-      })
-      .returning({ id: folders.id });
+    const created = await insertFolder(scope, parentId);
 
     PATHS.forEach((path) => revalidatePath(path, "layout"));
     return created;
@@ -92,13 +153,8 @@ export async function renameFolder(id: string, name: string) {
   return runAction(async () => {
     const scope = await resolveStagebookScope();
     const clean = cleanText(name, { fallback: "Nova pasta", maxLength: 120 });
-    await db
-      .update(folders)
-      .set({ name: clean, updatedAt: new Date() })
-      .where(
-        and(eq(folders.id, id), scopeWhere(scope, { userId: folders.userId, teamId: folders.teamId }))
-      );
-    PATHS.forEach((path) => revalidatePath(path, "layout"));
+    await setFolderName(scope, id, clean);
+    revalidateDocumentPaths();
   });
 }
 
@@ -332,12 +388,7 @@ export async function renameDocument(id: string, title: string) {
   return runAction(async () => {
     const scope = await resolveStagebookScope();
     const clean = cleanText(title, { fallback: "Sem título", maxLength: 200 });
-    await db
-      .update(documents)
-      .set({ title: clean, updatedBy: scope.userId, updatedAt: new Date() })
-      .where(
-        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-      );
+    await setDocumentTitle(scope, id, clean);
     revalidatePath(PATH, "layout");
   });
 }
@@ -345,12 +396,7 @@ export async function renameDocument(id: string, title: string) {
 export async function updateDocumentIcon(id: string, icon: string | null) {
   return runAction(async () => {
     const scope = await resolveStagebookScope();
-    await db
-      .update(documents)
-      .set({ icon: sanitizeDocIcon(icon), updatedBy: scope.userId, updatedAt: new Date() })
-      .where(
-        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-      );
+    await setDocumentIcon(scope, id, icon);
     revalidatePath(PATH, "layout");
   });
 }
@@ -420,16 +466,7 @@ export async function updateDocumentProperty(id: string, key: string, value: unk
 export async function updateDocumentContent(id: string, content: unknown) {
   return runAction(async () => {
     const scope = await resolveStagebookScope();
-    await db
-      .update(documents)
-      .set({
-        content: content as Record<string, unknown>,
-        updatedBy: scope.userId,
-        updatedAt: new Date(),
-      })
-      .where(
-        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-      );
+    await setDocumentContent(scope, id, content as Record<string, unknown>);
   });
 }
 

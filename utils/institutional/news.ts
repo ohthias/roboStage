@@ -25,6 +25,8 @@ export type NewsSummary = {
   tags?: string[];
   featured?: boolean;
   draft?: boolean;
+  /** Última edição no editor (ISO). Usado no sitemap. */
+  updatedAt?: string;
 };
 
 export type NewsArticle = { content: string; data: NewsSummary };
@@ -42,10 +44,11 @@ type NewsRow = {
   tags: string[] | null;
   featured: boolean | null;
   draft: boolean | null;
+  updated_at?: string | null;
   content?: string | null;
 };
 
-const SUMMARY_COLUMNS = "slug,title,description,date,category,author,cover_url,tags,featured,draft";
+const SUMMARY_COLUMNS = "slug,title,description,date,category,author,cover_url,tags,featured,draft,updated_at";
 
 // Slug só com letras, números, "-" e "_".
 const SLUG_RE = /^[a-z0-9][a-z0-9_-]*$/i;
@@ -120,6 +123,7 @@ function toSummary(row: NewsRow): NewsSummary {
     tags: row.tags ?? [],
     featured: !!row.featured,
     draft: !!row.draft,
+    updatedAt: row.updated_at || undefined,
   };
 }
 

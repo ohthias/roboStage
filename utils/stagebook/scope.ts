@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
@@ -8,6 +9,7 @@ import { teamMembers, users } from "@/db/schema";
 
 import { isTeamRole, type TeamRole } from "./team-permissions";
 import { StagebookAuthError } from "./scope-errors";
+import { requireUuid } from "./validation";
 
 export type { TeamRole };
 export { StagebookAuthError };
@@ -48,9 +50,10 @@ export async function requireAuthenticatedUser(): Promise<string> {
  * direto do Postgres em vez de uma mensagem amigável.
  *
  * Idempotente e barato: só faz a chamada ao Clerk quando a linha realmente
- * não existe ainda.
+ * não existe ainda. Memorizado por requisição com `cache()`: layout, página e
+ * actions chamam `requireAuthenticatedUser()` várias vezes no mesmo render.
  */
-async function ensureUserSynced(userId: string) {
+const ensureUserSynced = cache(async (userId: string) => {
   const existing = await db.query.users.findFirst({
     where: eq(users.id, userId),
     columns: { id: true },
@@ -69,7 +72,7 @@ async function ensureUserSynced(userId: string) {
     .insert(users)
     .values({ id: userId, email, name, avatarUrl: clerkUser.imageUrl ?? null })
     .onConflictDoNothing({ target: users.id });
-}
+});
 
 /**
  * Lê o cookie de contexto atual (seção 32: `resolveStagebookScope()`).
@@ -83,20 +86,31 @@ export async function resolveStagebookScope(): Promise<StagebookScope> {
   const teamId = cookieStore.get(SCOPE_COOKIE)?.value || null;
 
   if (!teamId) return { type: "personal", userId };
-
-  const membership = await db.query.teamMembers.findFirst({
-    where: and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)),
-  });
-
-  if (!membership) return { type: "personal", userId };
-
-  return {
-    type: "team",
-    teamId,
-    userId,
-    role: toTeamRole(membership.role),
-  };
+  return resolveTeamScope(userId, teamId);
 }
+
+/**
+ * Layout, página e actions resolvem o scope no mesmo render; `cache()` faz a
+ * consulta de membership uma vez por requisição. A chave inclui o teamId do
+ * cookie, então trocar de equipe (`switchStagebookScope`) nunca reaproveita
+ * o resultado anterior.
+ */
+const resolveTeamScope = cache(
+  async (userId: string, teamId: string): Promise<StagebookScope> => {
+    const membership = await db.query.teamMembers.findFirst({
+      where: and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)),
+    });
+
+    if (!membership) return { type: "personal", userId };
+
+    return {
+      type: "team",
+      teamId,
+      userId,
+      role: toTeamRole(membership.role),
+    };
+  },
+);
 
 /**
  * Seção 32: `requireStagebookAccess()` — resolve o scope a partir de um
@@ -118,6 +132,19 @@ export async function requireStagebookAccess(
   }
 
   return { type: "team", teamId, userId, role: toTeamRole(membership.role) };
+}
+
+/**
+ * Scope de uma equipe a partir de um `teamId` explícito (vindo do navegador,
+ * por exemplo da página da equipe, que pode estar aberta numa equipe diferente
+ * do espaço ativo): valida o id, exige ser membro e devolve o scope de equipe.
+ */
+export async function requireTeamAccess(teamId: unknown): Promise<TeamScope> {
+  const scope = await requireStagebookAccess(requireUuid(teamId, "equipe"));
+  if (scope.type !== "team") {
+    throw new StagebookAuthError("Esta ação só existe dentro do espaço de uma equipe.");
+  }
+  return scope;
 }
 
 /** Retorna o par { userId, teamId } a gravar em INSERTs, respeitando o scope. */

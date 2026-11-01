@@ -1,10 +1,17 @@
 import type { MetadataRoute } from "next";
 
 import { getAllLegalDocuments } from "@/utils/institutional/legal";
-import { getPublishedNews, newsHref } from "@/utils/institutional/news";
+import { getPublishedNews, newsHref, type NewsSummary } from "@/utils/institutional/news";
 import { NAVIGATION } from "@/utils/competitions/navigation";
 import { TIMERS_BY_COMPETITION } from "@/app/(public)/[competicao]/timers/config";
 import { SITE_URL } from "@/utils/competitions/site";
+
+/**
+ * As notícias vêm do Supabase (editor RoboStage News). O sitemap é regerado a
+ * cada 5 minutos e também na hora em que o editor publica, edita ou exclui uma
+ * notícia (POST /api/revalidate/news → revalidatePath("/sitemap.xml")).
+ */
+export const revalidate = 300;
 
 type Entry = MetadataRoute.Sitemap[number];
 type Competition = keyof typeof NAVIGATION;
@@ -101,15 +108,46 @@ function toEntry(pathname: string, overrides: Partial<Entry> = {}): Entry {
 
 function validDate(value: unknown): Date | undefined {
   if (!value) return undefined;
-  // Datas "AAAA-MM-DD" do frontmatter: meio-dia evita voltar um dia por fuso.
+  // Datas "AAAA-MM-DD": meio-dia evita voltar um dia por fuso.
   const raw = String(value);
   const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T12:00:00` : raw);
   return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
+/** Última mudança da notícia: edição no editor, senão a data de publicação. */
+function newsModified(n: NewsSummary): Date | undefined {
+  return validDate(n.updatedAt) ?? validDate(n.date);
+}
+
+/** Cover em URL absoluta (as do Supabase já são; as antigas começam com "/"). */
+function absoluteUrl(src?: string): string | undefined {
+  if (!src) return undefined;
+  if (/^https?:\/\//i.test(src)) return src;
+  return src.startsWith("/") ? `${SITE_URL}${src}` : undefined;
+}
+
+function newsEntry(n: NewsSummary): Entry[] {
+  const href = newsHref(n.slug);
+  if (href === "/news") return [];
+  const cover = absoluteUrl(n.cover);
+  return [
+    toEntry(href, {
+      lastModified: newsModified(n),
+      changeFrequency: "monthly",
+      priority: n.featured ? 0.7 : 0.6,
+      ...(cover ? { images: [cover] } : {}),
+    }),
+  ];
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const news = getPublishedNews();
-  const latestNewsDate = news.map((n) => validDate(n.date)).find(Boolean);
+  const [news, legalDocs] = await Promise.all([getPublishedNews(), getAllLegalDocuments()]);
+
+  // A listagem /news muda sempre que qualquer notícia muda.
+  const latestNewsDate = news
+    .map(newsModified)
+    .filter((d): d is Date => !!d)
+    .reduce<Date | undefined>((max, d) => (!max || d > max ? d : max), undefined);
 
   // Set elimina duplicatas (a lista antiga repetia todas as rotas da FLL).
   const staticPaths = [
@@ -127,19 +165,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
   );
 
-  const newsEntries = news.flatMap((article) => {
-    const href = newsHref(article.slug);
-    if (href === "/news") return [];
-    return [
-      toEntry(href, {
-        lastModified: validDate(article.date),
-        changeFrequency: "monthly",
-        priority: 0.6,
-      }),
-    ];
-  });
+  // Mesmo slug não pode aparecer duas vezes.
+  const seen = new Set<string>();
+  const newsEntries = news
+    .filter((n) => !n.draft && !seen.has(n.slug) && seen.add(n.slug))
+    .flatMap(newsEntry);
 
-  const legalEntries = (await getAllLegalDocuments()).map(({ slug }) =>
+  const legalEntries = legalDocs.map(({ slug }) =>
     toEntry(`/legal/${encodeURIComponent(slug)}`, { changeFrequency: "yearly", priority: 0.3 }),
   );
 

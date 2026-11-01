@@ -16,21 +16,11 @@ import {
   ToolsSection,
   type HomeNews,
 } from "@/components/home/HomeSections";
-import { getAllNews } from "@/utils/institutional/news";
+import { getLatestNews } from "@/utils/institutional/news";
 import "@/components/home/home.css";
 
-function latestNews(limit = 3): HomeNews[] {
-  try {
-    return (getAllNews() as (HomeNews & { draft?: boolean })[])
-      .filter((n) => !n.draft && n.title)
-      .slice(0, limit);
-  } catch {
-    return [];
-  }
-}
-
-export default function Page() {
-  const news = latestNews();
+export default async function Page() {
+  const news: HomeNews[] = await getLatestNews(3);
 
   return (
     <>

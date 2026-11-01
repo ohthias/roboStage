@@ -50,14 +50,6 @@ export const licenses: Record<string, License[]> = {
       repository: "https://github.com/motiondivision/motion",
     },
     {
-      name: "gray-matter",
-      license: "MIT",
-      author: "Jon Schlinkert and contributors",
-      description:
-        "Parser utilizado para trabalhar com front matter em arquivos de conteúdo.",
-      repository: "https://github.com/jonschlinkert/gray-matter",
-    },
-    {
       name: "html2canvas-pro",
       license: "MIT",
       author: "Yorick Shan",

@@ -210,8 +210,8 @@ const resources = [
 
 /* --------------------------------------------------------------- página */
 
-export default function FLLHome() {
-  const news = getLatestNews(3, "FLL");
+export default async function FLLHome() {
+  const news = await getLatestNews(3, "FLL");
 
   return (
     <main className="mt-16 overflow-x-clip bg-base-100 text-base-content">

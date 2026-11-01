@@ -188,8 +188,8 @@ const anatixCode = [
 
 /* --------------------------------------------------------------- página */
 
-export default function OBRHome() {
-  const news = getLatestNews(3, "OBR");
+export default async function OBRHome() {
+  const news = await getLatestNews(3, "OBR");
 
   return (
     <main className="mt-16 overflow-x-clip bg-base-100 text-base-content">

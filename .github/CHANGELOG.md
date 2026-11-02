@@ -11,6 +11,19 @@ Exemplo: `2026.1` corresponde à primeira atualização oficial de 2026.
 
 ---
 
+## [Próxima versão / Desenvolvimento] — Anatix na FLL
+
+### Anatix
+
+* O **Anatix chega à FLL**: robôs LEGO com **Pybricks** (SPIKE Prime, SPIKE Essential, Robot Inventor e hubs Powered Up) passam a enviar telemetria em tempo real para o LabTest, com a biblioteca em Python `anatix.py` e o mesmo protocolo v1 da versão Arduino.
+* Os laboratórios Anatix ganharam a escolha do robô: **Arduino e outras placas** (cabo USB, Web Serial) ou **LEGO com Pybricks**, conectado por **Bluetooth** (Web Bluetooth) ou **cabo USB** (WebUSB).
+* Com o hub conectado, o laboratório inicia e para o programa salvo no hub; cada execução do programa vira uma sessão gravada.
+* Programas de missões sem loop funcionam com `anx.keep_alive()` em paralelo, via `multitask()`.
+* Adicionada a página **Anatix para FLL** (`/fll/anatix`), com exemplos, referência e downloads da biblioteca e dos exemplos (`/anatix/pybricks/`).
+* O Anatix aparece nas ferramentas da FLL (menu e página inicial) e passou de "Em breve" para **Completo** no perfil da FLL Challenge.
+* O link "Criar laboratório" (`/dashboard/labtest/anatix?novo=pybricks`) abre o formulário já com LEGO/Pybricks selecionado.
+* A página **Anatix** (`/anatix`) passou a apresentar as **duas versões** (Arduino em C e Pybricks em Python), com como utilizar cada uma, comparação lado a lado, exemplos e referência das chamadas nas duas linguagens.
+
 ## [2026.7] — Evolua e Conecte
 
 **Data:** 01/11/2026

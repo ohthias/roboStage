@@ -14,6 +14,7 @@ import {
   ROWS,
   rotateTile,
   setShape,
+  SHAPE_GROUPS,
   SHAPES,
   toggleHazard,
 } from "@/utils/quickbrick/ArenaBuilder/tiles";
@@ -300,28 +301,43 @@ export default function PathEditor(props: Props) {
 
           <div>
             <div className="mb-1 text-xs font-semibold uppercase tracking-wide opacity-60">Linha</div>
-            <div className="grid grid-cols-3 gap-2">
-              {SHAPES.map((s) => {
-                const active = target?.shape === s.id;
-                return (
-                  <button
-                    key={s.id}
-                    title={`${s.label} — ${s.hint}`}
-                    disabled={!target}
-                    onClick={() => patchTarget((t) => setShape(t, s.id))}
-                    className={`flex flex-col items-center gap-1 rounded-box border-2 p-1.5 text-[10px] leading-tight transition ${
-                      active ? "border-primary bg-primary/10" : "border-base-300 hover:border-primary/50"
-                    } disabled:opacity-40`}
-                  >
-                    <TilePreview
-                      className="h-10 w-10"
-                      tile={{ shape: s.id, rot: 0, hazards: [], markL: false, markR: false }}
-                    />
-                    <span className="text-center">{s.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+            {SHAPE_GROUPS.map((g) => {
+              const items = SHAPES.filter((s) => s.group === g.id);
+              const grid = (
+                <div className="grid grid-cols-3 gap-2">
+                  {items.map((s) => {
+                    const active = target?.shape === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        title={`${s.label} — ${s.hint}`}
+                        disabled={!target}
+                        onClick={() => patchTarget((t) => setShape(t, s.id))}
+                        className={`flex flex-col items-center gap-1 rounded-box border-2 p-1.5 text-[10px] leading-tight transition ${
+                          active ? "border-primary bg-primary/10" : "border-base-300 hover:border-primary/50"
+                        } disabled:opacity-40`}
+                      >
+                        <TilePreview
+                          className="h-10 w-10"
+                          tile={{ shape: s.id, rot: 0, hazards: [], markL: false, markR: false }}
+                        />
+                        <span className="text-center">{s.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+              if (g.id === "base") return <div key={g.id}>{grid}</div>;
+              const hasActive = items.some((s) => s.id === target?.shape);
+              return (
+                <details key={g.id} className="group mt-2" open={hasActive || undefined}>
+                  <summary className="mb-1 cursor-pointer select-none text-[11px] font-medium opacity-70 hover:opacity-100">
+                    {g.label} <span className="opacity-60">({items.length})</span>
+                  </summary>
+                  {grid}
+                </details>
+              );
+            })}
           </div>
 
           <div className="join w-full">

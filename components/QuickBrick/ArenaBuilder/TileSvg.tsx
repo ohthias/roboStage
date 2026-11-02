@@ -22,8 +22,44 @@ export function SvgDefs() {
   );
 }
 
+/**
+ * Ladrilhos de "Sugestões de Ladrilhos" (OBR, v1.0), em cm e na orientação
+ * das pranchas: a linha entra pela borda de baixo (centro em x = 15).
+ */
+const OBR_PATHS: Partial<Record<Shape, string>> = {
+  // atravessam (baixo → cima)
+  deadEnd: "M15 30V15M7.5 15H22.5",
+  dashed: "M15 0V2.5M15 12.5V17.5M15 27.5V30",
+  spike: "M15 30V20L10 15L15 10V0",
+  wave: "M15 30V26.5C15 23 19 22.5 19 19C19 16.5 17 15 15 15C13 15 11 13.5 11 11C11 7.5 15 7 15 3.5V0",
+  zigzag: "M15 0V1L17.2 3.2L12.8 7.6L17.2 12L12.8 16.4L17.2 20.8L12.8 25.2L15 27.4V30",
+  chevron: "M15 30L22.5 22.5L8.5 8.5L15 2V0",
+  steps: "M15 30V26H19V15H11V4H15V0",
+  stairs: "M15 30V26H21V20H27V10H21V4H15V0",
+  meander: "M15 30V28.5H8.25V19.5H15V10.5H8.25V1.5H15V0",
+  vee: "M15 30L29 15L15 0",
+  uturn: "M15 0.75H29.25V29.25H15",
+  // viram (baixo → direita)
+  corner: "M15 30V15H30",
+  diagonal: "M15 30L30 15",
+  chamfer: "M15 30V21.5L21.5 15H30",
+  jog: "M15 30V20H20V15H30",
+  hook: "M15 30V19H11V11H21V15H30",
+  edgeCorner: "M15 29.25H29.25V15",
+  // laços
+  loop: "M15 30V24A9 9 0 1 1 24 15H30",
+  frame: "M15 30V22H6V6H24V15H30",
+  ring: "M15 30V24M24 15H30M15 24A9 9 0 1 1 15 6A9 9 0 1 1 15 24",
+  ringCut: "M15 30V24M24 15H30M15 6A9 9 0 1 1 6 15M6 15H15V6",
+  // duas linhas independentes
+  doubleDiag: "M15 0L0 15M15 30L30 15",
+  curveDiag: "M15 0A15 15 0 0 1 0 15M15 30L30 15",
+};
+
 function LineArt({ shape }: { shape: Shape }) {
   const p = { stroke: INK, strokeWidth: LINE_W, fill: "none" } as const;
+  const obr = OBR_PATHS[shape];
+  if (obr) return <path d={obr} {...p} />;
   switch (shape) {
     case "straight":
     case "silver":

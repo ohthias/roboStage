@@ -9,7 +9,7 @@ import {
   roomW,
   wallCells,
 } from "./rescue";
-import { connections, DIRS, terminalSide } from "./tiles";
+import { connections, DIRS, sideGroups, terminalSide } from "./tiles";
 import type { Door, Project, Rescue, Tile, Wall } from "./types";
 
 export type Level = "ok" | "warn" | "error" | "info";
@@ -65,20 +65,43 @@ function neighborOf(map: Map<string, Placed>, from: Placed, side: number): Place
   return n;
 }
 
-function reach(map: Map<string, Placed>, start: Placed): Set<string> {
-  const seen = new Set<string>([key(start.x, start.y)]);
-  const queue: Placed[] = [start];
+interface Node {
+  at: Placed;
+  /** índice do trecho de linha dentro do ladrilho (ver sideGroups) */
+  group: number;
+}
+
+interface Reach {
+  /** ladrilhos alcançados */
+  cells: Set<string>;
+  /** trechos alcançados, chave `x,y#trecho` */
+  nodes: Map<string, Node>;
+}
+
+/** percorre a linha a partir de um ladrilho, respeitando trechos independentes */
+function reach(map: Map<string, Placed>, start: Placed): Reach {
+  const cells = new Set<string>();
+  const nodes = new Map<string, Node>();
+  const queue: Node[] = [];
+  const visit = (at: Placed, group: number) => {
+    const k = `${key(at.x, at.y)}#${group}`;
+    if (group < 0 || nodes.has(k)) return;
+    const node = { at, group };
+    nodes.set(k, node);
+    cells.add(key(at.x, at.y));
+    queue.push(node);
+  };
+  sideGroups(start.tile).forEach((_, g) => visit(start, g));
   while (queue.length) {
-    const cur = queue.shift()!;
-    for (const s of connections(cur.tile)) {
-      const n = neighborOf(map, cur, s);
-      if (n && !seen.has(key(n.x, n.y))) {
-        seen.add(key(n.x, n.y));
-        queue.push(n);
-      }
+    const { at, group } = queue.shift()!;
+    for (const s of sideGroups(at.tile)[group]) {
+      const n = neighborOf(map, at, s);
+      if (!n) continue;
+      const back = (s + 2) % 4;
+      visit(n, sideGroups(n.tile).findIndex((g) => g.includes(back)));
     }
   }
-  return seen;
+  return { cells, nodes };
 }
 
 export function analyzePath(p: Project): Analysis {
@@ -183,10 +206,10 @@ export function analyzePath(p: Project): Analysis {
   // continuidade da linha
   let openLine = 0;
   let openInter = 0;
-  const reachedAll = new Set<string>();
+  const reachedAll = new Map<string, Node>();
   if (starts.length === 1) {
-    const r = reach(map, starts[0]);
-    r.forEach((k) => reachedAll.add(k));
+    const { cells: r, nodes } = reach(map, starts[0]);
+    nodes.forEach((n, k) => reachedAll.set(k, n));
     if (silvers.length === 1) {
       const ok = r.has(key(silvers[0].x, silvers[0].y));
       checks.push(
@@ -203,8 +226,8 @@ export function analyzePath(p: Project): Analysis {
     }
   }
   if (blacks.length === 1) {
-    const r = reach(map, blacks[0]);
-    r.forEach((k) => reachedAll.add(k));
+    const { cells: r, nodes } = reach(map, blacks[0]);
+    nodes.forEach((n, k) => reachedAll.set(k, n));
     if (finishes.length === 1) {
       const ok = r.has(key(finishes[0].x, finishes[0].y));
       checks.push(
@@ -214,9 +237,8 @@ export function analyzePath(p: Project): Analysis {
       );
     }
   }
-  reachedAll.forEach((k) => {
-    const a = map.get(k)!;
-    for (const s of connections(a.tile)) {
+  reachedAll.forEach(({ at: a, group }) => {
+    for (const s of sideGroups(a.tile)[group]) {
       if (terminalSide(a.tile) === s) continue;
       if (!neighborOf(map, a, s)) {
         if (a.tile.shape === "tee" || a.tile.shape === "cross") openInter++;

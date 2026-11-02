@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BarChart3, Map as MapIcon, Table2 } from "lucide-react";
+import { BarChart3, Cpu, Map as MapIcon, Table2, ToyBrick } from "lucide-react";
 import {
   createAnatixLab,
   updateAnatixLab,
@@ -12,6 +13,7 @@ import {
   DEFAULT_ANATIX_CONFIG,
   type AnatixLabConfig,
   type AnatixLabRecord,
+  type AnatixTransport,
   type AnatixViewKey,
 } from "@/types/anatix.types";
 
@@ -22,19 +24,39 @@ const VIEW_OPTIONS: { key: AnatixViewKey; label: string; hint: string; icon: typ
   { key: "tables", label: "Tabelas", hint: "Resumo das métricas, eventos e console", icon: Table2 },
 ];
 
+const TRANSPORT_OPTIONS: { key: AnatixTransport; label: string; hint: string; icon: typeof Cpu }[] = [
+  {
+    key: "serial",
+    label: "Arduino, ESP32 e outras placas",
+    hint: "Biblioteca Anatix em C, pelo cabo USB (OBR e projetos próprios)",
+    icon: Cpu,
+  },
+  {
+    key: "pybricks",
+    label: "LEGO com Pybricks",
+    hint: "SPIKE, Robot Inventor e hubs Powered Up, por Bluetooth ou cabo USB (FLL)",
+    icon: ToyBrick,
+  },
+];
+
 export function AnatixLabForm({
   lab,
   onDone,
+  defaultTransport,
 }: {
   lab?: AnatixLabRecord;
   onDone?: (lab: AnatixLabRecord) => void;
+  /** Conexão pré-selecionada ao criar (ex.: "pybricks" vindo da página da FLL). */
+  defaultTransport?: AnatixTransport;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState(lab?.name ?? "");
   const [description, setDescription] = useState(lab?.description ?? "");
-  const [config, setConfig] = useState<AnatixLabConfig>(lab?.config ?? DEFAULT_ANATIX_CONFIG);
+  const [config, setConfig] = useState<AnatixLabConfig>(
+    lab?.config ?? { ...DEFAULT_ANATIX_CONFIG, transport: defaultTransport ?? DEFAULT_ANATIX_CONFIG.transport },
+  );
 
   const noView = !Object.values(config.views).some(Boolean);
 
@@ -82,23 +104,57 @@ export function AnatixLabForm({
         />
       </label>
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-semibold text-base-content/70">Baud rate</span>
-        <select
-          className="select select-bordered w-full"
-          value={config.baudRate}
-          onChange={(e) => setConfig({ ...config, baudRate: Number(e.target.value) })}
-        >
-          {ANATIX_BAUD_RATES.map((b) => (
-            <option key={b} value={b}>
-              {b.toLocaleString("pt-BR")} {b === 115200 ? "(padrão)" : ""}
-            </option>
-          ))}
-        </select>
-        <span className="text-[11px] text-base-content/50">
-          Precisa ser igual ao <code>Serial.begin()</code> do robô.
-        </span>
-      </label>
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1.5 text-xs font-semibold text-base-content/70">Robô</legend>
+        {TRANSPORT_OPTIONS.map(({ key, label, hint, icon: Icon }) => (
+          <label
+            key={key}
+            className="flex cursor-pointer items-center gap-3 rounded-xl border border-base-300 bg-base-100 p-3 has-[:checked]:border-primary/50 has-[:checked]:bg-primary/5"
+          >
+            <input
+              type="radio"
+              name="anatix-transport"
+              className="radio radio-primary radio-sm"
+              checked={config.transport === key}
+              onChange={() => setConfig({ ...config, transport: key })}
+            />
+            <Icon className="size-4 text-base-content/60" />
+            <span className="flex flex-col">
+              <span className="text-sm font-semibold">{label}</span>
+              <span className="text-xs text-base-content/50">{hint}</span>
+            </span>
+          </label>
+        ))}
+      </fieldset>
+
+      {config.transport === "serial" ? (
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-base-content/70">Baud rate</span>
+          <select
+            className="select select-bordered w-full"
+            value={config.baudRate}
+            onChange={(e) => setConfig({ ...config, baudRate: Number(e.target.value) })}
+          >
+            {ANATIX_BAUD_RATES.map((b) => (
+              <option key={b} value={b}>
+                {b.toLocaleString("pt-BR")} {b === 115200 ? "(padrão)" : ""}
+              </option>
+            ))}
+          </select>
+          <span className="text-[11px] text-base-content/50">
+            Precisa ser igual ao <code>Serial.begin()</code> do robô.
+          </span>
+        </label>
+      ) : (
+        <p className="rounded-xl bg-base-200/60 px-3 py-2 text-xs text-base-content/60">
+          No Pybricks Code, adicione o arquivo <code>anatix.py</code> ao projeto e use{" "}
+          <code>anx.begin(&quot;MeuRobo&quot;, hub)</code>. Baixe a biblioteca e exemplos em{" "}
+          <Link href="/fll/anatix" className="link" target="_blank">
+            /fll/anatix
+          </Link>
+          .
+        </p>
+      )}
 
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1.5 text-xs font-semibold text-base-content/70">Formas de análise</legend>

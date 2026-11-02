@@ -11,5 +11,6 @@ export * from "./tags";
 export * from "./labtest";
 export * from "./anatix";
 export * from "./thinklab";
+export * from "./quickbrick";
 export * from "./user-preferences";
 export * from "./relations";

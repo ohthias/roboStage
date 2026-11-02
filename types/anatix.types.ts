@@ -18,7 +18,18 @@ export type AnatixParsed =
 
 export type AnatixViewKey = "charts" | "maps" | "tables";
 
+/**
+ * Como o robô se conecta:
+ *  - serial:   Arduino/ESP32… com a biblioteca Anatix_C, pelo cabo USB (Web Serial);
+ *  - pybricks: hub LEGO com Pybricks e o anatix.py, por Bluetooth ou cabo USB (FLL).
+ */
+export type AnatixTransport = "serial" | "pybricks";
+
+export const ANATIX_TRANSPORTS: AnatixTransport[] = ["serial", "pybricks"];
+
 export interface AnatixLabConfig {
+  transport: AnatixTransport;
+  /** Só vale para `serial`. */
   baudRate: number;
   views: Record<AnatixViewKey, boolean>;
   /** Métricas mostradas no gráfico de linhas (vazio = todas). */
@@ -31,6 +42,7 @@ export interface AnatixLabConfig {
 export const ANATIX_BAUD_RATES = [9600, 57600, 115200, 250000, 500000, 1000000] as const;
 
 export const DEFAULT_ANATIX_CONFIG: AnatixLabConfig = {
+  transport: "serial",
   baudRate: 115200,
   views: { charts: true, maps: true, tables: true },
   chartMetrics: [],

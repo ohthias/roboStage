@@ -90,8 +90,8 @@ type Profile = {
 const PROFILES: Record<ProfileKey, Profile> = {
   fll: {
     key: "fll",
-    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "soon", quickbrick: "full" },
-    note: "Founders Edition com configuração completa de missões.",
+    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "full", quickbrick: "full" },
+    note: "Founders Edition com configuração completa de missões e Anatix para robôs LEGO com Pybricks.",
   },
   "fll-future": {
     key: "fll-future",

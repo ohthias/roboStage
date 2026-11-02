@@ -189,7 +189,9 @@ export function CodeBlock({ lines }: { lines: string[] }) {
   return (
     <div className="mockup-code w-full overflow-x-auto rounded-tl-2xl rounded-br-2xl rounded-tr-none rounded-bl-none text-sm">
       {lines.map((line, i) => {
-        const anx = line.includes("ANX_") || line.includes("ANATIX_");
+        // Destaca as linhas do Anatix em C (ANX_…) e em Python (anx.…, import).
+        const anx =
+          line.includes("ANX_") || line.includes("ANATIX_") || /\banx\.|from anatix /.test(line);
         return (
           <pre
             key={i}

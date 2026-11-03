@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import packageJson from "../../../package.json";
 import {
   ArrowDown,
   ArrowRight,
@@ -44,7 +45,7 @@ export const metadata: Metadata = {
 };
 
 const REPO = "https://github.com/ohthias/roboStage";
-const VERSION = "v2026.5";
+const VERSION = `v${packageJson.version}`;
 
 /* ================================================================ DADOS */
 

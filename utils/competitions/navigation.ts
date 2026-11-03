@@ -103,7 +103,7 @@ export const NAVIGATION_MAIN_LINKS = [
   { href: "/about", label: "Sobre", new: false },
   { href: "/anatix", label: "Anatix", new: false },
   { href: "/roboticar", label: "Roboticar", new: false },
-  { href: "/news", label: "Notícias", icon: NotepadText, new: false, update: true },
+  { href: "/news", label: "Notícias", icon: NotepadText, new: false, update: false },
   { href: "/help", label: "Ajuda", icon: MessageSquare, new: false },
 ];
 

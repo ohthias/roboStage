@@ -1,8 +1,9 @@
 
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { TAPETE_WIDTH_CM, TAPETE_HEIGHT_CM } from './constants';
-import { PathPoint, RobotState, RobotConfig } from '@/types/SharksSimulator.types';
+import { PathPoint, RobotState, RobotConfig, Mission, Coordinate } from '@/types/SharksSimulator.types';
 import { cmToPct, pxToCm } from './engine.service';
+import MissionsLayer from './MissionsLayer';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface MatProps {
@@ -15,6 +16,18 @@ interface MatProps {
   isSettingStart?: boolean; 
   isMoving?: boolean;
   time?: number; // Current simulation time
+  missions?: Mission[];
+  completedMissions?: Set<string>;
+  touchingMissions?: Set<string>;
+  selectedMissionId?: string | null;
+  missionDraftVertices?: Coordinate[] | null;
+  showMissions?: boolean;
+  /** Mensagem exibida sobre o tapete quando um modo de edição está ativo. */
+  editHint?: string | null;
+  /** Mostra o cartão "Dados" sobre o tapete (posição/ângulo). */
+  showInfoPanel?: boolean;
+  /** Recebe a posição do cursor em cm (null ao sair do tapete). */
+  onPointerCm?: (pos: { x: number; y: number } | null) => void;
 }
 
 const Mat: React.FC<MatProps> = ({ 
@@ -26,8 +39,18 @@ const Mat: React.FC<MatProps> = ({
   isInteractive,
   isSettingStart = false,
   isMoving = false,
-  time = 0
+  time = 0,
+  missions = [],
+  completedMissions,
+  touchingMissions,
+  selectedMissionId = null,
+  missionDraftVertices = null,
+  showMissions = true,
+  editHint = null,
+  showInfoPanel = true,
+  onPointerCm,
 }) => {
+  const isTouchingMission = (touchingMissions?.size ?? 0) > 0;
   const containerRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState<{ x: number, y: number } | null>(null);
   const [hoveredPointIdx, setHoveredPointIdx] = useState<number | null>(null);
@@ -165,6 +188,7 @@ const Mat: React.FC<MatProps> = ({
     const y = e.clientY - rect.top;
     const cmCoords = pxToCm(x, y, rect.width, rect.height);
     setMousePos(cmCoords);
+    onPointerCm?.(cmCoords);
 
     // Handle Shift+Hover Rotation Arc Logic
     if (e.shiftKey && (isInteractive || isSettingStart)) {
@@ -221,9 +245,11 @@ const Mat: React.FC<MatProps> = ({
   const robotColor = robotConfig?.color || '#06b6d4';
   const robotShape = robotConfig?.shape || 'tank';
 
-  const glowStyle = isMoving 
-    ? { filter: `drop-shadow(0 0 15px ${robotColor}60)` } 
-    : { filter: 'drop-shadow(0 4px 6px rgb(0 0 0 / 0.5))' };
+  const glowStyle = isTouchingMission
+    ? { filter: 'drop-shadow(0 0 10px #facc15) drop-shadow(0 0 3px #fef08a)' }
+    : isMoving
+      ? { filter: `drop-shadow(0 0 15px ${robotColor}60)` }
+      : { filter: 'drop-shadow(0 4px 6px rgb(0 0 0 / 0.5))' };
 
   // Generate ticks for rulers
   const xTicks = [];
@@ -267,6 +293,12 @@ const Mat: React.FC<MatProps> = ({
 
   return (
     <div className="relative group/mat bg-base-100 border border-base-content/10 select-none">
+       {editHint && (
+         <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 pointer-events-none text-[10px] font-bold text-base-content bg-base-100/95 px-3 py-2 rounded-lg border border-info/40 backdrop-blur-md shadow-lg whitespace-nowrap">
+           🎯 {editHint}
+         </div>
+       )}
+       {showInfoPanel && (
        <div className="absolute -bottom-10 left-4 z-50 pointer-events-auto flex flex-col items-start gap-2">
            <div className="bg-base-100/90 backdrop-blur-md border border-base-content/10 rounded-lg transition-all duration-300">
              <button 
@@ -300,7 +332,9 @@ const Mat: React.FC<MatProps> = ({
                📍 POSIÇÃO INICIAL
             </div>
            )}
+
         </div>
+       )}
 
         {/* Mat Container (Clipped Viewport) */}
         <div 
@@ -308,6 +342,7 @@ const Mat: React.FC<MatProps> = ({
           onMouseMove={handleMouseMove}
           onMouseLeave={() => {
             setMousePos(null);
+            onPointerCm?.(null);
             setHoveredPointIdx(null);
             setIsPanning(false);
           }}
@@ -350,6 +385,17 @@ const Mat: React.FC<MatProps> = ({
                   <rect width="100%" height="100%" fill="url(#grid-large)" />
               </svg>
           </div>
+
+          {/* Missions Layer */}
+          {showMissions && missions.length > 0 && (
+            <MissionsLayer
+              missions={missions}
+              completed={completedMissions ?? new Set()}
+              touching={touchingMissions}
+              selectedId={selectedMissionId}
+              draftVertices={missionDraftVertices}
+            />
+          )}
 
           {/* Visualization Layer */}
           <svg 

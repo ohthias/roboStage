@@ -1,8 +1,9 @@
 "use client";
 import React, { useRef, useMemo, useCallback } from "react";
 import { TAPETE_WIDTH_CM, TAPETE_HEIGHT_CM } from "./constants";
-import { PathPoint, RobotState, RobotConfig } from "@/types/SharksSimulator.types";
+import { PathPoint, RobotState, RobotConfig, Mission } from "@/types/SharksSimulator.types";
 import { cmToPct, pxToCm } from "./engine.service";
+import MissionsLayer from "./MissionsLayer";
 
 interface MatMobileProps {
   trajectory: PathPoint[];
@@ -18,6 +19,10 @@ interface MatMobileProps {
   selectedTrajectoryIndex: number | null;
   /** When true, taps move the START position instead of adding a point. */
   isSettingStart?: boolean;
+  missions?: Mission[];
+  completedMissions?: Set<string>;
+  touchingMissions?: Set<string>;
+  showMissions?: boolean;
 }
 
 const MatMobile: React.FC<MatMobileProps> = ({
@@ -31,6 +36,10 @@ const MatMobile: React.FC<MatMobileProps> = ({
   onSelectWaypoint,
   selectedTrajectoryIndex,
   isSettingStart = false,
+  missions = [],
+  completedMissions,
+  touchingMissions,
+  showMissions = true,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const pointerDownPos = useRef<{ x: number; y: number } | null>(null);
@@ -102,7 +111,9 @@ const MatMobile: React.FC<MatMobileProps> = ({
   const robotColor = robotConfig?.color || "#06b6d4";
   const robotShape = robotConfig?.shape || "tank";
 
-  const glowStyle = isMoving
+  const glowStyle = (touchingMissions?.size ?? 0) > 0
+    ? { filter: "drop-shadow(0 0 8px #facc15) drop-shadow(0 0 2px #fef08a)" }
+    : isMoving
     ? { filter: `drop-shadow(0 0 12px ${robotColor}60)` }
     : { filter: "drop-shadow(0 3px 5px rgb(0 0 0 / 0.5))" };
 
@@ -137,6 +148,16 @@ const MatMobile: React.FC<MatMobileProps> = ({
             <rect width="100%" height="100%" fill="url(#mgrid-large)" />
           </svg>
         </div>
+
+        {/* Missions */}
+        {showMissions && missions.length > 0 && (
+          <MissionsLayer
+            missions={missions}
+            completed={completedMissions ?? new Set()}
+            touching={touchingMissions}
+            compact
+          />
+        )}
 
         {/* Path + waypoints */}
         <svg

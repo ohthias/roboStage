@@ -9,12 +9,15 @@ import {
   Code2,
   FileText,
   GitPullRequest,
+  HandCoins,
   Heart,
   HeartHandshake,
   Lightbulb,
   MessageSquare,
   Search,
+  Server,
   Share2,
+  Sparkles,
   Users,
   X,
   type LucideIcon,
@@ -31,11 +34,13 @@ import ShareButton, { CopyLinkButton } from "./ShareButton";
 
 export const metadata: Metadata = {
   title: "Apoie o RoboStage",
-  description: "Contribua com código, divulgação e, em breve, apoio financeiro para manter o RoboStage em movimento.",
+  description: "Contribua com código, divulgação ou apoio financeiro pelo Patreon e GitHub Sponsors para manter o RoboStage em movimento.",
 };
 
 const REPO = "https://github.com/ohthias/roboStage";
 const CONTRIBUTING = `${REPO}/blob/main/.github/CONTRIBUTING.md`;
+const PATREON = "https://www.patreon.com/c/roboStage";
+const GITHUB_SPONSORS = "https://github.com/sponsors/ohthias";
 
 const ways: {
   icon: LucideIcon;
@@ -71,12 +76,47 @@ const ways: {
     icon: Heart,
     tag: "FINANCEIRO",
     title: "Ajude a manter no ar",
-    text: "Uma forma simples e transparente de apoiar a infraestrutura e o desenvolvimento está sendo preparada.",
+    text: "Apoie pelo Patreon ou pelo GitHub Sponsors e ajude a manter a infraestrutura e o desenvolvimento do RoboStage.",
     href: "#financeiro",
-    cta: "Saiba mais",
-    status: "em breve",
+    cta: "Ver opções",
+    status: "aberto",
     tone: "accent",
   },
+];
+
+const sponsors: {
+  icon: LucideIcon;
+  name: string;
+  tag: string;
+  text: string;
+  href: string;
+  cta: string;
+  tone: Tone;
+}[] = [
+  {
+    icon: HandCoins,
+    name: "Patreon",
+    tag: "APOIO MENSAL",
+    text: "Torne-se apoiador com uma contribuição mensal e acompanhe de perto a evolução do projeto.",
+    href: PATREON,
+    cta: "Apoiar no Patreon",
+    tone: "accent",
+  },
+  {
+    icon: Sparkles,
+    name: "GitHub Sponsors",
+    tag: "MENSAL OU ÚNICO",
+    text: "Patrocine direto pelo GitHub, com valor recorrente ou uma contribuição única, junto ao código do projeto.",
+    href: GITHUB_SPONSORS,
+    cta: "Patrocinar no GitHub",
+    tone: "primary",
+  },
+];
+
+const fundsUse: { icon: LucideIcon; text: string }[] = [
+  { icon: Server, text: "Infraestrutura: hospedagem, domínio e serviços que mantêm a plataforma no ar." },
+  { icon: Code2, text: "Desenvolvimento de novas ferramentas e melhorias para as equipes." },
+  { icon: Heart, text: "Qualquer valor ajuda — e divulgar o projeto também conta." },
 ];
 
 const noCode: { icon: LucideIcon; title: string; text: string; href: string; label: string }[] = [
@@ -98,6 +138,12 @@ const shareRules = {
   do: ["Use informações atualizadas.", "Use os materiais oficiais da marca.", "Deixe claro quando fala em nome próprio."],
   dont: ["Prometer funcionalidades que não existem.", "Apresentar o RoboStage como ferramenta oficial da FIRST."],
 };
+
+const hoverShadow: Record<Tone, string> = {
+  primary: "hover:shadow-[8px_8px_0_0_var(--color-primary)]",
+  secondary: "hover:shadow-[8px_8px_0_0_var(--color-secondary)]",
+  accent: "hover:shadow-[8px_8px_0_0_var(--color-accent)]",
+} as Record<Tone, string>;
 
 export default function SupportPage() {
   return (
@@ -175,7 +221,7 @@ export default function SupportPage() {
                 const external = href.startsWith("http");
                 const soon = status === "em breve";
                 const cls = `group relative flex h-full flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border bg-base-100 p-7 transition-all duration-300 hover:-translate-y-1 ${
-                  soon ? "border-dashed border-base-content/25" : `border-base-300 ${tone === "primary" ? "hover:shadow-[8px_8px_0_0_var(--color-primary)]" : "hover:shadow-[8px_8px_0_0_var(--color-secondary)]"}`
+                  soon ? "border-dashed border-base-content/25" : `border-base-300 ${hoverShadow[tone]}`
                 }`;
                 const inner = (
                   <>
@@ -193,7 +239,13 @@ export default function SupportPage() {
                     <p className="relative mt-3 flex-1 text-sm leading-6 text-base-content/60">{text}</p>
                     <span className="relative mt-6 flex items-center justify-between border-t border-base-300 pt-4 text-sm font-bold">
                       {cta}
-                      {external ? <ArrowUpRight size={16} /> : <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />}
+                      {external ? (
+                        <ArrowUpRight size={16} />
+                      ) : href.startsWith("#") ? (
+                        <ArrowDown size={16} className="transition-transform group-hover:translate-y-1" />
+                      ) : (
+                        <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                      )}
                     </span>
                   </>
                 );
@@ -356,34 +408,66 @@ export default function SupportPage() {
 
         {/* ======================================================= FINANCEIRO */}
         <section id="financeiro" className="scroll-mt-20 border-y border-base-300 bg-base-200/40 px-6 py-24">
-          <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.2fr_1fr] [&>*]:min-w-0">
+          <div className="mx-auto grid max-w-6xl items-start gap-12 lg:grid-cols-[1fr_1.3fr] [&>*]:min-w-0">
             <RevealOnScroll>
-              <SectionTitle
-                kicker="/ APOIO FINANCEIRO"
-                title="Quer contribuir"
-                highlight="diretamente?"
-                highlightClass="bg-accent text-accent-content"
-                description="Estamos preparando uma forma simples e transparente de apoiar financeiramente a manutenção da infraestrutura e o desenvolvimento do RoboStage."
-              />
-            </RevealOnScroll>
-            <RevealOnScroll delay={0.1}>
-              <div className="rounded-tl-3xl rounded-br-3xl border-2 border-dashed border-base-content/25 bg-base-100 p-7 text-center">
-                <span className="mx-auto grid size-14 place-items-center rounded-tl-xl rounded-br-xl bg-accent/20 text-[color-mix(in_oklab,var(--color-accent)_55%,var(--color-base-content))]">
-                  <Heart size={24} />
-                </span>
-                <p className="mt-5 font-mono text-[10px] font-bold tracking-[0.18em] text-base-content/50">EM PREPARAÇÃO</p>
-                <p className="mt-2 text-lg font-bold">Ainda não há como doar</p>
-                <p className="mt-2 text-sm leading-6 text-base-content/60">
-                  Quando estiver disponível, valores e formas de apoio vão aparecer aqui e nas notícias.
-                </p>
-                <button type="button" disabled className={`btn mt-6 w-full ${cornerBtn}`}>
-                  Em breve
-                </button>
-                <Link href="/news" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold hover:text-primary">
-                  Acompanhar notícias <ArrowRight size={14} />
-                </Link>
+              <div className="lg:sticky lg:top-28">
+                <SectionTitle
+                  kicker="/ APOIO FINANCEIRO"
+                  title="Quer contribuir"
+                  highlight="diretamente?"
+                  highlightClass="bg-accent text-accent-content"
+                  description="Escolha a plataforma que preferir. Todo apoio vai para a manutenção da infraestrutura e o desenvolvimento do RoboStage."
+                />
+                <div className="mt-8 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5">
+                  <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-base-content/50">PARA ONDE VAI O APOIO</p>
+                  <ul className="mt-4 space-y-3 text-sm leading-6 text-base-content/70">
+                    {fundsUse.map(({ icon: Icon, text }) => (
+                      <li key={text} className="flex gap-3">
+                        <Icon size={16} className="mt-1 shrink-0 text-primary" />
+                        {text}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </RevealOnScroll>
+
+            <ul className="grid gap-5">
+              {sponsors.map(({ icon: Icon, name, tag, text, href, cta, tone }, i) => {
+                const c = toneClasses[tone];
+                return (
+                  <li key={name}>
+                    <RevealOnScroll delay={i * 0.08} className="h-full">
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`group relative flex h-full flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 p-7 transition-all duration-300 hover:-translate-y-1 ${hoverShadow[tone]}`}
+                      >
+                        <div aria-hidden="true" className={`pointer-events-none absolute -right-10 -top-10 size-32 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 ${c.ring}`} />
+                        <div className="relative flex items-center gap-4">
+                          <span className={`grid size-14 shrink-0 place-items-center rounded-tl-xl rounded-br-xl ${c.icon}`}>
+                            <Icon size={24} strokeWidth={1.8} />
+                          </span>
+                          <span className="min-w-0">
+                            <span className={`block text-[10px] font-bold tracking-[0.18em] ${c.tag}`}>{tag}</span>
+                            <span className="block text-2xl font-bold tracking-tight">{name}</span>
+                          </span>
+                        </div>
+                        <p className="relative mt-5 text-sm leading-6 text-base-content/60">{text}</p>
+                        <span className={`btn relative mt-6 w-full justify-between ${cornerBtn} ${tone === "accent" ? "btn-accent" : "btn-primary"}`}>
+                          {cta}
+                          <ArrowUpRight size={18} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                        </span>
+                        <span className="relative mt-3 truncate text-center font-mono text-xs text-base-content/45">
+                          {href.replace(/^https:\/\/(www\.)?/, "")}
+                        </span>
+                      </a>
+                    </RevealOnScroll>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </section>
 

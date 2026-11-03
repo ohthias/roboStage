@@ -34,6 +34,19 @@ export interface Command {
   speed: number;
 }
 
+/**
+ * Uma missão do tapete: uma zona (polígono em cm, origem no canto inferior
+ * esquerdo) e um ponto de ativação. A missão é considerada concluída quando o
+ * centro do robô passa a até `radius` cm do ponto de ativação.
+ */
+export interface Mission {
+  id: string;
+  name: string;
+  vertices: Coordinate[];
+  activation: Coordinate;
+  radius: number;
+}
+
 export interface AnimationSegment {
   startState: RobotState;
   endState: RobotState;

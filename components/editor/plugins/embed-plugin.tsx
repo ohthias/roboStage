@@ -13,6 +13,7 @@ import {
   type LexicalCommand,
 } from "lexical";
 import {
+  Camera,
   CalendarDays,
   FlaskConical,
   KanbanSquare,
@@ -30,6 +31,8 @@ import {
   listEmbeddableEvents,
   listEmbeddableLabTests,
   listEmbeddableThinkLabs,
+  listEmbeddableQuickbrickDiagrams,
+  listEmbeddableQuickbrickPhotos,
 } from "@/app/(protected)/dashboard/documents/embed-actions";
 import { $createEmbedNode } from "../nodes/embed-node";
 import { EVENT_TYPE_COLOR } from "../embeds/calendar-event-embed";
@@ -42,7 +45,11 @@ import {
   type LabTestPickerItem,
   type PickerItemMap,
   type ThinkLabPickerItem,
+  type QuickbrickDiagramPickerItem,
+  type QuickbrickPhotoPickerItem,
 } from "../embeds/embed-types";
+import { DIAGRAM_META } from "@/utils/quickbrick/notebook";
+import { DiagramIcon } from "@/components/QuickBrick/Notebook/diagram-icon";
 
 export type OpenEmbedPickerPayload = {
   kind: EmbedKind;
@@ -163,6 +170,65 @@ const PICKERS: { [K in EmbedKind]: PickerConfig<K> } = {
           {b.description || `Atualizado em ${shortDate(b.updatedAt)}`}
         </span>
       </>
+    ),
+  },
+  "quickbrick-photo": {
+    icon: Camera,
+    title: "Inserir foto do robô (QuickBrick)",
+    placeholder: "Buscar por caderno, robô ou versão…",
+    empty: "Nenhuma foto do robô nos cadernos do QuickBrick deste espaço.",
+    load: listEmbeddableQuickbrickPhotos,
+    id: (p) => p.id,
+    label: (p) => p.title || `${p.robotName ?? p.notebookName} — ${shortDate(p.takenAt)}`,
+    searchText: (p: QuickbrickPhotoPickerItem) =>
+      `${p.title ?? ""} ${p.notebookName} ${p.robotName ?? ""} ${shortDate(p.takenAt)}`,
+    options: (p: QuickbrickPhotoPickerItem) => ({ notebookId: p.notebookId, size: "medium" }),
+    row: (p: QuickbrickPhotoPickerItem) => (
+      <span className="flex items-center gap-3">
+        {p.thumbUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={p.thumbUrl} alt="" loading="lazy" className="h-11 w-14 shrink-0 rounded-md bg-base-200 object-cover" />
+        ) : (
+          <span className="grid h-11 w-14 shrink-0 place-items-center rounded-md bg-base-200">
+            <Camera size={16} className="text-base-content/40" />
+          </span>
+        )}
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-medium">{p.title || "Versão sem título"}</span>
+          <span className="block truncate text-xs text-base-content/50">
+            {p.robotName ? `${p.robotName} · ` : ""}
+            {p.notebookName} · {shortDate(p.takenAt)}
+          </span>
+        </span>
+      </span>
+    ),
+  },
+  "quickbrick-diagram": {
+    icon: Shapes,
+    title: "Inserir diagrama do QuickBrick",
+    placeholder: "Buscar diagrama ou caderno…",
+    empty: "Nenhum diagrama nos cadernos do QuickBrick deste espaço.",
+    load: listEmbeddableQuickbrickDiagrams,
+    id: (d) => d.id,
+    label: (d) => d.title,
+    searchText: (d: QuickbrickDiagramPickerItem) =>
+      `${d.title} ${d.notebookName} ${DIAGRAM_META[d.kind].label}`,
+    options: (d: QuickbrickDiagramPickerItem) => ({ notebookId: d.notebookId, size: "full" }),
+    row: (d: QuickbrickDiagramPickerItem) => (
+      <span className="flex items-center gap-3">
+        <span
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-white"
+          style={{ background: DIAGRAM_META[d.kind].color }}
+        >
+          <DiagramIcon kind={d.kind} className="size-4" />
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-medium">{d.title}</span>
+          <span className="block truncate text-xs text-base-content/50">
+            {DIAGRAM_META[d.kind].label} · {d.notebookName} · {d.summary}
+          </span>
+        </span>
+      </span>
     ),
   },
 };

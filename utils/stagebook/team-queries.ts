@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, gte, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
   boardCardAssignees,
@@ -216,7 +216,7 @@ export async function getTeamOverview(teamId: string, userId: string): Promise<T
       one(db.select({ value: count() }).from(boards).where(eq(boards.teamId, teamId))),
       one(db.select({ value: count() }).from(thinklab).where(eq(thinklab.teamId, teamId))),
       one(db.select({ value: count() }).from(tests).where(eq(tests.teamId, teamId))),
-      one(db.select({ value: count() }).from(documents).where(eq(documents.teamId, teamId))),
+      one(db.select({ value: count() }).from(documents).where(and(eq(documents.teamId, teamId), isNull(documents.deletedAt)))),
       one(
         db
           .select({ value: count() })

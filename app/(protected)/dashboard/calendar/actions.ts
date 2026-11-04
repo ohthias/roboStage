@@ -94,7 +94,7 @@ export async function getEventWithDocuments(id: string) {
     .select({ id: documents.id, title: documents.title, icon: documents.icon })
     .from(calendarEventDocuments)
     .innerJoin(documents, eq(documents.id, calendarEventDocuments.documentId))
-    .where(eq(calendarEventDocuments.eventId, id));
+    .where(and(eq(calendarEventDocuments.eventId, id), isNull(documents.deletedAt)));
 
   return { ...event, documents: linkedDocuments };
 }
@@ -159,7 +159,7 @@ export async function listPagesForLinking() {
   return db
     .select({ id: documents.id, title: documents.title, icon: documents.icon })
     .from(documents)
-    .where(scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+    .where(and(scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }), isNull(documents.deletedAt)))
     .orderBy(documents.title);
 }
 
@@ -181,7 +181,7 @@ export async function linkDocumentToEvent(eventId: string, documentId: string) {
     const [page] = await db
       .select({ userId: documents.userId, teamId: documents.teamId })
       .from(documents)
-      .where(eq(documents.id, documentId))
+      .where(and(eq(documents.id, documentId), isNull(documents.deletedAt)))
       .limit(1);
     if (!page) throw new ValidationError("Página não encontrada.");
 

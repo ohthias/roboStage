@@ -181,12 +181,12 @@ describe("páginas", () => {
     );
   });
 
-  it("excluir página sobe as subpáginas um nível", async () => {
+  it("excluir página manda para a lixeira e sobe as subpáginas um nível", async () => {
     actAs("user_dora");
     const page = await call(createDocument());
     const sub = await call(createDocument(null, page.id));
     await call(deleteDocument(page.id));
-    expect(await documentRow(page.id)).toBeUndefined();
+    expect((await documentRow(page.id)).deletedAt).toBeInstanceOf(Date);
     expect((await documentRow(sub.id)).parentId).toBeNull();
   });
 });

@@ -140,7 +140,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         <label htmlFor="lt-drawer" aria-label="Fechar menu" className="drawer-overlay" />
 
         <aside className="flex h-full min-h-full w-72 max-w-[85vw] flex-col border-r border-base-300 bg-base-200 lg:max-w-none lg:is-drawer-close:w-14 lg:is-drawer-open:w-64">
-          <div className="flex h-14 shrink-0 items-center justify-between border-b border-base-300 px-4 lg:h-16 lg:is-drawer-close:justify-center lg:is-drawer-close:px-2 lg:is-drawer-open:px-5">
+          <div className="flex h-14 shrink-0 items-center justify-between border-b border-base-300 px-4 lg:is-drawer-close:justify-center lg:is-drawer-close:px-2 lg:is-drawer-open:px-5">
             <div className="lg:is-drawer-close:hidden">
               <Logo logoSize="sm" />
             </div>

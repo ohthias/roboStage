@@ -5,6 +5,7 @@ import {
   BookOpen,
   CalendarClock,
   Check,
+  CircleCheck,
   Flag,
   Link2,
   Milestone as MilestoneIcon,
@@ -53,6 +54,9 @@ export function CardModal({
   card,
   assignees,
   tags,
+  completed,
+  completionLocked,
+  onToggleCompleted,
   teamMembers,
   isTeamScope,
   milestones,
@@ -63,6 +67,11 @@ export function CardModal({
   card: Card;
   assignees: Assignee[];
   tags: CardTag[];
+  /** Validação de tarefa concluída. */
+  completed: boolean;
+  /** A coluna atual conclui tarefas automaticamente: não dá para reabrir aqui. */
+  completionLocked: boolean;
+  onToggleCompleted: () => void;
   teamMembers: TeamMember[];
   isTeamScope: boolean;
   milestones: Milestone[];
@@ -168,6 +177,34 @@ export function CardModal({
         </div>
 
         <div className="space-y-5 px-6 py-5">
+          <label
+            className={`flex items-start gap-3 rounded-xl border p-4 transition-colors ${
+              completed ? "border-success/30 bg-success/5" : "border-base-300"
+            } ${completionLocked ? "cursor-default" : "cursor-pointer"}`}
+          >
+            <input
+              type="checkbox"
+              className="checkbox checkbox-sm checkbox-success mt-0.5"
+              checked={completed}
+              disabled={completionLocked}
+              onChange={onToggleCompleted}
+              aria-describedby="card-completion-hint"
+            />
+            <span className="min-w-0">
+              <span className="flex items-center gap-1.5 text-sm font-semibold">
+                <CircleCheck size={15} className={completed ? "text-success" : "text-base-content/40"} />
+                Tarefa concluída
+              </span>
+              <span id="card-completion-hint" className="mt-0.5 block text-xs text-base-content/55">
+                {completionLocked
+                  ? "Esta coluna conclui automaticamente todas as tarefas. Mova o card para outra coluna para reabri-lo."
+                  : completed
+                    ? "Validada como concluída — aparece no menu “Concluídas” da coluna."
+                    : "Marque quando a tarefa estiver entregue. Ela vai para o menu “Concluídas” da coluna."}
+              </span>
+            </span>
+          </label>
+
           <section>
             <div className="mb-3 flex items-center gap-2">
               <CalendarClock size={16} className="text-primary" />
@@ -294,7 +331,7 @@ export function CardModal({
 
           <div className="flex items-center justify-between border-t border-base-300 pt-4">
             <button type="button" className="btn btn-ghost btn-sm text-error" onClick={handleDelete}><Trash2 size={14} /> Excluir card</button>
-            <button type="button" className="btn btn-primary btn-sm" onClick={onClose}>Concluído</button>
+            <button type="button" className="btn btn-primary btn-sm" onClick={onClose}>Fechar</button>
           </div>
         </div>
       </div>

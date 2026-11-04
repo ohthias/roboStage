@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
   boards,
@@ -43,6 +43,7 @@ type ColumnRules = {
   dueDateRequired?: boolean;
   maxDueDays?: number | null;
   milestoneId?: string | null;
+  autoComplete?: boolean;
 };
 
 function boardPath(boardId: string) {
@@ -170,6 +171,7 @@ export async function updateColumnRules(boardId: string, columnId: string, rules
       dueDateRequired: Boolean(rules.dueDateRequired),
       maxDueDays: rules.maxDueDays && rules.maxDueDays > 0 ? Math.floor(rules.maxDueDays) : null,
       milestoneId: rules.milestoneId || null,
+      autoComplete: Boolean(rules.autoComplete),
     };
     if (cleanRules.milestoneId) {
       requireUuid(cleanRules.milestoneId, "milestone");
@@ -177,6 +179,14 @@ export async function updateColumnRules(boardId: string, columnId: string, rules
     }
     await db.update(boardColumns).set({ rules: cleanRules })
       .where(and(eq(boardColumns.id, columnId), eq(boardColumns.boardId, boardId)));
+    // Regra de negócio: ao ativar a conclusão automática, os cards que já
+    // estão na coluna também passam a ser concluídos.
+    if (cleanRules.autoComplete) {
+      await db
+        .update(boardCards)
+        .set({ completedAt: new Date(), completedBy: scope.userId })
+        .where(and(eq(boardCards.columnId, columnId), eq(boardCards.boardId, boardId), isNull(boardCards.completedAt)));
+    }
     revalidatePath(boardPath(boardId), "layout");
   });
 }
@@ -255,6 +265,7 @@ export async function createCard(boardId: string, columnId: string, title: strin
         priority,
         dueAt,
         milestoneId,
+        ...(column?.rules?.autoComplete ? { completedAt: new Date(), completedBy: scope.userId } : {}),
       })
       .returning({ id: boardCards.id });
 
@@ -306,6 +317,57 @@ export async function deleteCard(boardId: string, cardId: string) {
   });
 }
 
+/**
+ * Regra de negócio da conclusão:
+ * - entrar numa coluna com `autoComplete` conclui o card automaticamente;
+ * - sair de uma coluna `autoComplete` para uma comum reabre o card;
+ * - entre colunas comuns, o estado de conclusão manual é preservado.
+ */
+async function completionForMove(
+  card: { columnId: string; completedAt: Date | null },
+  targetRules: ColumnRules | null | undefined,
+  userId: string
+): Promise<{ completedAt?: Date | null; completedBy?: string | null }> {
+  if (targetRules?.autoComplete) {
+    return card.completedAt ? {} : { completedAt: new Date(), completedBy: userId };
+  }
+  if (!card.completedAt) return {};
+  const [source] = await db.select({ rules: boardColumns.rules }).from(boardColumns).where(eq(boardColumns.id, card.columnId)).limit(1);
+  return source?.rules?.autoComplete ? { completedAt: null, completedBy: null } : {};
+}
+
+/** Marca/desmarca a validação de tarefa concluída. */
+export async function setCardCompleted(boardId: string, cardId: string, completed: boolean) {
+  return runAction(async () => {
+    const { scope } = await requireBoardInScope(boardId);
+    const [card] = await db
+      .select({ id: boardCards.id, columnId: boardCards.columnId, title: boardCards.title })
+      .from(boardCards)
+      .where(and(eq(boardCards.id, cardId), eq(boardCards.boardId, boardId)))
+      .limit(1);
+    if (!card) throw new ValidationError("Card não encontrado.");
+    if (completed && !card.title.trim()) {
+      throw new ValidationError("Dê um título ao card antes de concluí-lo.");
+    }
+    if (!completed) {
+      const [column] = await db.select({ rules: boardColumns.rules, name: boardColumns.name }).from(boardColumns).where(eq(boardColumns.id, card.columnId)).limit(1);
+      if (column?.rules?.autoComplete) {
+        throw new ValidationError(`Cards em "${column.name}" são sempre concluídos. Mova o card para outra coluna para reabri-lo.`);
+      }
+    }
+    await db
+      .update(boardCards)
+      .set({
+        completedAt: completed ? new Date() : null,
+        completedBy: completed ? scope.userId : null,
+        updatedBy: scope.userId,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(boardCards.id, cardId), eq(boardCards.boardId, boardId)));
+    revalidatePath(boardPath(boardId), "layout");
+  });
+}
+
 /** Move um card para outra coluna/posição. beforeId/afterId = vizinhos na coluna destino (podem ser null). */
 export async function moveCard(
   boardId: string,
@@ -315,7 +377,7 @@ export async function moveCard(
   afterPosition: number | null
 ) {
   return runAction(async () => {
-    await requireBoardInScope(boardId);
+    const { scope } = await requireBoardInScope(boardId);
     await requireColumnInBoard(boardId, targetColumnId);
     const [card] = await db.select().from(boardCards).where(and(eq(boardCards.id, cardId), eq(boardCards.boardId, boardId))).limit(1);
     const [column] = await db.select().from(boardColumns).where(eq(boardColumns.id, targetColumnId)).limit(1);
@@ -329,9 +391,10 @@ export async function moveCard(
       card
     );
     const position = positionBetween(beforePosition, afterPosition);
+    const completion = await completionForMove(card, column?.rules, scope.userId);
     await db
       .update(boardCards)
-      .set({ columnId: targetColumnId, position, updatedAt: new Date() })
+      .set({ columnId: targetColumnId, position, updatedAt: new Date(), ...completion })
       .where(and(eq(boardCards.id, cardId), eq(boardCards.boardId, boardId)));
     revalidatePath(boardPath(boardId), "layout");
   });

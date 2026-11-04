@@ -116,6 +116,10 @@ function normalizeFllAnswers(raw: unknown): TestEntry["fllAnswers"] {
                     ]),
                   )
                 : {},
+            ...(typeof record.firstMarkSeconds === "number" && Number.isFinite(record.firstMarkSeconds)
+              ? { firstMarkSeconds: record.firstMarkSeconds }
+              : {}),
+            ...(record.markedAfterTime === true ? { markedAfterTime: true } : {}),
           },
         ],
       ];

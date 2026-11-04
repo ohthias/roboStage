@@ -35,7 +35,7 @@ export const anatixLabs = pgTable(
     // Nome/placa informados pelo robô no frame H da última conexão.
     robotName: text("robot_name"),
     board: text("board"),
-    // { transport, baudRate, views: { charts, maps, tables }, chartMetrics, mapX, mapY }
+    // { transport, baudRate, views: { custom, charts, maps, tables }, chartMetrics, mapX, mapY, dashboard: AnatixWidget[] }
     config: jsonb("config").notNull().default({}),
     lastConnectedAt: timestamp("last_connected_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })

@@ -10,7 +10,7 @@ import type { AnatixLabRecord, AnatixTransport } from "@/types/anatix.types";
 import { AnatixLabForm } from "./AnatixLabForm";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
-const VIEW_LABEL = { charts: "Gráficos", maps: "Mapas", tables: "Tabelas" } as const;
+const VIEW_LABEL = { custom: "Meu painel", charts: "Gráficos", maps: "Mapas", tables: "Tabelas" } as const;
 
 export function AnatixModal({
   dialogRef,

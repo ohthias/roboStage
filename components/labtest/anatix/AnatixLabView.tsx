@@ -13,6 +13,7 @@ import {
   Cpu,
   Database,
   History,
+  LayoutDashboard,
   Map as MapIcon,
   MemoryStick,
   Pause,
@@ -51,6 +52,7 @@ import type {
   AnatixViewKey,
 } from "@/types/anatix.types";
 import { AnatixCharts } from "./AnatixCharts";
+import { AnatixDashboard } from "./AnatixDashboard";
 import { AnatixMaps } from "./AnatixMaps";
 import { AnatixTables } from "./AnatixTables";
 import { AnatixLabForm } from "./AnatixLabForm";
@@ -80,6 +82,7 @@ const PYBRICKS_STATUS_LABEL: Partial<Record<AnatixStatus, string>> = {
 const HUB_KIND_LABEL: Record<PybricksTransportKind, string> = { ble: "Bluetooth", usb: "Cabo USB" };
 
 const VIEW_TABS: { key: AnatixViewKey; label: string; icon: typeof BarChart3 }[] = [
+  { key: "custom", label: "Meu painel", icon: LayoutDashboard },
   { key: "charts", label: "Gráficos", icon: BarChart3 },
   { key: "maps", label: "Mapas", icon: MapIcon },
   { key: "tables", label: "Tabelas", icon: Table2 },
@@ -313,6 +316,7 @@ export function AnatixLabView({
       : { ...baseStatus, label: (isPybricks && PYBRICKS_STATUS_LABEL[conn.status]) || baseStatus.label };
   const hub = pybricks.hub;
   const hello = live.hello;
+  const fileName = `anatix-${lab.name.replace(/\W+/g, "_")}`;
 
   return (
     <div className="min-h-full bg-base-200/40 px-4 py-8 text-base-content sm:px-6 lg:px-8">
@@ -567,7 +571,15 @@ export function AnatixLabView({
 
       <main className="mt-4">
         {enabledViews.length === 0 ? (
-          <p className="text-sm text-base-content/60">Ative gráficos, mapas ou tabelas em Configurar.</p>
+          <p className="text-sm text-base-content/60">Ative o painel, gráficos, mapas ou tabelas em Configurar.</p>
+        ) : currentView === "custom" ? (
+          <AnatixDashboard
+            store={store}
+            version={shownVersion}
+            widgets={config.dashboard}
+            onChange={(dashboard) => patchConfig({ dashboard })}
+            fileName={fileName}
+          />
         ) : currentView === "charts" ? (
           <AnatixCharts
             store={store}
@@ -584,7 +596,7 @@ export function AnatixLabView({
             onAxesChange={(mapX, mapY) => patchConfig({ mapX, mapY })}
           />
         ) : (
-          <AnatixTables store={store} version={shownVersion} fileName={`anatix-${lab.name.replace(/\W+/g, "_")}`} />
+          <AnatixTables store={store} version={shownVersion} fileName={fileName} />
         )}
       </main>
 

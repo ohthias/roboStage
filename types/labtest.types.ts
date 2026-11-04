@@ -50,6 +50,9 @@ export interface TestEntry {
     {
       value: number;
       subAnswers: Record<string, number>;
+      /** Round 2:30: segundo da primeira marcação da missão. */
+      firstMarkSeconds?: number | null;
+      markedAfterTime?: boolean;
     }
   >;
   precisionDiscs?: {

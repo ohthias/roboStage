@@ -11,6 +11,7 @@ import type {
   AnatixParsed,
 } from "@/types/anatix.types";
 import { DEFAULT_ANATIX_CONFIG, ANATIX_BAUD_RATES, ANATIX_TRANSPORTS } from "@/types/anatix.types";
+import { normalizeDashboard } from "./dashboard";
 
 export const ANATIX_COMMANDS = {
   ping: "ANX PING",
@@ -127,6 +128,7 @@ export function normalizeAnatixConfig(raw: unknown): AnatixLabConfig {
       ? baud
       : DEFAULT_ANATIX_CONFIG.baudRate,
     views: {
+      custom: views.custom !== false,
       charts: views.charts !== false,
       maps: views.maps !== false,
       tables: views.tables !== false,
@@ -136,5 +138,6 @@ export function normalizeAnatixConfig(raw: unknown): AnatixLabConfig {
       : [],
     mapX: str(obj.mapX),
     mapY: str(obj.mapY),
+    dashboard: normalizeDashboard(obj.dashboard),
   };
 }

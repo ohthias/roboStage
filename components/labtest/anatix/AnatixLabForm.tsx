@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BarChart3, Cpu, Map as MapIcon, Table2, ToyBrick } from "lucide-react";
+import { BarChart3, Cpu, LayoutDashboard, Map as MapIcon, Table2, ToyBrick } from "lucide-react";
 import {
   createAnatixLab,
   updateAnatixLab,
@@ -19,6 +19,12 @@ import {
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
 const VIEW_OPTIONS: { key: AnatixViewKey; label: string; hint: string; icon: typeof BarChart3 }[] = [
+  {
+    key: "custom",
+    label: "Meu painel",
+    hint: "Blocos que você monta: linhas, área, barras, dispersão, histograma, medidores, radar e tabelas",
+    icon: LayoutDashboard,
+  },
   { key: "charts", label: "Gráficos", hint: "Métricas no tempo, loop, seções e eventos", icon: BarChart3 },
   { key: "maps", label: "Mapas", hint: "Mapa XY, mapa de calor e mapa de estados", icon: MapIcon },
   { key: "tables", label: "Tabelas", hint: "Resumo das métricas, eventos e console", icon: Table2 },

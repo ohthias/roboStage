@@ -6,12 +6,19 @@
 // customizado de carregamento.
 // ---------------------------------------------------------------------------
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Activity,
   ArrowLeft,
+  BarChart3,
+  History,
+  LayoutDashboard,
+  RotateCcw,
+  Rows3,
+  SlidersHorizontal,
+  Table2,
   Calendar,
   CheckCircle2,
   ChevronDown,
@@ -42,6 +49,7 @@ import FutureEditionAnalysis from "@/components/labtest/future-edition/FutureEdi
 import ObrRoundAnalysis from "@/components/labtest/obr/ObrRoundAnalysis";
 import ObrEntryDetails from "@/components/labtest/obr/ObrEntryDetails";
 import { getObrArena, isObrConfig } from "@/utils/labtest/obr";
+import { missionsForTest } from "@/utils/labtest/fll-analysis";
 import { formatClock, isFutureEditionConfig } from "@/utils/labtest/future-edition";
 import { normalizeStatus } from "@/utils/labtest/catalog";
 import { loadSeasonMissions } from "@/utils/data/missions-client";
@@ -62,6 +70,21 @@ import {
 import { deleteTest } from "../new/actions";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
+import { useChartTheme } from "@/components/labtest/charts/chart-theme";
+import { ViewFilterBar } from "@/components/labtest/view/ViewFilterBar";
+import { ViewDashboard } from "@/components/labtest/view/ViewDashboard";
+import { ViewWidgetBody, type ViewContext } from "@/components/labtest/view/ViewWidgets";
+import {
+  DEFAULT_VIEW_STATE,
+  VIEW_PRESETS,
+  applyFilters,
+  defaultWidgets,
+  buildViewMetrics,
+  normalizeViewState,
+  type ViewState,
+  type ViewTab,
+} from "@/utils/labtest/view-dashboard";
+
 const STATUS_LABEL: Record<string, { label: string; badge: string }> = {
   planejamento: { label: "Planejamento", badge: "badge-ghost" },
   em_andamento: { label: "Em andamento", badge: "badge-warning" },
@@ -327,7 +350,7 @@ function EntryHistory({
         <SectionHeader label="Histórico de lançamentos" />
 
         <div className="rounded-2xl border border-dashed border-base-content/15 bg-base-100 py-10 text-center text-sm text-base-content/45">
-          Nenhum lançamento ainda. Use "Registrar resultado" para começar.
+          Nenhum lançamento para mostrar. Registre uma execução ou ajuste os filtros.
         </div>
       </div>
     );
@@ -365,7 +388,8 @@ function EntryHistory({
                 : null;
 
           const isOpen = expanded === entry.id;
-          const num = entries.length - ri;
+          // Número real da execução (a lista pode estar filtrada).
+          const num = entry.executionNumber ?? entries.length - ri;
 
           return (
             <div
@@ -758,6 +782,28 @@ function EntryHistory({
   );
 }
 
+// ---------------------------------------------------------------------------
+// Estado da visão (aba, filtros, painel) — salvo por teste neste navegador.
+// ---------------------------------------------------------------------------
+
+const VIEW_STORAGE_PREFIX = "robostage:labtest-view:";
+
+function readViewState(testId: string): ViewState {
+  if (typeof window === "undefined" || !testId) return DEFAULT_VIEW_STATE;
+  try {
+    const raw = window.localStorage.getItem(VIEW_STORAGE_PREFIX + testId);
+    return raw ? normalizeViewState(JSON.parse(raw)) : DEFAULT_VIEW_STATE;
+  } catch {
+    return DEFAULT_VIEW_STATE;
+  }
+}
+
+const TABS: { key: ViewTab; label: string; icon: typeof BarChart3 }[] = [
+  { key: "analysis", label: "Análise", icon: BarChart3 },
+  { key: "dashboard", label: "Meu painel", icon: LayoutDashboard },
+  { key: "history", label: "Execuções", icon: History },
+];
+
 export default function LabTestView() {
   const params = useParams();
   const testId = String(params.id ?? "");
@@ -771,6 +817,22 @@ export default function LabTestView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const presetsButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Enquanto carrega, a página mostra só o spinner (igual no servidor e no
+  // navegador), então dá para ler o localStorage já na inicialização.
+  const [view, setView] = useState<ViewState>(() => readViewState(testId));
+
+  useEffect(() => {
+    if (!testId) return;
+    try {
+      window.localStorage.setItem(VIEW_STORAGE_PREFIX + testId, JSON.stringify(view));
+    } catch {
+      /* navegador sem armazenamento: a visão só não fica salva */
+    }
+  }, [testId, view]);
+
+  const patchView = (patch: Partial<ViewState>) => setView((v) => ({ ...v, ...patch }));
 
   useEffect(() => {
     if (!testId) return;
@@ -808,6 +870,50 @@ export default function LabTestView() {
 
   const modeDef = useMemo(() => (test ? getModeDefinition(test.mode) : null), [test]);
 
+  // FLL "runs": missões da temporada para a análise por missão (painel e tabelas).
+  const fllSeason: string | null =
+    test && test.mode === "runs" && test.season && !isFutureEditionConfig(test.config) && !isObrConfig(test.config)
+      ? String(test.season)
+      : null;
+  const [seasonMissions, setSeasonMissions] = useState<{ season: string; list: FllMissionDefinition[] } | null>(null);
+  useEffect(() => {
+    if (!fllSeason) return;
+    let active = true;
+    loadSeasonMissions<FllMissionDefinition>(fllSeason)
+      .then((list) => active && setSeasonMissions({ season: fllSeason, list }))
+      .catch(() => active && setSeasonMissions({ season: fllSeason, list: [] }));
+    return () => {
+      active = false;
+    };
+  }, [fllSeason]);
+  const fll = useMemo(() => {
+    if (!fllSeason || seasonMissions?.season !== fllSeason) return null;
+    return { missions: missionsForTest(seasonMissions.list, test?.config?.missions, entries) };
+  }, [fllSeason, seasonMissions, test, entries]);
+  const { chartTheme, chartRef } = useThemeForView();
+
+  // Métricas derivadas + execuções filtradas (valem para todas as abas).
+  const derived = useMemo(
+    () => (test ? buildViewMetrics(test.mode, fields, entries, fll) : { metrics: [], rows: [] }),
+    [test, fields, entries, fll],
+  );
+  const filteredEntries = useMemo(() => applyFilters(entries, view.filters), [entries, view.filters]);
+  const filteredRows = useMemo(() => {
+    const ids = new Set(filteredEntries.map((e) => e.id));
+    return derived.rows
+      .filter((r) => ids.has(r.entry.id))
+      .sort((a, b) => a.entry.executionNumber - b.entry.executionNumber);
+  }, [derived.rows, filteredEntries]);
+  const visibleMetrics = useMemo(() => {
+    const hidden = new Set(view.filters.hiddenMetrics ?? []);
+    const list = derived.metrics.filter((m) => !hidden.has(m.key));
+    return list.length ? list : derived.metrics;
+  }, [derived.metrics, view.filters.hiddenMetrics]);
+  const widgets = useMemo(
+    () => view.widgets ?? defaultWidgets(derived.metrics, Boolean(fllSeason)),
+    [view.widgets, derived.metrics, fllSeason],
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen bg-base-200/40 px-4 py-8">
@@ -839,6 +945,9 @@ export default function LabTestView() {
   const numericFieldCount = fields.filter((f) => f.type === "number").length;
   const isObr = test.mode === "runs" && isObrConfig(test.config);
   const isFllRuns = test.mode === "runs" && Boolean(test.season) && !isFE && !isObr;
+  const fileName = `teste-${String(test.name).replace(/\W+/g, "_").slice(0, 40)}`;
+  const ctx: ViewContext = { rows: filteredRows, metrics: visibleMetrics, theme: chartTheme, fileName, fll };
+  const withAside = view.showAside && view.tab !== "dashboard";
 
   const handleDelete = async () => {
     if (!confirm("Tem certeza que deseja excluir este teste?")) return;
@@ -846,9 +955,23 @@ export default function LabTestView() {
     router.push("/dashboard/labtest");
   };
 
+  const applyPreset = (key: string) => {
+    const preset = VIEW_PRESETS.find((p) => p.key === key);
+    if (!preset) return;
+    if (view.widgets?.length && !confirm(`Trocar o painel atual pelo modo "${preset.label}"?`)) return;
+    setView((v) => ({
+      ...v,
+      tab: "dashboard",
+      widgets: preset.build(derived.metrics),
+      filters: { ...v.filters, ...(preset.filters ?? {}) },
+    }));
+  };
+
+  const newExecutionLabel = isFE ? "Nova partida" : isObr ? "Nova rodada" : "Nova execução";
+
   return (
-    <div className="min-h-screen bg-base-200/40">
-      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6 px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
+    <div ref={chartRef} className="min-h-screen bg-base-200/40">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-5 px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
         <Link
           href="/dashboard/labtest"
           className="group flex w-fit items-center gap-2 text-sm text-base-content/50 transition-colors hover:text-primary"
@@ -858,7 +981,7 @@ export default function LabTestView() {
         </Link>
 
         {/* Cabeçalho */}
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
             <div className="flex size-14 shrink-0 items-center justify-center rounded-tl-2xl rounded-br-2xl bg-primary text-primary-content shadow-sm">
               <FlaskConical className="size-7" />
@@ -876,12 +999,17 @@ export default function LabTestView() {
 
               <h1 className="break-words text-2xl font-black tracking-tight sm:text-3xl">{test.name}</h1>
               <p className="mt-1 text-sm text-base-content/50">
-                Criado em {test.createdAt ? fmtDate(test.createdAt) : "—"}
+                Criado em {test.createdAt ? fmtDate(test.createdAt) : "—"} · {entries.length}{" "}
+                {entries.length === 1 ? "execução" : "execuções"}
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Link href={`/dashboard/labtest/${test.id}/execute`} className="btn btn-sm btn-primary gap-2 rounded-full">
+              {isFE || isObr ? <Play className="size-4" /> : <Plus className="size-4" />}
+              {newExecutionLabel}
+            </Link>
             <Link href={`/dashboard/labtest/${test.id}/export`} className="btn btn-sm btn-outline gap-2 rounded-full">
               <FileDown className="size-4" />
               Exportar
@@ -892,143 +1020,279 @@ export default function LabTestView() {
             </Link>
             <button
               type="button"
-              className="btn btn-sm btn-ghost gap-2 rounded-full text-error hover:bg-error/10"
+              className="btn btn-sm btn-ghost btn-square rounded-full text-error hover:bg-error/10"
               onClick={handleDelete}
               aria-label="Excluir teste"
+              title="Excluir teste"
             >
               <Trash2 className="size-4" />
-              <span className="hidden sm:inline">Excluir</span>
             </button>
           </div>
         </header>
 
-        {/* Resumo (FLL já traz os próprios cards dentro dos gráficos) */}
-        {!isFllRuns && !isFE && !isObr && <OverviewStats mode={test.mode} fields={fields} entries={entries} />}
-
-        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-          {/* Coluna principal */}
-          <div className="flex min-w-0 flex-col gap-8">
-            <section className="space-y-4">
-              <div>
-                <h2 className="text-lg font-bold tracking-tight">Análise dos dados</h2>
-                <p className="mt-1 text-sm text-base-content/50">
-                  Escolha o tipo de gráfico e passe o mouse nos pontos para ver o valor real de cada execução.
-                </p>
-              </div>
-
-              {isFE ? (
-                <FutureEditionAnalysis entries={entries} />
-              ) : isObr ? (
-                <ObrRoundAnalysis entries={entries} arena={getObrArena(test.config)} />
-              ) : isFllRuns ? (
-                <FllRunsCharts season={test.season} entries={entries} accent={modeDef.accent} />
-              ) : test.mode === "runs" ? (
-                hasNumericFields ? (
-                  <div className="flex flex-col gap-4">
-                    <TotalEvolutionChart fields={fields} entries={entries} />
-                    {numericFieldCount > 1 && <FieldComparisonChart fields={fields} entries={entries} />}
-                  </div>
-                ) : (
-                  <EmptyState>
-                    <FlaskConical className="mx-auto mb-3 size-8 text-base-content/30" />
-                    Ainda não há dados numéricos para analisar. Registre execuções com campos numéricos.
-                  </EmptyState>
-                )
-              ) : (
-                <LabTestModeCharts
-                  mode={test.mode}
-                  config={test.config}
-                  fields={fields}
-                  entries={entries}
-                  accent={modeDef.accent}
-                />
-              )}
-            </section>
-
-            <section className="space-y-4">
-              <div>
-                <h2 className="text-lg font-bold tracking-tight">Histórico de execuções</h2>
-                <p className="mt-1 text-sm text-base-content/50">
-                  Consulte os registros e acompanhe os resultados de cada execução.
-                </p>
-              </div>
-
-              <EntryHistory
-                fields={fields}
-                entries={entries}
-                accent={modeDef.accent}
-                mode={test.mode}
-                season={test.season}
-                futureEdition={isFE}
-                obr={isObr}
-              />
-            </section>
+        {/* Abas + exibição */}
+        <nav className="flex flex-wrap items-center justify-between gap-3">
+          <div role="tablist" className="tabs tabs-box bg-base-100 shadow-sm">
+            {TABS.map(({ key, label, icon: TabIcon }) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={view.tab === key}
+                onClick={() => patchView({ tab: key })}
+                className={`tab gap-1.5 ${view.tab === key ? "tab-active" : ""}`}
+              >
+                <TabIcon className="size-4" />
+                {label}
+                {key === "history" && (
+                  <span className="badge badge-xs badge-ghost">{filteredEntries.length}</span>
+                )}
+              </button>
+            ))}
           </div>
 
-          {/* Coluna lateral */}
-          <aside className="flex flex-col gap-4 xl:sticky xl:top-20">
-            <div className="rounded-tl-3xl rounded-tr-lg rounded-br-3xl rounded-bl-lg bg-primary p-6 text-primary-content shadow-md">
-              {isFE || isObr ? <Play className="mb-4 size-8 opacity-80" /> : <ClipboardList className="mb-4 size-8 opacity-80" />}
-              <h3 className="text-xl font-black leading-tight">
-                {isFE ? "Jogar uma nova partida" : isObr ? "Jogar uma nova rodada" : "Registrar nova execução"}
-              </h3>
-              <p className="mt-2 text-sm opacity-80">
-                {isFE
-                  ? "Cronômetro, pontuação ao vivo e análise em gráficos ao fim de cada partida."
-                  : isObr
-                    ? "Cronômetro, perigos, falhas e sala de resgate: cada rodada alimenta a análise."
-                    : "Cada execução alimenta os gráficos e o histórico deste teste."}
-              </p>
-              <Link
-                href={`/dashboard/labtest/${test.id}/execute`}
-                className="btn mt-5 w-full rounded-full border-0 bg-base-100 text-base-content hover:bg-base-200"
+          <div className="dropdown dropdown-end">
+            <button type="button" tabIndex={0} className="btn btn-sm btn-ghost rounded-full border-base-300 bg-base-100">
+              <SlidersHorizontal className="size-4" /> Exibir
+            </button>
+            <div tabIndex={0} className="dropdown-content z-30 mt-1 w-60 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+              <div className="flex flex-col gap-1">
+              {(
+                [
+                  ["showSummary", "Cards de resumo"],
+                  ["showAside", "Coluna lateral (registrar, sobre o teste)"],
+                ] as const
+              ).map(([key, label]) => (
+                <label key={key} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-base-200">
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-xs toggle-primary"
+                    checked={view[key]}
+                    onChange={(e) => patchView({ [key]: e.target.checked })}
+                  />
+                  {label}
+                </label>
+              ))}
+              <button
+                type="button"
+                className="btn btn-ghost btn-xs mt-1 justify-start text-base-content/60"
+                onClick={() => setView({ ...DEFAULT_VIEW_STATE })}
               >
-                {isFE || isObr ? <Play className="size-4" /> : <Plus className="size-4" />}
-                {isFE ? "Nova partida" : isObr ? "Nova rodada" : "Nova execução"}
-              </Link>
+                <RotateCcw className="size-3.5" /> Restaurar visão padrão
+              </button>
+              </div>
             </div>
+          </div>
+        </nav>
 
-            <div className="card border border-base-300/70 bg-base-100 shadow-sm">
-              <div className="card-body gap-3 p-5">
-                <h3 className="text-sm font-bold">Sobre o teste</h3>
-                {test.description ? (
-                  <p className="whitespace-pre-wrap text-sm leading-6 text-base-content/65">{test.description}</p>
+        <ViewFilterBar
+          filters={view.filters}
+          onChange={(filters) => patchView({ filters })}
+          metrics={derived.metrics}
+          total={entries.length}
+          shown={filteredEntries.length}
+          onPreset={applyPreset}
+          presetsOpenRef={presetsButtonRef}
+          isFll={isFllRuns}
+        />
+
+        {/* Resumo (FLL/OBR/FE já trazem os próprios cards na análise) */}
+        {view.showSummary && !isFllRuns && !isFE && !isObr && (
+          <OverviewStats mode={test.mode} fields={fields} entries={filteredEntries} />
+        )}
+
+        <div className={`grid grid-cols-1 items-start gap-6 ${withAside ? "xl:grid-cols-[minmax(0,1fr)_320px]" : ""}`}>
+          <main className="flex min-w-0 flex-col gap-6">
+            {view.tab === "analysis" && (
+              <section className="space-y-4">
+                <div>
+                  <h2 className="text-lg font-bold tracking-tight">Análise dos dados</h2>
+                  <p className="mt-1 text-sm text-base-content/50">
+                    Gráficos padrão deste modo, com os filtros aplicados. Quer montar do seu jeito? Use{" "}
+                    <button type="button" className="link link-primary" onClick={() => patchView({ tab: "dashboard" })}>
+                      Meu painel
+                    </button>
+                    .
+                  </p>
+                </div>
+
+                {isFE ? (
+                  <FutureEditionAnalysis entries={filteredEntries} />
+                ) : isObr ? (
+                  <ObrRoundAnalysis entries={filteredEntries} arena={getObrArena(test.config)} />
+                ) : isFllRuns ? (
+                  <FllRunsCharts
+                    entries={filteredEntries}
+                    accent={modeDef.accent}
+                    missions={fll?.missions ?? null}
+                    loadFailed={Boolean(seasonMissions && seasonMissions.list.length === 0)}
+                    theme={chartTheme}
+                    fileName={fileName}
+                    executeHref={`/dashboard/labtest/${test.id}/execute`}
+                  />
+                ) : test.mode === "runs" ? (
+                  hasNumericFields ? (
+                    <div className="flex flex-col gap-4">
+                      <TotalEvolutionChart fields={fields} entries={filteredEntries} />
+                      {numericFieldCount > 1 && <FieldComparisonChart fields={fields} entries={filteredEntries} />}
+                    </div>
+                  ) : (
+                    <EmptyState>
+                      <FlaskConical className="mx-auto mb-3 size-8 text-base-content/30" />
+                      Ainda não há dados numéricos para analisar. Registre execuções com campos numéricos.
+                    </EmptyState>
+                  )
                 ) : (
-                  <p className="text-sm italic text-base-content/40">Nenhuma descrição adicionada.</p>
+                  <LabTestModeCharts
+                    mode={test.mode}
+                    config={test.config}
+                    fields={fields}
+                    entries={filteredEntries}
+                    accent={modeDef.accent}
+                  />
                 )}
+              </section>
+            )}
 
-                {labels && (
-                  <div className="border-t border-base-200 pt-3">
-                    <ResourceLabels
-                      kind="labtest"
-                      resourceId={test.id}
-                      initialTags={labels.tags}
-                      initialMilestone={labels.milestone}
+            {view.tab === "dashboard" && (
+              <ViewDashboard
+                widgets={widgets}
+                onChange={(next) => patchView({ widgets: next })}
+                ctx={ctx}
+                onOpenPresets={() => presetsButtonRef.current?.focus()}
+              />
+            )}
+
+            {view.tab === "history" && (
+              <section className="space-y-4">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <h2 className="text-lg font-bold tracking-tight">Histórico de execuções</h2>
+                    <p className="mt-1 text-sm text-base-content/50">
+                      Abra um cartão para ver o detalhe ou troque para a tabela para comparar tudo de uma vez.
+                    </p>
+                  </div>
+                  <div className="join">
+                    <button
+                      type="button"
+                      className={`btn join-item btn-sm ${view.historyLayout === "cards" ? "btn-neutral" : "btn-ghost border-base-300 bg-base-100"}`}
+                      onClick={() => patchView({ historyLayout: "cards" })}
+                    >
+                      <Rows3 className="size-4" /> Cartões
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn join-item btn-sm ${view.historyLayout === "table" ? "btn-neutral" : "btn-ghost border-base-300 bg-base-100"}`}
+                      onClick={() => patchView({ historyLayout: "table" })}
+                    >
+                      <Table2 className="size-4" /> Tabela
+                    </button>
+                  </div>
+                </div>
+
+                {view.historyLayout === "table" ? (
+                  <div className="rounded-2xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+                    <ViewWidgetBody
+                      widget={{ id: "history", type: "table-entries", title: "Execuções", metrics: visibleMetrics.map((m) => m.key), size: "full", options: {} }}
+                      ctx={ctx}
+                      height={420}
                     />
                   </div>
+                ) : (
+                  <EntryHistory
+                    fields={fields}
+                    entries={filteredEntries}
+                    accent={modeDef.accent}
+                    mode={test.mode}
+                    season={test.season}
+                    futureEdition={isFE}
+                    obr={isObr}
+                  />
                 )}
-              </div>
-            </div>
+              </section>
+            )}
+          </main>
 
-            {entries.length > 0 && (
+          {withAside && (
+            <aside className="flex flex-col gap-4 xl:sticky xl:top-20">
+              <div className="rounded-tl-3xl rounded-tr-lg rounded-br-3xl rounded-bl-lg bg-primary p-6 text-primary-content shadow-md">
+                {isFE || isObr ? <Play className="mb-4 size-8 opacity-80" /> : <ClipboardList className="mb-4 size-8 opacity-80" />}
+                <h3 className="text-xl font-black leading-tight">
+                  {isFE ? "Jogar uma nova partida" : isObr ? "Jogar uma nova rodada" : "Registrar nova execução"}
+                </h3>
+                <p className="mt-2 text-sm opacity-80">
+                  {isFE
+                    ? "Cronômetro, pontuação ao vivo e análise em gráficos ao fim de cada partida."
+                    : isObr
+                      ? "Cronômetro, perigos, falhas e sala de resgate: cada rodada alimenta a análise."
+                      : "Cada execução alimenta os gráficos e o histórico deste teste."}
+                </p>
+                <Link
+                  href={`/dashboard/labtest/${test.id}/execute`}
+                  className="btn mt-5 w-full rounded-full border-0 bg-base-100 text-base-content hover:bg-base-200"
+                >
+                  {isFE || isObr ? <Play className="size-4" /> : <Plus className="size-4" />}
+                  {newExecutionLabel}
+                </Link>
+              </div>
+
               <div className="card border border-base-300/70 bg-base-100 shadow-sm">
-                <div className="card-body gap-2 p-5">
-                  <h3 className="mb-1 text-sm font-bold">Últimas execuções</h3>
-                  {[...entries].slice(-4).reverse().map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="flex items-center justify-between rounded-xl bg-base-200/60 px-3 py-2 text-sm"
-                    >
-                      <span className="font-semibold">#{entry.executionNumber}</span>
-                      <span className="text-xs text-base-content/50">{fmtDate(entry.createdAt)}</span>
+                <div className="card-body gap-3 p-5">
+                  <h3 className="text-sm font-bold">Sobre o teste</h3>
+                  {test.description ? (
+                    <p className="whitespace-pre-wrap text-sm leading-6 text-base-content/65">{test.description}</p>
+                  ) : (
+                    <p className="text-sm italic text-base-content/40">Nenhuma descrição adicionada.</p>
+                  )}
+
+                  {labels && (
+                    <div className="border-t border-base-200 pt-3">
+                      <ResourceLabels
+                        kind="labtest"
+                        resourceId={test.id}
+                        initialTags={labels.tags}
+                        initialMilestone={labels.milestone}
+                      />
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
-            )}
-          </aside>
+
+              {entries.length > 0 && (
+                <div className="card border border-base-300/70 bg-base-100 shadow-sm">
+                  <div className="card-body gap-2 p-5">
+                    <h3 className="mb-1 text-sm font-bold">Últimas execuções</h3>
+                    {[...entries].slice(-4).reverse().map((entry) => (
+                      <button
+                        key={entry.id}
+                        type="button"
+                        onClick={() =>
+                          setView((v) => ({
+                            ...v,
+                            tab: "history",
+                            filters: { ...v.filters, range: "all", search: `#${entry.executionNumber}` },
+                          }))
+                        }
+                        className="flex items-center justify-between rounded-xl bg-base-200/60 px-3 py-2 text-left text-sm transition hover:bg-base-200"
+                        title="Ver no histórico"
+                      >
+                        <span className="font-semibold">#{entry.executionNumber}</span>
+                        <span className="text-xs text-base-content/50">{fmtDate(entry.createdAt)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </aside>
+          )}
         </div>
       </div>
     </div>
   );
+}
+
+/** Tema dos gráficos lido do daisyUI ativo, para os blocos do painel. */
+function useThemeForView() {
+  const { ref, theme } = useChartTheme();
+  return { chartRef: ref, chartTheme: theme };
 }

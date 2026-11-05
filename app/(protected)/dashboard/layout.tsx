@@ -12,7 +12,11 @@ import {
   X,
 } from "lucide-react";
 import { ThemeController } from "@/components/UI/themeController";
-import { ScopeSwitcher } from "@/components/stagebook/scope-switcher";
+import { SidebarSpaceSwitcher } from "@/components/stagebook/sidebar-space-switcher";
+import { getPinsForScope } from "@/utils/stagebook/pins-core";
+import { db } from "@/db/client";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { NotificationsBell } from "@/components/stagebook/notifications-bell";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { listMyTeams, canCurrentUserCreateTeam } from "@/utils/stagebook/actions/teams";
@@ -30,6 +34,16 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     getUserPreferences(),
   ]);
   const activeTeamId = scope.type === "team" ? scope.teamId : null;
+  const activeTeam = teams.find((t) => t.id === activeTeamId) ?? null;
+  const [pins, me] = await Promise.all([
+    getPinsForScope(scope).catch(() => []),
+    db
+      .select({ name: users.name })
+      .from(users)
+      .where(eq(users.id, scope.userId))
+      .limit(1)
+      .then((rows) => rows[0] ?? null),
+  ]);
 
   return (
     <div
@@ -53,20 +67,15 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             </label>
           </div>
 
-          <div className="hidden truncate px-2 text-sm font-medium text-base-content/70 sm:block lg:hidden">
-            RoboStage
-          </div>
+          {/* Espaço ativo (no celular a troca fica no menu lateral). */}
+          <label
+            htmlFor="lt-drawer"
+            className="min-w-0 cursor-pointer truncate px-2 text-sm font-medium text-base-content/70 lg:hidden"
+          >
+            {activeTeam ? activeTeam.name : "Espaço pessoal"}
+          </label>
 
           <div className="ml-auto flex min-w-0 items-center gap-1 sm:gap-2">
-            {/* Pode encolher/truncar em telas pequenas */}
-            <div className="min-w-0 max-w-[45vw] sm:max-w-none">
-              <ScopeSwitcher
-                teams={teams}
-                activeTeamId={activeTeamId}
-                canCreateTeam={canCreateTeam}
-              />
-            </div>
-
             {/* Atalhos visíveis a partir de sm */}
             <Link
               href="/dashboard/calendar"
@@ -174,9 +183,19 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             )}
           </div>
 
+          {/* Troca de espaço (pessoal ↔ equipes) */}
+          <div className="shrink-0 border-b border-base-300 p-3 lg:is-drawer-close:px-2">
+            <SidebarSpaceSwitcher
+              teams={teams.map((t) => ({ id: t.id, name: t.name, role: t.role }))}
+              activeTeamId={activeTeamId}
+              canCreateTeam={canCreateTeam}
+              userName={me?.name ?? null}
+            />
+          </div>
+
           {/* Rola no mobile; overflow visível só no desktop recolhido (tooltips) */}
           <div className="w-full min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-[env(safe-area-inset-bottom)] lg:is-drawer-close:overflow-visible lg:is-drawer-close:px-2">
-            <NavLinks />
+            <NavLinks pins={pins} />
           </div>
         </aside>
       </div>

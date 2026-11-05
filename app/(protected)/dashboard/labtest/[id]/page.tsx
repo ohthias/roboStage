@@ -68,6 +68,7 @@ import {
   scoreFllMission,
 } from "@/utils/labtest/fll";
 import { deleteTest } from "../new/actions";
+import { PinToggle } from "@/components/stagebook/pin-toggle";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
 import { useChartTheme } from "@/components/labtest/charts/chart-theme";
@@ -1014,6 +1015,7 @@ export default function LabTestView() {
               <FileDown className="size-4" />
               Exportar
             </Link>
+            <PinToggle kind="labtest" resourceId={test.id} />
             <Link href={`/dashboard/labtest/${test.id}/edit`} className="btn btn-sm btn-outline gap-2 rounded-full">
               <Settings2 className="size-4" />
               Editar

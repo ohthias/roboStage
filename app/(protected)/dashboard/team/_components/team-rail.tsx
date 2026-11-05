@@ -1,16 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ChevronDown, LayoutGrid, Search } from "lucide-react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { ChevronDown, LayoutGrid } from "lucide-react";
 import { TeamAvatar } from "./team-avatar";
 import { RoleBadge } from "./role-badge";
 import { CreateTeamButton } from "./create-team-modal";
 
 export type RailTeam = { id: string; name: string; role: string };
-
-const norm = (v: string) => v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 function TeamList({
   teams,
@@ -49,9 +46,10 @@ function TeamList({
 }
 
 /**
- * Painel de equipes à esquerda, como o Microsoft Teams: lista de equipes com o
- * ladrilho colorido, busca e atalho para criar. Em telas pequenas vira um
- * seletor suspenso no topo da página.
+ * Coluna fina de equipes à esquerda (como Teams/Discord): um ladrilho por
+ * equipe, com o nome no tooltip e uma barra vermelha na equipe aberta. O
+ * painel da própria equipe (nav, cargo, números) fica no workspace. Em telas
+ * pequenas vira um seletor suspenso no topo.
  */
 export function TeamRail({
   teams,
@@ -64,59 +62,70 @@ export function TeamRail({
   canCreateTeam: boolean;
 }) {
   const pathname = usePathname();
-  const [search, setSearch] = useState("");
-
+  const view = useSearchParams().get("view");
+  const onHub = pathname === "/dashboard/team" && (view === "all" || !activeTeamId);
   const urlTeamId = pathname.match(/^\/dashboard\/team\/([0-9a-f-]{36})/i)?.[1] ?? null;
-  const activeId = urlTeamId ?? (pathname === "/dashboard/team" ? activeTeamId : null);
+  const activeId = urlTeamId ?? (pathname === "/dashboard/team" && !onHub ? activeTeamId : null);
   const current = teams.find((t) => t.id === activeId) ?? null;
-
-  const filtered = useMemo(() => {
-    const q = norm(search.trim());
-    return q ? teams.filter((t) => norm(t.name).includes(q)) : teams;
-  }, [teams, search]);
 
   return (
     <>
-      {/* Desktop */}
+      {/* Desktop: coluna fina de ladrilhos (o nome aparece no tooltip). */}
       <aside
         aria-label="Suas equipes"
-        className="sticky top-16 hidden h-[calc(100vh-4rem)] w-72 shrink-0 flex-col border-r border-base-300 bg-base-100 md:flex"
+        className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-[4.5rem] shrink-0 flex-col items-center gap-2 border-r border-base-300 bg-base-100 py-3 md:flex"
       >
-        <div className="flex items-center justify-between px-4 pb-2 pt-4">
-          <h2 className="text-base font-semibold">Equipes</h2>
-          {canCreateTeam && <CreateTeamButton variant="icon" />}
-        </div>
+        <Link
+          href="/dashboard/team?view=all"
+          title="Todas as equipes"
+          aria-label="Todas as equipes"
+          className={`flex size-11 items-center justify-center rounded-tl-xl rounded-br-xl rounded-tr-sm rounded-bl-sm transition-colors ${
+            onHub
+              ? "bg-primary text-primary-content"
+              : "bg-base-200 text-base-content/60 hover:bg-primary/10 hover:text-primary"
+          }`}
+        >
+          <LayoutGrid size={18} />
+        </Link>
+        <span className="h-px w-8 bg-base-300" />
 
-        {teams.length > 6 && (
-          <div className="px-3 pb-2">
-            <label className="input input-sm w-full">
-              <Search size={14} className="opacity-50" />
-              <input
-                type="search"
-                placeholder="Buscar equipe"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </label>
+        <ul className="flex min-h-0 w-full flex-1 flex-col items-center gap-2 overflow-y-auto overflow-x-visible py-1">
+          {teams.map((team) => {
+            const active = team.id === activeId;
+            return (
+              <li key={team.id} className="relative flex w-full justify-center">
+                {/* Indicador da equipe aberta, como no Teams/Discord. */}
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-0 top-1/2 w-1 -translate-y-1/2 rounded-r-full bg-primary transition-all ${
+                    active ? "h-8" : "h-0"
+                  }`}
+                />
+                <Link
+                  href={`/dashboard/team/${team.id}`}
+                  aria-current={active ? "page" : undefined}
+                  aria-label={team.name}
+                  className="tooltip tooltip-right z-10"
+                  data-tip={team.name}
+                >
+                  <TeamAvatar
+                    name={team.name}
+                    size="md"
+                    className={`transition-all ${
+                      active ? "ring-2 ring-primary ring-offset-2 ring-offset-base-100" : "opacity-80 hover:opacity-100"
+                    }`}
+                  />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+
+        {canCreateTeam && (
+          <div className="tooltip tooltip-right" data-tip="Criar equipe">
+            <CreateTeamButton variant="icon" />
           </div>
         )}
-
-        <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
-          {teams.length === 0 ? (
-            <p className="px-2 py-6 text-center text-xs text-base-content/45">Você ainda não está em nenhuma equipe.</p>
-          ) : filtered.length === 0 ? (
-            <p className="px-2 py-6 text-center text-xs text-base-content/45">Nenhuma equipe encontrada.</p>
-          ) : (
-            <TeamList teams={filtered} activeId={activeId} />
-          )}
-        </div>
-
-        <div className="border-t border-base-300 p-2">
-          <Link href="/dashboard/team?view=all" className="btn btn-ghost btn-sm w-full justify-start gap-2">
-            <LayoutGrid size={15} />
-            Todas as equipes
-          </Link>
-        </div>
       </aside>
 
       {/* Mobile */}

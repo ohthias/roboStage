@@ -21,6 +21,7 @@ import {
   type TeamRole,
 } from "@/utils/stagebook/team-permissions";
 import type { TeamMemberSummary } from "@/types/team-workspace";
+import type { MemberDutyHistory } from "@/types/training";
 import { PersonAvatar } from "./team-avatar";
 import { RoleBadge } from "./role-badge";
 import { ConfirmDialog } from "@/components/stagebook/modal";
@@ -40,12 +41,15 @@ export function MembersTab({
   viewerRole,
   members,
   invitations,
+  dutyHistory = {},
 }: {
   teamId: string;
   viewerId: string;
   viewerRole: TeamRole;
   members: TeamMemberSummary[];
   invitations: PendingInvitation[];
+  /** Funções já exercidas em sessões encerradas ("Piloto 14x · Apresentação 3x"). */
+  dutyHistory?: MemberDutyHistory;
 }) {
   const router = useRouter();
   const { addToast } = useToast();
@@ -234,6 +238,17 @@ export function MembersTab({
                             {isSelf && <span className="ml-1.5 text-xs font-normal text-base-content/40">(você)</span>}
                           </p>
                           {member.email && <p className="truncate text-xs text-base-content/45">{member.email}</p>}
+                          {dutyHistory[member.userId]?.length ? (
+                            <p
+                              className="truncate text-xs text-base-content/50"
+                              title="Funções exercidas nos treinos e competições encerrados"
+                            >
+                              {dutyHistory[member.userId]
+                                .slice(0, 3)
+                                .map((d) => `${d.label} ${d.count}x`)
+                                .join(" · ")}
+                            </p>
+                          ) : null}
                         </div>
                       </div>
                     </td>

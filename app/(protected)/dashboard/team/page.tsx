@@ -14,13 +14,13 @@ import { TeamAvatar } from "./_components/team-avatar";
 export default async function TeamHomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; view?: string }>;
+  searchParams: Promise<{ tab?: string; view?: string; feed?: string }>;
 }) {
-  const { tab, view } = await searchParams;
+  const { tab, view, feed } = await searchParams;
   const scope = await resolveStagebookScope();
 
   if (scope.type === "team" && view !== "all") {
-    return <TeamContent scope={scope} isActiveScope tab={parseTab(tab)} />;
+    return <TeamContent scope={scope} isActiveScope tab={parseTab(tab)} feed={feed === "all"} />;
   }
 
   const [teams, canCreateTeam] = await Promise.all([listMyTeams(), canCurrentUserCreateTeam()]);

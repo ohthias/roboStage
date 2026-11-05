@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, gte, isNull, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, isNull, lt, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
   boardCardAssignees,
@@ -10,9 +10,11 @@ import {
   calendarEvents,
   documents,
   milestones,
+  teamActivity,
   teamMembers,
   tests,
   thinklab,
+  trainingSessions,
   users,
 } from "@/db/schema";
 import {
@@ -29,6 +31,7 @@ import type {
   TeamMilestoneSummary,
   TeamThinkLabSummary,
 } from "@/types/team-workspace";
+import type { TeamActivityItem } from "@/types/training";
 
 /**
  * Leituras da página da equipe. Todas recebem um `teamId` JÁ VALIDADO pelo
@@ -194,6 +197,7 @@ export type TeamOverview = {
     pages: number;
     upcomingEvents: number;
     milestones: number;
+    sessions: number;
   };
   myCards: {
     id: string;
@@ -204,14 +208,16 @@ export type TeamOverview = {
     boardName: string;
     columnName: string;
   }[];
-  upcomingEvents: { id: string; title: string; startAt: string; type: string }[];
+  upcomingEvents: { id: string; title: string; startAt: string; type: string; location: string | null }[];
+  /** Próximo marco com prazo (para a contagem regressiva da aba Geral). */
+  nextMilestone: { id: string; name: string; dueAt: string; color: string | null } | null;
 };
 
 export async function getTeamOverview(teamId: string, userId: string): Promise<TeamOverview> {
   const now = new Date();
   const one = async (query: Promise<{ value: number }[]>) => (await query)[0]?.value ?? 0;
 
-  const [boardsN, thinklabsN, testsN, pagesN, eventsN, milestonesN, myCards, upcoming] =
+  const [boardsN, thinklabsN, testsN, pagesN, eventsN, milestonesN, sessionsN, myCards, upcoming, nextMilestone] =
     await Promise.all([
       one(db.select({ value: count() }).from(boards).where(eq(boards.teamId, teamId))),
       one(db.select({ value: count() }).from(thinklab).where(eq(thinklab.teamId, teamId))),
@@ -224,6 +230,7 @@ export async function getTeamOverview(teamId: string, userId: string): Promise<T
           .where(and(eq(calendarEvents.teamId, teamId), gte(calendarEvents.startAt, now))),
       ),
       one(db.select({ value: count() }).from(milestones).where(eq(milestones.teamId, teamId))),
+      one(db.select({ value: count() }).from(trainingSessions).where(eq(trainingSessions.teamId, teamId))),
       db
         .select({
           id: boardCards.id,
@@ -247,11 +254,19 @@ export async function getTeamOverview(teamId: string, userId: string): Promise<T
           title: calendarEvents.title,
           startAt: calendarEvents.startAt,
           type: calendarEvents.type,
+          location: calendarEvents.location,
         })
         .from(calendarEvents)
         .where(and(eq(calendarEvents.teamId, teamId), gte(calendarEvents.startAt, now)))
         .orderBy(asc(calendarEvents.startAt))
         .limit(5),
+      db
+        .select({ id: milestones.id, name: milestones.name, dueAt: milestones.dueAt, color: milestones.color })
+        .from(milestones)
+        .where(and(eq(milestones.teamId, teamId), gte(milestones.dueAt, new Date(now.getTime() - 86_400_000))))
+        .orderBy(asc(milestones.dueAt))
+        .limit(1)
+        .then((rows) => rows[0] ?? null),
     ]);
 
   return {
@@ -262,8 +277,64 @@ export async function getTeamOverview(teamId: string, userId: string): Promise<T
       pages: pagesN,
       upcomingEvents: eventsN,
       milestones: milestonesN,
+      sessions: sessionsN,
     },
     myCards: myCards.map((c) => ({ ...c, dueAt: iso(c.dueAt) })),
     upcomingEvents: upcoming.map((e) => ({ ...e, startAt: e.startAt.toISOString() })),
+    nextMilestone:
+      nextMilestone && nextMilestone.dueAt
+        ? { ...nextMilestone, dueAt: nextMilestone.dueAt.toISOString() }
+        : null,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Feed de atividade
+// ---------------------------------------------------------------------------
+
+/**
+ * Linha do tempo da equipe, mais recente primeiro. Ordena por `updated_at`
+ * porque linhas agregadas ("rodou 12 execuções") sobem quando recebem mais um
+ * evento. Paginação por cursor: passe o `updatedAt` do último item em `before`.
+ */
+export async function getTeamActivity(
+  teamId: string,
+  { before, limit = 30 }: { before?: Date | null; limit?: number } = {},
+): Promise<TeamActivityItem[]> {
+  const rows = await db
+    .select({
+      id: teamActivity.id,
+      verb: teamActivity.verb,
+      entityType: teamActivity.entityType,
+      entityId: teamActivity.entityId,
+      data: teamActivity.data,
+      count: teamActivity.count,
+      createdAt: teamActivity.createdAt,
+      updatedAt: teamActivity.updatedAt,
+      actorId: teamActivity.actorId,
+      actorName: users.name,
+      actorAvatar: users.avatarUrl,
+    })
+    .from(teamActivity)
+    .leftJoin(users, eq(users.id, teamActivity.actorId))
+    .where(
+      and(
+        eq(teamActivity.teamId, teamId),
+        before ? lt(teamActivity.updatedAt, before) : undefined,
+      ),
+    )
+    .orderBy(desc(teamActivity.updatedAt), desc(teamActivity.id))
+    .limit(Math.min(Math.max(limit, 1), 100));
+
+  return rows.map((row) => ({
+    id: row.id,
+    verb: row.verb,
+    entityType: row.entityType,
+    entityId: row.entityId,
+    data: row.data ?? {},
+    count: row.count,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    actor: row.actorId ? { id: row.actorId, name: row.actorName, avatarUrl: row.actorAvatar } : null,
+  }));
 }

@@ -32,6 +32,7 @@ import { MissionCard } from "@/components/FormMission/MissionCard";
 import { computeMissionBreakdown, computePoints } from "@/utils/scores";
 import { getSubMissionKey } from "@/utils/labtest/fll";
 import { createTestExecution } from "@/app/(protected)/dashboard/labtest/actions";
+import { useExecutionOperator } from "@/components/labtest/execution-operator";
 import { updateLabTestStatus } from "@/app/(protected)/dashboard/labtest/new/actions";
 import { LabTestModels } from "./LabTestModels";
 
@@ -62,6 +63,7 @@ export default function FllRoundExecution({
   missionIds,
   nextExecutionNumber,
 }: FllRoundExecutionProps) {
+  const operatorId = useExecutionOperator();
   const router = useRouter();
 
   const [catalog, setCatalog] = useState<Mission[] | null>(null);
@@ -260,6 +262,7 @@ export default function FllRoundExecution({
 
       await createTestExecution({
         testId,
+        operatorId,
         notes: notes.trim() || undefined,
         results: {
           answers,

@@ -18,6 +18,8 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import type { PinDTO } from "@/types/pins";
+import { PinnedSection } from "@/components/stagebook/pinned-nav";
 
 type NavItem = {
   href: string;
@@ -156,7 +158,7 @@ function NavSection({
   );
 }
 
-export function NavLinks() {
+export function NavLinks({ pins = [] }: { pins?: PinDTO[] }) {
   const pathname = usePathname();
 
   // Garante que o drawer feche após qualquer navegação no mobile
@@ -167,6 +169,7 @@ export function NavLinks() {
 
   return (
     <nav aria-label="Navegação principal" className="flex flex-col gap-6 py-4">
+      <PinnedSection pins={pins} pathname={pathname} onNavigate={closeDrawerOnMobile} />
       <NavSection title="Principal" items={MAIN_LINKS} pathname={pathname} />
       <NavSection title="Sistema" items={SYSTEM_LINKS} pathname={pathname} />
     </nav>

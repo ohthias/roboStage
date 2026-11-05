@@ -20,6 +20,8 @@ import type {
 } from "@/types/anatix.types";
 import { ValidationError } from "@/utils/stagebook/validation";
 import { runAction } from "@/utils/stagebook/action-result";
+import { recordTeamActivity } from "@/utils/stagebook/team-activity";
+import { activeSessionIdFor } from "@/utils/stagebook/training-core";
 
 const BASE_PATH = "/dashboard/labtest/anatix";
 const MAX_FRAMES_PER_BATCH = 2000;
@@ -249,12 +251,15 @@ export async function startAnatixSession(input: {
     const robotName = cleanText(input.robotName, 80);
     const board = cleanText(input.board, 80);
     const now = new Date();
+    // Laboratório de equipe: a conexão cai na sessão de treino em andamento.
+    const trainingSessionId = await activeSessionIdFor(lab.teamId);
 
     const [session] = await db
       .insert(anatixSessions)
       .values({
         labId: lab.id,
         userId: scope.userId,
+        trainingSessionId,
         robotName,
         board,
         protocolVersion: Number.isFinite(input.protocolVersion)
@@ -308,7 +313,7 @@ export async function endAnatixSession(input: {
   summary: AnatixSessionSummary;
 }) {
   return runAction(async () => {
-    const { lab, session } = await requireSession(input.sessionId);
+    const { scope, lab, session } = await requireSession(input.sessionId);
     const int = (v: unknown) =>
       Number.isFinite(Number(v)) ? Math.max(0, Math.trunc(Number(v))) : 0;
 
@@ -329,6 +334,24 @@ export async function endAnatixSession(input: {
         endedAt: new Date(),
       })
       .where(eq(anatixSessions.id, session.id));
+
+    if (lab.teamId && !session.endedAt) {
+      await recordTeamActivity({
+        teamId: lab.teamId,
+        actorId: scope.userId,
+        verb: "anatix.session_ended",
+        entityType: "anatix_session",
+        entityId: session.id,
+        data: {
+          labId: lab.id,
+          labName: lab.name,
+          robotName: session.robotName ?? lab.robotName,
+          frames: int(input.frameCount),
+          ...(session.trainingSessionId ? { sessionId: session.trainingSessionId } : {}),
+        },
+        aggregate: false,
+      });
+    }
 
     revalidatePath(`${BASE_PATH}/${lab.id}`);
   });

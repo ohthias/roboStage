@@ -2,6 +2,8 @@ import { requireStagebookAccess, StagebookAuthError } from "@/utils/stagebook/sc
 import { roleCan } from "@/utils/stagebook/team-permissions";
 import { getTeamSettingsInfo } from "../../actions";
 import { GeneralSettingsPanel } from "./general-settings-panel";
+import { DutyRolesPanel } from "./duty-roles-panel";
+import { getTeamDutyRoles } from "@/utils/stagebook/training-queries";
 import { SettingsNoAccess, SettingsShell } from "../../_components/settings-shell";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -31,7 +33,10 @@ export default async function TeamGeneralSettingsPage({
     return <SettingsNoAccess message="Só técnicos e mentores podem gerenciar a equipe." />;
   }
 
-  const info = await getTeamSettingsInfo(id);
+  const [info, dutyRoles] = await Promise.all([
+    getTeamSettingsInfo(id),
+    roleCan(scope.role, "roster.manage") ? getTeamDutyRoles(id, { includeArchived: true }) : Promise.resolve(null),
+  ]);
 
   return (
     <SettingsShell teamId={id} teamName={info.name} active="geral">
@@ -44,6 +49,7 @@ export default async function TeamGeneralSettingsPage({
         initialLogoUrl={info.hasCustomLogo ? info.logoUrl : null}
         canDeleteTeam={roleCan(scope.role, "team.delete")}
       />
+      {dutyRoles && <DutyRolesPanel teamId={info.id} roles={dutyRoles} />}
     </SettingsShell>
   );
 }

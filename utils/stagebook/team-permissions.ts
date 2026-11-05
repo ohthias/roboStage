@@ -40,7 +40,13 @@ export type TeamCapability =
   /** Convidar, remover e trocar cargo de membros. */
   | "team.members.manage"
   /** Excluir a equipe e a Organização do Clerk. */
-  | "team.delete";
+  | "team.delete"
+  /** Criar, iniciar e encerrar sessões de treino; marcar presença. */
+  | "session.run"
+  /** Excluir uma sessão de treino criada por outra pessoa. */
+  | "session.delete.any"
+  /** Montar/publicar a escala de competições e editar o catálogo de funções. */
+  | "roster.manage";
 
 const ALL: readonly TeamRole[] = TEAM_ROLES;
 
@@ -51,6 +57,9 @@ const MATRIX: Record<TeamCapability, readonly TeamRole[]> = {
   "team.edit": STAFF_ROLES,
   "team.members.manage": STAFF_ROLES,
   "team.delete": ["owner"],
+  "session.run": ALL,
+  "session.delete.any": STAFF_ROLES,
+  "roster.manage": STAFF_ROLES,
 };
 
 export const CAPABILITY_DENIED_MESSAGE: Record<TeamCapability, string> = {
@@ -61,6 +70,11 @@ export const CAPABILITY_DENIED_MESSAGE: Record<TeamCapability, string> = {
   "team.edit": "Só técnicos e mentores podem editar a equipe.",
   "team.members.manage": "Só técnicos e mentores podem gerenciar os membros da equipe.",
   "team.delete": "Só um técnico pode excluir a equipe.",
+  "session.run": "Seu cargo nesta equipe não permite conduzir sessões de treino.",
+  "session.delete.any":
+    "Só técnicos e mentores podem excluir sessões criadas por outras pessoas.",
+  "roster.manage":
+    "Só técnicos e mentores podem montar a escala de competições e editar as funções.",
 };
 
 export function roleCan(role: TeamRole, capability: TeamCapability): boolean {
@@ -143,6 +157,14 @@ export function canDeleteResource(
   userId: string,
 ): boolean {
   return creatorId === userId || roleCan(role, "tool.delete.any");
+}
+
+/**
+ * Escala de uma sessão: em treinos e simulados é informal (qualquer membro
+ * monta); em competições, só quem tem `roster.manage` (técnico/mentor).
+ */
+export function canEditRoster(role: TeamRole, sessionKind: string): boolean {
+  return sessionKind === "competicao" ? roleCan(role, "roster.manage") : roleCan(role, "session.run");
 }
 
 // ---------------------------------------------------------------------------

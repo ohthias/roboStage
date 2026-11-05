@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -93,9 +93,12 @@ type Source = { kind: "live" } | { kind: "saved"; session: AnatixSessionRecord; 
 export function AnatixLabView({
   lab,
   sessions,
+  banner,
 }: {
   lab: AnatixLabRecord;
   sessions: AnatixSessionRecord[];
+  /** Faixa da sessão de treino em andamento (laboratórios de equipe). */
+  banner?: ReactNode;
 }) {
   const router = useRouter();
   const settingsRef = useRef<HTMLDialogElement>(null);
@@ -320,6 +323,7 @@ export function AnatixLabView({
 
   return (
     <div className="min-h-full bg-base-200/40 px-4 py-8 text-base-content sm:px-6 lg:px-8">
+      {banner}
       {/* Cabeçalho */}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">

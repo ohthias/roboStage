@@ -10,11 +10,13 @@ import {
   numeric,
   timestamp,
   unique,
+  index,
 } from "drizzle-orm/pg-core";
 import { users } from "./users";
 import { teams } from "./teams";
 import { folders } from "./notebook";
 import { milestones } from "./milestones";
+import { trainingSessions } from "./training";
 
 // ---------------------------------------------------------------------------
 // Enums
@@ -74,10 +76,18 @@ export const testExecutions = pgTable("test_executions", {
   executionNumber: integer("execution_number").notNull(),
   notes: text("notes"),
   results: jsonb("results").notNull().default({}),
+  // Sessão de treino em que a execução aconteceu (vínculo automático com a
+  // sessão em andamento da equipe; ver utils/stagebook/training-core.ts).
+  trainingSessionId: uuid("training_session_id").references(() => trainingSessions.id, {
+    onDelete: "set null",
+  }),
+  // Quem lançou/operou a rodada. Execuções antigas ficam null ("autor desconhecido").
+  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
 }, (t) => [
+  index("test_executions_training_session_idx").on(t.trainingSessionId),
   // Dois lançamentos simultâneos (duas abas) não podem receber o mesmo número.
   // `createTestExecution` conta com esta constraint para detectar a corrida.
   unique("test_executions_test_number_unique").on(t.testId, t.executionNumber),

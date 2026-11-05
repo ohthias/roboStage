@@ -86,6 +86,7 @@ import {
   updateDocumentProperty,
 } from "../actions";
 import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
+import { PinToggle } from "@/components/stagebook/pin-toggle";
 import type { MilestoneDTO, TagDTO } from "@/types/labels";
 import { findPath, moveOptions, nodeLabel, useNotebook } from "../notebook-context";
 import { IntentLink } from "../intent-link";
@@ -763,12 +764,15 @@ export function NotebookEditor({
                 </div>
 
                 {/* Tags e milestone — catálogo universal (Kanban, Calendário, ThinkLab, LabTest) */}
-                <ResourceLabels
-                  kind="document"
-                  resourceId={documentId}
-                  initialTags={initialTags}
-                  initialMilestone={initialMilestone}
-                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <ResourceLabels
+                    kind="document"
+                    resourceId={documentId}
+                    initialTags={initialTags}
+                    initialMilestone={initialMilestone}
+                  />
+                  <PinToggle kind="stagebook" resourceId={documentId} className="btn btn-ghost btn-xs gap-1 text-base-content/50" />
+                </div>
               </div>
             )}
           </header>

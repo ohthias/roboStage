@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "./client";
 import { users, teams, teamMembers } from "./schema";
 import type { TeamRole } from "@/utils/stagebook/scope";
+import { recordTeamActivity } from "@/utils/stagebook/team-activity";
 
 /** Roles padrão do Clerk (org:admin / org:member) mapeados pro nosso enum. Se
  * no futuro forem criadas Roles customizadas no Clerk, caem em "colaborador".
@@ -158,7 +159,7 @@ export async function handleClerkWebhook(req: Request) {
         // Membership events can arrive before user.created/user.updated.
         // Satisfy the FK without depending on webhook delivery order.
         await ensureMembershipUser(public_user_data);
-        await db
+        const joined = await db
           .insert(teamMembers)
           .values({
             teamId: team.id,
@@ -167,7 +168,25 @@ export async function handleClerkWebhook(req: Request) {
           })
           .onConflictDoNothing({
             target: [teamMembers.teamId, teamMembers.userId],
+          })
+          .returning({ role: teamMembers.role });
+        // Só quando a linha é nova: o criador da equipe já entra pela action
+        // (e o webhook repetido não gera um segundo "entrou na equipe").
+        if (joined.length) {
+          await recordTeamActivity({
+            teamId: team.id,
+            actorId: public_user_data.user_id,
+            verb: "member.joined",
+            entityType: "member",
+            data: {
+              name:
+                [public_user_data.first_name, public_user_data.last_name].filter(Boolean).join(" ") ||
+                null,
+              role: joined[0].role,
+            },
+            aggregate: false,
           });
+        }
       }
       break;
     }

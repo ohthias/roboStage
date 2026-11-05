@@ -31,6 +31,7 @@ import { getSubMissionKey } from "@/utils/labtest/fll";
 import { computeMissionBreakdown } from "@/utils/scores";
 import { MissionCard } from "@/components/FormMission/MissionCard";
 import { createTestExecution } from "@/app/(protected)/dashboard/labtest/actions";
+import { useExecutionOperator } from "@/components/labtest/execution-operator";
 import { updateLabTestStatus } from "@/app/(protected)/dashboard/labtest/new/actions";
 import { FieldValueInput } from "./FieldValueInput";
 import { computeCalc } from "@/utils/labtest/calc";
@@ -115,6 +116,7 @@ export default function ExecuteTestForm({
   isMotorPairs = false,
   config,
 }: ExecuteTestFormProps) {
+  const operatorId = useExecutionOperator();
   const router = useRouter();
   const modeLabel = getModeMeta(mode).label;
   const isFllRuns = mode === "runs" && Boolean(season);
@@ -301,6 +303,7 @@ export default function ExecuteTestForm({
           testId,
           notes: d.notes.trim() || undefined,
           results: buildResults(d),
+          operatorId,
         }));
         saved += 1;
         // Tira da tela o que já foi salvo: tentar de novo não duplica.

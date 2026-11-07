@@ -48,8 +48,8 @@ export function TeamSidebar({
   const base = `/dashboard/team/${team.id}`;
 
   return (
-    <aside className="border-b border-base-300 lg:border-b-0 lg:border-r">
-      <div className="flex flex-col gap-5 p-4 lg:sticky lg:top-14 lg:max-h-[calc(100vh-3.5rem)] lg:overflow-y-auto lg:p-5">
+    <aside className="border-b border-base-300 lg:border-b-0 lg:border-r max-h-[calc(100vh-3.5rem)] lg:overflow-y-auto">
+      <div className="flex flex-col gap-5 p-4 lg:p-5">
         {/* Identidade */}
         <div className="flex items-center gap-3">
           <TeamAvatar name={team.name} imageUrl={logoUrl} size="md" />

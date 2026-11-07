@@ -203,7 +203,7 @@ export function OverviewTab({
             href={activeSession ? `${base}/treinos/${activeSession.id}` : `${base}?tab=membros`}
             linkLabel={activeSession ? "abrir sessão" : "membros"}
           />
-          <ul className="flex gap-3 overflow-x-auto pb-1">
+          <ul className="flex gap-3 pb-1">
             {ordered.map((m) => {
               const here = present.has(m.userId);
               return (

@@ -19,6 +19,7 @@ import {
   firstName,
   formatDate,
   greeting,
+  personalizedGreeting,
 } from "./shared";
 
 const PROGRESS_TONES = [
@@ -62,6 +63,9 @@ export function CompetitorDashboard({ data }: { data: DashboardData }) {
                 ? `Pronto para treinar para a ${nextLeague.leagueName}?`
                 : "Que tal começar um novo treino hoje?"}
             </h1>
+            <p className="mt-2 text-sm text-base-content/55">
+              {personalizedGreeting("competidor")}.
+            </p>
             <p className="mt-2 text-sm text-base-content/55">
               Você fez {weeklyExecutions}{" "}
               {weeklyExecutions === 1 ? "execução" : "execuções"} nesta semana.

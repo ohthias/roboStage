@@ -9,9 +9,11 @@ import {
   boards,
   calendarEvents,
   documents,
+  leagues,
   milestones,
   teamActivity,
   teamMembers,
+  teams,
   tests,
   thinklab,
   trainingSessions,
@@ -336,5 +338,51 @@ export async function getTeamActivity(
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     actor: row.actorId ? { id: row.actorId, name: row.actorName, avatarUrl: row.actorAvatar } : null,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Hub "Todas as equipes"
+// ---------------------------------------------------------------------------
+
+export type MyTeamSummary = {
+  id: string;
+  name: string;
+  role: TeamRole;
+  subtitle: string;
+  memberCount: number;
+  /** Título da sessão de treino em andamento, se houver. */
+  liveSession: string | null;
+  upcomingEvents: number;
+};
+
+/** Equipes do usuário com o essencial para os cartões do hub. */
+export async function getMyTeamsSummary(userId: string): Promise<MyTeamSummary[]> {
+  const rows = await db
+    .select({
+      id: teams.id,
+      name: teams.name,
+      role: teamMembers.role,
+      organizationName: teams.organizationName,
+      season: teams.season,
+      leagueName: leagues.name,
+      memberCount: sql<number>`(select count(*)::int from team_members tm where tm.team_id = "teams"."id")`,
+      liveSession: sql<string | null>`(select ts.title from training_sessions ts where ts.team_id = "teams"."id" and ts.status = 'em_andamento' limit 1)`,
+      upcomingEvents: sql<number>`(select count(*)::int from calendar_events ce where ce.team_id = "teams"."id" and ce.start_at >= now())`,
+    })
+    .from(teamMembers)
+    .innerJoin(teams, eq(teams.id, teamMembers.teamId))
+    .leftJoin(leagues, eq(leagues.id, teams.leagueId))
+    .where(eq(teamMembers.userId, userId))
+    .orderBy(asc(teams.name));
+
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    role: isTeamRole(r.role) ? r.role : "colaborador",
+    subtitle: [r.organizationName, r.leagueName, r.season].filter(Boolean).join(" · "),
+    memberCount: Number(r.memberCount),
+    liveSession: r.liveSession,
+    upcomingEvents: Number(r.upcomingEvents),
   }));
 }

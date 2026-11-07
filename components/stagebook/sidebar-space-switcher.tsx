@@ -115,7 +115,7 @@ export function SidebarSpaceSwitcher({
         role="button"
         aria-label={`Espaço atual: ${active ? active.name : "Espaço pessoal"}. Trocar de espaço`}
         data-tip={active ? active.name : "Espaço pessoal"}
-        className="group flex w-full items-center gap-2.5 rounded-tl-xl rounded-br-xl rounded-tr-sm rounded-bl-sm border border-base-300 bg-base-100 p-2 text-left transition-colors hover:border-primary/40 lg:is-drawer-close:tooltip lg:is-drawer-close:tooltip-right lg:is-drawer-close:justify-center lg:is-drawer-close:border-transparent lg:is-drawer-close:bg-transparent lg:is-drawer-close:p-0"
+        className="group flex h-11 w-full items-center gap-2.5 rounded-lg px-1.5 text-left transition-colors hover:bg-base-300/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 lg:is-drawer-close:tooltip lg:is-drawer-close:tooltip-right lg:is-drawer-close:justify-center lg:is-drawer-close:px-0"
       >
         <span className="relative">
           {tile(active)}
@@ -126,9 +126,11 @@ export function SidebarSpaceSwitcher({
           )}
         </span>
         <span className="min-w-0 flex-1 lg:is-drawer-close:hidden">
-          <span className="block font-mono text-[9px] tracking-[0.18em] text-base-content/40">/ ESPAÇO</span>
           <span className="block truncate text-sm font-semibold leading-tight">
-            {active ? active.name : "Pessoal"}
+            {active ? active.name : "Espaço pessoal"}
+          </span>
+          <span className="block truncate text-[11px] leading-tight text-base-content/45">
+            {active ? roleLabel(active.role) : "Só você"}
           </span>
         </span>
         <ChevronsUpDown size={14} className="shrink-0 text-base-content/35 lg:is-drawer-close:hidden" />

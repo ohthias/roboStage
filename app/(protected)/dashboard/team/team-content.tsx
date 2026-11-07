@@ -54,7 +54,7 @@ import { OverviewTab } from "./_components/overview-tab";
 import { ActivityFeed } from "./_components/activity-feed";
 import { TrainingTab } from "./_components/training-tab";
 import { ResourceTab } from "./_components/resource-tab";
-import { TeamSidebar } from "./_components/team-sidebar";
+import { TeamHeader } from "./_components/team-header";
 import { CORNER } from "./_components/team-ui";
 
 export const TEAM_TABS = [
@@ -138,31 +138,22 @@ export async function TeamContent({
     marcos: overview.counts.milestones,
     membros: members.length,
   };
-  const viewer = members.find((m) => m.userId === scope.userId) ?? null;
 
   return (
-    <div className="p-2 sm:p-4 lg:p-5">
+    <div className="min-h-full bg-base-100">
       <LiveRefresh />
 
-      <div
-        className={`overflow-hidden border border-base-300 bg-base-100 shadow-sm lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)] ${CORNER.lg}`}
-      >
-        <TeamSidebar
-          team={{ id: team.id, name: team.name }}
-          logoUrl={logoUrl}
-          subtitle={subtitle}
-          tabs={TEAM_TABS.map((t) => ({ ...t, count: counts[t.id] }))}
-          activeTab={tab}
-          role={scope.role}
-          canEditTeam={canEditTeam}
-          stats={[
-            { value: overview.counts.sessions, label: "treinos", href: `/dashboard/team/${team.id}?tab=treinos` },
-            { value: members.length, label: "membros", href: `/dashboard/team/${team.id}?tab=membros` },
-          ]}
-          viewer={viewer ? { name: viewer.name, avatarUrl: viewer.avatarUrl } : null}
-        />
+      <TeamHeader
+        team={{ id: team.id, name: team.name }}
+        logoUrl={logoUrl}
+        subtitle={subtitle}
+        tabs={TEAM_TABS.map((t) => ({ ...t, count: counts[t.id] }))}
+        activeTab={tab}
+        role={scope.role}
+        canEditTeam={canEditTeam}
+      />
 
-        <div className="min-w-0 p-4 sm:p-6">
+      <div className="mx-auto w-full max-w-[1500px] p-4 sm:p-6">
         {!isActiveScope && (
           <div role="alert" className={`alert alert-info alert-soft mb-5 ${CORNER.md}`}>
             <Info size={18} />
@@ -249,7 +240,6 @@ export async function TeamContent({
             invitations={canManageMembers ? await listPendingInvitations(team.id).catch(() => []) : []}
           />
         )}
-        </div>
       </div>
     </div>
   );

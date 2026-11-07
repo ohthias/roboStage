@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { UserButton } from "@clerk/nextjs";
-import { NavLinks } from "./nav-links";
+import { NavFooter, NavLinks } from "./nav-links";
 import Logo from "@/components/UI/Logo";
 import {
   CalendarDays,
@@ -184,7 +184,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           </div>
 
           {/* Troca de espaço (pessoal ↔ equipes) */}
-          <div className="shrink-0 border-b border-base-300 p-3 lg:is-drawer-close:px-2">
+          <div className="shrink-0 px-3 pt-3 lg:is-drawer-close:px-2">
             <SidebarSpaceSwitcher
               teams={teams.map((t) => ({ id: t.id, name: t.name, role: t.role }))}
               activeTeamId={activeTeamId}
@@ -194,8 +194,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           </div>
 
           {/* Rola no mobile; overflow visível só no desktop recolhido (tooltips) */}
-          <div className="w-full min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-[env(safe-area-inset-bottom)] lg:is-drawer-close:overflow-visible lg:is-drawer-close:px-2">
+          <div className="w-full min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 lg:is-drawer-close:overflow-visible lg:is-drawer-close:px-2">
             <NavLinks pins={pins} />
+          </div>
+
+          {/* Rodapé: Configurações + Mais */}
+          <div className="shrink-0 border-t border-base-300/70 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:is-drawer-close:px-2">
+            <NavFooter />
           </div>
         </aside>
       </div>

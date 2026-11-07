@@ -9,7 +9,7 @@ import {
   roomW,
   wallCells,
 } from "./rescue";
-import { connections, DIRS, sideGroups, terminalSide } from "./tiles";
+import { connections, DIRS, isJunction, junctionCount, sideGroups, terminalSide } from "./tiles";
 import type { Door, Project, Rescue, Tile, Wall } from "./types";
 
 export type Level = "ok" | "warn" | "error" | "info";
@@ -112,7 +112,8 @@ export function analyzePath(p: Project): Analysis {
   const count = (f: (t: Tile) => boolean) => all.filter((a) => f(a.tile)).length;
   const hz = (h: string) => count((t) => t.hazards.includes(h as never));
 
-  const nInter = count((t) => t.shape === "tee" || t.shape === "cross");
+  // interseções e becos: o círculo tem duas junções, o "Fim em T" é um beco
+  const nInter = all.reduce((n, a) => n + junctionCount(a.tile.shape), 0);
   const nFinish = count((t) => t.shape === "finish");
 
   const score: ScoreLine[] = [
@@ -241,7 +242,7 @@ export function analyzePath(p: Project): Analysis {
     for (const s of sideGroups(a.tile)[group]) {
       if (terminalSide(a.tile) === s) continue;
       if (!neighborOf(map, a, s)) {
-        if (a.tile.shape === "tee" || a.tile.shape === "cross") openInter++;
+        if (isJunction(a.tile.shape)) openInter++;
         else openLine++;
       }
     }
@@ -252,6 +253,14 @@ export function analyzePath(p: Project): Analysis {
     checks.push({
       level: "info",
       text: `${openInter} ramo(s) de interseção sem continuação (aceitável como beco sem saída).`,
+    });
+
+  // "Fim em T" sem as duas marcações verdes: o robô não sabe que deve voltar
+  const deadEnds = all.filter((a) => a.tile.shape === "deadEnd" && !(a.tile.markL && a.tile.markR)).length;
+  if (deadEnds > 0)
+    checks.push({
+      level: "info",
+      text: `${deadEnds} ladrilho(s) "Fim em T" sem as duas marcações verdes de beco sem saída.`,
     });
 
   // tablados vazios

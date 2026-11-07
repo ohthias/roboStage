@@ -6,7 +6,9 @@ import { roomCols, roomRows, roomH, roomW, WALL_T } from "@/utils/quickbrick/Are
 import {
   canHaveMarks,
   CELL,
-  isCross,
+  isBuiltinHazard,
+  MARK_HINT,
+  markSlots,
   COLS,
   emptyTile,
   HAZARDS,
@@ -354,7 +356,7 @@ export default function PathEditor(props: Props) {
             <div className="mb-1 text-xs font-semibold uppercase tracking-wide opacity-60">Perigos</div>
             <ul className="flex flex-col gap-1">
               {HAZARDS.map((h) => {
-                const ok = !!target && hazardAllowed(target.shape, h.id);
+                const ok = !!target && hazardAllowed(target.shape, h.id) && !isBuiltinHazard(target.shape, h.id);
                 return (
                   <li key={h.id}>
                     <label
@@ -376,51 +378,39 @@ export default function PathEditor(props: Props) {
               })}
             </ul>
             <p className="mt-1 text-[11px] opacity-60">
-              Gap e lombada valem em retas, curvas, interseções e ladrilhos de entrada/saída da sala. Obstáculo, rampa, gangorra e passagem, só em retas.
+              Gap e lombada valem em qualquer ladrilho com linha (a “Tracejada” já conta como gap). Obstáculo, rampa, gangorra e passagem, só em retas.
             </p>
           </div>
 
           <div>
             <div className="mb-1 text-xs font-semibold uppercase tracking-wide opacity-60">Marcações verdes</div>
-            {target && isCross(target.shape) ? (
+            {target && canHaveMarks(target.shape) ? (
               <div className="grid w-fit grid-cols-2 gap-x-4 gap-y-1">
-                {(
-                  [
-                    ["markTL", "↖ Sup. esq."],
-                    ["markTR", "↗ Sup. dir."],
-                    ["markL", "↙ Inf. esq."],
-                    ["markR", "↘ Inf. dir."],
-                  ] as const
-                ).map(([m, label]) => (
-                  <label key={m} className="flex items-center gap-2 text-sm">
+                {markSlots(target.shape).map((m) => (
+                  <label key={m.key} className="flex items-center gap-2 text-sm">
                     <input
                       type="checkbox"
                       className="checkbox checkbox-sm checkbox-success"
-                      checked={!!target[m]}
-                      onChange={() => patchTarget((t) => ({ ...t, [m]: !t[m] }))}
+                      checked={!!target[m.key]}
+                      onChange={() => patchTarget((t) => ({ ...t, [m.key]: !t[m.key] }))}
                     />
-                    {label}
+                    {m.label}
                   </label>
                 ))}
               </div>
             ) : (
-              <div className="flex gap-3">
-                {(["markL", "markR"] as const).map((m) => (
-                  <label key={m} className={`flex items-center gap-2 text-sm ${target && canHaveMarks(target.shape) ? "" : "opacity-40"}`}>
-                    <input
-                      type="checkbox"
-                      className="checkbox checkbox-sm checkbox-success"
-                      disabled={!target || !canHaveMarks(target.shape)}
-                      checked={!!target?.[m]}
-                      onChange={() => patchTarget((t) => ({ ...t, [m]: !t[m] }))}
-                    />
-                    {m === "markL" ? "Esquerda" : "Direita"}
+              <div className="flex gap-3 opacity-40">
+                {["Esquerda", "Direita"].map((l) => (
+                  <label key={l} className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" className="checkbox checkbox-sm checkbox-success" disabled checked={false} readOnly />
+                    {l}
                   </label>
                 ))}
               </div>
             )}
             <p className="mt-1 text-[11px] opacity-60">
-              Só em interseções. No “T”, vistas de quem chega pelo ramo de baixo (as duas = beco sem saída). No “+”, um marcador em cada quadrante (até 4).
+              {(target && MARK_HINT[target.shape]) ??
+                "Só onde a linha se ramifica: interseções T e +, “Fim em T” e círculos."}
             </p>
           </div>
         </div>

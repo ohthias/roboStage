@@ -91,7 +91,7 @@ export function Footer() {
                 </li>
               </ul>
               <div className="mt-8">
-                <h3 className="text-xs font-medium text-base-content/40">Ecossitema</h3>
+                <h3 className="text-xs font-medium text-base-content/40">Ecossistema</h3>
 
                 <ul className="mt-2 space-y-2.5 text-sm">
                   <li>

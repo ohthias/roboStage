@@ -70,16 +70,10 @@ const ways: {
   }
 ];
 
-const fundsUse: { icon: LucideIcon; text: string }[] = [
-  { icon: Server, text: "Infraestrutura: hospedagem, domínio e serviços que mantêm a plataforma no ar." },
-  { icon: Code2, text: "Desenvolvimento de novas ferramentas e melhorias para as equipes." },
-  { icon: Heart, text: "Qualquer valor ajuda — e divulgar o projeto também conta." },
-];
-
 const noCode: { icon: LucideIcon; title: string; text: string; href: string; label: string }[] = [
   { icon: Bug, title: "Reporte um bug", text: "Algo não funcionou como deveria? Conte o que aconteceu e como reproduzir.", href: `${REPO}/issues/new?template=bug_report.md`, label: "Abrir relato" },
   { icon: Lightbulb, title: "Sugira uma ideia", text: "Uma ferramenta que faria falta no treino? As sugestões guiam as próximas versões.", href: `${REPO}/issues/new?template=feature_request.md`, label: "Sugerir" },
-  { icon: FileText, title: "Melhore a documentação", text: "Guias, textos da plataforma, exemplos e mensagens de erro mais claras.", href: `${REPO}/tree/main/docs`, label: "Ver documentação" },
+  { icon: FileText, title: "Melhore a documentação", text: "Guias, textos da plataforma, exemplos e mensagens de erro mais claras.", href: `https://docs.roboStage.com.br`, label: "Ver documentação" },
   { icon: MessageSquare, title: "Tire uma dúvida", text: "Perguntas também ajudam: elas mostram onde a plataforma precisa ficar mais clara.", href: `${REPO}/issues/new?template=question.md`, label: "Perguntar" },
   { icon: Users, title: "Ajude a comunidade", text: "Responda dúvidas, compartilhe experiências e traga necessidades reais das equipes.", href: "/roboticar", label: "Conhecer o Roboticar" },
 ];
@@ -166,7 +160,7 @@ export default function SupportPage() {
             <RevealOnScroll>
               <SectionTitle
                 kicker="/ COMO APOIAR"
-                title="Três jeitos de"
+                title="Jeitos de"
                 highlight="fazer diferença."
                 highlightClass="bg-secondary text-secondary-content"
                 description="Pequenos apoios geram grandes possibilidades. Mais do que manter um site no ar, queremos um espaço onde equipes, mentores e competidores aprendam, testem e compartilhem."

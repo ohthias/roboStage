@@ -168,6 +168,7 @@ export const ferramentas: Ferramenta[] = [
     icon: <Puzzle className="w-5 h-5" />,
     link: "/obr/quickbrick/criador-de-arenas",
     image: "/images/QuickBrick/ArenaBuilder.png",
+    badge: "Atualizado",
     customContent: null,
   },
   {
@@ -179,7 +180,6 @@ export const ferramentas: Ferramenta[] = [
     icon: <Theater className="w-5 h-5" />,
     link: "/obr/quickbrick/mapa-de-palco",
     image: "/images/QuickBrick/StageMap.png",
-    badge: "Novo",
     customContent: null,
   },
 ];

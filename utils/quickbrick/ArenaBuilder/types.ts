@@ -7,7 +7,31 @@ export type Shape =
   | "start"
   | "finish"
   | "silver"
-  | "black";
+  | "black"
+  // ladrilhos sugeridos pela OBR (Sugestões de Ladrilhos v1.0)
+  | "deadEnd"
+  | "dashed"
+  | "spike"
+  | "wave"
+  | "steps"
+  | "meander"
+  | "chevron"
+  | "zigzag"
+  | "stairs"
+  | "vee"
+  | "uturn"
+  | "diagonal"
+  | "corner"
+  | "edgeCorner"
+  | "chamfer"
+  | "jog"
+  | "hook"
+  | "loop"
+  | "frame"
+  | "ring"
+  | "ringCut"
+  | "doubleDiag"
+  | "curveDiag";
 
 export type Hazard = "gap" | "bump" | "obstacle" | "ramp" | "seesaw" | "passage";
 

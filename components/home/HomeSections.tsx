@@ -329,8 +329,8 @@ const tools: Tool[] = [
     tag: "TELEMETRIA",
     title: "Anatix",
     description:
-      "Biblioteca aberta para ver sensores, estados e tempos do robô da OBR enquanto ele roda.",
-    href: "/obr/anatix",
+      "Biblioteca aberta para ver sensores, estados e tempos do robô da FLL e OBR enquanto ele roda.",
+    href: "/anatix",
     tone: "primary",
   },
   {
@@ -476,7 +476,7 @@ export function StepsSection() {
         <div className="relative mt-14 grid gap-10 md:grid-cols-3 md:gap-12">
           <div
             aria-hidden="true"
-            className="absolute left-[16.66%] right-[16.66%] top-6 hidden border-t-2 border-dashed border-base-300 md:block"
+            className="absolute left-0 right-[30%] top-6 hidden border-t-2 border-dashed border-base-300 md:block"
           />
           {steps.map(({ number, icon: Icon, title, description, detail, href, link }, i) => (
             <RevealOnScroll key={number} delay={i * 0.1}>

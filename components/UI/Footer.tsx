@@ -3,15 +3,7 @@ import Image from "next/image";
 import pkg from "@/package.json";
 import Logo from "./Logo";
 import { communities } from "@/utils/institutional/community";
-import {
-  Cuboid,
-  MessageSquare,
-  Clock,
-  FlaskConical,
-  Trophy,
-  Bug,
-  Heart,
-} from "lucide-react";
+import { Bug, Heart, SwatchBook } from "lucide-react";
 
 export function Footer() {
   return (
@@ -98,6 +90,32 @@ export function Footer() {
                   </Link>
                 </li>
               </ul>
+              <div className="mt-8">
+                <h3 className="text-xs font-medium text-base-content/40">Ecossistema</h3>
+
+                <ul className="mt-2 space-y-2.5 text-sm">
+                  <li>
+                    <Link href="https://robostage.com.br" className="link link-hover">
+                      Plataforma
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/showlive" className="link link-hover">
+                      ShowLive
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="https://docs.robostage.com.br" className="link link-hover">
+                      Documentação
+                    </Link>
+                  </li>                  
+                  <li>
+                    <Link href="https://necta.robostage.com.br" className="link link-hover">
+                      NECTA
+                    </Link>
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {/* Competições */}
@@ -177,6 +195,10 @@ export function Footer() {
                 </li>
                 <li>
                   <Link href="/assets" className="link link-hover">
+                    <SwatchBook
+                      className="mr-1.5 inline-block text-base-content/50"
+                      size={16}
+                    />
                     Assets
                   </Link>
                 </li>

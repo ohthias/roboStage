@@ -11,18 +11,109 @@ Exemplo: `2026.1` corresponde à primeira atualização oficial de 2026.
 
 ---
 
-## [Próxima versão / Desenvolvimento] — Anatix na FLL
+## [2026.8] — Treino em Equipe
+
+**Data:** 08/11/2026
+
+A oitava atualização de 2026 leva o RoboStage para dentro do treino. As equipes ganham **sessões de treino** que reúnem presença, execuções do LabTest e sessões do Anatix num só lugar, uma **escala de funções** por rodada para as competições e um **feed de atividade**. O **Anatix chega à FLL** com robôs LEGO rodando Pybricks, o LabTest ganha um **painel personalizável** com análise missão a missão, as páginas do Stagebook passam a ter **histórico de versões e lixeira**, e o QuickBrick Studio recebe **missões no Sharks Simulator** e **23 novos ladrilhos** no Criador de Arenas.
+
+### Treinos, escala e atividade da equipe
+
+* Adicionadas as **sessões de treino**, dos tipos Treino, Simulado e Competição, com os estados Planejada, Em andamento e Encerrada. Cada equipe tem no máximo uma sessão em andamento por vez.
+* Com uma sessão em andamento, as **execuções do LabTest e as sessões do Anatix da equipe entram nela automaticamente**. Um aviso nas telas de execução mostra para qual sessão os dados estão indo, com atalho para encerrá-la.
+* Nova página da sessão (`/dashboard/team/[id]/treinos/[sessionId]`), com presença por check-in, execuções agrupadas por teste e por operador, sessões Anatix vinculadas e notas do treino.
+* Execuções feitas fora do horário podem ser **vinculadas ou desvinculadas** manualmente da sessão.
+* Ao encerrar, a sessão calcula um **resumo**: duração, presentes, execuções, melhor resultado e média de cada teste comparada à sessão anterior, desempenho por operador e por função.
+* Sessões em andamento paradas há mais de **6 horas** encerram sozinhas, no horário da última atividade, para não capturar os dados do dia seguinte.
+* Nova aba **Treinos** na página da equipe, com as sessões em andamento, planejadas e encerradas.
+* Eventos de treino ou competição da equipe no **Calendário** ganharam os botões **Planejar / abrir** e **Iniciar sessão**, que criam a sessão a partir do evento.
+* Adicionada a **escala de funções**: uma grade função × rodada (ou sessão inteira) que fica em rascunho até ser publicada. Ao publicar, os escalados recebem uma notificação.
+* Em sessões de competição, só técnicos e mentores montam e publicam a escala. Em treinos, qualquer membro pode montar.
+* Adicionado o catálogo **Funções da competição** nas configurações da equipe, com cor, descrição, limite de pessoas por rodada e arquivamento sem perder o histórico.
+* Na aba Membros, cada pessoa mostra quantas vezes assumiu cada função.
+* Na tela de execução de testes da equipe, é possível escolher o **operador** do lançamento, já sugerido pela escala da rodada atual.
+* Adicionado o **feed de atividade** da equipe: testes criados e executados, novos recordes, quadros, marcos, entrada e troca de cargo de membros, sessões e escalas. Execuções em sequência do mesmo teste viram uma linha só.
+* A aba **Geral** da equipe foi reformulada, com sessão em andamento, treino rápido, o que está atribuído a você, agenda da semana, contagem regressiva para o próximo marco e atividade recente.
+* Nova página **Suas equipes**, com acesso ao espaço pessoal e a cada equipe. O novo cabeçalho da equipe substitui a antiga barra lateral.
 
 ### Anatix
 
 * O **Anatix chega à FLL**: robôs LEGO com **Pybricks** (SPIKE Prime, SPIKE Essential, Robot Inventor e hubs Powered Up) passam a enviar telemetria em tempo real para o LabTest, com a biblioteca em Python `anatix.py` e o mesmo protocolo v1 da versão Arduino.
 * Os laboratórios Anatix ganharam a escolha do robô: **Arduino e outras placas** (cabo USB, Web Serial) ou **LEGO com Pybricks**, conectado por **Bluetooth** (Web Bluetooth) ou **cabo USB** (WebUSB).
-* Com o hub conectado, o laboratório inicia e para o programa salvo no hub; cada execução do programa vira uma sessão gravada.
+* Com o hub conectado, o laboratório inicia e para o programa salvo no hub, e cada execução do programa vira uma sessão gravada.
 * Programas de missões sem loop funcionam com `anx.keep_alive()` em paralelo, via `multitask()`.
+* Adicionados os exemplos `basico.py`, `missoes_fll.py` e `seguidor_de_linha.py` (seguidor de linha com PID e desvio de obstáculo).
 * Adicionada a página **Anatix para FLL** (`/fll/anatix`), com exemplos, referência e downloads da biblioteca e dos exemplos (`/anatix/pybricks/`).
+* A página **Anatix** (`/anatix`) passou a apresentar as **duas versões** (Arduino em C e Pybricks em Python), com o uso de cada uma, comparação lado a lado, exemplos e referência das chamadas nas duas linguagens.
 * O Anatix aparece nas ferramentas da FLL (menu e página inicial) e passou de "Em breve" para **Completo** no perfil da FLL Challenge.
 * O link "Criar laboratório" (`/dashboard/labtest/anatix?novo=pybricks`) abre o formulário já com LEGO/Pybricks selecionado.
-* A página **Anatix** (`/anatix`) passou a apresentar as **duas versões** (Arduino em C e Pybricks em Python), com como utilizar cada uma, comparação lado a lado, exemplos e referência das chamadas nas duas linguagens.
+* Os laboratórios ganharam um **painel de blocos personalizável**: linhas e áreas no tempo, indicadores com mini-gráfico, comparação de estatísticas, distribuição, correlação, relação X × Y, perfil dos sensores, fatia de tempo em cada estado (`ANX_STATE`), histórico de estados e eventos (`ANX_EVENT`).
+* O painel tem janela de tempo comum a todos os blocos, modelos prontos e **exportação e importação do layout** em `.json`.
+
+### LabTest
+
+* A página do teste ganhou o **Meu painel**, com blocos de gráficos e tabelas montados do seu jeito ou a partir de modos prontos: Visão geral, Evolução e tendência, Consistência, Comparar parâmetros, Metas e sucesso, Últimas 5 execuções, Missões FLL e Consistência das missões.
+* Novos blocos: evolução por execução (linha, área, barras, empilhado, degraus, dispersão ou radar), tendência com média móvel, indicador, barras de estatísticas, distribuição, relação X × Y, taxa de sucesso, metas, tabela de execuções com exportação em CSV, estatísticas e correlação. Cada bloco pode ocupar 1/4, 1/2, 3/4 ou a largura inteira.
+* Adicionada a barra de filtros, por intervalo de execuções, por datas e por busca de número ou observação.
+* **Análise da FLL missão a missão**: ranking das missões, tabela de desempenho (tentativas, % que pontuou, % no máximo, aproveitamento, pontos perdidos e tempo médio da 1ª marcação) e mapa de calor missões × execuções.
+* As execuções de testes de equipe passaram a registrar **quem operou** o robô.
+
+### Stagebook
+
+* **Histórico de versões** nas páginas: as 5 versões mais recentes ficam guardadas, com "Salvar versão agora" e restauração. Antes de restaurar, o conteúdo atual vai para o histórico.
+* **Lixeira**: páginas excluídas podem ser restauradas por 7 dias, com busca, exclusão definitiva e opção de esvaziar a lixeira. Páginas na lixeira deixam de aparecer no Calendário e nos vínculos.
+* **Fonte por página**: Padrão, Sans, Serifa, Mono e Manuscrita.
+* Novos embeds do QuickBrick Studio: **foto de uma versão do robô** e **diagramas** do caderno, com tamanho pequeno, médio ou largura inteira.
+* O salvamento automático passou a lembrar o conteúdo já salvo e a tratar erros de forma mais clara.
+* **Fixados** na barra lateral: até 3 testes, quadros do ThinkLab, cadernos do QuickBrick ou páginas por espaço.
+* Novo seletor para trocar entre o **espaço pessoal** e as equipes direto da barra lateral.
+* O Dashboard passou a cumprimentar cada pessoa de acordo com o seu perfil.
+
+### Kanban
+
+* Os cards ganharam a marcação de **tarefa concluída**, com menu "Concluídas" em cada coluna.
+* Nova regra de coluna **Concluir tarefas automaticamente**: cards que entram nela são concluídos e só reabrem ao sair da coluna.
+* Novo modal **Editar board**, com nome, descrição e ícone.
+* Adicionado o carregamento com esqueleto ao abrir um board.
+
+### Calendário
+
+* A semana passou a começar no **domingo**.
+* Corrigido o deslocamento de dias na grade do mês causado pelo fuso horário.
+
+### QuickBrick Studio
+
+* O **Sharks Simulator** ganhou **missões no tapete**: cada missão tem uma zona e um ponto de ativação, e é concluída quando o centro do robô passa perto dele.
+* O simulador mostra quando o robô encosta numa missão, o progresso das missões concluídas e o tempo de cada conclusão.
+* As missões podem ser criadas, editadas ponto a ponto, removidas, exibidas ou ocultadas no tapete, exportadas e importadas em `.json` e restauradas para o padrão da temporada. As alterações ficam salvas no navegador.
+* O **Criador de Arenas** ganhou **23 novos ladrilhos**, organizados em grupos: retas especiais (tracejada, pico, ondulada, ziguezague, ziguezague largo, degraus, escada, serpentina, seta, volta pela borda e fim em T), curvas de 90° (canto, diagonal, chanfro, degrau, gancho e canto na borda), laços e círculos, e ladrilhos com duas linhas independentes.
+* Gap e lombada podem ser colocados em qualquer ladrilho com linha. A linha tracejada já vem com gap.
+* As marcações verdes passaram a aparecer só nas junções de cada formato, incluindo os quadrantes superiores do cruzamento.
+* A análise da arena reconhece as duas junções dos círculos, trata o "Fim em T" como beco sem saída e avisa quando ele está sem as duas marcações verdes.
+* A importação de arenas descarta marcações e perigos inválidos para o ladrilho.
+
+### Site e apoio ao projeto
+
+* O repositório passou a exibir o botão **Sponsor** do GitHub, com GitHub Sponsors e Patreon.
+* A página **Apoie o RoboStage** foi simplificada, com foco em contribuir com código e divulgar o projeto.
+* O rodapé ganhou a coluna **Ecossistema** (Plataforma, ShowLive, Documentação e NECTA).
+* As páginas Sobre e Apoie passaram a ler a versão direto do `package.json`.
+* O card do Anatix na página inicial passou a apontar para `/anatix` e a citar FLL e OBR.
+
+### Desempenho
+
+* Os plugins do editor que servem só à interação (menus, barras flutuantes, galeria de modelos) passaram a carregar depois do texto, e as páginas abrem mais rápido.
+
+### Infraestrutura
+
+* Novas migrações: `0006_document_history_trash`, `0007_training_sessions_activity` e `0008_user_pins`.
+* Novos scripts SQL manuais: `anatix_transport.sql` (coluna `transport` das sessões Anatix) e `board_cards_completion.sql` (conclusão de cards do Kanban).
+* Novas permissões de equipe: `session.run`, `session.delete.any` e `roster.manage`.
+* Adicionado o `notifyUsers` (`utils/stagebook/notify-internal.ts`), que permite notificar outros membros de dentro de actions já validadas.
+* Novos testes para o Anatix com Pybricks, o painel do Anatix, a análise da FLL, o painel do LabTest, histórico e lixeira de páginas, fontes e embeds, fixados, treinos e escala, a página de equipes e os novos ladrilhos do Criador de Arenas.
+* Removida a pasta `docs/` com a documentação antiga do projeto.
+
+> **A v2026.8 faz o RoboStage acompanhar o treino de verdade: quem estava, quem pilotou, o que rodou e o que melhorou desde a última vez.**
 
 ## [2026.7] — Evolua e Conecte
 

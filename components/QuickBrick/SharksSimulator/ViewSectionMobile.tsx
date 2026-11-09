@@ -12,11 +12,18 @@ import {
   MapPin,
   Target,
   Gauge,
+  Flag,
+  CheckCircle2,
+  Clock,
+  CircleSlash,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import MatMobile from "./MatMobile";
 import MobileWaypointsSheet from "./MobileWaypointsSheet";
 import MobileRobotSheet from "./MobileRobotSheet";
 import BottomSheetMobile from "./BottomSheetMobile";
+import { useMissionProgress, useMissions } from "./useMissions";
 import {
   calculateTrajectory,
   parseCode,
@@ -75,7 +82,7 @@ const ViewSectionMobile: React.FC = () => {
   const [robotState, setRobotState] = useState<RobotState>({ x: START_X, y: START_Y, angle: START_ANGLE });
 
   // --- Sheets / overlays --------------------------------------------------
-  const [sheet, setSheet] = useState<"none" | "waypoints" | "robot" | "speed">("none");
+  const [sheet, setSheet] = useState<"none" | "waypoints" | "robot" | "speed" | "missions">("none");
 
   // --- Fit-to-screen zoom ---------------------------------------------------
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -109,6 +116,12 @@ const ViewSectionMobile: React.FC = () => {
   const waypoints: Waypoint[] = useMemo(() => commandsToWaypoints(commands, trajectory), [commands, trajectory]);
   const segments = useMemo(() => generateSegments(trajectory, speed), [trajectory, speed]);
   const totalDuration = segments.length > 0 ? segments[segments.length - 1].endTime / 1000 : 0;
+
+  // --- Missões (edição completa fica no desktop; aqui só acompanhamento) ----
+  const { missions } = useMissions();
+  const [showMissions, setShowMissions] = useState(true);
+  const missionProgress = useMissionProgress(missions, segments, startConfig, robotState, robotConfig, time);
+  const missionsDone = missions.filter((m) => missionProgress.completed.has(m.id)).length;
 
   useEffect(() => {
     setIsPlaying(false);
@@ -244,6 +257,10 @@ const ViewSectionMobile: React.FC = () => {
           onSelectWaypoint={handleSelectWaypoint}
           selectedTrajectoryIndex={null}
           isSettingStart={isSettingStart}
+          missions={missions}
+          completedMissions={missionProgress.completed}
+          touchingMissions={missionProgress.touching}
+          showMissions={showMissions}
         />
 
         {/* Zoom controls */}
@@ -291,12 +308,15 @@ const ViewSectionMobile: React.FC = () => {
       </div>
 
       {/* Quick access row */}
-      <div className="grid grid-cols-3 gap-2 px-3 py-2 border-t border-base-content/10 shrink-0">
+      <div className="grid grid-cols-4 gap-1.5 px-3 py-2 border-t border-base-content/10 shrink-0">
         <button
           onClick={() => setIsSettingStart((v) => !v)}
           className={`btn btn-sm gap-1.5 ${isSettingStart ? "btn-warning" : "btn-outline"}`}
         >
           <Target size={14} /> Início
+        </button>
+        <button onClick={() => setSheet("missions")} className="btn btn-sm btn-outline gap-1 px-1">
+          <Flag size={14} /> {missionsDone}/{missions.length}
         </button>
         <button onClick={() => setSheet("waypoints")} className="btn btn-sm btn-outline gap-1.5">
           <MapPin size={14} /> Pontos ({waypoints.length})
@@ -339,6 +359,47 @@ const ViewSectionMobile: React.FC = () => {
         robotConfig={robotConfig}
         onChange={setRobotConfig}
       />
+
+      <BottomSheetMobile
+        open={sheet === "missions"}
+        onClose={() => setSheet("none")}
+        title={`Missões ${missionsDone}/${missions.length}`}
+        headerRight={
+          <button
+            onClick={() => setShowMissions((v) => !v)}
+            className="btn btn-ghost btn-sm btn-circle"
+            aria-label={showMissions ? "Ocultar missões no tapete" : "Mostrar missões no tapete"}
+          >
+            {showMissions ? <Eye size={16} /> : <EyeOff size={16} />}
+          </button>
+        }
+      >
+        <ul className="space-y-1.5 pb-2">
+          {missions.map((m) => {
+            const done = missionProgress.completed.has(m.id);
+            const t = missionProgress.completionTimes[m.id];
+            return (
+              <li key={m.id} className="flex items-center gap-2 rounded-lg bg-base-200 px-3 py-2">
+                {done ? (
+                  <CheckCircle2 size={16} className="text-success shrink-0" />
+                ) : t != null ? (
+                  <Clock size={16} className="text-warning shrink-0" />
+                ) : (
+                  <CircleSlash size={16} className="text-base-content/30 shrink-0" />
+                )}
+                <span className="flex-1 text-sm">{m.name}</span>
+                <span className="font-mono text-[10px] text-base-content/50">
+                  {t != null ? `${(t / 1000).toFixed(1)}s` : "fora da rota"}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="text-[10px] text-base-content/50">
+          Uma missão conta quando o centro do robô entra no círculo de ativação. Para criar ou editar missões, use o
+          simulador no computador.
+        </p>
+      </BottomSheetMobile>
 
       <BottomSheetMobile open={sheet === "speed"} onClose={() => setSheet("none")} title="Velocidade da simulação">
         <div className="pb-4">

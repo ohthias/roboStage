@@ -38,7 +38,7 @@ export default function SharksSimulatorPage() {
         IconTool={Bot}
       />
 
-      <div className="flex justify-center mt-8 mb-16">
+      <div className="mt-6 mb-10">
         <ViewSection />
       </div>
     </div>

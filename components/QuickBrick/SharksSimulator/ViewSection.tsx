@@ -17,10 +17,18 @@ import {
   Redo2,
   Minus,
   Plus,
+  Maximize2,
+  Flag,
+  Bot,
+  Crosshair,
+  MousePointer2,
+  Keyboard,
 } from "lucide-react";
 import Mat from "./Mat";
 import CodeEditor from "./CodeEditor";
 import VisualEditor from "./VisualEditor";
+import MissionsPanel, { MissionEditMode } from "./MissionsPanel";
+import { useMissionProgress, useMissions } from "./useMissions";
 import {
   calculateTrajectory,
   parseCode,
@@ -28,12 +36,20 @@ import {
   interpolateState,
   commandsToCode,
 } from "./engine.service";
-import { DEFAULT_CODE, START_ANGLE, START_X, START_Y } from "./constants";
+import {
+  DEFAULT_CODE,
+  START_ANGLE,
+  START_X,
+  START_Y,
+  TAPETE_HEIGHT_CM,
+  TAPETE_WIDTH_CM,
+} from "./constants";
 import {
   RobotState,
   AnimationSegment,
   RobotConfig,
   Command,
+  Coordinate,
 } from "@/types/SharksSimulator.types";
 
 const Panel: React.FC<{
@@ -101,7 +117,29 @@ const ViewSection: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [time, setTime] = useState(0);
   const [speed, setSpeed] = useState(1.0);
-  const [zoom, setZoom] = useState(4.0);
+  const [zoomFactor, setZoomFactor] = useState(1);
+  const [rightTab, setRightTab] = useState<"missions" | "robot" | "start">("missions");
+  const [pointerCm, setPointerCm] = useState<{ x: number; y: number } | null>(null);
+
+  // --- Tapete se ajusta ao espaço disponível --------------------------------
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [fitScale, setFitScale] = useState(4);
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const compute = () => {
+      // descontos: réguas (esquerda/topo) e respiro
+      const w = el.clientWidth - 64;
+      const h = el.clientHeight - 56;
+      if (w <= 0 || h <= 0) return;
+      setFitScale(Math.max(1.5, Math.min(w / TAPETE_WIDTH_CM, h / TAPETE_HEIGHT_CM)));
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const scale = fitScale * zoomFactor;
   const [editorMode, setEditorMode] = useState<"code" | "visual">("code");
 
   const [startConfig, setStartConfig] = useState({
@@ -150,6 +188,62 @@ const ViewSection: React.FC = () => {
 
   const totalDuration =
     segments.length > 0 ? segments[segments.length - 1].endTime / 1000 : 0;
+
+  // --- Missões ---------------------------------------------------------------
+  const { missions, addMission, updateMission, removeMission, resetMissions, replaceMissions } = useMissions();
+  const [showMissions, setShowMissions] = useState(true);
+  const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
+  const [missionEdit, setMissionEdit] = useState<MissionEditMode>(null);
+  const [missionDraft, setMissionDraft] = useState<Coordinate[]>([]);
+
+  const missionProgress = useMissionProgress(
+    missions,
+    segments,
+    startConfig,
+    robotState,
+    robotConfig,
+    time,
+  );
+
+  const startMissionEdit = (missionId: string, kind: "zone" | "activation") => {
+    setIsSettingStart(false);
+    setRightTab("missions");
+    setShowMissions(true);
+    setSelectedMissionId(missionId);
+    setMissionDraft([]);
+    setMissionEdit({ missionId, kind });
+  };
+
+  const cancelMissionEdit = () => {
+    setMissionEdit(null);
+    setMissionDraft([]);
+  };
+
+  const finishMissionZone = () => {
+    if (missionEdit?.kind === "zone" && missionDraft.length >= 3) {
+      updateMission(missionEdit.missionId, { vertices: missionDraft });
+    }
+    cancelMissionEdit();
+  };
+
+  const handleAddMission = () => {
+    const created = addMission();
+    setShowMissions(true);
+    setSelectedMissionId(created.id);
+  };
+
+  const handleRemoveMission = (id: string) => {
+    if (missionEdit?.missionId === id) cancelMissionEdit();
+    if (selectedMissionId === id) setSelectedMissionId(null);
+    removeMission(id);
+  };
+
+  const missionEditHint =
+    missionEdit?.kind === "zone"
+      ? `ZONA: clique para marcar os cantos (${missionDraft.length})`
+      : missionEdit?.kind === "activation"
+        ? "ALVO: clique para posicionar"
+        : null;
   useEffect(() => {
     setIsPlaying(false);
     if (animationReqRef.current) cancelAnimationFrame(animationReqRef.current);
@@ -231,6 +325,48 @@ const ViewSection: React.FC = () => {
     setRobotState({ x: startConfig.x, y: startConfig.y, angle: startConfig.angle });
   };
 
+  /** Pula para um instante da simulação (linha do tempo). */
+  const seekTo = (seconds: number) => {
+    if (animationReqRef.current) cancelAnimationFrame(animationReqRef.current);
+    setIsPlaying(false);
+    const ms = Math.max(0, Math.min(seconds * 1000, totalDuration * 1000));
+    elapsedWhenPausedRef.current = ms;
+    setTime(ms / 1000);
+    if (ms === 0) {
+      setRobotState({ x: startConfig.x, y: startConfig.y, angle: startConfig.angle });
+      return;
+    }
+    const state = interpolateState(segments, ms);
+    if (state) setRobotState(state);
+  };
+
+  const toggleSettingStart = () => {
+    if (!isSettingStart) {
+      cancelMissionEdit();
+      setRightTab("start");
+    }
+    setIsSettingStart((v) => !v);
+  };
+
+  // Atalhos: Esc cancela modos de edição; Enter conclui a zona sendo desenhada
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
+      if (e.key === "Escape") {
+        setIsSettingStart(false);
+        setMissionEdit(null);
+        setMissionDraft([]);
+      } else if (e.key === "Enter" && missionEdit?.kind === "zone" && missionDraft.length >= 3) {
+        updateMission(missionEdit.missionId, { vertices: missionDraft });
+        setMissionEdit(null);
+        setMissionDraft([]);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [missionEdit, missionDraft, updateMission]);
+
   const handleMapClick = (targetX: number, targetY: number, isShiftKey: boolean) => {
     if (isSettingStart) {
       if (isShiftKey) {
@@ -245,6 +381,17 @@ const ViewSection: React.FC = () => {
           x: parseFloat(targetX.toFixed(1)),
           y: parseFloat(targetY.toFixed(1)),
         }));
+      }
+      return;
+    }
+
+    if (missionEdit) {
+      const point = { x: parseFloat(targetX.toFixed(1)), y: parseFloat(targetY.toFixed(1)) };
+      if (missionEdit.kind === "activation") {
+        updateMission(missionEdit.missionId, { activation: point });
+        cancelMissionEdit();
+      } else {
+        setMissionDraft((prev) => [...prev, point]);
       }
       return;
     }
@@ -269,54 +416,84 @@ const ViewSection: React.FC = () => {
       updateCode(commandsToCode([...commands, ...newCommands]));
   };
 
-  return (
-    <div className="flex flex-col w-full overflow-hidden font-sans">
-      <header className="h-14 shrink-0 px-4 flex items-center justify-between z-40">
-        <div className="flex items-center gap-4">
-          <div className="join">
-            <button
-              onClick={togglePlay}
-              className={`join-item btn btn-sm ${isPlaying ? "btn-warning" : "btn-primary"} gap-1.5`}
-            >
-              {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-              {isPlaying ? "Pausar" : "Iniciar"}
-            </button>
-            <button
-              onClick={handleReset}
-              className="join-item btn btn-sm btn-ghost"
-              title="Reiniciar"
-            >
-              <RotateCcw size={14} />
-            </button>
-          </div>
+  const totalDistance = commands
+    .filter((c) => c.type === "reto")
+    .reduce((sum, c) => sum + Math.abs(c.val), 0);
+  const missionsDone = missions.filter((m) => missionProgress.completed.has(m.id)).length;
+  const touchingNames = missions
+    .filter((m) => missionProgress.touching.has(m.id))
+    .map((m) => m.name);
+  const SPEEDS = [0.5, 1, 2, 5];
 
-          <span className="font-mono text-sm text-base-content/70">
-            <span className="text-primary font-semibold">{time.toFixed(2)}s</span>
-            <span className="text-base-content/40"> / {totalDuration.toFixed(2)}s</span>
-          </span>
+  return (
+    <div className="flex flex-col w-full gap-3 font-sans">
+      {/* ===================== Barra de controle ===================== */}
+      <header className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-base-content/10 bg-base-100 px-3 py-2">
+        <div className="join">
+          <button
+            onClick={togglePlay}
+            disabled={segments.length === 0}
+            className={`join-item btn btn-sm ${isPlaying ? "btn-warning" : "btn-primary"} gap-1.5 w-28`}
+          >
+            {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+            {isPlaying ? "Pausar" : time > 0 && time < totalDuration ? "Continuar" : "Iniciar"}
+          </button>
+          <button onClick={handleReset} className="join-item btn btn-sm btn-ghost" title="Reiniciar">
+            <RotateCcw size={14} />
+          </button>
         </div>
 
-        <div className="flex items-center gap-2 w-48">
-          <span className="text-[10px] font-medium text-base-content/50 whitespace-nowrap">
-            Velocidade
-          </span>
+        {/* Linha do tempo */}
+        <div className="flex min-w-[220px] flex-1 items-center gap-2">
+          <span className="w-14 text-right font-mono text-xs font-semibold text-primary">{time.toFixed(2)}s</span>
           <input
             type="range"
-            min={0.1}
-            max={5.0}
-            step={0.1}
-            value={speed}
-            onChange={(e) => setSpeed(parseFloat(e.target.value))}
-            className="range range-xs range-primary"
+            min={0}
+            max={Math.max(totalDuration, 0.01)}
+            step={0.01}
+            value={Math.min(time, totalDuration)}
+            onChange={(e) => seekTo(parseFloat(e.target.value))}
+            className="range range-xs range-primary flex-1"
+            aria-label="Linha do tempo"
+            disabled={segments.length === 0}
           />
-          <span className="text-xs font-mono w-8 text-right">{speed.toFixed(1)}x</span>
+          <span className="w-14 font-mono text-xs text-base-content/50">{totalDuration.toFixed(2)}s</span>
         </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-base-content/50">Velocidade</span>
+          <div className="join">
+            {SPEEDS.map((v) => (
+              <button
+                key={v}
+                onClick={() => setSpeed(v)}
+                className={`join-item btn btn-xs font-mono ${speed === v ? "btn-neutral" : "btn-ghost border-base-content/10"}`}
+              >
+                {v}x
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={() => setRightTab("missions")}
+          className="btn btn-sm btn-ghost gap-1.5"
+          title="Missões concluídas"
+        >
+          <Flag size={14} className={missionsDone > 0 ? "text-success" : ""} />
+          <span className="font-mono text-xs">
+            <span className="font-semibold text-success">{missionsDone}</span>
+            <span className="text-base-content/40">/{missions.length}</span>
+          </span>
+        </button>
       </header>
 
-      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden w-full h-[calc(100vh-4rem)] relative">
-        <aside className="w-full lg:w-[300px] bg-base-200 flex flex-col h-full shrink-0 rounded-lg border border-base-content/10 overflow-hidden">
-          <div className="p-1.5 border-b border-base-content/10 flex items-center justify-between bg-base-300">
-            <div className="flex gap-0.5 bg-base-300 rounded-md p-0.5">
+      {/* ===================== Área de trabalho ===================== */}
+      <main className="grid h-[calc(100dvh-9rem)] min-h-[560px] w-full grid-cols-[260px_minmax(0,1fr)_320px] gap-3 xl:grid-cols-[300px_minmax(0,1fr)_340px]">
+        {/* --- Editor de rota --- */}
+        <aside className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-base-content/10 bg-base-200">
+          <div className="flex items-center justify-between border-b border-base-content/10 bg-base-300 p-1.5">
+            <div className="flex gap-0.5 rounded-md p-0.5">
               <button
                 className={`btn btn-xs h-6 min-h-0 text-[11px] ${editorMode === "code" ? "btn-default" : "btn-ghost"}`}
                 onClick={() => setEditorMode("code")}
@@ -330,7 +507,6 @@ const ViewSection: React.FC = () => {
                 <MousePointerClick size={11} className="mr-1" /> Visual
               </button>
             </div>
-
             <div className="join">
               <button
                 onClick={undo}
@@ -351,145 +527,260 @@ const ViewSection: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-hidden max-h-[calc(100vh-4rem)]">
+          {editorMode === "visual" && (
+            <p className="border-b border-base-content/10 bg-info/10 px-3 py-1.5 text-[10px] text-base-content/70">
+              Clique no tapete para adicionar um ponto à rota.
+            </p>
+          )}
+
+          <div className="min-h-0 flex-1 overflow-hidden">
             {editorMode === "code" ? (
               <CodeEditor code={code} onChange={updateCode} />
             ) : (
               <VisualEditor code={code} onChange={updateCode} />
             )}
           </div>
+
+          <footer className="flex items-center justify-between border-t border-base-content/10 bg-base-300 px-3 py-1.5 font-mono text-[10px] text-base-content/60">
+            <span>{commands.length} comandos</span>
+            <span>{totalDistance.toFixed(0)} cm percorridos</span>
+          </footer>
         </aside>
 
-        <section className="flex-grow relative flex items-center justify-center overflow-hidden p-3.5 h-full">
-          <div className="relative z-10 max-w-full max-h-full">
-            <Mat
-              trajectory={trajectory}
-              robotState={robotState}
-              robotConfig={robotConfig}
-              scale={zoom}
-              onMapClick={handleMapClick}
-              isInteractive={editorMode === "visual" || isSettingStart}
-              isSettingStart={isSettingStart}
-              isMoving={isPlaying}
-              time={time}
-            />
-          </div>
-
-          <div className="absolute bottom-4 right-4 z-20 card card-compact bg-base-100/90 backdrop-blur shadow-sm border border-base-300">
-            <div className="card-body p-1.5">
-              <div className="join">
-                <button
-                  onClick={() => setZoom(Math.max(2, zoom - 0.5))}
-                  className="btn btn-xs join-item btn-square mx-1"
-                  disabled={zoom <= 2}
-                  aria-label="Diminuir zoom"
-                >
-                  <Minus size={11} />
-                </button>
-                <div className="join-item border-none font-mono rounded-none flex items-center justify-center mx-1">
-                  {(zoom / 4).toFixed(1)}x
-                </div>
-                <button
-                  onClick={() => setZoom(Math.min(8, zoom + 0.5))}
-                  className="btn btn-xs join-item btn-square"
-                  disabled={zoom >= 8}
-                  aria-label="Aumentar zoom"
-                >
-                  <Plus size={11} />
-                </button>
-              </div>
+        {/* --- Tapete --- */}
+        <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-base-content/10 bg-base-200">
+          <div ref={stageRef} className="relative min-h-0 flex-1 overflow-auto">
+            <div className="flex min-h-full min-w-max items-center justify-center pb-4 pl-12 pr-4 pt-9">
+              <Mat
+                trajectory={trajectory}
+                robotState={robotState}
+                robotConfig={robotConfig}
+                scale={scale}
+                onMapClick={handleMapClick}
+                isInteractive={editorMode === "visual" || isSettingStart || missionEdit !== null}
+                isSettingStart={isSettingStart}
+                isMoving={isPlaying}
+                time={time}
+                missions={missions}
+                completedMissions={missionProgress.completed}
+                touchingMissions={missionProgress.touching}
+                selectedMissionId={selectedMissionId}
+                missionDraftVertices={missionEdit?.kind === "zone" ? missionDraft : null}
+                showMissions={showMissions}
+                editHint={
+                  isSettingStart
+                    ? "PARTIDA: clique para posicionar · Shift+clique define o ângulo"
+                    : missionEditHint
+                }
+                showInfoPanel={false}
+                onPointerCm={setPointerCm}
+              />
             </div>
           </div>
+
+          {/* Barra de status */}
+          <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-base-content/10 bg-base-100 px-3 py-1.5 font-mono text-[10px] text-base-content/70">
+            <span className="flex items-center gap-1" title="Posição do robô (cm)">
+              <Bot size={11} className="text-info" />
+              {robotState.x.toFixed(1)}, {robotState.y.toFixed(1)}
+            </span>
+            <span className="flex items-center gap-1" title="Ângulo do robô">
+              <Crosshair size={11} className="text-success" />
+              {(((robotState.angle % 360) + 360) % 360).toFixed(1)}°
+            </span>
+            <span className="flex items-center gap-1" title="Cursor (cm)">
+              <MousePointer2 size={11} />
+              {pointerCm ? `${pointerCm.x.toFixed(1)}, ${pointerCm.y.toFixed(1)}` : "—"}
+            </span>
+            {touchingNames.length > 0 && (
+              <span className="badge badge-warning badge-xs font-sans">contato: {touchingNames.join(", ")}</span>
+            )}
+
+            <span className="ml-auto hidden items-center gap-1 text-base-content/40 xl:flex">
+              <Keyboard size={11} /> Espaço+arrastar move · Esc cancela
+            </span>
+
+            <div className="join ml-auto xl:ml-0">
+              <button
+                onClick={() => setZoomFactor((z) => Math.max(0.5, +(z - 0.1).toFixed(2)))}
+                className="btn btn-xs join-item btn-ghost"
+                aria-label="Diminuir zoom"
+              >
+                <Minus size={11} />
+              </button>
+              <span className="join-item flex w-11 items-center justify-center">{Math.round(zoomFactor * 100)}%</span>
+              <button
+                onClick={() => setZoomFactor((z) => Math.min(3, +(z + 0.1).toFixed(2)))}
+                className="btn btn-xs join-item btn-ghost"
+                aria-label="Aumentar zoom"
+              >
+                <Plus size={11} />
+              </button>
+              <button
+                onClick={() => setZoomFactor(1)}
+                className="btn btn-xs join-item btn-ghost"
+                title="Ajustar à tela"
+              >
+                <Maximize2 size={11} />
+              </button>
+            </div>
+          </footer>
         </section>
 
-        <aside className="w-full lg:w-[300px] bg-base-200 border border-base-content/10 flex flex-col h-full overflow-y-auto shrink-0 p-3.5 gap-3.5 rounded-lg">
-          <Panel title="Posição de partida">
-            <button
-              onClick={() => setIsSettingStart(!isSettingStart)}
-              className={`btn btn-sm w-full text-xs gap-1.5 ${isSettingStart ? "btn-warning" : "btn-outline"}`}
-            >
-              <Target size={13} />
-              {isSettingStart ? "Definindo no mapa…" : "Definir no mapa"}
-            </button>
-            <div className="grid grid-cols-3 gap-2">
-              <NumberField
-                label="X (cm)"
-                value={startConfig.x}
-                onChange={(v) => setStartConfig((p) => ({ ...p, x: v }))}
-              />
-              <NumberField
-                label="Y (cm)"
-                value={startConfig.y}
-                onChange={(v) => setStartConfig((p) => ({ ...p, y: v }))}
-              />
-              <NumberField
-                label="Ângulo (°)"
-                value={startConfig.angle}
-                onChange={(v) => setStartConfig((p) => ({ ...p, angle: v }))}
-              />
-            </div>
-          </Panel>
-
-          <Panel title="Robô">
-            <div className="grid grid-cols-2 gap-2">
-              <NumberField
-                label="Largura (cm)"
-                value={robotConfig.widthCm}
-                onChange={(v) => setRobotConfig((p) => ({ ...p, widthCm: v }))}
-              />
-              <NumberField
-                label="Comprimento (cm)"
-                value={robotConfig.lengthCm}
-                onChange={(v) => setRobotConfig((p) => ({ ...p, lengthCm: v }))}
-              />
-            </div>
-
-            <label className="form-control w-full">
-              <span className="text-[10px] font-medium text-base-content/50 mb-1">Chassi</span>
-              <select
-                className="select select-bordered select-sm w-full text-xs"
-                value={robotConfig.shape}
-                onChange={(e) => setRobotConfig({ ...robotConfig, shape: e.target.value as any })}
+        {/* --- Painel lateral em abas --- */}
+        <aside className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-base-content/10 bg-base-200">
+          <div role="tablist" className="grid grid-cols-3 gap-0.5 border-b border-base-content/10 bg-base-300 p-1">
+            {(
+              [
+                ["missions", "Missões", Flag],
+                ["robot", "Robô", Bot],
+                ["start", "Partida", Target],
+              ] as const
+            ).map(([id, label, Icon]) => (
+              <button
+                key={id}
+                role="tab"
+                aria-selected={rightTab === id}
+                onClick={() => setRightTab(id)}
+                className={`btn btn-xs h-7 min-h-0 gap-1 text-[11px] ${rightTab === id ? "btn-default" : "btn-ghost"}`}
               >
-                <option value="tank">Esteiras (Tank Drive)</option>
-                <option value="4x4">4x4 Tração integral</option>
-                <option value="fwd">Tração dianteira (FWD)</option>
-                <option value="rwd">Tração traseira (RWD)</option>
-                <option value="custom">Desenho SVG customizado</option>
-              </select>
-            </label>
+                <Icon size={12} /> {label}
+              </button>
+            ))}
+          </div>
 
-            <label className="form-control w-full">
-              <span className="text-[10px] font-medium text-base-content/50 mb-1">Cor</span>
-              <div className="flex gap-2">
-                <input
-                  type="color"
-                  className="w-9 h-9 rounded border border-base-content/20 bg-transparent cursor-pointer shrink-0"
-                  value={robotConfig.color}
-                  onChange={(e) => setRobotConfig({ ...robotConfig, color: e.target.value })}
-                />
-                <input
-                  type="text"
-                  className="input input-bordered input-sm flex-1 font-mono uppercase text-xs"
-                  value={robotConfig.color}
-                  onChange={(e) => setRobotConfig({ ...robotConfig, color: e.target.value })}
-                />
-              </div>
-            </label>
-
-            {robotConfig.shape === "custom" && (
-              <label className="form-control w-full">
-                <span className="text-[10px] font-medium text-base-content/50 mb-1">Path SVG</span>
-                <textarea
-                  value={robotConfig.customPath}
-                  onChange={(e) => setRobotConfig({ ...robotConfig, customPath: e.target.value })}
-                  className="textarea textarea-bordered textarea-xs w-full font-mono text-[10px]"
-                  placeholder="M 50 0 L..."
-                  rows={2}
-                />
-              </label>
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
+            {rightTab === "missions" && (
+              <MissionsPanel
+                missions={missions}
+                completed={missionProgress.completed}
+                touching={missionProgress.touching}
+                completionTimes={missionProgress.completionTimes}
+                selectedId={selectedMissionId}
+                onSelect={(id) => {
+                  if (missionEdit && missionEdit.missionId !== id) cancelMissionEdit();
+                  setSelectedMissionId(id);
+                }}
+                editMode={missionEdit}
+                draftCount={missionDraft.length}
+                onStartEdit={startMissionEdit}
+                onFinishZone={finishMissionZone}
+                onCancelEdit={cancelMissionEdit}
+                onUpdate={updateMission}
+                onRemove={handleRemoveMission}
+                onAdd={handleAddMission}
+                onReset={() => {
+                  cancelMissionEdit();
+                  setSelectedMissionId(null);
+                  resetMissions();
+                }}
+                onImport={(list) => {
+                  cancelMissionEdit();
+                  setSelectedMissionId(null);
+                  replaceMissions(list);
+                }}
+                showMissions={showMissions}
+                onToggleShow={() => setShowMissions((v) => !v)}
+              />
             )}
-          </Panel>
+
+            {rightTab === "start" && (
+              <Panel title="Posição de partida">
+                <button
+                  onClick={toggleSettingStart}
+                  className={`btn btn-sm w-full text-xs gap-1.5 ${isSettingStart ? "btn-warning" : "btn-outline"}`}
+                >
+                  <Target size={13} />
+                  {isSettingStart ? "Definindo no mapa… (Esc)" : "Definir no mapa"}
+                </button>
+                <p className="text-[10px] text-base-content/50">
+                  Clique para posicionar. Shift+clique aponta o robô na direção do cursor.
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <NumberField
+                    label="X (cm)"
+                    value={startConfig.x}
+                    onChange={(v) => setStartConfig((p) => ({ ...p, x: v }))}
+                  />
+                  <NumberField
+                    label="Y (cm)"
+                    value={startConfig.y}
+                    onChange={(v) => setStartConfig((p) => ({ ...p, y: v }))}
+                  />
+                  <NumberField
+                    label="Ângulo (°)"
+                    value={startConfig.angle}
+                    onChange={(v) => setStartConfig((p) => ({ ...p, angle: v }))}
+                  />
+                </div>
+              </Panel>
+            )}
+
+            {rightTab === "robot" && (
+              <Panel title="Robô">
+                <div className="grid grid-cols-2 gap-2">
+                  <NumberField
+                    label="Largura (cm)"
+                    value={robotConfig.widthCm}
+                    onChange={(v) => setRobotConfig((p) => ({ ...p, widthCm: v }))}
+                  />
+                  <NumberField
+                    label="Comprimento (cm)"
+                    value={robotConfig.lengthCm}
+                    onChange={(v) => setRobotConfig((p) => ({ ...p, lengthCm: v }))}
+                  />
+                </div>
+
+                <label className="form-control w-full">
+                  <span className="text-[10px] font-medium text-base-content/50 mb-1">Chassi</span>
+                  <select
+                    className="select select-bordered select-sm w-full text-xs"
+                    value={robotConfig.shape}
+                    onChange={(e) =>
+                      setRobotConfig({ ...robotConfig, shape: e.target.value as RobotConfig["shape"] })
+                    }
+                  >
+                    <option value="tank">Esteiras (Tank Drive)</option>
+                    <option value="4x4">4x4 Tração integral</option>
+                    <option value="fwd">Tração dianteira (FWD)</option>
+                    <option value="rwd">Tração traseira (RWD)</option>
+                    <option value="custom">Desenho SVG customizado</option>
+                  </select>
+                </label>
+
+                <label className="form-control w-full">
+                  <span className="text-[10px] font-medium text-base-content/50 mb-1">Cor</span>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      className="w-9 h-9 rounded border border-base-content/20 bg-transparent cursor-pointer shrink-0"
+                      value={robotConfig.color}
+                      onChange={(e) => setRobotConfig({ ...robotConfig, color: e.target.value })}
+                    />
+                    <input
+                      type="text"
+                      className="input input-bordered input-sm flex-1 font-mono uppercase text-xs"
+                      value={robotConfig.color}
+                      onChange={(e) => setRobotConfig({ ...robotConfig, color: e.target.value })}
+                    />
+                  </div>
+                </label>
+
+                {robotConfig.shape === "custom" && (
+                  <label className="form-control w-full">
+                    <span className="text-[10px] font-medium text-base-content/50 mb-1">Path SVG</span>
+                    <textarea
+                      value={robotConfig.customPath}
+                      onChange={(e) => setRobotConfig({ ...robotConfig, customPath: e.target.value })}
+                      className="textarea textarea-bordered textarea-xs w-full font-mono text-[10px]"
+                      placeholder="M 50 0 L..."
+                      rows={2}
+                    />
+                  </label>
+                )}
+              </Panel>
+            )}
+          </div>
         </aside>
       </main>
     </div>

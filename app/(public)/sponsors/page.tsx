@@ -14,6 +14,7 @@ import {
   Lightbulb,
   MessageSquare,
   Search,
+  Server,
   Share2,
   Users,
   X,
@@ -31,7 +32,7 @@ import ShareButton, { CopyLinkButton } from "./ShareButton";
 
 export const metadata: Metadata = {
   title: "Apoie o RoboStage",
-  description: "Contribua com código, divulgação e, em breve, apoio financeiro para manter o RoboStage em movimento.",
+  description: "Contribua com código ou divulgação para manter o RoboStage em movimento.",
 };
 
 const REPO = "https://github.com/ohthias/roboStage";
@@ -66,23 +67,13 @@ const ways: {
     cta: "Compartilhar",
     status: "aberto",
     tone: "secondary",
-  },
-  {
-    icon: Heart,
-    tag: "FINANCEIRO",
-    title: "Ajude a manter no ar",
-    text: "Uma forma simples e transparente de apoiar a infraestrutura e o desenvolvimento está sendo preparada.",
-    href: "#financeiro",
-    cta: "Saiba mais",
-    status: "em breve",
-    tone: "accent",
-  },
+  }
 ];
 
 const noCode: { icon: LucideIcon; title: string; text: string; href: string; label: string }[] = [
   { icon: Bug, title: "Reporte um bug", text: "Algo não funcionou como deveria? Conte o que aconteceu e como reproduzir.", href: `${REPO}/issues/new?template=bug_report.md`, label: "Abrir relato" },
   { icon: Lightbulb, title: "Sugira uma ideia", text: "Uma ferramenta que faria falta no treino? As sugestões guiam as próximas versões.", href: `${REPO}/issues/new?template=feature_request.md`, label: "Sugerir" },
-  { icon: FileText, title: "Melhore a documentação", text: "Guias, textos da plataforma, exemplos e mensagens de erro mais claras.", href: `${REPO}/tree/main/docs`, label: "Ver documentação" },
+  { icon: FileText, title: "Melhore a documentação", text: "Guias, textos da plataforma, exemplos e mensagens de erro mais claras.", href: `https://docs.roboStage.com.br`, label: "Ver documentação" },
   { icon: MessageSquare, title: "Tire uma dúvida", text: "Perguntas também ajudam: elas mostram onde a plataforma precisa ficar mais clara.", href: `${REPO}/issues/new?template=question.md`, label: "Perguntar" },
   { icon: Users, title: "Ajude a comunidade", text: "Responda dúvidas, compartilhe experiências e traga necessidades reais das equipes.", href: "/roboticar", label: "Conhecer o Roboticar" },
 ];
@@ -98,6 +89,12 @@ const shareRules = {
   do: ["Use informações atualizadas.", "Use os materiais oficiais da marca.", "Deixe claro quando fala em nome próprio."],
   dont: ["Prometer funcionalidades que não existem.", "Apresentar o RoboStage como ferramenta oficial da FIRST."],
 };
+
+const hoverShadow: Record<Tone, string> = {
+  primary: "hover:shadow-[8px_8px_0_0_var(--color-primary)]",
+  secondary: "hover:shadow-[8px_8px_0_0_var(--color-secondary)]",
+  accent: "hover:shadow-[8px_8px_0_0_var(--color-accent)]",
+} as Record<Tone, string>;
 
 export default function SupportPage() {
   return (
@@ -163,7 +160,7 @@ export default function SupportPage() {
             <RevealOnScroll>
               <SectionTitle
                 kicker="/ COMO APOIAR"
-                title="Três jeitos de"
+                title="Jeitos de"
                 highlight="fazer diferença."
                 highlightClass="bg-secondary text-secondary-content"
                 description="Pequenos apoios geram grandes possibilidades. Mais do que manter um site no ar, queremos um espaço onde equipes, mentores e competidores aprendam, testem e compartilhem."
@@ -175,7 +172,7 @@ export default function SupportPage() {
                 const external = href.startsWith("http");
                 const soon = status === "em breve";
                 const cls = `group relative flex h-full flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border bg-base-100 p-7 transition-all duration-300 hover:-translate-y-1 ${
-                  soon ? "border-dashed border-base-content/25" : `border-base-300 ${tone === "primary" ? "hover:shadow-[8px_8px_0_0_var(--color-primary)]" : "hover:shadow-[8px_8px_0_0_var(--color-secondary)]"}`
+                  soon ? "border-dashed border-base-content/25" : `border-base-300 ${hoverShadow[tone]}`
                 }`;
                 const inner = (
                   <>
@@ -193,7 +190,13 @@ export default function SupportPage() {
                     <p className="relative mt-3 flex-1 text-sm leading-6 text-base-content/60">{text}</p>
                     <span className="relative mt-6 flex items-center justify-between border-t border-base-300 pt-4 text-sm font-bold">
                       {cta}
-                      {external ? <ArrowUpRight size={16} /> : <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />}
+                      {external ? (
+                        <ArrowUpRight size={16} />
+                      ) : href.startsWith("#") ? (
+                        <ArrowDown size={16} className="transition-transform group-hover:translate-y-1" />
+                      ) : (
+                        <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                      )}
                     </span>
                   </>
                 );
@@ -349,39 +352,6 @@ export default function SupportPage() {
                     <p className="mt-3 text-xs text-primary-content/70">O RoboStage é uma plataforma independente.</p>
                   </div>
                 </div>
-              </div>
-            </RevealOnScroll>
-          </div>
-        </section>
-
-        {/* ======================================================= FINANCEIRO */}
-        <section id="financeiro" className="scroll-mt-20 border-y border-base-300 bg-base-200/40 px-6 py-24">
-          <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.2fr_1fr] [&>*]:min-w-0">
-            <RevealOnScroll>
-              <SectionTitle
-                kicker="/ APOIO FINANCEIRO"
-                title="Quer contribuir"
-                highlight="diretamente?"
-                highlightClass="bg-accent text-accent-content"
-                description="Estamos preparando uma forma simples e transparente de apoiar financeiramente a manutenção da infraestrutura e o desenvolvimento do RoboStage."
-              />
-            </RevealOnScroll>
-            <RevealOnScroll delay={0.1}>
-              <div className="rounded-tl-3xl rounded-br-3xl border-2 border-dashed border-base-content/25 bg-base-100 p-7 text-center">
-                <span className="mx-auto grid size-14 place-items-center rounded-tl-xl rounded-br-xl bg-accent/20 text-[color-mix(in_oklab,var(--color-accent)_55%,var(--color-base-content))]">
-                  <Heart size={24} />
-                </span>
-                <p className="mt-5 font-mono text-[10px] font-bold tracking-[0.18em] text-base-content/50">EM PREPARAÇÃO</p>
-                <p className="mt-2 text-lg font-bold">Ainda não há como doar</p>
-                <p className="mt-2 text-sm leading-6 text-base-content/60">
-                  Quando estiver disponível, valores e formas de apoio vão aparecer aqui e nas notícias.
-                </p>
-                <button type="button" disabled className={`btn mt-6 w-full ${cornerBtn}`}>
-                  Em breve
-                </button>
-                <Link href="/news" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold hover:text-primary">
-                  Acompanhar notícias <ArrowRight size={14} />
-                </Link>
               </div>
             </RevealOnScroll>
           </div>

@@ -1,5 +1,5 @@
 import { defaultRescue, roomCols, roomRows, wallCells } from "./rescue";
-import { canHaveMarks, COLS, emptyTile, hazardAllowed, HAZARDS, isCross, ROWS, SHAPES } from "./tiles";
+import { COLS, emptyTile, HAZARDS, keepHazards, keepMarks, ROWS, SHAPES } from "./tiles";
 import type { Board, Corner, Hazard, Project, Rescue, Rot, Shape, Tile, Wall } from "./types";
 
 type Rect = { col: number; row: number; w: number; h: number };
@@ -140,20 +140,11 @@ function sanitizeTile(raw: unknown): Tile {
   const shape = (SHAPE_IDS.includes(t.shape as string) ? t.shape : "empty") as Shape;
   if (shape === "empty") return emptyTile();
   const rot = ((((num(t.rot, 0) % 4) + 4) % 4) | 0) as Rot;
-  const hazards = (Array.isArray(t.hazards) ? t.hazards : []).filter(
-    (h): h is Hazard => HAZARD_IDS.includes(h as string) && hazardAllowed(shape, h as Hazard),
-  );
-  const marks = canHaveMarks(shape);
-  const cross = isCross(shape);
-  return {
+  const hazards = keepHazards(
     shape,
-    rot,
-    hazards,
-    markL: marks && !!t.markL,
-    markR: marks && !!t.markR,
-    markTL: cross && !!t.markTL,
-    markTR: cross && !!t.markTR,
-  };
+    (Array.isArray(t.hazards) ? t.hazards : []).filter((h) => HAZARD_IDS.includes(h as string)),
+  );
+  return { shape, rot, hazards, ...keepMarks(shape, t) };
 }
 
 function sanitizeRescue(raw: unknown): Rescue {

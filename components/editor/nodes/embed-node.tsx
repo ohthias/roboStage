@@ -16,7 +16,8 @@ import {
 } from "lexical";
 import { KanbanCardEmbed } from "../embeds/kanban-card-embed";
 import { CalendarEventEmbed } from "../embeds/calendar-event-embed";
-import { LabTestChartEmbed } from "../embeds/labtest-chart-embed";
+import dynamic from "next/dynamic";
+import { EmbedSkeleton } from "../embeds/embed-shell";
 import { ThinkLabEmbed } from "../embeds/thinklab-embed";
 import {
   EMBED_KINDS,
@@ -24,6 +25,23 @@ import {
   type EmbedOptions,
   type LabTestChartOptions,
 } from "../embeds/embed-types";
+
+// Embeds do QuickBrick: só carregam quando a página tem um deles.
+const QuickbrickPhotoEmbed = dynamic(
+  () => import("../embeds/quickbrick-photo-embed").then((m) => m.QuickbrickPhotoEmbed),
+  { ssr: false, loading: () => <EmbedSkeleton height="h-64" /> },
+);
+const QuickbrickDiagramEmbed = dynamic(
+  () => import("../embeds/quickbrick-diagram-embed").then((m) => m.QuickbrickDiagramEmbed),
+  { ssr: false, loading: () => <EmbedSkeleton height="h-64" /> },
+);
+
+// O gráfico do LabTest puxa o recharts (pesado). Carregado só quando a página
+// tem um embed desse tipo, em vez de entrar no bundle de todo documento.
+const LabTestChartEmbed = dynamic(
+  () => import("../embeds/labtest-chart-embed").then((m) => m.LabTestChartEmbed),
+  { ssr: false, loading: () => <EmbedSkeleton height="h-64" /> },
+);
 
 export type SerializedEmbedNode = Spread<
   { embedKind: EmbedKind; refId: string; label: string; options: EmbedOptions },
@@ -86,6 +104,26 @@ function EmbedComponent({
       return <CalendarEventEmbed refId={refId} label={label} onRemove={onRemove} />;
     case "thinklab-board":
       return <ThinkLabEmbed refId={refId} label={label} onRemove={onRemove} />;
+    case "quickbrick-photo":
+      return (
+        <QuickbrickPhotoEmbed
+          refId={refId}
+          label={label}
+          options={options}
+          onOptionsChange={onOptionsChange}
+          onRemove={onRemove}
+        />
+      );
+    case "quickbrick-diagram":
+      return (
+        <QuickbrickDiagramEmbed
+          refId={refId}
+          label={label}
+          options={options}
+          onOptionsChange={onOptionsChange}
+          onRemove={onRemove}
+        />
+      );
     case "labtest-chart":
       return (
         <LabTestChartEmbed

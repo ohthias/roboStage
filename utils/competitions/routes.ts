@@ -58,6 +58,7 @@ export const COMPETITION_PAGES: Record<Competicao, readonly string[]> = {
     "rubric",
     "cheklist",
     "partiu-mesa",
+    "anatix",
     "recall",
     "future-edition",
     "future-edition/score",

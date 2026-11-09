@@ -23,6 +23,10 @@ export interface FllSubMissionDefinition {
 export interface FllAnswer {
   value: number;
   subAnswers: Record<string, number>;
+  /** Round 2:30: segundo da primeira marcação da missão. */
+  firstMarkSeconds?: number | null;
+  /** Round 2:30: primeira marcação feita depois do fim do tempo. */
+  markedAfterTime?: boolean;
 }
 
 export const getSubMissionKey = (

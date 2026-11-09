@@ -10,7 +10,8 @@ import type {
   AnatixLabConfig,
   AnatixParsed,
 } from "@/types/anatix.types";
-import { DEFAULT_ANATIX_CONFIG, ANATIX_BAUD_RATES } from "@/types/anatix.types";
+import { DEFAULT_ANATIX_CONFIG, ANATIX_BAUD_RATES, ANATIX_TRANSPORTS } from "@/types/anatix.types";
+import { normalizeDashboard } from "./dashboard";
 
 export const ANATIX_COMMANDS = {
   ping: "ANX PING",
@@ -18,6 +19,8 @@ export const ANATIX_COMMANDS = {
   stop: "ANX STOP",
   reset: "ANX RESET",
   rate: (ms: number) => `ANX RATE ${Math.min(10000, Math.max(20, Math.round(ms)))}`,
+  /** Extensão do anatix.py (Pybricks): banda máxima da telemetria em bytes/s. */
+  bandwidth: (bytesPerS: number) => `ANX BW ${Math.min(100000, Math.max(200, Math.round(bytesPerS)))}`,
 } as const;
 
 /** Intervalo recomendado entre PINGs (o robô para após 2000 ms sem PING). */
@@ -118,10 +121,14 @@ export function normalizeAnatixConfig(raw: unknown): AnatixLabConfig {
   const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
 
   return {
+    transport: (ANATIX_TRANSPORTS as unknown[]).includes(obj.transport)
+      ? (obj.transport as AnatixLabConfig["transport"])
+      : DEFAULT_ANATIX_CONFIG.transport,
     baudRate: (ANATIX_BAUD_RATES as readonly number[]).includes(baud)
       ? baud
       : DEFAULT_ANATIX_CONFIG.baudRate,
     views: {
+      custom: views.custom !== false,
       charts: views.charts !== false,
       maps: views.maps !== false,
       tables: views.tables !== false,
@@ -131,5 +138,6 @@ export function normalizeAnatixConfig(raw: unknown): AnatixLabConfig {
       : [],
     mapX: str(obj.mapX),
     mapY: str(obj.mapY),
+    dashboard: normalizeDashboard(obj.dashboard),
   };
 }

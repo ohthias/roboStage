@@ -337,6 +337,11 @@
   }
   body.doc-printing .doc-print-root > .doc-print-body {
     padding: 0 !important;
+    max-width: none !important;
+  }
+  body.doc-printing .doc-print-body > header {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
   }
   body.doc-printing .doc-print-cover {
     height: 38mm !important;
@@ -348,6 +353,7 @@
   /* Editor: sem moldura de edição e sem espaço reservado ao handle. */
   body.doc-printing .doc-print-editor {
     padding-left: 0 !important;
+    margin-left: 0 !important;
   }
   body.doc-printing [data-lexical-editor] {
     min-height: 0 !important;

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { UserButton } from "@clerk/nextjs";
-import { NavLinks } from "./nav-links";
+import { NavFooter, NavLinks } from "./nav-links";
 import Logo from "@/components/UI/Logo";
 import {
   CalendarDays,
@@ -12,7 +12,11 @@ import {
   X,
 } from "lucide-react";
 import { ThemeController } from "@/components/UI/themeController";
-import { ScopeSwitcher } from "@/components/stagebook/scope-switcher";
+import { SidebarSpaceSwitcher } from "@/components/stagebook/sidebar-space-switcher";
+import { getPinsForScope } from "@/utils/stagebook/pins-core";
+import { db } from "@/db/client";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { NotificationsBell } from "@/components/stagebook/notifications-bell";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { listMyTeams, canCurrentUserCreateTeam } from "@/utils/stagebook/actions/teams";
@@ -30,6 +34,16 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     getUserPreferences(),
   ]);
   const activeTeamId = scope.type === "team" ? scope.teamId : null;
+  const activeTeam = teams.find((t) => t.id === activeTeamId) ?? null;
+  const [pins, me] = await Promise.all([
+    getPinsForScope(scope).catch(() => []),
+    db
+      .select({ name: users.name })
+      .from(users)
+      .where(eq(users.id, scope.userId))
+      .limit(1)
+      .then((rows) => rows[0] ?? null),
+  ]);
 
   return (
     <div
@@ -53,20 +67,15 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             </label>
           </div>
 
-          <div className="hidden truncate px-2 text-sm font-medium text-base-content/70 sm:block lg:hidden">
-            RoboStage
-          </div>
+          {/* Espaço ativo (no celular a troca fica no menu lateral). */}
+          <label
+            htmlFor="lt-drawer"
+            className="min-w-0 cursor-pointer truncate px-2 text-sm font-medium text-base-content/70 lg:hidden"
+          >
+            {activeTeam ? activeTeam.name : "Espaço pessoal"}
+          </label>
 
           <div className="ml-auto flex min-w-0 items-center gap-1 sm:gap-2">
-            {/* Pode encolher/truncar em telas pequenas */}
-            <div className="min-w-0 max-w-[45vw] sm:max-w-none">
-              <ScopeSwitcher
-                teams={teams}
-                activeTeamId={activeTeamId}
-                canCreateTeam={canCreateTeam}
-              />
-            </div>
-
             {/* Atalhos visíveis a partir de sm */}
             <Link
               href="/dashboard/calendar"
@@ -140,7 +149,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         <label htmlFor="lt-drawer" aria-label="Fechar menu" className="drawer-overlay" />
 
         <aside className="flex h-full min-h-full w-72 max-w-[85vw] flex-col border-r border-base-300 bg-base-200 lg:max-w-none lg:is-drawer-close:w-14 lg:is-drawer-open:w-64">
-          <div className="flex h-14 shrink-0 items-center justify-between border-b border-base-300 px-4 lg:h-16 lg:is-drawer-close:justify-center lg:is-drawer-close:px-2 lg:is-drawer-open:px-5">
+          <div className="flex h-14 shrink-0 items-center justify-between border-b border-base-300 px-4 lg:is-drawer-close:justify-center lg:is-drawer-close:px-2 lg:is-drawer-open:px-5">
             <div className="lg:is-drawer-close:hidden">
               <Logo logoSize="sm" />
             </div>
@@ -174,9 +183,24 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             )}
           </div>
 
+          {/* Troca de espaço (pessoal ↔ equipes) */}
+          <div className="shrink-0 px-3 pt-3 lg:is-drawer-close:px-2">
+            <SidebarSpaceSwitcher
+              teams={teams.map((t) => ({ id: t.id, name: t.name, role: t.role }))}
+              activeTeamId={activeTeamId}
+              canCreateTeam={canCreateTeam}
+              userName={me?.name ?? null}
+            />
+          </div>
+
           {/* Rola no mobile; overflow visível só no desktop recolhido (tooltips) */}
-          <div className="w-full min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-[env(safe-area-inset-bottom)] lg:is-drawer-close:overflow-visible lg:is-drawer-close:px-2">
-            <NavLinks />
+          <div className="w-full min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 lg:is-drawer-close:overflow-visible lg:is-drawer-close:px-2">
+            <NavLinks pins={pins} />
+          </div>
+
+          {/* Rodapé: Configurações + Mais */}
+          <div className="shrink-0 border-t border-base-300/70 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:is-drawer-close:px-2">
+            <NavFooter />
           </div>
         </aside>
       </div>

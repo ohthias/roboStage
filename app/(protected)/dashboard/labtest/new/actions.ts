@@ -27,6 +27,9 @@ import { creatorScopeWhere, scopeWhere } from "@/utils/stagebook/permissions";
 import { canDeleteResource } from "@/utils/stagebook/team-permissions";
 import { ValidationError } from "@/utils/stagebook/validation";
 import { runAction } from "@/utils/stagebook/action-result";
+import { recordTeamActivity } from "@/utils/stagebook/team-activity";
+import { activeSessionIdFor, scoreExecutions } from "@/utils/stagebook/training-core";
+import { teamMembers } from "@/db/schema/teams";
 
 /* =========================================================================
  * Tipos de entrada — espelham o estado que o hook `useCreateTest` produz
@@ -521,6 +524,8 @@ async function insertNextExecution(values: {
   testId: string;
   notes: string | null;
   results: Record<string, unknown>;
+  trainingSessionId: string | null;
+  createdBy: string | null;
 }) {
   for (let attempt = 1; ; attempt++) {
     try {
@@ -612,6 +617,17 @@ async function createTestRecord(input: CreateTestInput) {
     })
     .returning();
 
+  if (created.teamId) {
+    await recordTeamActivity({
+      teamId: created.teamId,
+      actorId: scope.userId,
+      verb: "test.created",
+      entityType: "test",
+      entityId: created.id,
+      data: { name: created.name },
+    });
+  }
+
   revalidatePath("/dashboard/labtest");
   revalidatePath("/dashboard/folders", "layout");
 
@@ -655,7 +671,7 @@ async function deleteTestRecord(testId: string) {
   const scope = await resolveStagebookScope();
 
   const [existing] = await db
-    .select({ creatorId: tests.userId })
+    .select({ creatorId: tests.userId, name: tests.name, teamId: tests.teamId })
     .from(tests)
     .where(and(eq(tests.id, testId), testScope(scope)))
     .limit(1);
@@ -670,6 +686,16 @@ async function deleteTestRecord(testId: string) {
   }
 
   await db.delete(tests).where(and(eq(tests.id, testId), testScope(scope)));
+  if (existing.teamId) {
+    await recordTeamActivity({
+      teamId: existing.teamId,
+      actorId: scope.userId,
+      verb: "test.deleted",
+      entityType: "test",
+      entityId: testId,
+      data: { name: existing.name },
+    });
+  }
   revalidatePath("/dashboard/labtest");
 }
 
@@ -686,12 +712,14 @@ export async function createTestExecution(input: {
   testId: string;
   notes?: string;
   results?: Record<string, unknown>;
+  /** Operador da rodada (só em testes de equipe). Padrão: quem está lançando. */
+  operatorId?: string | null;
 }) {
   return runAction(async () => {
     const scope = await resolveStagebookScope();
 
     const [owned] = await db
-      .select({ id: tests.id, config: tests.config })
+      .select({ id: tests.id, name: tests.name, config: tests.config, teamId: tests.teamId })
       .from(tests)
       .where(and(eq(tests.id, input.testId), testScope(scope)));
 
@@ -729,16 +757,101 @@ export async function createTestExecution(input: {
       validateExecutionResults(ownedConfig, results);
     }
 
+    // Operador: em testes de equipe pode ser outro membro (o piloto escalado);
+    // no espaço pessoal é sempre o próprio usuário.
+    let operatorId = scope.userId;
+    if (owned.teamId && input.operatorId && input.operatorId !== scope.userId) {
+      const [member] = await db
+        .select({ userId: teamMembers.userId })
+        .from(teamMembers)
+        .where(and(eq(teamMembers.teamId, owned.teamId), eq(teamMembers.userId, input.operatorId)))
+        .limit(1);
+      if (!member) throw new ValidationError("O operador escolhido não é membro da equipe.");
+      operatorId = member.userId;
+    }
+
+    // Vínculo automático com a sessão de treino em andamento da equipe.
+    const trainingSessionId = await activeSessionIdFor(owned.teamId);
+
+    // Recorde do teste antes desta execução (para o evento "novo recorde").
+    const previousRows = owned.teamId
+      ? await db.select().from(testExecutions).where(eq(testExecutions.testId, owned.id))
+      : [];
+
     const created = await insertNextExecution({
       testId: input.testId,
       notes: input.notes ?? null,
       results,
+      trainingSessionId,
+      createdBy: operatorId,
     });
+
+    if (owned.teamId) {
+      await publishExecutionActivity({
+        teamId: owned.teamId,
+        actorId: scope.userId,
+        test: { id: owned.id, name: owned.name },
+        previousRows,
+        created,
+        trainingSessionId,
+      });
+    }
 
     revalidatePath(`/dashboard/labtest/${input.testId}`);
 
     return created;
   });
+}
+
+/**
+ * Feed da equipe: "rodou N execuções" (agregado) e, se bater o melhor placar
+ * anterior do teste, "novo recorde". Falhas aqui nunca derrubam o lançamento.
+ */
+async function publishExecutionActivity(params: {
+  teamId: string;
+  actorId: string;
+  test: { id: string; name: string };
+  previousRows: (typeof testExecutions.$inferSelect)[];
+  created: typeof testExecutions.$inferSelect;
+  trainingSessionId: string | null;
+}) {
+  let score: number | null = null;
+  let previousBest: number | null = null;
+  try {
+    const scored = await scoreExecutions([...params.previousRows, params.created]);
+    score = scored.find((e) => e.id === params.created.id)?.score ?? null;
+    const previous = scored
+      .filter((e) => e.id !== params.created.id && e.score !== null)
+      .map((e) => e.score as number);
+    previousBest = previous.length ? Math.max(...previous) : null;
+  } catch (error) {
+    console.error("[stagebook] falha ao pontuar execução para o feed:", error);
+  }
+
+  await recordTeamActivity({
+    teamId: params.teamId,
+    actorId: params.actorId,
+    verb: "test.executed",
+    entityType: "test",
+    entityId: params.test.id,
+    data: {
+      name: params.test.name,
+      ...(score !== null ? { bestScore: score, lastScore: score } : {}),
+      ...(params.trainingSessionId ? { sessionId: params.trainingSessionId } : {}),
+    },
+  });
+
+  if (score !== null && previousBest !== null && score > previousBest) {
+    await recordTeamActivity({
+      teamId: params.teamId,
+      actorId: params.actorId,
+      verb: "test.record",
+      entityType: "test",
+      entityId: params.test.id,
+      data: { name: params.test.name, score, previous: previousBest },
+      aggregate: false,
+    });
+  }
 }
 
 /* =========================================================================

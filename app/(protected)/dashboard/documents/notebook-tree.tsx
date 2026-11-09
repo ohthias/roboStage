@@ -16,6 +16,7 @@ import {
   PanelLeftOpen,
   Pencil,
   Trash2,
+  X,
 } from "lucide-react";
 import { DocIcon } from "@/components/editor/doc-icon";
 import {
@@ -28,23 +29,11 @@ import {
   moveNotebookItem,
 } from "./actions";
 import { useToast } from "@/app/context/ToastContext";
+import { nodeLabel, type TreeNode } from "./notebook-context";
+import { IntentLink } from "./intent-link";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
-export type TreeNode =
-  | {
-      type: "folder";
-      id: string;
-      name: string;
-      icon: string | null;
-      children: TreeNode[];
-    }
-  | {
-      type: "document";
-      id: string;
-      title: string;
-      icon: string | null;
-      children: TreeNode[];
-    };
+export type { TreeNode };
 
 type DraggedItem = { type: "folder" | "document"; id: string };
 type MoveTarget = { folderId?: string | null; parentPageId?: string | null };
@@ -59,10 +48,6 @@ function flattenTree(nodes: TreeNode[], out: TreeNode[] = []): TreeNode[] {
     flattenTree(n.children, out);
   }
   return out;
-}
-
-function nodeLabel(node: TreeNode) {
-  return node.type === "folder" ? node.name : node.title;
 }
 
 function NodeIcon({ node, expanded = false }: { node: TreeNode; expanded?: boolean }) {
@@ -111,13 +96,16 @@ function useRailTooltip() {
   return { bind, node, hide: () => setTip(null) };
 }
 
-export function NotebookTree({ tree }: { tree: TreeNode[] }) {
+export function NotebookTree({ tree, trashCount = 0 }: { tree: TreeNode[]; trashCount?: number }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { addToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [draggedItem, setDraggedItem] = useState<DraggedItem | null>(null);
   const [dragOverRoot, setDragOverRoot] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  // Em telas pequenas a árvore vira uma gaveta, aberta pelo botão "Páginas".
+  const [mobileOpen, setMobileOpen] = useState(false);
   const rail = useRailTooltip();
 
   useEffect(() => {
@@ -125,6 +113,14 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
       if (localStorage.getItem(COLLAPSE_KEY) === "1") setCollapsed(true);
     } catch {}
   }, []);
+
+  // Fecha a gaveta ao navegar (ajuste de estado durante a renderização,
+  // padrão recomendado pelo React em vez de um efeito).
+  const [lastPathname, setLastPathname] = useState(pathname);
+  if (lastPathname !== pathname) {
+    setLastPathname(pathname);
+    setMobileOpen(false);
+  }
 
   const toggleCollapsed = useCallback(() => {
     rail.hide();
@@ -142,8 +138,10 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
     function onKey(e: KeyboardEvent) {
       if ((e.ctrlKey || e.metaKey) && e.key === "\\") {
         e.preventDefault();
-        toggleCollapsed();
+        if (window.matchMedia("(min-width: 1024px)").matches) toggleCollapsed();
+        else setMobileOpen((open) => !open);
       }
+      if (e.key === "Escape") setMobileOpen(false);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -155,8 +153,8 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
     startTransition(async () => {
       try {
         unwrapAction(await moveNotebookItem(type, id, target));
-          addToast("Item movido com sucesso.", "success");
-          router.refresh();
+        addToast("Item movido com sucesso.", "success");
+        router.refresh();
       } catch (error) {
         addToast(error instanceof Error ? error.message : "Não foi possível mover o item.", "error");
       }
@@ -165,33 +163,34 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
 
   function handleNewFolder() {
     startTransition(async () => {
-        try {
-          unwrapAction(await createFolder(null));
-          addToast("Pasta criada com sucesso.", "success");
-          router.refresh();
-        } catch (error) {
-          addToast(error instanceof Error ? error.message : "Não foi possível criar a pasta.", "error");
-        }
+      try {
+        unwrapAction(await createFolder(null));
+        addToast("Pasta criada com sucesso.", "success");
+        router.refresh();
+      } catch (error) {
+        addToast(error instanceof Error ? error.message : "Não foi possível criar a pasta.", "error");
+      }
     });
   }
 
   function handleNewDocument() {
     startTransition(async () => {
-        try {
-          const created = unwrapAction(await createDocument(null, null));
-          addToast("Página criada com sucesso.", "success");
-          router.refresh();
-          if (created) router.push(`/dashboard/documents/${created.id}`);
-        } catch (error) {
-          addToast(error instanceof Error ? error.message : "Não foi possível criar a página.", "error");
-        }
+      try {
+        const created = unwrapAction(await createDocument(null, null));
+        router.refresh();
+        if (created) router.push(`/dashboard/documents/${created.id}`);
+      } catch (error) {
+        addToast(error instanceof Error ? error.message : "Não foi possível criar a página.", "error");
+      }
     });
   }
 
-  const aside = collapsed ? (
+  const trashActive = pathname === "/dashboard/documents/trash";
+
+  const rail_aside = (
     <aside
       aria-label="Páginas (compacto)"
-      className="sticky top-16 flex h-[calc(100vh-4rem)] w-14 flex-shrink-0 flex-col items-center gap-1 overflow-y-auto overflow-x-hidden border-r border-base-300/50 bg-base-100/90 px-1.5 py-3 backdrop-blur-md transition-[width] duration-200"
+      className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-14 flex-shrink-0 flex-col items-center gap-1 overflow-y-auto overflow-x-hidden border-r border-base-300/60 bg-base-200/40 px-1.5 py-3 lg:flex"
     >
       <RailButton label="Expandir menu (Ctrl+\)" onClick={toggleCollapsed} rail={rail}>
         <PanelLeftOpen size={17} strokeWidth={1.8} />
@@ -205,79 +204,112 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
 
       <div className="my-1 h-px w-6 shrink-0 bg-base-300" />
 
-      <ul className="flex w-full flex-col items-center gap-1">
+      <ul className="flex w-full flex-1 flex-col items-center gap-1">
         {flattenTree(tree).map((node) => (
-          <RailItem
-            key={node.id}
-            node={node}
-            rail={rail}
-            onFolderClick={toggleCollapsed}
-          />
+          <RailItem key={node.id} node={node} rail={rail} onFolderClick={toggleCollapsed} />
         ))}
       </ul>
+
+      <Link
+        href="/dashboard/documents/trash"
+        aria-label="Lixeira"
+        className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${
+          trashActive
+            ? "bg-base-300 text-base-content"
+            : "text-base-content/55 hover:bg-base-300/60 hover:text-base-content"
+        }`}
+        {...rail.bind(trashCount ? `Lixeira (${trashCount})` : "Lixeira")}
+      >
+        <Trash2 size={16} strokeWidth={1.8} />
+        {trashCount > 0 && (
+          <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-base-content/40" />
+        )}
+      </Link>
     </aside>
-  ) : (
-    <aside className="sticky top-16 flex h-[calc(100vh-4rem)] w-full max-w-[250px] flex-col gap-2 overflow-y-auto border-r border-base-300/50 bg-base-100/90 px-2 py-3 backdrop-blur-md transition-[width] duration-200 lg:w-[250px] lg:flex-shrink-0 overflow-x-hidden">
-      <div className="flex flex-col gap-2">
-        <div
-          className={`flex h-8 items-center justify-between rounded-md px-2 transition-colors ${
-            dragOverRoot ? "bg-primary/15" : ""
-          }`}
-          onDragOver={(event) => {
-            event.preventDefault();
-            setDragOverRoot(true);
-          }}
-          onDragLeave={() => setDragOverRoot(false)}
-          onDrop={(event) => {
-            event.preventDefault();
-            if (draggedItem) moveItem(draggedItem.type, draggedItem.id, { folderId: null, parentPageId: null });
-          }}
+  );
+
+  const full_aside = (
+    <aside
+      aria-label="Páginas"
+      className={[
+        "flex flex-col border-r border-base-300/60 bg-base-100 lg:bg-base-200/40",
+        // Celular/tablet: gaveta sobre o conteúdo.
+        "fixed inset-y-0 left-0 z-40 w-[85vw] max-w-[300px] shadow-2xl transition-transform duration-200",
+        mobileOpen ? "translate-x-0" : "-translate-x-full",
+        // Desktop: coluna fixa ao lado do conteúdo.
+        "lg:sticky lg:top-14 lg:z-auto lg:h-[calc(100vh-3.5rem)] lg:w-[264px] lg:max-w-none lg:flex-shrink-0 lg:translate-x-0 lg:shadow-none",
+      ].join(" ")}
+    >
+      <div
+        className={`mx-2 mt-3 flex h-8 items-center justify-between rounded-md px-2 transition-colors ${
+          dragOverRoot ? "bg-primary/15" : ""
+        }`}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setDragOverRoot(true);
+        }}
+        onDragLeave={() => setDragOverRoot(false)}
+        onDrop={(event) => {
+          event.preventDefault();
+          if (draggedItem) moveItem(draggedItem.type, draggedItem.id, { folderId: null, parentPageId: null });
+        }}
+      >
+        <Link
+          href="/dashboard/documents"
+          className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50 hover:text-base-content"
         >
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
-            Páginas
-          </span>
+          Páginas
+        </Link>
 
-          <div className="flex items-center gap-0.5">
-            <button
-              type="button"
-              className="tooltip tooltip-bottom btn btn-ghost btn-xs btn-square text-base-content/50 hover:text-base-content"
-              data-tip="Nova página"
-              aria-label="Nova página"
-              onClick={handleNewDocument}
-              disabled={isPending}
-            >
-              <FilePlus size={15} strokeWidth={1.8} />
-            </button>
+        <div className="flex items-center gap-0.5">
+          <button
+            type="button"
+            className="tooltip tooltip-bottom btn btn-ghost btn-xs btn-square text-base-content/50 hover:text-base-content"
+            data-tip="Nova página"
+            aria-label="Nova página"
+            onClick={handleNewDocument}
+            disabled={isPending}
+          >
+            <FilePlus size={15} strokeWidth={1.8} />
+          </button>
 
-            <button
-              type="button"
-              className="tooltip tooltip-bottom btn btn-ghost btn-xs btn-square text-base-content/50 hover:text-base-content"
-              data-tip="Nova pasta"
-              aria-label="Nova pasta"
-              onClick={handleNewFolder}
-              disabled={isPending}
-            >
-              <FolderPlus size={15} strokeWidth={1.8} />
-            </button>
+          <button
+            type="button"
+            className="tooltip tooltip-bottom btn btn-ghost btn-xs btn-square text-base-content/50 hover:text-base-content"
+            data-tip="Nova pasta"
+            aria-label="Nova pasta"
+            onClick={handleNewFolder}
+            disabled={isPending}
+          >
+            <FolderPlus size={15} strokeWidth={1.8} />
+          </button>
 
-            <button
-              type="button"
-              className="tooltip tooltip-bottom btn btn-ghost btn-xs btn-square text-base-content/50 hover:text-base-content"
-              data-tip="Recolher menu (Ctrl+\)"
-              aria-label="Recolher menu"
-              onClick={toggleCollapsed}
-            >
-              <PanelLeftClose size={15} strokeWidth={1.8} />
-            </button>
-          </div>
+          <button
+            type="button"
+            className="tooltip tooltip-bottom btn btn-ghost btn-xs btn-square hidden text-base-content/50 hover:text-base-content lg:inline-flex"
+            data-tip="Recolher menu (Ctrl+\)"
+            aria-label="Recolher menu"
+            onClick={toggleCollapsed}
+          >
+            <PanelLeftClose size={15} strokeWidth={1.8} />
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs btn-square text-base-content/50 hover:text-base-content lg:hidden"
+            aria-label="Fechar"
+            onClick={() => setMobileOpen(false)}
+          >
+            <X size={15} strokeWidth={1.8} />
+          </button>
         </div>
+      </div>
 
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 pb-3 pt-1">
         {tree.length === 0 ? (
           <div className="px-3 py-8 text-center">
             <FileText size={22} className="mx-auto mb-2 text-base-content/20" />
-
             <p className="text-xs text-base-content/40">Nenhuma página por aqui ainda</p>
-
             <button
               type="button"
               className="mt-2 text-xs font-medium text-base-content/60 hover:text-base-content"
@@ -301,12 +333,59 @@ export function NotebookTree({ tree }: { tree: TreeNode[] }) {
           </ul>
         )}
       </div>
+
+      <div className="border-t border-base-300/60 p-2">
+        <Link
+          href="/dashboard/documents/trash"
+          className={`flex h-8 items-center gap-2 rounded-md px-2 text-[13px] transition-colors ${
+            trashActive
+              ? "bg-base-300 text-base-content"
+              : "text-base-content/60 hover:bg-base-300/60 hover:text-base-content"
+          }`}
+        >
+          <Trash2 size={15} strokeWidth={1.7} />
+          <span className="flex-1">Lixeira</span>
+          {trashCount > 0 && (
+            <span className="rounded-full bg-base-300 px-1.5 text-[11px] font-medium text-base-content/60">
+              {trashCount}
+            </span>
+          )}
+        </Link>
+      </div>
     </aside>
   );
 
   return (
     <>
-      {aside}
+      {/* Botão que abre a árvore em telas pequenas */}
+      <button
+        type="button"
+        className="btn btn-sm fixed bottom-4 left-4 z-30 gap-1.5 rounded-full border-base-300 bg-base-100 shadow-lg lg:hidden no-print"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Abrir lista de páginas"
+      >
+        <PanelLeftOpen size={15} />
+        Páginas
+      </button>
+
+      {mobileOpen && (
+        <button
+          type="button"
+          aria-label="Fechar lista de páginas"
+          className="fixed inset-0 z-30 bg-black/30 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* No desktop, o modo compacto troca a coluna pela barra de ícones. */}
+      {collapsed ? (
+        <>
+          {rail_aside}
+          <div className="lg:hidden no-print">{full_aside}</div>
+        </>
+      ) : (
+        <div className="no-print contents">{full_aside}</div>
+      )}
       {rail.node}
     </>
   );
@@ -361,9 +440,14 @@ function RailItem({
   return (
     <li>
       {node.type === "document" ? (
-        <Link href={`/dashboard/documents/${node.id}`} aria-label={label} className={cls} {...rail.bind(label)}>
+        <IntentLink
+          href={`/dashboard/documents/${node.id}`}
+          aria-label={label}
+          className={cls}
+          {...rail.bind(label)}
+        >
           <NodeIcon node={node} />
-        </Link>
+        </IntentLink>
       ) : (
         <button type="button" aria-label={`${label} (expandir menu)`} className={cls} onClick={onFolderClick} {...rail.bind(label)}>
           <NodeIcon node={node} />
@@ -424,9 +508,9 @@ function TreeItem({
     const label = node.type === "folder" ? "esta pasta" : "esta página";
     const extra =
       node.type === "folder"
-        ? "As páginas dentro dela voltam para a raiz."
-        : "Subpages dentro dela sobem um nível.";
-    if (!window.confirm(`Excluir ${label}? ${extra} Isso não pode ser desfeito.`)) return;
+        ? "As páginas dentro dela voltam para a raiz. Isso não pode ser desfeito."
+        : "Ela fica na lixeira por 7 dias e pode ser restaurada. Subpages dentro dela sobem um nível.";
+    if (!window.confirm(`Excluir ${label}? ${extra}`)) return;
     startTransition(async () => {
       if (node.type === "folder") {
         unwrapAction(await deleteFolder(node.id));
@@ -460,10 +544,10 @@ function TreeItem({
   }
 
   return (
-    <li>
+    <li className="w-full min-w-0 max-w-full">
       <div
         className={[
-          "group relative flex min-h-8 items-center rounded-md pr-1",
+          "group relative flex min-h-8 w-full min-w-0 items-center rounded-md pr-1",
           "text-sm transition-colors",
           isActive
             ? "bg-base-300 text-base-content"
@@ -548,16 +632,18 @@ function TreeItem({
             }}
           />
         ) : node.type === "document" ? (
-          <Link
+          <IntentLink
             href={`/dashboard/documents/${node.id}`}
-            className="min-w-0 flex-1 truncate py-1 text-[13px] max-w-[90px]"
+            className="min-w-0 flex-1 truncate py-1 text-[13px]"
+            title={node.title}
           >
             {node.title}
-          </Link>
+          </IntentLink>
         ) : (
           <button
             type="button"
-            className="min-w-0 flex-1 truncate py-1 text-left text-[13px] max-w-[90px]"
+            className="min-w-0 flex-1 truncate py-1 text-left text-[13px]"
+            title={node.name}
             onDoubleClick={() => setEditing(true)}
             onClick={() => setExpanded((v) => !v)}
           >
@@ -566,7 +652,7 @@ function TreeItem({
         )}
 
         <div
-          className="dropdown dropdown-end ml-auto shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
+          className="dropdown dropdown-end ml-auto shrink-0 opacity-100 transition-opacity focus-within:opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
           onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
         >
@@ -628,7 +714,7 @@ function TreeItem({
                 onPointerDown={(event) => event.stopPropagation()}
               >
                 <Trash2 size={14} />
-                Excluir
+                {node.type === "folder" ? "Excluir" : "Mover para a lixeira"}
               </button>
             </li>
           </ul>
@@ -636,7 +722,9 @@ function TreeItem({
       </div>
 
       {expanded && node.children.length > 0 && (
-        <ul className="relative">
+        // A indentação vem do paddingLeft da linha; zera a do menu do daisyUI
+        // (margem + padding + nowrap), que empurrava os títulos para fora da coluna.
+        <ul className="relative m-0 w-full min-w-0 p-0 whitespace-normal before:hidden">
           {node.children.map((child) => (
             <TreeItem
               key={child.id}

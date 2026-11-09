@@ -1,16 +1,16 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Cpu, Plug, Plus, Radio, Trash2 } from "lucide-react";
 import { deleteAnatixLab } from "@/app/(protected)/dashboard/labtest/anatix/actions";
 import { fmtDate } from "@/components/labtest/shared";
-import type { AnatixLabRecord } from "@/types/anatix.types";
+import type { AnatixLabRecord, AnatixTransport } from "@/types/anatix.types";
 import { AnatixLabForm } from "./AnatixLabForm";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
-const VIEW_LABEL = { charts: "Gráficos", maps: "Mapas", tables: "Tabelas" } as const;
+const VIEW_LABEL = { custom: "Meu painel", charts: "Gráficos", maps: "Mapas", tables: "Tabelas" } as const;
 
 export function AnatixModal({
   dialogRef,
@@ -82,7 +82,9 @@ function LabCard({ lab }: { lab: AnatixLabRecord }) {
             {VIEW_LABEL[v]}
           </span>
         ))}
-        <span className="badge badge-sm badge-ghost">{lab.config.baudRate} baud</span>
+        <span className="badge badge-sm badge-ghost">
+          {lab.config.transport === "pybricks" ? "Pybricks · Bluetooth/USB" : `${lab.config.baudRate} baud`}
+        </span>
       </div>
 
       <div className="flex items-center justify-between border-t border-base-200 pt-3 text-xs text-base-content/50">
@@ -99,10 +101,23 @@ function LabCard({ lab }: { lab: AnatixLabRecord }) {
   );
 }
 
-export function AnatixLabSlots({ labs, max }: { labs: AnatixLabRecord[]; max: number }) {
+export function AnatixLabSlots({
+  labs,
+  max,
+  createTransport,
+}: {
+  labs: AnatixLabRecord[];
+  max: number;
+  /** Abre o formulário de criação já com esta conexão (link `?novo=pybricks`). */
+  createTransport?: AnatixTransport;
+}) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [formKey, setFormKey] = useState(0);
   const free = Math.max(0, max - labs.length);
+
+  useEffect(() => {
+    if (createTransport && free > 0) dialogRef.current?.showModal();
+  }, [createTransport, free]);
 
   function openCreate() {
     setFormKey((k) => k + 1);
@@ -134,7 +149,7 @@ export function AnatixLabSlots({ labs, max }: { labs: AnatixLabRecord[]; max: nu
       </div>
 
       <AnatixModal dialogRef={dialogRef} title="Novo laboratório Anatix">
-        <AnatixLabForm key={formKey} onDone={() => dialogRef.current?.close()} />
+        <AnatixLabForm key={formKey} defaultTransport={createTransport} onDone={() => dialogRef.current?.close()} />
       </AnatixModal>
     </>
   );

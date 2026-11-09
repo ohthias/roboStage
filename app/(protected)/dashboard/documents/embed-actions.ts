@@ -1,6 +1,6 @@
 "use server";
 
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
   boards,
@@ -17,6 +17,9 @@ import {
   users,
 } from "@/db/schema";
 import { thinklab } from "@/db/schema/thinklab";
+import { quickbrickDiagrams, quickbrickNotebooks, quickbrickPhotos } from "@/db/schema/quickbrick";
+import { isR2Configured, presignDownload } from "@/utils/quickbrick/r2";
+import { summarizeDiagram } from "@/utils/quickbrick/notebook";
 import { tests } from "@/db/schema/labtest";
 import {
   requireAuthenticatedUser,
@@ -36,6 +39,10 @@ import type {
   LabTestPickerItem,
   ThinkLabEmbedData,
   ThinkLabPickerItem,
+  QuickbrickDiagramEmbedData,
+  QuickbrickDiagramPickerItem,
+  QuickbrickPhotoEmbedData,
+  QuickbrickPhotoPickerItem,
 } from "@/components/editor/embeds/embed-types";
 import { getLabTestViewData } from "../labtest/actions";
 
@@ -284,6 +291,138 @@ export async function getEmbedLabTest(testId: string): Promise<LabTestEmbedData>
 }
 
 // ---------------------------------------------------------------------------
+// QuickBrick Studio — fotos do robô e diagramas dos cadernos
+// ---------------------------------------------------------------------------
+
+function notebookScope(scope: StagebookScope) {
+  return creatorScopeWhere(scope, {
+    userId: quickbrickNotebooks.userId,
+    teamId: quickbrickNotebooks.teamId,
+  });
+}
+
+/** URL temporária (1h) da foto no R2 — o arquivo nunca fica público. */
+async function photoUrl(objectKey: string) {
+  return isR2Configured() ? presignDownload(objectKey, { expiresIn: 3600 }) : "";
+}
+
+export async function listEmbeddableQuickbrickPhotos(): Promise<QuickbrickPhotoPickerItem[]> {
+  const scope = await resolveStagebookScope();
+  const rows = await db
+    .select({
+      id: quickbrickPhotos.id,
+      objectKey: quickbrickPhotos.objectKey,
+      title: quickbrickPhotos.title,
+      takenAt: quickbrickPhotos.takenAt,
+      notebookId: quickbrickNotebooks.id,
+      notebookName: quickbrickNotebooks.name,
+      robotName: quickbrickNotebooks.robotName,
+    })
+    .from(quickbrickPhotos)
+    .innerJoin(quickbrickNotebooks, eq(quickbrickNotebooks.id, quickbrickPhotos.notebookId))
+    .where(notebookScope(scope))
+    .orderBy(desc(quickbrickPhotos.takenAt))
+    .limit(MAX_LIST);
+
+  return Promise.all(
+    rows.map(async ({ objectKey, takenAt, ...row }) => ({
+      ...row,
+      takenAt: iso(takenAt)!,
+      thumbUrl: await photoUrl(objectKey),
+    })),
+  );
+}
+
+export async function getEmbedQuickbrickPhoto(photoId: string): Promise<QuickbrickPhotoEmbedData> {
+  requireUuid(photoId, "foto");
+  const scope = await resolveStagebookScope();
+  const [row] = await db
+    .select({
+      photo: quickbrickPhotos,
+      notebookName: quickbrickNotebooks.name,
+      robotName: quickbrickNotebooks.robotName,
+    })
+    .from(quickbrickPhotos)
+    .innerJoin(quickbrickNotebooks, eq(quickbrickNotebooks.id, quickbrickPhotos.notebookId))
+    .where(and(eq(quickbrickPhotos.id, photoId), notebookScope(scope)))
+    .limit(1);
+  if (!row) throw new Error("Foto não encontrada.");
+  if (!isR2Configured()) throw new Error("O armazenamento de arquivos não está configurado.");
+
+  const versions = await db
+    .select({ id: quickbrickPhotos.id })
+    .from(quickbrickPhotos)
+    .where(eq(quickbrickPhotos.notebookId, row.photo.notebookId))
+    .orderBy(quickbrickPhotos.takenAt);
+
+  return {
+    id: row.photo.id,
+    notebookId: row.photo.notebookId,
+    notebookName: row.notebookName,
+    robotName: row.robotName,
+    url: await photoUrl(row.photo.objectKey),
+    title: row.photo.title,
+    notes: row.photo.notes,
+    takenAt: iso(row.photo.takenAt)!,
+    version: versions.findIndex((v) => v.id === row.photo.id) + 1,
+    totalVersions: versions.length,
+  };
+}
+
+export async function listEmbeddableQuickbrickDiagrams(): Promise<QuickbrickDiagramPickerItem[]> {
+  const scope = await resolveStagebookScope();
+  const rows = await db
+    .select({
+      id: quickbrickDiagrams.id,
+      kind: quickbrickDiagrams.kind,
+      title: quickbrickDiagrams.title,
+      data: quickbrickDiagrams.data,
+      updatedAt: quickbrickDiagrams.updatedAt,
+      notebookId: quickbrickNotebooks.id,
+      notebookName: quickbrickNotebooks.name,
+    })
+    .from(quickbrickDiagrams)
+    .innerJoin(quickbrickNotebooks, eq(quickbrickNotebooks.id, quickbrickDiagrams.notebookId))
+    .where(notebookScope(scope))
+    .orderBy(desc(quickbrickDiagrams.updatedAt))
+    .limit(MAX_LIST);
+
+  return rows.map(({ data, updatedAt, ...row }) => ({
+    ...row,
+    summary: summarizeDiagram(row.kind, data),
+    updatedAt: iso(updatedAt)!,
+  }));
+}
+
+export async function getEmbedQuickbrickDiagram(diagramId: string): Promise<QuickbrickDiagramEmbedData> {
+  requireUuid(diagramId, "diagrama");
+  const scope = await resolveStagebookScope();
+  const [row] = await db
+    .select({
+      diagram: quickbrickDiagrams,
+      notebookName: quickbrickNotebooks.name,
+    })
+    .from(quickbrickDiagrams)
+    .innerJoin(quickbrickNotebooks, eq(quickbrickNotebooks.id, quickbrickDiagrams.notebookId))
+    .where(and(eq(quickbrickDiagrams.id, diagramId), notebookScope(scope)))
+    .limit(1);
+  if (!row) throw new Error("Diagrama não encontrado.");
+
+  const { diagram } = row;
+  return {
+    id: diagram.id,
+    notebookId: diagram.notebookId,
+    notebookName: row.notebookName,
+    kind: diagram.kind,
+    title: diagram.title,
+    season: diagram.season,
+    summary: summarizeDiagram(diagram.kind, diagram.data),
+    data: diagram.data,
+    updatedAt: iso(diagram.updatedAt)!,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Vínculo documento ⇄ item
 //
 // Kanban e Calendário já têm "páginas vinculadas" (boardCardDocuments /
@@ -309,6 +448,7 @@ export async function linkDocumentToEmbed(
       and(
         eq(documents.id, documentId),
         scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }),
+        isNull(documents.deletedAt),
       ),
     )
     .limit(1);

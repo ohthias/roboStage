@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Play, Timer, Trash2 } from "lucide-react";
 import {
   createEvent,
   deleteEvent,
@@ -20,6 +20,7 @@ import { MilestoneSelector } from "@/components/stagebook/labels/milestone-selec
 import { DocIcon } from "@/components/editor/doc-icon";
 import { toggleResourceTag } from "@/utils/stagebook/actions/tags";
 import { setResourceMilestone } from "@/utils/stagebook/actions/milestones";
+import { sessionFromCalendarEvent } from "@/utils/stagebook/actions/training";
 import type { MilestoneDTO, TagDTO } from "@/types/labels";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
@@ -58,6 +59,21 @@ export function EventModal({
 
   const [availablePages, setAvailablePages] = useState<{ id: string; title: string; icon: string | null }[]>([]);
   const [linkedPageIds, setLinkedPageIds] = useState<string[]>([]);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+
+  /** Cria (ou reabre) a sessão de treino deste evento e vai para ela. */
+  function openSession(start: boolean) {
+    if (!event) return;
+    setSessionError(null);
+    startTransition(async () => {
+      const result = await sessionFromCalendarEvent(event.id, { start });
+      if (!result.ok) {
+        setSessionError(result.error);
+        return;
+      }
+      router.push(`/dashboard/team/${result.data.teamId}/treinos/${result.data.sessionId}`);
+    });
+  }
 
   useEffect(() => {
     listPagesForLinking().then(setAvailablePages);
@@ -225,6 +241,33 @@ export function EventModal({
             </div>
           )}
         </div>
+
+        {mode === "edit" && event?.teamId && (event.type === "treino" || event.type === "competicao") && (
+          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-base-300 bg-base-200/40 px-3 py-2">
+            <Timer size={15} className="text-primary" />
+            <span className="min-w-0 flex-1 text-xs text-base-content/65">
+              Sessão de {event.type === "competicao" ? "competição" : "treino"} da equipe: presença, escala e execuções
+              registradas juntas.
+            </span>
+            <button
+              type="button"
+              className="btn btn-ghost btn-xs"
+              disabled={isPending}
+              onClick={() => openSession(false)}
+            >
+              Planejar / abrir
+            </button>
+            <button
+              type="button"
+              className="btn btn-success btn-xs gap-1"
+              disabled={isPending}
+              onClick={() => openSession(true)}
+            >
+              <Play size={12} /> Iniciar sessão
+            </button>
+          </div>
+        )}
+        {sessionError && <p className="mt-2 text-xs text-error">{sessionError}</p>}
 
         <div className="modal-action justify-between">
           {mode === "edit" ? (

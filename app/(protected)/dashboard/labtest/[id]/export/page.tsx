@@ -203,7 +203,7 @@ export default function LabTestExportPage() {
           <div><strong>{data.entries.length ? Math.max(...data.entries.map((entry: TestEntry) => entryTotal(entry, data.fields))) : 0}</strong><span>melhor total</span></div>
           <div><strong>{data.fields.length}</strong><span>parâmetros</span></div>
         </section>
-        {data.test.mode === "runs" && data.test.season ? <FllRunsCharts season={data.test.season} entries={data.entries} accent={modeDef.accent} /> : data.test.mode !== "runs" ? <LabTestModeCharts mode={data.test.mode} config={data.test.config} fields={data.fields} entries={data.entries} accent={modeDef.accent} /> : <SummaryChart fields={data.fields} entries={data.entries} />}
+        {data.test.mode === "runs" && data.test.season ? <FllRunsCharts season={data.test.season} missionIds={data.test.config?.missions} entries={data.entries} accent={modeDef.accent} /> : data.test.mode !== "runs" ? <LabTestModeCharts mode={data.test.mode} config={data.test.config} fields={data.fields} entries={data.entries} accent={modeDef.accent} /> : <SummaryChart fields={data.fields} entries={data.entries} />}
         <ExecutionTable fields={data.fields} entries={data.entries} />
       </div>
     </main>

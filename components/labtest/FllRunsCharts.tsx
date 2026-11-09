@@ -1,14 +1,19 @@
 "use client";
 
-import { loadSeasonMissions } from "@/utils/data/missions-client";
 import { useEffect, useMemo, useState } from "react";
+import { loadSeasonMissions } from "@/utils/data/missions-client";
+import { useChartTheme } from "./charts/chart-theme";
 import Image from "next/image";
-import { Award, BarChart3, Disc3, Hash, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { Award, BarChart3, Disc3, Grid3x3, Hash, ListChecks, Target, TrendingUp, Trophy } from "lucide-react";
+import type { ChartTheme } from "./charts/chart-theme";
+import { ChartPanel } from "./charts/chart-panel";
+import { FllMissionGrid, FllMissionRanking, FllMissionTable } from "./fll/FllMissionViews";
+import { fllEntryScore, fllMissionStats, missionsForTest } from "@/utils/labtest/fll-analysis";
 
 import type { TestEntry } from "@/types/labtest.types";
 import {
   getSubMissionKey,
-  scoreFllExecution,
   scoreFllMission,
   scoreFllSubMission,
   type FllMissionDefinition,
@@ -24,11 +29,21 @@ import { SectionHeader, StatCard } from "./shared";
 import { SeriesChartPanel } from "./charts/SeriesChart";
 import { CategoryChartPanel, type CategoryDatum } from "./charts/CategoryChart";
 
-interface FllRunsChartsProps {
-  season: string;
+interface FllRunsAnalysisProps {
   entries: TestEntry[];
   accent: AccentColor;
+  /** Missões do teste (null = carregando). */
+  missions: FllMissionDefinition[] | null;
+  loadFailed?: boolean;
+  theme: ChartTheme;
+  fileName: string;
+  executeHref?: string;
 }
+
+type FllRunsChartsProps =
+  | FllRunsAnalysisProps
+  /** Uso antigo (relatório/embeds): carrega as missões da temporada sozinho. */
+  | { season: string; entries: TestEntry[]; accent: AccentColor; missionIds?: unknown; fileName?: string };
 
 type Definition = FllMissionDefinition | FllSubMissionDefinition;
 
@@ -203,42 +218,62 @@ function MissionChart({
   );
 }
 
-export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
-  const [missions, setMissions] = useState<FllMissionDefinition[]>([]);
-  const style = ACCENT_STYLES[accent];
+export function FllRunsCharts(props: FllRunsChartsProps) {
+  return "season" in props ? <FllRunsChartsLoader {...props} /> : <FllRunsAnalysis {...props} />;
+}
 
-  const requiredMissionIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const entry of entries) {
-      for (const missionId of Object.keys(entry.fllAnswers ?? {})) ids.add(missionId);
-    }
-    return [...ids];
-  }, [entries]);
-
+function FllRunsChartsLoader({
+  season,
+  entries,
+  accent,
+  missionIds,
+  fileName = "teste-fll",
+}: Extract<FllRunsChartsProps, { season: string }>) {
+  const { ref, theme } = useChartTheme();
+  const [loaded, setLoaded] = useState<{ season: string; list: FllMissionDefinition[] } | null>(null);
   useEffect(() => {
     let active = true;
-
     loadSeasonMissions<FllMissionDefinition>(season)
-      .then((seasonMissions) => {
-        if (!active) return;
-        const required = new Set(requiredMissionIds);
-        setMissions(seasonMissions.filter((mission) => required.has(mission.id)));
-      })
-      .catch(() => {
-        if (active) setMissions([]);
-      });
-
+      .then((list) => active && setLoaded({ season, list }))
+      .catch(() => active && setLoaded({ season, list: [] }));
     return () => {
       active = false;
     };
-  }, [season, requiredMissionIds]);
+  }, [season]);
+  const missions = useMemo(
+    () => (loaded?.season === season ? missionsForTest(loaded.list, missionIds, entries) : null),
+    [loaded, season, missionIds, entries],
+  );
+  return (
+    <div ref={ref}>
+      <FllRunsAnalysis
+        entries={entries}
+        accent={accent}
+        missions={missions}
+        loadFailed={loaded?.season === season && loaded.list.length === 0}
+        theme={theme}
+        fileName={fileName}
+      />
+    </div>
+  );
+}
+
+function FllRunsAnalysis({
+  entries,
+  accent,
+  missions: testMissions,
+  loadFailed,
+  theme,
+  fileName,
+  executeHref,
+}: FllRunsAnalysisProps) {
+  const style = ACCENT_STYLES[accent];
+  const missions = useMemo(() => testMissions ?? [], [testMissions]);
+  const [cardsFilter, setCardsFilter] = useState<"all" | "weak">("all");
 
   const scores = useMemo(
     // Round 2:30 já guarda o placar completo (com inspeção e tokens).
-    () =>
-      entries.map(
-        (entry) => entry.roundTotal ?? scoreFllExecution(missions, entry.fllAnswers),
-      ),
+    () => entries.map((entry) => fllEntryScore(missions, entry) ?? 0),
     [entries, missions],
   );
 
@@ -254,14 +289,45 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
       }),
     [entries, scoreSeries, scores],
   );
+  const stats = useMemo(() => fllMissionStats(missions, entries), [missions, entries]);
 
-  if (missions.length === 0) return null;
+  if (testMissions === null) {
+    return loadFailed ? (
+      <div role="alert" className="alert alert-warning alert-soft text-sm">
+        Não foi possível carregar as missões da temporada. Recarregue a página para tentar de novo.
+      </div>
+    ) : (
+      <div className="flex h-40 items-center justify-center rounded-2xl border border-base-300/70 bg-base-100">
+        <span className="loading loading-spinner text-primary" />
+      </div>
+    );
+  }
+  if (missions.length === 0) {
+    return (
+      <div role="alert" className="alert alert-warning alert-soft text-sm">
+        As missões desta temporada não foram encontradas. Confira a temporada do teste em Editar.
+      </div>
+    );
+  }
+  if (entries.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-base-300 bg-base-100 px-6 py-10 text-center text-sm text-base-content/55">
+        Nenhuma execução com os filtros atuais. Registre um round para começar a análise das {missions.length} missões.
+        {executeHref && <Link href={executeHref} className="btn btn-primary btn-sm rounded-full">Nova execução</Link>}
+      </div>
+    );
+  }
 
   const best = scores.length ? Math.max(...scores) : 0;
   const worst = scores.length ? Math.min(...scores) : 0;
   const mean = scores.length
     ? scores.reduce((sum, value) => sum + value, 0) / scores.length
     : 0;
+  const weakest = [...stats].filter((s) => s.attempts > 0).sort((a, b) => b.lost - a.lost)[0];
+  const weakIds = new Set(
+    stats.filter((s) => s.attempts > 0 && (s.efficiency ?? 0) < 0.8).map((s) => s.id),
+  );
+  const cardMissions = cardsFilter === "weak" ? missions.filter((m) => weakIds.has(m.id)) : missions;
 
   const discFrequency = new Map<number, number>();
   for (const entry of entries) {
@@ -272,7 +338,7 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
   }
   const discMode = discFrequency.size
     ? [...discFrequency.entries()].reduce((a, b) => (b[1] > a[1] ? b : a))[0]
-    : 0;
+    : null;
 
   return (
     <div className="flex flex-col gap-5">
@@ -280,7 +346,17 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
         <StatCard label="Melhor execução" value={`${formatNumber(best)} pts`} icon={Award} accent="primary" />
         <StatCard label="Menor execução" value={`${formatNumber(worst)} pts`} icon={BarChart3} accent="secondary" />
         <StatCard label="Média" value={`${formatNumber(mean)} pts`} sub={`${entries.length} execuções`} icon={Hash} accent="accent" />
-        <StatCard label="Moda dos discos" value={`${discMode} restantes`} icon={Disc3} accent="info" />
+        {weakest ? (
+          <StatCard
+            label="Missão que mais perde pontos"
+            value={weakest.id}
+            sub={`${formatNumber(weakest.lost)} pts/execução · ${weakest.name}`}
+            icon={Target}
+            accent="info"
+          />
+        ) : (
+          <StatCard label="Moda dos discos" value={discMode === null ? "—" : `${discMode} restantes`} icon={Disc3} accent="info" />
+        )}
       </div>
 
       <SeriesChartPanel
@@ -294,11 +370,38 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
         height={260}
       />
 
-      <div>
-        <SectionHeader label="Pontuação por missão" />
+      <ChartPanel icon={Trophy} title="Ranking das missões" subtitle="Média feita × máximo possível de cada missão">
+        <FllMissionRanking missions={missions} entries={entries} theme={theme} />
+      </ChartPanel>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
-          {missions.map((mission) => (
+      <ChartPanel icon={ListChecks} title="Desempenho por missão" subtitle="Tentativas, acertos, aproveitamento e pontos perdidos — clique para ver as submissões">
+        <FllMissionTable missions={missions} entries={entries} fileName={fileName} />
+      </ChartPanel>
+
+      <ChartPanel icon={Grid3x3} title="Missões × execuções" subtitle="Pontos de cada missão em cada round">
+        <FllMissionGrid missions={missions} entries={entries} theme={theme} fileName={fileName} />
+      </ChartPanel>
+
+      <div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <SectionHeader label="Respostas por missão" />
+          <div className="join">
+            <button type="button" className={`btn join-item btn-xs ${cardsFilter === "all" ? "btn-neutral" : "btn-ghost border-base-300 bg-base-100"}`} onClick={() => setCardsFilter("all")}>
+              Todas ({missions.length})
+            </button>
+            <button type="button" className={`btn join-item btn-xs ${cardsFilter === "weak" ? "btn-neutral" : "btn-ghost border-base-300 bg-base-100"}`} onClick={() => setCardsFilter("weak")}>
+              Abaixo de 80% ({weakIds.size})
+            </button>
+          </div>
+        </div>
+
+        {cardMissions.length === 0 && (
+          <p className="rounded-2xl border border-dashed border-base-300 bg-base-100 p-6 text-center text-sm text-base-content/55">
+            Todas as missões estão com 80% ou mais de aproveitamento.
+          </p>
+        )}
+        <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 2xl:grid-cols-3">
+          {cardMissions.map((mission) => (
             <div
               key={mission.id}
               className="card border border-base-300/70 bg-base-100 shadow-sm"
@@ -306,7 +409,16 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
               <div className="card-body gap-3 p-5">
                 <h3 className="flex items-center gap-2 text-sm font-bold">
                   <span className="badge badge-primary badge-soft font-mono">{mission.id}</span>
-                  {mission.name}
+                  <span className="min-w-0 flex-1">{mission.name}</span>
+                  {(() => {
+                    const st = stats.find((x) => x.id === mission.id);
+                    if (!st || !st.attempts) return <span className="badge badge-ghost badge-sm">sem tentativas</span>;
+                    return (
+                      <span className={`badge badge-sm badge-soft ${st.efficiency === null ? "badge-ghost" : st.efficiency >= 0.8 ? "badge-success" : st.efficiency >= 0.5 ? "badge-warning" : "badge-error"}`}>
+                        {formatNumber(st.avg)}/{st.max} pts
+                      </span>
+                    );
+                  })()}
                 </h3>
 
                 <p className="text-sm text-base-content/65">
@@ -320,12 +432,13 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
         </div>
       </div>
 
+      {discMode !== null && (
       <div className="card border border-base-300/70 bg-base-100 shadow-sm">
         <div className="card-body gap-4 p-5">
           <SectionHeader label="Discos de Precisão por execução" />
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {entries.map((entry) => {
+            {entries.filter((entry) => entry.precisionDiscs).map((entry) => {
               const discs = entry.precisionDiscs;
               const total = discs?.total ?? 6;
               const remaining = discs?.remaining ?? 0;
@@ -379,6 +492,7 @@ export function FllRunsCharts({ season, entries, accent }: FllRunsChartsProps) {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

@@ -6,7 +6,8 @@ import type { EditorState } from "lexical";
 import { updateDocumentContent } from "@/app/(protected)/dashboard/documents/actions";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
-type SaveState = "idle" | "saving" | "saved";
+import { rememberSavedContent } from "../doc-content-cache";
+export type SaveState = "idle" | "saving" | "saved" | "error";
 
 export function AutosavePlugin({
   documentId,
@@ -27,16 +28,15 @@ export function AutosavePlugin({
     pending.current = null;
     onStatusChange?.("saving");
     try {
-      unwrapAction(await updateDocumentContent(
-        documentId,
-        state.toJSON() as unknown as Record<string, unknown>,
-      ));
+      const json = state.toJSON() as unknown as Record<string, unknown>;
+      const saved = unwrapAction(await updateDocumentContent(documentId, json));
+      rememberSavedContent(documentId, json, saved.updatedAt);
       onStatusChange?.("saved");
       if (resetTimer.current) clearTimeout(resetTimer.current);
       resetTimer.current = setTimeout(() => onStatusChange?.("idle"), 1500);
     } catch (error) {
       console.error("Falha ao salvar documento", error);
-      onStatusChange?.("idle");
+      onStatusChange?.("error");
     }
   }, [documentId, onStatusChange]);
 

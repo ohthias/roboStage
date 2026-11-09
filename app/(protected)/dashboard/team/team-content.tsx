@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { clerkClient } from "@clerk/nextjs/server";
 import { unstable_cache } from "next/cache";
@@ -22,7 +21,7 @@ import {
   KanbanSquare,
   LayoutDashboard,
   Lightbulb,
-  Settings,
+  Timer,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -31,6 +30,7 @@ import { leagues, teams } from "@/db/schema";
 import type { TeamScope } from "@/utils/stagebook/scope";
 import { roleCan } from "@/utils/stagebook/team-permissions";
 import {
+  getTeamActivity,
   getTeamBoards,
   getTeamLabTests,
   getTeamMembers,
@@ -38,21 +38,31 @@ import {
   getTeamOverview,
   getTeamThinkLabs,
 } from "@/utils/stagebook/team-queries";
+import {
+  getActiveSessionRef,
+  getMemberDutyHistory,
+  getSessionAttendeeIds,
+  getTeamTrainingSessions,
+  getUpcomingDutiesFor,
+} from "@/utils/stagebook/training-queries";
 import { LiveRefresh } from "@/components/stagebook/live-refresh";
 import { listPendingInvitations } from "./actions";
 import { ActivateTeamButton } from "./activate-team-button";
 import { MembersTab } from "./_components/members-tab";
 import { MilestonesTab } from "./_components/milestones-tab";
 import { OverviewTab } from "./_components/overview-tab";
+import { ActivityFeed } from "./_components/activity-feed";
+import { TrainingTab } from "./_components/training-tab";
 import { ResourceTab } from "./_components/resource-tab";
-import { RoleBadge } from "./_components/role-badge";
-import { PersonAvatar, TeamAvatar } from "./_components/team-avatar";
+import { TeamHeader } from "./_components/team-header";
+import { CORNER } from "./_components/team-ui";
 
 export const TEAM_TABS = [
   { id: "geral", label: "Geral", Icon: LayoutDashboard },
   { id: "kanban", label: "Kanban", Icon: KanbanSquare },
   { id: "thinklab", label: "ThinkLab", Icon: Lightbulb },
   { id: "labtests", label: "LabTests", Icon: FlaskConical },
+  { id: "treinos", label: "Treinos", Icon: Timer },
   { id: "marcos", label: "Marcos", Icon: Flag },
   { id: "membros", label: "Membros", Icon: Users },
 ] as const satisfies readonly { id: string; label: string; Icon: LucideIcon }[];
@@ -75,10 +85,13 @@ export async function TeamContent({
   scope,
   isActiveScope,
   tab = "geral",
+  feed = false,
 }: {
   scope: TeamScope;
   isActiveScope: boolean;
   tab?: TeamTabId;
+  /** `?feed=all`: a aba Geral mostra o feed completo. */
+  feed?: boolean;
 }) {
   const [team, members, overview] = await Promise.all([
     db
@@ -111,6 +124,8 @@ export async function TeamContent({
   // Cacheado por 10 min: o LiveRefresh re-renderiza esta página periodicamente
   // e cada render chamava a Backend API do Clerk (fonte comum de 429).
   const logoUrl = team.clerkOrgId ? await getOrgLogoUrl(team.clerkOrgId) : null;
+  // Sessão em andamento só importa na aba Geral (destaque e "na equipe agora").
+  const activeSession = tab === "geral" && !feed ? await getActiveSessionRef(team.id) : null;
 
   const canManageMembers = roleCan(scope.role, "team.members.manage");
   const canEditTeam = roleCan(scope.role, "team.edit");
@@ -119,78 +134,28 @@ export async function TeamContent({
     kanban: overview.counts.boards,
     thinklab: overview.counts.thinklabs,
     labtests: overview.counts.tests,
+    treinos: overview.counts.sessions,
     marcos: overview.counts.milestones,
     membros: members.length,
   };
-  const base = `/dashboard/team/${team.id}`;
 
   return (
-    <div>
+    <div className="min-h-full bg-base-100">
       <LiveRefresh />
 
-      {/* Cabeçalho da equipe + abas */}
-      <header className="border-b border-base-300 bg-base-100">
-        <div className="flex flex-wrap items-center gap-4 px-4 pb-3 pt-5 sm:px-6">
-          <TeamAvatar name={team.name} imageUrl={logoUrl} size="lg" />
-          <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold leading-tight">{team.name}</h1>
-            <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-base-content/55">
-              <RoleBadge role={scope.role} size="xs" />
-              {subtitle && <span>{subtitle}</span>}
-            </p>
-          </div>
+      <TeamHeader
+        team={{ id: team.id, name: team.name }}
+        logoUrl={logoUrl}
+        subtitle={subtitle}
+        tabs={TEAM_TABS.map((t) => ({ ...t, count: counts[t.id] }))}
+        activeTab={tab}
+        role={scope.role}
+        canEditTeam={canEditTeam}
+      />
 
-          <div className="ml-auto flex items-center gap-3">
-            <Link
-              href={`${base}?tab=membros`}
-              className="avatar-group -space-x-3 rtl:space-x-reverse"
-              aria-label={`${members.length} membros`}
-            >
-              {members.slice(0, 4).map((m) => (
-                <PersonAvatar key={m.userId} name={m.name} imageUrl={m.avatarUrl} size="size-8" />
-              ))}
-              {members.length > 4 && (
-                <div className="avatar avatar-placeholder">
-                  <div className="size-8 bg-neutral text-neutral-content">
-                    <span className="text-[10px]">+{members.length - 4}</span>
-                  </div>
-                </div>
-              )}
-            </Link>
-
-            {canEditTeam && (
-              <Link href={`${base}/settings`} className="btn btn-sm btn-ghost gap-1.5">
-                <Settings size={15} />
-                <span className="hidden sm:inline">Gerenciar equipe</span>
-              </Link>
-            )}
-          </div>
-        </div>
-
-        <nav role="tablist" aria-label="Seções da equipe" className="tabs tabs-border overflow-x-auto px-2 sm:px-4">
-          {TEAM_TABS.map(({ id, label, Icon }) => {
-            const active = id === tab;
-            const count = counts[id];
-            return (
-              <Link
-                key={id}
-                role="tab"
-                aria-selected={active}
-                href={`${base}?tab=${id}`}
-                className={`tab gap-2 whitespace-nowrap ${active ? "tab-active font-semibold" : ""}`}
-              >
-                <Icon size={15} />
-                {label}
-                {count !== undefined && <span className="badge badge-ghost badge-xs">{count}</span>}
-              </Link>
-            );
-          })}
-        </nav>
-      </header>
-
-      <div className="mx-auto w-full p-4 sm:p-6">
+      <div className="mx-auto w-full max-w-[1500px] p-4 sm:p-6">
         {!isActiveScope && (
-          <div role="alert" className="alert alert-info alert-soft mb-5">
+          <div role="alert" className={`alert alert-info alert-soft mb-5 ${CORNER.md}`}>
             <Info size={18} />
             <span className="text-sm">
               Você está vendo <strong>{team.name}</strong>, mas seu espaço ativo é outro. Abrir um Kanban,
@@ -200,7 +165,33 @@ export async function TeamContent({
           </div>
         )}
 
-        {tab === "geral" && <OverviewTab teamId={team.id} overview={overview} role={scope.role} />}
+        {tab === "geral" && feed && (
+          <ActivityFeed teamId={team.id} initial={await getTeamActivity(team.id, { limit: 30 })} />
+        )}
+
+        {tab === "geral" && !feed && (
+          <OverviewTab
+            teamId={team.id}
+            overview={overview}
+            role={scope.role}
+            viewerId={scope.userId}
+            members={members}
+            activity={await getTeamActivity(team.id, { limit: 8 })}
+            activeSession={activeSession}
+            presentIds={activeSession ? await getSessionAttendeeIds(activeSession.id) : []}
+            sessions={await getTeamTrainingSessions(team.id, { limit: 12 })}
+            upcomingDuties={await getUpcomingDutiesFor(team.id, scope.userId)}
+          />
+        )}
+
+        {tab === "treinos" && (
+          <TrainingTab
+            teamId={team.id}
+            viewerId={scope.userId}
+            viewerRole={scope.role}
+            sessions={await getTeamTrainingSessions(team.id)}
+          />
+        )}
 
         {tab === "kanban" && (
           <ResourceTab
@@ -245,6 +236,7 @@ export async function TeamContent({
             viewerId={scope.userId}
             viewerRole={scope.role}
             members={members}
+            dutyHistory={await getMemberDutyHistory(team.id)}
             invitations={canManageMembers ? await listPendingInvitations(team.id).catch(() => []) : []}
           />
         )}

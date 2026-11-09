@@ -16,7 +16,7 @@ function parseMonthParam(month?: string) {
 
 function monthGridRange(monthStart: Date) {
   const gridStart = new Date(monthStart);
-  const startWeekday = (gridStart.getDay() + 6) % 7; // segunda = 0
+  const startWeekday = gridStart.getDay();
   gridStart.setDate(gridStart.getDate() - startWeekday);
   gridStart.setHours(0, 0, 0, 0);
 
@@ -25,6 +25,10 @@ function monthGridRange(monthStart: Date) {
   gridEnd.setHours(23, 59, 59, 999);
 
   return { gridStart, gridEnd };
+}
+
+function dateKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 export default async function CalendarPage({
@@ -82,8 +86,8 @@ export default async function CalendarPage({
       </header>
       
       <CalendarView
-        monthStart={monthStart.toISOString()}
-        gridStart={gridStart.toISOString()}
+        monthStart={dateKey(monthStart)}
+        gridStart={dateKey(gridStart)}
         events={events.map((e) => ({
           ...e,
           teamName: e.teamId ? (teamNames.get(e.teamId) ?? "Equipe") : null,

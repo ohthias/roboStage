@@ -5,6 +5,11 @@ import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { documents, folders } from "@/db/schema";
 import {
+  liveDocumentWhere,
+  purgeExpiredTrash,
+  snapshotBeforeContentChange,
+} from "./history-core";
+import {
   resolveStagebookScope,
   scopeOwnership,
   type StagebookScope,
@@ -21,6 +26,7 @@ import { runAction } from "@/utils/stagebook/action-result";
 import { sanitizeDocIcon } from "@/utils/stagebook/doc-icon";
 import { sanitizeDocCover } from "@/utils/stagebook/doc-cover";
 import { sanitizeFolderColor } from "@/utils/stagebook/folder-colors";
+import { isDocFontId } from "@/utils/stagebook/doc-fonts";
 
 const PATH = "/dashboard/documents";
 const PATHS = [PATH, "/dashboard/folders"];
@@ -40,7 +46,7 @@ async function nextDocumentPosition(
   parentId: string | null
 ) {
   const where = and(
-    scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }),
+    liveDocumentWhere(scope),
     folderId ? eq(documents.folderId, folderId) : isNull(documents.folderId),
     parentId ? eq(documents.parentId, parentId) : isNull(documents.parentId)
   );
@@ -102,7 +108,7 @@ async function setDocumentTitle(scope: StagebookScope, id: string, title: string
     .where(
       and(
         eq(documents.id, id),
-        scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId })
+        liveDocumentWhere(scope)
       )
     );
 }
@@ -112,15 +118,15 @@ async function setDocumentContent(
   id: string,
   content: Record<string, unknown>
 ) {
-  await db
+  // Guarda o estado anterior no histórico (no máximo uma versão a cada
+  // VERSION_INTERVAL_MS; só as 5 mais recentes ficam).
+  await snapshotBeforeContentChange(scope, id, content);
+  const [saved] = await db
     .update(documents)
     .set({ content, updatedBy: scope.userId, updatedAt: new Date() })
-    .where(
-      and(
-        eq(documents.id, id),
-        scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId })
-      )
-    );
+    .where(and(eq(documents.id, id), liveDocumentWhere(scope)))
+    .returning({ updatedAt: documents.updatedAt });
+  return saved ?? null;
 }
 
 async function setDocumentIcon(scope: StagebookScope, id: string, icon: string | null) {
@@ -130,7 +136,7 @@ async function setDocumentIcon(scope: StagebookScope, id: string, icon: string |
     .where(
       and(
         eq(documents.id, id),
-        scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId })
+        liveDocumentWhere(scope)
       )
     );
 }
@@ -226,7 +232,7 @@ export async function createDocument(
         .where(
           and(
             eq(documents.id, parentId),
-            scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId })
+            liveDocumentWhere(scope)
           )
         )
         .limit(1);
@@ -261,6 +267,7 @@ export async function duplicateDocument(id: string) {
         icon: documents.icon,
         cover: documents.cover,
         description: documents.description,
+        font: documents.font,
         folderId: documents.folderId,
         parentId: documents.parentId,
         content: documents.content,
@@ -269,7 +276,7 @@ export async function duplicateDocument(id: string) {
       })
       .from(documents)
       .where(
-        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+        and(eq(documents.id, id), liveDocumentWhere(scope))
       )
       .limit(1);
 
@@ -287,6 +294,7 @@ export async function duplicateDocument(id: string) {
         icon: source.icon,
         cover: source.cover,
         description: source.description,
+        font: source.font,
         content: source.content,
         properties: source.properties,
         milestoneId: source.milestoneId,
@@ -327,8 +335,11 @@ export async function moveNotebookItem(
         const scopedDocs = await db
           .select({ id: documents.id, parentId: documents.parentId })
           .from(documents)
-          .where(scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }));
+          .where(liveDocumentWhere(scope));
         const byId = new Map(scopedDocs.map((d) => [d.id, d]));
+        if (!byId.has(parentPageId)) {
+          throw new ValidationError("Página de destino inválida.");
+        }
         let cursor: string | null = byId.get(parentPageId)?.parentId ?? null;
         while (cursor) {
           if (cursor === id) {
@@ -344,7 +355,7 @@ export async function moveNotebookItem(
         .update(documents)
         .set({ folderId: parentPageId ? null : folderId, parentId: parentPageId, position, updatedAt: new Date() })
         .where(
-          and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+          and(eq(documents.id, id), liveDocumentWhere(scope))
         );
     } else {
       const targetFolderId = target.folderId ?? null;
@@ -408,9 +419,25 @@ export async function updateDocumentCover(id: string, cover: string | null) {
       .update(documents)
       .set({ cover: sanitizeDocCover(cover), updatedBy: scope.userId, updatedAt: new Date() })
       .where(
-        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+        and(eq(documents.id, id), liveDocumentWhere(scope))
       );
     revalidatePath(PATH, "layout");
+  });
+}
+
+/** Fonte da página inteira ("default" ou null volta para a fonte padrão). */
+export async function updateDocumentFont(id: string, font: string | null) {
+  return runAction(async () => {
+    const scope = await resolveStagebookScope();
+    if (font !== null && !isDocFontId(font)) throw new ValidationError("Fonte inválida.");
+    await db
+      .update(documents)
+      .set({
+        font: font === "default" ? null : font,
+        updatedBy: scope.userId,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(documents.id, id), liveDocumentWhere(scope)));
   });
 }
 
@@ -425,7 +452,7 @@ export async function updateDocumentDescription(id: string, description: string)
         updatedAt: new Date(),
       })
       .where(
-        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+        and(eq(documents.id, id), liveDocumentWhere(scope))
       );
     revalidatePath(PATH, "layout");
   });
@@ -441,7 +468,7 @@ export async function updateDocumentProperty(id: string, key: string, value: unk
       .select({ properties: documents.properties })
       .from(documents)
       .where(
-        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+        and(eq(documents.id, id), liveDocumentWhere(scope))
       )
       .limit(1);
     if (!current) throw new ValidationError("Página não encontrada.");
@@ -466,20 +493,41 @@ export async function updateDocumentProperty(id: string, key: string, value: unk
 export async function updateDocumentContent(id: string, content: unknown) {
   return runAction(async () => {
     const scope = await resolveStagebookScope();
-    await setDocumentContent(scope, id, content as Record<string, unknown>);
+    const saved = await setDocumentContent(scope, id, content as Record<string, unknown>);
+    if (!saved) throw new ValidationError("Página não encontrada.");
+    return { updatedAt: new Date(saved.updatedAt).toISOString() };
   });
 }
 
+/**
+ * Envia a página para a lixeira (fica restaurável por 7 dias). As subpages não
+ * vão junto: sobem um nível, para o lugar que a página ocupava (seção 42).
+ */
 export async function deleteDocument(id: string) {
   return runAction(async () => {
     const scope = await resolveStagebookScope();
-    // Subpages não são apagadas junto: a FK parent_id tem onDelete "set null",
-    // então elas sobem um nível em vez de sumir (seção 42).
+    const [page] = await db
+      .select({ id: documents.id, folderId: documents.folderId, parentId: documents.parentId })
+      .from(documents)
+      .where(and(eq(documents.id, id), liveDocumentWhere(scope)))
+      .limit(1);
+    if (!page) return;
+
+    const now = new Date();
     await db
-      .delete(documents)
-      .where(
-        and(eq(documents.id, id), scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
-      );
+      .update(documents)
+      .set({
+        parentId: page.parentId,
+        folderId: page.parentId ? null : page.folderId,
+        updatedAt: now,
+      })
+      .where(and(eq(documents.parentId, page.id), liveDocumentWhere(scope)));
+    await db
+      .update(documents)
+      .set({ deletedAt: now, updatedBy: scope.userId })
+      .where(and(eq(documents.id, page.id), liveDocumentWhere(scope)));
+
+    await purgeExpiredTrash(scope, now);
     revalidatePath(PATH, "layout");
   });
 }

@@ -1,10 +1,13 @@
 import type { ReactNode } from "react";
-import { eq } from "drizzle-orm";
+import { count } from "drizzle-orm";
 import { db } from "@/db/client";
 import { folders, documents } from "@/db/schema";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { scopeWhere } from "@/utils/stagebook/permissions";
-import { NotebookTree, type TreeNode } from "./notebook-tree";
+import { NotebookTree } from "./notebook-tree";
+import { NotebookProvider, type TreeNode } from "./notebook-context";
+import { liveDocumentWhere, trashedDocumentWhere } from "./history-core";
+import { docFontVariables } from "./doc-fonts";
 import type { FolderRow } from "@/types/folders";
 
 type DocumentRow = {
@@ -77,12 +80,7 @@ export default async function NotebookLayout({
     userId: folders.userId,
     teamId: folders.teamId,
   });
-  const documentScope = scopeWhere(scope, {
-    userId: documents.userId,
-    teamId: documents.teamId,
-  });
-
-  const [allFolders, allDocuments] = await Promise.all([
+  const [allFolders, rawDocuments, [trash]] = await Promise.all([
     db
       .select({
         id: folders.id,
@@ -103,16 +101,30 @@ export default async function NotebookLayout({
         position: documents.position,
       })
       .from(documents)
-      .where(documentScope),
+      .where(liveDocumentWhere(scope)),
+    db
+      .select({ value: count() })
+      .from(documents)
+      .where(trashedDocumentWhere(scope)),
   ]);
 
+  // Subpage cuja página-pai não está visível (ex.: dados antigos) aparece na
+  // raiz em vez de sumir da árvore.
+  const liveIds = new Set(rawDocuments.map((d) => d.id));
+  const allDocuments = rawDocuments.map((d) =>
+    d.parentId && !liveIds.has(d.parentId) ? { ...d, parentId: null } : d
+  );
+
   const tree = buildTree(null, allFolders, allDocuments);
+  const trashCount = Number(trash?.value ?? 0);
 
   return (
-    <div className="flex h-full flex-col gap-6 lg:flex-row">
-      <NotebookTree tree={tree} />
+    <NotebookProvider tree={tree} trashCount={trashCount}>
+      <div className={`flex h-full min-h-[calc(100vh-3.5rem)] lg:flex-row ${docFontVariables}`}>
+        <NotebookTree tree={tree} trashCount={trashCount} />
 
-      <main className="flex-1">{children}</main>
-    </div>
+        <div className="min-w-0 flex-1">{children}</div>
+      </div>
+    </NotebookProvider>
   );
 }

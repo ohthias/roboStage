@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CalendarClock, Check, Milestone as MilestoneIcon, Settings2, X } from "lucide-react";
+import { CalendarClock, Check, CircleCheck, Milestone as MilestoneIcon, Settings2, X } from "lucide-react";
 import { updateColumnRules } from "./actions";
 import { createMilestone } from "@/utils/stagebook/actions/milestones";
 
@@ -12,6 +12,8 @@ export type ColumnRules = {
   dueDateRequired?: boolean;
   maxDueDays?: number | null;
   milestoneId?: string | null;
+  /** Todo card colocado nesta coluna é concluído automaticamente. */
+  autoComplete?: boolean;
 };
 
 type Milestone = { id: string; name: string; dueAt: string | Date | null };
@@ -79,7 +81,17 @@ export function ColumnRulesModal({
           </button>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-lg border border-base-300 p-3 has-[:checked]:border-success/40 has-[:checked]:bg-success/5">
+          <input type="checkbox" className="toggle toggle-sm toggle-success mt-0.5" checked={Boolean(rules.autoComplete)} onChange={(e) => setRules((prev) => ({ ...prev, autoComplete: e.target.checked }))} />
+          <span>
+            <span className="flex items-center gap-1.5 text-sm font-medium"><CircleCheck size={14} className="text-success" /> Concluir tarefas automaticamente</span>
+            <span className="mt-0.5 block text-xs text-base-content/55">
+              Toda tarefa colocada nesta coluna é marcada como concluída. Nas demais colunas, as concluídas ficam agrupadas no menu “Concluídas”.
+            </span>
+          </span>
+        </label>
+
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="flex items-center gap-3 rounded-lg border border-base-300 p-3">
             <input type="number" min={1} className="input input-bordered input-sm w-24" placeholder="Sem limite" value={rules.maxCards ?? ""} onChange={(e) => setRules((prev) => ({ ...prev, maxCards: e.target.value ? Number(e.target.value) : null }))} />
             <span className="text-sm">Máximo de cards</span>

@@ -9,9 +9,9 @@ export default async function TeamByIdPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; feed?: string }>;
 }) {
-  const [{ id }, { tab }] = await Promise.all([params, searchParams]);
+  const [{ id }, { tab, feed }] = await Promise.all([params, searchParams]);
 
   if (!UUID_RE.test(id)) {
     return <NoAccess />;
@@ -34,7 +34,9 @@ export default async function TeamByIdPage({
   const activeScope = await resolveStagebookScope();
   const isActiveScope = activeScope.type === "team" && activeScope.teamId === id;
 
-  return <TeamContent scope={scope} isActiveScope={isActiveScope} tab={parseTab(tab)} />;
+  return (
+    <TeamContent scope={scope} isActiveScope={isActiveScope} tab={parseTab(tab)} feed={feed === "all"} />
+  );
 }
 
 function NoAccess() {

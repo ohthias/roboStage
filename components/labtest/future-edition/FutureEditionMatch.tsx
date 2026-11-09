@@ -47,6 +47,7 @@ import {
 import type { SeriesDatum } from "@/utils/labtest/chart-data";
 import { SeriesChartPanel } from "../charts/SeriesChart";
 import { createTestExecution } from "@/app/(protected)/dashboard/labtest/actions";
+import { useExecutionOperator } from "@/components/labtest/execution-operator";
 import { updateLabTestStatus } from "@/app/(protected)/dashboard/labtest/new/actions";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
@@ -236,6 +237,7 @@ export default function FutureEditionMatch({
   nextExecutionNumber: number;
   durationSec: number;
 }) {
+  const operatorId = useExecutionOperator();
   const { data, error, loading } = useFutureEditionData();
 
   const [status, setStatus] = useState<Status>("idle");
@@ -394,6 +396,7 @@ export default function FutureEditionMatch({
         testId,
         notes: notes.trim() || undefined,
         results: { futureEdition: result },
+        operatorId,
       }));
       if (matchNumber === 1) {
         unwrapAction(await updateLabTestStatus({ testId, status: "em_andamento" }));

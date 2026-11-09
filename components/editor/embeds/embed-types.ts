@@ -4,6 +4,7 @@ import type {
   TestRecord,
 } from "@/types/labtest.types";
 import type { CanvasElement } from "@/types/thinklab.types";
+import type { DiagramKind } from "@/utils/quickbrick/notebook";
 
 /**
  * Blocos "embed" do editor de documentos: referências vivas a itens de outros
@@ -15,13 +16,17 @@ export type EmbedKind =
   | "kanban-card"
   | "calendar-event"
   | "labtest-chart"
-  | "thinklab-board";
+  | "thinklab-board"
+  | "quickbrick-photo"
+  | "quickbrick-diagram";
 
 export const EMBED_KINDS: EmbedKind[] = [
   "kanban-card",
   "calendar-event",
   "labtest-chart",
   "thinklab-board",
+  "quickbrick-photo",
+  "quickbrick-diagram",
 ];
 
 export const EMBED_LABELS: Record<EmbedKind, string> = {
@@ -29,6 +34,8 @@ export const EMBED_LABELS: Record<EmbedKind, string> = {
   "calendar-event": "Evento do calendário",
   "labtest-chart": "Gráfico do LabTest",
   "thinklab-board": "Quadro do ThinkLab",
+  "quickbrick-photo": "Foto do robô · QuickBrick",
+  "quickbrick-diagram": "Diagrama do QuickBrick",
 };
 
 export const EMBED_HREF: Record<EmbedKind, (id: string, extra?: string) => string> = {
@@ -36,6 +43,8 @@ export const EMBED_HREF: Record<EmbedKind, (id: string, extra?: string) => strin
   "calendar-event": () => `/dashboard/calendar`,
   "labtest-chart": (id) => `/dashboard/labtest/${id}`,
   "thinklab-board": (id) => `/dashboard/thinklab/${id}`,
+  "quickbrick-photo": (_id, notebookId) => `/dashboard/quickbrick/${notebookId ?? ""}`,
+  "quickbrick-diagram": (id, notebookId) => `/dashboard/quickbrick/${notebookId ?? ""}/diagramas/${id}`,
 };
 
 /** Opções por bloco, guardadas junto da referência. */
@@ -47,7 +56,15 @@ export type LabTestChartOptions = {
   fieldKeys?: string[];
 };
 
-export type EmbedOptions = LabTestChartOptions & { boardId?: string };
+/** Tamanho da imagem nos embeds de imagem (foto do robô / diagrama). */
+export type ImageEmbedSize = "small" | "medium" | "full";
+
+export type QuickbrickEmbedOptions = {
+  notebookId?: string;
+  size?: ImageEmbedSize;
+};
+
+export type EmbedOptions = LabTestChartOptions & QuickbrickEmbedOptions & { boardId?: string };
 
 // ---------------------------------------------------------------------------
 // Itens do seletor (listas leves)
@@ -88,11 +105,33 @@ export type ThinkLabPickerItem = {
   updatedAt: string;
 };
 
+export type QuickbrickPhotoPickerItem = {
+  id: string;
+  notebookId: string;
+  notebookName: string;
+  robotName: string | null;
+  title: string | null;
+  takenAt: string;
+  thumbUrl: string;
+};
+
+export type QuickbrickDiagramPickerItem = {
+  id: string;
+  notebookId: string;
+  notebookName: string;
+  kind: DiagramKind;
+  title: string;
+  summary: string;
+  updatedAt: string;
+};
+
 export type PickerItemMap = {
   "kanban-card": CardPickerItem;
   "calendar-event": EventPickerItem;
   "labtest-chart": LabTestPickerItem;
   "thinklab-board": ThinkLabPickerItem;
+  "quickbrick-photo": QuickbrickPhotoPickerItem;
+  "quickbrick-diagram": QuickbrickDiagramPickerItem;
 };
 
 // ---------------------------------------------------------------------------
@@ -141,9 +180,37 @@ export type ThinkLabEmbedData = {
   elements: CanvasElement[];
 };
 
+export type QuickbrickPhotoEmbedData = {
+  id: string;
+  notebookId: string;
+  notebookName: string;
+  robotName: string | null;
+  url: string;
+  title: string | null;
+  notes: string | null;
+  takenAt: string;
+  /** Posição desta foto entre as versões do robô (1 = primeira). */
+  version: number;
+  totalVersions: number;
+};
+
+export type QuickbrickDiagramEmbedData = {
+  id: string;
+  notebookId: string;
+  notebookName: string;
+  kind: DiagramKind;
+  title: string;
+  season: string | null;
+  summary: string;
+  data: unknown;
+  updatedAt: string;
+};
+
 export type EmbedDataMap = {
   "kanban-card": CardEmbedData;
   "calendar-event": EventEmbedData;
   "labtest-chart": LabTestEmbedData;
   "thinklab-board": ThinkLabEmbedData;
+  "quickbrick-photo": QuickbrickPhotoEmbedData;
+  "quickbrick-diagram": QuickbrickDiagramEmbedData;
 };

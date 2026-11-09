@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { users } from "./users";
 import { teams } from "./teams";
+import { trainingSessions } from "./training";
 
 // ---------------------------------------------------------------------------
 // Anatix — telemetria ao vivo do robô (biblioteca Anatix para Arduino).
@@ -35,7 +36,7 @@ export const anatixLabs = pgTable(
     // Nome/placa informados pelo robô no frame H da última conexão.
     robotName: text("robot_name"),
     board: text("board"),
-    // { baudRate, views: { charts, maps, tables }, chartMetrics, mapX, mapY }
+    // { transport, baudRate, views: { custom, charts, maps, tables }, chartMetrics, mapX, mapY, dashboard: AnatixWidget[] }
     config: jsonb("config").notNull().default({}),
     lastConnectedAt: timestamp("last_connected_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -72,12 +73,19 @@ export const anatixSessions = pgTable(
     droppedFrames: integer("dropped_frames").notNull().default(0),
     // Resumo por métrica: { metrics: { nome: { min, max, avg, count, last } }, states, sections }
     summary: jsonb("summary").notNull().default({}),
+    // Sessão de treino da equipe em andamento quando a conexão começou.
+    trainingSessionId: uuid("training_session_id").references(() => trainingSessions.id, {
+      onDelete: "set null",
+    }),
     startedAt: timestamp("started_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
     endedAt: timestamp("ended_at", { withTimezone: true }),
   },
-  (t) => [index("anatix_sessions_lab_idx").on(t.labId)],
+  (t) => [
+    index("anatix_sessions_lab_idx").on(t.labId),
+    index("anatix_sessions_training_session_idx").on(t.trainingSessionId),
+  ],
 );
 
 export const anatixFrames = pgTable(

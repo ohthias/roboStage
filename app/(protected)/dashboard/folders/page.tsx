@@ -1,4 +1,4 @@
-import { count, eq } from "drizzle-orm";
+import { count, eq, and, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { documents, folders } from "@/db/schema";
 import { scopeWhere } from "@/utils/stagebook/permissions";
@@ -36,7 +36,7 @@ export default async function FoldersPage() {
         count: count(documents.id),
       })
       .from(documents)
-      .where(documentScope)
+      .where(and(documentScope, isNull(documents.deletedAt)))
       .groupBy(documents.folderId),
   ]);
 

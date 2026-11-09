@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, desc, eq, gte, isNotNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, sql, isNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db } from "@/db/client";
 import {
@@ -142,7 +142,7 @@ export async function getDashboardData() {
         updatedAt: documents.updatedAt,
       })
       .from(documents)
-      .where(documentScope)
+      .where(and(documentScope, isNull(documents.deletedAt)))
       .orderBy(desc(documents.updatedAt))
       .limit(4),
     db

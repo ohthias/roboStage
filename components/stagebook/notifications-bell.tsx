@@ -20,6 +20,15 @@ function formatRelative(date: Date) {
   return `${days} d`;
 }
 
+/** Para onde a notificação leva (quando o `data` aponta para algo navegável). */
+function notificationHref(n: NotificationRow): string | null {
+  const data = (n.data ?? {}) as Record<string, unknown>;
+  if (typeof data.teamId === "string" && typeof data.sessionId === "string") {
+    return `/dashboard/team/${data.teamId}/treinos/${data.sessionId}`;
+  }
+  return null;
+}
+
 export function NotificationsBell({
   initialNotifications,
 }: {
@@ -28,10 +37,12 @@ export function NotificationsBell({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  function readOne(id: string) {
+  function readOne(n: NotificationRow) {
+    const href = notificationHref(n);
     startTransition(async () => {
-      await markNotificationRead(id);
-      router.refresh();
+      await markNotificationRead(n.id);
+      if (href) router.push(href);
+      else router.refresh();
     });
   }
 
@@ -88,7 +99,7 @@ export function NotificationsBell({
                 <button
                   type="button"
                   className="flex w-full flex-col gap-0.5 rounded-lg px-2 py-2 text-left text-sm transition-colors hover:bg-base-200"
-                  onClick={() => readOne(n.id)}
+                  onClick={() => readOne(n)}
                 >
                   <span className="flex items-center justify-between gap-2">
                     <span className="font-medium">{n.title}</span>

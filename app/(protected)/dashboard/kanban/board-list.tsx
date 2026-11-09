@@ -5,27 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
-  Briefcase,
-  CalendarDays,
-  Flag,
-  FolderKanban,
-  GraduationCap,
-  LayoutDashboard,
-  Lightbulb,
-  ListTodo,
   KanbanSquare,
   MoreHorizontal,
   Pencil,
   Plus,
-  Rocket,
-  Star,
-  Target,
   Trash2,
-  Users,
   X,
-  type LucideIcon,
 } from "lucide-react";
 import { createBoard, deleteBoard, renameBoard } from "./actions";
+import { BOARD_ICON_MAP, BOARD_ICON_PRESET } from "./board-icons";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
 type Board = {
@@ -34,25 +22,6 @@ type Board = {
   description: string | null;
   icon: string | null;
 };
-
-const BOARD_ICON_PRESET: { name: string; label: string; icon: LucideIcon }[] = [
-  { name: "LayoutDashboard", label: "Dashboard", icon: LayoutDashboard },
-  { name: "ListTodo", label: "Tarefas", icon: ListTodo },
-  { name: "FolderKanban", label: "Projetos", icon: FolderKanban },
-  { name: "Rocket", label: "Lançamento", icon: Rocket },
-  { name: "Target", label: "Metas", icon: Target },
-  { name: "CalendarDays", label: "Agenda", icon: CalendarDays },
-  { name: "Lightbulb", label: "Ideias", icon: Lightbulb },
-  { name: "Briefcase", label: "Trabalho", icon: Briefcase },
-  { name: "GraduationCap", label: "Estudos", icon: GraduationCap },
-  { name: "Users", label: "Equipe", icon: Users },
-  { name: "Star", label: "Favoritos", icon: Star },
-  { name: "Flag", label: "Prioridades", icon: Flag },
-];
-
-const BOARD_ICON_MAP = new Map(
-  BOARD_ICON_PRESET.map((item) => [item.name, item.icon]),
-);
 
 function BoardIcon({ name }: { name: string | null }) {
   const Icon = name ? BOARD_ICON_MAP.get(name) : undefined;

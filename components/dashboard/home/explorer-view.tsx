@@ -22,6 +22,7 @@ import {
   formatDate,
   greeting,
   modeDonutItems,
+  personalizedGreeting,
   type DonutItem,
 } from "./shared";
 
@@ -146,6 +147,9 @@ export function ExplorerDashboard({
           <h1 className="font-mono uppercase text-3xl font-bold tracking-tight text-base-content font-regular sm:text-4xl">
             {greeting()}, {firstName(currentUser.name)} 👋
           </h1>
+          <p className="w-full text-sm text-base-content/55">
+            {personalizedGreeting(variant)}.
+          </p>
           <Link
             href={isOrg ? "/dashboard/calendar" : "/dashboard/thinklab"}
             className="btn btn-sm rounded-full border-primary/40 bg-base-100 text-primary shadow-sm hover:bg-primary hover:text-primary-content"

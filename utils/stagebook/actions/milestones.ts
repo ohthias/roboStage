@@ -11,6 +11,7 @@ import {
   type StagebookScope,
 } from "../scope";
 import { requireCapability } from "../permissions";
+import { recordTeamActivity } from "../team-activity";
 import { runAction, type ActionResult } from "../action-result";
 import { roleCan } from "../team-permissions";
 import {
@@ -95,6 +96,16 @@ async function insertMilestone(scope: StagebookScope, input: MilestoneInput): Pr
       createdBy: scope.userId,
     })
     .returning(milestoneColumns);
+  if (scope.type === "team") {
+    await recordTeamActivity({
+      teamId: scope.teamId,
+      actorId: scope.userId,
+      verb: "milestone.created",
+      entityType: "milestone",
+      entityId: created.id,
+      data: { name: created.name, dueAt: created.dueAt?.toISOString() ?? null },
+    });
+  }
   refresh();
   return toMilestoneDTO(created);
 }

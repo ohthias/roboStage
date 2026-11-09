@@ -90,8 +90,8 @@ type Profile = {
 const PROFILES: Record<ProfileKey, Profile> = {
   fll: {
     key: "fll",
-    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "soon", quickbrick: "full" },
-    note: "Founders Edition com configuração completa de missões.",
+    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "full", quickbrick: "full" },
+    note: "Founders Edition com configuração completa de missões e Anatix para robôs LEGO com Pybricks.",
   },
   "fll-future": {
     key: "fll-future",
@@ -175,4 +175,49 @@ export function featureLevel(league: { code: string; name: string }, feature: Fe
 /** O QuickBrick Studio (caderno do robô) só está liberado por completo na FLL Challenge. */
 export function supportsQuickbrick(league: { code: string; name: string }) {
   return featureLevel(league, "quickbrick") === "full";
+}
+
+// ---------------------------------------------------------------------------
+// Funções padrão da escala (catálogo inicial de `team_duty_roles`)
+// ---------------------------------------------------------------------------
+
+export type DutyRoleSeed = { label: string; description?: string; maxPerSlot?: number };
+
+/**
+ * Funções que uma equipe recebe na primeira vez que abre a escala, pela liga.
+ * A primeira função de cada lista é a de "quem opera o robô": é ela que sugere
+ * o operador das execuções do LabTest durante a sessão.
+ *
+ * Evitar o rótulo "Técnico": já é o nome do cargo `owner` (ver `ROLE_META`).
+ */
+const DUTY_SEEDS: Record<"fll" | "obr" | "generic", DutyRoleSeed[]> = {
+  fll: [
+    { label: "Piloto", description: "Opera o robô na mesa.", maxPerSlot: 2 },
+    { label: "Co-piloto", description: "Prepara os anexos e ajuda na base.", maxPerSlot: 2 },
+    { label: "Estrategista de mesa", description: "Decide a ordem das missões e acompanha o tempo." },
+    { label: "Apresentação do projeto", description: "Conduz a apresentação do projeto de inovação." },
+    { label: "Apresentação do robô", description: "Explica o design e a programação do robô." },
+    { label: "Peças/pit", description: "Cuida das peças, baterias e reparos no pit." },
+  ],
+  obr: [
+    { label: "Operador", description: "Posiciona e inicia o robô na arena.", maxPerSlot: 1 },
+    { label: "Ajuste de sensores", description: "Calibra os sensores antes de cada rodada." },
+    { label: "Estratégia de resgate", description: "Planeja a rota e o resgate das vítimas." },
+    { label: "Peças/pit", description: "Cuida das peças, baterias e reparos no pit." },
+  ],
+  generic: [
+    { label: "Piloto", description: "Opera o robô." },
+    { label: "Estrategista", description: "Planeja a estratégia das rodadas." },
+    { label: "Mecânica", description: "Montagem e reparos do robô." },
+    { label: "Programação", description: "Ajustes no código durante a sessão." },
+    { label: "Documentação", description: "Registra resultados e decisões." },
+  ],
+};
+
+export function dutyRoleSeedsFor(league: { code: string; name: string } | null): DutyRoleSeed[] {
+  if (!league) return DUTY_SEEDS.generic;
+  const key = resolveProfileKey(league);
+  if (key === "fll" || key === "fll-future") return DUTY_SEEDS.fll;
+  if (key === "obr" || key === "obr-resgate") return DUTY_SEEDS.obr;
+  return DUTY_SEEDS.generic;
 }

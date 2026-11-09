@@ -231,7 +231,7 @@ export function LabTestChartEmbed({
 
           {view === "completo" && hasFullView ? (
             data.test.mode === "runs" && data.test.season ? (
-              <FllRunsCharts season={data.test.season} entries={data.entries} accent={mode.accent} />
+              <FllRunsCharts season={data.test.season} missionIds={data.test.config?.missions} entries={data.entries} accent={mode.accent} />
             ) : (
               <LabTestModeCharts
                 mode={data.test.mode}

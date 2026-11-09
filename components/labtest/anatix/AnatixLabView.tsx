@@ -1,17 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   ArrowLeft,
   BarChart3,
+  Bluetooth,
   Cable,
   CircleSlash,
   Cpu,
   Database,
   History,
+  LayoutDashboard,
   Map as MapIcon,
   MemoryStick,
   Pause,
@@ -19,7 +21,9 @@ import {
   Plug,
   RotateCcw,
   Settings2,
+  Square,
   Table2,
+  ToyBrick,
   Trash2,
   Unplug,
   Zap,
@@ -33,7 +37,9 @@ import {
   startAnatixSession,
   updateAnatixLab,
 } from "@/app/(protected)/dashboard/labtest/anatix/actions";
-import { useAnatixSerial, type AnatixStatus } from "@/hooks/useAnatixSerial";
+import { useAnatixSerial, type AnatixSerialHandlers, type AnatixStatus } from "@/hooks/useAnatixSerial";
+import { useAnatixPybricks } from "@/hooks/useAnatixPybricks";
+import type { PybricksTransportKind } from "@/utils/labtest/anatix/pybricks";
 import { ANATIX_COMMANDS } from "@/utils/labtest/anatix/protocol";
 import { AnatixStore } from "@/utils/labtest/anatix/store";
 import { fmtMs, fmtNum } from "@/utils/labtest/anatix/analysis";
@@ -46,6 +52,7 @@ import type {
   AnatixViewKey,
 } from "@/types/anatix.types";
 import { AnatixCharts } from "./AnatixCharts";
+import { AnatixDashboard } from "./AnatixDashboard";
 import { AnatixMaps } from "./AnatixMaps";
 import { AnatixTables } from "./AnatixTables";
 import { AnatixLabForm } from "./AnatixLabForm";
@@ -66,7 +73,16 @@ const STATUS_META: Record<AnatixStatus, { label: string; tone: string; dot: stri
   error: { label: "Falha na conexão", tone: "text-error", dot: "bg-error" },
 };
 
+/** Rótulos que mudam quando o robô é um hub LEGO com Pybricks. */
+const PYBRICKS_STATUS_LABEL: Partial<Record<AnatixStatus, string>> = {
+  unsupported: "Navegador sem Web Bluetooth/WebUSB",
+  opening: "Conectando ao hub…",
+};
+
+const HUB_KIND_LABEL: Record<PybricksTransportKind, string> = { ble: "Bluetooth", usb: "Cabo USB" };
+
 const VIEW_TABS: { key: AnatixViewKey; label: string; icon: typeof BarChart3 }[] = [
+  { key: "custom", label: "Meu painel", icon: LayoutDashboard },
   { key: "charts", label: "Gráficos", icon: BarChart3 },
   { key: "maps", label: "Mapas", icon: MapIcon },
   { key: "tables", label: "Tabelas", icon: Table2 },
@@ -77,9 +93,12 @@ type Source = { kind: "live" } | { kind: "saved"; session: AnatixSessionRecord; 
 export function AnatixLabView({
   lab,
   sessions,
+  banner,
 }: {
   lab: AnatixLabRecord;
   sessions: AnatixSessionRecord[];
+  /** Faixa da sessão de treino em andamento (laboratórios de equipe). */
+  banner?: ReactNode;
 }) {
   const router = useRouter();
   const settingsRef = useRef<HTMLDialogElement>(null);
@@ -131,7 +150,9 @@ export function AnatixLabView({
     flushingRef.current = null;
   }, []);
 
-  const serial = useAnatixSerial(config.baudRate, {
+  const isPybricks = config.transport === "pybricks";
+
+  const handlers: AnatixSerialHandlers = {
     onFrame: (frame) => {
       live.add(frame);
       if (recordRef.current && sessionIdRef.current) pendingRef.current.push(frame);
@@ -139,6 +160,11 @@ export function AnatixLabView({
     onConsole: (text) => live.addConsole(text, "serial"),
     onInvalid: () => live.addInvalid(),
     onConnected: (hello) => {
+      // Pybricks: cada execução do programa é uma sessão; começa a tela do zero.
+      if (isPybricks && live.frameCount > 0) {
+        live.reset();
+        setVersion(live.version);
+      }
       live.addConsole(
         hello
           ? `Conectado: ${hello.robot} (${hello.board}), protocolo v${hello.version}, relatórios a cada ${hello.periodMs} ms.`
@@ -155,7 +181,7 @@ export function AnatixLabView({
         robotName: hello?.robot ?? null,
         board: hello?.board ?? null,
         protocolVersion: hello?.version ?? null,
-        baudRate: config.baudRate,
+        baudRate: isPybricks ? null : config.baudRate,
       })
         .then((r) => unwrapAction(r).sessionId)
         .catch((err) => {
@@ -186,7 +212,12 @@ export function AnatixLabView({
         setSaveError(err instanceof Error ? err.message : "Não foi possível encerrar a sessão.");
       }
     },
-  });
+  };
+
+  // Os dois hooks ficam montados; só o da conexão escolhida no laboratório é usado.
+  const serial = useAnatixSerial(config.baudRate, handlers);
+  const pybricks = useAnatixPybricks(handlers);
+  const conn = isPybricks ? pybricks : serial;
 
   // Gravação periódica em lotes.
   useEffect(() => {
@@ -205,14 +236,30 @@ export function AnatixLabView({
     return () => window.clearInterval(id);
   }, [live, paused]);
 
-  const connected = serial.status === "connected" || serial.status === "silent";
-  const busy = serial.status === "opening" || serial.status === "handshake";
+  const connected = conn.status === "connected" || conn.status === "silent";
+  const busy = conn.status === "opening" || (!isPybricks && conn.status === "handshake");
+  const hubLinked = isPybricks && pybricks.hub !== null;
 
-  function startConnection(reuseKnown: boolean) {
+  function resetLive() {
     live.reset();
     setVersion(live.version);
     setSource({ kind: "live" });
+  }
+
+  function startConnection(reuseKnown: boolean) {
+    resetLive();
     void serial.connect({ reuseKnown });
+  }
+
+  function startPybricks(kind: PybricksTransportKind) {
+    resetLive();
+    void pybricks.connect(kind);
+  }
+
+  // Cada execução do programa no hub é uma sessão nova: limpa a tela ao iniciar.
+  function startHubProgram() {
+    resetLive();
+    void pybricks.startProgram();
   }
 
   // ---- Configuração persistida (métricas do gráfico, eixos do mapa) ---------
@@ -254,7 +301,7 @@ export function AnatixLabView({
   function removeLab() {
     if (!confirm(`Excluir "${lab.name}" e todas as sessões gravadas?`)) return;
     startTransition(async () => {
-      await serial.disconnect();
+      await conn.disconnect();
       unwrapAction(await deleteAnatixLab(lab.id));
       router.push("/dashboard/labtest/anatix");
     });
@@ -263,11 +310,20 @@ export function AnatixLabView({
   const store = source.kind === "saved" ? source.store : live;
   const shownVersion = source.kind === "saved" ? source.store.version : version;
   const loop = store.loop.at(-1);
-  const status = STATUS_META[serial.status];
+  const baseStatus = STATUS_META[conn.status];
+  const status =
+    isPybricks && conn.status === "handshake"
+      ? pybricks.programRunning
+        ? { label: "Aguardando o Anatix…", tone: "text-info", dot: "bg-info animate-pulse" }
+        : { label: "Hub conectado · programa parado", tone: "text-base-content/70", dot: "bg-info" }
+      : { ...baseStatus, label: (isPybricks && PYBRICKS_STATUS_LABEL[conn.status]) || baseStatus.label };
+  const hub = pybricks.hub;
   const hello = live.hello;
+  const fileName = `anatix-${lab.name.replace(/\W+/g, "_")}`;
 
   return (
     <div className="min-h-full bg-base-200/40 px-4 py-8 text-base-content sm:px-6 lg:px-8">
+      {banner}
       {/* Cabeçalho */}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
@@ -295,7 +351,7 @@ export function AnatixLabView({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <span className="flex size-10 items-center justify-center rounded-full bg-primary/15 text-primary">
-                <Cable size={18} />
+                {isPybricks ? <ToyBrick size={18} /> : <Cable size={18} />}
               </span>
               <div>
                 <p className={`flex items-center gap-2 text-sm font-bold ${status.tone}`}>
@@ -303,15 +359,58 @@ export function AnatixLabView({
                   {status.label}
                 </p>
                 <p className="text-xs text-base-content/50">
-                  {connected && hello
-                    ? `${hello.robot} · ${hello.board} · ${serial.portLabel ?? ""}`
-                    : `${config.baudRate.toLocaleString("pt-BR")} baud${serial.knownPorts ? ` · ${serial.knownPorts} porta(s) já autorizada(s)` : ""}`}
+                  {isPybricks
+                    ? connected && hello && hub
+                      ? `${hello.robot} · ${hello.board} · ${HUB_KIND_LABEL[hub.kind]}`
+                      : hub
+                        ? `${hub.name} · ${HUB_KIND_LABEL[hub.kind]}${hub.firmware ? ` · Pybricks ${hub.firmware}` : ""}`
+                        : "LEGO com Pybricks · Bluetooth ou cabo USB"
+                    : connected && hello
+                      ? `${hello.robot} · ${hello.board} · ${serial.portLabel ?? ""}`
+                      : `${config.baudRate.toLocaleString("pt-BR")} baud${serial.knownPorts ? ` · ${serial.knownPorts} porta(s) já autorizada(s)` : ""}`}
                 </p>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {connected || busy ? (
+              {isPybricks ? (
+                hubLinked || busy ? (
+                  <>
+                    {hubLinked &&
+                      (pybricks.programRunning ? (
+                        <button type="button" className="btn btn-sm btn-ghost border-base-300" onClick={() => void pybricks.stopProgram()}>
+                          <Square size={14} /> Parar programa
+                        </button>
+                      ) : (
+                        <button type="button" className="btn btn-sm btn-primary" onClick={startHubProgram}>
+                          <Play size={14} /> Iniciar programa
+                        </button>
+                      ))}
+                    <button type="button" className="btn btn-sm btn-error btn-outline" onClick={() => void pybricks.disconnect()}>
+                      <Unplug size={15} /> Desconectar
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-ghost border-base-300"
+                      disabled={!pybricks.supports.usb}
+                      onClick={() => startPybricks("usb")}
+                    >
+                      <Cable size={15} /> Cabo USB
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-primary"
+                      disabled={!pybricks.supports.bluetooth}
+                      onClick={() => startPybricks("ble")}
+                    >
+                      <Bluetooth size={15} /> Bluetooth
+                    </button>
+                  </>
+                )
+              ) : connected || busy ? (
                 <button type="button" className="btn btn-sm btn-error btn-outline" onClick={() => void serial.disconnect()}>
                   <Unplug size={15} /> Desconectar
                 </button>
@@ -340,27 +439,46 @@ export function AnatixLabView({
             </div>
           </div>
 
-          {serial.status === "unsupported" && (
+          {conn.status === "unsupported" && (
             <div role="alert" className="alert alert-warning alert-soft mt-4 text-sm">
               <AlertTriangle size={16} />
-              A conexão USB usa a Web Serial API. Abra o RoboStage no Chrome, Edge ou Opera em um computador.
+              {isPybricks
+                ? "A conexão com o hub usa Web Bluetooth e WebUSB. Abra o RoboStage no Chrome ou Edge em um computador."
+                : "A conexão USB usa a Web Serial API. Abra o RoboStage no Chrome, Edge ou Opera em um computador."}
             </div>
           )}
-          {serial.error && (
+          {conn.error && (
             <div role="alert" className="alert alert-error alert-soft mt-4 text-sm">
               <CircleSlash size={16} />
-              {serial.error}
+              {conn.error}
             </div>
           )}
-          {serial.status === "handshake" && (
+          {isPybricks && conn.status === "handshake" && (
+            <p className="mt-4 text-xs text-base-content/60">
+              {pybricks.programRunning ? (
+                <>
+                  Programa rodando. Enviando <code>ANX PING</code> e aguardando o robô se apresentar… Confira se o
+                  programa importa o <code>anatix.py</code> e chama <code>anx.update()</code> (ou{" "}
+                  <code>anx.keep_alive()</code> com <code>multitask</code>).
+                </>
+              ) : (
+                <>
+                  Hub conectado. Inicie o programa pelo botão do hub ou em <b>Iniciar programa</b>; cada execução
+                  vira uma sessão.
+                </>
+              )}
+            </p>
+          )}
+          {!isPybricks && serial.status === "handshake" && (
             <p className="mt-4 text-xs text-base-content/60">
               Porta aberta. Enviando <code>ANX PING</code> e aguardando o robô se apresentar…
               (placas como o Uno reiniciam ao conectar).
             </p>
           )}
-          {serial.status === "silent" && (
+          {conn.status === "silent" && (
             <p className="mt-4 text-xs text-warning">
-              Conectado, mas o robô parou de enviar. Ele travou, reiniciou ou o <code>ANX_UPDATE()</code> deixou de ser chamado.
+              Conectado, mas o robô parou de enviar. Ele travou, reiniciou ou o{" "}
+              <code>{isPybricks ? "anx.update()" : "ANX_UPDATE()"}</code> deixou de ser chamado.
             </p>
           )}
 
@@ -388,7 +506,7 @@ export function AnatixLabView({
                   className="select select-xs select-bordered"
                   defaultValue=""
                   onChange={(e) => {
-                    if (e.target.value) void serial.send(ANATIX_COMMANDS.rate(Number(e.target.value)));
+                    if (e.target.value) void conn.send(ANATIX_COMMANDS.rate(Number(e.target.value)));
                     e.target.value = "";
                   }}
                   aria-label="Período dos relatórios"
@@ -398,7 +516,7 @@ export function AnatixLabView({
                     <option key={ms} value={ms}>{ms} ms</option>
                   ))}
                 </select>
-                <button type="button" className="btn btn-ghost btn-xs border-base-300" onClick={() => void serial.send(ANATIX_COMMANDS.reset)}>
+                <button type="button" className="btn btn-ghost btn-xs border-base-300" onClick={() => void conn.send(ANATIX_COMMANDS.reset)}>
                   Zerar estatísticas
                 </button>
               </div>
@@ -457,7 +575,15 @@ export function AnatixLabView({
 
       <main className="mt-4">
         {enabledViews.length === 0 ? (
-          <p className="text-sm text-base-content/60">Ative gráficos, mapas ou tabelas em Configurar.</p>
+          <p className="text-sm text-base-content/60">Ative o painel, gráficos, mapas ou tabelas em Configurar.</p>
+        ) : currentView === "custom" ? (
+          <AnatixDashboard
+            store={store}
+            version={shownVersion}
+            widgets={config.dashboard}
+            onChange={(dashboard) => patchConfig({ dashboard })}
+            fileName={fileName}
+          />
         ) : currentView === "charts" ? (
           <AnatixCharts
             store={store}
@@ -474,7 +600,7 @@ export function AnatixLabView({
             onAxesChange={(mapX, mapY) => patchConfig({ mapX, mapY })}
           />
         ) : (
-          <AnatixTables store={store} version={shownVersion} fileName={`anatix-${lab.name.replace(/\W+/g, "_")}`} />
+          <AnatixTables store={store} version={shownVersion} fileName={fileName} />
         )}
       </main>
 
@@ -552,6 +678,7 @@ export function AnatixLabView({
         <AnatixLabForm
           lab={{ ...lab, config }}
           onDone={(saved) => {
+            if (saved.config.transport !== config.transport) void conn.disconnect();
             setConfig(saved.config);
             settingsRef.current?.close();
           }}

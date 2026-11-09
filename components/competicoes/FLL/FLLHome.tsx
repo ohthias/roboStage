@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  Activity,
   ArrowRight,
   ArrowUpRight,
   BookCopy,
@@ -100,6 +101,7 @@ const judgedAreas = [
     tools: [
       { label: "QuickBrick", href: "/fll/quickbrick" },
       { label: "Partiu Mesa!", href: "/fll/partiu-mesa" },
+      { label: "Anatix", href: "/fll/anatix" },
     ],
     tone: "secondary" as Tone,
   },
@@ -189,6 +191,16 @@ const tools: ToolItem[] = [
       "Simulador simples para testar saídas e analisar o desempenho do robô durante o teste.",
     href: "/fll/partiu-mesa",
     tone: "primary",
+  },
+  {
+    icon: Activity,
+    tag: "TELEMETRIA",
+    title: "Anatix",
+    description:
+      "Veja sensores, giro, estados e tempos do robô LEGO em tempo real, com Pybricks, por Bluetooth ou cabo USB.",
+    href: "/fll/anatix",
+    tone: "accent",
+    status: "Novo",
   },
   {
     icon: ListCheck,

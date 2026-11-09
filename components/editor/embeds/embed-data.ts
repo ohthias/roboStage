@@ -6,6 +6,8 @@ import {
   getEmbedEvent,
   getEmbedLabTest,
   getEmbedThinkLab,
+  getEmbedQuickbrickDiagram,
+  getEmbedQuickbrickPhoto,
 } from "@/app/(protected)/dashboard/documents/embed-actions";
 import type { EmbedDataMap, EmbedKind } from "./embed-types";
 
@@ -14,6 +16,8 @@ const fetchers: { [K in EmbedKind]: (id: string) => Promise<EmbedDataMap[K]> } =
   "calendar-event": getEmbedEvent,
   "labtest-chart": getEmbedLabTest,
   "thinklab-board": getEmbedThinkLab,
+  "quickbrick-photo": getEmbedQuickbrickPhoto,
+  "quickbrick-diagram": getEmbedQuickbrickDiagram,
 };
 
 /**

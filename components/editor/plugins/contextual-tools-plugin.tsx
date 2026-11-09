@@ -22,6 +22,7 @@ import {
 } from "@lexical/table";
 import { $findMatchingParent, mergeRegister } from "@lexical/utils";
 import { $getSelectionStyleValueForProperty, $patchStyleText } from "@lexical/selection";
+import { DOC_FONTS, docFontFromFamily } from "@/utils/stagebook/doc-fonts";
 import {
   $isDividerNode,
   DIVIDER_STYLES,
@@ -61,6 +62,7 @@ import {
   Palette,
   Strikethrough,
   Trash2,
+  Type,
   Underline,
   X,
   ArrowUpToLine,
@@ -93,6 +95,7 @@ type ToolbarState = {
   linkUrl: string;
   textColor: string;
   bgColor: string;
+  fontFamily: string;
   dividerStyle: DividerStyle;
   dividerColor: string;
   dividerWeight: DividerWeight;
@@ -110,6 +113,7 @@ const EMPTY_STATE = {
   linkUrl: "",
   textColor: "",
   bgColor: "",
+  fontFamily: "",
   dividerStyle: "solid" as DividerStyle,
   dividerColor: DEFAULT_DIVIDER_COLOR,
   dividerWeight: "medium" as DividerWeight,
@@ -273,6 +277,45 @@ function ColorPanel({
   );
 }
 
+/** Lista de fontes do seletor: cada opção é mostrada na própria fonte. */
+function FontPanel({
+  current,
+  onApply,
+}: {
+  current: string;
+  onApply: (family: string | null) => void;
+}) {
+  const selected = docFontFromFamily(current)?.id ?? (current ? null : "default");
+  return (
+    <ul
+      role="listbox"
+      aria-label="Fonte do texto"
+      className="menu absolute left-1/2 top-full z-10 mt-2 w-48 -translate-x-1/2 rounded-xl border border-base-300 bg-base-100 p-1 shadow-xl"
+    >
+      {DOC_FONTS.map((font) => (
+        <li key={font.id}>
+          <button
+            type="button"
+            role="option"
+            aria-selected={selected === font.id}
+            className={`flex items-center justify-between ${selected === font.id ? "menu-active" : ""}`}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onApply(font.family)}
+          >
+            <span className="text-[15px]" style={{ fontFamily: font.family ?? undefined }}>
+              {font.label}
+            </span>
+            {selected === font.id && <Check size={14} />}
+          </button>
+        </li>
+      ))}
+      {current && selected === null && (
+        <li className="px-3 py-1 text-[11px] text-base-content/45">Seleção com fontes diferentes</li>
+      )}
+    </ul>
+  );
+}
+
 export function ContextualToolsPlugin() {
   const [editor] = useLexicalComposerContext();
   const [state, setState] = useState<ToolbarState | null>(null);
@@ -280,6 +323,7 @@ export function ContextualToolsPlugin() {
   const [linkInput, setLinkInput] = useState<string | null>(null);
   const [showTurnInto, setShowTurnInto] = useState(false);
   const [showColors, setShowColors] = useState(false);
+  const [showFonts, setShowFonts] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const linkLocked = useRef(false);
@@ -375,6 +419,7 @@ export function ContextualToolsPlugin() {
         linkUrl: linkNode ? linkNode.getURL() : "",
         textColor: $getSelectionStyleValueForProperty(selection, "color", ""),
         bgColor: $getSelectionStyleValueForProperty(selection, "background-color", ""),
+        fontFamily: $getSelectionStyleValueForProperty(selection, "font-family", ""),
         dividerStyle: "solid",
         dividerColor: DEFAULT_DIVIDER_COLOR,
         dividerWeight: "medium",
@@ -448,6 +493,7 @@ export function ContextualToolsPlugin() {
       setLinkInput(null);
       setShowTurnInto(false);
       setShowColors(false);
+      setShowFonts(false);
     }
   }, [state]);
 
@@ -463,7 +509,7 @@ export function ContextualToolsPlugin() {
     let left = state.rect.left + state.rect.width / 2 - w / 2;
     left = Math.max(gap, Math.min(left, window.innerWidth - w - gap));
     setPos({ top, left });
-  }, [state, linkInput, showTurnInto, showColors]);
+  }, [state, linkInput, showTurnInto, showColors, showFonts]);
 
   const format = (type: TextFormatType) =>
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, type);
@@ -715,6 +761,7 @@ export function ContextualToolsPlugin() {
               onClick={() => {
                 setShowTurnInto((v) => !v);
                 setShowColors(false);
+                setShowFonts(false);
               }}
             >
               {state.kind === "code" ? "Código" : current}
@@ -796,11 +843,31 @@ export function ContextualToolsPlugin() {
               </ToolButton>
               <div className="relative">
                 <ToolButton
+                  label="Fonte"
+                  active={showFonts || !!state.fontFamily}
+                  onClick={() => {
+                    setShowFonts((v) => !v);
+                    setShowTurnInto(false);
+                    setShowColors(false);
+                  }}
+                >
+                  <Type size={15} />
+                </ToolButton>
+                {showFonts && (
+                  <FontPanel
+                    current={state.fontFamily}
+                    onApply={(family) => applyStyle({ "font-family": family })}
+                  />
+                )}
+              </div>
+              <div className="relative">
+                <ToolButton
                   label="Cores do texto e do fundo"
                   active={showColors || !!state.textColor || !!state.bgColor}
                   onClick={() => {
                     setShowColors((v) => !v);
                     setShowTurnInto(false);
+                    setShowFonts(false);
                   }}
                 >
                   <Palette size={15} />

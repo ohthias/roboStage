@@ -2,7 +2,7 @@ import { relations } from "drizzle-orm";
 import { users } from "./users";
 import { leagues, userLeagueInterests } from "./leagues";
 import { teams, teamMembers } from "./teams";
-import { folders, documents } from "./notebook";
+import { folders, documents, documentVersions } from "./notebook";
 import { tests, testExecutions } from "./labtest";
 import { calendarEvents, calendarEventDocuments } from "./calendar";
 import {
@@ -106,6 +106,14 @@ export const documentsRelations = relations(documents, ({ one, many }) => ({
   calendarEvents: many(calendarEventDocuments),
   boardCards: many(boardCardDocuments),
   tags: many(documentTags),
+  versions: many(documentVersions),
+}));
+
+export const documentVersionsRelations = relations(documentVersions, ({ one }) => ({
+  document: one(documents, {
+    fields: [documentVersions.documentId],
+    references: [documents.id],
+  }),
 }));
 
 // ---------------------------------------------------------------------------

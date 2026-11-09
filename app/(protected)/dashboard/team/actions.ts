@@ -31,6 +31,7 @@ import {
   cleanText,
 } from "@/utils/stagebook/validation";
 import { switchStagebookScope } from "@/utils/stagebook/actions/teams";
+import { recordTeamActivity } from "@/utils/stagebook/team-activity";
 import { emailOptedOutOfTeamInvites } from "@/utils/stagebook/preferences-core";
 
 const PATH = "/dashboard/team";
@@ -286,6 +287,19 @@ export async function updateTeamMemberRole(
       throw error;
     }
 
+    const [targetUser] = await db
+      .select({ name: users.name })
+      .from(users)
+      .where(eq(users.id, targetUserId))
+      .limit(1);
+    await recordTeamActivity({
+      teamId: team.id,
+      actorId: scope.userId,
+      verb: "member.role_changed",
+      entityType: "member",
+      data: { userId: targetUserId, name: targetUser?.name ?? null, from: targetRole, to: nextRole },
+      aggregate: false,
+    });
     refresh();
   });
 }

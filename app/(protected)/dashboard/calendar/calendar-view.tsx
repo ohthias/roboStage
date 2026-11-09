@@ -38,7 +38,7 @@ export type CalendarEventClient = {
   milestone?: MilestoneDTO | null;
 };
 
-const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 const TYPE_COLOR: Record<string, string> = {
   treino: "#2563eb",
@@ -52,6 +52,14 @@ const TYPE_COLOR: Record<string, string> = {
 
 function toDateKey(iso: string) {
   return iso.slice(0, 10);
+}
+
+function dateKey(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function dateFromKey(key: string) {
+  return new Date(`${key}T00:00:00Z`);
 }
 
 function formatMonthLabel(date: Date) {
@@ -80,7 +88,7 @@ export function CalendarView({
   activeTeamId: string | null;
 }) {
   const router = useRouter();
-  const month = new Date(monthStart);
+  const month = dateFromKey(monthStart);
   const [modalState, setModalState] = useState<
     | { mode: "create"; date: string }
     | { mode: "edit"; event: CalendarEventClient }
@@ -107,10 +115,10 @@ export function CalendarView({
   }, []);
 
   const days = useMemo(() => {
-    const start = new Date(gridStart);
+    const start = dateFromKey(gridStart);
     return Array.from({ length: 42 }, (_, i) => {
       const d = new Date(start);
-      d.setDate(d.getDate() + i);
+      d.setUTCDate(d.getUTCDate() + i);
       return d;
     });
   }, [gridStart]);
@@ -121,7 +129,7 @@ export function CalendarView({
       const startKey = toDateKey(event.startAt);
       const endKey = event.endAt ? toDateKey(event.endAt) : startKey;
       for (const day of days) {
-        const key = day.toISOString().slice(0, 10);
+        const key = dateKey(day);
         if (key < startKey || key > endKey) continue;
         if (!map.has(key)) map.set(key, []);
         map.get(key)!.push(event);
@@ -135,7 +143,7 @@ export function CalendarView({
     ? (eventsByDay.get(selectedDate) ?? [])
     : todayEvents;
   const viewAnchor = new Date(
-    `${selectedDate ?? month.toISOString().slice(0, 10)}T12:00:00Z`,
+    `${selectedDate ?? dateKey(month)}T12:00:00Z`,
   );
   const weekStart = new Date(viewAnchor);
   weekStart.setUTCDate(
@@ -171,7 +179,7 @@ export function CalendarView({
     }
     const param = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}`;
     setSelectedDate(
-      calendarView === "month" ? null : next.toISOString().slice(0, 10),
+      calendarView === "month" ? null : dateKey(next),
     );
     const params = new URLSearchParams({ month: param });
     if (selectedTeamIds.length > 0)
@@ -341,9 +349,9 @@ export function CalendarView({
             ))}
 
             {days.map((day) => {
-              const key = day.toISOString().slice(0, 10);
+              const key = dateKey(day);
               const dayEvents = eventsByDay.get(key) ?? [];
-              const inMonth = day.getMonth() === month.getMonth();
+              const inMonth = day.getUTCMonth() === month.getUTCMonth();
               const isToday = key === todayKey;
               const isSelected = key === selectedDate;
 
@@ -370,7 +378,7 @@ export function CalendarView({
                           : "text-base-content/25"
                     }`}
                   >
-                    {day.getDate()}
+                    {day.getUTCDate()}
                   </span>
 
                   <div className="flex flex-col gap-0.5">
@@ -382,7 +390,7 @@ export function CalendarView({
                           : eventStartKey;
                         const isFirstSegment =
                           key === eventStartKey ||
-                          key === days[0].toISOString().slice(0, 10);
+                          key === dateKey(days[0]);
                         const isLastSegment = key >= eventEndKey;
 
                         return (
@@ -434,7 +442,7 @@ export function CalendarView({
               >
                 {(calendarView === "week" ? weekDays : [viewAnchor]).map(
                   (day) => {
-                    const key = day.toISOString().slice(0, 10);
+                    const key = dateKey(day);
                     const selected = key === selectedDate;
                     const dayEvents = eventsByDay.get(key) ?? [];
 

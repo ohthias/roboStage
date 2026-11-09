@@ -28,6 +28,8 @@ import {
   Pilcrow,
   Quote,
   Shapes,
+  Camera,
+  Map as MapIcon,
   Table2,
 } from "lucide-react";
 import { $insertLayout } from "../nodes/layout-nodes";
@@ -229,6 +231,20 @@ export function SlashMenuPlugin() {
         keywords: ["thinklab", "quadro", "miniatura", "diagrama", "whiteboard", "board", "ideia"],
         group: "Integrações",
         onSelect: openEmbedPicker("thinklab-board"),
+      }),
+      new SlashOption("Foto do robô", {
+        description: "Imagem de uma versão do robô do caderno QuickBrick",
+        icon: <Camera size={18} />,
+        keywords: ["foto", "imagem", "robo", "robot", "quickbrick", "versao", "caderno", "image"],
+        group: "Integrações",
+        onSelect: openEmbedPicker("quickbrick-photo"),
+      }),
+      new SlashOption("Diagrama do QuickBrick", {
+        description: "Estratégia, SWOT, riscos, missões ou mapa de calor como imagem",
+        icon: <MapIcon size={18} />,
+        keywords: ["diagrama", "quickbrick", "estrategia", "swot", "risco", "missoes", "heatmap", "calor", "imagem", "mesa"],
+        group: "Integrações",
+        onSelect: openEmbedPicker("quickbrick-diagram"),
       }),
     ];
     all.push(...integrations);

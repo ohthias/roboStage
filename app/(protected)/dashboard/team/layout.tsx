@@ -1,27 +1,9 @@
 import type { ReactNode } from "react";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { canCurrentUserCreateTeam, listMyTeams } from "@/utils/stagebook/actions/teams";
-import { TeamRail } from "./_components/team-rail";
 
 /**
- * Casca no estilo Microsoft Teams: painel de equipes à esquerda e, à direita,
- * o conteúdo (hub de equipes ou o workspace de uma equipe).
+ * Área de equipes. A troca entre equipes (e o espaço pessoal) fica na barra
+ * lateral do dashboard; aqui é só o conteúdo: o hub ou o workspace da equipe.
  */
-export default async function TeamLayout({ children }: { children: ReactNode }) {
-  const [scope, teams, canCreateTeam] = await Promise.all([
-    resolveStagebookScope(),
-    listMyTeams(),
-    canCurrentUserCreateTeam(),
-  ]);
-
-  return (
-    <div className="min-h-[calc(100vh-4rem)] bg-base-200 md:flex">
-      <TeamRail
-        teams={teams.map((t) => ({ id: t.id, name: t.name, role: t.role }))}
-        activeTeamId={scope.type === "team" ? scope.teamId : null}
-        canCreateTeam={canCreateTeam}
-      />
-      <div className="min-w-0 flex-1">{children}</div>
-    </div>
-  );
+export default function TeamLayout({ children }: { children: ReactNode }) {
+  return <div className="min-h-[calc(100vh-3.5rem)] bg-base-100">{children}</div>;
 }

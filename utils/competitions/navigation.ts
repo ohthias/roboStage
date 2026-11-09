@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Code, Bot, UserSearch, LayoutGrid, Clapperboard } from "lucide-react";
+import { Activity, BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Code, Bot, UserSearch, LayoutGrid, Clapperboard } from "lucide-react";
 
 /** Item de menu de competição: `path` é relativo a `/{competicao}/`. */
 export type NavMenuItem = {
@@ -45,6 +45,7 @@ export const NAVIGATION = {
           { nome: "Mapa de Empatia", path: "empathy-map", icon: UserSearch, description: "Ferramenta para análise de empatia com o profissional alvo", new: false, update: false },
           { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para auxiliar na gestão do tempo durante os treinos", update: false },
           { nome: "Partiu Mesa!", path: "partiu-mesa", icon: MonitorDot, description: "Simulador de simples para teste de saídas. Para análise de desempenho do robô durante um teste de saída." },
+          { nome: "Anatix", path: "anatix", icon: Activity, description: "Telemetria em tempo real do robô LEGO com Pybricks, por Bluetooth ou cabo USB", new: true },
           { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento." },
         ],
       },
@@ -90,7 +91,7 @@ export const NAVIGATION = {
         label: "Recursos",
         icon: BookOpen,
         items: [
-          { nome: "Documentações", path: "docs", icon: BookOpen, description: "Documentos e materiais de apoio para competição.", update: true },
+          { nome: "Documentações", path: "docs", icon: BookOpen, description: "Documentos e materiais de apoio para competição.", update: false },
           { nome: "Bastidores", path: "bastidores", icon: Clapperboard, description: "O que sua equipe precisa para brilhar no palco. Recursos que auxiliam no desenvolvimento do seu robô.", new: false },
         ],
       },

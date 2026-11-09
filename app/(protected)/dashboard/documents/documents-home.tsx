@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clock, FilePlus, FileText, Loader2, Sparkles } from "lucide-react";
+import { Clock, FilePlus, FileText, Loader2, Trash2 } from "lucide-react";
 import { DocIcon } from "@/components/editor/doc-icon";
 import { bgVar, textVar } from "@/components/editor/editor-colors";
 import { readRecentDocs } from "@/components/editor/recent-docs";
@@ -11,6 +11,8 @@ import { TEMPLATES, type DocTemplate } from "@/components/editor/templates";
 import { templateToEditorState } from "@/components/editor/template-state";
 import "@/components/editor/editor.css";
 import { useToast } from "@/app/context/ToastContext";
+import { useNotebook } from "./notebook-context";
+import { IntentLink } from "./intent-link";
 import {
   createDocument,
   renameDocument,
@@ -42,6 +44,7 @@ function relative(ts: number, now: number) {
 }
 
 export function DocumentsHome({ docs }: { docs: HomeDocument[] }) {
+  const { trashCount } = useNotebook();
   const router = useRouter();
   const { addToast } = useToast();
   const [creating, setCreating] = useState<string | null>(null); // id do modelo | "blank"
@@ -80,7 +83,7 @@ export function DocumentsHome({ docs }: { docs: HomeDocument[] }) {
           updateDocumentIcon(created.id, tpl.emoji),
           updateDocumentContent(created.id, templateToEditorState(tpl)),
         ]);
-        results.forEach(unwrapAction);
+        results.forEach((result) => unwrapAction<unknown>(result));
       }
       router.refresh();
       router.push(`/dashboard/documents/${created.id}`);
@@ -92,27 +95,37 @@ export function DocumentsHome({ docs }: { docs: HomeDocument[] }) {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-1 py-4 sm:gap-10 sm:px-6 sm:py-8">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
-              Stage<span className="text-primary">Book</span>
-            </h1>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
-              Retome de onde parou ou comece algo novo a partir de um modelo.
-            </p>
-          </div>
-        </header>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
+            Stage<span className="text-primary">Book</span>
+          </h1>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
+            Retome de onde parou ou comece algo novo a partir de um modelo.
+          </p>
+        </div>
 
-        <button
-          type="button"
-          className="btn btn-primary btn-sm gap-1.5"
-          onClick={() => create(null)}
-          disabled={creating !== null}
-        >
-          {creating === "blank" ? <Loader2 size={15} className="animate-spin" /> : <FilePlus size={15} />}
-          Página em branco
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/dashboard/documents/trash"
+            className="btn btn-ghost btn-sm gap-1.5 text-base-content/60"
+          >
+            <Trash2 size={15} />
+            Lixeira
+            {trashCount > 0 && (
+              <span className="badge badge-sm border-none bg-base-300 text-base-content/70">{trashCount}</span>
+            )}
+          </Link>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm gap-1.5"
+            onClick={() => create(null)}
+            disabled={creating !== null}
+          >
+            {creating === "blank" ? <Loader2 size={15} className="animate-spin" /> : <FilePlus size={15} />}
+            Página em branco
+          </button>
+        </div>
       </header>
 
       <section aria-labelledby="quick-access">
@@ -134,7 +147,7 @@ export function DocumentsHome({ docs }: { docs: HomeDocument[] }) {
           <ul className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
             {recents.map((doc) => (
               <li key={doc.id}>
-                <Link
+                <IntentLink
                   href={`/dashboard/documents/${doc.id}`}
                   className="group flex h-full flex-col gap-3 rounded-xl border border-base-300 bg-base-100 p-3.5 transition hover:-translate-y-0.5 hover:border-base-content/20 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                 >
@@ -151,7 +164,7 @@ export function DocumentsHome({ docs }: { docs: HomeDocument[] }) {
                         : `${doc.opened ? "Aberto" : "Editado"} ${relative(doc.at, now)}`}
                     </span>
                   </span>
-                </Link>
+                </IntentLink>
               </li>
             ))}
           </ul>

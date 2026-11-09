@@ -83,6 +83,7 @@ export default async function FolderPage({
           documentScope,
           eq(documents.folderId, folder.id),
           isNull(documents.parentId),
+          isNull(documents.deletedAt),
         ),
       )
       .orderBy(asc(documents.position), asc(documents.title)),

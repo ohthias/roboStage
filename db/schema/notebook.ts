@@ -113,6 +113,8 @@ export const documents = pgTable(
     icon: text("icon"), // emoji, ex: "📝"
     cover: text("cover"), // URL da capa (opcional)
     description: text("description"),
+    // Fonte da página inteira (ver utils/stagebook/doc-fonts.ts). Null = padrão.
+    font: text("font"),
     // Estado serializado do editor Lexical (editorState.toJSON()).
     content: jsonb("content").$type<Record<string, unknown> | null>(),
     // Propriedades personalizadas livres (chave/valor), sem exigir migração
@@ -133,9 +135,14 @@ export const documents = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    // Lixeira: preenchido quando a página é excluída. A página some da árvore
+    // e de todas as listagens, mas pode ser restaurada por 7 dias; depois disso
+    // é apagada de vez (ver utils/stagebook/document-history.ts).
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (table) => ({
     userIdIdx: index("documents_user_id_idx").on(table.userId),
+    deletedAtIdx: index("documents_deleted_at_idx").on(table.deletedAt),
     teamIdIdx: index("documents_team_id_idx").on(table.teamId),
     folderIdIdx: index("documents_folder_id_idx").on(table.folderId),
     parentIdIdx: index("documents_parent_id_idx").on(table.parentId),
@@ -180,7 +187,39 @@ export const documents = pgTable(
   })
 );
 
+/**
+ * Histórico de versões de uma página. Guarda só as 5 versões mais recentes de
+ * cada página (as mais antigas são apagadas ao criar uma nova). Some junto com
+ * a página quando ela é apagada de vez.
+ */
+export const documentVersions = pgTable(
+  "document_versions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    documentId: uuid("document_id").notNull(),
+    title: text("title").notNull(),
+    icon: text("icon"),
+    content: jsonb("content").$type<Record<string, unknown> | null>(),
+    createdBy: text("created_by"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    documentCreatedIdx: index("document_versions_document_created_idx").on(
+      table.documentId,
+      table.createdAt
+    ),
+    documentFk: foreignKey({
+      columns: [table.documentId],
+      foreignColumns: [documents.id],
+      name: "document_versions_document_id_fkey",
+    }).onDelete("cascade"),
+  })
+);
+
 export type DocumentRow = typeof documents.$inferSelect;
+export type DocumentVersionRow = typeof documentVersions.$inferSelect;
 export type NewDocumentRow = typeof documents.$inferInsert;
 export type FolderRow = typeof folders.$inferSelect;
 export type NewFolderRow = typeof folders.$inferInsert;

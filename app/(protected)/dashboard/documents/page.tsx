@@ -2,7 +2,7 @@ import { desc } from "drizzle-orm";
 import { db } from "@/db/client";
 import { documents } from "@/db/schema";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { scopeWhere } from "@/utils/stagebook/permissions";
+import { liveDocumentWhere } from "./history-core";
 import { DocumentsHome, type HomeDocument } from "./documents-home";
 
 export default async function NotebookIndexPage() {
@@ -16,7 +16,7 @@ export default async function NotebookIndexPage() {
       updatedAt: documents.updatedAt,
     })
     .from(documents)
-    .where(scopeWhere(scope, { userId: documents.userId, teamId: documents.teamId }))
+    .where(liveDocumentWhere(scope))
     .orderBy(desc(documents.updatedAt))
     .limit(40);
 

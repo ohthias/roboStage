@@ -52,6 +52,7 @@ import {
 } from "@/utils/labtest/obr";
 import type { Project } from "@/utils/quickbrick/ArenaBuilder/types";
 import { createTestExecution } from "@/app/(protected)/dashboard/labtest/actions";
+import { useExecutionOperator } from "@/components/labtest/execution-operator";
 import { updateLabTestStatus } from "@/app/(protected)/dashboard/labtest/new/actions";
 import ArenaMap from "./ArenaMap";
 
@@ -103,6 +104,7 @@ export default function ObrRoundExecution({
   nextExecutionNumber: number;
   arena: Project | null;
 }) {
+  const operatorId = useExecutionOperator();
   const router = useRouter();
   const timer = useObrRoundTimer();
   const elapsed = Math.min(ROUND_MAX_SECONDS, timer.state.elapsed);
@@ -212,6 +214,7 @@ export default function ObrRoundExecution({
         testId,
         notes: notes.trim() || undefined,
         results: { obrRound },
+        operatorId,
       }));
       if (nextExecutionNumber === 1) {
         // Melhor esforço: falhar aqui não impede o lançamento já salvo.

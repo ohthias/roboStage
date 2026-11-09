@@ -23,6 +23,7 @@ import {
   firstName,
   formatDate,
   greeting,
+  personalizedGreeting,
 } from "./shared";
 import { getModeMeta, getTestImage } from "@/utils/labtest/catalog";
 
@@ -63,7 +64,7 @@ export function MentorDashboard({ data }: { data: DashboardData }) {
               {greeting()}, {firstName(currentUser.name)}! 👋
             </h1>
             <p className="mt-1 text-sm text-base-content/50">
-              Vamos ver como sua equipe está evoluindo hoje.
+              {personalizedGreeting("mentor_tecnico")}.
             </p>
           </div>
           <Link

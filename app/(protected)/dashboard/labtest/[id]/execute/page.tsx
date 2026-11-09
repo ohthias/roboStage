@@ -22,6 +22,9 @@ import { getMatchDuration, isFutureEditionConfig } from "@/utils/labtest/future-
 import ObrRoundExecution from "@/components/labtest/obr/ObrRoundExecution";
 import { getObrArena, isObrConfig } from "@/utils/labtest/obr";
 import { getLabTestViewData } from "../../actions";
+import { getExecutionContext, type ExecutionContext } from "@/utils/stagebook/actions/roster";
+import { ExecutionOperatorProvider } from "@/components/labtest/execution-operator";
+import { OperatorSelect, TrainingSessionBanner } from "@/components/stagebook/training-session-banner";
 
 export default function ExecuteTestPage() {
   const params = useParams();
@@ -32,6 +35,9 @@ export default function ExecuteTestPage() {
   const [nextExecutionNumber, setNextExecutionNumber] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Testes de equipe: sessão de treino ativa (banner) e operador da rodada.
+  const [context, setContext] = useState<ExecutionContext | null>(null);
+  const [operatorId, setOperatorId] = useState("");
 
   useEffect(() => {
     if (!testId) return;
@@ -60,6 +66,36 @@ export default function ExecuteTestPage() {
     };
   }, [testId]);
 
+  useEffect(() => {
+    if (!testId) return;
+    let active = true;
+    getExecutionContext(testId)
+      .then((ctx) => {
+        if (!active) return;
+        setContext(ctx);
+        // Pré-seleciona quem está escalado na função de operador (editável).
+        if (ctx.suggestedOperatorId && ctx.suggestedOperatorId !== ctx.viewerId) {
+          setOperatorId(ctx.suggestedOperatorId);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [testId]);
+
+  const operatorPicker =
+    context && context.members.length > 1 ? (
+      <OperatorSelect
+        members={context.members}
+        viewerId={context.viewerId}
+        value={operatorId}
+        onChange={setOperatorId}
+        suggestedDuty={context.suggestedDuty}
+        suggestedOperatorId={context.suggestedOperatorId}
+      />
+    ) : null;
+
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-12 pt-6 md:px-8">
       <Link
@@ -70,59 +106,72 @@ export default function ExecuteTestPage() {
         {test?.name ?? "Voltar ao teste"}
       </Link>
 
-      {loading ? (
-        <div className="flex flex-col gap-4" aria-busy="true" aria-label="Carregando teste">
-          <div className="h-4 w-40 animate-pulse rounded bg-base-300/70" />
-          <div className="h-8 w-72 animate-pulse rounded bg-base-300/70" />
-          <div className="mt-4 h-64 animate-pulse rounded-tl-3xl rounded-br-3xl bg-base-300/50" />
-        </div>
-      ) : error || !test ? (
-        <div className="rounded-tl-3xl rounded-br-3xl border border-error/40 bg-base-100 p-6">
-          <p className="font-semibold text-error">Não foi possível carregar o teste.</p>
-          <p className="mt-2 text-sm text-base-content/60">{error ?? "Teste não encontrado."}</p>
-        </div>
-      ) : isObrConfig(test.config) ? (
-        <ObrRoundExecution
-          testId={test.id}
-          testName={test.name}
-          nextExecutionNumber={nextExecutionNumber}
-          arena={getObrArena(test.config)}
-        />
-      ) : isFutureEditionConfig(test.config) ? (
-        <FutureEditionMatch
-          testId={test.id}
-          testName={test.name}
-          nextExecutionNumber={nextExecutionNumber}
-          durationSec={getMatchDuration(test.config)}
-        />
-      ) : test.mode === "runs" &&
-        test.config?.runMode === "round" &&
-        test.season ? (
-        <FllRoundExecution
-          testId={test.id}
-          testName={test.name}
-          season={test.season}
-          missionIds={
-            Array.isArray(test.config?.missions)
-              ? test.config.missions.filter(
-                  (m: unknown): m is string => typeof m === "string",
-                )
-              : []
-          }
-          nextExecutionNumber={nextExecutionNumber}
-        />
+      {context?.session ? (
+        <TrainingSessionBanner
+          session={context.session}
+          onEnded={() => setContext({ ...context, session: null })}
+        >
+          {operatorPicker}
+        </TrainingSessionBanner>
       ) : (
-        <ExecuteTestForm
-          testId={test.id}
-          mode={test.mode}
-          season={test.season}
-          testName={test.name}
-          fields={fields}
-          nextExecutionNumber={nextExecutionNumber}
-          isMotorPairs={test.config?.modo === "duplas"}
-          config={test.config}
-        />
+        operatorPicker && <div className="mb-4 flex justify-end">{operatorPicker}</div>
       )}
+
+      <ExecutionOperatorProvider operatorId={operatorId || null}>
+        {loading ? (
+          <div className="flex flex-col gap-4" aria-busy="true" aria-label="Carregando teste">
+            <div className="h-4 w-40 animate-pulse rounded bg-base-300/70" />
+            <div className="h-8 w-72 animate-pulse rounded bg-base-300/70" />
+            <div className="mt-4 h-64 animate-pulse rounded-tl-3xl rounded-br-3xl bg-base-300/50" />
+          </div>
+        ) : error || !test ? (
+          <div className="rounded-tl-3xl rounded-br-3xl border border-error/40 bg-base-100 p-6">
+            <p className="font-semibold text-error">Não foi possível carregar o teste.</p>
+            <p className="mt-2 text-sm text-base-content/60">{error ?? "Teste não encontrado."}</p>
+          </div>
+        ) : isObrConfig(test.config) ? (
+          <ObrRoundExecution
+            testId={test.id}
+            testName={test.name}
+            nextExecutionNumber={nextExecutionNumber}
+            arena={getObrArena(test.config)}
+          />
+        ) : isFutureEditionConfig(test.config) ? (
+          <FutureEditionMatch
+            testId={test.id}
+            testName={test.name}
+            nextExecutionNumber={nextExecutionNumber}
+            durationSec={getMatchDuration(test.config)}
+          />
+        ) : test.mode === "runs" &&
+          test.config?.runMode === "round" &&
+          test.season ? (
+          <FllRoundExecution
+            testId={test.id}
+            testName={test.name}
+            season={test.season}
+            missionIds={
+              Array.isArray(test.config?.missions)
+                ? test.config.missions.filter(
+                    (m: unknown): m is string => typeof m === "string",
+                  )
+                : []
+            }
+            nextExecutionNumber={nextExecutionNumber}
+          />
+        ) : (
+          <ExecuteTestForm
+            testId={test.id}
+            mode={test.mode}
+            season={test.season}
+            testName={test.name}
+            fields={fields}
+            nextExecutionNumber={nextExecutionNumber}
+            isMotorPairs={test.config?.modo === "duplas"}
+            config={test.config}
+          />
+        )}
+      </ExecutionOperatorProvider>
     </div>
   );
 }

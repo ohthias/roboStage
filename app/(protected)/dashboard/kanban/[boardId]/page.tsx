@@ -27,8 +27,10 @@ export default async function BoardPage({
     <BoardView
       boardId={boardId}
       boardName={detail.board.name}
+      boardDescription={detail.board.description}
+      boardIcon={detail.board.icon}
       columns={detail.columns}
-      cards={detail.cards.map((c) => ({ ...c, dueAt: c.dueAt ? c.dueAt.toISOString() : null }))}
+      cards={detail.cards.map((c) => ({ ...c, dueAt: c.dueAt ? c.dueAt.toISOString() : null, completedAt: c.completedAt ? c.completedAt.toISOString() : null }))}
       assignees={detail.assignees}
       cardTags={detail.cardTags}
       allTags={detail.allTags}

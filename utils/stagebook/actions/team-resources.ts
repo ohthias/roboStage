@@ -9,6 +9,7 @@ import { requireCapability, requireTeamScope } from "../permissions";
 import { runAction, type ActionResult } from "../action-result";
 import { canDeleteResource } from "../team-permissions";
 import { requireMilestoneInScope } from "../labels-core";
+import { recordTeamActivity } from "../team-activity";
 import {
   ValidationError,
   optionalText,
@@ -116,6 +117,14 @@ export async function createTeamBoard(
       return board;
     });
 
+    await recordTeamActivity({
+      teamId: scope.teamId,
+      actorId: scope.userId,
+      verb: "board.created",
+      entityType: "board",
+      entityId: created.id,
+      data: { name },
+    });
     refresh();
     return created;
   });
@@ -127,7 +136,7 @@ export async function deleteTeamBoard(teamId: string, boardId: string): Promise<
     const id = requireUuid(boardId, "kanban");
 
     const [board] = await db
-      .select({ id: boards.id, createdBy: boards.createdBy })
+      .select({ id: boards.id, name: boards.name, createdBy: boards.createdBy })
       .from(boards)
       .where(and(eq(boards.id, id), eq(boards.teamId, scope.teamId)))
       .limit(1);
@@ -138,6 +147,14 @@ export async function deleteTeamBoard(teamId: string, boardId: string): Promise<
 
     // Colunas, cards e vínculos caem em cascata (FKs).
     await db.delete(boards).where(and(eq(boards.id, id), eq(boards.teamId, scope.teamId)));
+    await recordTeamActivity({
+      teamId: scope.teamId,
+      actorId: scope.userId,
+      verb: "board.deleted",
+      entityType: "board",
+      entityId: id,
+      data: { name: board.name },
+    });
     refresh();
   });
 }
@@ -172,6 +189,14 @@ export async function createTeamThinkLab(
       .values({ userId: scope.userId, teamId: scope.teamId, name, description, milestoneId })
       .returning({ id: thinklab.id });
 
+    await recordTeamActivity({
+      teamId: scope.teamId,
+      actorId: scope.userId,
+      verb: "thinklab.created",
+      entityType: "thinklab",
+      entityId: created.id,
+      data: { name },
+    });
     refresh();
     return created;
   });
@@ -183,7 +208,7 @@ export async function deleteTeamThinkLab(teamId: string, thinklabId: string): Pr
     const id = requireUuid(thinklabId, "quadro");
 
     const [row] = await db
-      .select({ id: thinklab.id, createdBy: thinklab.userId })
+      .select({ id: thinklab.id, name: thinklab.name, createdBy: thinklab.userId })
       .from(thinklab)
       .where(and(eq(thinklab.id, id), eq(thinklab.teamId, scope.teamId)))
       .limit(1);
@@ -193,6 +218,14 @@ export async function deleteTeamThinkLab(teamId: string, thinklabId: string): Pr
     }
 
     await db.delete(thinklab).where(and(eq(thinklab.id, id), eq(thinklab.teamId, scope.teamId)));
+    await recordTeamActivity({
+      teamId: scope.teamId,
+      actorId: scope.userId,
+      verb: "thinklab.deleted",
+      entityType: "thinklab",
+      entityId: id,
+      data: { name: row.name },
+    });
     refresh();
   });
 }
@@ -252,6 +285,14 @@ export async function createTeamLabTest(
       })
       .returning({ id: tests.id });
 
+    await recordTeamActivity({
+      teamId: scope.teamId,
+      actorId: scope.userId,
+      verb: "test.created",
+      entityType: "test",
+      entityId: created.id,
+      data: { name },
+    });
     refresh();
     return created;
   });
@@ -263,7 +304,7 @@ export async function deleteTeamLabTest(teamId: string, testId: string): Promise
     const id = requireUuid(testId, "teste");
 
     const [row] = await db
-      .select({ id: tests.id, createdBy: tests.userId })
+      .select({ id: tests.id, name: tests.name, createdBy: tests.userId })
       .from(tests)
       .where(and(eq(tests.id, id), eq(tests.teamId, scope.teamId)))
       .limit(1);
@@ -274,6 +315,14 @@ export async function deleteTeamLabTest(teamId: string, testId: string): Promise
 
     // Execuções e valores caem em cascata (FKs).
     await db.delete(tests).where(and(eq(tests.id, id), eq(tests.teamId, scope.teamId)));
+    await recordTeamActivity({
+      teamId: scope.teamId,
+      actorId: scope.userId,
+      verb: "test.deleted",
+      entityType: "test",
+      entityId: id,
+      data: { name: row.name },
+    });
     refresh();
   });
 }

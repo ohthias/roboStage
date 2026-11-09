@@ -74,6 +74,8 @@ export const boardColumns = pgTable(
       dueDateRequired?: boolean;
       maxDueDays?: number | null;
       milestoneId?: string | null;
+      /** Todo card que entra nesta coluna é marcado como concluído. */
+      autoComplete?: boolean;
     }>().notNull().default({}),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -105,6 +107,10 @@ export const boardCards = pgTable(
     // do type/status do Calendar: evitar migração para novo valor de enum.
     priority: text("priority").notNull().default("media"),
     milestoneId: uuid("milestone_id"),
+    // Validação de conclusão: null = aberta. Preenchido manualmente (checkbox)
+    // ou automaticamente quando o card entra numa coluna com `autoComplete`.
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    completedBy: text("completed_by"),
     createdBy: text("created_by").notNull(),
     updatedBy: text("updated_by"),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -118,6 +124,7 @@ export const boardCards = pgTable(
     boardIdIdx: index("board_cards_board_id_idx").on(table.boardId),
     columnIdIdx: index("board_cards_column_id_idx").on(table.columnId),
     dueAtIdx: index("board_cards_due_at_idx").on(table.dueAt),
+    completedAtIdx: index("board_cards_completed_at_idx").on(table.completedAt),
     boardFk: foreignKey({
       columns: [table.boardId],
       foreignColumns: [boards.id],

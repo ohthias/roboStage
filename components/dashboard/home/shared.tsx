@@ -54,17 +54,69 @@ export function formatDate(value: string | Date | null) {
   });
 }
 
-export function greeting() {
-  const hour = Number(
-    new Intl.DateTimeFormat("pt-BR", {
-      hour: "numeric",
-      hour12: false,
-      timeZone: "America/Sao_Paulo",
-    }).format(new Date()),
+const GREETING_PHRASES: Record<
+  PersonaType,
+  { morning: string[]; afternoon: string[]; evening: string[] }
+> = {
+  competidor: {
+    morning: ["Bora superar seus recordes?", "Pronto para o próximo treino?"],
+    afternoon: ["Hora de evoluir mais um pouco!", "Vamos buscar seu próximo resultado?"],
+    evening: ["Que tal fechar o dia com uma conquista?", "Seu próximo recorde começa agora!"],
+  },
+  mentor_tecnico: {
+    morning: ["Vamos fortalecer sua equipe!", "Pronto para guiar mais uma evolução?"],
+    afternoon: ["Vamos acompanhar o avanço da equipe?", "Hora de transformar treino em resultado?"],
+    evening: ["Veja como sua equipe está evoluindo!", "Mais um dia construindo grandes resultados!"],
+  },
+  entusiasta: {
+    morning: ["Que tal descobrir algo novo?", "Pronto para explorar novas ideias?"],
+    afternoon: ["Sempre há algo novo para explorar!", "Vamos encontrar sua próxima inspiração?"],
+    evening: ["Que tal terminar o dia com uma descoberta?", "Novas ideias esperam por você!"],
+  },
+  organizador: {
+    morning: ["Vamos colocar o dia em movimento", "Tudo pronto para organizar seus próximos passos"],
+    afternoon: ["Vamos manter tudo no ritmo certo", "Hora de transformar planos em ação"],
+    evening: ["Vamos conferir o que vem pela frente", "Seu planejamento está ganhando forma"],
+  },
+};
+
+function currentTimeGreeting() {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("pt-BR", {
+    hour: "numeric",
+    hour12: false,
+    timeZone: "America/Sao_Paulo",
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+  }).formatToParts(now);
+  const values = Object.fromEntries(
+    parts
+      .filter(({ type }) => type !== "literal")
+      .map(({ type, value }) => [type, Number(value)]),
   );
-  if (hour < 12) return "Bom dia";
-  if (hour < 18) return "Boa tarde";
+  const hour = values.hour ?? 0;
+  return {
+    dateKey:
+      (values.year ?? 0) * 10000 +
+      (values.month ?? 0) * 100 +
+      (values.day ?? 0),
+    period: hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening",
+  } as const;
+}
+
+export function greeting() {
+  const { period } = currentTimeGreeting();
+  if (period === "morning") return "Bom dia";
+  if (period === "afternoon") return "Boa tarde";
   return "Boa noite";
+}
+
+export function personalizedGreeting(persona: PersonaType) {
+  const { dateKey, period } = currentTimeGreeting();
+  const phrases = GREETING_PHRASES[persona][period];
+
+  return phrases[dateKey % phrases.length];
 }
 
 export function firstName(name: string | null | undefined) {

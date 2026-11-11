@@ -22,6 +22,7 @@ import {
 import { roleLabel } from "@/utils/stagebook/team-permissions";
 import { sessionKindLabel, type TeamActivityItem } from "@/types/training";
 import { PersonAvatar } from "./team-avatar";
+import { teamToolHref } from "./team-links";
 
 /**
  * Um item do feed da equipe. `data` guarda um snapshot do nome do recurso:
@@ -44,6 +45,17 @@ function Res({ href, children }: { href?: string | null; children: ReactNode }) 
   );
 }
 
+/** Recurso de uma ferramenta (Kanban, ThinkLab, LabTest…): abre já no espaço da equipe. */
+function ToolRes({ teamId, path, children }: { teamId: string; path: string | null; children: ReactNode }) {
+  return path ? (
+    <a href={teamToolHref(teamId, path)} className="font-medium hover:text-primary hover:underline">
+      {children}
+    </a>
+  ) : (
+    <span className="font-medium">{children}</span>
+  );
+}
+
 const sessionHref = ({ teamId, item }: Ctx) =>
   item.entityId ? `/dashboard/team/${teamId}/treinos/${item.entityId}` : null;
 
@@ -51,8 +63,8 @@ const VERBS: Record<string, { Icon: LucideIcon; tone: string; render: (c: Ctx) =
   "board.created": {
     Icon: KanbanSquare,
     tone: "text-primary",
-    render: ({ item, d }) => (
-      <>criou o kanban <Res href={item.entityId ? `/dashboard/kanban/${item.entityId}` : null}>{str(d.name)}</Res></>
+    render: ({ teamId, item, d }) => (
+      <>criou o kanban <ToolRes teamId={teamId} path={item.entityId ? `/dashboard/kanban/${item.entityId}` : null}>{str(d.name)}</ToolRes></>
     ),
   },
   "board.deleted": {
@@ -63,8 +75,8 @@ const VERBS: Record<string, { Icon: LucideIcon; tone: string; render: (c: Ctx) =
   "thinklab.created": {
     Icon: Lightbulb,
     tone: "text-warning",
-    render: ({ item, d }) => (
-      <>criou o quadro <Res href={item.entityId ? `/dashboard/thinklab/${item.entityId}` : null}>{str(d.name)}</Res></>
+    render: ({ teamId, item, d }) => (
+      <>criou o quadro <ToolRes teamId={teamId} path={item.entityId ? `/dashboard/thinklab/${item.entityId}` : null}>{str(d.name)}</ToolRes></>
     ),
   },
   "thinklab.deleted": {
@@ -75,8 +87,8 @@ const VERBS: Record<string, { Icon: LucideIcon; tone: string; render: (c: Ctx) =
   "test.created": {
     Icon: FlaskConical,
     tone: "text-info",
-    render: ({ item, d }) => (
-      <>criou o teste <Res href={item.entityId ? `/dashboard/labtest/${item.entityId}` : null}>{str(d.name)}</Res></>
+    render: ({ teamId, item, d }) => (
+      <>criou o teste <ToolRes teamId={teamId} path={item.entityId ? `/dashboard/labtest/${item.entityId}` : null}>{str(d.name)}</ToolRes></>
     ),
   },
   "test.deleted": {
@@ -87,12 +99,12 @@ const VERBS: Record<string, { Icon: LucideIcon; tone: string; render: (c: Ctx) =
   "test.executed": {
     Icon: Activity,
     tone: "text-info",
-    render: ({ item, d }) => {
+    render: ({ teamId, item, d }) => {
       const best = num(d.bestScore);
       return (
         <>
           rodou {item.count === 1 ? "uma execução" : `${item.count} execuções`} de{" "}
-          <Res href={item.entityId ? `/dashboard/labtest/${item.entityId}` : null}>{str(d.name)}</Res>
+          <ToolRes teamId={teamId} path={item.entityId ? `/dashboard/labtest/${item.entityId}` : null}>{str(d.name)}</ToolRes>
           {best !== null && <span className="text-base-content/55"> · melhor {fmtNum(best)} pts</span>}
         </>
       );
@@ -101,12 +113,12 @@ const VERBS: Record<string, { Icon: LucideIcon; tone: string; render: (c: Ctx) =
   "test.record": {
     Icon: Trophy,
     tone: "text-warning",
-    render: ({ item, d }) => {
+    render: ({ teamId, item, d }) => {
       const score = num(d.score);
       const prev = num(d.previous);
       return (
         <>
-          bateu o recorde de <Res href={item.entityId ? `/dashboard/labtest/${item.entityId}` : null}>{str(d.name)}</Res>
+          bateu o recorde de <ToolRes teamId={teamId} path={item.entityId ? `/dashboard/labtest/${item.entityId}` : null}>{str(d.name)}</ToolRes>
           {score !== null && (
             <span className="text-base-content/55">
               {" "}
@@ -142,12 +154,12 @@ const VERBS: Record<string, { Icon: LucideIcon; tone: string; render: (c: Ctx) =
   "anatix.session_ended": {
     Icon: Cpu,
     tone: "text-accent",
-    render: ({ d }) => {
+    render: ({ teamId, d }) => {
       const frames = num(d.frames);
       return (
         <>
           gravou uma sessão Anatix em{" "}
-          <Res href={str(d.labId) ? `/dashboard/labtest/anatix/${str(d.labId)}` : null}>{str(d.labName) ?? "um laboratório"}</Res>
+          <ToolRes teamId={teamId} path={str(d.labId) ? `/dashboard/labtest/anatix/${str(d.labId)}` : null}>{str(d.labName) ?? "um laboratório"}</ToolRes>
           {(str(d.robotName) || frames !== null) && (
             <span className="text-base-content/55">
               {" "}

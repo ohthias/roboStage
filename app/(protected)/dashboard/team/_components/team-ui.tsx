@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "./nav-link";
 import type { ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
 
@@ -55,13 +55,13 @@ export function SectionHead({
       </div>
       {action}
       {href && (
-        <Link
+        <NavLink
           href={href}
           className="group inline-flex shrink-0 items-center gap-0.5 font-mono text-[11px] text-base-content/45 hover:text-primary"
         >
           {linkLabel}
           <ArrowUpRight size={12} className="transition-transform group-hover:-translate-y-px group-hover:translate-x-px" />
-        </Link>
+        </NavLink>
       )}
     </div>
   );

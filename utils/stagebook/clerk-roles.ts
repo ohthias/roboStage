@@ -1,6 +1,16 @@
 import { isTeamRole, type TeamRole } from "./team-permissions";
 
 /**
+ * Papel de administração da Organização no Clerk. O padrão é `org:admin`, mas
+ * instâncias com papéis personalizados podem usar outra chave (ex.:
+ * `org:owner`, `org:team_admin`).
+ */
+export function isClerkAdminRole(role: string | null | undefined): boolean {
+  if (!role) return false;
+  return role === "org:admin" || /(^|[:_])(admin|owner)($|_)/.test(role);
+}
+
+/**
  * Converte o cargo de uma membership do Clerk (org:admin / org:member) para o
  * cargo do RoboStage.
  *
@@ -15,7 +25,7 @@ export function mapClerkOrgRole(role: string | null | undefined, stagebookRole?:
   if (isTeamRole(stagebookRole)) return stagebookRole;
   // Sem metadata (adicionado direto pelo painel do Clerk): mantém o
   // comportamento histórico — admin da Organização é técnico.
-  if (role === "org:admin") return "owner";
+  if (isClerkAdminRole(role)) return "owner";
   return "colaborador";
 }
 
@@ -31,7 +41,7 @@ const STAFF_ROLES: readonly TeamRole[] = ["owner", "mentor"];
  */
 export function reconcileClerkOrgRole(current: string | null | undefined, clerkRole: string): TeamRole {
   const currentRole: TeamRole | null = isTeamRole(current) ? current : null;
-  const clerkIsAdmin = clerkRole === "org:admin";
+  const clerkIsAdmin = isClerkAdminRole(clerkRole);
   if (currentRole && STAFF_ROLES.includes(currentRole) === clerkIsAdmin) return currentRole;
   return clerkIsAdmin ? "mentor" : "colaborador";
 }

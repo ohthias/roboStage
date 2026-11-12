@@ -15,7 +15,6 @@ import { requireCapability, requireTeamScope } from "@/utils/stagebook/permissio
 import { runAction, type ActionResult } from "@/utils/stagebook/action-result";
 import {
   assignableRolesFor,
-  clerkRoleFor,
   isStaffRole,
   isTeamRole,
   memberChangeError,
@@ -33,6 +32,7 @@ import {
 } from "@/utils/stagebook/validation";
 import { switchStagebookScope } from "@/utils/stagebook/actions/teams";
 import { recordTeamActivity } from "@/utils/stagebook/team-activity";
+import { clerkRoleKeyFor, forgetClerkRoleKeys } from "@/utils/stagebook/clerk-org-roles";
 import { emailOptedOutOfTeamInvites } from "@/utils/stagebook/preferences-core";
 
 const PATH = "/dashboard/team";
@@ -50,12 +50,26 @@ function refresh() {
  * motivo real de um convite falhar. Traduz os casos conhecidos e repassa a
  * mensagem do Clerk nos demais.
  */
+/** O Clerk recusou porque o papel (`role`) não existe nesta Organização/instância. */
+function isRoleNotFound(error: unknown): boolean {
+  if (!isClerkAPIResponseError(error)) return false;
+  return error.errors.some((e) => {
+    const text = `${e.code} ${e.message} ${e.longMessage ?? ""}`.toLowerCase();
+    return text.includes("role") && text.includes("not found");
+  });
+}
+
 function clerkFailure(error: unknown, fallback: string): Error {
   if (!isClerkAPIResponseError(error)) return error instanceof Error ? error : new Error(String(error));
   const first = error.errors[0];
   const code = first?.code ?? "";
   console.error("[stagebook] Clerk recusou a operação:", code, first?.longMessage ?? first?.message);
 
+  if (isRoleNotFound(error)) {
+    return new ValidationError(
+      "O Clerk não encontrou o papel de Organização usado pela equipe. Confira os papéis em Organizations → Roles no painel do Clerk (o RoboStage procura org:admin e org:member, ou o papel de criador e o papel padrão do role set).",
+    );
+  }
   if (code.includes("quota") || code.includes("limit")) {
     return new ValidationError(
       "A equipe atingiu o limite de membros/convites da Organização no Clerk. Remova convites pendentes ou aumente o limite no painel do Clerk.",
@@ -185,14 +199,27 @@ export async function inviteTeamMember(
     const invitation = {
       organizationId: team.clerkOrgId,
       emailAddress: cleanEmail,
-      role: clerkRoleFor(nextRole),
+      // Papel real desta Organização no Clerk (nem toda instância tem
+      // org:admin/org:member — ver clerk-org-roles.ts).
+      role: await clerkRoleKeyFor(team.clerkOrgId, nextRole),
       publicMetadata: { stagebookRole: nextRole },
     };
     try {
-      await client.organizations.createOrganizationInvitation({
-        ...invitation,
-        inviterUserId: scope.userId,
-      });
+      try {
+        await client.organizations.createOrganizationInvitation({
+          ...invitation,
+          inviterUserId: scope.userId,
+        });
+      } catch (error) {
+        if (!isRoleNotFound(error)) throw error;
+        // Papéis em cache desatualizados (mudaram no painel do Clerk): relê e tenta de novo.
+        forgetClerkRoleKeys(team.clerkOrgId);
+        invitation.role = await clerkRoleKeyFor(team.clerkOrgId, nextRole);
+        await client.organizations.createOrganizationInvitation({
+          ...invitation,
+          inviterUserId: scope.userId,
+        });
+      }
     } catch (error) {
       // O Clerk exige que `inviterUserId` seja admin da Organização. Se o
       // cargo no RoboStage e no Clerk divergirem (ex.: mentor que entrou como
@@ -200,6 +227,7 @@ export async function inviteTeamMember(
       // (`team.members.manage`), então reenviamos sem o convidante.
       const forbidden =
         isClerkAPIResponseError(error) && (error.status === 403 || error.status === 422) &&
+        !isRoleNotFound(error) &&
         !error.errors.some((e) => e.code === "duplicate_record" || e.code.includes("quota"));
       if (!forbidden) throw clerkFailure(error, "Não foi possível enviar o convite.");
       try {
@@ -334,11 +362,12 @@ export async function updateTeamMemberRole(
       await client.organizations.updateOrganizationMembership({
         organizationId: team.clerkOrgId,
         userId: targetUserId,
-        role: clerkRoleFor(nextRole),
+        role: await clerkRoleKeyFor(team.clerkOrgId, nextRole),
       });
     } catch (error) {
       // 404: sem membership no Clerk (só no nosso banco) — o cargo local vale.
-      if (!(isClerkAPIResponseError(error) && error.status === 404)) {
+      if (isRoleNotFound(error)) forgetClerkRoleKeys(team.clerkOrgId);
+      if (isRoleNotFound(error) || !(isClerkAPIResponseError(error) && error.status === 404)) {
         await db
           .update(teamMembers)
           .set({ role: targetRole })

@@ -7,7 +7,8 @@ import {
   createTeamLabTest,
   createTeamThinkLab,
 } from "@/utils/stagebook/actions/team-resources";
-import { mapClerkOrgRole, reconcileClerkOrgRole } from "@/utils/stagebook/clerk-roles";
+import { isClerkAdminRole, mapClerkOrgRole, reconcileClerkOrgRole } from "@/utils/stagebook/clerk-roles";
+import { pickRoleKeys } from "@/utils/stagebook/clerk-org-roles";
 import {
   safeDashboardPath,
   teamToolHref,
@@ -92,5 +93,38 @@ describe("cargos vindos do Clerk", () => {
     expect(reconcileClerkOrgRole("competidor", "org:member")).toBe("competidor");
     expect(reconcileClerkOrgRole("competidor", "org:admin")).toBe("mentor");
     expect(reconcileClerkOrgRole("mentor", "org:member")).toBe("colaborador");
+  });
+});
+
+describe("papéis da Organização no Clerk", () => {
+  it("usa org:admin/org:member quando existem", () => {
+    expect(pickRoleKeys(["org:admin", "org:member"], null, null)).toEqual({
+      admin: "org:admin",
+      member: "org:member",
+    });
+  });
+
+  it("usa os papéis do role set quando os padrões não existem", () => {
+    // Instância sem org:member: o convite falhava com "Organization role not found".
+    expect(pickRoleKeys(["org:owner", "org:participant"], "org:owner", "org:participant")).toEqual({
+      admin: "org:owner",
+      member: "org:participant",
+    });
+    expect(pickRoleKeys(["org:admin", "org:viewer"], "org:admin", "org:viewer")).toEqual({
+      admin: "org:admin",
+      member: "org:viewer",
+    });
+    expect(pickRoleKeys(["org:team_admin", "org:aluno"], null, null)).toEqual({
+      admin: "org:team_admin",
+      member: "org:aluno",
+    });
+  });
+
+  it("reconhece papéis de administração personalizados", () => {
+    expect(isClerkAdminRole("org:admin")).toBe(true);
+    expect(isClerkAdminRole("org:owner")).toBe(true);
+    expect(isClerkAdminRole("org:team_admin")).toBe(true);
+    expect(isClerkAdminRole("org:member")).toBe(false);
+    expect(isClerkAdminRole("org:administrativo")).toBe(false);
   });
 });

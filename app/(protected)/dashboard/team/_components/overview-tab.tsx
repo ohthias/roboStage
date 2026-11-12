@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   ArrowRight,
@@ -6,7 +5,9 @@ import {
   CalendarDays,
   CheckCircle2,
   Flag,
+  FlaskConical,
   KanbanSquare,
+  Lightbulb,
   ListChecks,
   MapPin,
   Play,
@@ -16,7 +17,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import type { TeamOverview } from "@/utils/stagebook/team-queries";
-import type { TeamRole } from "@/utils/stagebook/team-permissions";
+import { roleCan, type TeamRole } from "@/utils/stagebook/team-permissions";
 import type { TeamMemberSummary } from "@/types/team-workspace";
 import {
   sessionKindLabel,
@@ -28,6 +29,8 @@ import {
 import { ActivityItem } from "./activity-item";
 import { PersonAvatar } from "./team-avatar";
 import { QuickStart } from "./quick-start";
+import { NavLink } from "./nav-link";
+import { teamToolHref } from "./team-links";
 import { EVENT_TYPES } from "@/app/(protected)/dashboard/calendar/constants";
 import { CORNER, SectionHead, TONE_FILL, TONE_SOFT, TrackArt, type Tone } from "./team-ui";
 
@@ -91,7 +94,7 @@ function FeatureCard({
   live?: boolean;
 }) {
   return (
-    <Link
+    <NavLink
       href={href}
       className={`group relative flex h-60 flex-col overflow-hidden p-4 sm:h-72 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-base-content/10 ${TONE_FILL[tone]} ${CORNER.lg}`}
     >
@@ -110,20 +113,20 @@ function FeatureCard({
         <p className="line-clamp-2 text-sm font-bold leading-snug">{title}</p>
         <p className="mt-1 line-clamp-1 text-[11px] opacity-80">{subtitle}</p>
       </div>
-    </Link>
+    </NavLink>
   );
 }
 
 function EmptyFeature({ href, icon, title, text }: { href: string; icon: ReactNode; title: string; text: string }) {
   return (
-    <Link
+    <NavLink
       href={href}
       className={`group flex h-48 flex-col items-center justify-center sm:h-72 gap-2 border-2 border-dashed border-base-300 p-6 text-center transition-colors hover:border-primary/40 ${CORNER.lg}`}
     >
       <span className={`flex size-11 items-center justify-center ${TONE_SOFT.primary} ${CORNER.md}`}>{icon}</span>
       <p className="font-semibold">{title}</p>
       <p className="max-w-56 text-xs text-base-content/55">{text}</p>
-    </Link>
+    </NavLink>
   );
 }
 
@@ -138,6 +141,7 @@ function EmptyFeature({ href, icon, title, text }: { href: string; icon: ReactNo
 export function OverviewTab({
   teamId,
   overview,
+  role,
   viewerId,
   members,
   activity,
@@ -158,6 +162,9 @@ export function OverviewTab({
   upcomingDuties: UpcomingDuty[];
 }) {
   const base = `/dashboard/team/${teamId}`;
+  /** Ferramentas do RoboStage abertas já no espaço desta equipe. */
+  const tool = (path: string) => teamToolHref(teamId, path);
+  const canCreate = roleCan(role, "tool.create");
   const present = new Set(presentIds);
   // Presentes primeiro; você logo depois deles.
   const ordered = [...members].sort(
@@ -297,7 +304,7 @@ export function OverviewTab({
 
             {nextEvent ? (
               <FeatureCard
-                href="/dashboard/calendar"
+                href={tool("/dashboard/calendar")}
                 tone={eventTone}
                 art={1}
                 chip={
@@ -334,7 +341,7 @@ export function OverviewTab({
               />
             ) : (
               <EmptyFeature
-                href="/dashboard/calendar"
+                href={tool("/dashboard/calendar")}
                 icon={<CalendarDays size={20} />}
                 title="Agenda vazia"
                 text="Marque treinos e competições no calendário para vê-los aqui."
@@ -345,7 +352,7 @@ export function OverviewTab({
 
         {/* Para você */}
         <section>
-          <SectionHead kicker="PARA VOCÊ" title="Atribuído a você" href="/dashboard/kanban" linkLabel="kanban" />
+          <SectionHead kicker="PARA VOCÊ" title="Atribuído a você" href={`${base}?tab=kanban`} linkLabel="kanban" />
           {overview.myCards.length === 0 ? (
             <div className={`flex items-center gap-3 bg-base-200/60 p-4 text-sm text-base-content/60 ${CORNER.md}`}>
               <CheckCircle2 size={18} className="shrink-0 text-success" />
@@ -357,8 +364,8 @@ export function OverviewTab({
                 const p = PRIORITY[card.priority] ?? { label: card.priority, tone: "secondary" as Tone };
                 return (
                   <li key={card.id}>
-                    <Link
-                      href={`/dashboard/kanban/${card.boardId}`}
+                    <NavLink
+                      href={tool(`/dashboard/kanban/${card.boardId}`)}
                       className={`group flex items-center gap-3 bg-base-200/60 p-2.5 transition-colors hover:bg-base-200 ${CORNER.md}`}
                     >
                       <span className={`flex size-9 shrink-0 items-center justify-center ${TONE_SOFT[p.tone]} ${CORNER.sm}`}>
@@ -376,7 +383,7 @@ export function OverviewTab({
                       >
                         <ArrowRight size={13} />
                       </span>
-                    </Link>
+                    </NavLink>
                   </li>
                 );
               })}
@@ -409,7 +416,7 @@ export function OverviewTab({
         <section className="max-xl:order-first">
           <SectionHead kicker="INICIAR" title={activeSession ? "Sessão em andamento" : "Treino rápido"} />
           {activeSession ? (
-            <Link
+            <NavLink
               href={`${base}/treinos/${activeSession.id}`}
               className={`flex items-center gap-3 bg-success/10 p-3 transition-colors hover:bg-success/15 ${CORNER.md}`}
             >
@@ -421,7 +428,7 @@ export function OverviewTab({
               <span className={`btn btn-success btn-xs gap-1 ${CORNER.sm}`}>
                 <Play size={11} /> Entrar
               </span>
-            </Link>
+            </NavLink>
           ) : (
             <QuickStart teamId={teamId} />
           )}
@@ -430,14 +437,14 @@ export function OverviewTab({
         {/* Agenda: um card largo + dois pequenos, como a coluna da referência */}
         {(laterEvents.length > 0 || upcomingDuties.length > 0) && (
           <section>
-            <SectionHead kicker="AGENDA" title="Vem por aí" href="/dashboard/calendar" linkLabel="calendário" />
+            <SectionHead kicker="AGENDA" title="Vem por aí" href={tool("/dashboard/calendar")} linkLabel="calendário" />
             <div className="grid grid-cols-2 gap-2.5">
               {laterEvents.slice(0, 4).map((e, i) => {
                 const tone: Tone = e.type === "competicao" ? "primary" : (["secondary", "accent", "success"] as const)[i % 3];
                 return (
-                  <Link
+                  <NavLink
                     key={e.id}
-                    href="/dashboard/calendar"
+                    href={tool("/dashboard/calendar")}
                     className={`group relative flex min-h-28 flex-col overflow-hidden p-3 transition-transform hover:-translate-y-0.5 ${
                       i === 0 ? "col-span-2" : ""
                     } ${TONE_FILL[tone]} ${CORNER.md}`}
@@ -455,7 +462,7 @@ export function OverviewTab({
                         <MapPin size={9} /> {e.location}
                       </p>
                     )}
-                  </Link>
+                  </NavLink>
                 );
               })}
             </div>
@@ -468,13 +475,13 @@ export function OverviewTab({
                 <ul className="space-y-1.5">
                   {upcomingDuties.map((u) => (
                     <li key={u.sessionId}>
-                      <Link href={`${base}/treinos/${u.sessionId}`} className="block text-xs hover:text-primary">
+                      <NavLink href={`${base}/treinos/${u.sessionId}`} className="block text-xs hover:text-primary">
                         <span className="font-semibold">{u.duties.map((d) => `${d.label}${roundsText(d.rounds)}`).join(" · ")}</span>
                         <span className="block truncate text-[11px] text-base-content/50" suppressHydrationWarning>
                           {u.sessionTitle}
                           {u.when && ` · ${relDay(u.when)}`}
                         </span>
-                      </Link>
+                      </NavLink>
                     </li>
                   ))}
                 </ul>
@@ -505,12 +512,12 @@ export function OverviewTab({
                 <p className="relative mt-1 pr-16 text-xs font-medium text-base-content/70">
                   para <strong>{milestone.name}</strong>
                 </p>
-                <Link
+                <NavLink
                   href={`${base}?tab=marcos`}
                   className={`btn btn-xs relative mt-4 border-0 bg-base-100 shadow-sm ${CORNER.sm}`}
                 >
                   Ver marcos
-                </Link>
+                </NavLink>
               </>
             ) : (
               <>
@@ -520,27 +527,61 @@ export function OverviewTab({
                 <p className="relative mt-1 pr-16 text-xs text-base-content/70">
                   Marcos com prazo aparecem aqui com a contagem regressiva.
                 </p>
-                <Link
+                <NavLink
                   href={`${base}?tab=marcos`}
                   className={`btn btn-xs relative mt-4 gap-1 border-0 bg-base-100 shadow-sm ${CORNER.sm}`}
                 >
                   <Plus size={11} /> Marcos
-                </Link>
+                </NavLink>
               </>
             )}
           </div>
         </section>
 
-        {/* Atalhos */}
-        <section className="flex flex-wrap gap-2">
-          <Link href="/dashboard/documents" className={`btn btn-ghost btn-sm flex-1 gap-1.5 bg-base-200/60 ${CORNER.sm}`}>
-            <Book size={14} /> StageBook
-            <span className="font-mono text-[11px] text-base-content/45">{overview.counts.pages}</span>
-          </Link>
-          <Link href="/dashboard/calendar" className={`btn btn-ghost btn-sm flex-1 gap-1.5 bg-base-200/60 ${CORNER.sm}`}>
-            <CalendarDays size={14} /> Agenda
-            <span className="font-mono text-[11px] text-base-content/45">{overview.counts.upcomingEvents}</span>
-          </Link>
+        {/* Atalhos: tudo abre/cria DENTRO desta equipe (ver team-links.ts) */}
+        <section>
+          <SectionHead kicker="ATALHOS" title="Criar na equipe" />
+          {canCreate && (
+            <div className="mb-2 grid grid-cols-3 gap-2">
+              {[
+                { href: `${base}?tab=kanban&novo=1`, Icon: KanbanSquare, label: "Kanban", count: overview.counts.boards },
+                { href: `${base}?tab=thinklab&novo=1`, Icon: Lightbulb, label: "ThinkLab", count: overview.counts.thinklabs },
+                { href: `${base}?tab=labtests&novo=1`, Icon: FlaskConical, label: "LabTest", count: overview.counts.tests },
+              ].map(({ href, Icon, label, count }) => (
+                <NavLink
+                  key={label}
+                  href={href}
+                  title={`Novo ${label} da equipe`}
+                  className={`btn btn-ghost btn-sm h-auto flex-col gap-0.5 bg-base-200/60 py-2 ${CORNER.sm}`}
+                >
+                  <span className="flex items-center gap-1">
+                    <Plus size={11} className="text-primary" />
+                    <Icon size={14} />
+                  </span>
+                  <span className="text-[11px]">{label}</span>
+                  <span className="font-mono text-[10px] text-base-content/45">{count}</span>
+                </NavLink>
+              ))}
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <NavLink
+              href={tool("/dashboard/documents")}
+              title="Documentos da equipe no StageBook"
+              className={`btn btn-ghost btn-sm flex-1 gap-1.5 bg-base-200/60 ${CORNER.sm}`}
+            >
+              <Book size={14} /> StageBook
+              <span className="font-mono text-[11px] text-base-content/45">{overview.counts.pages}</span>
+            </NavLink>
+            <NavLink
+              href={tool("/dashboard/calendar")}
+              title="Agenda da equipe"
+              className={`btn btn-ghost btn-sm flex-1 gap-1.5 bg-base-200/60 ${CORNER.sm}`}
+            >
+              <CalendarDays size={14} /> Agenda
+              <span className="font-mono text-[11px] text-base-content/45">{overview.counts.upcomingEvents}</span>
+            </NavLink>
+          </div>
         </section>
       </aside>
     </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Loader2, Plus, Search, Trash2, User } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
@@ -24,6 +23,7 @@ import {
   type ResourceKind,
 } from "./resource-meta";
 import { ConfirmDialog, Modal } from "@/components/stagebook/modal";
+import { teamToolHref } from "./team-links";
 
 export type ResourceItem = {
   id: string;
@@ -60,6 +60,7 @@ export function ResourceTab({
   milestones,
   viewerId,
   viewerRole,
+  autoCreate = false,
 }: {
   teamId: string;
   kind: ResourceKind;
@@ -68,6 +69,8 @@ export function ResourceTab({
   milestones: MilestoneRef[];
   viewerId: string;
   viewerRole: TeamRole;
+  /** Abre o formulário de criação ao carregar (atalhos "Novo …" da aba Geral: `?novo=1`). */
+  autoCreate?: boolean;
 }) {
   const meta = RESOURCE_META[kind];
   const router = useRouter();
@@ -75,7 +78,7 @@ export function ResourceTab({
   const [isPending, startTransition] = useTransition();
 
   const [search, setSearch] = useState("");
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(() => autoCreate && roleCan(viewerRole, "tool.create"));
   const [toDelete, setToDelete] = useState<ResourceItem | null>(null);
 
   // Formulário de criação
@@ -261,10 +264,10 @@ export function ResourceTab({
                           <Trash2 size={14} />
                         </button>
                       )}
-                      <Link href={meta.href(item.id)} className="btn btn-primary btn-soft btn-xs gap-1">
+                      <a href={teamToolHref(teamId, meta.href(item.id))} className="btn btn-primary btn-soft btn-xs gap-1">
                         Abrir
                         <ExternalLink size={11} />
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 </div>

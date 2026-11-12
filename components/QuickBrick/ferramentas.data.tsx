@@ -118,6 +118,7 @@ export const ferramentas: Ferramenta[] = [
     link: "/fll/quickbrick/sharks-simulator",
     customContent: null,
     mobileSafe: true,
+    badge: "Atualizado",
     feitoPor: ["Sharks", "https://www.instagram.com/sharksfll_12476/"],
   },
   {

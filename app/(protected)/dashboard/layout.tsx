@@ -24,6 +24,7 @@ import { listUnreadNotifications } from "@/utils/stagebook/actions/notifications
 import { getUserPreferences } from "@/utils/stagebook/actions/preferences";
 import { LayoutPrefsProvider, SidebarPosition } from "@/components/stagebook/layout-prefs";
 import Link from "next/link";
+import { SHOWLIVE_URL } from "@/utils/showlive-url";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const [scope, teams, notifications, canCreateTeam, prefs] = await Promise.all([
@@ -130,7 +131,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               <ThemeController />
             </div>
             <div className="flex shrink-0 items-center">
-              <UserButton />
+              {/* Gerenciar conta leva às configurações nativas, sem o modal do Clerk. */}
+              <UserButton userProfileMode="navigation" userProfileUrl="/dashboard/settings" />
             </div>
           </div>
         </div>
@@ -195,7 +197,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
           {/* Rola no mobile; overflow visível só no desktop recolhido (tooltips) */}
           <div className="w-full min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 lg:is-drawer-close:overflow-visible lg:is-drawer-close:px-2">
-            <NavLinks pins={pins} />
+            <NavLinks pins={pins} showliveUrl={prefs.showliveEnabled ? SHOWLIVE_URL : null} />
           </div>
 
           {/* Rodapé: Configurações + Mais */}

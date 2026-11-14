@@ -10,6 +10,7 @@ import {
   KanbanSquare,
   Lightbulb,
   Newspaper,
+  Radio,
   Settings,
   Tags,
   Trophy,
@@ -100,7 +101,7 @@ function NavRow({ item, pathname, className = "" }: { item: NavItem; pathname: s
 }
 
 /** Corpo da barra: ferramentas e fixados. */
-export function NavLinks({ pins = [] }: { pins?: PinDTO[] }) {
+export function NavLinks({ pins = [], showliveUrl = null }: { pins?: PinDTO[]; showliveUrl?: string | null }) {
   const pathname = usePathname();
 
   // Fecha o drawer após qualquer navegação no mobile (inclusive voltar/avançar).
@@ -114,6 +115,21 @@ export function NavLinks({ pins = [] }: { pins?: PinDTO[] }) {
         {TOOL_LINKS.map((item) => (
           <NavRow key={item.href} item={item} pathname={pathname} />
         ))}
+        {showliveUrl && (
+          <li data-tip="ShowLive" className={TIP}>
+            <a
+              href={showliveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="ShowLive (abre em nova aba)"
+              className={`${ROW} text-base-content/60 hover:bg-base-300/50 hover:text-base-content`}
+            >
+              <Radio className="size-[18px] shrink-0 text-base-content/45 group-hover:text-primary" strokeWidth={1.8} />
+              <span className="min-w-0 truncate lg:is-drawer-close:hidden">ShowLive</span>
+              <span className="badge badge-primary badge-soft badge-xs ml-auto lg:is-drawer-close:hidden">ao vivo</span>
+            </a>
+          </li>
+        )}
       </ul>
       <PinnedSection pins={pins} pathname={pathname} onNavigate={closeDrawerOnMobile} />
     </nav>

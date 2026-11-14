@@ -1,8 +1,23 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Play, Timer, Trash2 } from "lucide-react";
+import {
+  CalendarDays,
+  Dumbbell,
+  Flag,
+  Lightbulb,
+  MapPin,
+  MoreHorizontal,
+  Play,
+  Plus,
+  Smile,
+  Timer,
+  Trash2,
+  Trophy,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import {
   createEvent,
   deleteEvent,
@@ -17,19 +32,40 @@ import type { CalendarEventClient } from "./calendar-view";
 import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
 import { TagSelector } from "@/components/stagebook/labels/tag-selector";
 import { MilestoneSelector } from "@/components/stagebook/labels/milestone-selector";
+import { ConfirmDialog } from "@/components/stagebook/modal";
+import { DialogNote, Field, FieldGroup, FormDialog, OptionCard, ToggleRow } from "@/components/UI/Modal/FormDialog";
 import { DocIcon } from "@/components/editor/doc-icon";
+import { DocIconPicker } from "@/components/editor/doc-icon-picker";
 import { toggleResourceTag } from "@/utils/stagebook/actions/tags";
 import { setResourceMilestone } from "@/utils/stagebook/actions/milestones";
 import { sessionFromCalendarEvent } from "@/utils/stagebook/actions/training";
 import type { MilestoneDTO, TagDTO } from "@/types/labels";
-
 import { unwrapAction } from "@/utils/stagebook/action-result";
+
+const TYPE_ICON: Record<string, LucideIcon> = {
+  treino: Dumbbell,
+  reuniao: Users,
+  competicao: Trophy,
+  deadline: Flag,
+  projeto: Lightbulb,
+  evento: CalendarDays,
+  outro: MoreHorizontal,
+};
+
 function toLocalInput(iso: string) {
   const date = new Date(iso);
   const offset = date.getTimezoneOffset();
   const local = new Date(date.getTime() - offset * 60000);
   return local.toISOString().slice(0, 16);
 }
+
+const fmtWhen = (value: string, allDay: boolean) => {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("pt-BR", allDay
+    ? { weekday: "long", day: "numeric", month: "long" }
+    : { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+};
 
 export function EventModal({
   mode,
@@ -45,14 +81,18 @@ export function EventModal({
   onSaved: () => void;
 }) {
   const [title, setTitle] = useState(event?.title ?? "");
-  const [type, setType] = useState(event?.type ?? "evento");
+  const [type, setType] = useState<string>(event?.type ?? "evento");
   const [description, setDescription] = useState(event?.description ?? "");
   const [location, setLocation] = useState(event?.location ?? "");
+  const [icon, setIcon] = useState<string | null>(event?.icon ?? null);
+  const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const [allDay, setAllDay] = useState(event?.allDay ?? false);
   const [startAt, setStartAt] = useState(toLocalInput(event?.startAt ?? initialDate ?? new Date().toISOString()));
   const [endAt, setEndAt] = useState(event?.endAt ? toLocalInput(event.endAt) : "");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   // Tags/milestone de um evento NOVO ficam aqui até o evento existir.
   const [draftTags, setDraftTags] = useState<TagDTO[]>([]);
   const [draftMilestone, setDraftMilestone] = useState<MilestoneDTO | null>(null);
@@ -60,6 +100,10 @@ export function EventModal({
   const [availablePages, setAvailablePages] = useState<{ id: string; title: string; icon: string | null }[]>([]);
   const [linkedPageIds, setLinkedPageIds] = useState<string[]>([]);
   const [sessionError, setSessionError] = useState<string | null>(null);
+
+  const endBeforeStart = Boolean(endAt) && new Date(endAt).getTime() < new Date(startAt).getTime();
+  const typeMeta = EVENT_TYPES.find((t) => t.value === type) ?? EVENT_TYPES[EVENT_TYPES.length - 1];
+  const whenLabel = useMemo(() => fmtWhen(startAt, allDay), [startAt, allDay]);
 
   /** Cria (ou reabre) a sessão de treino deste evento e vai para ela. */
   function openSession(start: boolean) {
@@ -85,34 +129,45 @@ export function EventModal({
   }, [mode, event]);
 
   function submit() {
-    if (!title.trim()) return;
+    if (!title.trim() || endBeforeStart) return;
+    setError(null);
     startTransition(async () => {
-      const payload = {
-        title,
-        description,
-        startAt,
-        endAt: endAt || null,
-        allDay,
-        type,
-        location,
-      };
-      if (mode === "edit" && event) {
-        unwrapAction(await updateEvent(event.id, payload));
-      } else {
-        const created = unwrapAction(await createEvent(payload));
-        for (const tag of draftTags) unwrapAction(await toggleResourceTag("calendar-event", created.id, tag.id));
-        if (draftMilestone) unwrapAction(await setResourceMilestone("calendar-event", created.id, draftMilestone.id));
+      try {
+        const payload = {
+          title,
+          description,
+          startAt,
+          endAt: endAt || null,
+          allDay,
+          type,
+          icon,
+          location,
+        };
+        if (mode === "edit" && event) {
+          unwrapAction(await updateEvent(event.id, payload));
+        } else {
+          const created = unwrapAction(await createEvent(payload));
+          for (const tag of draftTags) unwrapAction(await toggleResourceTag("calendar-event", created.id, tag.id));
+          if (draftMilestone) unwrapAction(await setResourceMilestone("calendar-event", created.id, draftMilestone.id));
+        }
+        onSaved();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Não foi possível salvar o evento.");
       }
-      onSaved();
     });
   }
 
   function handleDelete() {
     if (!event) return;
-    if (!window.confirm("Excluir este evento?")) return;
     startTransition(async () => {
-      unwrapAction(await deleteEvent(event.id));
-      onSaved();
+      try {
+        unwrapAction(await deleteEvent(event.id));
+        setConfirmDelete(false);
+        onSaved();
+      } catch (err) {
+        setConfirmDelete(false);
+        setError(err instanceof Error ? err.message : "Não foi possível excluir o evento.");
+      }
     });
   }
 
@@ -129,167 +184,292 @@ export function EventModal({
     });
   }
 
+  // "Dia inteiro" troca o campo por data pura, mas o valor guardado continua
+  // no formato do datetime-local para o payload não mudar.
+  const dateInput = (value: string, onChange: (v: string) => void, endOfDay = false) =>
+    allDay ? (
+      <input
+        type="date"
+        className="input input-bordered w-full"
+        value={value.slice(0, 10)}
+        onChange={(e) => onChange(e.target.value ? `${e.target.value}T${endOfDay ? "23:59" : "00:00"}` : "")}
+      />
+    ) : (
+      <input
+        type="datetime-local"
+        className="input input-bordered w-full"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    );
+
+  const canSession = mode === "edit" && event?.teamId && (event.type === "treino" || event.type === "competicao");
+
   return (
-    <div className="modal modal-open" role="dialog" aria-modal="true">
-      <div className="modal-box max-w-md">
-        <h2 className="text-lg font-semibold">{mode === "edit" ? "Editar evento" : "Novo evento"}</h2>
-
-        <div className="mt-4 flex flex-col gap-3">
-          <input
-            className="input input-bordered"
-            placeholder="Título"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            autoFocus
-          />
-
-          <div className="grid grid-cols-2 gap-3">
-            <select className="select select-bordered" value={type} onChange={(e) => setType(e.target.value)}>
-              {EVENT_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" className="checkbox checkbox-sm" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} />
-              Dia inteiro
-            </label>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <label className="flex flex-col gap-1 text-xs text-base-content/60">
-              Início
-              <input
-                type="datetime-local"
-                className="input input-bordered input-sm"
-                value={startAt}
-                onChange={(e) => setStartAt(e.target.value)}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-xs text-base-content/60">
-              Fim (opcional)
-              <input
-                type="datetime-local"
-                className="input input-bordered input-sm"
-                value={endAt}
-                onChange={(e) => setEndAt(e.target.value)}
-              />
-            </label>
-          </div>
-
-          <input
-            className="input input-bordered input-sm"
-            placeholder="Local (opcional)"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-
-          <textarea
-            className="textarea textarea-bordered textarea-sm"
-            placeholder="Descrição (opcional)"
-            rows={2}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-
-          <div>
-            <p className="mb-1 text-xs font-medium text-base-content/50">Tags e milestone</p>
-            {mode === "edit" && event ? (
-              <ResourceLabels
-                kind="calendar-event"
-                resourceId={event.id}
-                initialTags={event.tags ?? []}
-                initialMilestone={event.milestone ?? null}
-                onChange={() => router.refresh()}
-              />
+    <>
+      <FormDialog
+        onClose={onClose}
+        eyebrow="Calendário"
+        title={mode === "edit" ? "Editar evento" : "Novo evento"}
+        description={
+          whenLabel ? (
+            <span className="inline-flex items-center gap-1.5">
+              {icon ? (
+                <DocIcon value={icon} size={14} fallback={null} />
+              ) : (
+                <span className="size-2 rounded-full" style={{ background: typeMeta.color }} aria-hidden />
+              )}
+              {typeMeta.label} · {whenLabel.charAt(0).toUpperCase() + whenLabel.slice(1)}
+            </span>
+          ) : undefined
+        }
+        size="lg"
+        busy={isPending || confirmDelete}
+        closeOnEscape={!iconPickerOpen}
+        onSubmit={submit}
+        footer={
+          <>
+            {mode === "edit" ? (
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm gap-1.5 rounded-lg text-error"
+                onClick={() => setConfirmDelete(true)}
+                disabled={isPending}
+              >
+                <Trash2 size={14} /> Excluir
+              </button>
             ) : (
-              <div className="space-y-2">
-                <TagSelector
-                  value={draftTags}
-                  onAdd={(tag) => setDraftTags((prev) => (prev.some((t) => t.id === tag.id) ? prev : [...prev, tag]))}
-                  onRemove={(tag) => setDraftTags((prev) => prev.filter((t) => t.id !== tag.id))}
-                  onTagUpdated={(tag) => setDraftTags((prev) => prev.map((t) => (t.id === tag.id ? tag : t)))}
-                />
-                <MilestoneSelector value={draftMilestone} onChange={setDraftMilestone} />
-              </div>
+              <span />
             )}
+            <div className="flex gap-2">
+              <button type="button" className="btn btn-ghost rounded-lg" onClick={onClose} disabled={isPending}>
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary gap-2 rounded-lg"
+                disabled={isPending || !title.trim() || endBeforeStart}
+              >
+                {isPending ? <span className="loading loading-spinner loading-sm" /> : mode === "create" && <Plus size={16} />}
+                {mode === "edit" ? "Salvar" : "Criar evento"}
+              </button>
+            </div>
+          </>
+        }
+      >
+        <div>
+          <label htmlFor="event-title" className="text-sm font-medium">
+            Título do evento
+          </label>
+          <div className="mt-1.5 flex gap-2">
+            <button
+              type="button"
+              data-icon-trigger
+              onClick={() => setIconPickerOpen((v) => !v)}
+              aria-expanded={iconPickerOpen}
+              aria-label={icon ? "Trocar ícone do evento" : "Escolher ícone do evento"}
+              title={icon ? "Trocar ícone" : "Escolher ícone"}
+              className={`btn btn-square shrink-0 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md border-base-300 bg-base-100 ${
+                iconPickerOpen ? "ring-1 ring-primary" : ""
+              }`}
+            >
+              {icon ? <DocIcon value={icon} size={22} fallback={null} /> : <Smile size={18} className="text-base-content/45" />}
+            </button>
+            <input
+              id="event-title"
+              className="input input-bordered w-full"
+              placeholder="Ex.: Treino de missões — mesa oficial"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={160}
+              required
+              autoFocus
+            />
           </div>
-
-          {mode === "edit" && (
-            <div>
-              <p className="mb-1 text-xs font-medium text-base-content/50">Páginas relacionadas</p>
-              <div className="flex max-h-32 flex-col gap-1 overflow-y-auto rounded-lg border border-base-300 p-2">
-                {availablePages.length === 0 ? (
-                  <span className="text-xs text-base-content/40">Nenhuma página criada ainda.</span>
-                ) : (
-                  availablePages.map((page) => (
-                    <label key={page.id} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        className="checkbox checkbox-xs"
-                        checked={linkedPageIds.includes(page.id)}
-                        onChange={() => toggleLink(page.id)}
-                      />
-                      <DocIcon value={page.icon} size={16} />
-                      <span className="truncate">{page.title}</span>
-                    </label>
-                  ))
-                )}
-              </div>
+          {iconPickerOpen && (
+            // O seletor das páginas é um popover absoluto; aqui ele abre em linha
+            // para não ser cortado pela rolagem do modal.
+            <div className="mt-2 [&>[role=dialog]]:static [&>[role=dialog]]:mt-0 [&>[role=dialog]]:w-full [&>[role=dialog]]:max-w-none [&>[role=dialog]]:rounded-tl-xl [&>[role=dialog]]:rounded-br-xl [&>[role=dialog]]:shadow-none">
+              <DocIconPicker value={icon} onChange={setIcon} onClose={() => setIconPickerOpen(false)} />
             </div>
           )}
+          {!iconPickerOpen && (
+            <p className="mt-1 text-xs text-base-content/55">
+              {icon ? (
+                <>
+                  Ícone aparece no calendário.{" "}
+                  <button type="button" className="link link-hover" onClick={() => setIcon(null)}>
+                    Remover ícone
+                  </button>
+                </>
+              ) : (
+                "Toque no rosto para dar um ícone ao evento."
+              )}
+            </p>
+          )}
         </div>
 
-        {mode === "edit" && event?.teamId && (event.type === "treino" || event.type === "competicao") && (
-          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-base-300 bg-base-200/40 px-3 py-2">
-            <Timer size={15} className="text-primary" />
-            <span className="min-w-0 flex-1 text-xs text-base-content/65">
-              Sessão de {event.type === "competicao" ? "competição" : "treino"} da equipe: presença, escala e execuções
-              registradas juntas.
+        <FieldGroup legend="Tipo">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="Tipo do evento">
+            {EVENT_TYPES.map((t) => {
+              const Icon = TYPE_ICON[t.value] ?? MoreHorizontal;
+              return (
+                <OptionCard
+                  key={t.value}
+                  compact
+                  active={type === t.value}
+                  onClick={() => setType(t.value)}
+                  color={t.color}
+                  icon={<Icon size={16} />}
+                  title={t.label}
+                />
+              );
+            })}
+          </div>
+        </FieldGroup>
+
+        <FieldGroup legend="Quando">
+          <div className="space-y-3 rounded-tl-xl rounded-br-xl border border-base-300 p-3">
+            <ToggleRow
+              checked={allDay}
+              onChange={setAllDay}
+              title="Dia inteiro"
+              description="Sem horário — ocupa o dia todo no calendário."
+            />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Início">{dateInput(startAt, setStartAt)}</Field>
+              <Field label="Fim" optional>
+                {dateInput(endAt, setEndAt, true)}
+              </Field>
+            </div>
+            {endBeforeStart && <p className="text-xs text-error">O fim precisa ser depois do início.</p>}
+          </div>
+        </FieldGroup>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Local" optional>
+            <span className="input input-bordered flex w-full items-center gap-2">
+              <MapPin size={15} className="shrink-0 text-base-content/45" />
+              <input
+                className="grow"
+                placeholder="Ex.: Laboratório da escola"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
             </span>
-            <button
-              type="button"
-              className="btn btn-ghost btn-xs"
-              disabled={isPending}
-              onClick={() => openSession(false)}
-            >
-              Planejar / abrir
-            </button>
-            <button
-              type="button"
-              className="btn btn-success btn-xs gap-1"
-              disabled={isPending}
-              onClick={() => openSession(true)}
-            >
-              <Play size={12} /> Iniciar sessão
-            </button>
+          </Field>
+          <Field label="Descrição" optional>
+            <textarea
+              className="textarea textarea-bordered min-h-10 w-full"
+              placeholder="Pauta, o que levar, links…"
+              rows={1}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </Field>
+        </div>
+
+        <FieldGroup legend="Tags e milestone" hint="As mesmas de páginas, kanban, ThinkLab e LabTest.">
+          {mode === "edit" && event ? (
+            <ResourceLabels
+              kind="calendar-event"
+              resourceId={event.id}
+              initialTags={event.tags ?? []}
+              initialMilestone={event.milestone ?? null}
+              onChange={() => router.refresh()}
+            />
+          ) : (
+            <div className="space-y-2">
+              <TagSelector
+                value={draftTags}
+                onAdd={(tag) => setDraftTags((prev) => (prev.some((t) => t.id === tag.id) ? prev : [...prev, tag]))}
+                onRemove={(tag) => setDraftTags((prev) => prev.filter((t) => t.id !== tag.id))}
+                onTagUpdated={(tag) => setDraftTags((prev) => prev.map((t) => (t.id === tag.id ? tag : t)))}
+              />
+              <MilestoneSelector value={draftMilestone} onChange={setDraftMilestone} />
+            </div>
+          )}
+        </FieldGroup>
+
+        {mode === "edit" && (
+          <FieldGroup
+            legend="Páginas relacionadas"
+            aside={
+              linkedPageIds.length > 0 && (
+                <span className="badge badge-ghost badge-sm font-mono">{linkedPageIds.length}</span>
+              )
+            }
+          >
+            <div className="flex max-h-36 flex-col gap-0.5 overflow-y-auto rounded-tl-xl rounded-br-xl border border-base-300 p-1.5">
+              {availablePages.length === 0 ? (
+                <span className="px-1.5 py-1 text-xs text-base-content/45">Nenhuma página criada ainda.</span>
+              ) : (
+                availablePages.map((page) => (
+                  <label
+                    key={page.id}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-sm hover:bg-base-200"
+                  >
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-xs checkbox-primary"
+                      checked={linkedPageIds.includes(page.id)}
+                      onChange={() => toggleLink(page.id)}
+                    />
+                    <DocIcon value={page.icon} size={16} />
+                    <span className="truncate">{page.title}</span>
+                  </label>
+                ))
+              )}
+            </div>
+          </FieldGroup>
+        )}
+
+        {canSession && (
+          <div className="flex flex-wrap items-center gap-3 rounded-tl-xl rounded-br-xl border border-primary/25 bg-primary/5 p-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-content">
+              <Timer size={18} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold">
+                Sessão de {event.type === "competicao" ? "competição" : "treino"}
+              </span>
+              <span className="block text-xs text-base-content/60">
+                Presença, escala e execuções registradas juntas.
+              </span>
+            </span>
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm rounded-lg"
+                disabled={isPending}
+                onClick={() => openSession(false)}
+              >
+                Planejar
+              </button>
+              <button
+                type="button"
+                className="btn btn-success btn-sm gap-1 rounded-lg"
+                disabled={isPending}
+                onClick={() => openSession(true)}
+              >
+                <Play size={13} /> Iniciar
+              </button>
+            </div>
+            {sessionError && <p className="w-full text-xs text-error">{sessionError}</p>}
           </div>
         )}
-        {sessionError && <p className="mt-2 text-xs text-error">{sessionError}</p>}
 
-        <div className="modal-action justify-between">
-          {mode === "edit" ? (
-            <button type="button" className="btn btn-ghost btn-sm text-error" onClick={handleDelete}>
-              <Trash2 size={14} />
-              Excluir
-            </button>
-          ) : (
-            <span />
-          )}
+        {error && <DialogNote tone="error">{error}</DialogNote>}
+      </FormDialog>
 
-          <div className="flex gap-2">
-            <button type="button" className="btn btn-sm" onClick={onClose}>
-              Cancelar
-            </button>
-            <button type="button" className="btn btn-primary btn-sm" onClick={submit} disabled={isPending || !title.trim()}>
-              Salvar
-            </button>
-          </div>
-        </div>
-      </div>
-      <button type="button" className="modal-backdrop" aria-label="Fechar" onClick={onClose} />
-    </div>
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Excluir evento?"
+        description={`“${event?.title ?? ""}” sai do calendário de todos. Páginas e cards vinculados continuam existindo.`}
+        pending={isPending}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
+    </>
   );
 }

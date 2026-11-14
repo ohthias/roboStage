@@ -9,6 +9,7 @@ import {
   Home,
   KanbanSquare,
   Lightbulb,
+  LogOut,
   Newspaper,
   Radio,
   Settings,
@@ -18,6 +19,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useClerk } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import type { PinDTO } from "@/types/pins";
@@ -44,7 +46,11 @@ const MORE_LINKS: NavItem[] = [
   { href: "/", label: "Voltar ao site", Icon: Earth },
 ];
 
-const SETTINGS: NavItem = { href: "/dashboard/settings", label: "Configurações", Icon: Settings };
+const SETTINGS: NavItem = {
+  href: "/dashboard/settings",
+  label: "Configurações",
+  Icon: Settings,
+};
 
 const DRAWER_ID = "lt-drawer";
 const DESKTOP_QUERY = "(min-width: 1024px)"; // breakpoint lg
@@ -61,21 +67,31 @@ export function closeDrawerOnMobile() {
 }
 
 const isActive = (href: string, pathname: string) =>
-  href === "/dashboard" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+  href === "/dashboard"
+    ? pathname === href
+    : pathname === href || pathname.startsWith(`${href}/`);
 
 /**
  * Linha da barra. Expandida: ícone + rótulo. Recolhida: só o ícone,
- * centralizado, com o rótulo no tooltip.
+ * centralizado. O rótulo vai em `data-tip` e é exibido pelo
+ * <SidebarTooltips /> (tooltip flutuante, não cortado pela rolagem).
  */
 export const ROW =
   "group relative flex h-9 w-full items-center gap-3 rounded-lg px-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 lg:is-drawer-close:justify-center lg:is-drawer-close:px-0";
-export const TIP = "lg:is-drawer-close:tooltip lg:is-drawer-close:tooltip-right lg:is-drawer-close:z-50";
 
-function NavRow({ item, pathname, className = "" }: { item: NavItem; pathname: string; className?: string }) {
+function NavRow({
+  item,
+  pathname,
+  className = "",
+}: {
+  item: NavItem;
+  pathname: string;
+  className?: string;
+}) {
   const active = isActive(item.href, pathname);
   const { Icon } = item;
   return (
-    <li data-tip={item.label} className={`${TIP} ${className}`}>
+    <li data-tip={item.label} className={className}>
       <Link
         href={item.href}
         onClick={closeDrawerOnMobile}
@@ -88,20 +104,31 @@ function NavRow({ item, pathname, className = "" }: { item: NavItem; pathname: s
         }`}
       >
         {active && (
-          <span aria-hidden="true" className="absolute -left-3 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-r-full bg-primary lg:is-drawer-close:-left-2" />
+          <span
+            aria-hidden="true"
+            className="absolute -left-3 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-r-full bg-primary lg:is-drawer-close:-left-2"
+          />
         )}
         <Icon
           className={`size-[18px] shrink-0 ${active ? "text-primary" : "text-base-content/45 group-hover:text-base-content/80"}`}
           strokeWidth={active ? 2.2 : 1.8}
         />
-        <span className="min-w-0 truncate lg:is-drawer-close:hidden">{item.label}</span>
+        <span className="min-w-0 truncate lg:is-drawer-close:hidden">
+          {item.label}
+        </span>
       </Link>
     </li>
   );
 }
 
 /** Corpo da barra: ferramentas e fixados. */
-export function NavLinks({ pins = [], showliveUrl = null }: { pins?: PinDTO[]; showliveUrl?: string | null }) {
+export function NavLinks({
+  pins = [],
+  showliveUrl = null,
+}: {
+  pins?: PinDTO[];
+  showliveUrl?: string | null;
+}) {
   const pathname = usePathname();
 
   // Fecha o drawer após qualquer navegação no mobile (inclusive voltar/avançar).
@@ -116,7 +143,7 @@ export function NavLinks({ pins = [], showliveUrl = null }: { pins?: PinDTO[]; s
           <NavRow key={item.href} item={item} pathname={pathname} />
         ))}
         {showliveUrl && (
-          <li data-tip="ShowLive" className={TIP}>
+          <li data-tip="ShowLive">
             <a
               href={showliveUrl}
               target="_blank"
@@ -124,14 +151,25 @@ export function NavLinks({ pins = [], showliveUrl = null }: { pins?: PinDTO[]; s
               aria-label="ShowLive (abre em nova aba)"
               className={`${ROW} text-base-content/60 hover:bg-base-300/50 hover:text-base-content`}
             >
-              <Radio className="size-[18px] shrink-0 text-base-content/45 group-hover:text-primary" strokeWidth={1.8} />
-              <span className="min-w-0 truncate lg:is-drawer-close:hidden">ShowLive</span>
-              <span className="badge badge-primary badge-soft badge-xs ml-auto lg:is-drawer-close:hidden">ao vivo</span>
+              <Radio
+                className="size-[18px] shrink-0 text-base-content/45 group-hover:text-primary"
+                strokeWidth={1.8}
+              />
+              <span className="min-w-0 truncate lg:is-drawer-close:hidden">
+                ShowLive
+              </span>
+              <span className="badge badge-primary badge-soft badge-xs ml-auto lg:is-drawer-close:hidden">
+                ao vivo
+              </span>
             </a>
           </li>
         )}
       </ul>
-      <PinnedSection pins={pins} pathname={pathname} onNavigate={closeDrawerOnMobile} />
+      <PinnedSection
+        pins={pins}
+        pathname={pathname}
+        onNavigate={closeDrawerOnMobile}
+      />
     </nav>
   );
 }
@@ -143,19 +181,28 @@ function closeMenus() {
 /** Rodapé fixo: Configurações + "Mais" (ligas, tags, notícias, site). */
 export function NavFooter() {
   const pathname = usePathname();
-  const moreActive = MORE_LINKS.some((l) => l.href !== "/" && isActive(l.href, pathname));
+  const { signOut } = useClerk();
+  const moreActive = MORE_LINKS.some(
+    (l) => l.href !== "/" && isActive(l.href, pathname),
+  );
 
   return (
     <ul className="flex flex-col gap-0.5 lg:is-drawer-open:flex-row lg:is-drawer-open:items-center">
-      <NavRow item={SETTINGS} pathname={pathname} className="lg:is-drawer-open:flex-1" />
-      <li data-tip="Mais" className={TIP}>
+      <NavRow
+        item={SETTINGS}
+        pathname={pathname}
+        className="lg:is-drawer-open:flex-1"
+      />
+      <li data-tip="Mais">
         <div className="dropdown dropdown-top dropdown-end w-full lg:is-drawer-close:dropdown-right lg:is-drawer-close:dropdown-end">
           <div
             tabIndex={0}
             role="button"
             aria-label="Mais opções"
             className={`${ROW} lg:is-drawer-open:w-9 lg:is-drawer-open:justify-center lg:is-drawer-open:px-0 ${
-              moreActive ? "text-primary" : "text-base-content/55 hover:bg-base-300/50 hover:text-base-content"
+              moreActive
+                ? "text-primary"
+                : "text-base-content/55 hover:bg-base-300/50 hover:text-base-content"
             }`}
           >
             <Ellipsis className="size-[18px] shrink-0" />
@@ -174,7 +221,9 @@ export function NavFooter() {
                     closeDrawerOnMobile();
                   }}
                   className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm hover:bg-base-200 ${
-                    href !== "/" && isActive(href, pathname) ? "font-semibold text-primary" : "text-base-content/75"
+                    href !== "/" && isActive(href, pathname)
+                      ? "font-semibold text-primary"
+                      : "text-base-content/75"
                   }`}
                 >
                   <Icon className="size-4 shrink-0 opacity-70" />
@@ -182,6 +231,20 @@ export function NavFooter() {
                 </Link>
               </li>
             ))}
+            <li>
+              <button
+                type="button"
+                onClick={() => {
+                  closeMenus();
+                  closeDrawerOnMobile();
+                  void signOut({ redirectUrl: "/" });
+                }}
+                className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-base-content/75 hover:bg-base-200"
+              >
+                <LogOut className="size-4 shrink-0 opacity-70" />
+                Sair da conta
+              </button>
+            </li>
           </ul>
         </div>
       </li>

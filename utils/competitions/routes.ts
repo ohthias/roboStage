@@ -45,7 +45,7 @@ const fllSeasonal = (base: string, seasons: readonly string[]) =>
  * Páginas de cada competição, relativas a `/{competicao}` ("" é a home).
  * Só entra aqui o que a página realmente aceita para aquela competição:
  * Future Edition e as páginas de iniciantes são só da FLL; Bastidores, só da
- * OBR; os timers seguem `TIMERS_BY_COMPETITION`.
+ * OBR; arena, estratégia e scouting, só da FTC; os timers seguem `TIMERS_BY_COMPETITION`.
  */
 export const COMPETITION_PAGES: Record<Competicao, readonly string[]> = {
   fll: [
@@ -78,6 +78,16 @@ export const COMPETITION_PAGES: Record<Competicao, readonly string[]> = {
     ...fllSeasonal("quickbrick/matriz-swot", FLL_QUICKBRICK_SEASONS),
     "quickbrick/tabela-de-missoes",
     ...fllSeasonal("quickbrick/tabela-de-missoes", FLL_QUICKBRICK_SEASONS),
+  ],
+  ftc: [
+    "",
+    "docs",
+    "arena",
+    "estrategia",
+    "scouting",
+    "timers",
+    "timers/match",
+    "timers/custom",
   ],
   obr: [
     "",

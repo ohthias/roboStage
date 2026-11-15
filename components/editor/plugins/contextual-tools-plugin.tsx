@@ -78,6 +78,7 @@ import {
   BLOCK_LABELS,
   type BlockType,
 } from "../block-utils";
+import { blockTypeIcon, TURN_INTO_TYPES } from "../block-icons";
 
 type Kind = "text" | "code" | "table" | "divider";
 
@@ -119,17 +120,7 @@ const EMPTY_STATE = {
   dividerWeight: "medium" as DividerWeight,
 };
 
-const TURN_INTO: BlockType[] = [
-  "paragraph",
-  "h1",
-  "h2",
-  "h3",
-  "bullet",
-  "number",
-  "check",
-  "quote",
-  "code",
-];
+const TURN_INTO: BlockType[] = TURN_INTO_TYPES;
 
 function rectOf(r: DOMRect) {
   return { top: r.top, left: r.left, width: r.width, height: r.height };
@@ -770,7 +761,7 @@ export function ContextualToolsPlugin() {
             {showTurnInto && (
               <ul
                 role="listbox"
-                className="menu absolute left-0 top-full z-10 mt-2 w-52 rounded-xl border border-base-300 bg-base-100 p-1 shadow-xl"
+                className="menu absolute left-0 top-full z-10 mt-2 max-h-80 w-52 flex-nowrap overflow-y-auto rounded-xl border border-base-300 bg-base-100 p-1 shadow-xl"
               >
                 {TURN_INTO.map((type) => (
                   <li key={type}>
@@ -781,6 +772,7 @@ export function ContextualToolsPlugin() {
                       className={state.blockType === type ? "menu-active" : ""}
                       onClick={() => turnInto(type)}
                     >
+                      {blockTypeIcon(type, 14)}
                       {BLOCK_LABELS[type]}
                     </button>
                   </li>

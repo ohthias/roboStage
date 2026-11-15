@@ -6,6 +6,7 @@
 type LexicalNode = {
   type?: string;
   text?: string;
+  equation?: string;
   children?: LexicalNode[];
 };
 
@@ -18,6 +19,7 @@ const BLOCK_TYPES = new Set([
   "tablerow",
   "callout",
   "layout-item",
+  "collapsible-title",
 ]);
 
 export function lexicalToPlainText(content: unknown, maxLength = 4000): string {
@@ -30,6 +32,7 @@ export function lexicalToPlainText(content: unknown, maxLength = 4000): string {
   function walk(node: LexicalNode) {
     if (typeof node.text === "string") current += node.text;
     if (node.type === "linebreak") current += "\n";
+    if (node.type === "equation" && node.equation) current += node.equation;
     if (node.type === "tablecell" && current) current += " · ";
     for (const child of node.children ?? []) walk(child);
     if (node.type && BLOCK_TYPES.has(node.type)) {

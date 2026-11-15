@@ -38,3 +38,13 @@ export const TemplateGalleryPlugin = dynamic(
   () => import("./template-gallery-plugin").then((m) => m.TemplateGalleryPlugin),
   { ssr: false },
 );
+
+export const EmojiPlugin = dynamic(
+  () => import("./emoji-plugin").then((m) => m.EmojiPlugin),
+  { ssr: false },
+);
+
+export const CommandPalette = dynamic(
+  () => import("./command-palette").then((m) => m.CommandPalette),
+  { ssr: false },
+);

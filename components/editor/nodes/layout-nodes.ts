@@ -149,7 +149,10 @@ export function $isLayoutItemNode(
 export const equalColumns = (n: number) => Array(n).fill("1fr").join(" ");
 
 /** Distribuições de largura oferecidas na barra da seção. */
-export const LAYOUT_PRESETS: Record<2 | 3, { label: string; value: string }[]> = {
+export type LayoutColumns = 2 | 3 | 4;
+export const MAX_LAYOUT_COLUMNS = 4;
+
+export const LAYOUT_PRESETS: Record<LayoutColumns, { label: string; value: string }[]> = {
   2: [
     { label: "1 : 1", value: "1fr 1fr" },
     { label: "1 : 2", value: "1fr 2fr" },
@@ -163,10 +166,15 @@ export const LAYOUT_PRESETS: Record<2 | 3, { label: string; value: string }[]> =
     { label: "1 : 2 : 1", value: "1fr 2fr 1fr" },
     { label: "1 : 1 : 2", value: "1fr 1fr 2fr" },
   ],
+  4: [
+    { label: "1 : 1 : 1 : 1", value: "1fr 1fr 1fr 1fr" },
+    { label: "2 : 1 : 1 : 1", value: "2fr 1fr 1fr 1fr" },
+    { label: "1 : 1 : 1 : 2", value: "1fr 1fr 1fr 2fr" },
+  ],
 };
 
 /** Insere uma seção de N colunas no lugar do bloco atual (se vazio) ou logo abaixo. */
-export function $insertLayout(columns: 2 | 3, anchor: LexicalNode): LayoutContainerNode {
+export function $insertLayout(columns: LayoutColumns, anchor: LexicalNode): LayoutContainerNode {
   // Nunca aninha: sobe até o bloco de primeiro nível.
   let top: LexicalNode = anchor;
   while (top.getParent() && top.getParent() !== $getRoot()) {
@@ -197,7 +205,7 @@ export function $insertLayout(columns: 2 | 3, anchor: LexicalNode): LayoutContai
 }
 
 /** Muda o número de colunas preservando o conteúdo. */
-export function $setLayoutColumns(container: LayoutContainerNode, columns: 2 | 3) {
+export function $setLayoutColumns(container: LayoutContainerNode, columns: LayoutColumns) {
   const items = container.getChildren<LayoutItemNode>();
   if (items.length === columns) return;
   if (items.length < columns) {
@@ -229,4 +237,42 @@ export function $unwrapLayout(container: LayoutContainerNode) {
     anchor = b;
   });
   container.remove();
+}
+
+/** Adiciona uma coluna vazia depois de `after` (ou no fim), até o máximo. */
+export function $addLayoutColumn(container: LayoutContainerNode, after?: LayoutItemNode | null) {
+  const items = container.getChildren<LayoutItemNode>();
+  if (items.length >= MAX_LAYOUT_COLUMNS) return null;
+  const item = $createLayoutItemNode();
+  const p = $createParagraphNode();
+  item.append(p);
+  if (after) after.insertAfter(item);
+  else container.append(item);
+  container.setTemplateColumns(equalColumns(items.length + 1));
+  p.select();
+  return item;
+}
+
+/**
+ * Remove uma coluna; o conteúdo dela vai para a coluna vizinha. Com uma
+ * coluna só, a seção vira blocos normais.
+ */
+export function $removeLayoutColumn(container: LayoutContainerNode, item: LayoutItemNode) {
+  const items = container.getChildren<LayoutItemNode>();
+  if (items.length <= 2) {
+    item.getChildren().forEach((c) => {
+      const keep = items.find((i) => !i.is(item));
+      if (c.getTextContentSize() > 0 || c.getType() !== "paragraph") keep?.append(c);
+    });
+    item.remove();
+    $unwrapLayout(container);
+    return;
+  }
+  const neighbor = (item.getPreviousSibling() ?? item.getNextSibling()) as LayoutItemNode | null;
+  item.getChildren().forEach((c) => {
+    if (c.getTextContentSize() > 0 || c.getType() !== "paragraph") neighbor?.append(c);
+  });
+  item.remove();
+  container.setTemplateColumns(equalColumns(items.length - 1));
+  neighbor?.selectEnd();
 }

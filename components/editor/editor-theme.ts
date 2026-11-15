@@ -6,6 +6,9 @@ export const editorTheme: EditorThemeClasses = {
     h1: "mt-8 mb-2 text-3xl font-bold tracking-tight",
     h2: "mt-6 mb-2 text-2xl font-semibold tracking-tight",
     h3: "mt-4 mb-1 text-xl font-semibold",
+    h4: "mt-4 mb-1 text-lg font-semibold",
+    h5: "mt-3 mb-1 text-base font-semibold",
+    h6: "mt-3 mb-1 text-sm font-semibold uppercase tracking-wide text-base-content/70",
   },
   quote:
     "my-3 border-l-4 border-base-content/20 pl-4 italic text-base-content/70",

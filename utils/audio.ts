@@ -1,4 +1,4 @@
-export const playSound = (type: "start" | "warning" | "end" | "tick") => {
+export const playSound = (type: "start" | "warning" | "end" | "tick" | "go") => {
   const AudioContext =
     window.AudioContext || (window as any).webkitAudioContext;
   if (!AudioContext) return;
@@ -50,6 +50,14 @@ export const playSound = (type: "start" | "warning" | "end" | "tick") => {
 
     osc.start(now);
     osc.stop(now + 0.3);
+  } else if (type === "go") {
+    // Bipe agudo único, para o início de uma fase
+    osc.type = "square";
+    osc.frequency.setValueAtTime(880, now);
+    gain.gain.setValueAtTime(0.25, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+    osc.start(now);
+    osc.stop(now + 0.7);
   } else if (type === "tick") {
     osc.type = "triangle";
     osc.frequency.setValueAtTime(800, now);

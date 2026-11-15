@@ -44,6 +44,10 @@ describe("lista única de rotas", () => {
     expect(paths).not.toContain("/obr/score/bioglow");
     expect(paths).not.toContain("/fll/bastidores");
     expect(paths).toContain("/obr/bastidores");
+    expect(paths).toContain("/ftc/scouting");
+    expect(paths).toContain("/ftc/timers/match");
+    expect(paths).not.toContain("/fll/scouting");
+    expect(paths).not.toContain("/ftc/future-edition");
   });
 
   it("sitemap não tem URLs repetidas", () => {

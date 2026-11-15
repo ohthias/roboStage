@@ -134,6 +134,11 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/ftc" className="link link-hover">
+                    FIRST® Tech Challenge (FTC)
+                  </Link>
+                </li>
+                <li>
                   <Link href="/obr" className="link link-hover">
                     Olimpíada Brasileira de Robótica (OBR)
                   </Link>

@@ -840,3 +840,529 @@
     break-inside: avoid;
   }
 }
+
+/* ================================================================== */
+/* Abas                                                                */
+/* ================================================================== */
+.editor-tabs {
+  margin: 0.9rem 0;
+  border: 1px solid color-mix(in oklab, currentColor 12%, transparent);
+  border-radius: 0.85rem;
+}
+.editor-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  overflow-x: auto;
+  padding: 0.35rem 0.4rem 0;
+  border-bottom: 1px solid color-mix(in oklab, currentColor 12%, transparent);
+  user-select: none;
+  scrollbar-width: thin;
+}
+.editor-tab-btn {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 14rem;
+  margin-bottom: -1px;
+  border: 1px solid transparent;
+  border-radius: 0.55rem 0.55rem 0 0;
+  padding: 0.35rem 0.75rem;
+  font-size: 13px;
+  font-weight: 500;
+  color: color-mix(in oklab, currentColor 55%, transparent);
+  cursor: pointer;
+}
+.editor-tab-btn:hover {
+  color: inherit;
+  background: color-mix(in oklab, currentColor 5%, transparent);
+}
+.editor-tab-btn[aria-selected="true"] {
+  border-color: color-mix(in oklab, currentColor 12%, transparent);
+  border-bottom-color: var(--color-base-100, #fff);
+  background: var(--color-base-100, #fff);
+  color: inherit;
+}
+.editor-tab-btn[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0.6rem;
+  right: 0.6rem;
+  top: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-primary, #3b82f6);
+}
+.editor-tab-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.editor-tab-close {
+  display: inline-flex;
+  border-radius: 0.25rem;
+  padding: 1px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.editor-tab-btn:hover .editor-tab-close,
+.editor-tab-btn[aria-selected="true"] .editor-tab-close {
+  opacity: 0.55;
+}
+.editor-tab-close:hover {
+  opacity: 1 !important;
+  background: color-mix(in oklab, currentColor 12%, transparent);
+}
+.editor-tab-input {
+  width: 9rem;
+  border-radius: 0.3rem;
+  background: color-mix(in oklab, currentColor 7%, transparent);
+  padding: 0 0.3rem;
+  font: inherit;
+  outline: 2px solid color-mix(in oklab, var(--color-primary, #3b82f6) 45%, transparent);
+}
+.editor-tab-add,
+.editor-tab-unwrap {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  height: 1.75rem;
+  width: 1.75rem;
+  margin-bottom: 0.15rem;
+  border-radius: 0.4rem;
+  color: color-mix(in oklab, currentColor 45%, transparent);
+  cursor: pointer;
+}
+.editor-tab-unwrap {
+  margin-left: auto;
+  opacity: 0;
+}
+.editor-tabs:hover .editor-tab-unwrap {
+  opacity: 1;
+}
+.editor-tab-add:hover,
+.editor-tab-unwrap:hover {
+  background: color-mix(in oklab, currentColor 8%, transparent);
+  color: inherit;
+}
+.editor-tabs-panels {
+  padding: 0.5rem 1rem 0.65rem;
+}
+.editor-tab-panel[data-hidden] {
+  display: none;
+}
+
+/* ================================================================== */
+/* Menção de página                                                    */
+/* ================================================================== */
+.editor-mention {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0 0.05rem;
+  border-radius: 0.375rem;
+  padding: 0 0.3rem;
+  background: color-mix(in oklab, currentColor 6%, transparent);
+  color: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 25%, transparent);
+  text-underline-offset: 3px;
+  vertical-align: baseline;
+  cursor: pointer;
+}
+.editor-mention:hover {
+  background: color-mix(in oklab, var(--color-primary, #3b82f6) 14%, transparent);
+}
+.editor-mention.is-missing {
+  opacity: 0.55;
+  text-decoration: line-through;
+  cursor: default;
+}
+
+/* ================================================================== */
+/* Bloco sincronizado                                                  */
+/* ================================================================== */
+.synced-block {
+  position: relative;
+  margin: 0.6rem 0;
+  border-radius: 0.6rem;
+  outline: 1.5px dashed transparent;
+  outline-offset: 3px;
+  transition: outline-color 0.12s ease;
+}
+.synced-block:hover,
+.synced-block:focus-within {
+  outline-color: color-mix(in oklab, var(--color-error, #ef4444) 55%, transparent);
+}
+.synced-block-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 1.75rem;
+  padding: 0 0.25rem;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.synced-block:hover .synced-block-bar,
+.synced-block:focus-within .synced-block-bar,
+.synced-block[data-state="error"] .synced-block-bar {
+  opacity: 1;
+}
+.synced-block-title {
+  min-width: 0;
+  max-width: 16rem;
+  border-radius: 0.3rem;
+  background: transparent;
+  padding: 0 0.25rem;
+  font-weight: 600;
+  outline: none;
+}
+.synced-block-title:focus {
+  background: color-mix(in oklab, currentColor 7%, transparent);
+}
+.synced-block-body {
+  position: relative;
+}
+.synced-block-editable {
+  min-height: 1.75rem;
+  outline: none;
+}
+.synced-block-placeholder {
+  pointer-events: none;
+  position: absolute;
+  top: 0.25rem;
+  left: 0;
+  color: color-mix(in oklab, currentColor 30%, transparent);
+}
+@media (hover: none) {
+  .synced-block-bar {
+    opacity: 1;
+  }
+}
+
+/* ================================================================== */
+/* Blocos inteligentes                                                 */
+/* ================================================================== */
+.smart-shell {
+  --smart: var(--color-primary, #3b82f6);
+  margin: 0.9rem 0;
+  border: 1px solid color-mix(in oklab, currentColor 12%, transparent);
+  border-radius: 0.9rem;
+  background: var(--color-base-100, #fff);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  cursor: auto;
+  user-select: text;
+}
+.smart-shell[data-tone="info"] { --smart: var(--color-info, #0ea5e9); }
+.smart-shell[data-tone="success"] { --smart: var(--color-success, #22c55e); }
+.smart-shell[data-tone="warning"] { --smart: var(--color-warning, #f59e0b); }
+.smart-shell[data-tone="secondary"] { --smart: var(--color-secondary, #a855f7); }
+.smart-shell[data-tone="accent"] { --smart: var(--color-accent, #14b8a6); }
+.smart-shell-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid color-mix(in oklab, currentColor 8%, transparent);
+  border-radius: 0.9rem 0.9rem 0 0;
+  background: color-mix(in oklab, var(--smart) 7%, transparent);
+  padding: 0.45rem 0.6rem 0.45rem 0.75rem;
+}
+.smart-shell-icon {
+  display: flex;
+  height: 1.6rem;
+  width: 1.6rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.45rem;
+  background: color-mix(in oklab, var(--smart) 16%, transparent);
+  color: color-mix(in oklab, var(--smart) 80%, var(--color-base-content, #111));
+}
+.smart-shell-label {
+  min-width: 0;
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: color-mix(in oklab, currentColor 60%, transparent);
+}
+.smart-shell-label .smart-input {
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 14px;
+  color: var(--color-base-content, inherit);
+}
+.smart-shell-body {
+  padding: 0.75rem 0.9rem 0.9rem;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.smart-input {
+  display: block;
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+  border-radius: 0.4rem;
+  background: transparent;
+  padding: 0.1rem 0.3rem;
+  margin: 0 -0.3rem;
+  line-height: 1.55;
+  outline: none;
+}
+.smart-input:hover {
+  background: color-mix(in oklab, currentColor 4%, transparent);
+}
+.smart-input:focus {
+  background: color-mix(in oklab, currentColor 6%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--smart) 35%, transparent);
+}
+.smart-input::placeholder {
+  color: color-mix(in oklab, currentColor 32%, transparent);
+}
+.smart-field {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+.smart-field-label {
+  padding-top: 0.15rem;
+  font-size: 12.5px;
+  color: color-mix(in oklab, currentColor 55%, transparent);
+}
+@media (max-width: 640px) {
+  .smart-field {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}
+.smart-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.6rem;
+  min-width: 1.6rem;
+  border-radius: 0.4rem;
+  color: color-mix(in oklab, currentColor 45%, transparent);
+}
+.smart-icon-btn:hover:not(:disabled) {
+  background: color-mix(in oklab, currentColor 8%, transparent);
+  color: inherit;
+}
+.smart-icon-btn:disabled {
+  opacity: 0.4;
+}
+.smart-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 0.4rem;
+  padding: 0.15rem 0.45rem;
+  font-size: 12.5px;
+  color: color-mix(in oklab, currentColor 50%, transparent);
+}
+.smart-add-btn:hover {
+  background: color-mix(in oklab, currentColor 6%, transparent);
+  color: inherit;
+}
+.smart-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--smart) 13%, transparent);
+  padding: 0.05rem 0.55rem;
+  font-size: 12.5px;
+}
+.smart-chip button {
+  opacity: 0.55;
+}
+.smart-chip button:hover {
+  opacity: 1;
+}
+.smart-chip-input {
+  min-width: 6rem;
+  flex: 1;
+  background: transparent;
+  font-size: 13px;
+  outline: none;
+}
+.smart-chip-suggestion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  border: 1px dashed color-mix(in oklab, currentColor 18%, transparent);
+  border-radius: 999px;
+  padding: 0 0.45rem;
+  font-size: 11.5px;
+  color: color-mix(in oklab, currentColor 50%, transparent);
+}
+.smart-chip-suggestion:hover {
+  border-color: color-mix(in oklab, var(--smart) 60%, transparent);
+  color: inherit;
+}
+.smart-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in oklab, currentColor 14%, transparent);
+  border-radius: 999px;
+  padding: 0.05rem 0.6rem;
+  font-size: 12.5px;
+  color: color-mix(in oklab, currentColor 65%, transparent);
+}
+.smart-pill:is(button):hover {
+  border-color: color-mix(in oklab, currentColor 30%, transparent);
+}
+.smart-pill.is-on {
+  border-color: transparent;
+  background: color-mix(in oklab, var(--pill, var(--smart)) 16%, transparent);
+  color: color-mix(in oklab, var(--pill, var(--smart)) 75%, var(--color-base-content, #111));
+  font-weight: 500;
+}
+.tone-neutral { --pill: var(--color-base-content, #555); }
+.tone-info { --pill: var(--color-info, #0ea5e9); }
+.tone-success { --pill: var(--color-success, #22c55e); }
+.tone-warning { --pill: var(--color-warning, #f59e0b); }
+.tone-error { --pill: var(--color-error, #ef4444); }
+.smart-date,
+.smart-number {
+  border-radius: 0.4rem;
+  background: color-mix(in oklab, currentColor 5%, transparent);
+  padding: 0.05rem 0.35rem;
+  font-size: 12.5px;
+  outline: none;
+}
+.smart-number {
+  width: 4rem;
+}
+.smart-alt {
+  display: flex;
+  gap: 0.5rem;
+  border-left: 2px solid color-mix(in oklab, currentColor 15%, transparent);
+  padding-left: 0.6rem;
+}
+.smart-step-num {
+  display: inline-flex;
+  height: 1.35rem;
+  min-width: 1.35rem;
+  margin-top: 0.1rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--smart) 15%, transparent);
+  font-size: 11px;
+  font-weight: 700;
+}
+.smart-code {
+  border-radius: 0.6rem;
+  background: #0d1117 !important;
+  color: #e6edf3;
+  padding: 0.6rem 0.75rem !important;
+  margin: 0 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.smart-group {
+  border: 1px solid color-mix(in oklab, currentColor 9%, transparent);
+  border-radius: 0.7rem;
+  padding: 0.55rem 0.7rem;
+}
+.smart-option-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  border: 1px solid color-mix(in oklab, currentColor 12%, transparent);
+  border-radius: 0.7rem;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+.smart-option-card:hover:not(:disabled) {
+  border-color: color-mix(in oklab, var(--smart) 55%, transparent);
+  background: color-mix(in oklab, var(--smart) 5%, transparent);
+}
+.smart-robot-photo {
+  display: flex;
+  height: 9rem;
+  width: 100%;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.7rem;
+  background: color-mix(in oklab, var(--smart) 10%, transparent);
+}
+@media (min-width: 640px) {
+  .smart-robot-photo {
+    width: 11rem;
+  }
+}
+.smart-robot-photo img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+.smart-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 0.4rem;
+  background: color-mix(in oklab, currentColor 5%, transparent);
+  padding: 0.1rem 0.45rem;
+}
+.smart-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.smart-log li {
+  display: flex;
+  gap: 0.75rem;
+  border-top: 1px solid color-mix(in oklab, currentColor 8%, transparent);
+  padding: 0.55rem 0;
+}
+.smart-log li:first-child {
+  border-top: 0;
+}
+.smart-log-date {
+  width: 5.5rem;
+  flex-shrink: 0;
+  padding-top: 0.1rem;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in oklab, currentColor 50%, transparent);
+}
+
+@media print {
+  body.doc-printing .editor-tabs-bar,
+  body.doc-printing .synced-block-bar {
+    display: none !important;
+  }
+  /* No papel, todas as abas aparecem, uma depois da outra. */
+  body.doc-printing .editor-tab-panel[data-hidden] {
+    display: block !important;
+  }
+  body.doc-printing .synced-block {
+    outline: none !important;
+  }
+  body.doc-printing .smart-shell {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+}
+/* Abas em modo só leitura: sem controles de edição. */
+[data-lexical-editor][contenteditable="false"] .editor-tab-add,
+[data-lexical-editor][contenteditable="false"] .editor-tab-unwrap,
+[data-lexical-editor][contenteditable="false"] .editor-tab-close {
+  display: none;
+}
+.editor-tab-input.fixed {
+  background: var(--color-base-100, #fff);
+  box-shadow: 0 6px 20px -8px rgb(0 0 0 / 0.3);
+}

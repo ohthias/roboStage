@@ -15,6 +15,10 @@ import { EmbedNode } from "./nodes/embed-node";
 import { EquationNode } from "./nodes/equation-node";
 import { LayoutContainerNode, LayoutItemNode } from "./nodes/layout-nodes";
 import { TimelineItemNode, TimelineNode } from "./nodes/timeline-nodes";
+import { TabNode, TabsNode } from "./nodes/tabs-nodes";
+import { PageMentionNode } from "./nodes/page-mention-node";
+import { SmartBlockNode } from "./nodes/smart-block-node";
+import { SyncedBlockNode } from "./nodes/synced-block-node";
 import { TocNode } from "./nodes/toc-node";
 
 /** Nós registrados no editor (usado também para gerar conteúdo fora da tela). */
@@ -41,4 +45,9 @@ export const EDITOR_NODES = [
   TimelineItemNode,
   TimelineNode,
   TocNode,
+  TabsNode,
+  TabNode,
+  PageMentionNode,
+  SmartBlockNode,
+  SyncedBlockNode,
 ];

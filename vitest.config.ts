@@ -5,6 +5,9 @@ export default defineConfig({
   resolve: {
     alias: { "@": path.resolve(__dirname) },
   },
+  // Componentes do editor importam CSS; nos testes não precisa do Tailwind
+  // (e o plugin do Tailwind no postcss.config quebra o carregamento do Vite).
+  css: { postcss: { plugins: [] } },
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],

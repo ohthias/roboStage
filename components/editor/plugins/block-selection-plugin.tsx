@@ -31,6 +31,7 @@ import {
   GripVertical,
   List as ListIcon,
   Plus,
+  RefreshCcw,
   Repeat2,
   Trash2,
 } from "lucide-react";
@@ -47,6 +48,7 @@ import {
   type BlockType,
 } from "../block-utils";
 import { blockTypeIcon, TURN_INTO_TYPES } from "../block-icons";
+import { CONVERT_TO_SYNCED_COMMAND } from "./synced-blocks-plugin";
 import {
   $getListMarker,
   $setListMarker,
@@ -153,6 +155,9 @@ export function BlockSelectionPlugin({
       else if (node.getType() === "table") label = "Tabela";
       else if (node.getType() === "toc") label = "Sumário";
       else if (node.getType() === "timeline") label = "Linha do tempo";
+      else if (node.getType() === "tabs") label = "Abas";
+      else if (node.getType() === "synced-block") label = "Bloco sincronizado";
+      else if (node.getType() === "smart-block") label = "Bloco inteligente";
       else if (node.getType() === "equation") label = "Equação";
     });
     setShowTurnInto(false);
@@ -478,6 +483,22 @@ export function BlockSelectionPlugin({
               Duplicar
             </button>
 
+            {menu.label !== "Bloco sincronizado" && (
+              <button
+                type="button"
+                role="menuitem"
+                className={itemClass}
+                title="O mesmo conteúdo poderá ser usado em outras páginas; editar em uma muda todas"
+                onClick={() => {
+                  const key = menu.key;
+                  closeMenu();
+                  editor.dispatchCommand(CONVERT_TO_SYNCED_COMMAND, { key });
+                }}
+              >
+                <RefreshCcw size={15} />
+                Transformar em bloco sincronizado
+              </button>
+            )}
             <div className="my-1 border-t border-base-300" />
 
             <button

@@ -21,10 +21,19 @@ export type PaletteAction = {
 
 export type PalettePage = { id: string; title: string; icon: string | null; href: string };
 
+/** Resultado da busca no conteúdo das páginas (com trecho em volta). */
+export type PaletteSearchHit = {
+  id: string;
+  title: string;
+  icon: string | null;
+  href: string;
+  snippet: { before: string; match: string; after: string } | null;
+};
+
 type Item = {
   key: string;
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   icon: ReactNode;
   keywords: string[];
   group: string;
@@ -44,12 +53,17 @@ export function CommandPalette({
   onNavigate,
   open,
   onOpenChange,
+  initialQuery = "",
+  onSearch,
 }: {
   actions: PaletteAction[];
   pages: PalettePage[];
   onNavigate: (href: string) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialQuery?: string;
+  /** Busca no texto de todas as páginas do espaço. */
+  onSearch?: (query: string) => Promise<PaletteSearchHit[]>;
 }) {
   // Atalhos globais.
   useEffect(() => {
@@ -68,7 +82,14 @@ export function CommandPalette({
   }, [open, onOpenChange]);
 
   return open ? (
-    <PaletteDialog actions={actions} pages={pages} onNavigate={onNavigate} onClose={() => onOpenChange(false)} />
+    <PaletteDialog
+      actions={actions}
+      pages={pages}
+      onNavigate={onNavigate}
+      onClose={() => onOpenChange(false)}
+      initialQuery={initialQuery}
+      onSearch={onSearch}
+    />
   ) : null;
 }
 
@@ -77,14 +98,19 @@ function PaletteDialog({
   pages,
   onNavigate,
   onClose,
+  initialQuery,
+  onSearch,
 }: {
   actions: PaletteAction[];
   pages: PalettePage[];
   onNavigate: (href: string) => void;
   onClose: () => void;
+  initialQuery: string;
+  onSearch?: (query: string) => Promise<PaletteSearchHit[]>;
 }) {
   const [editor] = useLexicalComposerContext();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
+  const [hits, setHits] = useState<{ q: string; items: PaletteSearchHit[] } | null>(null);
   const [active, setActive] = useState(0);
   // Ao abrir: guarda onde estava o cursor e lê os títulos da página.
   const [headings] = useState(() =>
@@ -94,6 +120,23 @@ function PaletteDialog({
     editor.getEditorState().read(() => $getSelection()?.clone() ?? null),
   );
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Busca no conteúdo das páginas (com atraso curto enquanto digita).
+  useEffect(() => {
+    const q = query.trim();
+    if (!onSearch || q.length < 2) return;
+    let alive = true;
+    const t = setTimeout(() => {
+      onSearch(q)
+        .then((items) => alive && setHits({ q, items }))
+        .catch(() => alive && setHits({ q, items: [] }));
+    }, 220);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, [query, onSearch]);
+
   const close = onClose;
 
   /** Volta o cursor para onde estava antes de rodar um comando de bloco. */
@@ -155,13 +198,36 @@ function PaletteDialog({
     if (!query.trim()) {
       return [...actionItems, ...headingItems.slice(0, 8), ...blockItems.slice(0, 12)];
     }
+    const titleMatches = filterCommands(pageItems, query).slice(0, 8);
+    const seen = new Set(titleMatches.map((i) => i.key));
+    const contentItems: Item[] =
+      hits && hits.q === query.trim()
+        ? hits.items
+            .filter((h) => !seen.has(`page:${h.id}`) || h.snippet)
+            .map((h) => ({
+              key: `hit:${h.id}`,
+              title: h.title || "Sem título",
+              subtitle: h.snippet ? (
+                <>
+                  {h.snippet.before}
+                  <mark className="rounded bg-warning/30 px-0.5 text-inherit">{h.snippet.match}</mark>
+                  {h.snippet.after}
+                </>
+              ) : undefined,
+              icon: h.icon ? <DocIcon value={h.icon} size={16} fallback={null} /> : <FileText size={16} />,
+              keywords: [],
+              group: "Encontrado nas páginas",
+              run: () => onNavigate(h.href),
+            }))
+        : [];
     return [
       ...filterCommands(actionItems, query),
       ...filterCommands(headingItems, query).slice(0, 8),
+      ...titleMatches.filter((i) => !contentItems.some((c) => c.key === `hit:${i.key.slice(5)}`)),
+      ...contentItems,
       ...filterCommands(blockItems, query),
-      ...filterCommands(pageItems, query).slice(0, 8),
     ];
-  }, [editor, actions, headings, pages, query, restoreSelection, onNavigate]);
+  }, [editor, actions, headings, pages, query, restoreSelection, onNavigate, hits]);
 
   useEffect(() => {
     listRef.current?.querySelector(`[data-index="${active}"]`)?.scrollIntoView({ block: "nearest" });
@@ -192,7 +258,7 @@ function PaletteDialog({
             aria-controls="command-palette-list"
             aria-activedescendant={items[active] ? `cmd-${active}` : undefined}
             className="w-full bg-transparent text-[15px] outline-none placeholder:text-base-content/40"
-            placeholder="Buscar comando, bloco, título ou página…"
+            placeholder="Buscar comando, bloco, título ou texto nas páginas…"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -245,7 +311,7 @@ function PaletteDialog({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm">{item.title}</span>
-                    {item.subtitle && <span className="block truncate text-xs text-base-content/45">{item.subtitle}</span>}
+                    {item.subtitle && <span className={`block text-xs text-base-content/45 ${item.key.startsWith("hit:") ? "line-clamp-2" : "truncate"}`}>{item.subtitle}</span>}
                   </span>
                   {item.shortcut && (
                     <span className="shrink-0 rounded bg-base-200 px-1.5 py-0.5 font-mono text-[10px] text-base-content/50">

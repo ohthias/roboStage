@@ -55,7 +55,7 @@ import { EDITOR_NODES } from "@/components/editor/editor-nodes";
 import { MARKDOWN_SHORTCUTS } from "@/components/editor/markdown-transformers";
 import { documentToHtml, documentToMarkdown, exportFileName } from "@/components/editor/export-document";
 import { RichBlocksPlugin } from "@/components/editor/plugins/rich-blocks-plugin";
-import type { PaletteAction, PalettePage } from "@/components/editor/plugins/command-palette";
+import type { PaletteAction, PalettePage, PaletteSearchHit } from "@/components/editor/plugins/command-palette";
 import { recordRecentDoc } from "@/components/editor/recent-docs";
 import { usePrintDocument } from "@/components/editor/use-print-document";
 import { DocCoverPicker } from "@/components/editor/doc-cover-picker";
@@ -66,6 +66,11 @@ import "@/components/editor/editor.css";
 import { AutosavePlugin, type SaveState } from "@/components/editor/plugins/auto-save-plugin";
 import { LayoutPlugin } from "@/components/editor/plugins/layout-plugin";
 import { TimelinePlugin } from "@/components/editor/plugins/timeline-plugin";
+import { TabsPlugin } from "@/components/editor/plugins/tabs-plugin";
+import { StagebookEditorProvider, STAGEBOOK_SEARCH_EVENT } from "@/components/editor/stagebook-context";
+import { collectSyncIds } from "@/utils/stagebook/page-links";
+import { getSyncedBlocksForExport, searchPages } from "../blocks-actions";
+import { BacklinksPanel } from "./backlinks-panel";
 import { DividerPlugin } from "@/components/editor/plugins/divider-plugin";
 import { EmbedPlugin } from "@/components/editor/plugins/embed-plugin";
 import {
@@ -74,6 +79,8 @@ import {
   CommandPalette,
   ContextualToolsPlugin,
   EmojiPlugin,
+  MentionPlugin,
+  SyncedBlocksPlugin,
   SlashMenuPlugin,
   TableToolsPlugin,
   TemplateGalleryPlugin,
@@ -184,6 +191,7 @@ export function NotebookEditor({
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
+  const [paletteQuery, setPaletteQuery] = useState("");
   const editorRef = useRef<LexicalEditor | null>(null);
   const fullWidth = useFullWidthPreference();
   const [moveTarget, setMoveTarget] = useState(
@@ -337,18 +345,29 @@ export function NotebookEditor({
   }
 
   /** Estado atual do editor + dados da página, para exportar. */
-  function exportSource() {
+  async function exportSource() {
     const editor = editorRef.current;
     if (!editor) return null;
+    const state = editor.getEditorState().toJSON();
+    const ids = collectSyncIds(state);
+    let synced = {};
+    if (ids.length) {
+      try {
+        synced = unwrapAction(await getSyncedBlocksForExport(ids));
+      } catch {
+        addToast("Blocos sincronizados saíram sem conteúdo na exportação.", "warning");
+      }
+    }
     return {
-      state: editor.getEditorState().toJSON(),
+      synced,
+      state,
       meta: { title: title.trim() || "Sem título", icon, description, properties: propertiesForExport(properties) },
     };
   }
 
   async function handleExportHtml() {
     closeMenus();
-    const source = exportSource();
+    const source = await exportSource();
     if (!source) return;
     try {
       const hasMath = JSON.stringify(source.state).includes('"type":"equation"');
@@ -361,6 +380,7 @@ export function NotebookEditor({
           : undefined,
         resolveColor: (value) => rootStyle.getPropertyValue(value.slice(4, -1)).trim() || value,
         fontFamily: docFontFamily(pageFont),
+        synced: source.synced,
       });
       saveAs(new Blob([html], { type: "text/html;charset=utf-8" }), exportFileName(source.meta.title, "html"));
     } catch (error) {
@@ -369,19 +389,19 @@ export function NotebookEditor({
     }
   }
 
-  function handleExportMarkdown() {
+  async function handleExportMarkdown() {
     closeMenus();
-    const source = exportSource();
+    const source = await exportSource();
     if (!source) return;
-    const md = documentToMarkdown(source.state, source.meta);
+    const md = documentToMarkdown(source.state, source.meta, source.synced);
     saveAs(new Blob([md], { type: "text/markdown;charset=utf-8" }), exportFileName(source.meta.title, "md"));
   }
 
   async function handleCopyMarkdown() {
-    const source = exportSource();
+    const source = await exportSource();
     if (!source) return;
     try {
-      await navigator.clipboard.writeText(documentToMarkdown(source.state, source.meta));
+      await navigator.clipboard.writeText(documentToMarkdown(source.state, source.meta, source.synced));
       addToast("Markdown copiado.", "success");
     } catch {
       addToast("Não foi possível copiar.", "error");
@@ -475,6 +495,32 @@ export function NotebookEditor({
     return out;
   }, [tree, documentId]);
 
+  const mentionPages = useMemo(
+    () => [...palettePages, { id: documentId, title: title || "Sem título", icon, href: `/dashboard/documents/${documentId}` }],
+    [palettePages, documentId, title, icon],
+  );
+  const navigate = useCallback((href: string) => router.push(href), [router]);
+  const editorContext = useMemo(
+    () => ({ documentId, pages: mentionPages, navigate }),
+    [documentId, mentionPages, navigate],
+  );
+
+  const searchInPages = useCallback(async (query: string): Promise<PaletteSearchHit[]> => {
+    const results = unwrapAction(await searchPages(query));
+    return results.map((r) => ({ id: r.id, title: r.title, icon: r.icon, href: `/dashboard/documents/${r.id}`, snippet: r.snippet }));
+  }, []);
+
+  // "Buscar nas páginas" da barra de seleção abre a paleta com o termo.
+  useEffect(() => {
+    const onSearch = (e: Event) => {
+      const term = (e as CustomEvent<string>).detail ?? "";
+      setPaletteQuery(term);
+      setShowPalette(true);
+    };
+    window.addEventListener(STAGEBOOK_SEARCH_EVENT, onSearch);
+    return () => window.removeEventListener(STAGEBOOK_SEARCH_EVENT, onSearch);
+  }, []);
+
   const paletteActions: PaletteAction[] = [
     { id: "export-pdf", title: "Exportar como PDF", icon: <FileDown size={16} />, keywords: ["pdf", "imprimir", "exportar", "baixar"], shortcut: "Ctrl+P", run: handleExportPdf },
     { id: "export-html", title: "Exportar como HTML", icon: <FileCode2 size={16} />, keywords: ["html", "site", "exportar", "baixar", "web"], run: handleExportHtml },
@@ -505,6 +551,7 @@ export function NotebookEditor({
   return (
     <div ref={printRootRef} className="doc-print-root min-h-[calc(100vh-3.5rem)]">
       <LexicalComposer initialConfig={initialConfig}>
+       <StagebookEditorProvider value={editorContext}>
         {/* Barra superior: caminho, status do salvamento e ações */}
         <div className="no-print sticky top-14 z-20 flex h-11 items-center gap-2 border-b border-base-300/50 bg-base-100/90 px-3 backdrop-blur sm:px-5">
           <nav aria-label="Caminho" className="flex min-w-0 flex-1 items-center gap-1 text-[13px] text-base-content/55">
@@ -914,6 +961,7 @@ export function NotebookEditor({
               <TemplateGalleryPlugin />
             </div>
           </div>
+          {mounted && <BacklinksPanel documentId={documentId} title={title} />}
         </div>
 
         <HistoryPlugin />
@@ -936,9 +984,17 @@ export function NotebookEditor({
         <RichBlocksPlugin />
         <EmojiPlugin />
         <EditorRefPlugin editorRef={editorRef} />
+        <TabsPlugin />
+        <MentionPlugin />
+        <SyncedBlocksPlugin onError={(message) => addToast(message, "error")} />
         <CommandPalette
           open={showPalette}
-          onOpenChange={setShowPalette}
+          onOpenChange={(open) => {
+            setShowPalette(open);
+            if (!open) setPaletteQuery("");
+          }}
+          initialQuery={paletteQuery}
+          onSearch={searchInPages}
           actions={paletteActions}
           pages={palettePages}
           onNavigate={(href) => router.push(href)}
@@ -952,6 +1008,7 @@ export function NotebookEditor({
           onClose={closeHistory}
           onRestored={handleRestored}
         />
+       </StagebookEditorProvider>
       </LexicalComposer>
     </div>
   );

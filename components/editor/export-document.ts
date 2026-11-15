@@ -29,6 +29,12 @@ export type JsonNode = {
   label?: string;
   templateColumns?: string;
   status?: string;
+  title?: string;
+  docId?: string;
+  syncId?: string;
+  kind?: string;
+  data?: Record<string, unknown>;
+  active?: number;
   $?: Record<string, unknown>;
 };
 
@@ -63,6 +69,91 @@ const EMBED_LABEL: Record<string, string> = {
   "quickbrick-photo": "Foto do robô",
   "quickbrick-diagram": "Diagrama do QuickBrick",
 };
+
+export type SyncedResolved = Record<string, { title: string; content: Record<string, unknown> | null }>;
+
+/** Blocos sincronizados resolvidos para a exportação em andamento. */
+let syncedForExport: SyncedResolved = {};
+
+const syncedChildren = (id: string | undefined): JsonNode[] | null => {
+  const entry = id ? syncedForExport[id] : undefined;
+  if (!entry) return null;
+  return ((entry.content as { root?: JsonNode } | null)?.root?.children ?? []) as JsonNode[];
+};
+
+/* ---------- blocos inteligentes: texto estruturado ---------- */
+
+type Line = { label: string; value: string };
+const S = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+const L = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && !!x.trim()) : []);
+
+const DECISION_STATUS_LABEL: Record<string, string> = { proposta: "Proposta", decidida: "Decidida", implementada: "Implementada", revisada: "Revista" };
+const OUTCOME_LABEL: Record<string, string> = { sucesso: "Deu certo", parcial: "Em parte", falhou: "Não deu certo" };
+const STRATEGY_STATUS_LABEL: Record<string, string> = { ideia: "Ideia", testando: "Testando", aprovada: "Aprovada", descartada: "Descartada" };
+const PLATFORM_LABEL: Record<string, string> = { pybricks: "Pybricks", spike: "SPIKE App", ev3: "EV3", outra: "Outra" };
+const SPEC_LABEL: Record<string, string> = { motores: "Motores", sensores: "Sensores", rodas: "Rodas / tração", dimensoes: "Dimensões", peso: "Peso", programacao: "Programação" };
+
+/** Título + linhas rotuladas + listas de cada bloco inteligente. */
+function smartSummary(node: JsonNode): { heading: string; lines: Line[]; lists: { label: string; items: string[] }[]; code?: string } {
+  const d = (node.data ?? {}) as Record<string, unknown>;
+  const lines: Line[] = [];
+  const lists: { label: string; items: string[] }[] = [];
+  const push = (label: string, value: string) => value && lines.push({ label, value });
+  switch (node.kind) {
+    case "decision": {
+      push("Data", S(d.date));
+      push("Status", DECISION_STATUS_LABEL[S(d.status)] ?? "");
+      push("O que foi decidido", S(d.decision));
+      push("Por quê", S(d.reason));
+      push("Quem participou", L(d.participants).join(", "));
+      const alts = Array.isArray(d.alternatives) ? (d.alternatives as { text?: string; why?: string }[]) : [];
+      const altItems = alts.filter((a) => S(a.text)).map((a) => (S(a.why) ? `${S(a.text)} — ${S(a.why)}` : S(a.text)));
+      if (altItems.length) lists.push({ label: "Alternativas descartadas", items: altItems });
+      push("Resultado", OUTCOME_LABEL[S(d.outcome)] ?? "");
+      push("Depois de implementar", S(d.result));
+      return { heading: `Decisão: ${S(d.title) || "sem título"}`, lines, lists };
+    }
+    case "programming-strategy": {
+      push("Objetivo", S(d.goal));
+      push("Status", STRATEGY_STATUS_LABEL[S(d.status)] ?? "");
+      push("Plataforma", PLATFORM_LABEL[S(d.platform)] ?? "");
+      push("Abordagem", L(d.approaches).join(", "));
+      push("Sensores", L(d.sensors).join(", "));
+      const steps = Array.isArray(d.steps) ? (d.steps as { text?: string }[]).map((x) => S(x.text)).filter(Boolean) : [];
+      if (steps.length) lists.push({ label: "Passos", items: steps });
+      const params = Array.isArray(d.params) ? (d.params as { key?: string; value?: string }[]).filter((x) => S(x.key)).map((x) => `${S(x.key)} = ${S(x.value)}`) : [];
+      if (params.length) lists.push({ label: "Parâmetros", items: params });
+      const attempts = Number(d.attempts) || 0;
+      if (attempts) push("Testes", `${Number(d.successes) || 0} acertos em ${attempts} tentativas (${Math.round(((Number(d.successes) || 0) / attempts) * 100)}%)`);
+      push("Observações", S(d.notes));
+      return { heading: `Estratégia: ${S(d.mission) || "missão"}`, lines, lists, code: S(d.code) || undefined };
+    }
+    case "robot-sheet": {
+      const snap = (d.snapshot ?? {}) as Record<string, unknown>;
+      const name = S(snap.robotName) || S(snap.name) || S(d.manualName) || "Robô";
+      push("Caderno", S(snap.name) && S(snap.name) !== name ? S(snap.name) : "");
+      push("Temporada", S(snap.season));
+      const specs = (d.specs ?? {}) as Record<string, unknown>;
+      Object.entries(SPEC_LABEL).forEach(([k, label]) => push(label, S(specs[k])));
+      push("Anexos", L(d.attachments).join(", "));
+      push("Pontos fortes", S(d.strengths));
+      push("Pontos fracos", S(d.weaknesses));
+      return { heading: `Ficha do robô: ${name}`, lines, lists };
+    }
+    case "competition-checklist": {
+      const groups = Array.isArray(d.groups) ? (d.groups as { title?: string; items?: { text?: string; checked?: boolean; important?: boolean }[] }[]) : [];
+      groups.forEach((g) =>
+        lists.push({
+          label: S(g.title) || "Itens",
+          items: (g.items ?? []).filter((i) => S(i.text)).map((i) => `${i.checked ? "[x]" : "[ ]"} ${S(i.text)}${i.important ? " ⭐" : ""}`),
+        }),
+      );
+      return { heading: S(d.title) || "Checklist de competição", lines, lists };
+    }
+    default:
+      return { heading: "Histórico de decisões", lines: [{ label: "Obs.", value: "lista viva — veja no Stagebook" }], lists };
+  }
+}
 
 const rootChildren = (state: unknown): JsonNode[] =>
   ((state as { root?: JsonNode } | null)?.root?.children ?? []) as JsonNode[];
@@ -153,6 +244,8 @@ function mdInline(nodes: JsonNode[] = []): string {
           return `[${mdInline(node.children)}](${node.url ?? ""})`;
         case "equation":
           return node.inline ? `$${node.equation ?? ""}$` : `\n$$\n${node.equation ?? ""}\n$$\n`;
+        case "page-mention":
+          return `[@${escapeMd(node.title || "página")}](/dashboard/documents/${node.docId ?? ""})`;
         default:
           return node.children ? mdInline(node.children) : (node.text ?? "");
       }
@@ -271,6 +364,23 @@ function mdBlock(node: JsonNode, headings: Heading[]): string | null {
         })
         .join("\n\n");
     }
+    case "tabs":
+      return (node.children ?? [])
+        .filter((t) => t.type === "tab")
+        .map((t) => `**▸ ${escapeMd(t.title || "Aba")}**\n\n${mdBlocks(t.children ?? [], headings)}`)
+        .join("\n\n");
+    case "synced-block": {
+      const kids = syncedChildren(node.syncId);
+      return kids ? mdBlocks(kids, headings) : "> 🔁 *Bloco sincronizado (abra no Stagebook)*";
+    }
+    case "smart-block": {
+      const sum = smartSummary(node);
+      const parts = [`**${escapeMd(sum.heading)}**`];
+      if (sum.lines.length) parts.push(sum.lines.map((l) => `- **${escapeMd(l.label)}:** ${escapeMd(l.value)}`).join("\n"));
+      sum.lists.forEach((list) => parts.push(`*${escapeMd(list.label)}*\n\n${list.items.map((i) => (i.startsWith("[") ? `- ${i}` : `- ${escapeMd(i)}`)).join("\n")}`));
+      if (sum.code) parts.push(`\`\`\`\n${sum.code}\n\`\`\``);
+      return parts.join("\n\n");
+    }
     case "toc":
       if (!headings.length) return null;
       {
@@ -287,7 +397,8 @@ function mdBlock(node: JsonNode, headings: Heading[]): string | null {
 }
 
 /** Página inteira em Markdown (GFM). */
-export function documentToMarkdown(state: unknown, meta: ExportMeta): string {
+export function documentToMarkdown(state: unknown, meta: ExportMeta, synced: SyncedResolved = {}): string {
+  syncedForExport = synced;
   const nodes = rootChildren(state);
   const headings = collectHeadings(nodes);
   const head = [`# ${meta.icon && !meta.icon.includes(":") ? `${meta.icon} ` : ""}${meta.title || "Sem título"}`];
@@ -304,6 +415,8 @@ export function documentToMarkdown(state: unknown, meta: ExportMeta): string {
 /* ================================================================== */
 
 export type HtmlOptions = {
+  /** Conteúdo dos blocos sincronizados usados na página. */
+  synced?: SyncedResolved;
   /** Converte LaTeX em HTML (KaTeX.renderToString). */
   renderMath?: (latex: string, displayMode: boolean) => string;
   /** Troca var(--ed-…) pelos valores reais (o arquivo não tem o CSS do app). */
@@ -362,6 +475,8 @@ function htmlInline(nodes: JsonNode[] = [], opts: HtmlOptions): string {
           return `<a href="${esc(safeUrl(node.url))}">${htmlInline(node.children, opts)}</a>`;
         case "equation":
           return htmlEquation(node.equation ?? "", !node.inline, opts);
+        case "page-mention":
+          return `<a class="sb-mention" href="/dashboard/documents/${esc(node.docId ?? "")}">${esc(node.title || "página")}</a>`;
         default:
           return node.children ? htmlInline(node.children, opts) : esc(node.text ?? "");
       }
@@ -489,6 +604,26 @@ function htmlBlock(node: JsonNode, opts: HtmlOptions, ctx: HtmlCtx): string {
         })
         .join("")}</ol>`;
     }
+    case "tabs":
+      return `<div class="sb-tabs">${(node.children ?? [])
+        .filter((t) => t.type === "tab")
+        .map((t) => `<section class="sb-tab"><div class="sb-tab-title">${esc(t.title || "Aba")}</div>${htmlBlocks(t.children ?? [], opts, ctx)}</section>`)
+        .join("")}</div>`;
+    case "synced-block": {
+      const kids = syncedChildren(node.syncId);
+      return kids ? `<div class="sb-synced">${htmlBlocks(kids, opts, ctx)}</div>` : `<div class="sb-embed">🔁 Bloco sincronizado (abra no Stagebook)</div>`;
+    }
+    case "smart-block": {
+      const sum = smartSummary(node);
+      const lines = sum.lines.length
+        ? `<dl class="sb-props">${sum.lines.map((l) => `<dt>${esc(l.label)}</dt><dd>${esc(l.value)}</dd>`).join("")}</dl>`
+        : "";
+      const lists = sum.lists
+        .map((list) => `<p class="sb-smart-sub">${esc(list.label)}</p><ul>${list.items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>`)
+        .join("");
+      const code = sum.code ? `<pre><code>${esc(sum.code)}</code></pre>` : "";
+      return `<div class="sb-smart sb-smart-${esc(node.kind ?? "")}"><div class="sb-smart-title">${esc(sum.heading)}</div>${lines}${lists}${code}</div>`;
+    }
     case "toc": {
       if (!ctx.headings.length) return "";
       const min = Math.min(...ctx.headings.map((h) => h.level));
@@ -541,6 +676,14 @@ details{margin:.5rem 0}summary{cursor:pointer}summary>h1,summary>h2,summary>h3,s
 .sb-toc ol{list-style:none;margin:.4rem 0 0;padding:0}.sb-toc a{text-decoration:none}
 .sb-embed{margin:1rem 0;padding:.75rem 1rem;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
 mark{background:#fff3a3}
+.sb-tabs{margin:1rem 0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sb-tab{padding:.75rem 1rem;border-top:1px solid var(--line)}.sb-tab:first-child{border-top:0}
+.sb-tab-title{font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:.25rem}
+.sb-synced{margin:.5rem 0;padding:.25rem 0 .25rem .9rem;border-left:3px solid #f0b3b3}
+.sb-smart{margin:1rem 0;padding:.9rem 1rem;border:1px solid var(--line);border-radius:12px}
+.sb-smart-title{font-weight:700;margin-bottom:.5rem}.sb-smart .sb-props{margin:0 0 .5rem}
+.sb-smart-sub{font-weight:600;font-size:.9rem;margin:.5rem 0 .2rem}
+.sb-mention{background:var(--soft);border-radius:6px;padding:0 .3rem;text-decoration:none}
 .sb-timeline{list-style:none;counter-reset:step;margin:1rem 0;padding:0}
 .sb-step{position:relative;counter-increment:step;padding:0 0 1.1rem 2.6rem}
 .sb-step::before{content:counter(step);position:absolute;left:0;top:.1rem;width:1.75rem;height:1.75rem;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:600;border:2px solid var(--line);background:#fff;color:var(--muted)}
@@ -555,6 +698,7 @@ mark{background:#fff3a3}
 
 /** Página inteira como documento HTML autônomo (abre em qualquer navegador). */
 export function documentToHtml(state: unknown, meta: ExportMeta, opts: HtmlOptions = {}): string {
+  syncedForExport = opts.synced ?? {};
   const nodes = rootChildren(state);
   const ctx: HtmlCtx = { headings: collectHeadings(nodes), next: 0 };
   const body = htmlBlocks(nodes, opts, ctx);

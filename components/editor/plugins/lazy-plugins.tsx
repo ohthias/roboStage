@@ -48,3 +48,13 @@ export const CommandPalette = dynamic(
   () => import("./command-palette").then((m) => m.CommandPalette),
   { ssr: false },
 );
+
+export const MentionPlugin = dynamic(
+  () => import("./mention-plugin").then((m) => m.MentionPlugin),
+  { ssr: false },
+);
+
+export const SyncedBlocksPlugin = dynamic(
+  () => import("./synced-blocks-plugin").then((m) => m.SyncedBlocksPlugin),
+  { ssr: false },
+);

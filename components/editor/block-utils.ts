@@ -34,6 +34,7 @@ import {
 } from "./nodes/collapsible-nodes";
 import { $createCalloutNode, $isCalloutNode } from "./nodes/callout-node";
 import { $isTimelineItemNode } from "./nodes/timeline-nodes";
+import { $isTabNode } from "./nodes/tabs-nodes";
 
 /** Tipos de bloco que o editor sabe criar / converter. */
 export type BlockType =
@@ -104,7 +105,7 @@ function createTextBlock(type: BlockType): ElementNode {
  * seção de colunas, filho direto da coluna.
  */
 const isBlockParent = (p: LexicalNode | null) =>
-  $isRootNode(p) || $isLayoutItemNode(p) || $isCollapsibleContentNode(p) || $isTimelineItemNode(p);
+  $isRootNode(p) || $isLayoutItemNode(p) || $isCollapsibleContentNode(p) || $isTimelineItemNode(p) || $isTabNode(p);
 
 export function $getTopLevelBlock(node: LexicalNode): LexicalNode | null {
   const top = $findMatchingParent(node, (p) => isBlockParent(p.getParent()));

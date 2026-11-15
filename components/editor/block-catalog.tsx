@@ -21,6 +21,14 @@ import {
   Columns3,
   Columns4,
   Milestone,
+  AtSign,
+  Bot,
+  ClipboardCheck,
+  Gavel,
+  History,
+  PanelTop,
+  RefreshCcw,
+  Route,
   FlaskConical,
   Heading1,
   Heading2,
@@ -57,6 +65,10 @@ import { $insertCallout, type CalloutVariant } from "./nodes/callout-node";
 import { $createEquationNode } from "./nodes/equation-node";
 import { $createTocNode } from "./nodes/toc-node";
 import { $insertTimeline } from "./nodes/timeline-nodes";
+import { $insertTabs } from "./nodes/tabs-nodes";
+import { localDateISO } from "./local-date";
+import { $createSmartBlockNode, type SmartBlockKind, type SmartBlockData } from "./nodes/smart-block-node";
+import { OPEN_SYNCED_PICKER_COMMAND } from "./plugins/synced-blocks-plugin";
 
 export type BlockCommand = {
   id: string;
@@ -148,6 +160,7 @@ export function buildBlockCommands(editor: LexicalEditor): BlockCommand[] {
     { id: "columns-3", title: "3 colunas", description: "Seção com três colunas lado a lado", icon: <Columns3 size={18} />, keywords: ["colunas", "coluna", "columns", "tres", "3", "layout", "secao"], group: "Blocos básicos", run: insertColumns(3) },
     { id: "columns-4", title: "4 colunas", description: "Seção com quatro colunas lado a lado", icon: <Columns4 size={18} />, keywords: ["colunas", "coluna", "columns", "quatro", "4", "layout", "secao", "grade"], group: "Blocos básicos", run: insertColumns(4) },
     { id: "timeline", title: "Linha do tempo", description: "Etapas numeradas com status e blocos dentro", icon: <Milestone size={18} />, keywords: ["linha do tempo", "timeline", "etapas", "passos", "stepper", "cronograma", "roadmap", "processo", "fases"], group: "Blocos básicos", run: () => editor.update(() => $insertTimeline($currentBlock(), 3)) },
+    { id: "tabs", title: "Abas", description: "Conteúdo separado em abas clicáveis", icon: <PanelTop size={18} />, keywords: ["abas", "tabs", "guias", "separar", "alternar", "tab"], group: "Blocos básicos", run: () => editor.update(() => $insertTabs($currentBlock())) },
     { id: "divider", title: "Divisor", description: "Linha horizontal separadora", icon: <Minus size={18} />, keywords: ["divider", "hr", "linha", "separador", "divisor"], group: "Blocos básicos", hint: "---", run: () => editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined) },
     { id: "table", title: "Tabela", description: "Tabela 3×3", icon: <Table2 size={18} />, keywords: ["table", "tabela", "grid", "grade"], group: "Blocos básicos", run: () => editor.dispatchCommand(INSERT_TABLE_COMMAND, { columns: "3", rows: "3", includeHeaders: { rows: true, columns: false } }) },
   ];
@@ -189,6 +202,34 @@ export function buildBlockCommands(editor: LexicalEditor): BlockCommand[] {
     { id: "emoji", title: "Emoji", description: "Escolha um emoji para o texto", icon: <Smile size={18} />, keywords: ["emoji", "emoticon", "carinha", "icone", "smile"], group: "Avançado", hint: ":", run: () => editor.dispatchCommand(OPEN_EMOJI_PICKER_COMMAND, undefined) },
   ];
 
+  const smart = (kind: SmartBlockKind, data: SmartBlockData = {}) => () =>
+    editor.update(() => $placeBlock($createSmartBlockNode(kind, data)));
+
+  const reuse: BlockCommand[] = [
+    { id: "mention", title: "Mencionar página", description: "Link para outra página (gera backlink)", icon: <AtSign size={18} />, keywords: ["mencionar", "mencao", "link", "pagina", "backlink", "@", "referencia"], group: "Conectar e reutilizar", hint: "@", run: () => editor.update(() => { const s = $getSelection(); if ($isRangeSelection(s)) s.insertText("@"); }) },
+    {
+      id: "synced",
+      title: "Bloco sincronizado",
+      description: "Mesmo conteúdo em várias páginas, sempre igual",
+      icon: <RefreshCcw size={18} />,
+      keywords: ["sincronizado", "synced", "reutilizar", "reusar", "personalizado", "bloco salvo", "compartilhado", "template"],
+      group: "Conectar e reutilizar",
+      run: () =>
+        editor.update(() => {
+          const top = $currentBlock();
+          editor.dispatchCommand(OPEN_SYNCED_PICKER_COMMAND, { anchorKey: top?.getKey() ?? null });
+        }),
+    },
+  ];
+
+  const smartBlocks: BlockCommand[] = [
+    { id: "robot-sheet", title: "Ficha do robô", description: "Foto, versões e especificações do caderno QuickBrick", icon: <Bot size={18} />, keywords: ["ficha", "robo", "robot", "quickbrick", "especificacoes", "specs", "caderno"], group: "Blocos inteligentes", run: smart("robot-sheet") },
+    { id: "competition-checklist", title: "Checklist de competição", description: "Confia, mas confere — modelos do ConfereAí", icon: <ClipboardCheck size={18} />, keywords: ["checklist", "competicao", "torneio", "confere", "conferir", "lista", "campeonato", "pre"], group: "Blocos inteligentes", run: smart("competition-checklist") },
+    { id: "programming-strategy", title: "Estratégia de programação", description: "Missão, abordagem, passos, parâmetros e taxa de acerto", icon: <Route size={18} />, keywords: ["estrategia", "programacao", "missao", "codigo", "pid", "giroscopio", "pybricks", "rota"], group: "Blocos inteligentes", run: smart("programming-strategy", { status: "ideia", steps: [], params: [] }) },
+    { id: "decision", title: "Registro de decisão", description: "O que, por quê, quem, alternativas e resultado", icon: <Gavel size={18} />, keywords: ["decisao", "decidir", "adr", "historico", "conhecimento", "registro", "porque"], group: "Conhecimento da equipe", run: smart("decision", { date: localDateISO(), status: "decidida" }) },
+    { id: "decision-log", title: "Histórico de decisões", description: "Todas as decisões registradas no espaço", icon: <History size={18} />, keywords: ["historico", "decisoes", "indice", "log", "conhecimento", "linha do tempo"], group: "Conhecimento da equipe", run: smart("decision-log") },
+  ];
+
   const integrations: BlockCommand[] = [
     { id: "embed-kanban", title: "Card do Kanban", description: "Mostra um card de qualquer board, sempre atualizado", icon: <KanbanSquare size={18} />, keywords: ["card", "cartao", "kanban", "tarefa", "board", "quadro", "task"], group: "Integrações", run: openEmbedPicker("kanban-card") },
     { id: "embed-calendar", title: "Evento do calendário", description: "Mostra um evento com data, horário e local", icon: <CalendarDays size={18} />, keywords: ["evento", "calendario", "agenda", "data", "reuniao", "prazo", "event"], group: "Integrações", run: openEmbedPicker("calendar-event") },
@@ -212,7 +253,7 @@ export function buildBlockCommands(editor: LexicalEditor): BlockCommand[] {
       }),
   }));
 
-  return [...basics, ...toggles, ...callouts, ...advanced, ...integrations, ...layouts];
+  return [...basics, ...toggles, ...callouts, ...smartBlocks, ...reuse, ...advanced, ...integrations, ...layouts];
 }
 
 export function normalizeQuery(value: string) {
@@ -225,9 +266,22 @@ export function normalizeQuery(value: string) {
 /** Filtro por palavras: todas precisam aparecer no título ou nas palavras-chave. */
 export function filterCommands<T extends { title: string; keywords: string[] }>(items: T[], query: string | null): T[] {
   if (!query) return items;
-  const tokens = normalizeQuery(query).split(/\s+/).filter(Boolean);
-  return items.filter((o) => {
-    const haystack = normalizeQuery([o.title, ...o.keywords].join(" "));
-    return tokens.every((t) => haystack.includes(t));
-  });
+  const q = normalizeQuery(query).trim();
+  const tokens = q.split(/\s+/).filter(Boolean);
+  // Título que começa com o termo vem antes; depois título que contém tudo;
+  // por último quem só casou pelas palavras-chave. Empate mantém a ordem.
+  const score = (o: T) => {
+    const title = normalizeQuery(o.title);
+    if (title.startsWith(q)) return 0;
+    if (tokens.every((t) => title.includes(t))) return 1;
+    return 2;
+  };
+  return items
+    .filter((o) => {
+      const haystack = normalizeQuery([o.title, ...o.keywords].join(" "));
+      return tokens.every((t) => haystack.includes(t));
+    })
+    .map((o, i) => ({ o, i, s: score(o) }))
+    .sort((a, b) => a.s - b.s || a.i - b.i)
+    .map((x) => x.o);
 }

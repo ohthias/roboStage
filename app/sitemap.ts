@@ -49,6 +49,7 @@ const QUICKBRICK_TOOLS: Record<Competition, string[]> = {
     "matriz-swot",
     "tabela-de-missoes",
   ],
+  ftc: [],
   obr: ["criador-de-arenas", "mapa-de-palco", "matriz-de-risco", "matriz-swot"],
 };
 
@@ -69,7 +70,8 @@ function competitionRoutes(competition: Competition): string[] {
   const base = `/${competition}`;
 
   const fromNav = [
-    nav.scorePath,
+    // FTC não tem pontuador (scorePath vazio).
+    ...(nav.scorePath ? [nav.scorePath] : []),
     ...nav.options.map((o) => o.path),
     ...nav.menus.flatMap((m) => m.items.map((i) => i.path)),
   ].map((p) => `${base}/${p}`);

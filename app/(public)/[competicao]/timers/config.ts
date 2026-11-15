@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Clock, Flag, Trophy } from "lucide-react";
+import { BookOpen, Clock, Flag, Hexagon, Trophy } from "lucide-react";
 
-export type TimerMode = "robot-game" | "judging" | "custom" | "round";
+export type TimerMode = "robot-game" | "judging" | "custom" | "round" | "match";
 
 export type TimerOption = {
   slug: TimerMode;
@@ -38,6 +38,17 @@ export const TIMERS_BY_COMPETITION: Record<string, TimerOption[]> = {
         "Controle completo do tempo de Entrada, Apresentação, Perguntas e Feedback.",
       icon: BookOpen,
       color: "secondary",
+    },
+    CUSTOM,
+  ],
+  ftc: [
+    {
+      slug: "match",
+      title: "Partida BIOBUZZ",
+      description:
+        "0:30 de AUTO, 0:08 de transição e 2:00 de TELEOP, com avisos de 1:00 (FLOWERS e NECTAR) e 0:20, contador de TIPs e modos de treino.",
+      icon: Hexagon,
+      color: "primary",
     },
     CUSTOM,
   ],

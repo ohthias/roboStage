@@ -4,6 +4,7 @@ import RobotGame from "../views/RobotGame";
 import { JudgingRoom } from "../views/JudgingRoom";
 import { CustomTimer } from "../views/CustomTimer";
 import { ObrRound } from "../views/ObrRound";
+import { FtcMatch } from "../views/FtcMatch";
 import { getTimers } from "../config";
 
 type Props = {
@@ -33,6 +34,9 @@ export default async function TimerPage({ params }: Props) {
 
     case "round":
       return <ObrRound backHref={backHref} />;
+
+    case "match":
+      return <FtcMatch backHref={backHref} />;
 
     default:
       notFound();

@@ -210,22 +210,25 @@ export function CompetitionsSection() {
           {/* Futuras */}
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-1">
             <RevealOnScroll delay={0.16} className="h-full">
-              <div className="group flex h-full min-h-[150px] flex-col justify-between rounded-tl-[28px] rounded-br-[28px] border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-secondary/50">
+              <Link
+                href="/ftc"
+                className="group flex h-full min-h-[150px] flex-col justify-between rounded-tl-[28px] rounded-br-[28px] border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-secondary/50"
+              >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] font-bold tracking-[0.15em] text-base-content/45">
-                    EM BREVE
+                  <span className="rounded-tl-md rounded-br-md bg-secondary px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.15em] text-secondary-content">
+                    NOVO
                   </span>
                   <span className="font-mono text-xs text-base-content/30">/ftc</span>
                 </div>
                 <div>
-                  <h3 className="text-3xl font-black text-base-content/60 transition-colors group-hover:text-secondary">
+                  <h3 className="text-3xl font-black transition-colors group-hover:text-secondary">
                     FTC
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed text-base-content/60">
-                    Ferramentas para equipes da FIRST Tech Challenge.
+                    BIOBUZZ: cronômetro, estratégia de TELEOP e scouting com alianças.
                   </p>
                 </div>
-              </div>
+              </Link>
             </RevealOnScroll>
             <RevealOnScroll delay={0.24} className="h-full">
               <Link
@@ -1111,7 +1114,7 @@ const faq = [
   },
   {
     q: "Quais competições são atendidas?",
-    a: "Hoje a plataforma tem ferramentas para a FIRST LEGO League e para a OBR. A FTC e outras modalidades estão nos planos; acompanhe pelas notícias.",
+    a: "Hoje a plataforma tem ferramentas para a FIRST LEGO League, a FIRST Tech Challenge (temporada BIOBUZZ) e a OBR. Outras modalidades estão nos planos; acompanhe pelas notícias.",
   },
   {
     q: "Preciso de conta para usar as ferramentas?",

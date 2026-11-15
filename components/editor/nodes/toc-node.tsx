@@ -20,6 +20,7 @@ import {
   $isCollapsibleContainerNode,
   $isCollapsibleTitleNode,
 } from "./collapsible-nodes";
+import { $revealInTabs } from "./tabs-nodes";
 
 export type TocEntry = { key: string; level: number; text: string };
 
@@ -48,7 +49,9 @@ export function $collectHeadings(): TocEntry[] {
 export function scrollToHeading(editor: LexicalEditor, key: string) {
   editor.update(
     () => {
-      let node: LexicalNode | null = $getNodeByKey(key);
+      const target = $getNodeByKey(key);
+      if (target) $revealInTabs(target);
+      let node: LexicalNode | null = target;
       while (node) {
         if ($isCollapsibleContainerNode(node) && !node.getOpen()) node.setOpen(true);
         node = node.getParent();

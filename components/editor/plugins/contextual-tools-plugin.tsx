@@ -58,6 +58,7 @@ import {
   Copy,
   Italic,
   Link2,
+  TextSearch,
   Link2Off,
   Palette,
   Strikethrough,
@@ -79,6 +80,7 @@ import {
   type BlockType,
 } from "../block-utils";
 import { blockTypeIcon, TURN_INTO_TYPES } from "../block-icons";
+import { STAGEBOOK_SEARCH_EVENT } from "../stagebook-context";
 
 type Kind = "text" | "code" | "table" | "divider";
 
@@ -891,6 +893,15 @@ export function ContextualToolsPlugin() {
                   <Link2 size={15} />
                 </ToolButton>
               )}
+              <ToolButton
+                label="Buscar este trecho nas outras páginas"
+                onClick={() => {
+                  const text = editor.read(() => $getSelection()?.getTextContent() ?? "").trim().slice(0, 80);
+                  if (text) window.dispatchEvent(new CustomEvent(STAGEBOOK_SEARCH_EVENT, { detail: text }));
+                }}
+              >
+                <TextSearch size={15} />
+              </ToolButton>
             </>
           )}
         </>

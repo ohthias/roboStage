@@ -36,6 +36,7 @@ const TOOL_LINKS: NavItem[] = [
   { href: "/dashboard/documents", label: "StageBook", Icon: Book },
   { href: "/dashboard/thinklab", label: "ThinkLab", Icon: Lightbulb },
   { href: "/dashboard/kanban", label: "Kanban", Icon: KanbanSquare },
+  { href: "/dashboard/showlive", label: "ShowLive", Icon: Radio },
 ];
 
 /** Raramente usados: ficam atrás do "Mais", no rodapé. */

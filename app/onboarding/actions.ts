@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db/client";
 import { users, userLeagueInterests } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { PERSONA_LOCKED_MESSAGE, personaLockState } from "@/utils/stagebook/persona-lock";
 
 const PERSONA_VALUES = [
   "competidor",
@@ -56,6 +57,15 @@ export async function completeOnboarding(input: OnboardingInput) {
   const existing = await db.query.users.findFirst({
     where: eq(users.id, userId),
   });
+
+  // Reabrir o onboarding não pode driblar a trava do tipo de conta.
+  if (
+    existing?.personaType &&
+    existing.personaType !== input.personaType &&
+    personaLockState(existing.createdAt).locked
+  ) {
+    throw new Error(PERSONA_LOCKED_MESSAGE);
+  }
 
   if (existing) {
     await db

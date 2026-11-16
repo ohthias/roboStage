@@ -16,6 +16,8 @@ export const userPreferences = pgTable(
     sidebarExpanded: boolean("sidebar_expanded").notNull().default(false),
     /** Falso = ninguém consegue adicionar este usuário a equipes. */
     allowTeamInvites: boolean("allow_team_invites").notNull().default(true),
+    /** Mostra o ShowLive (eventos ao vivo) no menu do painel. */
+    showliveEnabled: boolean("showlive_enabled").notNull().default(false),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({

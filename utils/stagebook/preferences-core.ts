@@ -18,6 +18,7 @@ export async function getPreferencesFor(userId: string): Promise<UserPreferences
       layoutLocked: userPreferences.layoutLocked,
       sidebarExpanded: userPreferences.sidebarExpanded,
       allowTeamInvites: userPreferences.allowTeamInvites,
+      showliveEnabled: userPreferences.showliveEnabled,
     })
     .from(userPreferences)
     .where(eq(userPreferences.userId, userId))

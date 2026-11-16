@@ -1,6 +1,7 @@
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { canCurrentUserCreateTeam } from "@/utils/stagebook/actions/teams";
 import { getMyTeamsSummary } from "@/utils/stagebook/team-queries";
+import { syncClerkMembershipsFor } from "@/utils/stagebook/team-membership-sync";
 import { TeamContent, parseTab } from "./team-content";
 import { TeamsHub } from "./_components/teams-hub";
 
@@ -12,14 +13,19 @@ import { TeamsHub } from "./_components/teams-hub";
 export default async function TeamHomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; view?: string; feed?: string }>;
+  searchParams: Promise<{ tab?: string; view?: string; feed?: string; novo?: string }>;
 }) {
-  const { tab, view, feed } = await searchParams;
+  const { tab, view, feed, novo } = await searchParams;
   const scope = await resolveStagebookScope();
 
   if (scope.type === "team" && view !== "all") {
-    return <TeamContent scope={scope} isActiveScope tab={parseTab(tab)} feed={feed === "all"} />;
+    return (
+      <TeamContent scope={scope} isActiveScope tab={parseTab(tab)} feed={feed === "all"} create={novo === "1"} />
+    );
   }
+
+  // Convites aceitos no Clerk entram aqui mesmo que o webhook não tenha chegado.
+  await syncClerkMembershipsFor(scope.userId);
 
   const [teams, canCreateTeam] = await Promise.all([getMyTeamsSummary(scope.userId), canCurrentUserCreateTeam()]);
   const activeId = scope.type === "team" ? scope.teamId : null;

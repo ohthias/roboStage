@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { and, count, eq, sql } from "drizzle-orm";
 import { clerkClient } from "@clerk/nextjs/server";
+import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { db } from "@/db/client";
 import { teams, teamMembers, users } from "@/db/schema";
 import {
@@ -14,7 +15,6 @@ import { requireCapability, requireTeamScope } from "@/utils/stagebook/permissio
 import { runAction, type ActionResult } from "@/utils/stagebook/action-result";
 import {
   assignableRolesFor,
-  clerkRoleFor,
   isStaffRole,
   isTeamRole,
   memberChangeError,
@@ -32,6 +32,7 @@ import {
 } from "@/utils/stagebook/validation";
 import { switchStagebookScope } from "@/utils/stagebook/actions/teams";
 import { recordTeamActivity } from "@/utils/stagebook/team-activity";
+import { clerkRoleKeyFor, forgetClerkRoleKeys } from "@/utils/stagebook/clerk-org-roles";
 import { emailOptedOutOfTeamInvites } from "@/utils/stagebook/preferences-core";
 
 const PATH = "/dashboard/team";
@@ -41,6 +42,47 @@ export type AssignableRole = TeamRole;
 
 function refresh() {
   revalidatePath(PATH, "layout");
+}
+
+/**
+ * Erros da API do Clerk viravam "Não foi possível concluir a ação" (o
+ * `runAction` só repassa ValidationError/StagebookAuthError), escondendo o
+ * motivo real de um convite falhar. Traduz os casos conhecidos e repassa a
+ * mensagem do Clerk nos demais.
+ */
+/** O Clerk recusou porque o papel (`role`) não existe nesta Organização/instância. */
+function isRoleNotFound(error: unknown): boolean {
+  if (!isClerkAPIResponseError(error)) return false;
+  return error.errors.some((e) => {
+    const text = `${e.code} ${e.message} ${e.longMessage ?? ""}`.toLowerCase();
+    return text.includes("role") && text.includes("not found");
+  });
+}
+
+function clerkFailure(error: unknown, fallback: string): Error {
+  if (!isClerkAPIResponseError(error)) return error instanceof Error ? error : new Error(String(error));
+  const first = error.errors[0];
+  const code = first?.code ?? "";
+  console.error("[stagebook] Clerk recusou a operação:", code, first?.longMessage ?? first?.message);
+
+  if (isRoleNotFound(error)) {
+    return new ValidationError(
+      "O Clerk não encontrou o papel de Organização usado pela equipe. Confira os papéis em Organizations → Roles no painel do Clerk (o RoboStage procura org:admin e org:member, ou o papel de criador e o papel padrão do role set).",
+    );
+  }
+  if (code.includes("quota") || code.includes("limit")) {
+    return new ValidationError(
+      "A equipe atingiu o limite de membros/convites da Organização no Clerk. Remova convites pendentes ou aumente o limite no painel do Clerk.",
+    );
+  }
+  if (code === "duplicate_record" || code.includes("already")) {
+    return new ValidationError("Esta pessoa já faz parte da equipe ou já tem um convite pendente.");
+  }
+  if (error.status === 429) {
+    return new ValidationError("Muitas tentativas seguidas. Aguarde alguns segundos e tente de novo.");
+  }
+  const detail = first?.longMessage || first?.message;
+  return new ValidationError(detail ? `${fallback} (Clerk: ${detail})` : fallback);
 }
 
 /**
@@ -140,9 +182,11 @@ export async function inviteTeamMember(
 
     const client = await clerkClient();
 
-    const { data: invitations } = await client.organizations.getOrganizationInvitationList({
-      organizationId: team.clerkOrgId,
-    });
+    const { data: invitations } = await client.organizations
+      .getOrganizationInvitationList({ organizationId: team.clerkOrgId, status: ["pending"], limit: 100 })
+      .catch((error: unknown) => {
+        throw clerkFailure(error, "Não foi possível consultar os convites da equipe.");
+      });
     const pending = invitations.filter((inv) => inv.status === "pending");
     if (pending.some((inv) => inv.emailAddress.toLowerCase() === cleanEmail)) {
       throw new ValidationError("Já existe um convite pendente para este e-mail.");
@@ -152,13 +196,46 @@ export async function inviteTeamMember(
     // webhook organizationMembership.created cria a linha em team_members
     // lendo o cargo de `publicMetadata.stagebookRole`. Equipe técnica entra
     // como admin no Clerk (necessário para editar a Organização).
-    await client.organizations.createOrganizationInvitation({
+    const invitation = {
       organizationId: team.clerkOrgId,
-      inviterUserId: scope.userId,
       emailAddress: cleanEmail,
-      role: clerkRoleFor(nextRole),
+      // Papel real desta Organização no Clerk (nem toda instância tem
+      // org:admin/org:member — ver clerk-org-roles.ts).
+      role: await clerkRoleKeyFor(team.clerkOrgId, nextRole),
       publicMetadata: { stagebookRole: nextRole },
-    });
+    };
+    try {
+      try {
+        await client.organizations.createOrganizationInvitation({
+          ...invitation,
+          inviterUserId: scope.userId,
+        });
+      } catch (error) {
+        if (!isRoleNotFound(error)) throw error;
+        // Papéis em cache desatualizados (mudaram no painel do Clerk): relê e tenta de novo.
+        forgetClerkRoleKeys(team.clerkOrgId);
+        invitation.role = await clerkRoleKeyFor(team.clerkOrgId, nextRole);
+        await client.organizations.createOrganizationInvitation({
+          ...invitation,
+          inviterUserId: scope.userId,
+        });
+      }
+    } catch (error) {
+      // O Clerk exige que `inviterUserId` seja admin da Organização. Se o
+      // cargo no RoboStage e no Clerk divergirem (ex.: mentor que entrou como
+      // org:member), o convite era recusado. A permissão já foi checada acima
+      // (`team.members.manage`), então reenviamos sem o convidante.
+      const forbidden =
+        isClerkAPIResponseError(error) && (error.status === 403 || error.status === 422) &&
+        !isRoleNotFound(error) &&
+        !error.errors.some((e) => e.code === "duplicate_record" || e.code.includes("quota"));
+      if (!forbidden) throw clerkFailure(error, "Não foi possível enviar o convite.");
+      try {
+        await client.organizations.createOrganizationInvitation(invitation);
+      } catch (retryError) {
+        throw clerkFailure(retryError, "Não foi possível enviar o convite.");
+      }
+    }
 
     refresh();
   });
@@ -175,8 +252,12 @@ export async function listPendingInvitations(teamId: string): Promise<PendingInv
   const { team } = await requireTeamCapability(teamId, "team.members.manage");
   const client = await clerkClient();
 
+  // Sem `status`, o Clerk devolve só os 10 convites mais recentes de QUALQUER
+  // status — convites pendentes mais antigos sumiam da lista.
   const { data } = await client.organizations.getOrganizationInvitationList({
     organizationId: team.clerkOrgId,
+    status: ["pending"],
+    limit: 100,
   });
 
   return data
@@ -201,11 +282,15 @@ export async function revokeInvitation(teamId: string, invitationId: string): Pr
     const id = requireText(invitationId, "o convite", { maxLength: 100 });
 
     const client = await clerkClient();
-    await client.organizations.revokeOrganizationInvitation({
-      organizationId: team.clerkOrgId,
-      invitationId: id,
-      requestingUserId: scope.userId,
-    });
+    try {
+      await client.organizations.revokeOrganizationInvitation({
+        organizationId: team.clerkOrgId,
+        invitationId: id,
+        requestingUserId: scope.userId,
+      });
+    } catch (error) {
+      throw clerkFailure(error, "Não foi possível cancelar o convite.");
+    }
 
     refresh();
   });
@@ -277,14 +362,18 @@ export async function updateTeamMemberRole(
       await client.organizations.updateOrganizationMembership({
         organizationId: team.clerkOrgId,
         userId: targetUserId,
-        role: clerkRoleFor(nextRole),
+        role: await clerkRoleKeyFor(team.clerkOrgId, nextRole),
       });
     } catch (error) {
-      await db
-        .update(teamMembers)
-        .set({ role: targetRole })
-        .where(and(eq(teamMembers.teamId, team.id), eq(teamMembers.userId, targetUserId)));
-      throw error;
+      // 404: sem membership no Clerk (só no nosso banco) — o cargo local vale.
+      if (isRoleNotFound(error)) forgetClerkRoleKeys(team.clerkOrgId);
+      if (isRoleNotFound(error) || !(isClerkAPIResponseError(error) && error.status === 404)) {
+        await db
+          .update(teamMembers)
+          .set({ role: targetRole })
+          .where(and(eq(teamMembers.teamId, team.id), eq(teamMembers.userId, targetUserId)));
+        throw clerkFailure(error, "Não foi possível alterar o cargo.");
+      }
     }
 
     const [targetUser] = await db
@@ -329,10 +418,18 @@ export async function removeTeamMember(teamId: string, userId: string): Promise<
 
     // Clerk é a fonte de verdade da membership — remove lá primeiro.
     const client = await clerkClient();
-    await client.organizations.deleteOrganizationMembership({
-      organizationId: team.clerkOrgId,
-      userId: targetUserId,
-    });
+    try {
+      await client.organizations.deleteOrganizationMembership({
+        organizationId: team.clerkOrgId,
+        userId: targetUserId,
+      });
+    } catch (error) {
+      // 404: a pessoa só existe no nosso banco (membership do Clerk já
+      // removida ou nunca criada) — segue e limpa a linha local.
+      if (!(isClerkAPIResponseError(error) && error.status === 404)) {
+        throw clerkFailure(error, "Não foi possível remover o membro.");
+      }
+    }
 
     // E aqui na hora, para não esperar o round-trip do webhook.
     await db

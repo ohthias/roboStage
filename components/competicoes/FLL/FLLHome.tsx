@@ -172,7 +172,6 @@ const tools: ToolItem[] = [
       "Entenda o profissional e o público do seu projeto para criar soluções mais certeiras.",
     href: "/fll/empathy-map",
     tone: "secondary",
-    status: "Novo",
   },
   {
     icon: Clock,

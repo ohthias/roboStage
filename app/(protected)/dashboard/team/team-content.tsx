@@ -86,12 +86,15 @@ export async function TeamContent({
   isActiveScope,
   tab = "geral",
   feed = false,
+  create = false,
 }: {
   scope: TeamScope;
   isActiveScope: boolean;
   tab?: TeamTabId;
   /** `?feed=all`: a aba Geral mostra o feed completo. */
   feed?: boolean;
+  /** `?novo=1`: abre direto o formulário de criação da aba (Kanban, ThinkLab, LabTest). */
+  create?: boolean;
 }) {
   const [team, members, overview] = await Promise.all([
     db
@@ -158,8 +161,8 @@ export async function TeamContent({
           <div role="alert" className={`alert alert-info alert-soft mb-5 ${CORNER.md}`}>
             <Info size={18} />
             <span className="text-sm">
-              Você está vendo <strong>{team.name}</strong>, mas seu espaço ativo é outro. Abrir um Kanban,
-              ThinkLab ou LabTest daqui só funciona depois de ativar esta equipe.
+              Você está vendo <strong>{team.name}</strong>, mas seu espaço ativo é outro. Ao abrir um Kanban,
+              ThinkLab, LabTest, documento ou a agenda por aqui, esta equipe vira o espaço ativo automaticamente.
             </span>
             <ActivateTeamButton teamId={scope.teamId} />
           </div>
@@ -201,6 +204,7 @@ export async function TeamContent({
             milestones={[]}
             viewerId={scope.userId}
             viewerRole={scope.role}
+            autoCreate={create}
           />
         )}
 
@@ -212,6 +216,7 @@ export async function TeamContent({
             milestones={await getTeamMilestones(team.id)}
             viewerId={scope.userId}
             viewerRole={scope.role}
+            autoCreate={create}
           />
         )}
 
@@ -223,6 +228,7 @@ export async function TeamContent({
             milestones={await getTeamMilestones(team.id)}
             viewerId={scope.userId}
             viewerRole={scope.role}
+            autoCreate={create}
           />
         )}
 

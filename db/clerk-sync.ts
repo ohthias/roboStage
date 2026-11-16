@@ -3,31 +3,8 @@ import { headers } from "next/headers";
 import { and, eq } from "drizzle-orm";
 import { db } from "./client";
 import { users, teams, teamMembers } from "./schema";
-import type { TeamRole } from "@/utils/stagebook/scope";
+import { mapClerkOrgRole, reconcileClerkOrgRole } from "@/utils/stagebook/clerk-roles";
 import { recordTeamActivity } from "@/utils/stagebook/team-activity";
-
-/** Roles padrão do Clerk (org:admin / org:member) mapeados pro nosso enum. Se
- * no futuro forem criadas Roles customizadas no Clerk, caem em "colaborador".
- * `stagebookRole` (metadata pública que a gente manda no convite — ver
- * app/(protected)/dashboard/team/actions.ts) tem prioridade quando presente,
- * porque é o papel que o "técnico" (owner) realmente escolheu pra pessoa
- * (mentor/competidor/colaborador), mais granular do que admin/member.
- */
-function mapClerkOrgRole(role: string, stagebookRole?: unknown): TeamRole {
-  if (stagebookRole === "tecnico") {
-    return "owner";
-  }
-
-  if (role === "org:admin") {
-    return "owner";
-  }
-
-  if (stagebookRole === "mentor" || stagebookRole === "competidor" || stagebookRole === "colaborador") {
-    return stagebookRole;
-  }
-
-  return "colaborador";
-}
 
 async function ensureMembershipUser(userData: {
   user_id?: string;
@@ -197,12 +174,17 @@ export async function handleClerkWebhook(req: Request) {
         columns: { id: true },
       });
       if (team && public_user_data?.user_id) {
-        await db
-          .update(teamMembers)
-          .set({ role: mapClerkOrgRole(role) })
-          .where(
-            and(eq(teamMembers.teamId, team.id), eq(teamMembers.userId, public_user_data.user_id))
-          );
+        const where = and(
+          eq(teamMembers.teamId, team.id),
+          eq(teamMembers.userId, public_user_data.user_id)
+        );
+        const current = await db.query.teamMembers.findFirst({ where, columns: { role: true } });
+        // O Clerk só sabe admin/member: não rebaixa um "competidor" para
+        // "colaborador" nem promove um "mentor" a técnico por causa disso.
+        const nextRole = reconcileClerkOrgRole(current?.role, role);
+        if (current && current.role !== nextRole) {
+          await db.update(teamMembers).set({ role: nextRole }).where(where);
+        }
       }
       break;
     }

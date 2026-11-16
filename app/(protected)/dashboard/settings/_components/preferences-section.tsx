@@ -2,14 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { LayoutPanelLeft, Lock, PanelLeftClose, PanelLeftOpen, Users } from "lucide-react";
+import { ExternalLink, Lock, PanelLeftClose, PanelLeftOpen, Radio } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
 import { updatePreferences } from "@/utils/stagebook/actions/preferences";
 import type { UserPreferences } from "@/types/preferences";
-import { SettingRow, SettingsCard } from "./settings-card";
+import { FieldRow, SettingsGroup, ToggleField } from "./settings-card";
 
-/** Interface e privacidade. Cada mudança salva na hora (otimista, com desfazer se o servidor recusar). */
-export function PreferencesSection({ initial }: { initial: UserPreferences }) {
+/** Salva na hora (otimista, desfaz se o servidor recusar). */
+function usePreferences(initial: UserPreferences) {
   const router = useRouter();
   const { addToast } = useToast();
   const [prefs, setPrefs] = useState(initial);
@@ -30,82 +30,125 @@ export function PreferencesSection({ initial }: { initial: UserPreferences }) {
     });
   }
 
+  return { prefs, change, isPending };
+}
+
+export function PreferencesSection({ initial }: { initial: UserPreferences }) {
+  const { prefs, change, isPending } = usePreferences(initial);
+
   return (
-    <div className="space-y-6">
-      <SettingsCard icon={LayoutPanelLeft} title="Interface" description="Posição e comportamento dos menus e painéis.">
-        <div className="divide-y divide-base-300">
-          <SettingRow
-            title="Posição do menu lateral"
-            description="Como o menu de navegação aparece ao abrir o RoboStage no computador."
-          >
-            <div className="join" role="radiogroup" aria-label="Posição do menu lateral">
-              <button
-                type="button"
-                role="radio"
-                aria-checked={prefs.sidebarExpanded}
-                className={`btn btn-sm join-item gap-1.5 ${prefs.sidebarExpanded ? "btn-primary" : ""}`}
-                disabled={isPending}
-                onClick={() => change({ sidebarExpanded: true }, "Menu lateral expandido.")}
-              >
-                <PanelLeftOpen size={14} /> Expandido
-              </button>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={!prefs.sidebarExpanded}
-                className={`btn btn-sm join-item gap-1.5 ${!prefs.sidebarExpanded ? "btn-primary" : ""}`}
-                disabled={isPending}
-                onClick={() => change({ sidebarExpanded: false }, "Menu lateral recolhido.")}
-              >
-                <PanelLeftClose size={14} /> Só ícones
-              </button>
-            </div>
-          </SettingRow>
+    <div className="space-y-12">
+      <SettingsGroup title="Interface" description="Posição e comportamento dos menus e painéis no computador.">
+        <FieldRow title="Menu lateral" description="Como o menu aparece ao abrir o RoboStage.">
+          <div className="join" role="radiogroup" aria-label="Posição do menu lateral">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={prefs.sidebarExpanded}
+              className={`btn btn-sm join-item gap-1.5 ${prefs.sidebarExpanded ? "btn-primary" : ""}`}
+              disabled={isPending}
+              onClick={() => change({ sidebarExpanded: true }, "Menu lateral expandido.")}
+            >
+              <PanelLeftOpen size={14} /> Expandido
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={!prefs.sidebarExpanded}
+              className={`btn btn-sm join-item gap-1.5 ${!prefs.sidebarExpanded ? "btn-primary" : ""}`}
+              disabled={isPending}
+              onClick={() => change({ sidebarExpanded: false }, "Menu lateral recolhido.")}
+            >
+              <PanelLeftClose size={14} /> Só ícones
+            </button>
+          </div>
+        </FieldRow>
 
-          <SettingRow
-            title="Travar painéis e menus"
-            description="Mantém menus e painéis exatamente na posição escolhida: o menu lateral deixa de expandir/recolher e painéis não podem ser movidos por engano."
-          >
-            <label className="flex items-center gap-2 text-xs text-base-content/60">
-              {prefs.layoutLocked && <Lock size={12} />}
-              <input
-                type="checkbox"
-                className="toggle toggle-primary"
-                checked={prefs.layoutLocked}
-                disabled={isPending}
-                aria-label="Travar painéis e menus"
-                onChange={(e) =>
-                  change(
-                    { layoutLocked: e.target.checked },
-                    e.target.checked ? "Painéis e menus travados." : "Painéis e menus destravados.",
-                  )
-                }
-              />
-            </label>
-          </SettingRow>
-        </div>
-      </SettingsCard>
-
-      <SettingsCard icon={Users} title="Equipes e privacidade" description="Quem pode te adicionar a equipes.">
-        <SettingRow
-          title="Permitir que me adicionem a equipes"
-          description="Desativado, ninguém consegue te convidar — nem pelo e-mail — e convites aceitos por outro caminho são desfeitos. Equipes de que você já faz parte não são afetadas."
+        <FieldRow
+          title="Travar painéis e menus"
+          badge={prefs.layoutLocked && <Lock size={12} className="text-base-content/50" />}
+          description="O menu deixa de expandir/recolher e painéis não podem ser movidos por engano."
         >
-          <input
-            type="checkbox"
-            className="toggle toggle-primary"
+          <ToggleField
+            label="Travar"
+            hint="Útil em telas compartilhadas no box da equipe."
+            checked={prefs.layoutLocked}
+            disabled={isPending}
+            onChange={(v) => change({ layoutLocked: v }, v ? "Painéis e menus travados." : "Painéis e menus destravados.")}
+          />
+        </FieldRow>
+      </SettingsGroup>
+
+      <SettingsGroup title="Equipes e privacidade" description="Quem pode te adicionar a equipes.">
+        <FieldRow
+          title="Convites de equipe"
+          description="Desativado, ninguém te convida — nem pelo e-mail. Equipes de que você já faz parte não mudam."
+        >
+          <ToggleField
+            label="Permitir que me adicionem a equipes"
             checked={prefs.allowTeamInvites}
             disabled={isPending}
-            aria-label="Permitir que me adicionem a equipes"
-            onChange={(e) =>
-              change(
-                { allowTeamInvites: e.target.checked },
-                e.target.checked ? "Você pode receber convites de equipe." : "Convites de equipe bloqueados.",
-              )
+            onChange={(v) =>
+              change({ allowTeamInvites: v }, v ? "Você pode receber convites de equipe." : "Convites de equipe bloqueados.")
             }
           />
-        </SettingRow>
-      </SettingsCard>
+        </FieldRow>
+      </SettingsGroup>
     </div>
+  );
+}
+
+/** Integrações: por enquanto o ShowLive (eventos e placares ao vivo). */
+export function IntegrationsSection({ initial, showliveUrl }: { initial: UserPreferences; showliveUrl: string }) {
+  const { prefs, change, isPending } = usePreferences(initial);
+  const on = prefs.showliveEnabled;
+
+  return (
+    <SettingsGroup title="Integrações" description="Ferramentas do ecossistema RoboStage que você pode ligar na sua conta.">
+      <FieldRow
+        title="ShowLive"
+        badge={on && <span className="badge badge-success badge-soft badge-sm">Ativo</span>}
+        description="Placar ao vivo, telão, mesas de arbitragem e avaliação por rubricas para os seus eventos. Usa a mesma conta do RoboStage."
+      >
+        <div
+          className={`flex flex-col gap-4 rounded-box border p-4 sm:flex-row sm:items-center ${
+            on ? "border-primary/40 bg-primary/5" : "border-base-300"
+          }`}
+        >
+          <span
+            className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${
+              on ? "bg-primary text-primary-content" : "bg-base-200 text-base-content/50"
+            }`}
+          >
+            <Radio size={20} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">{on ? "ShowLive ativado" : "Ativar o ShowLive"}</p>
+            <p className="mt-0.5 text-xs leading-5 text-base-content/55">
+              {on
+                ? "O ShowLive aparece no menu do painel. Desligar não apaga seus eventos."
+                : "Adiciona o ShowLive ao menu do painel para criar e acompanhar eventos."}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            {on && (
+              <a href={showliveUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm gap-2">
+                Abrir <ExternalLink size={13} />
+              </a>
+            )}
+            <input
+              type="checkbox"
+              className="toggle toggle-primary"
+              checked={on}
+              disabled={isPending}
+              aria-label="Ativar ShowLive"
+              onChange={(e) =>
+                change({ showliveEnabled: e.target.checked }, e.target.checked ? "ShowLive ativado." : "ShowLive desativado.")
+              }
+            />
+          </div>
+        </div>
+      </FieldRow>
+    </SettingsGroup>
   );
 }

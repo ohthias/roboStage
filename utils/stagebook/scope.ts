@@ -31,7 +31,8 @@ function toTeamRole(value: string): TeamRole {
 }
 
 /** Nome do cookie que guarda qual equipe está selecionada no momento. */
-const SCOPE_COOKIE = "stagebook_team_id";
+export const STAGEBOOK_SCOPE_COOKIE = "stagebook_team_id";
+const SCOPE_COOKIE = STAGEBOOK_SCOPE_COOKIE;
 
 export async function requireAuthenticatedUser(): Promise<string> {
   const { userId } = await auth();

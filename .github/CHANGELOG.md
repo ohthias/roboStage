@@ -11,6 +11,39 @@ Exemplo: `2026.1` corresponde à primeira atualização oficial de 2026.
 
 ---
 
+## [2026.8.1] — Correções nas Equipes
+
+**Data:** 11/11/2026
+
+Patch de correção da **v2026.8**. Corrige a entrada de novos membros nas equipes, que podiam ficar com o cargo errado ou nem aparecer depois de aceitar o convite. Corrige também os atalhos do dashboard da equipe, que abriam as ferramentas fora da equipe e falhavam ao criar Kanbans. Não há novas migrações de banco.
+
+### Atalhos do dashboard da equipe
+
+* Corrigida a criação de **Kanbans** pela página da equipe, que sempre falhava. A action usava uma transação, e o driver `neon-http` não tem suporte a transações.
+* Os atalhos da equipe passam a **ativar a equipe antes de abrir a ferramenta**: StageBook, Agenda, cards atribuídos a você, LabTests e sessões Anatix do feed e das sessões de treino, além do botão **Abrir** das abas. Antes, com o espaço pessoal ativo, o que se criava ficava fora da equipe ou o recurso aparecia como "não encontrado".
+* Nova seção **Criar na equipe** na aba Geral, com atalhos para criar um **Kanban**, um **ThinkLab** ou um **LabTest**. Cada atalho abre a aba correspondente com o formulário de criação aberto (`?novo=1`).
+* O link **kanban** de "Atribuído a você" passa a levar à aba Kanban da própria equipe.
+* O aviso de que o espaço ativo é outro foi atualizado: abrir uma ferramenta por ali já torna a equipe o espaço ativo.
+
+### Membros e convites
+
+* O cargo escolhido pelo técnico no convite passa a valer sobre o papel da Organização no Clerk. Antes, **todo mentor convidado entrava como técnico**.
+* Mudanças de papel vindas do Clerk deixam de sobrescrever o cargo na equipe. Um competidor não vira mais colaborador, nem um mentor vira técnico, por causa do `org:admin` ou `org:member`.
+* Quem aceita um convite passa a **aparecer na equipe mesmo que o webhook do Clerk não tenha chegado**. As memberships são sincronizadas ao abrir **Suas equipes** ou a página da equipe.
+* Erros do Clerk ao convidar, cancelar convite, trocar cargo ou remover membro passam a mostrar o motivo real, como limite de membros da Organização, convite duplicado ou excesso de tentativas. Antes aparecia uma mensagem genérica.
+* A lista de **convites pendentes** passa a mostrar todos os convites em aberto. Antes, os mais antigos sumiam, porque só eram consultados os 10 convites mais recentes de qualquer status.
+* Convites enviados por mentores deixam de ser recusados quando o papel do mentor no Clerk diverge do cargo no RoboStage.
+* Remover ou trocar o cargo de um membro que só existe no banco do RoboStage, sem membership no Clerk, não falha mais.
+
+### Infraestrutura
+
+* Nova rota `/dashboard/team/[id]/abrir?to=…`. Ela confirma que a pessoa é membro, ativa a equipe e só redireciona para caminhos internos do `/dashboard`.
+* O mapeamento de cargos do Clerk foi centralizado em `utils/stagebook/clerk-roles.ts`, usado pelo webhook e pela sincronização.
+* Adicionado o `syncClerkMembershipsFor` (`utils/stagebook/team-membership-sync.ts`).
+* Novos testes para a criação de recursos pela página da equipe (incluindo o cenário sem transações), os links dos atalhos e o mapeamento de cargos.
+
+---
+
 ## [2026.8] — Treino em Equipe
 
 **Data:** 08/11/2026

@@ -87,35 +87,40 @@ export async function createTeamBoard(
       .limit(1);
     if (clash.length) throw new ValidationError("Já existe um kanban com esse nome nesta equipe.");
 
-    const created = await db.transaction(async (tx) => {
-      const [{ next }] = await tx
-        .select({ next: sql<number>`coalesce(max(${boards.position}), 0) + 1` })
-        .from(boards)
-        .where(eq(boards.teamId, scope.teamId));
+    // O driver neon-http NÃO suporta `db.transaction` (lança "No transactions
+    // support in neon-http driver"), o que fazia TODA criação de kanban pela
+    // página da equipe falhar. Gravamos em sequência e, se as colunas falharem,
+    // apagamos o quadro recém-criado para não deixar um kanban sem colunas.
+    const [{ next }] = await db
+      .select({ next: sql<number>`coalesce(max(${boards.position}), 0) + 1` })
+      .from(boards)
+      .where(eq(boards.teamId, scope.teamId));
 
-      const [board] = await tx
-        .insert(boards)
-        .values({
-          userId: null,
-          teamId: scope.teamId,
-          name,
-          description,
-          position: next,
-          createdBy: scope.userId,
-        })
-        .returning({ id: boards.id });
+    const [created] = await db
+      .insert(boards)
+      .values({
+        userId: null,
+        teamId: scope.teamId,
+        name,
+        description,
+        position: Number(next),
+        createdBy: scope.userId,
+      })
+      .returning({ id: boards.id });
 
-      await tx.insert(boardColumns).values(
+    try {
+      await db.insert(boardColumns).values(
         DEFAULT_COLUMNS.map((column, index) => ({
-          boardId: board.id,
+          boardId: created.id,
           name: column.name,
           color: column.color,
           position: (index + 1) * POSITION_STEP,
         })),
       );
-
-      return board;
-    });
+    } catch (error) {
+      await db.delete(boards).where(eq(boards.id, created.id)).catch(() => {});
+      throw error;
+    }
 
     await recordTeamActivity({
       teamId: scope.teamId,

@@ -146,6 +146,8 @@ export function applyPreset(plan: StrategyPlan, key: PresetKey): StrategyPlan {
 
 /** Preenche um robô a partir das médias do scouting. */
 export function robotFromStats(stats: TeamStats, base: RobotPlan = blankRobot()): RobotPlan {
+  // Só OPR (FTCScout), sem partidas anotadas: não há como saber o perfil do robô.
+  if (stats.matches === 0) return { ...base, team: stats.number };
   return {
     ...base,
     team: stats.number,

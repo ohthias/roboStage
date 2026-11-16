@@ -97,6 +97,12 @@
       "category": "eventos"
     },
     {
+      "title": "FTCScout",
+      "description": "Resultados, rankings, OPR e partidas de todos os eventos. É a fonte dos dados oficiais do Scouting FTC do RoboStage (projeto independente da comunidade).",
+      "url": "https://ftcscout.org/",
+      "category": "eventos"
+    },
+    {
       "title": "Página da temporada (ftc.game)",
       "description": "Atalho oficial para tudo da temporada BIOBUZZ.",
       "url": "https://ftc.game/",

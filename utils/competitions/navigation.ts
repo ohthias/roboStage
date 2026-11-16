@@ -1,5 +1,8 @@
+import { FLLIcon } from "@/components/icons/FLLIcon";
+import { FTCIcon } from "@/components/icons/FTCIcon";
+import { OBRIcon } from "@/components/icons/OBRIcon";
 import type { LucideIcon } from "lucide-react";
-import { Flower2, Hexagon, ClipboardList, Swords, Activity, BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Code, Bot, UserSearch, LayoutGrid, Clapperboard } from "lucide-react";
+import { Flower2, ClipboardList, Swords, Activity, BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, UserSearch, LayoutGrid, Clapperboard } from "lucide-react";
 
 /** Item de menu de competição: `path` é relativo a `/{competicao}/`. */
 export type NavMenuItem = {
@@ -28,7 +31,7 @@ export type NavLinkGroup = Omit<NavMenuGroup, "items"> & { items: NavLinkItem[] 
 export const NAVIGATION = {
   fll: {
     label: "FLL",
-    icon: ToyBrick,
+    icon: FLLIcon,
     scorePath: "score",
     options: [
       { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false, update: false },
@@ -45,7 +48,7 @@ export const NAVIGATION = {
           { nome: "Mapa de Empatia", path: "empathy-map", icon: UserSearch, description: "Ferramenta para análise de empatia com o profissional alvo", new: false, update: false },
           { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para auxiliar na gestão do tempo durante os treinos", update: false },
           { nome: "Partiu Mesa!", path: "partiu-mesa", icon: MonitorDot, description: "Simulador de simples para teste de saídas. Para análise de desempenho do robô durante um teste de saída." },
-          { nome: "Anatix", path: "anatix", icon: Activity, description: "Telemetria em tempo real do robô LEGO com Pybricks, por Bluetooth ou cabo USB", new: true },
+          { nome: "Anatix", path: "anatix", icon: Activity, description: "Telemetria em tempo real do robô LEGO com Pybricks, por Bluetooth ou cabo USB", new: false },
           { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento." },
         ],
       },
@@ -70,7 +73,7 @@ export const NAVIGATION = {
   },
   ftc: {
     label: "FTC",
-    icon: Hexagon,
+    icon: FTCIcon,
     scorePath: "score",
     options: [
       { nome: "Estratégia TeleOp", path: "estrategia", icon: Swords, new: true },
@@ -98,7 +101,7 @@ export const NAVIGATION = {
   },
   obr: {
     label: "OBR",
-    icon: Bot,
+    icon: OBRIcon,
     scorePath: "score",
     options: [
       { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false },

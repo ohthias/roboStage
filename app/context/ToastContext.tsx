@@ -49,19 +49,19 @@ const TOAST_STYLES: Record<
   }
 > = {
   info: {
-    className: "border-info/20 bg-info/45 text-info-content",
+    className: "border-info/30 bg-base-100",
     icon: <Info size={18} className="text-info" />,
   },
   success: {
-    className: "border-success/20 bg-success/45 text-success-content",
+    className: "border-success/30 bg-base-100",
     icon: <CheckCircle2 size={18} className="text-success" />,
   },
   warning: {
-    className: "border-warning/20 bg-warning/45 text-warning-content",
+    className: "border-warning/40 bg-base-100",
     icon: <TriangleAlert size={18} className="text-warning" />,
   },
   error: {
-    className: "border-error/20 bg-error/45 text-error-content",
+    className: "border-error/40 bg-base-100",
     icon: <AlertCircle size={18} className="text-error" />,
   },
 };
@@ -137,7 +137,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           return (
             <div
               key={toast.id}
-              className={`${toast.leaving ? "toast-leave" : "toast-enter"} pointer-events-auto flex items-start gap-3 rounded-2xl border p-4 shadow-xl backdrop-blur ${style.className}`}
+              className={`${toast.leaving ? "toast-leave" : "toast-drop-in"} pointer-events-auto flex items-start gap-3 rounded-tl-2xl rounded-br-2xl border-2 p-4 shadow-[4px_4px_0_0_var(--color-base-content)] ${style.className}`}
             >
               <div className="mt-0.5 shrink-0">{style.icon}</div>
               <div className="flex-1 text-sm leading-relaxed">
@@ -146,7 +146,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={() => removeToast(toast.id)}
-                className="btn btn-ghost btn-xs h-6 min-h-6 w-6 p-0 opacity-70 transition hover:opacity-100"
+                className="btn btn-ghost btn-xs btn-square"
                 aria-label="Fechar toast"
               >
                 <X size={14} />
@@ -155,6 +155,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           );
         })}
       </div>
+
+      <style>{`
+        @keyframes toast-drop-in {
+          from {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .toast-drop-in {
+          animation: toast-drop-in 180ms ease-out both;
+        }
+      `}</style>
     </ToastContext.Provider>
   );
 }

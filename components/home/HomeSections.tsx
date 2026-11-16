@@ -41,8 +41,7 @@ import {
   type Tone,
 } from "./shared";
 
-const cornerBtn =
-  "rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none";
+const cornerBtn = "rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none";
 
 /* ================================================================ SOBRE */
 
@@ -70,7 +69,10 @@ export function PlatformIntro() {
 
           <ul className="mt-8 space-y-3">
             {platformPoints.map(({ icon: Icon, text }) => (
-              <li key={text} className="flex items-center gap-3 text-sm sm:text-base">
+              <li
+                key={text}
+                className="flex items-center gap-3 text-sm sm:text-base"
+              >
                 <span className="grid size-8 shrink-0 place-items-center rounded-tl-lg rounded-br-lg bg-base-200 text-primary">
                   <Icon size={16} strokeWidth={2} />
                 </span>
@@ -97,164 +99,6 @@ export function PlatformIntro() {
         <RevealOnScroll delay={0.1}>
           <LivePreview />
         </RevealOnScroll>
-      </div>
-    </section>
-  );
-}
-
-/* =========================================================== COMPETIÇÕES */
-
-export function CompetitionsSection() {
-  return (
-    <section className="bg-base-200/40 px-6 py-24">
-      <div className="mx-auto max-w-6xl">
-        <RevealOnScroll>
-          <SectionTitle
-            kicker="/ MODALIDADES"
-            title="Um lar para cada"
-            highlight="competição."
-            highlightClass="bg-accent text-accent-content"
-            description="Ferramentas pensadas para as regras, os tempos e a rotina de cada modalidade."
-          />
-        </RevealOnScroll>
-
-        <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-12">
-          {/* FLL */}
-          <RevealOnScroll className="lg:col-span-5">
-            <Link
-              href="/fll"
-              className="group relative isolate block h-full min-h-[340px] overflow-hidden rounded-tl-[32px] rounded-br-[32px] bg-primary text-primary-content shadow-[8px_8px_0_0_var(--color-base-content)] transition-all duration-500 ease-out hover:-translate-y-1.5 hover:shadow-[10px_10px_0_0_var(--color-base-content)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4"
-            >
-              <img
-                src="/images/index/hero_banner_fll.jpg"
-                alt=""
-                className="absolute inset-0 -z-20 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-              />
-              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-primary via-primary/80 to-primary/20" />
-              <div className="flex h-full min-h-[340px] flex-col justify-between p-6 sm:p-8">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="rounded-tl-md rounded-br-md bg-base-100 px-2 py-1 font-mono text-[10px] font-bold tracking-[0.15em] text-base-content">
-                    DISPONÍVEL
-                  </span>
-                  <span className="flex size-10 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition-all duration-300 group-hover:-rotate-45 group-hover:bg-white group-hover:text-primary">
-                    <ChevronRight size={22} />
-                  </span>
-                </div>
-                <div className="text-white">
-                  <p className="font-mono text-xs tracking-[0.2em] text-white/70">
-                    /fll
-                  </p>
-                  <h3 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl xl:text-5xl">
-                    FIRST LEGO League
-                  </h3>
-                  <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">
-                    Pontuador por temporada, QuickBrick Studio, Recall, rubricas,
-                    timers e guias para equipes iniciantes.
-                  </p>
-                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold">
-                    Explorar a FLL
-                    <ChevronRight
-                      size={18}
-                      className="transition-transform duration-300 group-hover:translate-x-2"
-                    />
-                  </span>
-                </div>
-              </div>
-            </Link>
-          </RevealOnScroll>
-
-          {/* OBR */}
-          <RevealOnScroll className="lg:col-span-4" delay={0.08}>
-            <Link
-              href="/obr"
-              className="group relative isolate block h-full min-h-[340px] overflow-hidden rounded-tl-[32px] rounded-br-[32px] bg-secondary text-secondary-content shadow-[8px_8px_0_0_var(--color-accent)] transition-all duration-500 ease-out hover:-translate-y-1.5 hover:shadow-[10px_10px_0_0_var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-4"
-            >
-              <img
-                src="/images/index/hero_banner_obr.png"
-                alt=""
-                className="absolute inset-0 -z-20 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-              />
-              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-secondary via-secondary/85 to-secondary/20" />
-              <div className="flex h-full min-h-[340px] flex-col justify-between p-6 sm:p-7">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="rounded-tl-md rounded-br-md bg-base-100 px-2 py-1 font-mono text-[10px] font-bold tracking-[0.15em] text-base-content">
-                    DISPONÍVEL
-                  </span>
-                  <span className="flex size-10 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition-all duration-300 group-hover:-rotate-45 group-hover:bg-white group-hover:text-secondary">
-                    <ChevronRight size={22} />
-                  </span>
-                </div>
-                <div className="text-white">
-                  <p className="font-mono text-xs tracking-[0.2em] text-white/70">
-                    /obr
-                  </p>
-                  <h3 className="mt-2 text-4xl font-black tracking-tight sm:text-5xl">
-                    OBR
-                  </h3>
-                  <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85">
-                    Pontuador da arena, documentação e o Anatix para ver o robô
-                    em tempo real.
-                  </p>
-                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold">
-                    Explorar a OBR
-                    <ChevronRight
-                      size={18}
-                      className="transition-transform duration-300 group-hover:translate-x-2"
-                    />
-                  </span>
-                </div>
-              </div>
-            </Link>
-          </RevealOnScroll>
-
-          {/* Futuras */}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-1">
-            <RevealOnScroll delay={0.16} className="h-full">
-              <Link
-                href="/ftc"
-                className="group flex h-full min-h-[150px] flex-col justify-between rounded-tl-[28px] rounded-br-[28px] border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-secondary/50"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="rounded-tl-md rounded-br-md bg-secondary px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.15em] text-secondary-content">
-                    NOVO
-                  </span>
-                  <span className="font-mono text-xs text-base-content/30">/ftc</span>
-                </div>
-                <div>
-                  <h3 className="text-3xl font-black transition-colors group-hover:text-secondary">
-                    FTC
-                  </h3>
-                  <p className="mt-1 text-sm leading-relaxed text-base-content/60">
-                    BIOBUZZ: cronômetro, estratégia de TELEOP e scouting com alianças.
-                  </p>
-                </div>
-              </Link>
-            </RevealOnScroll>
-            <RevealOnScroll delay={0.24} className="h-full">
-              <Link
-                href="/news"
-                className="group flex h-full min-h-[150px] flex-col justify-between rounded-tl-[28px] rounded-br-[28px] border border-dashed border-base-300 bg-base-100/50 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl font-light text-base-content/40 transition-transform duration-300 group-hover:rotate-90 group-hover:text-primary">
-                    +
-                  </span>
-                  <span className="font-mono text-[10px] font-bold tracking-[0.15em] text-base-content/45">
-                    EM EXPANSÃO
-                  </span>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-base-content/75">
-                    Mais modalidades
-                  </h3>
-                  <p className="mt-1 text-sm leading-relaxed text-base-content/60">
-                    Acompanhe as novidades para saber o que vem por aí.
-                  </p>
-                </div>
-              </Link>
-            </RevealOnScroll>
-          </div>
-        </div>
       </div>
     </section>
   );
@@ -375,56 +219,67 @@ export function ToolsSection() {
         </RevealOnScroll>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {tools.map(({ icon: Icon, tag, title, description, href, tone, status }, i) => {
-            const c = toneClasses[tone];
-            return (
-              <RevealOnScroll key={title} delay={(i % 4) * 0.06} className="h-full">
-                <Link
-                  href={href}
-                  className={`group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-base-content/[0.04] ${c.hover}`}
+          {tools.map(
+            (
+              { icon: Icon, tag, title, description, href, tone, status },
+              i,
+            ) => {
+              const c = toneClasses[tone];
+              return (
+                <RevealOnScroll
+                  key={title}
+                  delay={(i % 4) * 0.06}
+                  className="h-full"
                 >
-                  <div
-                    aria-hidden="true"
-                    className={`pointer-events-none absolute -right-10 -top-10 size-32 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 ${c.ring}`}
-                  />
-                  <div className="relative flex items-center justify-between">
+                  <Link
+                    href={href}
+                    className={`group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-base-content/[0.04] ${c.hover}`}
+                  >
                     <div
-                      className={`flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}
-                    >
-                      <Icon size={22} strokeWidth={1.8} />
-                    </div>
-                    <span className="font-mono text-xs text-base-content/35">
-                      /{String(i + 1).padStart(2, "0")}
-                    </span>
-                  </div>
-                  <p className={`relative mt-7 text-[10px] font-bold tracking-[0.18em] ${c.tag}`}>
-                    {tag}
-                  </p>
-                  <h3 className="relative mt-2 flex items-center gap-2 text-xl font-bold tracking-tight">
-                    {title}
-                    {status && (
-                      <span className="badge badge-warning badge-outline badge-xs gap-1 font-normal">
-                        <Wrench size={10} />
-                        {status}
-                      </span>
-                    )}
-                  </h3>
-                  <p className="relative mt-3 flex-1 text-sm leading-6 text-base-content/60">
-                    {description}
-                  </p>
-                  <div className="relative mt-6 flex items-center justify-between">
-                    <code className="rounded-md bg-base-200 px-2 py-1 font-mono text-xs text-base-content/70">
-                      {href}
-                    </code>
-                    <ArrowRight
-                      size={16}
-                      className="text-base-content/40 transition-all group-hover:translate-x-1 group-hover:text-base-content"
+                      aria-hidden="true"
+                      className={`pointer-events-none absolute -right-10 -top-10 size-32 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 ${c.ring}`}
                     />
-                  </div>
-                </Link>
-              </RevealOnScroll>
-            );
-          })}
+                    <div className="relative flex items-center justify-between">
+                      <div
+                        className={`flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}
+                      >
+                        <Icon size={22} strokeWidth={1.8} />
+                      </div>
+                      <span className="font-mono text-xs text-base-content/35">
+                        /{String(i + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                    <p
+                      className={`relative mt-7 text-[10px] font-bold tracking-[0.18em] ${c.tag}`}
+                    >
+                      {tag}
+                    </p>
+                    <h3 className="relative mt-2 flex items-center gap-2 text-xl font-bold tracking-tight">
+                      {title}
+                      {status && (
+                        <span className="badge badge-warning badge-outline badge-xs gap-1 font-normal">
+                          <Wrench size={10} />
+                          {status}
+                        </span>
+                      )}
+                    </h3>
+                    <p className="relative mt-3 flex-1 text-sm leading-6 text-base-content/60">
+                      {description}
+                    </p>
+                    <div className="relative mt-6 flex items-center justify-between">
+                      <code className="rounded-md bg-base-200 px-2 py-1 font-mono text-xs text-base-content/70">
+                        {href}
+                      </code>
+                      <ArrowRight
+                        size={16}
+                        className="text-base-content/40 transition-all group-hover:translate-x-1 group-hover:text-base-content"
+                      />
+                    </div>
+                  </Link>
+                </RevealOnScroll>
+              );
+            },
+          )}
         </div>
       </div>
     </section>
@@ -438,7 +293,8 @@ const steps = [
     number: "01",
     icon: UserPlus,
     title: "Crie sua conta",
-    description: "O cadastro é gratuito e libera o painel com as ferramentas da equipe.",
+    description:
+      "O cadastro é gratuito e libera o painel com as ferramentas da equipe.",
     detail: "Leva um minuto",
     href: "/sign-up",
     link: "Cadastrar",
@@ -447,7 +303,8 @@ const steps = [
     number: "02",
     icon: Users,
     title: "Monte a equipe",
-    description: "Convide os integrantes, escolha a modalidade e organize documentos e tarefas.",
+    description:
+      "Convide os integrantes, escolha a modalidade e organize documentos e tarefas.",
     detail: "Todos no mesmo lugar",
     href: "/dashboard/team",
     link: "Ver equipes",
@@ -456,7 +313,8 @@ const steps = [
     number: "03",
     icon: Rocket,
     title: "Treine e evolua",
-    description: "Pontue rodadas, registre testes no LabTest e compare a evolução ao longo da temporada.",
+    description:
+      "Pontue rodadas, registre testes no LabTest e compare a evolução ao longo da temporada.",
     detail: "Decisões com dados",
     href: "/labtest",
     link: "Conhecer o LabTest",
@@ -481,37 +339,44 @@ export function StepsSection() {
             aria-hidden="true"
             className="absolute left-0 right-[30%] top-6 hidden border-t-2 border-dashed border-base-300 md:block"
           />
-          {steps.map(({ number, icon: Icon, title, description, detail, href, link }, i) => (
-            <RevealOnScroll key={number} delay={i * 0.1}>
-              <article className="group relative">
-                <div className="flex items-center gap-4 md:block">
-                  <div className="relative z-10 flex size-12 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 text-secondary transition-all duration-300 group-hover:border-secondary group-hover:bg-secondary group-hover:text-secondary-content">
-                    <Icon size={21} strokeWidth={1.8} />
+          {steps.map(
+            (
+              { number, icon: Icon, title, description, detail, href, link },
+              i,
+            ) => (
+              <RevealOnScroll key={number} delay={i * 0.1}>
+                <article className="group relative">
+                  <div className="flex items-center gap-4 md:block">
+                    <div className="relative z-10 flex size-12 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 text-secondary transition-all duration-300 group-hover:border-secondary group-hover:bg-secondary group-hover:text-secondary-content">
+                      <Icon size={21} strokeWidth={1.8} />
+                    </div>
+                    <span className="font-mono text-xs tracking-widest text-base-content/40 md:mt-4 md:block">
+                      ETAPA {number}
+                    </span>
                   </div>
-                  <span className="font-mono text-xs tracking-widest text-base-content/40 md:mt-4 md:block">
-                    ETAPA {number}
-                  </span>
-                </div>
-                <h3 className="mt-5 text-xl font-bold tracking-tight">{title}</h3>
-                <p className="mt-3 max-w-sm text-sm leading-6 text-base-content/60">
-                  {description}
-                </p>
-                <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-                  <span className="inline-flex items-center gap-2 text-xs font-bold text-secondary">
-                    <span className="size-1.5 rounded-full bg-secondary" />
-                    {detail}
-                  </span>
-                  <Link
-                    href={href}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-base-content/70 transition-colors hover:text-primary"
-                  >
-                    {link}
-                    <ArrowRight size={14} />
-                  </Link>
-                </div>
-              </article>
-            </RevealOnScroll>
-          ))}
+                  <h3 className="mt-5 text-xl font-bold tracking-tight">
+                    {title}
+                  </h3>
+                  <p className="mt-3 max-w-sm text-sm leading-6 text-base-content/60">
+                    {description}
+                  </p>
+                  <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <span className="inline-flex items-center gap-2 text-xs font-bold text-secondary">
+                      <span className="size-1.5 rounded-full bg-secondary" />
+                      {detail}
+                    </span>
+                    <Link
+                      href={href}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-base-content/70 transition-colors hover:text-primary"
+                    >
+                      {link}
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </article>
+              </RevealOnScroll>
+            ),
+          )}
         </div>
       </div>
     </section>
@@ -529,7 +394,11 @@ const personas = [
     links: [
       { label: "Iniciantes da Challenge", href: "/fll/begins", icon: School },
       { label: "Iniciantes da Explore", href: "/fll/explore", icon: Telescope },
-      { label: "Guia de Missões", href: "/fll/docs/missions-guide", icon: BookOpen },
+      {
+        label: "Guia de Missões",
+        href: "/fll/docs/missions-guide",
+        icon: BookOpen,
+      },
     ],
   },
   {
@@ -538,7 +407,11 @@ const personas = [
     image: "/images/icons/Tecnicos.svg",
     text: "Acompanhem a evolução técnica da equipe com treinos cronometrados, rubricas e testes registrados.",
     links: [
-      { label: "Rubrica de Avaliação", href: "/fll/rubric", icon: GraduationCap },
+      {
+        label: "Rubrica de Avaliação",
+        href: "/fll/rubric",
+        icon: GraduationCap,
+      },
       { label: "Timers", href: "/fll/timers", icon: Clock },
       { label: "Recall", href: "/fll/recall", icon: MessageSquare },
     ],
@@ -551,7 +424,11 @@ const personas = [
     links: [
       { label: "ShowLive", href: "/showlive", icon: Radio },
       { label: "Entrar em um evento", href: "/universe", icon: Sparkles },
-      { label: "Checklist de evento", href: "/fll/cheklist", icon: ShieldCheck },
+      {
+        label: "Checklist de evento",
+        href: "/fll/cheklist",
+        icon: ShieldCheck,
+      },
     ],
   },
   {
@@ -619,7 +496,12 @@ function PersonaTab({
       <div className="tab-content pt-2">
         <div className="grid items-center gap-8 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 sm:p-8 md:grid-cols-[220px_1fr]">
           <div className="grid aspect-square w-40 place-items-center justify-self-center rounded-tl-3xl rounded-br-3xl bg-base-200 p-6 md:w-full">
-            <img src={image} alt="" aria-hidden="true" className="h-full w-full object-contain" />
+            <img
+              src={image}
+              alt=""
+              aria-hidden="true"
+              className="h-full w-full object-contain"
+            />
           </div>
           <div>
             <p className="font-mono text-xs tracking-[0.2em] text-base-content/45">
@@ -715,7 +597,9 @@ export function SeasonsSection() {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-base-content/45">{period}</span>
+                  <span className="font-mono text-xs text-base-content/45">
+                    {period}
+                  </span>
                   {current && (
                     <span className="rounded-tl-md rounded-br-md bg-primary px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.15em] text-primary-content">
                       ATUAL
@@ -730,10 +614,15 @@ export function SeasonsSection() {
                   />
                 </div>
                 <div className="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-                  <h3 className="text-sm font-bold tracking-tight sm:text-base">{name}</h3>
+                  <h3 className="text-sm font-bold tracking-tight sm:text-base">
+                    {name}
+                  </h3>
                   <span className="inline-flex items-center gap-1 text-xs font-bold text-base-content/55 transition-colors group-hover:text-primary">
                     Pontuar
-                    <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                    <ArrowRight
+                      size={14}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
                   </span>
                 </div>
               </Link>
@@ -800,16 +689,23 @@ export function SpotlightSection() {
                   />
                 </div>
                 <div className="flex flex-1 flex-col p-6 sm:p-8">
-                  <p className={`font-mono text-xs tracking-[0.2em] ${toneClasses[tone].tag}`}>
+                  <p
+                    className={`font-mono text-xs tracking-[0.2em] ${toneClasses[tone].tag}`}
+                  >
                     {kicker}
                   </p>
-                  <h3 className="mt-2 text-2xl font-bold tracking-tight">{title}</h3>
+                  <h3 className="mt-2 text-2xl font-bold tracking-tight">
+                    {title}
+                  </h3>
                   <p className="mt-3 flex-1 text-sm leading-6 text-base-content/60 sm:text-base">
                     {text}
                   </p>
                   <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold">
                     {cta}
-                    <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                    <ArrowRight
+                      size={16}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
                   </span>
                 </div>
               </Link>
@@ -885,7 +781,11 @@ function formatDate(date?: string) {
   if (!date) return "";
   const d = new Date(`${date}T12:00:00`);
   if (Number.isNaN(d.getTime())) return date;
-  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+  return d.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function NewsSection({
@@ -954,7 +854,10 @@ export function NewsSection({
                 )}
                 <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold">
                   Ler notícia
-                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                  <ArrowRight
+                    size={16}
+                    className="transition-transform group-hover:translate-x-1"
+                  />
                 </span>
               </div>
             </Link>
@@ -962,13 +865,19 @@ export function NewsSection({
 
           <div className="flex flex-col gap-5">
             {rest.map((n, i) => (
-              <RevealOnScroll key={n.slug} delay={(i + 1) * 0.08} className="flex-1">
+              <RevealOnScroll
+                key={n.slug}
+                delay={(i + 1) * 0.08}
+                className="flex-1"
+              >
                 <Link
                   href={`/news/${encodeURIComponent(n.slug)}`}
                   className="group flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-secondary/40"
                 >
                   <NewsMeta date={n.date} category={n.category} />
-                  <h3 className="mt-3 text-lg font-bold leading-snug tracking-tight">{n.title}</h3>
+                  <h3 className="mt-3 text-lg font-bold leading-snug tracking-tight">
+                    {n.title}
+                  </h3>
                   {n.description && (
                     <p className="mt-2 line-clamp-2 flex-1 text-sm leading-6 text-base-content/60">
                       {n.description}
@@ -976,7 +885,10 @@ export function NewsSection({
                   )}
                   <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-base-content/60 transition-colors group-hover:text-secondary">
                     Ler
-                    <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                    <ArrowRight
+                      size={14}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
                   </span>
                 </Link>
               </RevealOnScroll>
@@ -1064,41 +976,56 @@ export function CommunitySection() {
         </RevealOnScroll>
 
         <div className="grid content-center gap-4">
-          {communityLinks.map(({ icon: Icon, title, text, href, external, tone }, i) => {
-            const c = toneClasses[tone];
-            const inner = (
-              <>
-                <div
-                  className={`flex size-12 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}
-                >
-                  <Icon size={21} strokeWidth={1.8} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-bold">{title}</h3>
-                  <p className="mt-1 text-sm leading-6 text-base-content/60">{text}</p>
-                </div>
-                {external ? (
-                  <ArrowUpRight size={18} className="shrink-0 text-base-content/35 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                ) : (
-                  <ArrowRight size={18} className="shrink-0 text-base-content/35 transition-transform group-hover:translate-x-1" />
-                )}
-              </>
-            );
-            const cls = `group flex items-center gap-4 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-0.5 ${c.hover}`;
-            return (
-              <RevealOnScroll key={title} delay={i * 0.08}>
-                {external ? (
-                  <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
-                    {inner}
-                  </a>
-                ) : (
-                  <Link href={href} className={cls}>
-                    {inner}
-                  </Link>
-                )}
-              </RevealOnScroll>
-            );
-          })}
+          {communityLinks.map(
+            ({ icon: Icon, title, text, href, external, tone }, i) => {
+              const c = toneClasses[tone];
+              const inner = (
+                <>
+                  <div
+                    className={`flex size-12 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}
+                  >
+                    <Icon size={21} strokeWidth={1.8} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold">{title}</h3>
+                    <p className="mt-1 text-sm leading-6 text-base-content/60">
+                      {text}
+                    </p>
+                  </div>
+                  {external ? (
+                    <ArrowUpRight
+                      size={18}
+                      className="shrink-0 text-base-content/35 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                    />
+                  ) : (
+                    <ArrowRight
+                      size={18}
+                      className="shrink-0 text-base-content/35 transition-transform group-hover:translate-x-1"
+                    />
+                  )}
+                </>
+              );
+              const cls = `group flex items-center gap-4 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-0.5 ${c.hover}`;
+              return (
+                <RevealOnScroll key={title} delay={i * 0.08}>
+                  {external ? (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cls}
+                    >
+                      {inner}
+                    </a>
+                  ) : (
+                    <Link href={href} className={cls}>
+                      {inner}
+                    </Link>
+                  )}
+                </RevealOnScroll>
+              );
+            },
+          )}
         </div>
       </div>
     </section>
@@ -1136,7 +1063,11 @@ export function FaqSection() {
       <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
         <RevealOnScroll>
           <div className="lg:sticky lg:top-28">
-            <SectionTitle kicker="/ DÚVIDAS" title="Antes de" highlight="começar." />
+            <SectionTitle
+              kicker="/ DÚVIDAS"
+              title="Antes de"
+              highlight="começar."
+            />
             <Link
               href="/help"
               className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-base-content/70 transition-colors hover:text-primary"
@@ -1155,7 +1086,12 @@ export function FaqSection() {
                 key={q}
                 className="collapse collapse-plus rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100"
               >
-                <input type="radio" name="home_faq" defaultChecked={i === 0} aria-label={q} />
+                <input
+                  type="radio"
+                  name="home_faq"
+                  defaultChecked={i === 0}
+                  aria-label={q}
+                />
                 <div className="collapse-title pr-12 font-semibold">{q}</div>
                 <div className="collapse-content text-sm leading-6 text-base-content/65">
                   <p>{a}</p>
@@ -1176,15 +1112,26 @@ export function FinalCta() {
     <section className="px-6 py-24">
       <RevealOnScroll>
         <div className="relative mx-auto max-w-6xl overflow-hidden rounded-tl-[2.5rem] rounded-br-[2.5rem] bg-secondary px-8 py-14 text-secondary-content sm:px-14">
-          <div aria-hidden="true" className="absolute -right-16 -top-16 size-64 rounded-full border-[28px] border-accent/90" />
-          <div aria-hidden="true" className="absolute -bottom-10 right-40 size-24 rotate-12 rounded-tl-2xl rounded-br-2xl bg-primary" />
-          <div aria-hidden="true" className="absolute bottom-8 right-12 size-10 rounded-full border-2 border-dashed border-secondary-content/40" />
-          <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] bg-[size:22px_22px] opacity-[0.08]" />
+          <div
+            aria-hidden="true"
+            className="absolute -right-16 -top-16 size-64 rounded-full border-[28px] border-accent/90"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute -bottom-10 right-40 size-24 rotate-12 rounded-tl-2xl rounded-br-2xl bg-primary"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute bottom-8 right-12 size-10 rounded-full border-2 border-dashed border-secondary-content/40"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] bg-[size:22px_22px] opacity-[0.08]"
+          />
 
           <div className="relative max-w-2xl">
             <div className="inline-flex items-center gap-2 font-mono text-xs tracking-[0.2em] text-secondary-content/70">
-              <Trophy size={14} />
-              O PRÓXIMO EVENTO COMEÇA AQUI
+              <Trophy size={14} />O PRÓXIMO EVENTO COMEÇA AQUI
             </div>
             <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
               Existe um lugar esperando pela sua equipe.
@@ -1222,4 +1169,3 @@ export function FinalCta() {
     </section>
   );
 }
-

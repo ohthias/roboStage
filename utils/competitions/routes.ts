@@ -85,6 +85,7 @@ export const COMPETITION_PAGES: Record<Competicao, readonly string[]> = {
     "arena",
     "estrategia",
     "scouting",
+    "score",
     "timers",
     "timers/match",
     "timers/custom",

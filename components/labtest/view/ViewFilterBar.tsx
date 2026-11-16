@@ -2,8 +2,10 @@
 
 // Barra de filtros e modos da página do teste: período, busca, observações,
 // métricas visíveis e modos predefinidos. Vale para todas as abas.
+// Visual enxuto: uma linha de pílulas finas com os cantos assimétricos do
+// RoboStage; os detalhes (intervalo, métricas, modos) ficam nos menus.
 
-import { Eye, Filter, MessageSquareText, Search, Sparkles, X } from "lucide-react";
+import { Check, ChevronDown, Eye, History, MessageSquareText, Search, Sparkles, X } from "lucide-react";
 import {
   DEFAULT_FILTERS,
   RANGE_LABEL,
@@ -13,6 +15,26 @@ import {
   type ViewMetric,
   type ViewRange,
 } from "@/utils/labtest/view-dashboard";
+import {
+  closeDropdown as blur,
+  filterMenu as menu,
+  filterMenuTitle,
+  filterOption,
+  filterPill as pill,
+} from "../filter-styles";
+
+const shortDate = (v: string) => {
+  const [, m, d] = v.split("-");
+  return d && m ? `${d}/${m}` : v;
+};
+
+function rangeSummary(f: ViewFilters) {
+  if (f.range === "execs" && (f.fromExec || f.toExec)) return `#${f.fromExec ?? 1} – #${f.toExec ?? "…"}`;
+  if (f.range === "dates" && (f.fromDate || f.toDate))
+    return `${f.fromDate ? shortDate(f.fromDate) : "…"} – ${f.toDate ? shortDate(f.toDate) : "hoje"}`;
+  return f.range === "all" ? "Todas as execuções" : RANGE_LABEL[f.range];
+}
+
 
 export function ViewFilterBar({
   filters,
@@ -36,134 +58,191 @@ export function ViewFilterBar({
   const set = (p: Partial<ViewFilters>) => onChange({ ...filters, ...p });
   const hidden = new Set(filters.hiddenMetrics ?? []);
   const count = activeFilterCount(filters);
+  const searching = Boolean(filters.search?.trim());
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-base-300/70 bg-base-100 p-3 shadow-sm sm:p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="flex items-center gap-1.5 text-xs font-semibold text-base-content/60">
-          <Filter size={13} /> Execuções
-        </span>
-        <div className="join flex-wrap">
-          {(Object.keys(RANGE_LABEL) as ViewRange[]).map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => set({ range: r })}
-              className={`btn join-item btn-xs sm:btn-sm ${filters.range === r ? "btn-neutral" : "btn-ghost border-base-300"}`}
-            >
-              {RANGE_LABEL[r]}
-            </button>
-          ))}
-        </div>
+    <div
+      role="toolbar"
+      aria-label="Filtros das execuções"
+      className="flex flex-wrap items-center gap-2 border-y border-base-300/70 py-2.5"
+    >
+      {/* Busca */}
+      <label
+        className={`${pill(searching)} w-full cursor-text px-2.5 focus-within:border-primary/50 sm:w-56`}
+      >
+        <Search size={13} className="shrink-0 opacity-60" />
+        <input
+          type="search"
+          className="min-w-0 grow bg-transparent text-xs text-base-content outline-none placeholder:text-base-content/45"
+          placeholder="Buscar nº ou observação"
+          value={filters.search ?? ""}
+          onChange={(e) => set({ search: e.target.value })}
+        />
+      </label>
 
-        {filters.range === "execs" && (
-          <div className="flex items-center gap-1.5 text-xs">
-            de #
-            <input type="number" min={1} className="input input-bordered input-xs w-16" value={filters.fromExec ?? ""} onChange={(e) => set({ fromExec: e.target.value ? Number(e.target.value) : null })} aria-label="Da execução" />
-            até #
-            <input type="number" min={1} className="input input-bordered input-xs w-16" value={filters.toExec ?? ""} onChange={(e) => set({ toExec: e.target.value ? Number(e.target.value) : null })} aria-label="Até a execução" />
-          </div>
-        )}
-        {filters.range === "dates" && (
-          <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            de
-            <input type="date" className="input input-bordered input-xs w-36" value={filters.fromDate ?? ""} onChange={(e) => set({ fromDate: e.target.value || null })} aria-label="Data inicial" />
-            até
-            <input type="date" className="input input-bordered input-xs w-36" value={filters.toDate ?? ""} onChange={(e) => set({ toDate: e.target.value || null })} aria-label="Data final" />
-          </div>
-        )}
-
-        <div className="ml-auto flex items-center gap-1.5">
-          <div className="dropdown dropdown-end">
-            <button ref={presetsOpenRef} type="button" tabIndex={0} className="btn btn-sm rounded-full btn-primary btn-soft">
-              <Sparkles size={14} /> Modos
-            </button>
-            <ul tabIndex={0} className="dropdown-content menu z-30 mt-1 w-80 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
-              <li className="menu-title text-[11px]">Monta o painel e ajusta os filtros</li>
-              {presetsFor(isFll).map((p) => (
-                <li key={p.key}>
+      {/* Período */}
+      <div className="dropdown">
+        <button type="button" tabIndex={0} className={pill(filters.range !== "all")}>
+          <History size={13} className="opacity-70" />
+          {rangeSummary(filters)}
+          <ChevronDown size={12} className="opacity-50" />
+        </button>
+        <div tabIndex={0} className={`${menu} w-64`}>
+          <p className={filterMenuTitle}>Período</p>
+          <ul className="flex flex-col gap-0.5">
+            {(Object.keys(RANGE_LABEL) as ViewRange[]).map((r) => {
+              const active = filters.range === r;
+              const opensInputs = r === "execs" || r === "dates";
+              return (
+                <li key={r}>
                   <button
                     type="button"
-                    className="flex flex-col items-start gap-0.5"
                     onClick={() => {
-                      onPreset(p.key);
-                      (document.activeElement as HTMLElement | null)?.blur();
+                      set({ range: r });
+                      if (!opensInputs) blur();
                     }}
+                    className={filterOption(active)}
                   >
-                    <span className="text-sm font-semibold">{p.label}</span>
-                    <span className="text-xs text-base-content/55">{p.description}</span>
+                    {RANGE_LABEL[r]}
+                    {active && <Check size={14} />}
                   </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          {filters.range === "execs" && (
+            <div className="mt-2 flex items-center gap-1.5 border-t border-base-300 px-1 pt-2.5 text-xs text-base-content/60">
+              <span>de #</span>
+              <input type="number" min={1} className="input input-bordered input-xs w-16" value={filters.fromExec ?? ""} onChange={(e) => set({ fromExec: e.target.value ? Number(e.target.value) : null })} aria-label="Da execução" />
+              <span>até #</span>
+              <input type="number" min={1} className="input input-bordered input-xs w-16" value={filters.toExec ?? ""} onChange={(e) => set({ toExec: e.target.value ? Number(e.target.value) : null })} aria-label="Até a execução" />
+            </div>
+          )}
+          {filters.range === "dates" && (
+            <div className="mt-2 grid grid-cols-2 gap-1.5 border-t border-base-300 px-1 pt-2.5 text-[11px] text-base-content/60">
+              <label className="flex flex-col gap-1">
+                De
+                <input type="date" className="input input-bordered input-xs w-full" value={filters.fromDate ?? ""} onChange={(e) => set({ fromDate: e.target.value || null })} />
+              </label>
+              <label className="flex flex-col gap-1">
+                Até
+                <input type="date" className="input input-bordered input-xs w-full" value={filters.toDate ?? ""} onChange={(e) => set({ toDate: e.target.value || null })} />
+              </label>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Só com observações */}
+      <button
+        type="button"
+        aria-pressed={!!filters.withNotes}
+        onClick={() => set({ withNotes: !filters.withNotes })}
+        className={pill(!!filters.withNotes)}
+      >
+        <MessageSquareText size={13} className="opacity-70" />
+        Com observações
+        {filters.withNotes && <Check size={12} />}
+      </button>
+
+      {/* Métricas */}
+      {metrics.length > 0 && (
+        <div className="dropdown">
+          <button type="button" tabIndex={0} className={pill(hidden.size > 0)}>
+            <Eye size={13} className="opacity-70" />
+            Métricas
+            <span className="font-mono text-[10px] opacity-60">
+              {metrics.length - hidden.size}/{metrics.length}
+            </span>
+            <ChevronDown size={12} className="opacity-50" />
+          </button>
+          <div tabIndex={0} className={`${menu} w-72`}>
+            <div className="flex items-center justify-between px-2 pb-1.5 pt-1">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-base-content/45">
+                No painel e na tabela
+              </span>
+              {hidden.size > 0 && (
+                <button type="button" className="text-xs text-primary hover:underline" onClick={() => set({ hiddenMetrics: [] })}>
+                  Mostrar todas
+                </button>
+              )}
+            </div>
+            <ul className="flex max-h-72 flex-col gap-0.5 overflow-y-auto">
+              {metrics.map((m) => (
+                <li key={m.key}>
+                  <label className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-base-200">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-xs checkbox-primary"
+                      checked={!hidden.has(m.key)}
+                      disabled={!hidden.has(m.key) && hidden.size >= metrics.length - 1}
+                      onChange={(e) => {
+                        const next = new Set(hidden);
+                        if (e.target.checked) next.delete(m.key);
+                        else next.add(m.key);
+                        set({ hiddenMetrics: [...next] });
+                      }}
+                    />
+                    <span className="min-w-0 flex-1 truncate">{m.label}</span>
+                    <span className="text-[10px] text-base-content/40">
+                      {m.group === "resultado" ? "resultado" : m.group === "missao" ? "missão" : m.kind === "boolean" ? "sim/não" : (m.unit ?? "")}
+                    </span>
+                  </label>
                 </li>
               ))}
             </ul>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <label className="input input-bordered input-sm flex w-full items-center gap-2 sm:w-64">
-          <Search size={14} className="opacity-50" />
-          <input
-            type="search"
-            className="grow"
-            placeholder="Buscar nº ou observação"
-            value={filters.search ?? ""}
-            onChange={(e) => set({ search: e.target.value })}
-          />
-        </label>
+      {count > 0 && (
+        <button
+          type="button"
+          className="inline-flex h-8 items-center gap-1 px-1.5 text-xs text-base-content/55 transition hover:text-error"
+          onClick={() => onChange(DEFAULT_FILTERS)}
+        >
+          <X size={12} /> Limpar ({count})
+        </button>
+      )}
 
-        <label className="flex cursor-pointer items-center gap-2 rounded-full border border-base-300 px-3 py-1.5 text-xs">
-          <input type="checkbox" className="toggle toggle-xs toggle-primary" checked={!!filters.withNotes} onChange={(e) => set({ withNotes: e.target.checked })} />
-          <MessageSquareText size={13} className="opacity-60" /> Só com observações
-        </label>
-
-        {metrics.length > 0 && (
-          <div className="dropdown">
-            <button type="button" tabIndex={0} className="btn btn-ghost btn-sm rounded-full border-base-300">
-              <Eye size={14} /> Métricas
-              <span className="badge badge-sm">{metrics.length - hidden.size}/{metrics.length}</span>
-            </button>
-            <div tabIndex={0} className="dropdown-content z-30 mt-1 w-72 rounded-box border border-base-300 bg-base-100 p-3 shadow-lg">
-              <div className="mb-2 flex items-center justify-between text-xs">
-                <span className="font-semibold">O que mostrar no painel e na tabela</span>
-                <button type="button" className="link link-hover text-base-content/60" onClick={() => set({ hiddenMetrics: [] })}>todas</button>
-              </div>
-              <ul className="flex max-h-72 flex-col gap-1 overflow-y-auto">
-                {metrics.map((m) => (
-                  <li key={m.key}>
-                    <label className="flex cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-sm hover:bg-base-200">
-                      <input
-                        type="checkbox"
-                        className="checkbox checkbox-xs checkbox-primary"
-                        checked={!hidden.has(m.key)}
-                        disabled={!hidden.has(m.key) && hidden.size >= metrics.length - 1}
-                        onChange={(e) => {
-                          const next = new Set(hidden);
-                          if (e.target.checked) next.delete(m.key);
-                          else next.add(m.key);
-                          set({ hiddenMetrics: [...next] });
-                        }}
-                      />
-                      <span className="min-w-0 flex-1 truncate">{m.label}</span>
-                      <span className="text-[10px] text-base-content/40">
-                        {m.group === "resultado" ? "resultado" : m.group === "missao" ? "missão" : m.kind === "boolean" ? "sim/não" : (m.unit ?? "")}
-                      </span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
-
-        <span className="ml-auto text-xs text-base-content/55">
-          Mostrando <b className="text-base-content">{shown}</b> de {total} execuções
+      <div className="ml-auto flex items-center gap-3">
+        <span className="text-xs text-base-content/50" aria-live="polite">
+          <b className="font-mono font-semibold text-base-content">{shown}</b>
+          <span className="font-mono">/{total}</span> execuções
         </span>
-        {count > 0 && (
-          <button type="button" className="btn btn-ghost btn-xs rounded-full" onClick={() => onChange(DEFAULT_FILTERS)}>
-            <X size={12} /> Limpar filtros ({count})
+
+        {/* Modos predefinidos */}
+        <div className="dropdown dropdown-end">
+          <button
+            ref={presetsOpenRef}
+            type="button"
+            tabIndex={0}
+            className="inline-flex h-8 items-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-primary px-3 text-xs font-semibold text-primary-content shadow-sm transition hover:bg-primary/90"
+          >
+            <Sparkles size={13} /> Modos
           </button>
-        )}
+          <ul tabIndex={0} className={`${menu} w-80`}>
+            <li className="px-2 pb-1.5 pt-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-base-content/45">
+              Monta o painel e ajusta os filtros
+            </li>
+            {presetsFor(isFll).map((p) => (
+              <li key={p.key}>
+                <button
+                  type="button"
+                  className="flex w-full flex-col items-start gap-0.5 rounded-lg px-2 py-2 text-left transition hover:bg-base-200"
+                  onClick={() => {
+                    onPreset(p.key);
+                    blur();
+                  }}
+                >
+                  <span className="text-sm font-semibold">{p.label}</span>
+                  <span className="text-xs leading-snug text-base-content/55">{p.description}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

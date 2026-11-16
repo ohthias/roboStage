@@ -1,6 +1,6 @@
 "use server";
 
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { FUTURE_EDITION_DATA } from "@/utils/data/static-data";
 import { getUserLeagues } from "@/utils/stagebook/user-leagues";
@@ -855,17 +855,55 @@ async function publishExecutionActivity(params: {
 }
 
 /* =========================================================================
- * listTests — leitura simples para o painel/listagem de testes
+ * listTests — listagem do painel, do teste executado mais recentemente para
+ * o mais antigo (testes sem execução entram pela data de criação)
  * ========================================================================= */
 
 export async function listTests() {
   const scope = await resolveStagebookScope();
 
-  return db
-    .select()
+  const stats = db
+    .select({
+      testId: testExecutions.testId,
+      lastExecutedAt: sql<string | Date | null>`max(${testExecutions.createdAt})`.as("last_executed_at"),
+      executionCount: sql<number>`count(*)::int`.as("execution_count"),
+    })
+    .from(testExecutions)
+    .groupBy(testExecutions.testId)
+    .as("exec_stats");
+
+  const rows = await db
+    .select({ test: tests, lastExecutedAt: stats.lastExecutedAt, executionCount: stats.executionCount })
     .from(tests)
+    .leftJoin(stats, eq(stats.testId, tests.id))
     .where(testScope(scope))
-    .orderBy(desc(tests.createdAt));
+    .orderBy(sql`coalesce(${stats.lastExecutedAt}, ${tests.createdAt}) desc`, desc(tests.createdAt));
+
+  return rows.map(({ test, lastExecutedAt, executionCount }) => ({
+    ...test,
+    // Agregados vêm como texto no driver HTTP do Neon.
+    lastExecutedAt: lastExecutedAt ? new Date(lastExecutedAt) : null,
+    executionCount: Number(executionCount ?? 0),
+  }));
+}
+
+/**
+ * Pontuação da última execução de cada teste (null quando o modo não é de
+ * pontuação, ex.: calibração). Só considera testes do escopo atual.
+ */
+export async function getLatestExecutionScores(testIds: string[]): Promise<Record<string, number | null>> {
+  if (testIds.length === 0) return {};
+  const scope = await resolveStagebookScope();
+
+  const latest = await db
+    .selectDistinctOn([testExecutions.testId], { exec: testExecutions })
+    .from(testExecutions)
+    .innerJoin(tests, eq(tests.id, testExecutions.testId))
+    .where(and(inArray(testExecutions.testId, testIds), testScope(scope)))
+    .orderBy(testExecutions.testId, desc(testExecutions.createdAt));
+
+  const scored = await scoreExecutions(latest.map((r) => r.exec));
+  return Object.fromEntries(scored.map((s) => [s.testId, s.score]));
 }
 
 export async function updateLabTestStatus({

@@ -608,6 +608,7 @@ export function BoardView({
         <CardModal
           boardId={boardId}
           card={selectedCard}
+          columnName={columns.find((c) => c.id === selectedCard.columnId)?.name}
           assignees={assigneesByCard.get(selectedCard.id) ?? []}
           tags={tagsByCard.get(selectedCard.id) ?? []}
           completed={isCompleted(selectedCard)}

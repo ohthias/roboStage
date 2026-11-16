@@ -3,6 +3,7 @@
 // Peças pequenas reaproveitadas pelo LabTest (lista, detalhe, gráficos).
 // ---------------------------------------------------------------------------
 
+import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import type { AccentColor } from "@/utils/labtest/modes";
 
@@ -31,18 +32,25 @@ export function StatCard({
   sub,
   icon: Icon,
   accent,
+  href,
+  active = false,
 }: {
   label: string;
   value: string | number;
   sub?: string;
   icon: LucideIcon;
   accent: AccentColor;
+  /** Quando presente, o card vira atalho (ex.: aplicar um filtro). */
+  href?: string;
+  /** Destaca o card cujo filtro está aplicado. */
+  active?: boolean;
 }) {
   const tone = TONES[accent];
-  return (
-    <div
-      className={`flex flex-col gap-3 rounded-tl-3xl rounded-tr-lg rounded-br-3xl rounded-bl-lg p-4 sm:p-5 ${tone.card}`}
-    >
+  const className = `flex flex-col gap-3 rounded-tl-3xl rounded-tr-lg rounded-br-3xl rounded-bl-lg p-4 sm:p-5 ${tone.card} ${
+    href ? "transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50" : ""
+  } ${active ? "ring-2 ring-base-content/25" : ""}`;
+  const body = (
+    <>
       <div className="flex items-center gap-2.5">
         <span className={`flex size-8 items-center justify-center rounded-full ${tone.chip}`}>
           <Icon className="size-4" />
@@ -51,7 +59,14 @@ export function StatCard({
       </div>
       <p className="text-2xl font-black tracking-tight sm:text-3xl">{value}</p>
       {sub && <p className="-mt-1 truncate text-xs text-base-content/50">{sub}</p>}
-    </div>
+    </>
+  );
+  return href ? (
+    <Link href={href} className={className} aria-current={active ? "true" : undefined} scroll={false}>
+      {body}
+    </Link>
+  ) : (
+    <div className={className}>{body}</div>
   );
 }
 

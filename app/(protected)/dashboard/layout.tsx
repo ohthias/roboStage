@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
-import { UserButton } from "@clerk/nextjs";
+import { UserAvatar, UserButton } from "@clerk/nextjs";
 import { NavFooter, NavLinks } from "./nav-links";
+import { SidebarTooltips } from "./sidebar-tooltips";
 import Logo from "@/components/UI/Logo";
 import {
   CalendarDays,
@@ -19,20 +20,33 @@ import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { NotificationsBell } from "@/components/stagebook/notifications-bell";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { listMyTeams, canCurrentUserCreateTeam } from "@/utils/stagebook/actions/teams";
+import {
+  listMyTeams,
+  canCurrentUserCreateTeam,
+} from "@/utils/stagebook/actions/teams";
 import { listUnreadNotifications } from "@/utils/stagebook/actions/notifications";
 import { getUserPreferences } from "@/utils/stagebook/actions/preferences";
-import { LayoutPrefsProvider, SidebarPosition } from "@/components/stagebook/layout-prefs";
+import {
+  LayoutPrefsProvider,
+  SidebarPosition,
+} from "@/components/stagebook/layout-prefs";
 import Link from "next/link";
+import { SHOWLIVE_URL } from "@/utils/showlive-url";
 
-export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const [scope, teams, notifications, canCreateTeam, prefs] = await Promise.all([
-    resolveStagebookScope(),
-    listMyTeams(),
-    listUnreadNotifications(),
-    canCurrentUserCreateTeam(),
-    getUserPreferences(),
-  ]);
+export default async function DashboardLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const [scope, teams, notifications, canCreateTeam, prefs] = await Promise.all(
+    [
+      resolveStagebookScope(),
+      listMyTeams(),
+      listUnreadNotifications(),
+      canCurrentUserCreateTeam(),
+      getUserPreferences(),
+    ],
+  );
   const activeTeamId = scope.type === "team" ? scope.teamId : null;
   const activeTeam = teams.find((t) => t.id === activeTeamId) ?? null;
   const [pins, me] = await Promise.all([
@@ -52,7 +66,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       data-layout-locked={prefs.layoutLocked || undefined}
     >
       <input id="lt-drawer" type="checkbox" className="drawer-toggle" />
-      <SidebarPosition expanded={prefs.sidebarExpanded} locked={prefs.layoutLocked} />
+      <SidebarPosition
+        expanded={prefs.sidebarExpanded}
+        locked={prefs.layoutLocked}
+      />
 
       <div className="drawer-content flex min-h-screen min-w-0 flex-col bg-base-100">
         {/* Navbar */}
@@ -130,14 +147,23 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               <ThemeController />
             </div>
             <div className="flex shrink-0 items-center">
-              <UserButton />
+              <Link
+                href="/dashboard/settings"
+                title="Gerenciar conta"
+                aria-label="Gerenciar conta"
+              >
+                <UserAvatar />
+              </Link>
             </div>
           </div>
         </div>
 
         <main className="mx-auto w-full min-w-0 flex-1">
           <LayoutPrefsProvider
-            value={{ locked: prefs.layoutLocked, sidebarExpanded: prefs.sidebarExpanded }}
+            value={{
+              locked: prefs.layoutLocked,
+              sidebarExpanded: prefs.sidebarExpanded,
+            }}
           >
             {children}
           </LayoutPrefsProvider>
@@ -145,10 +171,17 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       </div>
 
       {/* Sidebar */}
-      <div className="drawer-side z-30 lg:is-drawer-close:overflow-visible">
-        <label htmlFor="lt-drawer" aria-label="Fechar menu" className="drawer-overlay" />
+      <div className="drawer-side z-30 lg:is-drawer-close:overflow-x-visible lg:is-drawer-close:overflow-y-visible">
+        <label
+          htmlFor="lt-drawer"
+          aria-label="Fechar menu"
+          className="drawer-overlay"
+        />
 
-        <aside className="flex h-full min-h-full w-72 max-w-[85vw] flex-col border-r border-base-300 bg-base-200 lg:max-w-none lg:is-drawer-close:w-14 lg:is-drawer-open:w-64">
+        <aside
+          id="lt-sidebar"
+          className="flex h-full min-h-full w-72 max-w-[85vw] flex-col border-r border-base-300 bg-base-200 lg:max-w-none lg:is-drawer-close:w-14 lg:is-drawer-close:overflow-x-visible lg:is-drawer-close:overflow-y-visible lg:is-drawer-open:w-64"
+        >
           <div className="flex h-14 shrink-0 items-center justify-between border-b border-base-300 px-4 lg:is-drawer-close:justify-center lg:is-drawer-close:px-2 lg:is-drawer-open:px-5">
             <div className="lg:is-drawer-close:hidden">
               <Logo logoSize="sm" />
@@ -167,7 +200,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             {prefs.layoutLocked ? (
               <span
                 data-tip="Menu travado — altere em Configurações"
-                className="hidden size-8 items-center justify-center text-base-content/35 lg:inline-flex lg:is-drawer-close:tooltip lg:is-drawer-close:tooltip-right"
+                className="hidden size-8 items-center justify-center text-base-content/35 lg:inline-flex"
               >
                 <Lock className="size-3.5" aria-label="Menu travado" />
               </span>
@@ -176,7 +209,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                 htmlFor="lt-drawer"
                 aria-label="Recolher ou expandir menu"
                 data-tip="Expandir menu"
-                className="btn btn-square btn-ghost hidden transition-all duration-150 hover:bg-base-300/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 lg:inline-flex lg:is-drawer-close:tooltip lg:is-drawer-close:tooltip-right"
+                className="btn btn-square btn-ghost hidden transition-all duration-150 hover:bg-base-300/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 lg:inline-flex"
               >
                 <PanelLeft className="size-4" />
               </label>
@@ -186,22 +219,33 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           {/* Troca de espaço (pessoal ↔ equipes) */}
           <div className="shrink-0 px-3 pt-3 lg:is-drawer-close:px-2">
             <SidebarSpaceSwitcher
-              teams={teams.map((t) => ({ id: t.id, name: t.name, role: t.role }))}
+              teams={teams.map((t) => ({
+                id: t.id,
+                name: t.name,
+                role: t.role,
+              }))}
               activeTeamId={activeTeamId}
               canCreateTeam={canCreateTeam}
               userName={me?.name ?? null}
             />
           </div>
 
-          {/* Rola no mobile; overflow visível só no desktop recolhido (tooltips) */}
-          <div className="w-full min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 lg:is-drawer-close:overflow-visible lg:is-drawer-close:px-2">
-            <NavLinks pins={pins} />
+          {/* Rola em todos os modos: assim nada vaza por cima do rodapé quando
+              falta altura. Recolhida, a barra de rolagem fica oculta e os
+              tooltips são flutuantes (SidebarTooltips), então não são cortados. */}
+          <div className="w-full min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 lg:is-drawer-close:px-2 lg:is-drawer-close:[scrollbar-width:none] lg:is-drawer-close:[&::-webkit-scrollbar]:hidden">
+            <NavLinks
+              pins={pins}
+              showliveUrl={prefs.showliveEnabled ? SHOWLIVE_URL : null}
+            />
           </div>
 
           {/* Rodapé: Configurações + Mais */}
           <div className="shrink-0 border-t border-base-300/70 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:is-drawer-close:px-2">
             <NavFooter />
           </div>
+
+          <SidebarTooltips rootId="lt-sidebar" />
         </aside>
       </div>
     </div>

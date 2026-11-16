@@ -214,7 +214,7 @@ export function summarize(rows: ViewRow[], metric: ViewMetric): MetricSummary | 
 
 // ---- Filtros ------------------------------------------------------------------
 
-export type ViewRange = "all" | "last5" | "last10" | "last20" | "execs" | "dates";
+export type ViewRange = "all" | "today" | "week" | "last5" | "last10" | "last20" | "execs" | "dates";
 
 export interface ViewFilters {
   range: ViewRange;
@@ -233,6 +233,8 @@ export const DEFAULT_FILTERS: ViewFilters = { range: "all" };
 
 export const RANGE_LABEL: Record<ViewRange, string> = {
   all: "Todas",
+  today: "Hoje",
+  week: "Últimos 7 dias",
   last5: "Últimas 5",
   last10: "Últimas 10",
   last20: "Últimas 20",
@@ -249,7 +251,12 @@ function dayKey(iso: string) {
 
 export function applyFilters<T extends TestEntry>(entries: T[], f: ViewFilters): T[] {
   let list = [...entries].sort((a, b) => a.executionNumber - b.executionNumber);
-  if (f.range === "last5") list = list.slice(-5);
+  if (f.range === "today" || f.range === "week") {
+    const since = new Date();
+    since.setDate(since.getDate() - (f.range === "week" ? 6 : 0));
+    const from = dayKey(since.toISOString());
+    list = list.filter((e) => dayKey(e.createdAt) >= from);
+  } else if (f.range === "last5") list = list.slice(-5);
   else if (f.range === "last10") list = list.slice(-10);
   else if (f.range === "last20") list = list.slice(-20);
   else if (f.range === "execs") {

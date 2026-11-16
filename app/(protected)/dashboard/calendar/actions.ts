@@ -1,5 +1,6 @@
 "use server";
 
+import { sanitizeDocIcon } from "@/utils/stagebook/doc-icon";
 import { revalidatePath } from "next/cache";
 import { and, eq, gte, inArray, isNull, lte, or } from "drizzle-orm";
 import { db } from "@/db/client";
@@ -27,6 +28,7 @@ type EventInput = {
   type?: string;
   status?: string;
   color?: string | null;
+  icon?: string | null;
   location?: string | null;
 };
 
@@ -46,6 +48,7 @@ function normalizeEventInput(input: EventInput) {
     type: input.type || "evento",
     status: input.status || "confirmado",
     color: optionalText(input.color, 20),
+    icon: sanitizeDocIcon(input.icon ?? null),
     location: optionalText(input.location, 200),
   };
 }
@@ -124,7 +127,9 @@ export async function updateEvent(
 ) {
   return runAction(async () => {
     const scope = await resolveStagebookScope();
-    const eventData = normalizeEventInput(input);
+    const { icon, ...rest } = normalizeEventInput(input);
+    // Sem `icon` no payload, o ícone salvo continua como está.
+    const eventData = "icon" in input ? { ...rest, icon } : rest;
 
     await db
       .update(calendarEvents)

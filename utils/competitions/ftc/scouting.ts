@@ -5,6 +5,7 @@
  * Tudo aqui é puro (sem React, sem storage) para poder ser testado.
  */
 import { POINTS, RANKING_POINTS, allianceCountFor } from "./biobuzz";
+import type { OfficialEvent, OfficialTeam } from "./ftcscout";
 
 export type AllianceColor = "red" | "blue";
 
@@ -65,6 +66,8 @@ export type ScoutingData = {
   event: ScoutEvent;
   teams: ScoutTeam[];
   entries: ScoutEntry[];
+  /** Dados oficiais importados da FTCScout (equipes, ranking, partidas, OPR). */
+  official?: OfficialEvent;
 };
 
 export const emptyScouting = (): ScoutingData => ({
@@ -181,6 +184,22 @@ export type TeamStats = {
   rating: number;
   /** perfil: fração dos pontos de TELEOP que vêm de TIPs/CELL (0–1) */
   hiveShare: number;
+  /* ---- dados oficiais (FTCScout) ---- */
+  opr?: number;
+  /** "evento": OPR deste evento · "temporada": melhor OPR da equipe na temporada */
+  oprScope?: "evento" | "temporada";
+  oprAuto?: number;
+  oprTeleop?: number;
+  officialRank?: number;
+  officialRp?: number;
+  wins: number;
+  losses: number;
+  ties: number;
+  officialPlayed: number;
+  /** de onde vem a força da equipe: FTCScout, scouting próprio ou os dois */
+  source: "ftcscout" | "scout" | "both" | "none";
+  /** pontos que a equipe soma à aliança: base de toda a triagem */
+  strength: number;
 };
 
 const mean = (xs: number[]) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0);
@@ -190,7 +209,19 @@ const stdev = (xs: number[]) => {
   return Math.sqrt(mean(xs.map((x) => (x - m) ** 2)));
 };
 
-export function teamStats(team: ScoutTeam, entries: ScoutEntry[]): TeamStats {
+/**
+ * Força da equipe. A OPR da FTCScout é a base (vale para todas as equipes,
+ * inclusive as que ninguém anotou). Quando há 3+ partidas anotadas, a média
+ * do scouting entra com metade do peso; a confiabilidade anotada pesa sobre
+ * as duas.
+ */
+export function strengthOf(opr: number | undefined, scoutedAvg: number, scoutedMatches: number, reliability: number) {
+  if (opr != null && scoutedMatches >= 3) return (0.5 * opr + 0.5 * scoutedAvg) * reliability;
+  if (opr != null) return opr * (scoutedMatches > 0 ? reliability : 1);
+  return scoutedAvg * reliability;
+}
+
+export function teamStats(team: ScoutTeam, entries: ScoutEntry[], official?: OfficialTeam): TeamStats {
   const mine = entries.filter((e) => e.team === team.number);
   const played = mine.filter((e) => !e.noShow);
   const totals = mine.map(entryPoints);
@@ -201,9 +232,11 @@ export function teamStats(team: ScoutTeam, entries: ScoutEntry[]): TeamStats {
   const tipsPts = mean(played.map(entryTips));
   const endgame = mean(played.map(entryEndgame));
 
+  const opr = official?.opr?.total ?? official?.seasonOpr;
+  const strength = strengthOf(opr, avg, mine.length, reliability);
   return {
     number: team.number,
-    name: team.name,
+    name: team.name || official?.name || "",
     rank: team.rank,
     unavailable: Boolean(team.unavailable),
     matches: mine.length,
@@ -229,25 +262,42 @@ export function teamStats(team: ScoutTeam, entries: ScoutEntry[]): TeamStats {
     best: totals.length ? Math.max(...totals) : 0,
     driver: mean(played.map((e) => e.driver)),
     defense: mean(played.map((e) => e.defense)),
-    rating: avg * reliability - fouls,
+    rating: strength - fouls,
     hiveShare: tipsPts + endgame > 0 ? tipsPts / (tipsPts + endgame) : 0.5,
+    opr,
+    oprScope: official?.opr ? "evento" : official?.seasonOpr != null ? "temporada" : undefined,
+    oprAuto: official?.opr?.auto,
+    oprTeleop: official?.opr?.teleop,
+    officialRank: official?.rank,
+    officialRp: official?.rp,
+    wins: official?.wins ?? 0,
+    losses: official?.losses ?? 0,
+    ties: official?.ties ?? 0,
+    officialPlayed: official?.played ?? 0,
+    source: opr != null ? (mine.length ? "both" : "ftcscout") : mine.length ? "scout" : "none",
+    strength,
   };
 }
 
-export function allTeamStats(data: Pick<ScoutingData, "teams" | "entries">): TeamStats[] {
-  // Equipes que só aparecem nos registros também entram.
+export function allTeamStats(data: Pick<ScoutingData, "teams" | "entries" | "official">): TeamStats[] {
+  // Equipes da FTCScout, da lista manual e as que só aparecem nos registros.
+  const official = new Map((data.official?.teams ?? []).map((t) => [t.number, t]));
   const known = new Map(data.teams.map((t) => [t.number, t]));
+  for (const t of official.values()) if (!known.has(t.number)) known.set(t.number, { number: t.number, name: t.name });
   for (const e of data.entries) {
     if (e.team && !known.has(e.team)) known.set(e.team, { number: e.team, name: "" });
   }
-  return [...known.values()].map((t) => teamStats(t, data.entries));
+  return [...known.values()].map((t) => teamStats(t, data.entries, official.get(t.number)));
 }
+
+/** Equipes com algum dado para comparar (OPR da FTCScout ou partida anotada). */
+export const hasData = (t: TeamStats) => t.source !== "none";
 
 /** Ordem de qualificação: ranking oficial quando houver, senão a nota do scouting. */
 export function qualificationOrder(stats: TeamStats[]): TeamStats[] {
   return [...stats].sort((a, b) => {
-    const ra = a.rank ?? Number.POSITIVE_INFINITY;
-    const rb = b.rank ?? Number.POSITIVE_INFINITY;
+    const ra = a.officialRank ?? a.rank ?? Number.POSITIVE_INFINITY;
+    const rb = b.officialRank ?? b.rank ?? Number.POSITIVE_INFINITY;
     if (ra !== rb) return ra - rb;
     return b.rating - a.rating || a.number.localeCompare(b.number, undefined, { numeric: true });
   });
@@ -277,20 +327,23 @@ export type PairEvaluation = {
  * mesma coisa rendem menos que a soma), menos faltas.
  */
 export function evaluatePair(a: TeamStats, b: TeamStats): PairEvaluation {
-  const base = a.avg * a.reliability + b.avg * b.reliability;
+  const base = a.strength + b.strength;
   // As duas lançam na mesma HIVE e disputam as mesmas 4 FLOWERS.
   const hiveOverlap = 0.15 * Math.min(a.tipsPts, b.tipsPts);
   const endOverlap = 0.1 * Math.min(a.endgame, b.endgame);
   const expected = Math.max(0, base - hiveOverlap - endOverlap - a.fouls - b.fouls);
-  const spread = Math.sqrt(a.stdev ** 2 + b.stdev ** 2);
+  // Sem partidas anotadas não há variação medida: assume ±20% da força.
+  const sd = (t: TeamStats) => (t.matches >= 2 ? t.stdev : 0.2 * t.strength);
+  const spread = Math.sqrt(sd(a) ** 2 + sd(b) ** 2);
   const floor = Math.max(0, expected - spread);
   const tips = a.tipsCount + b.tipsCount;
   const swarm = a.swarm + b.swarm;
   const score = expected - 0.35 * spread;
 
   const reasons: string[] = [];
+  if (a.opr != null && b.opr != null) reasons.push(`OPR ${a.opr.toFixed(0)} + ${b.opr.toFixed(0)} (FTCScout)`);
   const complement = Math.abs(a.hiveShare - b.hiveShare);
-  if (complement >= 0.35) {
+  if (complement >= 0.35 && a.matches > 0 && b.matches > 0) {
     const [hive, end] = a.hiveShare > b.hiveShare ? [a, b] : [b, a];
     reasons.push(`${hive.number} puxa a HIVE e ${end.number} fecha nas FLOWERS`);
   } else if (a.tipsPts > 0 && b.tipsPts > 0 && complement < 0.15) {
@@ -298,7 +351,7 @@ export function evaluatePair(a: TeamStats, b: TeamStats): PairEvaluation {
   }
   if (tips >= RANKING_POINTS.pollinator2Tips) reasons.push(`${tips.toFixed(1)} TIPs por partida juntas`);
   if (swarm >= RANKING_POINTS.swarmThreshold) reasons.push("LEAVE + PARK garantem o SWARM");
-  if (Math.min(a.reliability, b.reliability) < 0.75) reasons.push("Atenção: histórico de quebras");
+  if (a.matches > 0 && b.matches > 0 && Math.min(a.reliability, b.reliability) < 0.75) reasons.push("Atenção: histórico de quebras");
   if (a.fouls + b.fouls >= 10) reasons.push(`Entregam ~${Math.round(a.fouls + b.fouls)} pts em faltas`);
   if (spread <= 10 && a.matches >= 3 && b.matches >= 3) reasons.push("Dupla consistente");
 
@@ -388,6 +441,9 @@ export function mergeScouting(base: ScoutingData, incoming: ScoutingData): Scout
     } as ScoutEvent,
     teams: [...teams.values()],
     entries: [...base.entries, ...(incoming.entries ?? []).filter((e) => !ids.has(e.id))],
+    // Fica o retrato mais recente da FTCScout.
+    official:
+      (incoming.official?.fetchedAt ?? 0) > (base.official?.fetchedAt ?? 0) ? incoming.official : base.official,
   };
 }
 
@@ -405,6 +461,7 @@ export function parseScouting(raw: unknown): ScoutingData | null {
     entries: d.entries
       .filter((e) => e && typeof e.team === "string" && typeof e.id === "string")
       .map((e) => newEntry(e)),
+    official: d.official && d.official.source === "ftcscout" && Array.isArray(d.official.teams) ? d.official : undefined,
   };
 }
 

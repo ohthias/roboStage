@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 export const STORAGE_KEYS = {
   scouting: "robostage:ftc-scouting:v1",
   strategy: "robostage:ftc-strategy:v1",
+  score: "robostage:ftc-score:v1",
 } as const;
 
 export function readStorage<T>(key: string, fallback: T, parse?: (raw: unknown) => T | null): T {

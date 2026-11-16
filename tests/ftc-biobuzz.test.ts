@@ -28,6 +28,8 @@ import {
   simulateSelection,
   type ScoutingData,
 } from "@/utils/competitions/ftc/scouting";
+import { eventPhase, namesFromGraphql, normalizeEvent, normalizeMatch, normalizeQuickStats, upcomingFor } from "@/utils/competitions/ftc/ftcscout";
+import { emptySheet, makeRun, runSummary, scoreMatch, sheetWarnings } from "@/utils/competitions/ftc/score";
 import { applyPreset, briefing, newPlan, planWarnings, scorePlan } from "@/utils/competitions/ftc/strategy";
 
 describe("pontuação BIOBUZZ", () => {
@@ -232,5 +234,151 @@ describe("estratégia do TELEOP", () => {
     const text = briefing(p);
     expect(text).toContain("Partida Q7");
     expect(text).toContain(`${scorePlan(p).total} pts`);
+  });
+});
+
+
+const rawEvent = { season: 2026, code: "BRSPQ1", name: "São Paulo Qualifier", start: "2026-12-05", city: "São Paulo", stateProv: "SP", country: "Brasil" };
+const rawTeams = [
+  { teamNumber: 100, stats: { rank: 2, rp: 4.5, wins: 4, losses: 1, ties: 0, qualMatchesPlayed: 5, opr: { totalPointsNp: 88.4, autoPoints: 20.1, dcPoints: 68.3 } } },
+  { teamNumber: 200, stats: { rank: 1, rp: 5, wins: 5, losses: 0, ties: 0, qualMatchesPlayed: 5, opr: { totalPoints: 102 } } },
+  { teamNumber: 300, stats: null },
+];
+const rawMatches = [
+  {
+    id: 1, matchNum: 1, tournamentLevel: "Quals", hasBeenPlayed: true,
+    teams: [
+      { teamNumber: 100, alliance: "Red", station: "One" }, { teamNumber: 300, alliance: "Red", station: "Two" },
+      { teamNumber: 200, alliance: "Blue", station: "One" }, { teamNumber: 400, alliance: "Blue", station: "Two" },
+    ],
+    scores: { red: { totalPoints: 150, autoPoints: 40 }, blue: { totalPoints: 170, autoPoints: 50 } },
+  },
+  {
+    id: 2, matchNum: 2, tournamentLevel: "Quals", hasBeenPlayed: false,
+    teams: [
+      { teamNumber: 200, alliance: "Red", station: "One" }, { teamNumber: 300, alliance: "Red", station: "Two" },
+      { teamNumber: 100, alliance: "Blue", station: "One" }, { teamNumber: 400, alliance: "Blue", station: "Two" },
+    ],
+    scores: null,
+  },
+  { id: 9, matchNum: 1, series: 1, tournamentLevel: "DoubleElim", hasBeenPlayed: false, teams: [], scores: null },
+];
+
+describe("FTCScout", () => {
+  it("normaliza evento, equipes (OPR sem faltas), partidas e nomes", () => {
+    const names = namesFromGraphql({ data: { eventByCode: { teams: [{ teamNumber: 100, team: { name: "Abelhas" } }] } } });
+    const ev = normalizeEvent(rawEvent, rawTeams, rawMatches, names, 2026);
+    expect(ev.code).toBe("BRSPQ1");
+    expect(ev.location).toBe("São Paulo, SP, Brasil");
+    const t100 = ev.teams.find((t) => t.number === "100")!;
+    expect(t100).toMatchObject({ name: "Abelhas", rank: 2, wins: 4, played: 5 });
+    expect(t100.opr).toEqual({ total: 88.4, auto: 20.1, teleop: 68.3 });
+    expect(ev.teams.find((t) => t.number === "200")!.opr?.total).toBe(102);
+    expect(ev.teams.find((t) => t.number === "300")!.opr).toBeUndefined();
+    // equipe que só aparece nas partidas
+    expect(ev.teams.some((t) => t.number === "400")).toBe(true);
+    expect(ev.matches.map((m) => m.label)).toEqual(["Q1", "Q2", "P1-1"]);
+    expect(ev.matches[0].red).toMatchObject({ teams: ["100", "300"], score: 150, auto: 40 });
+    expect(ev.matches[1].played).toBe(false);
+  });
+
+  it("ignora lixo sem quebrar", () => {
+    expect(normalizeMatch({})).toBeNull();
+    const ev = normalizeEvent(null, "x", { a: 1 });
+    expect(ev.teams).toEqual([]);
+    expect(ev.matches).toEqual([]);
+  });
+
+  it("lista as próximas partidas da equipe com parceiro e adversários", () => {
+    const ev = normalizeEvent(rawEvent, rawTeams, rawMatches);
+    const next = upcomingFor(ev, "100");
+    expect(next).toHaveLength(1);
+    expect(next[0]).toMatchObject({ alliance: "blue", partner: ["400"], opponents: ["200", "300"] });
+  });
+
+  it("triagem: OPR vale para equipes não anotadas e o ranking oficial manda", () => {
+    const d = emptyScouting();
+    d.official = normalizeEvent(rawEvent, rawTeams, rawMatches);
+    const stats = allTeamStats(d);
+    const t200 = stats.find((t) => t.number === "200")!;
+    expect(t200.source).toBe("ftcscout");
+    expect(t200.strength).toBe(102);
+    expect(qualificationOrder(stats)[0].number).toBe("200");
+    const pair = evaluatePair(t200, stats.find((t) => t.number === "100")!);
+    expect(pair.expected).toBeCloseTo(190.4, 1);
+    expect(pair.reasons[0]).toContain("FTCScout");
+  });
+
+  it("com 3+ partidas anotadas mistura OPR e média do scout", () => {
+    const d = emptyScouting();
+    d.official = normalizeEvent(rawEvent, rawTeams, rawMatches);
+    for (let m = 1; m <= 3; m++) d.entries.push(newEntry({ id: `x${m}`, team: "200", match: m, tips: 1 })); // 20 pts
+    const t200 = allTeamStats(d).find((t) => t.number === "200")!;
+    expect(t200.source).toBe("both");
+    expect(t200.strength).toBeCloseTo(0.5 * 102 + 0.5 * 20, 5);
+  });
+});
+
+describe("FTCScout no dia do campeonato", () => {
+  it("identifica o momento do evento pela agenda e placares", () => {
+    expect(eventPhase(undefined)).toBe("sem-evento");
+    expect(eventPhase(normalizeEvent(rawEvent, rawTeams, []))).toBe("vespera");
+    const notPlayed = rawMatches.slice(0, 2).map((m) => ({ ...m, hasBeenPlayed: false, scores: null }));
+    expect(eventPhase(normalizeEvent(rawEvent, rawTeams, notPlayed))).toBe("agenda");
+    expect(eventPhase(normalizeEvent(rawEvent, rawTeams, rawMatches.slice(0, 2)))).toBe("qualificacao");
+    expect(eventPhase(normalizeEvent(rawEvent, rawTeams, [rawMatches[0]]))).toBe("selecao");
+    expect(eventPhase(normalizeEvent(rawEvent, rawTeams, rawMatches))).toBe("playoffs");
+  });
+
+  it("antes das partidas usa a melhor OPR da temporada (quick-stats)", () => {
+    expect(normalizeQuickStats({ season: 2026, number: 300, tot: { value: 77.5, rank: 40 } })).toBe(77.5);
+    const d = emptyScouting();
+    d.official = normalizeEvent(rawEvent, rawTeams, []);
+    d.official.teams.find((t) => t.number === "300")!.seasonOpr = 77.5;
+    const t300 = allTeamStats(d).find((t) => t.number === "300")!;
+    expect(t300.opr).toBe(77.5);
+    expect(t300.oprScope).toBe("temporada");
+    expect(t300.strength).toBe(77.5);
+  });
+});
+
+
+describe("pontuador de treino", () => {
+  it("soma a folha da aliança com a tabela 10-2", () => {
+    const red = { ...emptySheet(), leave: [true, true] as [boolean, boolean], autoPark: [true, false] as [boolean, boolean], autoTips: 1, tips: 3, cell: 2, flowersOwned: 1, flowerElements: 5, bottomNectar: 1, garden: 4, park: [true, true] as [boolean, boolean] };
+    const r = scoreMatch(red, emptySheet()).red;
+    expect(r.auto).toBe(6 + 5 + 20);
+    expect(r.teleop).toBe(60 + 4 + 10 + 5 + 4 + 10);
+    expect(r.swarm).toBe(6 + 5 + 10);
+    expect(r.rp.swarm).toBe(true);
+  });
+
+  it("faltas viram pontos do adversário e decidem o resultado e os RP", () => {
+    const red = { ...emptySheet(), tips: 2, majorFouls: 1 }; // 40 pts, entrega 20
+    const blue = { ...emptySheet(), tips: 1, minorFouls: 1 }; // 20 pts, entrega 5
+    const m = scoreMatch(red, blue);
+    expect(m.red.final).toBe(45);
+    expect(m.blue.final).toBe(40);
+    expect(m.winner).toBe("red");
+    expect(m.red.rpTotal).toBe(3);
+    expect(m.blue.rpTotal).toBe(0);
+    const tie = scoreMatch(emptySheet(), emptySheet());
+    expect(tie.winner).toBe("tie");
+    expect(tie.red.rpTotal).toBe(1);
+  });
+
+  it("avisa erros comuns de contagem", () => {
+    expect(sheetWarnings({ ...emptySheet(), flowerElements: 3 }).join(" ")).toContain("não pontuam");
+    expect(sheetWarnings({ ...emptySheet(), autoPark: [true, false] }).join(" ")).toContain("sem LEAVE");
+    expect(sheetWarnings(emptySheet())).toEqual([]);
+  });
+
+  it("resume o histórico de tentativas com tendência", () => {
+    const runs = Array.from({ length: 10 }, (_, i) => makeRun({ ...emptySheet(), tips: i < 5 ? 3 : 1 }, `T${i}`));
+    const s = runSummary(runs)!;
+    expect(s.count).toBe(10);
+    expect(s.best).toBe(60);
+    expect(s.trend).toBe(40);
+    expect(runSummary([])).toBeNull();
   });
 });

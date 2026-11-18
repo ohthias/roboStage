@@ -21,7 +21,7 @@ export default function Hero() {
   const hero = HERO_CONFIG[competicao];
 
   return (
-    <section className="relative isolate overflow-hidden border-b border-base-300 px-6 pb-16 pt-12 sm:pb-20 sm:pt-16">
+    <section className="relative isolate overflow-hidden border-b border-base-300 px-6 pb-16 sm:pb-20 max-h-[700px]">
       <div
         className="absolute inset-0 -z-10 bg-gradient-to-b from-base-100/70 to-[var(--hero-accent)]/20"
         style={{ "--hero-accent": hero.accent } as React.CSSProperties}
@@ -90,7 +90,7 @@ export default function Hero() {
           <img
             src={hero.imagem}
             alt={hero.titulo}
-            className="relative aspect-square w-full object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.12)] transition-transform duration-500 motion-safe:hover:-translate-y-1"
+            className="relative aspect-square w-full object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.12)] transition-transform duration-500 hover:-translate-y-1 hover:scale-[1.02] max-h-[400px] md:max-h-[500px] lg:max-h-[600px]"
           />
         </div>
       </div>

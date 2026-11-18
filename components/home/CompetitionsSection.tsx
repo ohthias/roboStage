@@ -40,7 +40,7 @@ const COMPETITIONS: Competition[] = [
     description:
       "Pontuador por temporada, QuickBrick Studio, Recall, rubricas, timers e guias para equipes iniciantes.",
     cta: "Explorar a FLL",
-    image: "/images/index/hero_banner_fll.jpg",
+    image: "/images/index/banner_hero_fll2.webp",
     Icon: FLLIcon,
     span: "lg:col-span-7",
     minHeight: "min-h-[300px]",
@@ -57,7 +57,7 @@ const COMPETITIONS: Competition[] = [
     description:
       "Pontuador da arena, documentação e o Anatix para visualizar o robô em tempo real.",
     cta: "Explorar a OBR",
-    image: "/images/index/hero_banner_obr.png",
+    image: "/images/index/banner_hero_obr.webp",
     Icon: OBRIcon,
     span: "lg:col-span-5",
     minHeight: "min-h-[300px]",
@@ -74,7 +74,7 @@ const COMPETITIONS: Competition[] = [
     description:
       "BIOBUZZ: cronômetro, estratégia de TELEOP e scouting com alianças.",
     cta: "Explorar a FTC",
-    image: "/images/index/hero_banner_ftc.png",
+    image: "/images/index/banner_hero_ftc.webp",
     Icon: FTCIcon,
     span: "lg:col-span-5",
     minHeight: "min-h-[260px]",

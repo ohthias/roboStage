@@ -7,7 +7,7 @@ export const HERO_CONFIG = {
     descricao:
       "Planeje missões, analise pontuações e evolua sua estratégia, seja na Challenge, Future Edition ou na Explore.",
     imagem:
-      "/images/fll/FLL_hero.svg",
+      "images/index/illustration_hero_banner_fll.webp",
     ctaPrimario: {
       label: "Explorar QuickBrick",
       href: "/fll/quickbrick",
@@ -25,7 +25,7 @@ export const HERO_CONFIG = {
     abr: "FTC",
     descricao:
       "Cronômetro oficial da partida, montador de estratégia para o TELEOP, scouting com sugestão de alianças e tudo sobre a arena da BIOBUZZ.",
-    imagem: "/images/ftc/FTC_hero.png",
+    imagem: "images/index/illustration_hero_banner_ftc.webp",
     ctaPrimario: {
       label: "Abrir o scouting",
       href: "/ftc/scouting",
@@ -44,7 +44,7 @@ export const HERO_CONFIG = {
     descricao:
       "Na Olimpiada Brasileira de Robótica, você desenvolve o raciocínio lógico, a criatividade e o trabalho em equipe por meio da construção e programação de robôs.",
     imagem:
-      "https://2.bp.blogspot.com/-RwI2Zj2oTs0/Wz9faHeeOVI/AAAAAAAAJl4/XweL6dFnBbgaeH9wpOuSVzmQ7pGyl1ViwCLcBGAs/s1600/IMG_8560.JPG",
+      "images/index/illustration_hero_banner_obr.webp",
     ctaPrimario: {
       label: "Explorar Anatix",
       href: "/obr/anatix",

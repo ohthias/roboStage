@@ -169,11 +169,7 @@ export type AllianceScore = {
   rp: { swarm: boolean; pollinator1: boolean; pollinator2: boolean; bonus: number };
 };
 
-export function scoreAlliance(input: AllianceInput): AllianceScore {
-  const auto = autoPoints(input.auto);
-  const teleop = teleopPoints(input.teleop);
-  const tips = clamp(input.auto.tips, 0, 99) + clamp(input.teleop.tips, 0, 99);
-  const swarm = swarmPoints(input);
+function rankingPointsFor(swarm: number, tips: number): AllianceScore["rp"] {
   const rp = {
     swarm: swarm >= RANKING_POINTS.swarmThreshold,
     pollinator1: tips >= RANKING_POINTS.pollinator1Tips,
@@ -181,7 +177,15 @@ export function scoreAlliance(input: AllianceInput): AllianceScore {
     bonus: 0,
   };
   rp.bonus = Number(rp.swarm) + Number(rp.pollinator1) + Number(rp.pollinator2);
-  return { auto, teleop, total: auto + teleop, tips, swarm, rp };
+  return rp;
+}
+
+export function scoreAlliance(input: AllianceInput): AllianceScore {
+  const auto = autoPoints(input.auto);
+  const teleop = teleopPoints(input.teleop);
+  const tips = clamp(input.auto.tips, 0, 99) + clamp(input.teleop.tips, 0, 99);
+  const swarm = swarmPoints(input);
+  return { auto, teleop, total: auto + teleop, tips, swarm, rp: rankingPointsFor(swarm, tips) };
 }
 
 /**

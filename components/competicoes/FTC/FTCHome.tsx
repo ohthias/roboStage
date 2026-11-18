@@ -179,7 +179,35 @@ export default async function FTCHome() {
   return (
     <main className="mt-16 overflow-x-clip bg-base-100 text-base-content">
       <Hero />
+      <FTCSections />
+      <NewsSection
+        news={news}
+        kicker="/ NOVIDADES"
+        title="O que há de novo"
+        highlight="no RoboStage."
+      />
+      <CtaBlock
+        kicker="FTC · BIOBUZZ"
+        icon={Hexagon}
+        title="Seu evento, com mais dados e menos improviso."
+        text="Pontue os treinos, combine a estratégia na fila e chegue na seleção de alianças com as duplas já comparadas."
+        actions={[
+          { label: "Abrir o pontuador", href: "/ftc/score", variant: "accent" },
+          { label: "Scouting", href: "/ftc/scouting", variant: "ghost" },
+          {
+            label: "Estratégia TeleOp",
+            href: "/ftc/estrategia",
+            variant: "ghost",
+          },
+        ]}
+      />
+    </main>
+  );
+}
 
+function FTCSections() {
+  return (
+    <>
       {/* ========================================================= SOBRE A FTC */}
       <section className="relative isolate overflow-clip px-6 py-24">
         <AnimatedBackground />
@@ -432,28 +460,6 @@ export default async function FTCHome() {
         </div>
       </section>
 
-      <NewsSection
-        news={news}
-        kicker="/ NOVIDADES"
-        title="O que há de novo"
-        highlight="no RoboStage."
-      />
-
-      <CtaBlock
-        kicker="FTC · BIOBUZZ"
-        icon={Hexagon}
-        title="Seu evento, com mais dados e menos improviso."
-        text="Pontue os treinos, combine a estratégia na fila e chegue na seleção de alianças com as duplas já comparadas."
-        actions={[
-          { label: "Abrir o pontuador", href: "/ftc/score", variant: "accent" },
-          { label: "Scouting", href: "/ftc/scouting", variant: "ghost" },
-          {
-            label: "Estratégia TeleOp",
-            href: "/ftc/estrategia",
-            variant: "ghost",
-          },
-        ]}
-      />
-    </main>
+    </>
   );
 }

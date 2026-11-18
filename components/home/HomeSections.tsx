@@ -788,17 +788,23 @@ function formatDate(date?: string) {
   });
 }
 
-export function NewsSection({
-  news,
-  kicker = "/ NOVIDADES",
-  title = "O que mudou",
-  highlight = "por aqui.",
-}: {
+type NewsSectionProps = {
   news: HomeNews[];
   kicker?: string;
   title?: string;
   highlight?: string;
-}) {
+};
+
+export function NewsSection(props: NewsSectionProps) {
+  return <NewsSectionContent {...props} />;
+}
+
+function NewsSectionContent({
+  news,
+  kicker = "/ NOVIDADES",
+  title = "O que mudou",
+  highlight = "por aqui.",
+}: NewsSectionProps) {
   if (news.length === 0) return null;
   const [first, ...rest] = news;
 

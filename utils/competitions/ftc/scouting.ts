@@ -385,6 +385,19 @@ export type SimAlliance = {
   pair?: PairEvaluation;
 };
 
+/** Resolve o convite de um capitão sem repetir a avaliação da dupla. */
+function selectPartner(
+  captain: TeamStats,
+  available: TeamStats[],
+  forcedNumber?: string,
+): PairEvaluation | undefined {
+  const forced = forcedNumber
+    ? available.find((team) => team.number === forcedNumber)
+    : undefined;
+  if (forced) return evaluatePair(captain, forced);
+  return bestPartners(captain, available)[0];
+}
+
 /**
  * Simula a seleção (seção 13.7): o capitão da vez é sempre a equipe mais bem
  * ranqueada ainda livre — se um capitão aceitar convite, os de baixo sobem e
@@ -402,12 +415,10 @@ export function simulateSelection(
 
   for (let seed = 1; seed <= count && free.length > 0; seed++) {
     const captain = free.shift()!;
-    let pick: TeamStats | undefined;
-    const forced = opts.forcedPicks?.[captain.number];
-    if (forced) pick = free.find((t) => t.number === forced);
-    if (!pick) pick = bestPartners(captain, free)[0]?.b;
+    const pair = selectPartner(captain, free, opts.forcedPicks?.[captain.number]);
+    const pick = pair?.b;
     if (pick) free.splice(free.indexOf(pick), 1);
-    result.push({ seed, captain, pick, pair: pick ? evaluatePair(captain, pick) : undefined });
+    result.push({ seed, captain, pick, pair });
   }
   return result;
 }

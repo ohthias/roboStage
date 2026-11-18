@@ -235,7 +235,16 @@ function AllianceCard({
 
 /* --------------------------------------------------------- principal */
 
-export default function FtcScore() {
+const PHASE_LABEL: Record<MatchPhase, string> = {
+  idle: "Pronto",
+  countdown: "Preparar",
+  auto: "AUTO",
+  transition: "Transição",
+  teleop: "TELEOP",
+  finished: "Fim — conte o campo",
+};
+
+function useFtcScoreController() {
   const [store, setStore, loaded] = usePersistentState<Store>(STORAGE_KEYS.score, initialStore, parseStore);
   const [clock, dispatch] = useReducer(matchTimerReducer, undefined, () => initialMatchTimer("full", true));
   const [showClock, setShowClock] = useState(false);
@@ -243,7 +252,6 @@ export default function FtcScore() {
   const [notes, setNotes] = useState("");
   const [saved, setSaved] = useState(false);
   const prevPhase = useRef<MatchPhase>(clock.phase);
-
   const { mode, red, blue, runs } = store;
   const result = useMemo(() => scoreMatch(red, mode === "partida" ? blue : emptySheet()), [red, blue, mode]);
   const summary = useMemo(() => runSummary(runs), [runs]);
@@ -280,17 +288,18 @@ export default function FtcScore() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const phaseLabel: Record<MatchPhase, string> = {
-    idle: "Pronto",
-    countdown: "Preparar",
-    auto: "AUTO",
-    transition: "Transição",
-    teleop: "TELEOP",
-    finished: "Fim — conte o campo",
-  };
-
   const lastRuns = runs.slice(0, 15).reverse();
   const maxTotal = Math.max(1, ...lastRuns.map((r) => r.total));
+
+  return {
+    mode, red, blue, runs, result, summary, loaded, clock, dispatch, showClock, setShowClock,
+    label, setLabel, notes, setNotes, saved, patch, resetSheets, saveRun,
+    phaseLabel: PHASE_LABEL, lastRuns, maxTotal, setStore,
+  };
+}
+
+export default function FtcScore() {
+  const { mode, red, blue, runs, result, summary, loaded, clock, dispatch, showClock, setShowClock, label, setLabel, notes, setNotes, saved, patch, resetSheets, saveRun, phaseLabel, lastRuns, maxTotal, setStore } = useFtcScoreController();
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-6xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-5 sm:py-8 lg:px-6 lg:py-12">

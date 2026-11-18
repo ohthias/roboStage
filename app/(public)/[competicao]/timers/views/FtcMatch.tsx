@@ -63,9 +63,9 @@ const MARKERS = [
 const HEX_BG =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98' viewBox='0 0 56 98'%3E%3Cpath d='M28 66L0 50V16L28 0l28 16v34L28 66zm0 32L0 82V66l28 16 28-16v16L28 98z' fill='none' stroke='%23f5b942' stroke-opacity='0.09' stroke-width='1.5'/%3E%3C/svg%3E\")";
 
-export function FtcMatch({ backHref = "/ftc/timers" }: { backHref?: string }) {
+function useFtcMatchSession(backHref: string) {
   const [state, dispatch] = useReducer(matchTimerReducer, undefined, () => initialMatchTimer());
-  const { phase, timeLeft, isRunning, muted, mode, tips } = state;
+  const { phase, timeLeft, isRunning, muted, mode } = state;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const prevPhase = useRef<MatchPhase>(phase);
   const [exitOpen, setExitOpen] = useState(false);
@@ -139,7 +139,6 @@ export function FtcMatch({ backHref = "/ftc/timers" }: { backHref?: string }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [toggle, fullscreen]);
 
-  /* ---------------------------------------------------------- visual */
   const clockColor =
     phase === "countdown"
       ? "text-[#f5b942]"
@@ -169,6 +168,49 @@ export function FtcMatch({ backHref = "/ftc/timers" }: { backHref?: string }) {
               : "PARK no LOADING ZONE!"
           : null;
 
+  return {
+    state,
+    dispatch,
+    containerRef,
+    exitOpen,
+    setExitOpen,
+    left,
+    progress,
+    flowerOpen,
+    finalStretch,
+    clockColor,
+    clock,
+    nextCue,
+    toggle,
+    goBack,
+    handleBack,
+    fullscreen,
+  };
+}
+
+export function FtcMatch({ backHref = "/ftc/timers" }: { backHref?: string }) {
+  const session = useFtcMatchSession(backHref);
+  const {
+    state,
+    dispatch,
+    containerRef,
+    exitOpen,
+    setExitOpen,
+    left,
+    progress,
+    flowerOpen,
+    finalStretch,
+    clockColor,
+    clock,
+    nextCue,
+    toggle,
+    goBack,
+    handleBack,
+    fullscreen,
+  } = session;
+  const { phase, timeLeft, isRunning, muted, mode, tips } = state;
+
+  /* ---------------------------------------------------------- visual */
   return (
     <div
       ref={containerRef}

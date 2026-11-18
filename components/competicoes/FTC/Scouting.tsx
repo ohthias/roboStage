@@ -586,7 +586,7 @@ function EmptyState({ text }: { text: string }) {
 
 /* ============================================================= página */
 
-export default function Scouting() {
+function ScoutingContent() {
   const [data, setDataState] = usePersistentState<ScoutingData>(STORAGE_KEYS.scouting, emptyScouting, parseScouting);
   const [tab, setTab] = useState<Tab>("equipes");
   const [selected, setSelected] = useState("");
@@ -652,4 +652,12 @@ export default function Scouting() {
       <FtcScoutAttribution />
     </div>
   );
+}
+
+function ScoutingPage() {
+  return <ScoutingContent />;
+}
+
+export default function Scouting() {
+  return <ScoutingPage />;
 }

@@ -149,7 +149,7 @@ function RolePicker({ value, onChange, name }: { value: Role; onChange: (r: Role
 
 /* ------------------------------------------------------------ principal */
 
-export default function StrategyBuilder() {
+function useStrategyBuilder() {
   const [alliance, setAlliance] = useState<"red" | "blue">("red");
   const [match, setMatch] = useState("");
   const [robots, setRobots] = useState<[Robot, Robot]>(() => [newRobot(), newRobot()]);
@@ -208,6 +208,46 @@ export default function StrategyBuilder() {
 
   const red = alliance === "red";
   const tint = red ? "border-error" : "border-info";
+
+  return {
+    alliance,
+    setAlliance,
+    match,
+    setMatch,
+    robots,
+    setRobots,
+    extras,
+    setExtras,
+    queue,
+    setQueue,
+    setRobot,
+    reset,
+    score,
+    hints,
+    red,
+    tint,
+  };
+}
+
+export default function StrategyBuilder() {
+  const {
+    alliance,
+    setAlliance,
+    match,
+    setMatch,
+    robots,
+    setRobots,
+    extras,
+    setExtras,
+    queue,
+    setQueue,
+    setRobot,
+    reset,
+    score,
+    hints,
+    red,
+    tint,
+  } = useStrategyBuilder();
 
   return (
     <div className="space-y-4">

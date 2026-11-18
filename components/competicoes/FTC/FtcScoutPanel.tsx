@@ -67,15 +67,21 @@ const DAY_STEPS: [string, string][] = [
  * Barra do evento: equipe, importação da FTCScout e uma frase sobre o que
  * fazer agora. Tudo o que é configuração fica aqui; o resto da tela é análise.
  */
-export default function EventBar({
-  data,
-  setData,
-  menu,
-}: {
+type EventBarProps = {
   data: ScoutingData;
   setData: (fn: (d: ScoutingData) => ScoutingData) => void;
   menu?: React.ReactNode;
-}) {
+};
+
+export default function EventBar(props: EventBarProps) {
+  return <EventBarView {...props} />;
+}
+
+function EventBarView({
+  data,
+  setData,
+  menu,
+}: EventBarProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<EventSummary[] | null>(null);
   const [busy, setBusy] = useState("");

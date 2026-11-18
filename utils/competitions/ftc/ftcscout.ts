@@ -196,6 +196,40 @@ export function normalizeMatch(raw: unknown): OfficialMatch | null {
   };
 }
 
+function normalizeEventTeams(rawTeams: unknown, names: Record<string, string>): OfficialTeam[] {
+  return arr(rawTeams)
+    .map((team) => normalizeEventTeam(team, names))
+    .filter((team): team is OfficialTeam => team !== null);
+}
+
+function normalizeEventMatches(rawMatches: unknown): OfficialMatch[] {
+  return arr(rawMatches)
+    .map(normalizeMatch)
+    .filter((match): match is OfficialMatch => match !== null)
+    .sort((a, b) =>
+      a.level === b.level
+        ? (a.series ?? 0) - (b.series ?? 0) || a.number - b.number
+        : a.level === "Q"
+          ? -1
+          : 1,
+    );
+}
+
+function addTeamsMissingFromTable(
+  teams: OfficialTeam[],
+  matches: OfficialMatch[],
+  names: Record<string, string>,
+): void {
+  const known = new Set(teams.map((team) => team.number));
+  for (const match of matches) {
+    for (const number of [...match.red.teams, ...match.blue.teams]) {
+      if (known.has(number)) continue;
+      known.add(number);
+      teams.push({ number, name: names[number] ?? "", wins: 0, losses: 0, ties: 0, played: 0 });
+    }
+  }
+}
+
 export function normalizeEvent(
   rawEvent: unknown,
   rawTeams: unknown,
@@ -204,22 +238,9 @@ export function normalizeEvent(
   season: number = FTCSCOUT.season,
 ): OfficialEvent {
   const summary = normalizeEventSummary(rawEvent);
-  const teams = arr(rawTeams)
-    .map((t) => normalizeEventTeam(t, names))
-    .filter((t): t is OfficialTeam => t !== null);
-  const matches = arr(rawMatches)
-    .map(normalizeMatch)
-    .filter((m): m is OfficialMatch => m !== null)
-    .sort((a, b) => (a.level === b.level ? (a.series ?? 0) - (b.series ?? 0) || a.number - b.number : a.level === "Q" ? -1 : 1));
-
-  // Equipes que só aparecem na tabela de partidas também entram.
-  const known = new Set(teams.map((t) => t.number));
-  for (const m of matches)
-    for (const n of [...m.red.teams, ...m.blue.teams])
-      if (!known.has(n)) {
-        known.add(n);
-        teams.push({ number: n, name: names[n] ?? "", wins: 0, losses: 0, ties: 0, played: 0 });
-      }
+  const teams = normalizeEventTeams(rawTeams, names);
+  const matches = normalizeEventMatches(rawMatches);
+  addTeamsMissingFromTable(teams, matches, names);
 
   return {
     source: "ftcscout",

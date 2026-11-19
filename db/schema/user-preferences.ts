@@ -16,6 +16,14 @@ export const userPreferences = pgTable(
     sidebarExpanded: boolean("sidebar_expanded").notNull().default(false),
     /** Falso = ninguém consegue adicionar este usuário a equipes. */
     allowTeamInvites: boolean("allow_team_invites").notNull().default(true),
+    /** Painel do ShowLive habilitado para o usuário (coluna já existente no banco). */
+    showliveEnabled: boolean("showlive_enabled").notNull().default(false),
+    /**
+     * Opt-in para e-mails de novidades (LGPD: começa desligado e só liga com
+     * escolha explícita — no onboarding ou em Configurações). Lido pelo
+     * robostage-admin para montar o público das campanhas de "Novidades".
+     */
+    emailProductUpdates: boolean("email_product_updates").notNull().default(false),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({

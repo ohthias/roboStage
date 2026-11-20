@@ -3,7 +3,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { ChevronDown, Menu, Trophy, X, ChevronUp } from "lucide-react";
+import { ChevronDown, Menu, Trophy, X, ChevronUp, Rocket } from "lucide-react";
 
 import Logo from "./Logo";
 import { ThemeController } from "./themeController";
@@ -458,13 +458,15 @@ export function Navbar() {
 
           <div className="hidden items-center gap-2 lg:flex">
             <ThemeController />
-
             <div className="divider divider-horizontal mx-1" />
-
+            <Link href="https://showlive.robostage.com.br/entrar" className="btn btn-ghost btn-sm btn-secondary text-base-content hover:text-secondary-content">
+              <Rocket size={16} />
+              Acessar evento
+            </Link>
             <Show when="signed-in">
               <Link
                 href="/dashboard"
-                className="rounded-full border transition-shadow duration-200 hover:scale-110 hover:shadow-[0_0_0_2px_theme(colors.primary)]"
+                className="rounded-full border border-base-300/60 transition-shadow duration-200 hover:scale-110 hover:shadow-[4px_4px_0_0_theme(colors.base-content)]"
               >
                 <UserAvatar component="button" />
               </Link>
@@ -652,6 +654,9 @@ export function Navbar() {
 
             <div className="mt-4 border-t border-base-300 p-4">
               <div className="flex flex-col items-center gap-2">
+                <Link href="https://showlive.robostage.com.br/entrar" className="btn btn-ghost btn-sm">
+                  Acessar evento
+                </Link>
                 <Show when="signed-in">
                   <Link href="/dashboard" className="btn btn-ghost btn-wide">
                     Acessar seu dashboard

@@ -290,6 +290,7 @@ function mdTable(node: JsonNode): string {
       (c.children ?? [])
         .map((p) => mdInline(p.children))
         .join("<br>")
+        .replace(/\\/g, "\\\\")
         .replace(/\|/g, "\\|")
         .replace(/\n/g, " "),
     ),

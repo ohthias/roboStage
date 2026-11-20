@@ -4,7 +4,6 @@ import HeroSection from "@/components/UI/HeroSection";
 import {
   CanopySection,
   CommunitySection,
-  CompetitionsSection,
   FaqSection,
   FinalCta,
   NewsSection,
@@ -18,6 +17,7 @@ import {
 } from "@/components/home/HomeSections";
 import { getLatestNews } from "@/utils/institutional/news";
 import "@/components/home/home.css";
+import { CompetitionsSection } from "@/components/home/CompetitionsSection";
 
 export default async function Page() {
   const news: HomeNews[] = await getLatestNews(3);
@@ -30,7 +30,8 @@ export default async function Page() {
         badges={[
           { label: "FLL", href: "/fll" },
           { label: "OBR", href: "/obr" },
-          { label: "FTC", soon: true },
+          { label: "FTC", href: "/ftc" },
+          { label: "WRO", soon: true },
         ]}
         scrollTarget="#conheca"
       />

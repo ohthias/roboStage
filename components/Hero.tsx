@@ -2,8 +2,10 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowDownRight, ArrowUpRight, MoveUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { heroBtn } from "@/components/UI/PageHero";
 import { HERO_CONFIG } from "@/utils/competitions/hero";
+import "@/components/home/home.css";
 
 type Competicao = keyof typeof HERO_CONFIG;
 
@@ -17,100 +19,78 @@ export default function Hero() {
       : "fll";
 
   const hero = HERO_CONFIG[competicao];
-  const palavras = hero.titulo.trim().split(/\s+/);
-  const ultimaPalavra = palavras.pop() ?? "";
-  const tituloPrincipal = palavras.join(" ");
 
   return (
-    <section className="relative isolate overflow-hidden px-4 pb-12 pt-8 sm:px-6 sm:pb-16 sm:pt-12 lg:pb-20 lg:pt-16">
+    <section className="relative isolate overflow-hidden border-b border-base-300 px-6 pb-16 sm:pb-20 max-h-[700px]">
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full overflow-hidden"
-      >
-        <div
-          className="absolute inset-0 opacity-[0.07]"
-          style={{
-            background: `linear-gradient(180deg, ${hero.accent} 0%, transparent 100%)`,
-          }}
-        />
-
-        <div
-          className="absolute -right-24 top-0 size-72 rounded-full border opacity-40 sm:-right-16 sm:size-96"
-          style={{ borderColor: hero.accent }}
-        />
-
-        <div
-          className="absolute -right-12 top-12 size-48 rounded-full border opacity-30 sm:right-8 sm:top-20 sm:size-64"
-          style={{ borderColor: hero.accent }}
-        />
-
-        <div className="absolute bottom-0 left-0 h-px w-full bg-base-300" />
-      </div>
-
-      <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[1.05fr_0.95fr] md:gap-8 lg:gap-16">
-        <div className="relative z-10 flex w-full flex-col items-center text-center md:items-start md:text-left">
-          <div className="inline-flex items-center gap-2 rounded-tl-lg rounded-br-lg border border-base-content/15 bg-base-100/80 px-3 py-1.5 font-mono text-[11px] tracking-[0.15em] text-base-content/70">
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-base-100/70 to-[var(--hero-accent)]/20"
+        style={{ "--hero-accent": hero.accent } as React.CSSProperties}
+      />
+      <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-[1fr_1fr] lg:gap-16 [&>*]:min-w-0">
+        <div className="flex flex-col items-center text-center md:items-start md:text-left">
+          <p className="inline-flex items-center gap-2 font-mono text-xs tracking-[0.2em] text-base-content/45">
             <span
-              className="size-2 rounded-full"
+              aria-hidden="true"
+              className="size-1.5 rounded-full"
               style={{ backgroundColor: hero.accent }}
             />
-            {hero.badge}
-          </div>
-          <h1 className="mt-6 max-w-2xl text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl">
-            {tituloPrincipal && <>{tituloPrincipal} </>}
-            <span
-              className="relative inline-block"
-              style={{ color: hero.accent }}
-            >
-              {ultimaPalavra}
-              <span
-                aria-hidden="true"
-                className="absolute -bottom-1 left-0 h-1 w-1/2 rounded-full opacity-70 sm:-bottom-2 sm:h-1.5"
-                style={{ backgroundColor: hero.accent }}
-              />
-            </span>
+            {hero.badge.toUpperCase()}
+          </p>
+
+          <h1 className="mt-5 text-5xl font-bold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
+            {hero.titulo}
+            <span style={{ color: hero.accent }}>.</span>
           </h1>
 
-          <p className="mt-6 max-w-xl text-sm leading-7 text-base-content/65 sm:text-base sm:leading-8 lg:text-lg">
+          <p className="mt-5 flex items-center gap-3 text-lg font-semibold tracking-tight text-base-content/80 sm:text-xl">
+            <span
+              aria-hidden="true"
+              className="h-0.5 w-8 rounded-full"
+              style={{ backgroundColor: hero.accent }}
+            />
+            {hero.destaque}
+          </p>
+
+          <p className="mt-6 max-w-md text-base leading-relaxed text-base-content/60">
             {hero.descricao}
           </p>
-          {/* Ações */}
-          <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row md:max-w-none">
-            <Link
-              href={hero.ctaPrimario.href}
-              className="btn btn-primary group min-h-12 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none px-5 shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--color-base-content)]"
-            >
-              {hero.ctaPrimario.label}
-            </Link>
 
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 md:justify-start">
+            <Link href={hero.ctaPrimario.href} className={heroBtn}>
+              {hero.ctaPrimario.label}
+              <ArrowRight size={20} />
+            </Link>
             <Link
               href={hero.ctaSecundario.href}
-              className="btn btn-outline min-h-12 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none border-base-300 px-5 transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+              className="group inline-flex items-center gap-1.5 font-medium text-base-content/70 underline-offset-4 transition-colors hover:text-primary hover:underline"
             >
               {hero.ctaSecundario.label}
-              <ArrowUpRight size={16} />
+              <ArrowRight
+                size={16}
+                className="transition-transform group-hover:translate-x-0.5"
+              />
             </Link>
           </div>
         </div>
 
-        {/* Imagem */}
-        <div className="relative mx-auto w-full max-w-lg md:max-w-none">
+        {/* Imagem com fundo transparente, sem moldura */}
+        <div className="relative mx-auto w-full max-w-md md:max-w-none">
+          {/* Forma de canto recortado (assinatura visual) atrás da imagem */}
           <div
             aria-hidden="true"
-            className="absolute -left-3 -top-3 size-16 rounded-tl-xl border-l-2 border-t-2 sm:-left-4 sm:-top-4 sm:size-20"
-            style={{ borderColor: hero.accent }}
+            className="absolute inset-[12%] rotate-6 rounded-tl-[3rem] rounded-br-[3rem] border"
+            style={{ borderColor: `${hero.accent}55` }}
           />
-
+          {/* Brilho suave na cor da competição */}
           <div
             aria-hidden="true"
-            className="absolute -bottom-3 -right-3 size-16 rounded-br-xl border-b-2 border-r-2 sm:-bottom-4 sm:-right-4 sm:size-20"
-            style={{ borderColor: hero.accent }}
+            className="absolute inset-[22%] rounded-full opacity-20 blur-3xl"
+            style={{ backgroundColor: hero.accent }}
           />
-
           <img
             src={hero.imagem}
             alt={hero.titulo}
-            className="relative flex min-h-[240px] items-center justify-center overflow-hidden rounded-tl-xl rounded-br-xl sm:min-h-[320px] lg:min-h-[370px] object-contain transition-transform duration-300 hover:scale-105"
+            className="relative aspect-square w-full object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.12)] transition-transform duration-500 hover:-translate-y-1 hover:scale-[1.02] max-h-[400px] md:max-h-[500px] lg:max-h-[600px]"
           />
         </div>
       </div>

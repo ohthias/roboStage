@@ -199,7 +199,6 @@ const tools: ToolItem[] = [
       "Veja sensores, giro, estados e tempos do robô LEGO em tempo real, com Pybricks, por Bluetooth ou cabo USB.",
     href: "/fll/anatix",
     tone: "accent",
-    status: "Novo",
   },
   {
     icon: ListCheck,
@@ -228,75 +227,8 @@ export default async function FLLHome() {
     <main className="mt-16 overflow-x-clip bg-base-100 text-base-content">
       <Hero />
 
-      {/* ============================================== COMO O ROBOSTAGE AJUDA */}
-      <section className="relative isolate overflow-hidden px-6 py-24">
-        <AnimatedBackground />
-        <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1.05fr_1fr] [&>*]:min-w-0">
-          <RevealOnScroll>
-            <SectionTitle
-              kicker="/ O ROBOSTAGE NA FLL"
-              title="Menos tempo organizando,"
-              highlight="mais tempo construindo."
-              description="Um ambiente que conecta pessoas, ideias e tecnologia em todas as etapas da temporada: do primeiro treino de mesa à sala de avaliação."
-            />
-            <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Link
-                href="/fll/score/bioglow"
-                className={`btn btn-primary btn-lg ${cornerBtn} shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--color-base-content)]`}
-              >
-                <Trophy size={20} />
-                Pontuar a BIOGLOW
-              </Link>
-              <a href="#ferramentas" className="btn btn-ghost btn-lg">
-                Ver ferramentas
-                <ArrowRight size={18} />
-              </a>
-            </div>
-          </RevealOnScroll>
-          <RevealOnScroll delay={0.1}>
-            <LivePreview />
-          </RevealOnScroll>
-        </div>
-
-        <div className="mx-auto mt-20 grid max-w-6xl gap-5 md:grid-cols-3">
-          {pillars.map(({ icon: Icon, tag, title, description, links, tone }, i) => {
-            const c = toneClasses[tone];
-            return (
-              <RevealOnScroll key={title} delay={i * 0.08} className="h-full">
-                <article
-                  className={`group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 ${c.hover}`}
-                >
-                  <div aria-hidden="true" className={`pointer-events-none absolute -right-10 -top-10 size-32 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 ${c.ring}`} />
-                  <div className="relative flex items-center justify-between">
-                    <div className={`flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
-                      <Icon size={22} strokeWidth={1.8} />
-                    </div>
-                    <span className="font-mono text-xs text-base-content/35">{String(i + 1).padStart(2, "0")} / 03</span>
-                  </div>
-                  <p className={`relative mt-7 text-[10px] font-bold tracking-[0.18em] ${c.tag}`}>{tag}</p>
-                  <h3 className="relative mt-2 text-xl font-bold tracking-tight">{title}</h3>
-                  <p className="relative mt-3 flex-1 text-sm leading-6 text-base-content/60">{description}</p>
-                  <div className="relative mt-6 flex flex-wrap gap-2">
-                    {links.map((l) => (
-                      <Link
-                        key={l.href}
-                        href={l.href}
-                        className="inline-flex items-center gap-1 rounded-md bg-base-200 px-2.5 py-1 font-mono text-xs text-base-content/75 transition-colors hover:bg-base-content hover:text-base-100"
-                      >
-                        {l.label}
-                        <ArrowRight size={12} />
-                      </Link>
-                    ))}
-                  </div>
-                </article>
-              </RevealOnScroll>
-            );
-          })}
-        </div>
-      </section>
-
       {/* ========================================================= SOBRE A FLL */}
-      <section className="border-y border-base-300 bg-base-200/40 px-6 py-24">
+      <section className="bg-base-200/40 px-6 py-24">
         <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
           <RevealOnScroll>
             <figure className="relative">

@@ -8,6 +8,7 @@ const publicRoutePatterns = [
   "/assets(.*)",
   "/changelog(.*)",
   "/fll(.*)",
+  "/ftc(.*)",
   "/obr(.*)",
   "/help(.*)",
   "/labtest(.*)",
@@ -19,6 +20,9 @@ const publicRoutePatterns = [
   "/api/data/missions(.*)",
   "/api/data/fllDocs(.*)",
   "/api/data/obrDocs(.*)",
+  "/api/data/ftcDocs(.*)",
+  // Proxy com cache para a API pública da FTCScout (Scouting FTC).
+  "/api/data/ftcscout(.*)",
   "/api/data/toolsAbout(.*)",
   "/api/webhooks(.*)",
   "/api/revalidate(.*)",

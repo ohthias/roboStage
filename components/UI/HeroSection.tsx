@@ -4,12 +4,12 @@ import Link from "next/link";
 import { ArrowDown, ArrowUpRight, ChevronRight } from "lucide-react";
 
 const heroImages = [
-  "/images/index/hero_banner_fll.jpg",
-  "/images/index/hero_banner_fll_2.jpg",
-  "/images/index/hero_banner_obr.png",
-  "/images/index/hero_banner_obr_2.png",
-  "/images/index/hero_banner_obr_art.png",
-  "/images/index/hero_banner_obr_art_2.png",
+  "/images/index/banner_hero_fll.webp",
+  "/images/index/banner_hero_fll2.webp",
+  "/images/index/banner_hero_obr.webp",
+  "/images/index/banner_hero_obr2.webp",
+  "/images/index/banner_hero_obr_art.webp",
+  "/images/index/banner_hero_ftc.webp",
 ];
 
 type HeroAction = {

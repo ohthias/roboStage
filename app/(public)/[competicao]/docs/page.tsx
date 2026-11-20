@@ -29,6 +29,10 @@ const GROUP_TONE: Record<string, Tone> = {
   challenge: "primary",
   explore: "accent",
   "future-edition": "secondary",
+  regras: "primary",
+  campo: "secondary",
+  equipe: "accent",
+  eventos: "secondary",
 };
 
 export function generateStaticParams() {
@@ -162,6 +166,12 @@ export default async function DocsPage({ params }: Params) {
               <Link href="/fll/docs/missions-guide" className="btn btn-ghost btn-lg">
                 <MapIcon size={18} />
                 Guia de missões
+              </Link>
+            )}
+            {competicao === "ftc" && (
+              <Link href="/ftc/arena" className="btn btn-ghost btn-lg">
+                Arena BIOBUZZ
+                <ArrowRight size={18} />
               </Link>
             )}
           </>
@@ -322,6 +332,7 @@ export default async function DocsPage({ params }: Params) {
         actions={[
           { label: `Ferramentas da ${nome}`, href: `/${competicao}`, variant: "accent" },
           ...(competicao === "fll" ? [{ label: "Guia de missões", href: "/fll/docs/missions-guide", variant: "ghost" as const }] : []),
+          ...(competicao === "ftc" ? [{ label: "Arena BIOBUZZ", href: "/ftc/arena", variant: "ghost" as const }] : []),
         ]}
       />
     </main>

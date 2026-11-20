@@ -3,6 +3,9 @@ import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import PontuadorOBR from "@/components/competicoes/OBR/score/Pontuador";
+import FtcScore from "@/components/competicoes/FTC/FtcScore";
+import { AnimatedBackground } from "@/components/home/shared";
+import { SEASON } from "@/utils/competitions/ftc/biobuzz";
 
 export async function generateMetadata({
   params,
@@ -10,6 +13,15 @@ export async function generateMetadata({
   params: Promise<{ competicao: string }>;
 }) {
   const { competicao } = await params;
+
+  if (competicao === "ftc") {
+    return {
+      title: { absolute: "Pontuador de treino FTC BIOBUZZ | RoboStage" },
+      description:
+        "Pontuador de treino da FIRST Tech Challenge (BIOBUZZ 2026/2027): AUTO, TELEOP, FLOWERS, RP e faltas, com cronômetro e histórico de tentativas.",
+      alternates: { canonical: "/ftc/score" },
+    };
+  }
 
   if (competicao === "obr") {
     return {
@@ -71,6 +83,14 @@ export default async function ScorePage({
   params: Promise<{ competicao: string }>;
 }) {
   const { competicao } = await params;
+
+  if (competicao === "ftc") {
+    return (
+      <div className="bg-linear-to-b from-base-100 to-base-200">
+        <FtcScore />
+      </div>
+    );
+  }
 
   if (competicao === "obr") {
     return (

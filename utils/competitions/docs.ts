@@ -30,8 +30,12 @@ const CATEGORY_LABELS: Record<string, string> = {
   explore: "Explore",
   "future-edition": "Future Edition",
   geral: "Geral",
+  regras: "Regras",
+  campo: "Campo e arena",
+  equipe: "Recursos da equipe",
+  eventos: "Eventos e resultados",
 };
-const CATEGORY_ORDER = ["challenge", "explore", "future-edition", "geral"];
+const CATEGORY_ORDER = ["challenge", "explore", "future-edition", "regras", "campo", "equipe", "eventos", "geral"];
 
 export const isCompeticao = (c: string): c is Competicao => c in COMPETICOES;
 

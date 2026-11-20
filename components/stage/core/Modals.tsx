@@ -493,9 +493,9 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     <ConfirmCtx.Provider value={confirm}>
       {children}
       <ConfirmModal
+        {...opts}
         open={!!opts}
         title={opts?.title ?? ""}
-        {...(opts ?? {})}
         onClose={() => finish(false)}
         onConfirm={() => finish(true)}
       />

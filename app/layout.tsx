@@ -61,9 +61,9 @@ export default function RootLayout({
           <Analytics />
           <SpeedInsights />
           <ToastProvider>
-            <ToastProvider>
-              <ConfirmProvider>{children}</ConfirmProvider>
-            </ToastProvider>
+            <ConfirmProvider>
+              {children}
+            </ConfirmProvider>
           </ToastProvider>
         </ClerkProvider>
       </body>

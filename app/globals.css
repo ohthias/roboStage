@@ -1,86 +1,9 @@
-/*/global.css*/
-/* Só os ícones de marca (GitHub e Instagram no Footer): o pacote "all" tinha
-   1,2 MB de CSS e entrava, bloqueando a renderização, em todas as páginas. */
-@import "@flaticon/flaticon-uicons/css/brands/all.css";
 @import "tailwindcss";
+@import "../components/stage/stage.css";
 @plugin "@tailwindcss/typography";
-@plugin "daisyui/theme" {
-  name: "lightScheme";
-  default: true;
-  prefersdark: false;
-  color-scheme: "light";
-  --color-base-100: oklch(99% 0.005 90);
-  --color-base-200: oklch(96.5% 0.008 90);
-  --color-base-300: oklch(92.5% 0.012 90);
-  --color-base-content: oklch(20% 0.015 60);
-  --color-primary: #cf2a2a;
-  --color-primary-content: oklch(97% 0.014 343.198);
-  --color-secondary: #1e459f;
-  --color-secondary-content: oklch(98% 0.001 106.423);
-  --color-accent: #fabd32;
-  --color-accent-content: oklch(42% 0.095 57.708);
-  --color-neutral: #ded6c4;
-  --color-neutral-content: #494234;
-  --color-info: #3b82b6;
-  --color-info-content: #f5fbff;
-  --color-success: #4f7a2a;
-  --color-success-content: #f7fbf2;
-  --color-warning: #e5a52f;
-  --color-warning-content: #2f2108;
-  --color-error: #d94a2f;
-  --color-error-content: #fff7f5;
-  --radius-selector: 0.5rem;
-  --radius-field: 0.5rem;
-  --radius-box: 0.5rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 0.5px;
-  --depth: 1;
-  --noise: 1;
-}
-
-@plugin "daisyui/theme" {
-  name: "darkScheme";
-  default: false;
-  prefersdark: false;
-  color-scheme: "dark";
-  --color-base-100: oklch(22% 0.008 70);
-  --color-base-200: oklch(18% 0.008 70);
-  --color-base-300: oklch(14% 0.008 70);
-  --color-base-content: oklch(94% 0.008 70);
-  --color-primary: #e04444;
-  --color-primary-content: oklch(97% 0.015 25);
-  --color-secondary: #5279d1;
-  --color-secondary-content: oklch(97% 0.01 258);
-  --color-accent: #fabd32;
-  --color-accent-content: oklch(20% 0.035 70);
-  --color-neutral: #665c49;
-  --color-neutral-content: #f3ecdc;
-  --color-info: #6faed4;
-  --color-info-content: oklch(18% 0.035 243);
-  --color-success: #79a94b;
-  --color-success-content: oklch(18% 0.035 132);
-  --color-warning: #efb24b;
-  --color-warning-content: oklch(20% 0.04 70);
-  --color-error: #e45b38;
-  --color-error-content: oklch(18% 0.035 30);
-  --radius-selector: 0.5rem;
-  --radius-field: 0.5rem;
-  --radius-box: 0.5rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 0.5px;
-  --depth: 1;
-  --noise: 1;
-}
 
 @plugin "daisyui" {
   themes: "lightScheme" --default, "darkScheme";
-}
-
-.tooltip-custom[data-tip]::before {
-  @apply text-xs whitespace-normal;
-  max-width: 9rem !important;
 }
 
 .btn {
@@ -88,47 +11,5 @@
 }
 
 body {
-  @apply bg-base-100 text-base-content;
-}
-
-@keyframes slide-in {
-  from {
-    transform: translateX(-100%);
-  }
-
-  to {
-    transform: translateX(0);
-  }
-}
-
-.animate-slide-in {
-  animation: slide-in 0.25s ease-out forwards;
-}
-
-.animate-fade-in-down {
-  animation: fade-in-down 0.5s ease-out forwards;
-}
-
-@keyframes fade-in-down {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-/* Toasts (app/context/ToastContext.tsx) */
-@keyframes toast-enter {
-  from { opacity: 0; transform: translateY(-20px) scale(0.95); }
-  to { opacity: 1; transform: none; }
-}
-@keyframes toast-leave {
-  to { opacity: 0; transform: translateY(-10px) scale(0.95); }
-}
-.toast-enter { animation: toast-enter 200ms ease-out both; }
-.toast-leave { animation: toast-leave 150ms ease-in both; }
-@media (prefers-reduced-motion: reduce) {
-  .toast-enter, .toast-leave { animation-duration: 1ms; }
+  @apply bg-base-100 font-sans text-base-content antialiased;
 }

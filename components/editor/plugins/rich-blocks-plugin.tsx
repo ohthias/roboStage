@@ -52,7 +52,7 @@ function CalloutIcon({ variant }: { variant: CalloutVariant }) {
  * Comportamento dos blocos "ricos": recolhíveis (seta, Enter, setas do
  * teclado), destaques (troca de tipo/ícone) e marcadores de lista.
  */
-export function RichBlocksPlugin() {
+function useRichBlocks() {
   const [editor] = useLexicalComposerContext();
   const [calloutMenu, setCalloutMenu] = useState<CalloutMenu | null>(null);
   const [customEmoji, setCustomEmoji] = useState("");
@@ -311,71 +311,82 @@ export function RichBlocksPlugin() {
     setCalloutMenu(null);
   };
 
-  return calloutMenu
-    ? createPortal(
-        <div
-          ref={menuRef}
-          role="dialog"
-          aria-label="Tipo do destaque"
-          className="fixed z-[80] w-64 rounded-xl border border-base-300 bg-base-100 p-2 shadow-xl"
-          style={{ top: calloutMenu.top, left: calloutMenu.left }}
-        >
-          <div className="px-1 pb-1 text-[11px] font-medium uppercase tracking-wider text-base-content/45">Tipo</div>
-          <div className="grid grid-cols-3 gap-1">
-            {CALLOUT_VARIANTS.map((v) => (
-              <button
-                key={v.value}
-                type="button"
-                data-variant={v.value}
-                className={`editor-callout-swatch flex flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-xs transition ${
-                  calloutMenu.variant === v.value ? "ring-2 ring-primary/50" : "hover:brightness-95"
-                }`}
-                onClick={() => updateCallout((n) => n.setVariant(v.value).setEmoji(null))}
-              >
-                <CalloutIcon variant={v.value} />
-                {v.label}
-              </button>
-            ))}
-          </div>
-          <div className="px-1 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wider text-base-content/45">Ou um emoji</div>
-          <div className="grid grid-cols-6 gap-0.5">
-            {QUICK_EMOJIS.map((emoji) => (
-              <button
-                key={emoji}
-                type="button"
-                className="flex h-8 items-center justify-center rounded-md text-lg hover:bg-base-200"
-                onClick={() => updateCallout((n) => n.setEmoji(emoji))}
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-          <form
-            className="mt-2 flex gap-1"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const seg = [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(customEmoji.trim())][0]?.segment;
-              if (seg) updateCallout((n) => n.setEmoji(seg));
-            }}
-          >
-            <input
-              className="input input-xs input-bordered flex-1"
-              placeholder="Colar outro emoji…"
-              value={customEmoji}
-              onChange={(e) => setCustomEmoji(e.target.value)}
-              aria-label="Emoji personalizado"
-            />
-            <button type="submit" className="btn btn-xs">OK</button>
-          </form>
+  return { calloutMenu, customEmoji, setCustomEmoji, menuRef, updateCallout };
+}
+
+type RichBlocksState = ReturnType<typeof useRichBlocks>;
+
+function CalloutPopover({ state }: { state: RichBlocksState }) {
+  const { calloutMenu, customEmoji, setCustomEmoji, menuRef, updateCallout } = state;
+  if (!calloutMenu) return null;
+  return createPortal(
+    <div
+      ref={menuRef}
+      role="dialog"
+      aria-label="Tipo do destaque"
+      className="fixed z-[80] w-64 rounded-xl border border-base-300 bg-base-100 p-2 shadow-xl"
+      style={{ top: calloutMenu.top, left: calloutMenu.left }}
+    >
+      <div className="px-1 pb-1 text-[11px] font-medium uppercase tracking-wider text-base-content/45">Tipo</div>
+      <div className="grid grid-cols-3 gap-1">
+        {CALLOUT_VARIANTS.map((v) => (
           <button
+            key={v.value}
             type="button"
-            className="mt-1 w-full rounded-md px-2 py-1 text-left text-xs text-base-content/60 hover:bg-base-200"
-            onClick={() => updateCallout((n) => n.setEmoji(null))}
+            data-variant={v.value}
+            className={`editor-callout-swatch flex flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-xs transition ${
+              calloutMenu.variant === v.value ? "ring-2 ring-primary/50" : "hover:brightness-95"
+            }`}
+            onClick={() => updateCallout((n) => n.setVariant(v.value).setEmoji(null))}
           >
-            Usar ícone padrão (Lucide)
+            <CalloutIcon variant={v.value} />
+            {v.label}
           </button>
-        </div>,
-        document.body,
-      )
-    : null;
+        ))}
+      </div>
+      <div className="px-1 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wider text-base-content/45">Ou um emoji</div>
+      <div className="grid grid-cols-6 gap-0.5">
+        {QUICK_EMOJIS.map((emoji) => (
+          <button
+            key={emoji}
+            type="button"
+            className="flex h-8 items-center justify-center rounded-md text-lg hover:bg-base-200"
+            onClick={() => updateCallout((n) => n.setEmoji(emoji))}
+          >
+            {emoji}
+          </button>
+        ))}
+      </div>
+      <form
+        className="mt-2 flex gap-1"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const seg = [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(customEmoji.trim())][0]?.segment;
+          if (seg) updateCallout((n) => n.setEmoji(seg));
+        }}
+      >
+        <input
+          className="input input-xs input-bordered flex-1"
+          placeholder="Colar outro emoji…"
+          value={customEmoji}
+          onChange={(e) => setCustomEmoji(e.target.value)}
+          aria-label="Emoji personalizado"
+        />
+        <button type="submit" className="btn btn-xs">OK</button>
+      </form>
+      <button
+        type="button"
+        className="mt-1 w-full rounded-md px-2 py-1 text-left text-xs text-base-content/60 hover:bg-base-200"
+        onClick={() => updateCallout((n) => n.setEmoji(null))}
+      >
+        Usar ícone padrão (Lucide)
+      </button>
+    </div>,
+    document.body,
+  );
+}
+
+export function RichBlocksPlugin() {
+  const state = useRichBlocks();
+  return <CalloutPopover state={state} />;
 }

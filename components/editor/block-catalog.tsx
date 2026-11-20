@@ -107,6 +107,11 @@ function $placeBlock(node: LexicalNode) {
  * e pela paleta de comandos.
  */
 export function buildBlockCommands(editor: LexicalEditor): BlockCommand[] {
+  return createBlockCommandCatalog(editor);
+}
+
+/** Monta os grupos de comandos; a função pública acima mantém uma API estreita. */
+function createBlockCommandCatalog(editor: LexicalEditor): BlockCommand[] {
   const transform = (type: BlockType) => () =>
     editor.update(() => {
       const top = $currentBlock();

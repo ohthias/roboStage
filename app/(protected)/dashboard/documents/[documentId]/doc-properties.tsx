@@ -294,7 +294,7 @@ function TextValue({
 
 /* ---------- painel ---------- */
 
-export function DocProperties({
+function DocPropertiesPanel({
   properties,
   onSet,
   description,
@@ -545,4 +545,10 @@ export function DocProperties({
       </div>
     </section>
   );
+}
+
+type DocPropertiesProps = Parameters<typeof DocPropertiesPanel>[0];
+
+export function DocProperties(props: DocPropertiesProps) {
+  return <DocPropertiesPanel {...props} />;
 }

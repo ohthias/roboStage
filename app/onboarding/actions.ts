@@ -4,9 +4,6 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { eq, inArray } from "drizzle-orm";
 import { db } from "@/db/client";
-import { users, userLeagueInterests } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { PERSONA_LOCKED_MESSAGE, personaLockState } from "@/utils/stagebook/persona-lock";
 import { leagues, userLeagueInterests, userPreferences, users } from "@/db/schema";
 import {
   describeMissing,

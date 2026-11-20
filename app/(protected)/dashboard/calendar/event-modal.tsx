@@ -67,19 +67,25 @@ const fmtWhen = (value: string, allDay: boolean) => {
     : { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
 };
 
-export function EventModal({
-  mode,
-  initialDate,
-  event,
-  onClose,
-  onSaved,
-}: {
+type EventModalProps = {
   mode: "create" | "edit";
   initialDate?: string;
   event?: CalendarEventClient;
   onClose: () => void;
   onSaved: () => void;
-}) {
+};
+
+export function EventModal(props: EventModalProps) {
+  return <EventModalContent {...props} />;
+}
+
+function EventModalContent({
+  mode,
+  initialDate,
+  event,
+  onClose,
+  onSaved,
+}: EventModalProps) {
   const [title, setTitle] = useState(event?.title ?? "");
   const [type, setType] = useState<string>(event?.type ?? "evento");
   const [description, setDescription] = useState(event?.description ?? "");

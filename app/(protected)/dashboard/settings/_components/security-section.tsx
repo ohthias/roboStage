@@ -42,7 +42,7 @@ function timeAgo(date: Date) {
   return relative.format(Math.round(diff / 86400), "day");
 }
 
-function SessionsGroup() {
+function useSessionsGroup() {
   const { user } = useUser();
   const { session: currentSession } = useSession();
   const { addToast } = useToast();
@@ -86,24 +86,20 @@ function SessionsGroup() {
     }
   }
 
+  return { sessions, sorted, others, currentId, busyId, error, end };
+}
+
+function SessionRows({
+  sessions,
+  sorted,
+  others,
+  currentId,
+  busyId,
+  error,
+  end,
+}: ReturnType<typeof useSessionsGroup>) {
   return (
-    <SettingsGroup
-      title="Sessões ativas"
-      description="Dispositivos com a sua conta aberta. Encerre o que você não reconhece."
-      action={
-        others.length > 0 && (
-          <button
-            type="button"
-            className="btn btn-outline btn-sm gap-2"
-            disabled={busyId !== null}
-            onClick={() => void end(others, "all")}
-          >
-            {busyId === "all" ? <Loader2 size={14} className="animate-spin" /> : <LogOut size={14} />}
-            Sair dos outros ({others.length})
-          </button>
-        )
-      }
-    >
+    <>
       {sessions === null && !error && (
         <div className="flex justify-center py-8">
           <Loader2 className="animate-spin text-base-content/40" />
@@ -157,6 +153,32 @@ function SessionsGroup() {
           {error}
         </div>
       )}
+    </>
+  );
+}
+
+function SessionsGroup() {
+  const { sessions, sorted, others, currentId, busyId, error, end } = useSessionsGroup();
+
+  return (
+    <SettingsGroup
+      title="Sessões ativas"
+      description="Dispositivos com a sua conta aberta. Encerre o que você não reconhece."
+      action={
+        others.length > 0 && (
+          <button
+            type="button"
+            className="btn btn-outline btn-sm gap-2"
+            disabled={busyId !== null}
+            onClick={() => void end(others, "all")}
+          >
+            {busyId === "all" ? <Loader2 size={14} className="animate-spin" /> : <LogOut size={14} />}
+            Sair dos outros ({others.length})
+          </button>
+        )
+      }
+    >
+      <SessionRows sessions={sessions} sorted={sorted} others={others} currentId={currentId} busyId={busyId} error={error} end={end} />
     </SettingsGroup>
   );
 }

@@ -26,6 +26,10 @@ const STRENGTH_TONE = ["progress-error", "progress-error", "progress-warning", "
  * confirma a identidade com um código no e-mail e libera a troca sem a atual.
  */
 export function PasswordSection() {
+  return <PasswordSectionContent />;
+}
+
+function PasswordSectionContent() {
   const { user } = useUser();
   const { signOut } = useClerk();
   const { addToast } = useToast();

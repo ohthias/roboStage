@@ -54,6 +54,20 @@ export class CollapsibleContainerNode extends ElementNode {
     return new CollapsibleContainerNode(node.__open, node.__key);
   }
 
+  static withTitleAndContent(
+    level: ToggleLevel,
+    titleChildren: LexicalNode[],
+    contentBlocks: LexicalNode[],
+  ): CollapsibleContainerNode {
+    const container = new CollapsibleContainerNode(true);
+    const title = new CollapsibleTitleNode(level);
+    const content = new CollapsibleContentNode();
+    if (titleChildren.length) title.append(...titleChildren);
+    content.append(...(contentBlocks.length ? contentBlocks : [$createParagraphNode()]));
+    container.append(title, content);
+    return container;
+  }
+
   createDOM(): HTMLElement {
     const dom = document.createElement("div");
     dom.className = "editor-toggle";
@@ -318,13 +332,7 @@ export function $buildCollapsible(
   titleChildren: LexicalNode[] = [],
   contentBlocks: LexicalNode[] = [],
 ): CollapsibleContainerNode {
-  const container = $createCollapsibleContainerNode(true);
-  const title = $createCollapsibleTitleNode(level);
-  const content = $createCollapsibleContentNode();
-  if (titleChildren.length) title.append(...titleChildren);
-  content.append(...(contentBlocks.length ? contentBlocks : [$createParagraphNode()]));
-  container.append(title, content);
-  return container;
+  return CollapsibleContainerNode.withTitleAndContent(level, titleChildren, contentBlocks);
 }
 
 /**

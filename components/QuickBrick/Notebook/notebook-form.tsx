@@ -24,28 +24,19 @@ const splitSeason = (name: string) => {
   return m ? [m[1], m[2]] : [name, undefined];
 };
 
-/** Criar ou editar os dados do caderno (nome, robô, temporada, capa). */
-export function NotebookFormModal({
-  open,
-  onClose,
-  notebook,
-  leagues,
-  onSaved,
-}: {
-  /** Competições do usuário (Ligas e Competições). */
-  leagues: QuickbrickLeague[];
-  open: boolean;
-  onClose: () => void;
-  /** Ausente = criar um caderno novo. */
+type NotebookFormProps = {
   notebook?: NotebookDTO;
+  leagues: QuickbrickLeague[];
+  onClose: () => void;
   onSaved?: (values: Values) => void;
-}) {
+};
+
+function useNotebookForm({ notebook, leagues, onClose, onSaved }: NotebookFormProps) {
   const router = useRouter();
   const { addToast } = useToast();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  // A liga atual do caderno sempre aparece, mesmo que o usuário não a acompanhe
-  // (ex.: caderno criado por outra pessoa da equipe).
+  // A liga atual do caderno sempre aparece, mesmo que o usuário não a acompanhe.
   const current = notebook?.league;
   const options: QuickbrickLeague[] =
     current && !leagues.some((l) => l.id === current.id)
@@ -64,8 +55,8 @@ export function NotebookFormModal({
     };
   });
   const set = (patch: Partial<Values>) => setValues((v) => ({ ...v, ...patch }));
-  const noLeague = supported.length === 0 && !current;
   const league = options.find((l) => l.id === values.leagueId);
+  const noLeague = supported.length === 0 && !current;
 
   const submit = () => {
     setError(null);
@@ -84,6 +75,32 @@ export function NotebookFormModal({
       }
     });
   };
+
+  return { error, league, noLeague, options, pending, set, submit, values };
+}
+
+/** Criar ou editar os dados do caderno (nome, robô, temporada, capa). */
+export function NotebookFormModal({
+  open,
+  onClose,
+  notebook,
+  leagues,
+  onSaved,
+}: {
+  /** Competições do usuário (Ligas e Competições). */
+  leagues: QuickbrickLeague[];
+  open: boolean;
+  onClose: () => void;
+  /** Ausente = criar um caderno novo. */
+  notebook?: NotebookDTO;
+  onSaved?: (values: Values) => void;
+}) {
+  const { error, league, noLeague, options, pending, set, submit, values } = useNotebookForm({
+    notebook,
+    leagues,
+    onClose,
+    onSaved,
+  });
 
   return (
     <FormDialog

@@ -93,25 +93,27 @@ export async function createSyncedBlock(title: string, content: unknown) {
   });
 }
 
+async function loadSyncedBlock(id: string): Promise<SyncedBlockData> {
+  requireUuid(id, "bloco");
+  const scope = await resolveStagebookScope();
+  const [row] = await db
+    .select({
+      id: syncedBlocks.id,
+      title: syncedBlocks.title,
+      content: syncedBlocks.content,
+      updatedAt: syncedBlocks.updatedAt,
+      updatedByName: users.name,
+    })
+    .from(syncedBlocks)
+    .leftJoin(users, eq(users.id, syncedBlocks.updatedBy))
+    .where(and(eq(syncedBlocks.id, id), syncedScope(scope)))
+    .limit(1);
+  if (!row) throw new ValidationError("Bloco sincronizado não encontrado.");
+  return { ...row, updatedAt: iso(row.updatedAt)! };
+}
+
 export async function getSyncedBlock(id: string) {
-  return runAction(async (): Promise<SyncedBlockData> => {
-    requireUuid(id, "bloco");
-    const scope = await resolveStagebookScope();
-    const [row] = await db
-      .select({
-        id: syncedBlocks.id,
-        title: syncedBlocks.title,
-        content: syncedBlocks.content,
-        updatedAt: syncedBlocks.updatedAt,
-        updatedByName: users.name,
-      })
-      .from(syncedBlocks)
-      .leftJoin(users, eq(users.id, syncedBlocks.updatedBy))
-      .where(and(eq(syncedBlocks.id, id), syncedScope(scope)))
-      .limit(1);
-    if (!row) throw new ValidationError("Bloco sincronizado não encontrado.");
-    return { ...row, updatedAt: iso(row.updatedAt)! };
-  });
+  return runAction(() => loadSyncedBlock(id));
 }
 
 export async function updateSyncedBlock(id: string, patch: { title?: string; content?: unknown }) {
@@ -131,30 +133,35 @@ export async function updateSyncedBlock(id: string, patch: { title?: string; con
   });
 }
 
+async function loadSyncedBlockList(scope: StagebookScope): Promise<SyncedBlockListItem[]> {
+  const rows = await db
+    .select({ id: syncedBlocks.id, title: syncedBlocks.title, content: syncedBlocks.content, updatedAt: syncedBlocks.updatedAt })
+    .from(syncedBlocks)
+    .where(syncedScope(scope))
+    .orderBy(desc(syncedBlocks.updatedAt))
+    .limit(200);
+  if (rows.length === 0) return [];
+
+  // Uso = páginas vivas que têm o id no conteúdo.
+  const pages = await db
+    .select({ content: documents.content })
+    .from(documents)
+    .where(and(liveDocumentWhere(scope), contentHasNode("type", "synced-block")));
+  const text = pages.map((p) => JSON.stringify(p.content ?? ""));
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    updatedAt: iso(r.updatedAt)!,
+    preview: lexicalToPlainText(r.content, 140),
+    usage: text.filter((t) => t.includes(`"syncId":"${r.id}"`)).length,
+  }));
+}
+
 /** Biblioteca de blocos do espaço (para inserir em outra página). */
 export async function listSyncedBlocks() {
   return runAction(async (): Promise<SyncedBlockListItem[]> => {
     const scope = await resolveStagebookScope();
-    const rows = await db
-      .select({ id: syncedBlocks.id, title: syncedBlocks.title, content: syncedBlocks.content, updatedAt: syncedBlocks.updatedAt })
-      .from(syncedBlocks)
-      .where(syncedScope(scope))
-      .orderBy(desc(syncedBlocks.updatedAt))
-      .limit(200);
-    if (rows.length === 0) return [];
-    // Uso = páginas vivas que têm o id no conteúdo.
-    const pages = await db
-      .select({ content: documents.content })
-      .from(documents)
-      .where(and(liveDocumentWhere(scope), contentHasNode("type", "synced-block")));
-    const text = pages.map((p) => JSON.stringify(p.content ?? ""));
-    return rows.map((r) => ({
-      id: r.id,
-      title: r.title,
-      updatedAt: iso(r.updatedAt)!,
-      preview: lexicalToPlainText(r.content, 140),
-      usage: text.filter((t) => t.includes(`"syncId":"${r.id}"`)).length,
-    }));
+    return loadSyncedBlockList(scope);
   });
 }
 
@@ -230,41 +237,56 @@ export async function listRobotNotebooks() {
   });
 }
 
+async function loadRobotNotebook(notebookId: string, scope: StagebookScope) {
+  const [row] = await db
+    .select({ notebook: quickbrickNotebooks, league: leagues.name })
+    .from(quickbrickNotebooks)
+    .leftJoin(leagues, eq(leagues.id, quickbrickNotebooks.leagueId))
+    .where(and(eq(quickbrickNotebooks.id, notebookId), notebookScope(scope)))
+    .limit(1);
+  if (!row) throw new ValidationError("Caderno do robô não encontrado.");
+  return row;
+}
+
+async function loadRobotMedia(notebookId: string) {
+  const [[latest], [versions], [diagrams]] = await Promise.all([
+    db
+      .select({ objectKey: quickbrickPhotos.objectKey, title: quickbrickPhotos.title, takenAt: quickbrickPhotos.takenAt })
+      .from(quickbrickPhotos)
+      .where(eq(quickbrickPhotos.notebookId, notebookId))
+      .orderBy(desc(quickbrickPhotos.takenAt))
+      .limit(1),
+    db.select({ n: count() }).from(quickbrickPhotos).where(eq(quickbrickPhotos.notebookId, notebookId)),
+    db.select({ n: count() }).from(quickbrickDiagrams).where(eq(quickbrickDiagrams.notebookId, notebookId)),
+  ]);
+  const photoUrl = latest && isR2Configured()
+    ? await presignDownload(latest.objectKey, { expiresIn: 3600 })
+    : null;
+  return { latest, photoUrl, versions: versions?.n ?? 0, diagrams: diagrams?.n ?? 0 };
+}
+
 export async function getRobotSheet(notebookId: string) {
   return runAction(async (): Promise<RobotSheetData> => {
     requireUuid(notebookId, "caderno");
     const scope = await resolveStagebookScope();
-    const [nb] = await db
-      .select({ notebook: quickbrickNotebooks, league: leagues.name })
-      .from(quickbrickNotebooks)
-      .leftJoin(leagues, eq(leagues.id, quickbrickNotebooks.leagueId))
-      .where(and(eq(quickbrickNotebooks.id, notebookId), notebookScope(scope)))
-      .limit(1);
-    if (!nb) throw new ValidationError("Caderno do robô não encontrado.");
-    const [[latest], [versions], [diagrams]] = await Promise.all([
-      db
-        .select({ objectKey: quickbrickPhotos.objectKey, title: quickbrickPhotos.title, takenAt: quickbrickPhotos.takenAt })
-        .from(quickbrickPhotos)
-        .where(eq(quickbrickPhotos.notebookId, notebookId))
-        .orderBy(desc(quickbrickPhotos.takenAt))
-        .limit(1),
-      db.select({ n: count() }).from(quickbrickPhotos).where(eq(quickbrickPhotos.notebookId, notebookId)),
-      db.select({ n: count() }).from(quickbrickDiagrams).where(eq(quickbrickDiagrams.notebookId, notebookId)),
+    const [notebookRow, media] = await Promise.all([
+      loadRobotNotebook(notebookId, scope),
+      loadRobotMedia(notebookId),
     ]);
-    const n = nb.notebook;
+    const n = notebookRow.notebook;
     return {
       id: n.id,
       name: n.name,
       robotName: n.robotName,
       description: n.description,
       season: n.season,
-      league: nb.league ?? null,
+      league: notebookRow.league ?? null,
       coverColor: n.coverColor,
-      photoUrl: latest && isR2Configured() ? await presignDownload(latest.objectKey, { expiresIn: 3600 }) : null,
-      photoTitle: latest?.title ?? null,
-      photoTakenAt: iso(latest?.takenAt),
-      versions: versions?.n ?? 0,
-      diagrams: diagrams?.n ?? 0,
+      photoUrl: media.photoUrl,
+      photoTitle: media.latest?.title ?? null,
+      photoTakenAt: iso(media.latest?.takenAt),
+      versions: media.versions,
+      diagrams: media.diagrams,
       studioFileName: n.studioFileName,
       updatedAt: iso(n.updatedAt)!,
     };
@@ -301,8 +323,7 @@ export async function listDecisions() {
 export type BacklinkItem = { id: string; title: string; icon: string | null; snippets: string[] };
 export type UnlinkedMention = { id: string; title: string; icon: string | null; snippet: Snippet };
 
-export async function getBacklinks(documentId: string) {
-  return runAction(async (): Promise<{ links: BacklinkItem[]; unlinked: UnlinkedMention[] }> => {
+async function loadBacklinks(documentId: string): Promise<{ links: BacklinkItem[]; unlinked: UnlinkedMention[] }> {
     requireUuid(documentId, "página");
     const scope = await resolveStagebookScope();
     const [page] = await db
@@ -343,7 +364,10 @@ export async function getBacklinks(documentId: string) {
         .slice(0, 10);
     }
     return { links, unlinked };
-  });
+}
+
+export async function getBacklinks(documentId: string) {
+  return runAction(() => loadBacklinks(documentId));
 }
 
 // ---------------------------------------------------------------------------
@@ -359,45 +383,51 @@ export type PageSearchResult = {
   updatedAt: string;
 };
 
-export async function searchPages(query: string) {
-  return runAction(async (): Promise<PageSearchResult[]> => {
-    const q = cleanText(query, { maxLength: 80 });
-    if (q.length < 2) return [];
-    const scope = await resolveStagebookScope();
-    const pattern = likePattern(q);
-    const rows = await db
-      .select({
-        id: documents.id,
-        title: documents.title,
-        icon: documents.icon,
-        description: documents.description,
-        content: documents.content,
-        updatedAt: documents.updatedAt,
-      })
-      .from(documents)
-      .where(
-        and(
-          liveDocumentWhere(scope),
-          or(
-            ilike(documents.title, pattern),
-            ilike(documents.description, pattern),
-            sql`${documents.content}::text ilike ${pattern}`,
-          ),
+async function searchPagesInScope(query: string): Promise<PageSearchResult[]> {
+  const q = cleanText(query, { maxLength: 80 });
+  if (q.length < 2) return [];
+  const scope = await resolveStagebookScope();
+  const pattern = likePattern(q);
+  const rows = await db
+    .select({
+      id: documents.id,
+      title: documents.title,
+      icon: documents.icon,
+      description: documents.description,
+      content: documents.content,
+      updatedAt: documents.updatedAt,
+    })
+    .from(documents)
+    .where(
+      and(
+        liveDocumentWhere(scope),
+        or(
+          ilike(documents.title, pattern),
+          ilike(documents.description, pattern),
+          sql`${documents.content}::text ilike ${pattern}`,
         ),
-      )
-      .orderBy(desc(documents.updatedAt))
-      .limit(40);
-    const lower = q.toLowerCase();
-    return rows
-      .map((r) => {
-        const text = [r.description ?? "", lexicalToPlainText(r.content, 30_000)].join("\n");
-        const snippet = searchSnippet(text, q);
-        const inTitle = r.title.toLowerCase().includes(lower);
-        return { id: r.id, title: r.title, icon: r.icon, inTitle, snippet, updatedAt: iso(r.updatedAt)! };
-      })
-      // Casou só no JSON (ex.: id/atributo) e não no texto: descarta.
-      .filter((r) => r.inTitle || r.snippet)
-      .sort((a, b) => Number(b.inTitle) - Number(a.inTitle))
-      .slice(0, 20);
-  });
+      ),
+    )
+    .orderBy(desc(documents.updatedAt))
+    .limit(40);
+  const lower = q.toLowerCase();
+  return rows
+    .map((r) => {
+      const text = [r.description ?? "", lexicalToPlainText(r.content, 30_000)].join("\n");
+      const snippet = searchSnippet(text, q);
+      const inTitle = r.title.toLowerCase().includes(lower);
+      return { id: r.id, title: r.title, icon: r.icon, inTitle, snippet, updatedAt: iso(r.updatedAt)! };
+    })
+    // Casou só no JSON (ex.: id/atributo) e não no texto: descarta.
+    .filter((r) => r.inTitle || r.snippet)
+    .sort((a, b) => Number(b.inTitle) - Number(a.inTitle))
+    .slice(0, 20);
+}
+
+function runPageSearch(query: string) {
+  return runAction(() => searchPagesInScope(query));
+}
+
+export async function searchPages(query: string) {
+  return runPageSearch(query);
 }

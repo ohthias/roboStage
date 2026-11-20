@@ -398,8 +398,7 @@ function mdBlock(node: JsonNode, headings: Heading[]): string | null {
 }
 
 /** Página inteira em Markdown (GFM). */
-export function documentToMarkdown(state: unknown, meta: ExportMeta, synced: SyncedResolved = {}): string {
-  syncedForExport = synced;
+function renderMarkdownDocument(state: unknown, meta: ExportMeta): string {
   const nodes = rootChildren(state);
   const headings = collectHeadings(nodes);
   const head = [`# ${meta.icon && !meta.icon.includes(":") ? `${meta.icon} ` : ""}${meta.title || "Sem título"}`];
@@ -409,6 +408,11 @@ export function documentToMarkdown(state: unknown, meta: ExportMeta, synced: Syn
   }
   const body = mdBlocks(nodes, headings).replace(/\n{3,}/g, "\n\n").trim();
   return `${head.join("\n\n")}\n\n${body}\n`;
+}
+
+export function documentToMarkdown(state: unknown, meta: ExportMeta, synced: SyncedResolved = {}): string {
+  syncedForExport = synced;
+  return renderMarkdownDocument(state, meta);
 }
 
 /* ================================================================== */
@@ -699,6 +703,10 @@ mark{background:#fff3a3}
 
 /** Página inteira como documento HTML autônomo (abre em qualquer navegador). */
 export function documentToHtml(state: unknown, meta: ExportMeta, opts: HtmlOptions = {}): string {
+  return renderHtmlDocument(state, meta, opts);
+}
+
+function renderHtmlDocument(state: unknown, meta: ExportMeta, opts: HtmlOptions): string {
   syncedForExport = opts.synced ?? {};
   const nodes = rootChildren(state);
   const ctx: HtmlCtx = { headings: collectHeadings(nodes), next: 0 };

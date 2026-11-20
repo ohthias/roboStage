@@ -48,35 +48,15 @@ const initials = (name: string | null) =>
     .map((p) => p[0]?.toUpperCase())
     .join("");
 
-
-export function CardModal({
+function useCardModalController({
   boardId,
   card,
-  columnName,
-  assignees,
-  tags,
-  completed,
-  completionLocked,
-  onToggleCompleted,
-  teamMembers,
-  isTeamScope,
   milestones,
   onClose,
   onChanged,
 }: {
   boardId: string;
   card: Card;
-  /** Nome da coluna atual, exibido no cabeçalho. */
-  columnName?: string;
-  assignees: Assignee[];
-  tags: CardTag[];
-  /** Validação de tarefa concluída. */
-  completed: boolean;
-  /** A coluna atual conclui tarefas automaticamente: não dá para reabrir aqui. */
-  completionLocked: boolean;
-  onToggleCompleted: () => void;
-  teamMembers: TeamMember[];
-  isTeamScope: boolean;
   milestones: Milestone[];
   onClose: () => void;
   onChanged: () => void;
@@ -110,7 +90,6 @@ export function CardModal({
     });
   }, [card.id]);
 
-  /** Roda uma ação e mostra o erro no modal (ex.: regra da coluna violada). */
   function run(fn: () => Promise<void>) {
     setError(null);
     startTransition(async () => {
@@ -169,6 +148,53 @@ export function CardModal({
       unwrapAction(await toggleCardEventLink(boardId, card.id, eventId));
     });
   }
+
+  return {
+    title, setTitle, description, setDescription, priority, setPriority, dueAt, setDueAt,
+    milestoneId, setMilestoneId, isPending, error, confirmDelete, setConfirmDelete,
+    availablePages, availableEvents, linkedPageIds, linkedEventIds, milestone, setMilestone,
+    save, handleDelete, toggleAssignee, togglePageLink, toggleEventLink,
+  };
+}
+
+export function CardModal({
+  boardId,
+  card,
+  columnName,
+  assignees,
+  tags,
+  completed,
+  completionLocked,
+  onToggleCompleted,
+  teamMembers,
+  isTeamScope,
+  milestones,
+  onClose,
+  onChanged,
+}: {
+  boardId: string;
+  card: Card;
+  /** Nome da coluna atual, exibido no cabeçalho. */
+  columnName?: string;
+  assignees: Assignee[];
+  tags: CardTag[];
+  /** Validação de tarefa concluída. */
+  completed: boolean;
+  /** A coluna atual conclui tarefas automaticamente: não dá para reabrir aqui. */
+  completionLocked: boolean;
+  onToggleCompleted: () => void;
+  teamMembers: TeamMember[];
+  isTeamScope: boolean;
+  milestones: Milestone[];
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const {
+    title, setTitle, description, setDescription, priority, setPriority, dueAt, setDueAt,
+    milestoneId, setMilestoneId, isPending, error, confirmDelete, setConfirmDelete,
+    availablePages, availableEvents, linkedPageIds, linkedEventIds, milestone, setMilestone,
+    save, handleDelete, toggleAssignee, togglePageLink, toggleEventLink,
+  } = useCardModalController({ boardId, card, milestones, onClose, onChanged });
 
   const fmtEventDate = (v: Date | string) =>
     new Date(v).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });

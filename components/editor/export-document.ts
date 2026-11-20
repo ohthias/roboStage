@@ -220,7 +220,7 @@ function mdInline(nodes: JsonNode[] = []): string {
           const raw = node.text ?? "";
           const f = typeof node.format === "number" ? node.format : 0;
           if (!raw) return "";
-          if (f & IS_CODE) return `\`${raw.replace(/`/g, "\\`")}\``;
+          if (f & IS_CODE) return `\`${raw.replace(/\\/g, "\\\\").replace(/`/g, "\\`")}\``;
           // Espaços nas pontas ficam fora da marcação (senão o markdown quebra).
           const lead = raw.match(/^\s*/)![0];
           const trail = raw.match(/\s*$/)![0];

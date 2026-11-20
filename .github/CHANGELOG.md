@@ -11,6 +11,33 @@ Exemplo: `2026.1` corresponde à primeira atualização oficial de 2026.
 
 ---
 
+## Atualizações na autenticação - 2026-11-20
+
+### Adicionado
+- Redirecionamento de usuários autenticados que acessam `/sign-in` ou `/sign-up`: vão para `/dashboard`, ou para `/onboarding` se o onboarding estiver pendente.
+- Bloqueio de acesso a `/onboarding` para usuários que já concluíram o onboarding (redireciona para `/dashboard`).
+- Resposta `403` em JSON (`"Onboarding pendente"`) para requisições de API e não-GET de usuários com onboarding pendente.
+- Variáveis de ambiente de redirecionamento do Clerk:
+  - `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`
+  - `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`
+  - `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard`
+  - `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard` (ou `/onboarding`)
+
+### Alterado
+- Middleware refatorado: helpers `matchesPattern`, `isAuthPage` e `redirectTo`, e constantes `AFTER_AUTH_PATH`, `ONBOARDING_PATH` e `SIGN_IN_PATH`.
+- Matcher do middleware trocado pelo padrão recomendado pelo Clerk: agora ignora só arquivos estáticos por extensão, e não qualquer caminho com ponto.
+- Páginas de autenticação movidas para rotas catch-all: `app/sign-in/[[...sign-in]]` e `app/sign-up/[[...sign-up]]`.
+- `<SignIn />` e `<SignUp />` com `fallbackRedirectUrl="/dashboard"` e links cruzados (`signUpUrl` / `signInUrl`); props redundantes `path` e `routing` removidas.
+- Formulários de autenticação envolvidos em `relative z-10`, para que o `BackgroundStars` não bloqueie os cliques.
+- Caminhos de componentes no painel do Clerk apontando para as páginas do domínio do app.
+
+### Corrigido
+- Novos usuários não pulam mais o onboarding: a flag `onboardingComplete: false` passa a ser gravada no webhook `user.created`.
+- Loop de redirect para `/onboarding` após concluí-lo, resolvido com `user.reload()` antes de redirecionar.
+
+### Configuração necessária
+- Clerk → Sessions → Customize session token: `{ "publicMetadata": "{{user.public_metadata}}" }`
+
 ## [2026.8.1] — Correções nas Equipes
 
 **Data:** 11/11/2026

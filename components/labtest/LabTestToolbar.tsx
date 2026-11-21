@@ -1,21 +1,21 @@
 import { Grid2X2, List, Plus } from "lucide-react";
 import Link from "next/link";
-import type { ModeKey } from "@/utils/labtest/catalog";
+import { listHref, type ListParams } from "@/utils/labtest/list-filters";
 
 export function LabTestToolbar({
   viewMode,
-  validMode,
+  params,
 }: {
   viewMode: "grid" | "list";
-  validMode: ModeKey | null;
+  /** Parâmetros atuais da lista — trocar a visualização mantém os filtros. */
+  params: ListParams;
 }) {
-  const modeQuery = validMode ? `modo=${validMode}&` : "";
 
   return (
     <div className="flex items-center gap-2">
       <div className="join" role="group" aria-label="Modo de visualização">
         <Link
-          href={`/dashboard/labtest?${modeQuery}visualizacao=list`}
+          href={listHref(params, { visualizacao: "list", pagina: undefined })}
           className={`btn btn-sm join-item ${viewMode === "list" ? "btn-neutral" : "btn-ghost border-base-300 text-base-content/55"}`}
           aria-label="Visualização em lista"
           aria-current={viewMode === "list" ? "page" : undefined}
@@ -23,7 +23,7 @@ export function LabTestToolbar({
           <List size={16} />
         </Link>
         <Link
-          href={`/dashboard/labtest?${modeQuery}visualizacao=grid`}
+          href={listHref(params, { visualizacao: "grid", pagina: undefined })}
           className={`btn btn-sm join-item ${viewMode === "grid" ? "btn-neutral" : "btn-ghost border-base-300 text-base-content/55"}`}
           aria-label="Visualização em grid"
           aria-current={viewMode === "grid" ? "page" : undefined}

@@ -11,11 +11,15 @@ import {
   $getSelection,
   $isRangeSelection,
 } from "lexical";
-import { Columns2, Columns3, Rows3, Trash2 } from "lucide-react";
+import { Columns2, Columns3, Columns4, Minus, Plus, Rows3, Trash2 } from "lucide-react";
 import {
+  $addLayoutColumn,
   $isLayoutContainerNode,
   $isLayoutItemNode,
+  $removeLayoutColumn,
   $setLayoutColumns,
+  MAX_LAYOUT_COLUMNS,
+  type LayoutColumns,
   $unwrapLayout,
   LAYOUT_PRESETS,
   LayoutContainerNode,
@@ -23,7 +27,7 @@ import {
   equalColumns,
 } from "../nodes/layout-nodes";
 
-type Info = { key: string; rect: DOMRect; template: string; columns: 2 | 3 };
+type Info = { key: string; rect: DOMRect; template: string; columns: LayoutColumns; itemKey: string | null };
 
 /** Mini ícone que mostra a proporção das colunas. */
 function Ratio({ value }: { value: string }) {
@@ -46,6 +50,7 @@ export function LayoutPlugin() {
   const [editor] = useLexicalComposerContext();
   const [hoverKey, setHoverKey] = useState<string | null>(null);
   const [caretKey, setCaretKey] = useState<string | null>(null);
+  const [caretItemKey, setCaretItemKey] = useState<string | null>(null);
   const [info, setInfo] = useState<Info | null>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -122,7 +127,12 @@ export function LayoutPlugin() {
               $isLayoutContainerNode,
             );
             setCaretKey(c ? c.getKey() : null);
-          } else setCaretKey(null);
+            const item = $findMatchingParent(sel.anchor.getNode(), $isLayoutItemNode);
+            setCaretItemKey(c && item ? item.getKey() : null);
+          } else {
+            setCaretKey(null);
+            setCaretItemKey(null);
+          }
         });
       }),
     [editor],
@@ -135,12 +145,15 @@ export function LayoutPlugin() {
     const el = editor.getElementByKey(activeKey);
     if (!el) return setInfo(null);
     let template = "";
-    let columns: 2 | 3 = 2;
+    let columns: LayoutColumns = 2;
+    let itemKey: string | null = null;
     editor.read(() => {
       const n = $getNodeByKey(activeKey);
       if (n && $isLayoutContainerNode(n)) {
         template = n.getTemplateColumns();
-        columns = n.getChildrenSize() >= 3 ? 3 : 2;
+        columns = Math.min(MAX_LAYOUT_COLUMNS, Math.max(2, n.getChildrenSize())) as LayoutColumns;
+        const item = caretItemKey ? $getNodeByKey(caretItemKey) : null;
+        if (item && item.getParent()?.is(n)) itemKey = caretItemKey;
       }
     });
     if (!template) return setInfo(null);
@@ -149,8 +162,9 @@ export function LayoutPlugin() {
       rect: el.getBoundingClientRect(),
       template,
       columns,
+      itemKey,
     });
-  }, [editor, activeKey]);
+  }, [editor, activeKey, caretItemKey]);
 
   useEffect(() => {
     measure();
@@ -214,20 +228,52 @@ export function LayoutPlugin() {
       }}
       onMouseLeave={() => setHoverKey(null)}
     >
+      {([2, 3, 4] as const).map((n) => {
+        const Icon = n === 2 ? Columns2 : n === 3 ? Columns3 : Columns4;
+        return (
+          <button
+            key={n}
+            type="button"
+            className={btn(info.columns === n)}
+            title={`${n} colunas`}
+            aria-pressed={info.columns === n}
+            onClick={() => act((c) => $setLayoutColumns(c, n))}
+          >
+            <Icon size={15} /> {n}
+          </button>
+        );
+      })}
+      <span className="mx-1 h-5 w-px bg-base-300" />
       <button
         type="button"
-        className={btn(info.columns === 2)}
-        onClick={() => act((c) => $setLayoutColumns(c, 2))}
+        className={btn(false)}
+        title="Adicionar coluna ao lado"
+        disabled={info.columns >= MAX_LAYOUT_COLUMNS}
+        onClick={() =>
+          act((c) => {
+            const item = info.itemKey ? $getNodeByKey(info.itemKey) : null;
+            $addLayoutColumn(c, $isLayoutItemNode(item) ? item : null);
+          })
+        }
       >
-        <Columns2 size={15} /> 2 colunas
+        <Plus size={15} /> Coluna
       </button>
-      <button
-        type="button"
-        className={btn(info.columns === 3)}
-        onClick={() => act((c) => $setLayoutColumns(c, 3))}
-      >
-        <Columns3 size={15} /> 3 colunas
-      </button>
+      {info.itemKey && (
+        <button
+          type="button"
+          className="btn btn-ghost btn-xs btn-square h-8 min-h-8 w-8"
+          title="Remover esta coluna (o conteúdo vai para a vizinha)"
+          aria-label="Remover esta coluna"
+          onClick={() =>
+            act((c) => {
+              const item = info.itemKey ? $getNodeByKey(info.itemKey) : null;
+              if ($isLayoutItemNode(item)) $removeLayoutColumn(c, item);
+            })
+          }
+        >
+          <Minus size={15} />
+        </button>
+      )}
       <span className="mx-1 h-5 w-px bg-base-300" />
       {LAYOUT_PRESETS[info.columns].map((p) => (
         <button

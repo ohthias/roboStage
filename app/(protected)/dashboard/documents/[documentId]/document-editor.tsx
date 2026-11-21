@@ -20,34 +20,31 @@ import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
 import { HorizontalRulePlugin } from "@lexical/react/LexicalHorizontalRulePlugin";
-import {
-  DEFAULT_TRANSFORMERS,
-  MarkdownShortcutPlugin,
-} from "@lexical/react/LexicalMarkdownShortcutPlugin";
+import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
+import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin";
+import type { LexicalEditor } from "lexical";
+import { saveAs } from "file-saver";
 import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
-import {
-  $createHorizontalRuleNode,
-  $isHorizontalRuleNode,
-  HorizontalRuleNode,
-} from "@lexical/react/LexicalHorizontalRuleNode";
-import { CHECK_LIST, type ElementTransformer } from "@lexical/markdown";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import {
   Check,
   ChevronRight,
+  ClipboardCopy,
   CloudOff,
+  Command,
   Copy,
+  FileCode2,
   FileDown,
+  FileText,
   FolderInput,
   History,
   Loader2,
   MoreHorizontal,
   MoveHorizontal,
   Palette,
-  Plus,
   SlidersHorizontal,
+  Smile,
   Trash2,
-  X,
 } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
 import { editorTheme } from "@/components/editor/editor-theme";
@@ -55,6 +52,10 @@ import { DocIcon } from "@/components/editor/doc-icon";
 import { DocIconPicker } from "@/components/editor/doc-icon-picker";
 import { DocCover } from "@/components/editor/doc-cover";
 import { EDITOR_NODES } from "@/components/editor/editor-nodes";
+import { MARKDOWN_SHORTCUTS } from "@/components/editor/markdown-transformers";
+import { documentToHtml, documentToMarkdown, exportFileName } from "@/components/editor/export-document";
+import { RichBlocksPlugin } from "@/components/editor/plugins/rich-blocks-plugin";
+import type { PaletteAction, PalettePage, PaletteSearchHit } from "@/components/editor/plugins/command-palette";
 import { recordRecentDoc } from "@/components/editor/recent-docs";
 import { usePrintDocument } from "@/components/editor/use-print-document";
 import { DocCoverPicker } from "@/components/editor/doc-cover-picker";
@@ -64,12 +65,22 @@ import "@/components/editor/editor.css";
 
 import { AutosavePlugin, type SaveState } from "@/components/editor/plugins/auto-save-plugin";
 import { LayoutPlugin } from "@/components/editor/plugins/layout-plugin";
+import { TimelinePlugin } from "@/components/editor/plugins/timeline-plugin";
+import { TabsPlugin } from "@/components/editor/plugins/tabs-plugin";
+import { StagebookEditorProvider, STAGEBOOK_SEARCH_EVENT } from "@/components/editor/stagebook-context";
+import { collectSyncIds } from "@/utils/stagebook/page-links";
+import { getSyncedBlocksForExport, searchPages } from "../blocks-actions";
+import { BacklinksPanel } from "./backlinks-panel";
 import { DividerPlugin } from "@/components/editor/plugins/divider-plugin";
 import { EmbedPlugin } from "@/components/editor/plugins/embed-plugin";
 import {
   BlockSelectionPlugin,
   CodeToolsPlugin,
+  CommandPalette,
   ContextualToolsPlugin,
+  EmojiPlugin,
+  MentionPlugin,
+  SyncedBlocksPlugin,
   SlashMenuPlugin,
   TableToolsPlugin,
   TemplateGalleryPlugin,
@@ -91,32 +102,10 @@ import type { MilestoneDTO, TagDTO } from "@/types/labels";
 import { findPath, moveOptions, nodeLabel, useNotebook } from "../notebook-context";
 import { IntentLink } from "../intent-link";
 import { HistoryPanel } from "./history-panel";
+import { DocProperties, propertiesForExport } from "./doc-properties";
 import { DOC_FONTS, docFontFamily, isDocFontId, type DocFontId } from "@/utils/stagebook/doc-fonts";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
-// "---" / "***" / "___" viram um divisor.
-const HR_TRANSFORMER: ElementTransformer = {
-  dependencies: [HorizontalRuleNode],
-  export: (node) => ($isHorizontalRuleNode(node) ? "***" : null),
-  regExp: /^(---|\*\*\*|___)\s?$/,
-  replace: (parentNode, _children, _match, isImport) => {
-    const line = $createHorizontalRuleNode();
-    if (isImport || parentNode.getNextSibling() != null) {
-      parentNode.replace(line);
-    } else {
-      parentNode.insertBefore(line);
-    }
-    line.selectNext();
-  },
-  type: "element",
-};
-
-const MARKDOWN_TRANSFORMERS = [
-  HR_TRANSFORMER,
-  CHECK_LIST, // "[] " / "- [ ] " → lista de tarefas (antes da lista comum)
-  ...DEFAULT_TRANSFORMERS,
-];
-
 const FULL_WIDTH_KEY = "notebook:full-width";
 const fullWidthListeners = new Set<() => void>();
 
@@ -190,17 +179,20 @@ export function NotebookEditor({
   const [cover, setCover] = useState(initialCover);
   const [pageFont, setPageFont] = useState<DocFontId>(isDocFontId(initialFont) ? initialFont : "default");
   const [properties, setProperties] = useState(initialProperties);
-  const [newPropKey, setNewPropKey] = useState("");
-  const [newPropValue, setNewPropValue] = useState("");
-  const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(
-    Boolean(initialDescription) || Object.keys(initialProperties).length > 0,
+    Boolean(initialDescription) ||
+      Object.keys(initialProperties).length > 0 ||
+      initialTags.length > 0 ||
+      Boolean(initialMilestone),
   );
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showCoverPicker, setShowCoverPicker] = useState(false);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showPalette, setShowPalette] = useState(false);
+  const [paletteQuery, setPaletteQuery] = useState("");
+  const editorRef = useRef<LexicalEditor | null>(null);
   const fullWidth = useFullWidthPreference();
   const [moveTarget, setMoveTarget] = useState(
     currentParentId
@@ -286,11 +278,15 @@ export function NotebookEditor({
     });
   }
 
-  function commitDescription() {
-    if (description === (initialDescription ?? "")) return;
+  function commitDescription(value = description) {
+    if (value === (initialDescription ?? "")) return;
     startTransition(async () => {
-      unwrapAction(await updateDocumentDescription(documentId, description));
-      router.refresh();
+      try {
+        unwrapAction(await updateDocumentDescription(documentId, value));
+        router.refresh();
+      } catch (error) {
+        addToast(error instanceof Error ? error.message : "Não foi possível salvar a descrição.", "error");
+      }
     });
   }
 
@@ -322,26 +318,20 @@ export function NotebookEditor({
     });
   }
 
-  function addProperty() {
-    const key = newPropKey.trim();
-    if (!key) return;
-    setProperties((prev) => ({ ...prev, [key]: newPropValue.trim() }));
-    startTransition(async () => {
-      unwrapAction(await updateDocumentProperty(documentId, key, newPropValue.trim()));
-    });
-    setNewPropKey("");
-    setNewPropValue("");
-    setShowPropertyForm(false);
-  }
-
-  function removeProperty(key: string) {
+  function setProperty(key: string, value: string | null) {
     setProperties((prev) => {
       const next = { ...prev };
-      delete next[key];
+      if (value === null || value === "") delete next[key];
+      else next[key] = value;
       return next;
     });
+    if (value) setShowAdvancedOptions(true);
     startTransition(async () => {
-      unwrapAction(await updateDocumentProperty(documentId, key, null));
+      try {
+        unwrapAction(await updateDocumentProperty(documentId, key, value));
+      } catch (error) {
+        addToast(error instanceof Error ? error.message : "Não foi possível salvar a propriedade.", "error");
+      }
     });
   }
 
@@ -352,6 +342,70 @@ export function NotebookEditor({
     setShowEmojiPicker(false);
     setShowCoverPicker(false);
     setTimeout(() => window.print(), 150);
+  }
+
+  /** Estado atual do editor + dados da página, para exportar. */
+  async function exportSource() {
+    const editor = editorRef.current;
+    if (!editor) return null;
+    const state = editor.getEditorState().toJSON();
+    const ids = collectSyncIds(state);
+    let synced = {};
+    if (ids.length) {
+      try {
+        synced = unwrapAction(await getSyncedBlocksForExport(ids));
+      } catch {
+        addToast("Blocos sincronizados saíram sem conteúdo na exportação.", "warning");
+      }
+    }
+    return {
+      synced,
+      state,
+      meta: { title: title.trim() || "Sem título", icon, description, properties: propertiesForExport(properties) },
+    };
+  }
+
+  async function handleExportHtml() {
+    closeMenus();
+    const source = await exportSource();
+    if (!source) return;
+    try {
+      const hasMath = JSON.stringify(source.state).includes('"type":"equation"');
+      const katex = hasMath ? (await import("katex")).default : null;
+      const rootStyle = getComputedStyle(document.documentElement);
+      const html = documentToHtml(source.state, source.meta, {
+        renderMath: katex
+          ? (latex, displayMode) =>
+              katex.renderToString(latex, { displayMode, throwOnError: false, output: "htmlAndMathml", strict: "ignore" })
+          : undefined,
+        resolveColor: (value) => rootStyle.getPropertyValue(value.slice(4, -1)).trim() || value,
+        fontFamily: docFontFamily(pageFont),
+        synced: source.synced,
+      });
+      saveAs(new Blob([html], { type: "text/html;charset=utf-8" }), exportFileName(source.meta.title, "html"));
+    } catch (error) {
+      console.error(error);
+      addToast("Não foi possível exportar em HTML.", "error");
+    }
+  }
+
+  async function handleExportMarkdown() {
+    closeMenus();
+    const source = await exportSource();
+    if (!source) return;
+    const md = documentToMarkdown(source.state, source.meta, source.synced);
+    saveAs(new Blob([md], { type: "text/markdown;charset=utf-8" }), exportFileName(source.meta.title, "md"));
+  }
+
+  async function handleCopyMarkdown() {
+    const source = await exportSource();
+    if (!source) return;
+    try {
+      await navigator.clipboard.writeText(documentToMarkdown(source.state, source.meta, source.synced));
+      addToast("Markdown copiado.", "success");
+    } catch {
+      addToast("Não foi possível copiar.", "error");
+    }
   }
 
   function handleDuplicate() {
@@ -427,12 +481,77 @@ export function NotebookEditor({
   );
   const closeHistory = useCallback(() => setShowHistory(false), []);
 
+  const palettePages = useMemo(() => {
+    const out: PalettePage[] = [];
+    const walk = (nodes: typeof tree) => {
+      for (const node of nodes) {
+        if (node.type === "document" && node.id !== documentId) {
+          out.push({ id: node.id, title: nodeLabel(node), icon: node.icon, href: `/dashboard/documents/${node.id}` });
+        }
+        walk(node.children);
+      }
+    };
+    walk(tree);
+    return out;
+  }, [tree, documentId]);
+
+  const mentionPages = useMemo(
+    () => [...palettePages, { id: documentId, title: title || "Sem título", icon, href: `/dashboard/documents/${documentId}` }],
+    [palettePages, documentId, title, icon],
+  );
+  const navigate = useCallback((href: string) => router.push(href), [router]);
+  const editorContext = useMemo(
+    () => ({ documentId, pages: mentionPages, navigate }),
+    [documentId, mentionPages, navigate],
+  );
+
+  const searchInPages = useCallback(async (query: string): Promise<PaletteSearchHit[]> => {
+    const results = unwrapAction(await searchPages(query));
+    return results.map((r) => ({ id: r.id, title: r.title, icon: r.icon, href: `/dashboard/documents/${r.id}`, snippet: r.snippet }));
+  }, []);
+
+  // "Buscar nas páginas" da barra de seleção abre a paleta com o termo.
+  useEffect(() => {
+    const onSearch = (e: Event) => {
+      const term = (e as CustomEvent<string>).detail ?? "";
+      setPaletteQuery(term);
+      setShowPalette(true);
+    };
+    window.addEventListener(STAGEBOOK_SEARCH_EVENT, onSearch);
+    return () => window.removeEventListener(STAGEBOOK_SEARCH_EVENT, onSearch);
+  }, []);
+
+  const paletteActions: PaletteAction[] = [
+    { id: "export-pdf", title: "Exportar como PDF", icon: <FileDown size={16} />, keywords: ["pdf", "imprimir", "exportar", "baixar"], shortcut: "Ctrl+P", run: handleExportPdf },
+    { id: "export-html", title: "Exportar como HTML", icon: <FileCode2 size={16} />, keywords: ["html", "site", "exportar", "baixar", "web"], run: handleExportHtml },
+    { id: "export-md", title: "Exportar como Markdown", icon: <FileText size={16} />, keywords: ["markdown", "md", "exportar", "baixar", "texto"], run: handleExportMarkdown },
+    { id: "copy-md", title: "Copiar página como Markdown", icon: <ClipboardCopy size={16} />, keywords: ["copiar", "markdown", "md", "clipboard"], run: handleCopyMarkdown },
+    { id: "history", title: "Histórico de versões", icon: <History size={16} />, keywords: ["historico", "versoes", "restaurar", "voltar"], run: () => setShowHistory(true) },
+    { id: "width", title: fullWidth ? "Largura padrão" : "Largura total", icon: <MoveHorizontal size={16} />, keywords: ["largura", "largo", "tela cheia", "width"], run: toggleFullWidth },
+    { id: "props", title: showAdvancedOptions ? "Ocultar propriedades" : "Mostrar propriedades", icon: <SlidersHorizontal size={16} />, keywords: ["propriedades", "descricao", "tags", "marcos"], run: () => setShowAdvancedOptions((v) => !v) },
+    { id: "icon", title: "Alterar ícone da página", icon: <Smile size={16} />, keywords: ["icone", "emoji", "page icon"], run: () => setShowEmojiPicker(true) },
+    { id: "cover", title: cover ? "Trocar capa" : "Adicionar capa", icon: <Palette size={16} />, keywords: ["capa", "cover", "imagem", "fundo"], run: () => setShowCoverPicker(true) },
+    { id: "duplicate", title: "Duplicar página", icon: <Copy size={16} />, keywords: ["duplicar", "copia", "clonar"], run: handleDuplicate },
+    {
+      id: "move",
+      title: "Mover para…",
+      icon: <FolderInput size={16} />,
+      keywords: ["mover", "pasta", "subpagina"],
+      run: () => {
+        setMoveTarget(currentParentId ? `page:${currentParentId}` : currentFolderId ? `folder:${currentFolderId}` : "root");
+        setShowMoveDialog(true);
+      },
+    },
+    { id: "trash", title: "Mover para a lixeira", icon: <Trash2 size={16} />, keywords: ["excluir", "apagar", "deletar", "lixeira"], run: handleDelete },
+  ];
+
   const columnClass = fullWidth ? "max-w-none" : "max-w-[50rem]";
   const pageFontFamily = docFontFamily(pageFont);
 
   return (
     <div ref={printRootRef} className="doc-print-root min-h-[calc(100vh-3.5rem)]">
       <LexicalComposer initialConfig={initialConfig}>
+       <StagebookEditorProvider value={editorContext}>
         {/* Barra superior: caminho, status do salvamento e ações */}
         <div className="no-print sticky top-14 z-20 flex h-11 items-center gap-2 border-b border-base-300/50 bg-base-100/90 px-3 backdrop-blur sm:px-5">
           <nav aria-label="Caminho" className="flex min-w-0 flex-1 items-center gap-1 text-[13px] text-base-content/55">
@@ -495,6 +614,17 @@ export function NotebookEditor({
               </>
             )}
           </span>
+
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm gap-1.5 px-2 text-base-content/60 hover:text-base-content"
+            onClick={() => setShowPalette(true)}
+            title="Paleta de comandos (Ctrl/⌘ + K)"
+            aria-label="Abrir paleta de comandos"
+          >
+            <Command size={16} />
+            <span className="hidden md:inline">Comandos</span>
+          </button>
 
           <button
             type="button"
@@ -566,12 +696,30 @@ export function NotebookEditor({
 
               <div className="my-1 border-t border-base-300" />
 
+              <li className="menu-title px-2 pb-1 pt-1 text-[11px] uppercase tracking-wider">Exportar</li>
               <li>
                 <button type="button" onClick={handleExportPdf}>
                   <FileDown size={14} />
-                  Exportar como PDF
+                  PDF
+                  <span className="ml-auto text-[11px] text-base-content/40">imprimir</span>
                 </button>
               </li>
+              <li>
+                <button type="button" onClick={handleExportHtml}>
+                  <FileCode2 size={14} />
+                  HTML
+                  <span className="ml-auto text-[11px] text-base-content/40">.html</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={handleExportMarkdown}>
+                  <FileText size={14} />
+                  Markdown
+                  <span className="ml-auto text-[11px] text-base-content/40">.md</span>
+                </button>
+              </li>
+
+              <div className="my-1 border-t border-base-300" />
               <li>
                 <button type="button" onClick={handleDuplicate}>
                   <Copy size={14} />
@@ -694,77 +842,19 @@ export function NotebookEditor({
               aria-label="Título da página"
             />
 
-            {showAdvancedOptions && (
-              <div className="no-print mt-4 space-y-3 rounded-xl border border-base-300/70 bg-base-200/30 p-3 sm:p-4">
-                {/* Description */}
-                <input
-                  className="block w-full border-none bg-transparent p-0 text-sm text-base-content/70 outline-none placeholder:text-base-content/30 focus:outline-none focus:ring-0"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  onBlur={commitDescription}
-                  placeholder="Adicionar uma descrição..."
-                  aria-label="Descrição"
-                />
-
-                {/* Properties */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {Object.entries(properties).map(([key, value]) => (
-                    <span
-                      key={key}
-                      className="group/prop flex items-center gap-1 rounded-full bg-base-100 px-2.5 py-1 text-xs text-base-content/70 ring-1 ring-base-300/70"
-                    >
-                      <span className="font-medium">{key}:</span>{" "}
-                      {String(value)}
-                      <button
-                        type="button"
-                        aria-label={`Remover ${key}`}
-                        className="ml-0.5 p-1 opacity-100 transition-opacity md:p-0 md:opacity-0 md:group-hover/prop:opacity-100"
-                        onClick={() => removeProperty(key)}
-                      >
-                        <X size={11} />
-                      </button>
-                    </span>
-                  ))}
-
-                  <div className="relative">
-                    <button
-                      type="button"
-                      className="flex items-center gap-1 rounded-full border border-dashed border-base-300 px-2.5 py-1 text-xs text-base-content/45 hover:text-base-content/70"
-                      onClick={() => setShowPropertyForm((visible) => !visible)}
-                    >
-                      <Plus size={11} />
-                      Propriedade
-                    </button>
-                    {showPropertyForm && (
-                      <div className="absolute left-0 top-full z-50 mt-2 flex w-56 flex-col gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-xl">
-                        <input
-                          className="input input-xs input-bordered"
-                          placeholder="Nome (ex: status)"
-                          value={newPropKey}
-                          onChange={(e) => setNewPropKey(e.target.value)}
-                          autoFocus
-                        />
-                        <input
-                          className="input input-xs input-bordered"
-                          placeholder="Valor (ex: em andamento)"
-                          value={newPropValue}
-                          onChange={(e) => setNewPropValue(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && addProperty()}
-                        />
-                        <button
-                          type="button"
-                          className="btn btn-xs btn-primary"
-                          onClick={addProperty}
-                        >
-                          Adicionar
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Tags e milestone — catálogo universal (Kanban, Calendário, ThinkLab, LabTest) */}
-                <div className="flex flex-wrap items-center gap-2">
+            <DocProperties
+              properties={properties}
+              onSet={setProperty}
+              description={description}
+              onDescriptionCommit={(value) => {
+                setDescription(value);
+                commitDescription(value);
+              }}
+              hasLabels={initialTags.length > 0 || Boolean(initialMilestone)}
+              open={showAdvancedOptions}
+              onOpenChange={setShowAdvancedOptions}
+              labels={
+                <>
                   <ResourceLabels
                     kind="document"
                     resourceId={documentId}
@@ -772,9 +862,9 @@ export function NotebookEditor({
                     initialMilestone={initialMilestone}
                   />
                   <PinToggle kind="stagebook" resourceId={documentId} className="btn btn-ghost btn-xs gap-1 text-base-content/50" />
-                </div>
-              </div>
-            )}
+                </>
+              }
+            />
           </header>
 
           {showMoveDialog && (
@@ -871,6 +961,7 @@ export function NotebookEditor({
               <TemplateGalleryPlugin />
             </div>
           </div>
+          {mounted && <BacklinksPanel documentId={documentId} title={title} />}
         </div>
 
         <HistoryPlugin />
@@ -879,16 +970,35 @@ export function NotebookEditor({
         <LinkPlugin />
         <TabIndentationPlugin />
         <HorizontalRulePlugin />
-        <MarkdownShortcutPlugin transformers={MARKDOWN_TRANSFORMERS} />
+        <MarkdownShortcutPlugin transformers={MARKDOWN_SHORTCUTS} />
         <TablePlugin hasHorizontalScroll hasCellMerge />
         <SlashMenuPlugin />
         <BlockSelectionPlugin anchorElem={editorAnchor} />
         <ContextualToolsPlugin />
         <LayoutPlugin />
+        <TimelinePlugin />
         <DividerPlugin />
         <EmbedPlugin documentId={documentId} />
         <TableToolsPlugin />
         <CodeToolsPlugin />
+        <RichBlocksPlugin />
+        <EmojiPlugin />
+        <EditorRefPlugin editorRef={editorRef} />
+        <TabsPlugin />
+        <MentionPlugin />
+        <SyncedBlocksPlugin onError={(message) => addToast(message, "error")} />
+        <CommandPalette
+          open={showPalette}
+          onOpenChange={(open) => {
+            setShowPalette(open);
+            if (!open) setPaletteQuery("");
+          }}
+          initialQuery={paletteQuery}
+          onSearch={searchInPages}
+          actions={paletteActions}
+          pages={palettePages}
+          onNavigate={(href) => router.push(href)}
+        />
 
         <AutosavePlugin documentId={documentId} onStatusChange={handleSaveState} />
 
@@ -898,6 +1008,7 @@ export function NotebookEditor({
           onClose={closeHistory}
           onRestored={handleRestored}
         />
+       </StagebookEditorProvider>
       </LexicalComposer>
     </div>
   );

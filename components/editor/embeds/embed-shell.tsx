@@ -49,10 +49,10 @@ export function EmbedShell({
     >
       <div className="flex items-center gap-2 border-b border-base-200 bg-base-200/40 px-3 py-1.5 text-xs text-base-content/55">
         <Icon size={13} className="shrink-0" />
-        <span className="font-medium uppercase tracking-wide">{EMBED_LABELS[kind]}</span>
-        {loading && <Loader2 size={12} className="animate-spin" />}
+        <span className="min-w-0 truncate font-medium uppercase tracking-wide">{EMBED_LABELS[kind]}</span>
+        {loading && <Loader2 size={12} className="shrink-0 animate-spin" />}
         <span className="flex-1" />
-        <div className="no-print flex items-center gap-0.5">
+        <div className="no-print flex shrink-0 items-center gap-0.5">
           {toolbar}
           <button
             type="button"

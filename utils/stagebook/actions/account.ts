@@ -22,6 +22,7 @@ import { requireAuthenticatedUser } from "../scope";
 import { runAction, type ActionResult } from "../action-result";
 import { PERSONA_META, PERSONA_TYPES, type PersonaType } from "../persona";
 import { ValidationError, requireOneOf } from "../validation";
+import { PERSONA_LOCKED_MESSAGE, personaLockState } from "../persona-lock";
 import { CLEANUP_CATEGORIES, type CleanupCategory, type CleanupResult } from "../cleanup-categories";
 
 function refresh() {
@@ -60,6 +61,16 @@ export async function updatePersonaType(persona: PersonaType): Promise<ActionRes
   return runAction(async () => {
     const userId = await requireAuthenticatedUser();
     const next = requireOneOf(persona, PERSONA_TYPES, "Tipo de conta");
+
+    const me = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: { personaType: true, createdAt: true },
+    });
+    if (me?.personaType === next) return next;
+    // Sem tipo ainda (onboarding pendente) sempre pode escolher.
+    if (me?.personaType && personaLockState(me.createdAt).locked) {
+      throw new ValidationError(PERSONA_LOCKED_MESSAGE);
+    }
 
     if (next === "competidor") {
       const owned = await ownedTeams(userId);

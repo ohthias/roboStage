@@ -223,3 +223,46 @@ export type DocumentVersionRow = typeof documentVersions.$inferSelect;
 export type NewDocumentRow = typeof documents.$inferInsert;
 export type FolderRow = typeof folders.$inferSelect;
 export type NewFolderRow = typeof folders.$inferInsert;
+
+/**
+ * Blocos sincronizados do Stagebook: um trecho de conteúdo (estado do Lexical)
+ * reutilizado em várias páginas. As páginas guardam só o id (nó
+ * "synced-block"); editar o bloco em qualquer página muda todas as ocorrências.
+ * Mesmo esquema de dono das páginas: pessoal (userId) OU equipe (teamId).
+ */
+export const syncedBlocks = pgTable(
+  "synced_blocks",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id"),
+    teamId: uuid("team_id"),
+    title: text("title").notNull().default("Bloco sincronizado"),
+    // Estado serializado de um editor Lexical ({ root: { children: [...] } }).
+    content: jsonb("content").$type<Record<string, unknown> | null>(),
+    createdBy: text("created_by").notNull(),
+    updatedBy: text("updated_by"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("synced_blocks_user_id_idx").on(table.userId),
+    teamIdIdx: index("synced_blocks_team_id_idx").on(table.teamId),
+    ownershipCheckConstraint: ownershipCheck(table.userId, table.teamId),
+    userFk: foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.id],
+      name: "synced_blocks_user_id_fkey",
+    }).onDelete("cascade"),
+    teamFk: foreignKey({
+      columns: [table.teamId],
+      foreignColumns: [teams.id],
+      name: "synced_blocks_team_id_fkey",
+    }).onDelete("cascade"),
+  })
+);
+
+export type SyncedBlockRow = typeof syncedBlocks.$inferSelect;

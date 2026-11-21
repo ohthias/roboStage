@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import { cn, toneFill, type Tone } from "../lib";
 import { StickerTag } from "./Tag";
+import { AmbientVideo } from "./AmbientVideo";
 
 /* ------------------------------------------------------------------ */
 /*  Imagens — moldura, fita, efeito de impressão e legenda.            */
@@ -273,16 +274,7 @@ export function MediaHero({
   return (
     <header className={cn("relative isolate flex w-full items-center overflow-hidden", minHeight, className)}>
       {video ? (
-        <video
-          className="absolute inset-0 -z-20 h-full w-full object-cover"
-          src={video}
-          poster={poster ?? image}
-          autoPlay
-          muted
-          loop
-          playsInline
-          aria-hidden
-        />
+        <AmbientVideo className="absolute inset-0 -z-20 h-full w-full object-cover" src={video} poster={poster ?? image} />
       ) : (
         image && <Image src={image} alt="" fill priority sizes="100vw" className="-z-20 object-cover" />
       )}

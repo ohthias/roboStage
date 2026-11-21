@@ -22,7 +22,7 @@ export type EdgeProps = {
    * Textura dentro da forma, para emendar sem degrau com uma seção texturizada.
    * Padrão "both" (papel + grão, igual ao <Section> colorido).
    */
-  texture?: "none" | "noise" | "both";
+  texture?: "none" | "noise" | "paper" | "both";
   className?: string;
 };
 
@@ -63,6 +63,13 @@ function EdgeTexture({ id, texture, mode }: { id: string; texture: NonNullable<E
           <feColorMatrix in="b" type="saturate" values="0" result="bg" />
           <feBlend in="bg" in2="noisy" mode="multiply" result="pm" />
           <feComposite in="pm" in2="noisy" operator="arithmetic" k1="0" k2="0.12" k3="0.88" k4="0" result="mix" />
+        </>
+      ) : texture === "paper" ? (
+        <>
+          <feTurbulence type="fractalNoise" baseFrequency="0.006" numOctaves="3" seed="11" result="b" />
+          <feColorMatrix in="b" type="saturate" values="0" result="bg" />
+          <feBlend in="bg" in2="SourceGraphic" mode="multiply" result="pm" />
+          <feComposite in="pm" in2="SourceGraphic" operator="arithmetic" k1="0" k2="0.12" k3="0.88" k4="0" result="mix" />
         </>
       ) : (
         <feOffset in="noisy" dx="0" dy="0" result="mix" />

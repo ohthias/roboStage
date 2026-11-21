@@ -6,6 +6,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type CSSProperties,
   type ElementType,
   type ReactNode,
@@ -23,20 +24,76 @@ import { cn } from "../lib";
 /*    resposta a uma ação ou celebração.                               */
 /* ------------------------------------------------------------------ */
 
-/** true quando o sistema pede menos movimento. */
-export function useReducedMotion() {
-  const [reduce, setReduce] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const set = () => setReduce(mq.matches);
-    set();
-    mq.addEventListener("change", set);
-    return () => mq.removeEventListener("change", set);
-  }, []);
-  return reduce;
+/**
+ * Lê agora se é para reduzir movimento.
+ * <html data-motion="full"> força animar; data-motion="off" força parar;
+ * sem atributo, vale o pedido do sistema (prefers-reduced-motion).
+ */
+export function prefersReducedMotion() {
+  if (typeof window === "undefined") return false;
+  const force = document.documentElement.dataset.motion;
+  if (force === "full") return false;
+  if (force === "off") return true;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** Dispara uma vez quando o elemento entra na tela. */
+/* Um só ouvinte para a página toda (antes: um matchMedia + um
+   MutationObserver por componente). */
+const reduceSubs = new Set<() => void>();
+let reduceCleanup: (() => void) | null = null;
+function subscribeReduce(cb: () => void) {
+  reduceSubs.add(cb);
+  if (!reduceCleanup) {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const fire = () => reduceSubs.forEach((f) => f());
+    mq.addEventListener("change", fire);
+    const mo = new MutationObserver(fire);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-motion"] });
+    reduceCleanup = () => {
+      mq.removeEventListener("change", fire);
+      mo.disconnect();
+    };
+  }
+  return () => {
+    reduceSubs.delete(cb);
+    if (!reduceSubs.size && reduceCleanup) {
+      reduceCleanup();
+      reduceCleanup = null;
+    }
+  };
+}
+
+/** true quando é para reduzir movimento (sistema ou data-motion no <html>). */
+export function useReducedMotion() {
+  return useSyncExternalStore(subscribeReduce, prefersReducedMotion, () => false);
+}
+
+/* Observadores compartilhados: um IntersectionObserver por configuração,
+   não um por elemento. */
+type ViewCb = (visible: boolean) => void;
+const observers = new Map<string, { io: IntersectionObserver; cbs: Map<Element, ViewCb> }>();
+function observeView(el: Element, cb: ViewCb, margin: string, threshold: number) {
+  const key = `${margin}|${threshold}`;
+  let entry = observers.get(key);
+  if (!entry) {
+    const cbs = new Map<Element, ViewCb>();
+    const io = new IntersectionObserver(
+      (list) => list.forEach((e) => cbs.get(e.target)?.(e.isIntersecting)),
+      { rootMargin: margin, threshold },
+    );
+    entry = { io, cbs };
+    observers.set(key, entry);
+  }
+  entry.cbs.set(el, cb);
+  entry.io.observe(el);
+  const e = entry;
+  return () => {
+    e.io.unobserve(el);
+    e.cbs.delete(el);
+  };
+}
+
+/** Dispara quando o elemento entra na tela (uma vez, por padrão). */
 export function useInView<T extends Element>(options: { once?: boolean; margin?: string; threshold?: number } = {}) {
   const { once = true, margin = "0px 0px -10% 0px", threshold = 0.15 } = options;
   const ref = useRef<T>(null);
@@ -44,19 +101,68 @@ export function useInView<T extends Element>(options: { once?: boolean; margin?:
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
+    const stop = observeView(
+      el,
+      (visible) => {
+        if (visible) {
           setInView(true);
-          if (once) io.disconnect();
+          if (once) stop();
         } else if (!once) setInView(false);
       },
-      { rootMargin: margin, threshold },
+      margin,
+      threshold,
     );
-    io.observe(el);
-    return () => io.disconnect();
+    return stop;
   }, [once, margin, threshold]);
   return [ref, inView] as const;
+}
+
+/**
+ * Para as animações CSS de um bloco quando ele sai da tela
+ * (põe `data-paused` direto no DOM, sem re-render).
+ * Usado por Section, Marquee e AnimatedBackground.
+ */
+export function usePauseOffscreen<T extends Element>(enabled = true) {
+  const ref = useRef<T>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !enabled) return;
+    const stop = observeView(
+      el,
+      (visible) => {
+        if (visible) el.removeAttribute("data-paused");
+        else el.setAttribute("data-paused", "");
+      },
+      "200px 0px",
+      0,
+    );
+    return () => {
+      stop();
+      el.removeAttribute("data-paused");
+    };
+  }, [enabled]);
+  return ref;
+}
+
+/** Envolve qualquer bloco animado e pausa quando ele sai da tela. */
+export function PauseOffscreen({
+  as: As = "div",
+  children,
+  ...rest
+}: {
+  as?: ElementType;
+  id?: string;
+  className?: string;
+  style?: CSSProperties;
+  "aria-hidden"?: boolean | "true" | "false";
+  children?: ReactNode;
+}) {
+  const ref = usePauseOffscreen<HTMLElement>();
+  return (
+    <As ref={ref} {...rest}>
+      {children}
+    </As>
+  );
 }
 
 /* =========================================================== REVEAL */
@@ -89,11 +195,19 @@ export function Reveal({
   style?: CSSProperties;
   children: ReactNode;
 }) {
-  const [ref, inView] = useInView<HTMLElement>({ once });
+  // threshold 0: bloco mais alto que a tela também dispara
+  const [ref, inView] = useInView<HTMLElement>({ once, threshold: 0 });
   const reduce = useReducedMotion();
   const [armed, setArmed] = useState(false);
   useEffect(() => {
-    if (!reduce) setArmed(true);
+    const el = ref.current;
+    if (!el || prefersReducedMotion()) return setArmed(false);
+    // Já está na tela ao carregar? Fica como veio do servidor: esconder e
+    // mostrar de novo dava um "pisca".
+    const r = el.getBoundingClientRect();
+    if (r.top < window.innerHeight && r.bottom > 0) return;
+    setArmed(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduce]);
   const state = !armed ? undefined : inView ? "shown" : "armed";
   return (
@@ -133,7 +247,8 @@ export function Stagger({
   return (
     <div className={className}>
       {Children.toArray(children).map((child, i) => (
-        <Reveal key={i} effect={effect} delay={delay + i * step} className={itemClassName}>
+        // teto no atraso: com muitos itens, o último não fica 1–2 s esperando
+        <Reveal key={i} effect={effect} delay={delay + Math.min(i, 5) * step} className={itemClassName}>
           {child}
         </Reveal>
       ))}
@@ -255,14 +370,13 @@ export function Typewriter({
 }) {
   const reduce = useReducedMotion();
   const [text, setText] = useState(words[0] ?? "");
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  // só digita enquanto aparece na tela; fora dela, para e continua de onde estava
+  const [ref, visible] = useInView<HTMLSpanElement>({ once: false, margin: "100px 0px", threshold: 0 });
+  const pos = useRef({ i: 0, len: words[0]?.length ?? 0, deleting: true });
 
   useEffect(() => {
-    if (!mounted || reduce || words.length < 2) return;
-    let i = 0;
-    let len = words[0].length;
-    let deleting = true;
+    if (!visible || reduce || words.length < 2) return;
+    let { i, len, deleting } = pos.current;
     let t: ReturnType<typeof setTimeout>;
     const step = () => {
       const w = words[i];
@@ -285,11 +399,14 @@ export function Typewriter({
       }
     };
     t = setTimeout(step, pause);
-    return () => clearTimeout(t);
-  }, [mounted, reduce, words, typeSpeed, deleteSpeed, pause]);
+    return () => {
+      clearTimeout(t);
+      pos.current = { i, len, deleting };
+    };
+  }, [visible, reduce, words, typeSpeed, deleteSpeed, pause]);
 
   return (
-    <span className={className}>
+    <span ref={ref} className={className}>
       <span className="sr-only">{words.join(", ")}</span>
       <span aria-hidden>
         {text}
@@ -451,7 +568,7 @@ const CONFETTI_COLORS = ["var(--color-primary)", "var(--color-secondary)", "var(
  */
 export function confetti(origin?: { x: number; y: number } | HTMLElement, amount = 70) {
   if (typeof window === "undefined") return;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (prefersReducedMotion()) return;
   let x = window.innerWidth / 2;
   let y = window.innerHeight / 2;
   if (origin instanceof HTMLElement) {

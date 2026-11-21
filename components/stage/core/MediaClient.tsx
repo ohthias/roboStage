@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "./lazy-motion";
 import {
   ChevronLeft,
   ChevronRight,
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn, toneFill, type Tone } from "../lib";
 import { StatusBadge, StickerTag } from "./Tag";
+import { AmbientVideo } from "./AmbientVideo";
 import { MediaEffectLayer, StageImage, Tape, type MediaEffect, type MediaItem, type MediaRatio } from "./Media";
 
 /* ------------------------------------------------------------------ */
@@ -158,6 +159,9 @@ export function StageVideo({
           frameClass[frame],
         )}
       >
+        {ambient ? (
+          <AmbientVideo src={src} poster={poster} className="absolute inset-0 h-full w-full object-cover" />
+        ) : (
         <video
           ref={videoRef}
           src={src}
@@ -167,9 +171,7 @@ export function StageVideo({
           playsInline
           preload="metadata"
           muted={muted}
-          autoPlay={ambient}
-          loop={ambient}
-          controls={!mounted && !ambient}
+          controls={!mounted}
           onClick={showControls ? toggle : undefined}
           onPlay={() => {
             setPlaying(true);
@@ -182,6 +184,7 @@ export function StageVideo({
         >
           {captionsSrc && <track kind="captions" src={captionsSrc} srcLang="pt-BR" label="Português" default />}
         </video>
+        )}
 
         {/* textura por cima da imagem, por baixo dos controles */}
         {mounted && <MediaEffectLayer effect={effect} tone={tone} />}

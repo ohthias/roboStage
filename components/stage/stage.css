@@ -372,20 +372,22 @@
   max-width: 820px;
   aspect-ratio: 1;
   border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.14;
+  /* Gradiente no lugar de filter: blur(90px): mesmo brilho, sem a camada
+     gigante de desfoque que a GPU refazia. */
+  background: radial-gradient(closest-side, var(--glow) 0%, color-mix(in oklab, var(--glow) 45%, transparent) 45%, transparent 100%);
+  opacity: 0.2;
   will-change: transform;
 }
 .rs-glow-one {
   top: -35%;
   left: -15%;
-  background: var(--color-primary);
+  --glow: var(--color-primary);
   animation: rs-glow-one 12s ease-in-out infinite alternate;
 }
 .rs-glow-two {
   right: -15%;
   bottom: -45%;
-  background: var(--color-secondary);
+  --glow: var(--color-secondary);
   animation: rs-glow-two 16s ease-in-out infinite alternate;
 }
 .rs-grid {
@@ -415,23 +417,46 @@
 
 /* ---------- Animações ---------- */
 
+/* Fora da tela, para. `usePauseOffscreen` (core/Motion.tsx) põe data-paused
+   em Section, Marquee e AnimatedBackground quando saem da tela. */
+[data-paused],
+[data-paused] *,
+[data-paused] *::before,
+[data-paused] *::after {
+  animation-play-state: paused !important;
+}
+
 /* Reveal (core/Motion.tsx): só esconde depois que o JS "arma" o elemento,
    então sem JS — ou com prefers-reduced-motion — o conteúdo aparece normal. */
-[data-reveal="armed"] {
-  opacity: 0;
+/* A transição fica nos DOIS estados: o navegador usa a do estado novo
+   ("shown"); só no "armed" o bloco pulava direto, sem animar. */
+[data-reveal] {
   transition:
     opacity var(--reveal-duration, var(--duration-slow)) var(--ease-out) var(--reveal-delay, 0ms),
-    transform var(--reveal-duration, var(--duration-slow)) var(--reveal-ease, var(--ease-out)) var(--reveal-delay, 0ms),
-    filter var(--reveal-duration, var(--duration-slow)) var(--ease-out) var(--reveal-delay, 0ms);
+    transform var(--reveal-duration, var(--duration-slow)) var(--reveal-ease, var(--ease-out)) var(--reveal-delay, 0ms);
 }
-[data-reveal="armed"][data-effect="fade-up"] { transform: translateY(28px); }
-[data-reveal="armed"][data-effect="fade-down"] { transform: translateY(-28px); }
-[data-reveal="armed"][data-effect="slide-left"] { transform: translateX(40px); }
-[data-reveal="armed"][data-effect="slide-right"] { transform: translateX(-40px); }
-[data-reveal="armed"][data-effect="pop"] { transform: scale(0.85); --reveal-ease: var(--ease-stage); }
-[data-reveal="armed"][data-effect="blur"] { filter: blur(12px); transform: scale(1.03); }
-[data-reveal="armed"][data-effect="drop"] { transform: translateY(-36px) rotate(-10deg); --reveal-ease: var(--ease-stage); }
+[data-reveal="armed"] {
+  opacity: 0;
+  will-change: opacity, transform; /* só enquanto espera; some depois */
+}
+[data-reveal="armed"][data-effect="fade-up"] { transform: translateY(24px); }
+[data-reveal="armed"][data-effect="fade-down"] { transform: translateY(-24px); }
+[data-reveal="armed"][data-effect="slide-left"] { transform: translateX(32px); }
+[data-reveal="armed"][data-effect="slide-right"] { transform: translateX(-32px); }
+[data-reveal="armed"][data-effect="pop"] { transform: scale(0.9); --reveal-ease: var(--ease-stage); }
+[data-reveal="armed"][data-effect="drop"] { transform: translateY(-28px) rotate(-8deg); --reveal-ease: var(--ease-stage); }
+/* blur leve (6px) e só neste efeito: desfoque grande em bloco grande travava */
+[data-reveal][data-effect="blur"] {
+  transition-property: opacity, transform, filter;
+  transition-duration: var(--reveal-duration, var(--duration-slow));
+  transition-timing-function: var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal="armed"][data-effect="blur"] { filter: blur(6px); transform: scale(1.02); }
 [data-reveal="shown"] { opacity: 1; transform: none; filter: none; }
+@media print {
+  [data-reveal] { opacity: 1 !important; transform: none !important; filter: none !important; }
+}
 @keyframes stage-marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
@@ -475,19 +500,26 @@
   to { transform: none; opacity: 1; }
 }
 
+/* Menos movimento.
+   · Sistema pede "reduzir movimento" → enfeites param; marquee fica 3× mais lento
+     (é conteúdo, não some nem corta).
+   · <html data-motion="full"> ignora o pedido do sistema (tudo anima).
+   · <html data-motion="off"> desliga tudo, até o marquee. */
 @media (prefers-reduced-motion: reduce) {
-  .animate-marquee,
-  .animate-marquee-reverse,
-  .animate-spin-slow,
-  .animate-wiggle,
-  .animate-float,
-  .animate-live,
-  .animate-shake,
-  .animate-drop,
-  .animate-rise,
-  .animate-blink,
-  .rs-glow,
-  .rs-grid {
+  :root:not([data-motion="full"]) :is(
+    .animate-spin-slow, .animate-wiggle, .animate-float, .animate-live, .animate-shake,
+    .animate-drop, .animate-rise, .animate-blink, .rs-glow, .rs-grid
+  ) {
     animation: none !important;
   }
+  :root:not([data-motion="full"]) :is(.animate-marquee, .animate-marquee-reverse) {
+    animation-duration: calc(var(--marquee-speed, 30s) * 3) !important;
+  }
+}
+:root[data-motion="off"] :is(
+  .animate-marquee, .animate-marquee-reverse, .animate-spin-slow, .animate-wiggle,
+  .animate-float, .animate-live, .animate-shake, .animate-drop, .animate-rise,
+  .animate-blink, .rs-glow, .rs-grid
+) {
+  animation: none !important;
 }

@@ -10,7 +10,7 @@ import {
   type ReactNode,
   type SelectHTMLAttributes,
 } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "../core/lazy-motion";
 import { AlertCircle, ArrowDown, ArrowUp, ArrowUpDown, CheckCircle2, ChevronDown, Info, TriangleAlert, X } from "lucide-react";
 import { cn, type Tone } from "../lib";
 import { useDialogBehavior } from "../core/Interactive";

@@ -338,37 +338,84 @@ export function MemberCard({
 
 /* ============================================================== NEWS */
 
+/**
+ * Hosts externos que estão em `images.remotePatterns` no next.config
+ * (passam pelo otimizador do Next). Qualquer outra URL externa é renderizada
+ * com `unoptimized`, então o componente aceita imagens de qualquer origem.
+ */
+const OPTIMIZED_REMOTE_HOSTS = [/\.supabase\.co$/];
+
+function isExternalImage(src: string) {
+  return /^(https?:)?\/\//.test(src) || src.startsWith("data:") || src.startsWith("blob:");
+}
+
+function shouldSkipOptimization(src: string) {
+  if (!isExternalImage(src)) return false;
+  try {
+    const { hostname } = new URL(src, "https://local.invalid");
+    return !OPTIMIZED_REMOTE_HOSTS.some((re) => re.test(hostname));
+  } catch {
+    return true;
+  }
+}
+
 /** NewsCard — notícia/post. Layouts: vertical, horizontal e destaque (texto sobre a imagem). */
 export function NewsCard({
   title,
   excerpt,
   image,
+  color,
   tag,
   date,
   readingTime,
   href,
   layout = "vertical",
+  unoptimized,
   className,
 }: {
   title: string;
   excerpt?: string;
-  image: string;
+  /** Caminho local (/img/x.jpg) ou URL externa (https://…). Vazio → fundo em cor sólida. */
+  image?: string | null;
+  /** Cor de fundo quando não há imagem (qualquer cor CSS). Padrão: cor primária do tema. */
+  color?: string;
   tag?: string;
   date: string;
   readingTime?: string;
   href: string;
   layout?: "vertical" | "horizontal" | "featured";
+  /** Força ligar/desligar a otimização do next/image. Padrão: automático pela origem da URL. */
+  unoptimized?: boolean;
   className?: string;
 }) {
-  const fallbackCover = coverFromSeed(title);
-  const coverFallback = (
-    <CoverArt
-      pattern={fallbackCover.pattern}
-      tone={fallbackCover.tone}
-      seed={title}
-      className="absolute inset-0 size-full"
-    />
+  const src = image?.trim() || "";
+  const hasImage = Boolean(src);
+  const skipOptimization = unoptimized ?? shouldSkipOptimization(src);
+
+  /**
+   * Camada de mídia: ocupa todo o container pai (que precisa ser `relative`)
+   * e fica SEMPRE atrás do conteúdo (z-0). Sem imagem → cor sólida.
+   */
+  const media = (sizes: string, zoomClass: string) => (
+    <div
+      aria-hidden
+      className={cn("pointer-events-none absolute inset-0 z-0 overflow-hidden", !hasImage && !color && "bg-gradient-to-br to-primary from-accent stage-texture")}
+      style={!hasImage && color ? { backgroundColor: color } : undefined}
+    >
+      {hasImage && (
+        <Image
+          src={src}
+          alt=""
+          fill
+          sizes={sizes}
+          unoptimized={skipOptimization}
+          referrerPolicy="no-referrer"
+          className={cn("object-cover", zoomClass)}
+        />
+      )}
+    </div>
   );
+
   const meta = (
     <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-[0.12em] opacity-60">
       <span className="inline-flex items-center gap-1">
@@ -391,13 +438,18 @@ export function NewsCard({
   if (layout === "featured")
     return (
       <article className={cn("group relative isolate flex min-h-[22rem] flex-col justify-end overflow-hidden rounded-tl-[30px] rounded-br-[30px] p-6 text-white stage-shadow-lg", className)}>
-        {image ? (
-          <Image src={image} alt="" fill sizes="(min-width: 768px) 66vw, 100vw" className="-z-20 object-cover transition-transform duration-700 group-hover:scale-105" />
-        ) : (
-          <div className="absolute inset-0 -z-20 transition-transform duration-700 group-hover:scale-105">{coverFallback}</div>
-        )}
-        <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
-        <div className="max-w-xl space-y-3">
+        {/* z-0: imagem ou cor */}
+        {media("(min-width: 768px) 66vw, 100vw", "transition-transform duration-700 group-hover:scale-105")}
+        {/* z-[1]: degradê para legibilidade (mais suave quando é só cor) */}
+        <span
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t",
+            hasImage ? "from-black/85 via-black/40 to-transparent" : "from-black/40 via-black/10 to-transparent",
+          )}
+        />
+        {/* z-[2]: informações por cima de tudo */}
+        <div className="relative z-[2] max-w-xl space-y-3">
           {tagEl}
           <h3 className="text-2xl font-black leading-tight tracking-tight sm:text-4xl">{titleLink}</h3>
           {excerpt && <p className="line-clamp-2 text-sm text-white/80 sm:text-base">{excerpt}</p>}
@@ -408,13 +460,9 @@ export function NewsCard({
 
   if (layout === "horizontal")
     return (
-      <article className={cn(card, "group flex gap-4 rounded-2xl p-3 transition-colors hover:border-primary/40", className)}>
-        <div className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-tl-xl rounded-br-xl bg-base-200 sm:w-32">
-          {image ? (
-            <Image src={image} alt="" fill sizes="128px" className="object-cover transition-transform duration-500 group-hover:scale-105" />
-          ) : (
-            <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105">{coverFallback}</div>
-          )}
+      <article className={cn(card, "group relative flex gap-4 rounded-2xl p-3 transition-colors hover:border-primary/40", className)}>
+        <div className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-tl-xl rounded-br-xl sm:w-32">
+          {media("128px", "transition-transform duration-500 group-hover:scale-105")}
         </div>
         <div className="min-w-0 flex-1 space-y-1.5 py-1">
           {tag && <p className="stage-label text-primary">{tag}</p>}
@@ -425,14 +473,10 @@ export function NewsCard({
     );
 
   return (
-    <article className={cn(card, "group flex flex-col overflow-hidden rounded-tl-[30px] rounded-br-[30px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[6px_6px_0_0_var(--stage-shadow)]", className)}>
-      <div className="relative aspect-video overflow-hidden border-b border-base-300 bg-base-200">
-        {image ? (
-          <Image src={image} alt="" fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
-        ) : (
-          <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105">{coverFallback}</div>
-        )}
-        <span className="absolute left-4 top-4 z-10">{tagEl}</span>
+    <article className={cn(card, "group relative flex flex-col overflow-hidden rounded-tl-[30px] rounded-br-[30px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[6px_6px_0_0_var(--stage-shadow)]", className)}>
+      <div className="relative aspect-video overflow-hidden border-b border-base-300">
+        {media("(min-width: 768px) 33vw, 100vw", "transition-transform duration-500 group-hover:scale-105")}
+        <span className="absolute left-4 top-4 z-[2]">{tagEl}</span>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5">
         <h3 className="text-lg font-black leading-snug tracking-tight">{titleLink}</h3>

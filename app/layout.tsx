@@ -55,7 +55,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" data-motion="full">
       <body className={`${roboto.variable} antialiased`}>
         <ClerkProvider localization={ptBR}>
           <Analytics />

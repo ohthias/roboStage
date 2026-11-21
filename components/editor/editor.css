@@ -278,6 +278,49 @@
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary, #3b82f6) 35%, transparent);
 }
 
+/* Tamanho e posição (ThinkLab / LabTest): largura em % + alças laterais. */
+.editor-embed-frame {
+  max-width: 100%;
+}
+.editor-embed-resize {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  width: 1rem;
+  cursor: ew-resize;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.editor-embed-resize > span {
+  height: 2.75rem;
+  width: 0.3rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-base-content, #111) 35%, transparent);
+  box-shadow: 0 0 0 2px var(--color-base-100, #fff);
+}
+.editor-embed-frame:hover .editor-embed-resize,
+.editor-embed-selected .editor-embed-resize,
+.editor-embed-resize:active {
+  opacity: 1;
+}
+.editor-embed-resize:hover > span,
+.editor-embed-resize:active > span {
+  background: var(--color-primary, #3b82f6);
+}
+@media (max-width: 640px) {
+  .editor-embed-frame {
+    width: 100% !important;
+  }
+  .editor-embed-resize {
+    display: none;
+  }
+}
+
 /* ---------- Gradientes dos ícones de página ---------- */
 :root {
   --ed-grad-sunset: linear-gradient(135deg, #f59e0b, #ef4444 55%, #db2777);

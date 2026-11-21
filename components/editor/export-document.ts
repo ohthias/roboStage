@@ -5,6 +5,7 @@
  */
 import { markerToText, readMarkerFromJSON } from "./list-markers";
 import { lucideSvg, type LucideSvgName } from "./lucide-svg";
+import { embedLayoutStyle } from "./embeds/embed-options";
 
 export type JsonNode = {
   type: string;
@@ -27,6 +28,7 @@ export type JsonNode = {
   inline?: boolean;
   embedKind?: string;
   label?: string;
+  options?: { width?: number; align?: "left" | "center" | "right" };
   templateColumns?: string;
   status?: string;
   title?: string;
@@ -636,8 +638,12 @@ function htmlBlock(node: JsonNode, opts: HtmlOptions, ctx: HtmlCtx): string {
         .map((h) => `<li style="padding-left:${(h.level - min) * 1.1}rem"><a href="#${h.id}">${esc(h.text || "Sem título")}</a></li>`)
         .join("")}</ol></nav>`;
     }
-    case "stagebook-embed":
-      return `<div class="sb-embed">📎 <strong>${esc(EMBED_LABEL[node.embedKind ?? ""] ?? "Item incorporado")}:</strong> ${esc(node.label || "sem título")}</div>`;
+    case "stagebook-embed": {
+      // Tamanho e posição escolhidos no editor (ThinkLab / LabTest).
+      const lay = node.options?.width != null && node.options.width < 100 ? embedLayoutStyle(node.options) : null;
+      const style = lay ? ` style="width:${lay.width};margin-left:${lay.marginLeft};margin-right:${lay.marginRight}"` : "";
+      return `<div class="sb-embed"${style}>📎 <strong>${esc(EMBED_LABEL[node.embedKind ?? ""] ?? "Item incorporado")}:</strong> ${esc(node.label || "sem título")}</div>`;
+    }
     default:
       return node.children ? htmlBlocks(node.children, opts, ctx) : "";
   }

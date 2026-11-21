@@ -26,6 +26,9 @@ export const ACTIVITY_VERBS = [
   "roster.published",
   "roster.updated",
   "journal.created",
+  "resource.transferred",
+  "legacy.chapter_created",
+  "legacy.items_added",
 ] as const;
 
 export type ActivityVerb = (typeof ACTIVITY_VERBS)[number];
@@ -38,7 +41,8 @@ export type ActivityEntityType =
   | "milestone"
   | "member"
   | "anatix_session"
-  | "journal";
+  | "journal"
+  | "legacy_chapter";
 
 export function isActivityVerb(value: unknown): value is ActivityVerb {
   return typeof value === "string" && (ACTIVITY_VERBS as readonly string[]).includes(value);

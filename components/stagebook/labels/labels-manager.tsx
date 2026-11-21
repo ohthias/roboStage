@@ -39,10 +39,23 @@ import { MilestoneChip } from "./milestone-chip";
 import { TagChip } from "./tag-chip";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
+import {
+  DisplayHeading,
+  IconButton,
+  InlineAlert,
+  Panel,
+  ToolBadge,
+  ToolButton,
+  ToolEmpty,
+  ToolInput,
+  ToolSelect,
+  ToolTabs,
+  useToolConfirm,
+} from "@/components/stage";
 const norm = (v: string) => v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 function UsageSummary({ usage, total }: { usage: Record<LabelableKind, number>; total: number }) {
-  if (total === 0) return <span className="text-xs text-base-content/40">Sem uso</span>;
+  if (total === 0) return <ToolBadge>Sem uso</ToolBadge>;
   return (
     <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-base-content/55">
       {LABELABLE_KINDS.filter((k) => usage[k] > 0).map((k) => (
@@ -55,8 +68,8 @@ function UsageSummary({ usage, total }: { usage: Record<LabelableKind, number>; 
 }
 
 /**
- * Gestão central das tags e milestones do espaço atual. É a mesma lista
- * usada por Kanban, Documentos, Calendário, ThinkLab e LabTest.
+ * Gestão central das tags e metas (milestones) do espaço atual, com a Stage
+ * UI. É a mesma lista usada por todas as ferramentas, inclusive o Diário.
  */
 export function LabelsManager({
   initialTags,
@@ -79,6 +92,7 @@ export function LabelsManager({
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+  const { confirm, dialog: confirmDialog } = useToolConfirm();
 
   // Edição inline
   const [editId, setEditId] = useState<string | null>(null);
@@ -128,270 +142,286 @@ export function LabelsManager({
     });
   }
 
+  const isTags = tab === "tags";
+  const canCreateHere = isTags || canDelete;
+
+  async function removeTag(tag: TagWithUsage) {
+    const ok = await confirm({
+      title: `Excluir a tag “${tag.name}”?`,
+      message: tag.total ? `Ela sai de ${tag.total} ${tag.total === 1 ? "item" : "itens"} em todas as ferramentas.` : "Ela não está em uso.",
+      intent: "danger",
+      confirmLabel: "Excluir",
+    });
+    if (!ok) return;
+    run(async () => {
+      unwrapAction(await deleteTag(tag.id));
+      await reloadTags();
+    });
+  }
+
+  async function removeMilestone(m: MilestoneWithUsage) {
+    const ok = await confirm({
+      title: `Excluir a meta “${m.name}”?`,
+      message: m.total ? `Os ${m.total} itens vinculados ficam sem meta.` : "Nenhum item usa esta meta.",
+      intent: "danger",
+      confirmLabel: "Excluir",
+    });
+    if (!ok) return;
+    run(async () => {
+      unwrapAction(await deleteMilestone(m.id));
+      await reloadMilestones();
+    });
+  }
+
   return (
     <div className="mx-auto w-full space-y-4">
-      <header className={embedded ? "hidden" : undefined}>
-        <h1 className="text-3xl font-black tracking-tight text-base-content sm:text-4xl">
-          Tags <span className="text-success">&amp; Milestones</span>
-        </h1>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60 sm:text-base">
-          Um único catálogo para Kanban, StageBook, Calendário, ThinkLab e LabTest. Renomear ou mudar a cor
-          aqui atualiza tudo, em todas as ferramentas.
-        </p>
-      </header>
-      <div className="h-px bg-gradient-to-r from-success/30 via-base-300 to-transparent" />
-      <div className="flex flex-wrap items-center gap-3">
-        <div role="tablist" className="tabs tabs-box">
-          <button role="tab" className={`tab gap-1.5 ${tab === "tags" ? "tab-active" : ""}`} onClick={() => setTab("tags")}>
-            <TagsIcon size={14} /> Tags <span className="opacity-50">{tags.length}</span>
-          </button>
-          <button
-            role="tab"
-            className={`tab gap-1.5 ${tab === "milestones" ? "tab-active" : ""}`}
-            onClick={() => setTab("milestones")}
-          >
-            <Flag size={14} /> Milestones <span className="opacity-50">{milestones.length}</span>
-          </button>
-        </div>
+      {!embedded && (
+        <header>
+          <DisplayHeading as="h1" size="sm" tag="Organização" highlight="metas">
+            Tags &amp;
+          </DisplayHeading>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-base-content/60">
+            Um único catálogo para Kanban, StageBook, Calendário, ThinkLab, LabTest, QuickBrick e Diário. Renomear ou mudar a cor aqui
+            atualiza tudo, em todas as ferramentas.
+          </p>
+        </header>
+      )}
 
-        <label className="input input-bordered input-md ml-auto flex w-full items-center gap-2 flex-1">
-          <Search size={14} className="text-base-content/40" />
-          <input className="grow" placeholder="Buscar…" value={search} onChange={(e) => setSearch(e.target.value)} />
-        </label>
+      <div className="flex flex-wrap items-end gap-3">
+        <ToolTabs<"tags" | "milestones">
+          className="flex-1"
+          value={tab}
+          onChange={(v) => {
+            setTab(v);
+            setEditId(null);
+            setMergeId(null);
+          }}
+          tabs={[
+            { value: "tags", label: <><TagsIcon size={14} /> Tags</>, count: tags.length },
+            { value: "milestones", label: <><Flag size={14} /> Metas</>, count: milestones.length },
+          ]}
+        />
+        <ToolInput
+          icon={<Search />}
+          placeholder="Buscar…"
+          aria-label="Buscar"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="mb-1 w-full sm:w-60"
+        />
       </div>
 
-      {/* Em equipes, milestones são dos técnicos/mentores (`canDelete` = equipe técnica ou espaço pessoal). */}
-      {tab === "milestones" && !canDelete && (
-        <div role="note" className="alert alert-info alert-soft py-2 text-sm">
-          Só técnicos e mentores criam, editam e excluem milestones da equipe. Você pode usá-las em qualquer item.
-        </div>
+      {/* Em equipes, metas são dos técnicos/mentores (`canDelete` = equipe técnica ou espaço pessoal). */}
+      {!isTags && !canDelete && (
+        <InlineAlert type="info">Só técnicos e mentores criam, editam e excluem as metas da equipe. Você pode usá-las em qualquer item.</InlineAlert>
       )}
 
-      <form
-        className={`space-y-3 rounded-2xl border border-dashed bg-base-200/50 border-base-300 bg-base-100 p-4 ${
-          tab === "milestones" && !canDelete ? "hidden" : ""
-        }`}
-        onSubmit={(e) => {
-          e.preventDefault();
-          submitCreate();
-        }}
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            className="input input-bordered input-sm min-w-48 flex-1"
-            placeholder={tab === "tags" ? "Nome da nova tag" : "Nome da nova milestone"}
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            maxLength={tab === "tags" ? 40 : 100}
-          />
-          {tab === "milestones" && (
-            <input
-              type="date"
-              className="input input-bordered input-sm"
-              value={newDue}
-              onChange={(e) => setNewDue(e.target.value)}
-              aria-label="Prazo"
-            />
-          )}
-          <button type="submit" className="btn btn-primary btn-sm gap-1.5" disabled={!newName.trim()}>
-            <Plus size={14} /> Criar
-          </button>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="text-xs font-medium text-base-content/55">Cor de fundo</span>
-          <LabelColorPicker compact value={newColor} onChange={setNewColor} onReset={() => setNewColor(null)} />
-          {newName.trim() && (
-            <span className="flex-shrink-0">
-              {tab === "tags" ? (
-                <TagChip tag={{ name: newName.trim(), color: newColor }} />
-              ) : (
-                <MilestoneChip milestone={{ name: newName.trim(), color: newColor, dueAt: newDue || null }} />
+      {canCreateHere && (
+        <Panel title={isTags ? "Nova tag" : "Nova meta"} icon={<Plus />}>
+          <form
+            className="space-y-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              submitCreate();
+            }}
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <ToolInput
+                className="min-w-48 flex-1"
+                placeholder={isTags ? "Nome da nova tag" : "Nome da nova meta"}
+                aria-label={isTags ? "Nome da nova tag" : "Nome da nova meta"}
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                maxLength={isTags ? 40 : 100}
+              />
+              {!isTags && (
+                <ToolInput type="date" className="w-44" value={newDue} onChange={(e) => setNewDue(e.target.value)} aria-label="Prazo" />
               )}
-            </span>
-          )}
-        </div>
-      </form>
+              <ToolButton type="submit" variant="primary" icon={<Plus />} disabled={!newName.trim()}>
+                Criar
+              </ToolButton>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">Cor de fundo</span>
+              <LabelColorPicker compact value={newColor} onChange={setNewColor} onReset={() => setNewColor(null)} />
+              {newName.trim() && (
+                <span className="flex-shrink-0">
+                  {isTags ? (
+                    <TagChip tag={{ name: newName.trim(), color: newColor }} />
+                  ) : (
+                    <MilestoneChip milestone={{ name: newName.trim(), color: newColor, dueAt: newDue || null }} />
+                  )}
+                </span>
+              )}
+            </div>
+          </form>
+        </Panel>
+      )}
 
       {error && (
-        <div role="alert" className="alert alert-error alert-soft py-2 text-sm">
+        <InlineAlert type="error" onClose={() => setError(null)}>
           {error}
-        </div>
+        </InlineAlert>
       )}
 
-      {tab === "tags" ? (
-        <ul className="space-y-2">
-          {shownTags.map((tag) => {
-            const editing = editId === tag.id;
-            return (
-              <li key={tag.id} className="rounded-xl border border-base-300 bg-base-100 p-3 hover:border-base-content/20 transition-colors">
-                <div className="flex flex-wrap items-center gap-3">
-                  <TagChip tag={tag} size="md" />
-                  <UsageSummary usage={tag.usage} total={tag.total} />
-                  <div className="ml-auto flex items-center gap-1">
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-xs gap-1"
-                      onClick={() => {
-                        setEditId(editing ? null : tag.id);
-                        setEditName(tag.name);
-                        setMergeId(null);
-                      }}
-                    >
-                      <Palette size={13} /> Editar
-                    </button>
-                    {canDelete && (
-                      <>
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-xs gap-1"
-                          onClick={() => {
-                            setMergeId(mergeId === tag.id ? null : tag.id);
-                            setEditId(null);
-                          }}
-                        >
-                          <GitMerge size={13} /> Mesclar
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-xs gap-1 text-error"
-                          onClick={() => {
-                            if (!window.confirm(`Excluir a tag “${tag.name}”? Ela será removida de ${tag.total} item(ns).`)) return;
-                            run(async () => {
-                              unwrapAction(await deleteTag(tag.id));
-                              await reloadTags();
-                            });
-                          }}
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {editing && (
-                  <div className="mt-3 space-y-3 border-t border-base-200 pt-3">
-                    <form
-                      className="flex gap-2"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        run(async () => {
-                          unwrapAction(await updateTag(tag.id, { name: editName }));
-                          await reloadTags();
-                        });
-                      }}
-                    >
-                      <input
-                        className="input input-bordered input-sm flex-1"
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        maxLength={40}
-                      />
-                      <button type="submit" className="btn btn-primary btn-sm">
-                        <Check size={14} /> Salvar nome
-                      </button>
-                    </form>
-                    <LabelColorPicker
-                      value={tag.color ?? resolveLabelColor(null, tag.name)}
-                      onChange={(hex) =>
-                        run(async () => {
-                          unwrapAction(await updateTag(tag.id, { color: hex }));
-                          await reloadTags();
-                        })
-                      }
-                      onReset={() =>
-                        run(async () => {
-                          unwrapAction(await updateTag(tag.id, { color: null }));
-                          await reloadTags();
-                        })
-                      }
-                    />
-                  </div>
-                )}
-
-                {mergeId === tag.id && (
-                  <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-base-200 pt-3 text-sm">
-                    <span className="text-base-content/60">Juntar “{tag.name}” em</span>
-                    <select
-                      className="select select-bordered select-sm"
-                      defaultValue=""
-                      onChange={(e) => {
-                        const target = e.target.value;
-                        if (!target) return;
-                        run(async () => {
-                          unwrapAction(await mergeTags(tag.id, target));
+      {isTags ? (
+        shownTags.length === 0 ? (
+          <ToolEmpty icon={<TagsIcon />} title={tags.length === 0 ? "Nenhuma tag criada ainda" : "Nenhuma tag encontrada"} />
+        ) : (
+          <ul className="space-y-2">
+            {shownTags.map((tag) => {
+              const editing = editId === tag.id;
+              return (
+                <li key={tag.id} className="rounded-lg border border-base-300 bg-base-100 p-3 transition-colors hover:border-base-content/20">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <TagChip tag={tag} size="md" />
+                    <UsageSummary usage={tag.usage} total={tag.total} />
+                    <div className="ml-auto flex items-center gap-1">
+                      <ToolButton
+                        size="xs"
+                        variant="ghost"
+                        icon={<Palette />}
+                        active={editing}
+                        onClick={() => {
+                          setEditId(editing ? null : tag.id);
+                          setEditName(tag.name);
                           setMergeId(null);
-                          await reloadTags();
-                        });
-                      }}
-                    >
-                      <option value="">Escolha a tag de destino…</option>
-                      {tags
-                        .filter((t) => t.id !== tag.id)
-                        .map((t) => (
-                          <option key={t.id} value={t.id}>
-                            {t.name}
-                          </option>
-                        ))}
-                    </select>
-                    <button type="button" className="btn btn-ghost btn-xs" onClick={() => setMergeId(null)}>
-                      <X size={12} />
-                    </button>
+                        }}
+                      >
+                        Editar
+                      </ToolButton>
+                      {canDelete && (
+                        <>
+                          <ToolButton
+                            size="xs"
+                            variant="ghost"
+                            icon={<GitMerge />}
+                            active={mergeId === tag.id}
+                            onClick={() => {
+                              setMergeId(mergeId === tag.id ? null : tag.id);
+                              setEditId(null);
+                            }}
+                          >
+                            Mesclar
+                          </ToolButton>
+                          <IconButton size="xs" label={`Excluir a tag ${tag.name}`} icon={<Trash2 />} className="hover:text-error" onClick={() => removeTag(tag)} />
+                        </>
+                      )}
+                    </div>
                   </div>
-                )}
-              </li>
-            );
-          })}
-          {shownTags.length === 0 && (
-            <li className="rounded-xl border border-dashed border-base-300 py-12 text-center text-sm text-base-content/45">
-              {tags.length === 0 ? "Nenhuma tag criada ainda." : "Nenhuma tag encontrada."}
-            </li>
-          )}
-        </ul>
+
+                  {editing && (
+                    <div className="mt-3 space-y-3 border-t border-base-300 pt-3">
+                      <form
+                        className="flex gap-2"
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          run(async () => {
+                            unwrapAction(await updateTag(tag.id, { name: editName }));
+                            await reloadTags();
+                          });
+                        }}
+                      >
+                        <ToolInput className="flex-1" value={editName} onChange={(e) => setEditName(e.target.value)} maxLength={40} aria-label="Nome da tag" />
+                        <ToolButton type="submit" variant="primary" icon={<Check />}>
+                          Salvar nome
+                        </ToolButton>
+                      </form>
+                      <LabelColorPicker
+                        value={tag.color ?? resolveLabelColor(null, tag.name)}
+                        onChange={(hex) =>
+                          run(async () => {
+                            unwrapAction(await updateTag(tag.id, { color: hex }));
+                            await reloadTags();
+                          })
+                        }
+                        onReset={() =>
+                          run(async () => {
+                            unwrapAction(await updateTag(tag.id, { color: null }));
+                            await reloadTags();
+                          })
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {mergeId === tag.id && (
+                    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-base-300 pt-3 text-[13px]">
+                      <span className="text-base-content/60">Juntar “{tag.name}” em</span>
+                      <ToolSelect
+                        className="w-56"
+                        defaultValue=""
+                        aria-label="Tag de destino"
+                        onChange={(e) => {
+                          const target = e.target.value;
+                          if (!target) return;
+                          run(async () => {
+                            unwrapAction(await mergeTags(tag.id, target));
+                            setMergeId(null);
+                            await reloadTags();
+                          });
+                        }}
+                      >
+                        <option value="">Escolha a tag de destino…</option>
+                        {tags
+                          .filter((t) => t.id !== tag.id)
+                          .map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.name}
+                            </option>
+                          ))}
+                      </ToolSelect>
+                      <IconButton size="xs" label="Cancelar" icon={<X />} onClick={() => setMergeId(null)} />
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )
+      ) : shownMilestones.length === 0 ? (
+        <ToolEmpty icon={<Flag />} title={milestones.length === 0 ? "Nenhuma meta criada ainda" : "Nenhuma meta encontrada"} />
       ) : (
         <ul className="space-y-2">
           {shownMilestones.map((m) => {
             const editing = editId === m.id;
+            const crDone = m.criteria.filter((c) => c.done).length;
             return (
-              <li key={m.id} className="rounded-xl border border-base-300 bg-base-100 p-3">
+              <li key={m.id} className="rounded-lg border border-base-300 bg-base-100 p-3">
                 <div className="flex flex-wrap items-center gap-3">
                   <MilestoneChip milestone={m} size="sm" />
+                  {m.completedAt ? (
+                    <ToolBadge tone="success">Concluída</ToolBadge>
+                  ) : (
+                    m.criteria.length > 0 && (
+                      <ToolBadge tone={crDone === m.criteria.length ? "success" : "ink"}>
+                        {crDone}/{m.criteria.length} critérios
+                      </ToolBadge>
+                    )
+                  )}
                   <UsageSummary usage={m.usage} total={m.total} />
-                  <div className="ml-auto flex items-center gap-1">
-                    {canDelete && (
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-xs gap-1"
+                  {canDelete && (
+                    <div className="ml-auto flex items-center gap-1">
+                      <ToolButton
+                        size="xs"
+                        variant="ghost"
+                        icon={<Pencil />}
+                        active={editing}
                         onClick={() => {
                           setEditId(editing ? null : m.id);
                           setEditName(m.name);
                           setEditDue(m.dueAt ? m.dueAt.slice(0, 10) : "");
                         }}
                       >
-                        <Pencil size={13} /> Editar
-                      </button>
-                    )}
-                    {canDelete && (
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-xs text-error"
-                        aria-label={`Excluir ${m.name}`}
-                        onClick={() => {
-                          if (!window.confirm(`Excluir a milestone “${m.name}”? Os ${m.total} item(ns) ficarão sem milestone.`)) return;
-                          run(async () => {
-                            unwrapAction(await deleteMilestone(m.id));
-                            await reloadMilestones();
-                          });
-                        }}
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    )}
-                  </div>
+                        Editar
+                      </ToolButton>
+                      <IconButton size="xs" label={`Excluir ${m.name}`} icon={<Trash2 />} className="hover:text-error" onClick={() => removeMilestone(m)} />
+                    </div>
+                  )}
                 </div>
 
                 {editing && canDelete && (
-                  <div className="mt-3 space-y-3 border-t border-base-200 pt-3">
+                  <div className="mt-3 space-y-3 border-t border-base-300 pt-3">
                     <form
                       className="flex flex-wrap gap-2"
                       onSubmit={(e) => {
@@ -402,21 +432,11 @@ export function LabelsManager({
                         });
                       }}
                     >
-                      <input
-                        className="input input-bordered input-sm min-w-48 flex-1"
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        maxLength={100}
-                      />
-                      <input
-                        type="date"
-                        className="input input-bordered input-sm"
-                        value={editDue}
-                        onChange={(e) => setEditDue(e.target.value)}
-                      />
-                      <button type="submit" className="btn btn-primary btn-sm">
-                        <Check size={14} /> Salvar
-                      </button>
+                      <ToolInput className="min-w-48 flex-1" value={editName} onChange={(e) => setEditName(e.target.value)} maxLength={100} aria-label="Nome da meta" />
+                      <ToolInput type="date" className="w-44" value={editDue} onChange={(e) => setEditDue(e.target.value)} aria-label="Prazo" />
+                      <ToolButton type="submit" variant="primary" icon={<Check />}>
+                        Salvar
+                      </ToolButton>
                     </form>
                     <LabelColorPicker
                       value={m.color ?? resolveLabelColor(null, m.name)}
@@ -433,18 +453,15 @@ export function LabelsManager({
                         })
                       }
                     />
+                    <p className="text-[11px] text-base-content/50">Critérios de conclusão e progresso das metas da equipe ficam na aba Metas da página da equipe.</p>
                   </div>
                 )}
               </li>
             );
           })}
-          {shownMilestones.length === 0 && (
-            <li className="rounded-xl border border-dashed border-base-300 py-12 text-center text-sm text-base-content/45">
-              {milestones.length === 0 ? "Nenhuma milestone criada ainda." : "Nenhuma milestone encontrada."}
-            </li>
-          )}
         </ul>
       )}
+      {confirmDialog}
     </div>
   );
 }

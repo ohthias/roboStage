@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, gte, isNull, lt, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
   boardCardAssignees,
@@ -9,6 +9,7 @@ import {
   boards,
   calendarEvents,
   documents,
+  journalEntries,
   leagues,
   milestones,
   teamActivity,
@@ -25,9 +26,12 @@ import {
   toMilestoneDTO,
 } from "./labels-core";
 import { isStaffRole, isTeamRole, type TeamRole } from "./team-permissions";
+import { LABELABLE_KINDS, milestoneProgress, type LabelableKind } from "@/types/labels";
+import { addDays } from "@/types/journal";
 import type {
   MilestoneRef,
   TeamBoardSummary,
+  TeamGoal,
   TeamLabTestSummary,
   TeamMemberSummary,
   TeamMilestoneSummary,
@@ -158,6 +162,80 @@ export async function getTeamMilestones(teamId: string): Promise<TeamMilestoneSu
   return items.map((m) => {
     const u = usage.get(m.id);
     return { ...m, usageTotal: u ? Object.values(u).reduce((a, b) => a + b, 0) : 0 };
+  });
+}
+
+/**
+ * Metas da equipe (aba Marcos): cada marco com critérios, progresso (critérios
+ * + cards do Kanban), itens vinculados por ferramenta e o que a equipe
+ * escreveu no Diário sobre ele. `today` = "YYYY-MM-DD" (base das 8 semanas).
+ */
+export async function getTeamGoals(teamId: string, today: string): Promise<TeamGoal[]> {
+  const base = await getTeamMilestones(teamId);
+  const ids = base.map((m) => m.id);
+  if (!ids.length) return [];
+
+  const [{ usage }, cardRows, entryRows] = await Promise.all([
+    milestoneUsageByKind(ids),
+    db
+      .select({
+        milestoneId: boardCards.milestoneId,
+        total: sql<number>`count(*)::int`,
+        done: sql<number>`count(${boardCards.completedAt})::int`,
+      })
+      .from(boardCards)
+      .innerJoin(boards, eq(boards.id, boardCards.boardId))
+      .where(and(eq(boards.teamId, teamId), inArray(boardCards.milestoneId, ids)))
+      .groupBy(boardCards.milestoneId),
+    db
+      .select({
+        id: journalEntries.id,
+        milestoneId: journalEntries.milestoneId,
+        title: journalEntries.title,
+        entryDate: journalEntries.entryDate,
+        authorId: journalEntries.authorId,
+        authorName: users.name,
+        authorAvatar: users.avatarUrl,
+      })
+      .from(journalEntries)
+      .innerJoin(users, eq(users.id, journalEntries.authorId))
+      .where(and(eq(journalEntries.teamId, teamId), inArray(journalEntries.milestoneId, ids)))
+      .orderBy(desc(journalEntries.entryDate), desc(journalEntries.createdAt))
+      .limit(2000),
+  ]);
+
+  const cards = new Map(cardRows.flatMap((r) => (r.milestoneId ? [[r.milestoneId, { done: r.done, total: r.total }] as const] : [])));
+  // Semana i (0..7) termina em today - 7*(7-i): a última é a semana atual.
+  const weekStart = addDays(today, -55);
+  const emptyUsage = () => Object.fromEntries(LABELABLE_KINDS.map((k) => [k, 0])) as Record<LabelableKind, number>;
+
+  return base.map((m) => {
+    const entries = entryRows.filter((e) => e.milestoneId === m.id);
+    const weeks = Array.from({ length: 8 }, () => 0);
+    for (const e of entries) {
+      if (e.entryDate < weekStart || e.entryDate > today) continue;
+      const days = Math.round((Date.parse(e.entryDate) - Date.parse(weekStart)) / 86_400_000);
+      weeks[Math.min(7, Math.floor(days / 7))]++;
+    }
+    const c = cards.get(m.id) ?? { done: 0, total: 0 };
+    return {
+      ...m,
+      usage: usage.get(m.id) ?? emptyUsage(),
+      cards: c,
+      progress: milestoneProgress(m.criteria, c),
+      journal: {
+        count: entries.length,
+        contributors: new Set(entries.map((e) => e.authorId)).size,
+        lastDate: entries[0]?.entryDate ?? null,
+        recent: entries.slice(0, 3).map((e) => ({
+          id: e.id,
+          title: e.title,
+          entryDate: e.entryDate,
+          author: { id: e.authorId, name: e.authorName, avatarUrl: e.authorAvatar },
+        })),
+        weeks,
+      },
+    };
   });
 }
 

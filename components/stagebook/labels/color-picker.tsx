@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, RotateCcw } from "lucide-react";
 import { LABEL_PALETTE, normalizeHexColor } from "@/utils/stagebook/label-colors";
+import { ToolButton, ToolInput } from "@/components/stage";
 
 /**
  * Seletor de cor de fundo: paleta pronta + qualquer cor (seletor nativo e
@@ -62,21 +63,21 @@ export function LabelColorPicker({
           aria-label="Escolher outra cor"
           value={current ?? "#64748b"}
           onChange={(e) => commitHex(e.target.value)}
-          className="h-7 w-9 cursor-pointer rounded border border-base-300 bg-transparent p-0.5"
+          className="h-7 w-9 cursor-pointer rounded-md border border-base-300 bg-transparent p-0.5"
         />
-        <input
+        <ToolInput
           value={hex}
           onChange={(e) => commitHex(e.target.value)}
           placeholder="#rrggbb"
           maxLength={7}
           spellCheck={false}
-          className="input input-bordered input-xs w-24 font-mono"
+          className="h-7 w-24 font-mono text-[12px]"
           aria-label="Código hexadecimal da cor"
         />
         {onReset && (
-          <button type="button" className="btn btn-ghost btn-xs gap-1" onClick={onReset}>
-            <RotateCcw size={11} /> Automática
-          </button>
+          <ToolButton size="xs" variant="ghost" icon={<RotateCcw />} onClick={onReset}>
+            Automática
+          </ToolButton>
         )}
       </div>
     </div>

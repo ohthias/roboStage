@@ -16,11 +16,11 @@ const getOrgLogoUrl = unstable_cache(
 );
 import {
   FlaskConical,
-  Flag,
   Info,
   KanbanSquare,
   LayoutDashboard,
   Lightbulb,
+  Target,
   Timer,
   Users,
   type LucideIcon,
@@ -32,6 +32,7 @@ import { roleCan } from "@/utils/stagebook/team-permissions";
 import {
   getTeamActivity,
   getTeamBoards,
+  getTeamGoals,
   getTeamLabTests,
   getTeamMembers,
   getTeamMilestones,
@@ -63,7 +64,7 @@ export const TEAM_TABS = [
   { id: "thinklab", label: "ThinkLab", Icon: Lightbulb },
   { id: "labtests", label: "LabTests", Icon: FlaskConical },
   { id: "treinos", label: "Treinos", Icon: Timer },
-  { id: "marcos", label: "Marcos", Icon: Flag },
+  { id: "marcos", label: "Metas", Icon: Target },
   { id: "membros", label: "Membros", Icon: Users },
 ] as const satisfies readonly { id: string; label: string; Icon: LucideIcon }[];
 
@@ -233,7 +234,15 @@ export async function TeamContent({
         )}
 
         {tab === "marcos" && (
-          <MilestonesTab teamId={team.id} viewerRole={scope.role} milestones={await getTeamMilestones(team.id)} />
+          <MilestonesTab
+            teamId={team.id}
+            viewerRole={scope.role}
+            goals={await getTeamGoals(
+              team.id,
+              // Base das "últimas 8 semanas" do Diário; o servidor usa o fuso de Brasília.
+              new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date()),
+            )}
+          />
         )}
 
         {tab === "membros" && (

@@ -7,6 +7,7 @@ import { LABEL_PALETTE } from "@/utils/stagebook/label-colors";
 import type { MilestoneDTO } from "@/types/labels";
 import { MilestoneChip, fmtMilestoneDate } from "./milestone-chip";
 import { usePopover } from "./use-popover";
+import { IconButton, ToolButton, ToolInput } from "@/components/stage";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
 /**
@@ -88,43 +89,37 @@ export function MilestoneSelector({
         <>
           <MilestoneChip milestone={value} />
           {!disabled && (
-            <button
-              type="button"
-              className="btn btn-ghost btn-xs btn-square"
-              aria-label="Remover milestone"
-              onClick={() => pick(null)}
-            >
-              <X size={12} />
-            </button>
+            <IconButton size="xs" label="Remover meta" icon={<X />} onClick={() => pick(null)} />
           )}
         </>
       ) : null}
 
       {!disabled && (
-        <button
-          type="button"
-          className="btn btn-ghost btn-xs gap-1 rounded-full border border-dashed border-base-content/25 text-base-content/60"
+        <ToolButton
+          size="xs"
+          variant="ghost"
+          icon={<Flag />}
+          className="rounded-full border-dashed border-base-content/25 text-base-content/60 hover:text-base-content [&_svg]:size-3"
           onClick={() => setOpen((v) => !v)}
           aria-haspopup="dialog"
           aria-expanded={open}
         >
-          <Flag size={12} />
           {value ? "Trocar" : label}
-        </button>
+        </ToolButton>
       )}
 
       {open && (
         <div
           role="dialog"
           aria-label="Selecionar milestone"
-          className="absolute left-0 top-full z-50 mt-1.5 w-80 max-w-[85vw] rounded-xl border border-base-300 bg-base-100 p-2 shadow-2xl"
+          className="absolute left-0 top-full z-50 mt-1.5 w-80 max-w-[85vw] rounded-lg border border-base-300 bg-base-100 p-2 text-[13px] shadow-xl"
         >
           <div className="max-h-56 space-y-0.5 overflow-y-auto">
             {catalog === null ? (
-              <p className="py-6 text-center text-xs text-base-content/45">Carregando…</p>
+              error ? null : <p className="flex items-center justify-center gap-1.5 py-6 text-xs text-base-content/45"><Loader2 size={12} className="animate-spin" /> Carregando…</p>
             ) : catalog.length === 0 ? (
               <p className="py-6 text-center text-xs text-base-content/45">
-                Nenhuma milestone ainda{canCreate ? "." : " — peça a um técnico ou mentor para criar."}
+                Nenhuma meta ainda{canCreate ? "." : " — peça a um técnico ou mentor para criar."}
               </p>
             ) : (
               catalog.map((m) => (
@@ -132,7 +127,10 @@ export function MilestoneSelector({
                   key={m.id}
                   type="button"
                   onClick={() => pick(m)}
-                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-base-200/70"
+                  aria-current={value?.id === m.id ? "true" : undefined}
+                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-primary ${
+                    value?.id === m.id ? "bg-primary/10" : "hover:bg-base-content/[0.05]"
+                  }`}
                 >
                   <span className="flex h-4 w-4 shrink-0 items-center justify-center">
                     {value?.id === m.id && <Check size={13} className="text-primary" />}
@@ -147,7 +145,7 @@ export function MilestoneSelector({
           </div>
 
           {canCreate && (
-          <div className="mt-2 border-t border-base-200 pt-2">
+          <div className="mt-2 border-t border-base-300 pt-2">
             {creating ? (
               <form
                 className="space-y-2"
@@ -156,21 +154,15 @@ export function MilestoneSelector({
                   create();
                 }}
               >
-                <input
+                <ToolInput
                   autoFocus
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Nome da milestone"
+                  placeholder="Nome da meta"
                   maxLength={100}
-                  className="input input-bordered input-xs w-full"
+                  aria-label="Nome da meta"
                 />
-                <input
-                  type="date"
-                  value={dueAt}
-                  onChange={(e) => setDueAt(e.target.value)}
-                  className="input input-bordered input-xs w-full"
-                  aria-label="Prazo"
-                />
+                <ToolInput type="date" value={dueAt} onChange={(e) => setDueAt(e.target.value)} aria-label="Prazo" />
                 <div className="flex flex-wrap gap-1">
                   {LABEL_PALETTE.map((c) => (
                     <button
@@ -186,23 +178,23 @@ export function MilestoneSelector({
                   ))}
                 </div>
                 <div className="flex justify-end gap-1.5">
-                  <button type="button" className="btn btn-ghost btn-xs" onClick={() => setCreating(false)}>
+                  <ToolButton size="xs" onClick={() => setCreating(false)}>
                     Cancelar
-                  </button>
-                  <button type="submit" className="btn btn-primary btn-xs" disabled={!name.trim() || pending}>
-                    {pending ? <Loader2 size={12} className="animate-spin" /> : "Criar e usar"}
-                  </button>
+                  </ToolButton>
+                  <ToolButton type="submit" size="xs" variant="primary" disabled={!name.trim() || pending} icon={pending ? <Loader2 className="animate-spin" /> : undefined}>
+                    Criar e usar
+                  </ToolButton>
                 </div>
               </form>
             ) : (
-              <button type="button" className="btn btn-ghost btn-xs w-full justify-start gap-1.5" onClick={() => setCreating(true)}>
-                <Plus size={12} /> Nova milestone
-              </button>
+              <ToolButton size="xs" variant="ghost" icon={<Plus />} className="w-full justify-start" onClick={() => setCreating(true)}>
+                Nova meta
+              </ToolButton>
             )}
           </div>
           )}
 
-          {error && <p className="mt-1.5 px-1 text-xs text-error">{error}</p>}
+          {error && <p role="alert" className="mt-1.5 rounded-md border border-error/30 bg-error/[0.07] px-2 py-1 text-xs text-error">{error}</p>}
         </div>
       )}
     </div>

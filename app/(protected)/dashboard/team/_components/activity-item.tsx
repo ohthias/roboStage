@@ -11,6 +11,7 @@ import {
   KanbanSquare,
   Lightbulb,
   ListChecks,
+  NotebookPen,
   Play,
   ShieldCheck,
   Trash2,
@@ -21,6 +22,7 @@ import {
 } from "lucide-react";
 import { roleLabel } from "@/utils/stagebook/team-permissions";
 import { sessionKindLabel, type TeamActivityItem } from "@/types/training";
+import { formatJournalDate } from "@/types/journal";
 import { PersonAvatar } from "./team-avatar";
 import { teamToolHref } from "./team-links";
 
@@ -60,6 +62,18 @@ const sessionHref = ({ teamId, item }: Ctx) =>
   item.entityId ? `/dashboard/team/${teamId}/treinos/${item.entityId}` : null;
 
 const VERBS: Record<string, { Icon: LucideIcon; tone: string; render: (c: Ctx) => ReactNode }> = {
+  "journal.created": {
+    Icon: NotebookPen,
+    tone: "text-primary",
+    render: ({ teamId, item, d }) => (
+      <>
+        escreveu no diário{" "}
+        <ToolRes teamId={teamId} path={item.entityId ? `/dashboard/diario/${item.entityId}` : null}>
+          {str(d.name) ?? (str(d.entryDate) ? formatJournalDate(str(d.entryDate)!, "weekday") : "do dia")}
+        </ToolRes>
+      </>
+    ),
+  },
   "board.created": {
     Icon: KanbanSquare,
     tone: "text-primary",
@@ -125,6 +139,28 @@ const VERBS: Record<string, { Icon: LucideIcon; tone: string; render: (c: Ctx) =
               · {fmtNum(score)} pts{prev !== null && ` (antes ${fmtNum(prev)})`}
             </span>
           )}
+        </>
+      );
+    },
+  },
+  "milestone.completed": {
+    Icon: Trophy,
+    tone: "text-success",
+    render: ({ teamId, d }) => (
+      <>concluiu a meta <Res href={`/dashboard/team/${teamId}?tab=marcos`}>{str(d.name)}</Res></>
+    ),
+  },
+  "milestone.criterion_done": {
+    Icon: ListChecks,
+    tone: "text-secondary",
+    render: ({ teamId, d }) => {
+      const done = num(d.done);
+      const total = num(d.total);
+      return (
+        <>
+          marcou <span className="font-medium">“{str(d.criterion)}”</span> na meta{" "}
+          <Res href={`/dashboard/team/${teamId}?tab=marcos`}>{str(d.name)}</Res>
+          {done !== null && total !== null && <span className="text-base-content/55"> · {done}/{total}</span>}
         </>
       );
     },

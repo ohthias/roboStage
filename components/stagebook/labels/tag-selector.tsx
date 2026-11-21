@@ -11,6 +11,7 @@ import { LABEL_PALETTE, resolveLabelColor } from "@/utils/stagebook/label-colors
 import type { TagDTO } from "@/types/labels";
 import { LabelColorPicker } from "./color-picker";
 import { TagChip } from "./tag-chip";
+import { IconButton, ToolButton, ToolInput } from "@/components/stage";
 import { usePopover } from "./use-popover";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
@@ -115,46 +116,45 @@ export function TagSelector({
 
       {!disabled && (
         <div className="relative" ref={ref}>
-          <button
-            type="button"
-            className="btn btn-ghost btn-xs gap-1 rounded-full border border-dashed border-base-content/25 text-base-content/60"
+          <ToolButton
+            size="xs"
+            variant="ghost"
+            icon={<Plus />}
+            className="rounded-full border-dashed border-base-content/25 text-base-content/60 hover:text-base-content [&_svg]:size-3"
             onClick={() => setOpen((v) => !v)}
             aria-haspopup="dialog"
             aria-expanded={open}
           >
-            <Plus size={12} />
             {label}
-          </button>
+          </ToolButton>
 
           {open && (
             <div
               role="dialog"
               aria-label="Selecionar tags"
-              className="absolute left-0 top-full z-50 mt-1.5 w-80 max-w-[85vw] rounded-xl border border-base-300 bg-base-100 p-2 shadow-2xl"
+              className="absolute left-0 top-full z-50 mt-1.5 w-80 max-w-[85vw] rounded-lg border border-base-300 bg-base-100 p-2 text-[13px] shadow-xl"
             >
-              <label className="flex items-center gap-2 rounded-lg border border-base-300 px-2 py-1.5">
-                <Search size={13} className="text-base-content/40" />
-                <input
-                  autoFocus
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      if (!exact && trimmed) create();
-                      else if (filtered[0]) toggle(filtered[0]);
-                    }
-                  }}
-                  placeholder="Buscar ou criar tag…"
-                  maxLength={40}
-                  className="w-full bg-transparent text-sm outline-none"
-                />
-                {pending && <Loader2 size={13} className="animate-spin text-base-content/40" />}
-              </label>
+              <ToolInput
+                autoFocus
+                icon={<Search />}
+                suffix={pending ? <Loader2 size={12} className="animate-spin" /> : undefined}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (!exact && trimmed) create();
+                    else if (filtered[0]) toggle(filtered[0]);
+                  }
+                }}
+                placeholder="Buscar ou criar tag…"
+                maxLength={40}
+                aria-label="Buscar ou criar tag"
+              />
 
               <div className="mt-2 max-h-56 space-y-0.5 overflow-y-auto pr-0.5">
                 {catalog === null ? (
-                  <p className="py-6 text-center text-xs text-base-content/45">Carregando…</p>
+                  error ? null : <p className="flex items-center justify-center gap-1.5 py-6 text-xs text-base-content/45"><Loader2 size={12} className="animate-spin" /> Carregando…</p>
                 ) : filtered.length === 0 && !trimmed ? (
                   <p className="py-6 text-center text-xs text-base-content/45">
                     Nenhuma tag ainda. Digite um nome para criar a primeira.
@@ -165,7 +165,7 @@ export function TagSelector({
                     const editing = editingId === tag.id;
                     return (
                       <div key={tag.id} className="rounded-lg">
-                        <div className="flex items-center gap-1 rounded-lg px-1.5 py-1 hover:bg-base-200/70">
+                        <div className="flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-base-content/[0.05]">
                           <button
                             type="button"
                             onClick={() => toggle(tag)}
@@ -181,22 +181,20 @@ export function TagSelector({
                             </span>
                             <TagChip tag={tag} size="sm" />
                           </button>
-                          <button
-                            type="button"
-                            className="btn btn-ghost btn-xs btn-square"
-                            title="Editar nome e cor"
-                            aria-label={`Editar a tag ${tag.name}`}
+                          <IconButton
+                            size="xs"
+                            label={`Editar nome e cor de ${tag.name}`}
+                            icon={<Palette />}
+                            active={editing}
                             onClick={() => {
                               setEditingId(editing ? null : tag.id);
                               setEditName(tag.name);
                             }}
-                          >
-                            <Palette size={13} />
-                          </button>
+                          />
                         </div>
 
                         {editing && (
-                          <div className="mx-1.5 mb-1.5 space-y-2 rounded-lg border border-base-300 bg-base-200/40 p-2">
+                          <div className="mx-1.5 mb-1.5 space-y-2 rounded-md border border-base-300 bg-base-200/40 p-2">
                             <form
                               className="flex gap-1.5"
                               onSubmit={(e) => {
@@ -204,18 +202,18 @@ export function TagSelector({
                                 if (editName.trim() && editName.trim() !== tag.name) patch(tag, { name: editName });
                               }}
                             >
-                              <input
+                              <ToolInput
                                 value={editName}
                                 onChange={(e) => setEditName(e.target.value)}
                                 maxLength={40}
-                                className="input input-bordered input-xs flex-1"
+                                className="h-7 flex-1"
                                 aria-label="Nome da tag"
                               />
-                              <button type="submit" className="btn btn-primary btn-xs">
+                              <ToolButton type="submit" variant="primary" size="xs">
                                 Renomear
-                              </button>
+                              </ToolButton>
                             </form>
-                            <p className="text-[10px] font-medium uppercase tracking-wide text-base-content/45">
+                            <p className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
                               Cor de fundo
                             </p>
                             <LabelColorPicker
@@ -234,11 +232,11 @@ export function TagSelector({
                 )}
 
                 {trimmed && !exact && (
-                  <div className="mt-1 space-y-2 rounded-lg border border-dashed border-base-300 p-2">
+                  <div className="mt-1 space-y-2 rounded-md border border-dashed border-base-300 p-2">
                     <button
                       type="button"
                       onClick={create}
-                      className="flex w-full items-center gap-2 text-left text-sm"
+                      className="flex w-full items-center gap-2 rounded px-0.5 text-left text-[13px] font-semibold hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
                     >
                       <TagIcon size={13} className="text-base-content/50" />
                       <span>Criar</span>
@@ -262,7 +260,7 @@ export function TagSelector({
                 )}
               </div>
 
-              {error && <p className="mt-1.5 px-1 text-xs text-error">{error}</p>}
+              {error && <p role="alert" className="mt-1.5 rounded-md border border-error/30 bg-error/[0.07] px-2 py-1 text-xs text-error">{error}</p>}
             </div>
           )}
         </div>

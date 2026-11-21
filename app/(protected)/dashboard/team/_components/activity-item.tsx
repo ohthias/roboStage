@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   Activity,
+  ArrowRightLeft,
+  Archive,
   CalendarCheck,
   CalendarPlus,
   CircleStop,
@@ -61,7 +63,45 @@ function ToolRes({ teamId, path, children }: { teamId: string; path: string | nu
 const sessionHref = ({ teamId, item }: Ctx) =>
   item.entityId ? `/dashboard/team/${teamId}/treinos/${item.entityId}` : null;
 
+const legacyHref = ({ teamId, item }: Ctx) =>
+  `/dashboard/team/${teamId}?tab=legado${item.entityId ? `&aba=${item.entityId}` : ""}`;
+
 const VERBS: Record<string, { Icon: LucideIcon; tone: string; render: (c: Ctx) => ReactNode }> = {
+  "resource.transferred": {
+    Icon: ArrowRightLeft,
+    tone: "text-secondary",
+    render: ({ d }) => {
+      const total = num(d.count) ?? 1;
+      const rest = total - 1;
+      return (
+        <>
+          trouxe do espaço pessoal <Res>{str(d.first) ?? "arquivos"}</Res>
+          {rest > 0 && ` e mais ${rest} ${rest === 1 ? "item" : "itens"}`}
+        </>
+      );
+    },
+  },
+  "legacy.chapter_created": {
+    Icon: Archive,
+    tone: "text-accent",
+    render: (c) => (
+      <>
+        abriu {c.d.kind === "competition" ? "a competição" : "a temporada"} <Res href={legacyHref(c)}>{str(c.d.name)}</Res> no legado
+      </>
+    ),
+  },
+  "legacy.items_added": {
+    Icon: Archive,
+    tone: "text-accent",
+    render: (c) => {
+      const n = num(c.d.count) ?? c.item.count;
+      return (
+        <>
+          guardou {n === 1 ? "um item" : `${n} itens`} em <Res href={legacyHref(c)}>{str(c.d.name)}</Res>
+        </>
+      );
+    },
+  },
   "journal.created": {
     Icon: NotebookPen,
     tone: "text-primary",

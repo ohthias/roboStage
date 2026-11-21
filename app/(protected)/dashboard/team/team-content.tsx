@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { clerkClient } from "@clerk/nextjs/server";
 import { unstable_cache } from "next/cache";
 
@@ -15,6 +15,7 @@ const getOrgLogoUrl = unstable_cache(
   { revalidate: 600 },
 );
 import {
+  Archive,
   FlaskConical,
   Info,
   KanbanSquare,
@@ -26,7 +27,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { db } from "@/db/client";
-import { leagues, teams } from "@/db/schema";
+import { leagues, teamLegacyChapters, teams } from "@/db/schema";
 import type { TeamScope } from "@/utils/stagebook/scope";
 import { roleCan } from "@/utils/stagebook/team-permissions";
 import {
@@ -56,6 +57,8 @@ import { ActivityFeed } from "./_components/activity-feed";
 import { TrainingTab } from "./_components/training-tab";
 import { ResourceTab } from "./_components/resource-tab";
 import { TeamHeader } from "./_components/team-header";
+import { LegacyTab } from "./_components/legacy-tab";
+import { getTeamLegacy } from "@/utils/stagebook/legacy-core";
 import { CORNER } from "./_components/team-ui";
 
 export const TEAM_TABS = [
@@ -65,6 +68,7 @@ export const TEAM_TABS = [
   { id: "labtests", label: "LabTests", Icon: FlaskConical },
   { id: "treinos", label: "Treinos", Icon: Timer },
   { id: "marcos", label: "Metas", Icon: Target },
+  { id: "legado", label: "Legado", Icon: Archive },
   { id: "membros", label: "Membros", Icon: Users },
 ] as const satisfies readonly { id: string; label: string; Icon: LucideIcon }[];
 
@@ -88,6 +92,7 @@ export async function TeamContent({
   tab = "geral",
   feed = false,
   create = false,
+  chapterId = null,
 }: {
   scope: TeamScope;
   isActiveScope: boolean;
@@ -96,8 +101,10 @@ export async function TeamContent({
   feed?: boolean;
   /** `?novo=1`: abre direto o formulário de criação da aba (Kanban, ThinkLab, LabTest). */
   create?: boolean;
+  /** `?aba=`: aba do legado aberta (aba Legado). */
+  chapterId?: string | null;
 }) {
-  const [team, members, overview] = await Promise.all([
+  const [team, members, overview, legacyCount] = await Promise.all([
     db
       .select({
         id: teams.id,
@@ -114,6 +121,11 @@ export async function TeamContent({
       .then((rows) => rows[0]),
     getTeamMembers(scope.teamId, scope.role),
     getTeamOverview(scope.teamId, scope.userId),
+    db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(teamLegacyChapters)
+      .where(eq(teamLegacyChapters.teamId, scope.teamId))
+      .then((rows) => rows[0]?.n ?? 0),
   ]);
 
   if (!team) {
@@ -140,6 +152,7 @@ export async function TeamContent({
     labtests: overview.counts.tests,
     treinos: overview.counts.sessions,
     marcos: overview.counts.milestones,
+    legado: legacyCount,
     membros: members.length,
   };
 
@@ -242,6 +255,18 @@ export async function TeamContent({
               // Base das "últimas 8 semanas" do Diário; o servidor usa o fuso de Brasília.
               new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date()),
             )}
+          />
+        )}
+
+        {tab === "legado" && (
+          <LegacyTab
+            teamId={team.id}
+            teamName={team.name}
+            viewerId={scope.userId}
+            viewerRole={scope.role}
+            chapters={await getTeamLegacy(team.id)}
+            members={members}
+            initialChapterId={chapterId}
           />
         )}
 

@@ -4,6 +4,7 @@ import { documents } from "@/db/schema";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { liveDocumentWhere } from "./history-core";
 import { DocumentsHome, type HomeDocument } from "./documents-home";
+import { PersonalTransferButton } from "@/components/stagebook/transfer/personal-transfer-button";
 
 export default async function NotebookIndexPage() {
   const scope = await resolveStagebookScope();
@@ -27,5 +28,5 @@ export default async function NotebookIndexPage() {
     updatedAt: new Date(r.updatedAt).toISOString(),
   }));
 
-  return <DocumentsHome docs={docs} />;
+  return <DocumentsHome docs={docs} headerAction={<PersonalTransferButton kind="stagebook" size="sm" />} />;
 }

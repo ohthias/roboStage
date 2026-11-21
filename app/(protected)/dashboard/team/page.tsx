@@ -13,14 +13,21 @@ import { TeamsHub } from "./_components/teams-hub";
 export default async function TeamHomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; view?: string; feed?: string; novo?: string }>;
+  searchParams: Promise<{ tab?: string; view?: string; feed?: string; novo?: string; aba?: string }>;
 }) {
-  const { tab, view, feed, novo } = await searchParams;
+  const { tab, view, feed, novo, aba } = await searchParams;
   const scope = await resolveStagebookScope();
 
   if (scope.type === "team" && view !== "all") {
     return (
-      <TeamContent scope={scope} isActiveScope tab={parseTab(tab)} feed={feed === "all"} create={novo === "1"} />
+      <TeamContent
+        scope={scope}
+        isActiveScope
+        tab={parseTab(tab)}
+        feed={feed === "all"}
+        create={novo === "1"}
+        chapterId={typeof aba === "string" && /^[0-9a-f-]{36}$/i.test(aba) ? aba : null}
+      />
     );
   }
 

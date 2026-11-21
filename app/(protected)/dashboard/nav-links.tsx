@@ -211,7 +211,7 @@ export function NavFooter() {
           </div>
           <ul
             tabIndex={0}
-            className="dropdown-content z-50 mb-2 w-56 rounded-xl border border-base-300 bg-base-100 p-1.5 shadow-xl lg:is-drawer-close:mb-0 lg:is-drawer-close:ml-2"
+            className="dropdown-content z-50 mb-2 w-56 rounded-xl border border-base-300 bg-base-100 p-1.5 shadow-xl lg:is-drawer-close:bottom-0 lg:is-drawer-close:left-full lg:is-drawer-close:top-auto lg:is-drawer-close:m-0 lg:is-drawer-close:ml-4"
           >
             {MORE_LINKS.map(({ href, label, Icon }) => (
               <li key={href}>

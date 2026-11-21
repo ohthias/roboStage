@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Award, BarChart3, Disc3, Grid3x3, Hash, ListChecks, Target, TrendingUp, Trophy } from "lucide-react";
 import type { ChartTheme } from "./charts/chart-theme";
-import { ChartPanel } from "./charts/chart-panel";
+import { ChartPanel, type SeriesChartType } from "./charts/chart-panel";
 import { FllMissionGrid, FllMissionRanking, FllMissionTable } from "./fll/FllMissionViews";
 import { fllEntryScore, fllMissionStats, missionsForTest } from "@/utils/labtest/fll-analysis";
 
@@ -38,12 +38,24 @@ interface FllRunsAnalysisProps {
   theme: ChartTheme;
   fileName: string;
   executeHref?: string;
+  /** Partes escondidas (embeds do Stagebook): stats, score, ranking, table, grid, answers. */
+  hiddenSections?: string[];
+  /** Tipo inicial do gráfico de pontuação (embeds do Stagebook). */
+  seriesType?: SeriesChartType;
 }
 
 type FllRunsChartsProps =
   | FllRunsAnalysisProps
   /** Uso antigo (relatório/embeds): carrega as missões da temporada sozinho. */
-  | { season: string; entries: TestEntry[]; accent: AccentColor; missionIds?: unknown; fileName?: string };
+  | {
+      season: string;
+      entries: TestEntry[];
+      accent: AccentColor;
+      missionIds?: unknown;
+      fileName?: string;
+      hiddenSections?: string[];
+      seriesType?: SeriesChartType;
+    };
 
 type Definition = FllMissionDefinition | FllSubMissionDefinition;
 
@@ -228,6 +240,8 @@ function FllRunsChartsLoader({
   accent,
   missionIds,
   fileName = "teste-fll",
+  hiddenSections,
+  seriesType,
 }: Extract<FllRunsChartsProps, { season: string }>) {
   const { ref, theme } = useChartTheme();
   const [loaded, setLoaded] = useState<{ season: string; list: FllMissionDefinition[] } | null>(null);
@@ -253,6 +267,8 @@ function FllRunsChartsLoader({
         loadFailed={loaded?.season === season && loaded.list.length === 0}
         theme={theme}
         fileName={fileName}
+        hiddenSections={hiddenSections}
+        seriesType={seriesType}
       />
     </div>
   );
@@ -266,7 +282,12 @@ function FllRunsAnalysis({
   theme,
   fileName,
   executeHref,
+  hiddenSections,
+  seriesType,
 }: FllRunsAnalysisProps) {
+  const show = (id: string) => !hiddenSections?.includes(id);
+  const scoreTypes: SeriesChartType[] = ["bar", "line", "area", "step", "scatter"];
+  const scoreType = seriesType && scoreTypes.includes(seriesType) ? seriesType : "bar";
   const style = ACCENT_STYLES[accent];
   const missions = useMemo(() => testMissions ?? [], [testMissions]);
   const [cardsFilter, setCardsFilter] = useState<"all" | "weak">("all");
@@ -342,6 +363,7 @@ function FllRunsAnalysis({
 
   return (
     <div className="flex flex-col gap-5">
+      {show("stats") && (
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Melhor execução" value={`${formatNumber(best)} pts`} icon={Award} accent="primary" />
         <StatCard label="Menor execução" value={`${formatNumber(worst)} pts`} icon={BarChart3} accent="secondary" />
@@ -358,30 +380,41 @@ function FllRunsAnalysis({
           <StatCard label="Moda dos discos" value={discMode === null ? "—" : `${discMode} restantes`} icon={Disc3} accent="info" />
         )}
       </div>
+      )}
 
-      <SeriesChartPanel
-        icon={TrendingUp}
-        title="Pontuação por execução"
-        subtitle="Evolução do total de pontos"
-        series={scoreSeries}
-        rows={scoreRows}
-        defaultType="bar"
-        types={["bar", "line", "area", "step", "scatter"]}
-        height={260}
-      />
+      {show("score") && (
+        <SeriesChartPanel
+          key={scoreType}
+          icon={TrendingUp}
+          title="Pontuação por execução"
+          subtitle="Evolução do total de pontos"
+          series={scoreSeries}
+          rows={scoreRows}
+          defaultType={scoreType}
+          types={scoreTypes}
+          height={260}
+        />
+      )}
 
-      <ChartPanel icon={Trophy} title="Ranking das missões" subtitle="Média feita × máximo possível de cada missão">
-        <FllMissionRanking missions={missions} entries={entries} theme={theme} />
-      </ChartPanel>
+      {show("ranking") && (
+        <ChartPanel icon={Trophy} title="Ranking das missões" subtitle="Média feita × máximo possível de cada missão">
+          <FllMissionRanking missions={missions} entries={entries} theme={theme} />
+        </ChartPanel>
+      )}
 
-      <ChartPanel icon={ListChecks} title="Desempenho por missão" subtitle="Tentativas, acertos, aproveitamento e pontos perdidos — clique para ver as submissões">
-        <FllMissionTable missions={missions} entries={entries} fileName={fileName} />
-      </ChartPanel>
+      {show("table") && (
+        <ChartPanel icon={ListChecks} title="Desempenho por missão" subtitle="Tentativas, acertos, aproveitamento e pontos perdidos — clique para ver as submissões">
+          <FllMissionTable missions={missions} entries={entries} fileName={fileName} />
+        </ChartPanel>
+      )}
 
-      <ChartPanel icon={Grid3x3} title="Missões × execuções" subtitle="Pontos de cada missão em cada round">
-        <FllMissionGrid missions={missions} entries={entries} theme={theme} fileName={fileName} />
-      </ChartPanel>
+      {show("grid") && (
+        <ChartPanel icon={Grid3x3} title="Missões × execuções" subtitle="Pontos de cada missão em cada round">
+          <FllMissionGrid missions={missions} entries={entries} theme={theme} fileName={fileName} />
+        </ChartPanel>
+      )}
 
+      {show("answers") && (
       <div>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <SectionHeader label="Respostas por missão" />
@@ -431,8 +464,9 @@ function FllRunsAnalysis({
           ))}
         </div>
       </div>
+      )}
 
-      {discMode !== null && (
+      {discMode !== null && show("discs") && (
       <div className="card border border-base-300/70 bg-base-100 shadow-sm">
         <div className="card-body gap-4 p-5">
           <SectionHeader label="Discos de Precisão por execução" />

@@ -16,6 +16,7 @@ export * from "./core/Toasts";
 export * from "./core/Typography";
 export * from "./core/Media";
 export * from "./core/MediaClient";
+export * from "./core/AmbientVideo";
 
 // decoração
 export * from "./decor/Stickers";

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { cn, toneFill, type Tone } from "../lib";
 import { Flower, Gear, Sparkle, Starburst } from "./Stickers";
+import { PauseOffscreen } from "../core/Motion";
 
 /* ------------------------------------------------------------------ */
 /*  Marquee — faixa infinita (nomes de equipes, patrocinadores, avisos) */
@@ -45,9 +46,10 @@ export function Marquee({
   });
 
   return (
-    <div
+    // PauseOffscreen: a faixa para quando sai da tela.
+    <PauseOffscreen
       className={cn(
-        "stage-noise group overflow-hidden py-3",
+        "stage-noise group overflow-hidden py-3 select-none user-select-none user-drag-none",
         toneFill[tone],
         bordered && "border-y border-[var(--stage-line)]",
         className,
@@ -56,7 +58,7 @@ export function Marquee({
     >
       <ul
         className={cn(
-          "flex w-max group-hover:[animation-play-state:paused]",
+          "flex w-max group-hover:[animation-play-state:paused] group-focus-within:[animation-play-state:paused]",
           reverse ? "animate-marquee-reverse" : "animate-marquee",
         )}
         style={{ ["--marquee-speed" as string]: `${speed}s` }}
@@ -75,6 +77,6 @@ export function Marquee({
           );
         })}
       </ul>
-    </div>
+    </PauseOffscreen>
   );
 }

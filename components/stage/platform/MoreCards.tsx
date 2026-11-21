@@ -18,6 +18,7 @@ import { cn, toneFill, toneSoft, toneText, toneVar, type Tone } from "../lib";
 import { StatusBadge, type Status } from "../core/Tag";
 import { AvatarStack, ChunkyProgress, TeamAvatar } from "../core/Data";
 import { Gear, Sparkle, Starburst } from "../decor/Stickers";
+import { CoverArt, coverFromSeed } from "../covers/Covers";
 
 /* ------------------------------------------------------------------ */
 /*  Mais cards: partida, conquista, robô, membro, notícia, chamada,    */
@@ -359,6 +360,15 @@ export function NewsCard({
   layout?: "vertical" | "horizontal" | "featured";
   className?: string;
 }) {
+  const fallbackCover = coverFromSeed(title);
+  const coverFallback = (
+    <CoverArt
+      pattern={fallbackCover.pattern}
+      tone={fallbackCover.tone}
+      seed={title}
+      className="absolute inset-0 size-full"
+    />
+  );
   const meta = (
     <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-[0.12em] opacity-60">
       <span className="inline-flex items-center gap-1">
@@ -381,7 +391,11 @@ export function NewsCard({
   if (layout === "featured")
     return (
       <article className={cn("group relative isolate flex min-h-[22rem] flex-col justify-end overflow-hidden rounded-tl-[30px] rounded-br-[30px] p-6 text-white stage-shadow-lg", className)}>
-        <Image src={image} alt="" fill sizes="(min-width: 768px) 66vw, 100vw" className="-z-20 object-cover transition-transform duration-700 group-hover:scale-105" />
+        {image ? (
+          <Image src={image} alt="" fill sizes="(min-width: 768px) 66vw, 100vw" className="-z-20 object-cover transition-transform duration-700 group-hover:scale-105" />
+        ) : (
+          <div className="absolute inset-0 -z-20 transition-transform duration-700 group-hover:scale-105">{coverFallback}</div>
+        )}
         <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
         <div className="max-w-xl space-y-3">
           {tagEl}
@@ -396,7 +410,11 @@ export function NewsCard({
     return (
       <article className={cn(card, "group flex gap-4 rounded-2xl p-3 transition-colors hover:border-primary/40", className)}>
         <div className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-tl-xl rounded-br-xl bg-base-200 sm:w-32">
-          <Image src={image} alt="" fill sizes="128px" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+          {image ? (
+            <Image src={image} alt="" fill sizes="128px" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+          ) : (
+            <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105">{coverFallback}</div>
+          )}
         </div>
         <div className="min-w-0 flex-1 space-y-1.5 py-1">
           {tag && <p className="stage-label text-primary">{tag}</p>}
@@ -409,7 +427,11 @@ export function NewsCard({
   return (
     <article className={cn(card, "group flex flex-col overflow-hidden rounded-tl-[30px] rounded-br-[30px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[6px_6px_0_0_var(--stage-shadow)]", className)}>
       <div className="relative aspect-video overflow-hidden border-b border-base-300 bg-base-200">
-        <Image src={image} alt="" fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+        {image ? (
+          <Image src={image} alt="" fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+        ) : (
+          <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105">{coverFallback}</div>
+        )}
         <span className="absolute left-4 top-4 z-10">{tagEl}</span>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5">

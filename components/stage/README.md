@@ -1,6 +1,7 @@
 # Stage UI — biblioteca de componentes do RoboStage
 
-Next.js 16 · React 19 · Tailwind 4 · daisyUI 5 · lucide-react · framer-motion · tailwind-merge.
+Next.js 16 · React 19 · Tailwind 4 · daisyUI 5 · lucide-react · framer-motion · tailwind-merge
+(as mesmas dependências que o RoboStage já usa).
 
 ## O que ela é
 
@@ -177,7 +178,7 @@ coluna (com `aria-sort`) e a linha é selecionável por teclado. O `ToolDialog` 
   `stage.css`). `effect="none"` deixa a foto limpa; grão só com `effect="grain" | "halftone" | "duotone"`.
 - **Sem emenda:** cada borda leva dentro do SVG a mesma textura de papel e grão da `<Section>`, calibrada contra o
   CSS (diferença máxima de 3/255 no claro e 1/255 no escuro). A `<Section>` repassa a textura certa sozinha; solta,
-  use `texture="none" | "noise" | "both"`.
+  use `texture="none" | "noise" | "paper" | "both"`.
 - **Determinísticas:** sem `Math.random`, então o HTML do servidor e o do navegador batem.
 
 ## Animações
@@ -277,3 +278,14 @@ As intensidades ficam em variáveis CSS (`--stage-noise-opacity`, `--stage-paper
 `stage-texture`, `stage-halftone`, `stage-tape` e as animações
 `animate-marquee`, `animate-spin-slow`, `animate-wiggle`, `animate-float`, `animate-live`, `animate-pop`
 (todas desligadas com `prefers-reduced-motion`).
+
+## Desempenho das animações
+
+- Enfeites (stickers, mascote) animam um `<span>` (`MotionSpan`), não o `<svg>`: roda na GPU e o filtro de textura é rasterizado uma vez só.
+- Fora da tela, para: `Section`, `Marquee`, `AnimatedBackground` e stickers recebem `data-paused` (um `IntersectionObserver` compartilhado). Para outro bloco, use `<PauseOffscreen>` ou `usePauseOffscreen()`.
+- `Typewriter` e `CountdownCard` só rodam visíveis (o countdown também para com a aba escondida).
+- `MediaHero`/`StageVideo ambient` usam `AmbientVideo`: baixa só perto da tela, pausa fora, fica no poster com "reduzir movimento".
+- framer-motion via `LazyMotion` (`core/lazy-motion.tsx`): os recursos baixam depois da hidratação.
+- `rs-glow` usa gradiente, não `filter: blur(90px)`.
+- `Reveal`: transição nos dois estados, não esconde o que já está na tela ao carregar, `threshold: 0`, blur de 6px, visível na impressão. `Stagger` limita o atraso a 5 passos.
+- Menos movimento: o pedido do sistema para os enfeites e deixa o marquee 3× mais lento. `<html data-motion="full">` anima tudo; `data-motion="off"` desliga tudo.

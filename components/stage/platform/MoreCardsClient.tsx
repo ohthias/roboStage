@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { MapPin, RotateCw } from "lucide-react";
 import { cn, toneFill, type Tone } from "../lib";
-import { FlipNumber } from "../core/Motion";
+import { FlipNumber, useInView } from "../core/Motion";
 
 /* ------------------------------------------------------------------ */
 /*  Cards interativos: flashcard (FlashQA) e contagem regressiva.      */
@@ -97,11 +97,21 @@ export function CountdownCard({
   // Primeiro render: tempo zerado no servidor e no cliente (sem divergência de hidratação);
   // o relógio começa a correr depois de montar.
   const [now, setNow] = useState<number | null>(null);
+  // só bate o relógio com o card na tela e a aba aberta
+  const [ref, visible] = useInView<HTMLElement>({ once: false, margin: "100px 0px", threshold: 0 });
   useEffect(() => {
-    setNow(Date.now());
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
+    if (!visible) return;
+    const tick = () => {
+      if (!document.hidden) setNow(Date.now());
+    };
+    tick();
+    const t = setInterval(tick, 1000);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", tick);
+    };
+  }, [visible]);
   const p = now == null ? null : parts(target, now);
   const when = new Date(date).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
   const unit = (v: number | undefined, label: string) => (
@@ -113,7 +123,7 @@ export function CountdownCard({
     </div>
   );
   return (
-    <article className={cn("stage-texture stage-grid-on-color stage-shadow-lg relative overflow-hidden rounded-tl-[30px] rounded-br-[30px] p-6", toneFill[tone], className)}>
+    <article ref={ref} className={cn("stage-texture stage-grid-on-color stage-shadow-lg relative overflow-hidden rounded-tl-[30px] rounded-br-[30px] p-6", toneFill[tone], className)}>
       <p className="font-mono text-xs uppercase tracking-[0.2em] opacity-75">/ Contagem regressiva</p>
       <h3 className="mt-1 text-2xl font-black leading-tight tracking-tight">{title}</h3>
       <p className="mt-1 flex flex-wrap items-center gap-x-3 text-sm opacity-85">

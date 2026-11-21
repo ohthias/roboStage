@@ -1,5 +1,6 @@
 import { useId, type CSSProperties, type ReactNode } from "react";
 import { cn, toneVar, type Tone } from "../lib";
+import { MotionSpan } from "./MotionSpan";
 
 /* ------------------------------------------------------------------ */
 /*  Stickers — formas recortadas com contorno de tinta.                */
@@ -49,6 +50,8 @@ function StickerSvg({
 }: StickerProps & { stroke?: number; children: ReactNode; extra?: ReactNode }) {
   const fill = color ?? toneVar[tone];
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  // sem animação: <span> simples, sem JS
+  const Wrap = motion ? MotionSpan : "span";
   return (
     <span
       className={cn("pointer-events-none inline-block shrink-0 select-none", className)}
@@ -57,11 +60,14 @@ function StickerSvg({
       role={title ? "img" : undefined}
       aria-label={title}
     >
+      {/* A animação fica num <span> (HTML), não no <svg>: roda na GPU, os filtros
+          de textura são rasterizados uma vez só e para fora da tela. */}
+      <Wrap className={cn("block size-full", motion && cn(motionClass[motion], "stage-anim"))}>
       <svg
         viewBox="0 0 120 120"
         width={size}
         height={size}
-        className={cn("overflow-visible", motion && motionClass[motion])}
+        className="block overflow-visible"
       >
         {texture && <StickerFilters id={uid} />}
         <g filter={texture ? `url(#cut-${uid})` : undefined}>
@@ -79,6 +85,7 @@ function StickerSvg({
         </g>
         {extra}
       </svg>
+      </Wrap>
     </span>
   );
 }
@@ -238,13 +245,13 @@ export function Squiggle({
  */
 export function Mascot({ size = 88, tone = "neutral", className, motion, rotate = 0 }: StickerProps) {
   const fill = toneVar[tone];
-  return (
+  const svg = (
     <svg
       viewBox="0 0 120 120"
       width={size}
       height={size}
-      className={cn("shrink-0 overflow-visible", motion && motionClass[motion], className)}
-      style={{ rotate: `${rotate}deg` }}
+      className={cn("block shrink-0 overflow-visible", !motion && className)}
+      style={motion ? undefined : { rotate: `${rotate}deg` }}
       role="img"
       aria-label="Bit, o mascote do RoboStage"
     >
@@ -270,5 +277,11 @@ export function Mascot({ size = 88, tone = "neutral", className, motion, rotate 
         <circle cx={88} cy={86} r={4} fill="var(--color-primary)" stroke="none" opacity={0.6} />
       </g>
     </svg>
+  );
+  if (!motion) return svg;
+  return (
+    <span className={cn("inline-block shrink-0", className)} style={{ rotate: `${rotate}deg` }}>
+      <MotionSpan className={cn("block", motionClass[motion], "stage-anim")}>{svg}</MotionSpan>
+    </span>
   );
 }

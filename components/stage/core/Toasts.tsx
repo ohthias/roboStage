@@ -10,7 +10,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "./lazy-motion";
 import { AlertCircle, CheckCircle2, Info, Loader2, TriangleAlert, X } from "lucide-react";
 import { cn } from "../lib";
 

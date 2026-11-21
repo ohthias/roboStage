@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { cn, textureClass, type Texture } from "../lib";
 import { EDGES, type EdgeVariant } from "../decor/Edges";
 import { Mascot, Sparkle } from "../decor/Stickers";
+import { PauseOffscreen } from "../core/Motion";
 
 /* ------------------------------------------------------------------ */
 /*  Seções de página e rodapé                                          */
@@ -11,11 +12,11 @@ import { Mascot, Sparkle } from "../decor/Stickers";
 /** Fundo animado da home: dois brilhos (vermelho/azul) + grade de pontos. */
 export function AnimatedBackground() {
   return (
-    <div className="rs-background" aria-hidden="true">
+    <PauseOffscreen className="rs-background" aria-hidden="true">
       <div className="rs-glow rs-glow-one" />
       <div className="rs-glow rs-glow-two" />
       <div className="rs-grid" />
-    </div>
+    </PauseOffscreen>
   );
 }
 
@@ -71,16 +72,24 @@ export function Section({
   const Top = edgeTop ? EDGES[edgeTop] : null;
   const Bottom = edgeBottom ? EDGES[edgeBottom] : null;
   const hasEdge = !!(Top || Bottom);
-  const edgeTex = tex === "none" ? "none" : tex === "noise" ? "noise" : "both";
+  const edgeTex = tex;
   return (
-    <section id={id} className={cn("relative scroll-mt-20", className)}>
-      {Top && <Top color={color} direction="up" texture={edgeTex} className="-mb-px" />}
+    <PauseOffscreen as="section" id={id} className={cn("relative scroll-mt-20", className)}>
+      {Top && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 -translate-y-full">
+          <Top color={color} direction="up" texture={edgeTex} />
+        </div>
+      )}
       <div className={cn(sectionTone[tone], textureClass[tex], hasEdge && tone === "muted" && "border-y-0", "px-6 py-24", innerClassName)}>
         {tone === "glow" && <AnimatedBackground />}
         {children}
       </div>
-      {Bottom && <Bottom color={color} direction="down" texture={edgeTex} className="-mt-px" />}
-    </section>
+      {Bottom && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 translate-y-full">
+          <Bottom color={color} direction="down" texture={edgeTex} />
+        </div>
+      )}
+    </PauseOffscreen>
   );
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "./lazy-motion";
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Info, Trash2, TriangleAlert, X } from "lucide-react";
 import { cn, type Tone } from "../lib";
 import { Button } from "./Button";

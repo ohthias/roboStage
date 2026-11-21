@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, MotionLazy, motion } from "./lazy-motion";
 import { Plus, X } from "lucide-react";
 import { cn, toneFill, type Tone } from "../lib";
 import { Flower } from "../decor/Stickers";
@@ -24,6 +24,7 @@ export function Tabs<T extends string>({
 }) {
   const layoutId = useId();
   return (
+    <MotionLazy>
     <div role="tablist" className={cn("stage-paper inline-flex max-w-full gap-1 overflow-x-auto rounded-tl-2xl rounded-br-2xl bg-base-200/60 p-1.5 [scrollbar-width:none]", className)}>
       {tabs.map((t) => {
         const active = t.value === value;
@@ -52,6 +53,7 @@ export function Tabs<T extends string>({
         );
       })}
     </div>
+    </MotionLazy>
   );
 }
 

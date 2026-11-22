@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   Activity,
@@ -8,6 +9,7 @@ import {
   Bot,
   CalendarDays,
   Clock,
+  Cpu,
   Cuboid,
   Globe2,
   HeartHandshake,
@@ -19,71 +21,49 @@ import {
   School,
   Telescope,
   Trophy,
+  UserPlus,
   Users,
+  type LucideIcon,
 } from "lucide-react";
 
 import Hero from "../../Hero";
 import FLLHighlightSeason from "./Components/FLLHighlightSeason";
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import LivePreview from "@/components/home/LivePreview";
-import {
-  AnimatedBackground,
-  SectionTitle,
-  toneClasses,
-  type Tone,
-} from "@/components/home/shared";
 import { NewsSection, SeasonsSection } from "@/components/home/HomeSections";
 import {
-  CtaBlock,
-  ToolGrid,
-  cornerBtn,
-  type ToolItem,
-} from "@/components/competicoes/shared/CompetitionSections";
+  ButtonLink,
+  FeatureCard,
+  Flower,
+  Gear,
+  Kicker,
+  Reveal,
+  Section,
+  SectionTitle,
+  Sparkle,
+  StageImage,
+  Starburst,
+  StickerTag,
+  cn,
+  toneSoft,
+  toneText,
+  type Tone,
+} from "@/components/stage";
 import { getLatestNews } from "@/utils/institutional/news";
-import "@/components/home/home.css";
 
-/* -------------------------------------------------------------- dados */
+/* ================================================================ DADOS */
 
-const pillars = [
-  {
-    icon: Users,
-    tag: "TREINAMENTO",
-    title: "Desenvolva sua equipe",
-    description:
-      "Treine a sala de avaliação, aplique rubricas e registre testes para transformar evolução em aprendizado contínuo.",
-    links: [
-      { label: "Recall", href: "/fll/recall" },
-      { label: "Rubrica", href: "/fll/rubric" },
-    ],
-    tone: "primary" as Tone,
-  },
-  {
-    icon: CalendarDays,
-    tag: "ORGANIZAÇÃO",
-    title: "Planeje sua temporada",
-    description:
-      "Organize missões, estratégias de mesa e o projeto de inovação ao longo de toda a temporada.",
-    links: [
-      { label: "QuickBrick", href: "/fll/quickbrick" },
-      { label: "Documentações", href: "/fll/docs" },
-    ],
-    tone: "secondary" as Tone,
-  },
-  {
-    icon: Trophy,
-    tag: "COMPETIÇÃO",
-    title: "Chegue pronto ao torneio",
-    description:
-      "Pontue rodadas com o cronômetro oficial, revise o checklist e simule saídas antes do dia da competição.",
-    links: [
-      { label: "Pontuador", href: "/fll/score" },
-      { label: "Checklist", href: "/fll/cheklist" },
-    ],
-    tone: "accent" as Tone,
-  },
+const facts = [
+  { value: "650 mil+", label: "estudantes" },
+  { value: "77", label: "países" },
+  { value: "2012", label: "SESI no Brasil" },
 ];
 
-const judgedAreas = [
+const judgedAreas: {
+  icon: LucideIcon;
+  title: string;
+  text: string;
+  tools: { label: string; href: string }[];
+  tone: Tone;
+}[] = [
   {
     icon: Bot,
     title: "Robot Game",
@@ -92,7 +72,7 @@ const judgedAreas = [
       { label: "Pontuador", href: "/fll/score" },
       { label: "Timers", href: "/fll/timers" },
     ],
-    tone: "primary" as Tone,
+    tone: "primary",
   },
   {
     icon: Cuboid,
@@ -103,7 +83,7 @@ const judgedAreas = [
       { label: "Partiu Mesa!", href: "/fll/partiu-mesa" },
       { label: "Anatix", href: "/fll/anatix" },
     ],
-    tone: "secondary" as Tone,
+    tone: "secondary",
   },
   {
     icon: Lightbulb,
@@ -113,7 +93,7 @@ const judgedAreas = [
       { label: "Mapa de Empatia", href: "/fll/empathy-map" },
       { label: "Rubrica", href: "/fll/rubric" },
     ],
-    tone: "accent" as Tone,
+    tone: "accent",
   },
   {
     icon: HeartHandshake,
@@ -123,14 +103,21 @@ const judgedAreas = [
       { label: "Recall", href: "/fll/recall" },
       { label: "Rubrica", href: "/fll/rubric" },
     ],
-    tone: "primary" as Tone,
+    tone: "primary",
   },
 ];
 
-const tools: ToolItem[] = [
+const tools: {
+  icon: LucideIcon;
+  tag: string;
+  title: string;
+  description: string;
+  href: string;
+  tone: "primary" | "secondary" | "accent";
+}[] = [
   {
     icon: Cuboid,
-    tag: "ESTRATÉGIA",
+    tag: "Estratégia",
     title: "QuickBrick Studio",
     description:
       "Desenhe trajetórias no tapete, monte matrizes SWOT e de risco e simule saídas com o Sharks Simulator.",
@@ -139,16 +126,15 @@ const tools: ToolItem[] = [
   },
   {
     icon: Trophy,
-    tag: "PONTUAÇÃO",
+    tag: "Pontuação",
     title: "Pontuador",
-    description:
-      "Simule missões ou rodadas completas com cronômetro de 2:30, temporada por temporada.",
+    description: "Simule missões ou rodadas completas com cronômetro de 2:30, temporada por temporada.",
     href: "/fll/score",
     tone: "accent",
   },
   {
     icon: MessageCircleQuestion,
-    tag: "AVALIAÇÃO",
+    tag: "Avaliação",
     title: "Recall",
     description:
       "Perguntas cronometradas de Core Values, Projeto de Inovação e Design do Robô para treinar a sala de avaliação.",
@@ -157,43 +143,39 @@ const tools: ToolItem[] = [
   },
   {
     icon: NotepadText,
-    tag: "RUBRICAS",
+    tag: "Rubricas",
     title: "Rubricas de Avaliação",
-    description:
-      "Avalie a equipe com as rubricas da competição e descubra onde estão os pontos de melhoria.",
+    description: "Avalie a equipe com as rubricas da competição e descubra onde estão os pontos de melhoria.",
     href: "/fll/rubric",
     tone: "primary",
   },
   {
     icon: Users,
-    tag: "INOVAÇÃO",
+    tag: "Inovação",
     title: "Mapa de Empatia",
-    description:
-      "Entenda o profissional e o público do seu projeto para criar soluções mais certeiras.",
+    description: "Entenda o profissional e o público do seu projeto para criar soluções mais certeiras.",
     href: "/fll/empathy-map",
     tone: "secondary",
   },
   {
     icon: Clock,
-    tag: "TEMPO",
+    tag: "Tempo",
     title: "Timers",
-    description:
-      "Round do Robô, Sala de Avaliação e timer ajustável, com alertas sonoros e visuais.",
+    description: "Round do Robô, Sala de Avaliação e timer ajustável, com alertas sonoros e visuais.",
     href: "/fll/timers",
     tone: "accent",
   },
   {
     icon: MonitorDot,
-    tag: "SIMULAÇÃO",
+    tag: "Simulação",
     title: "Partiu Mesa!",
-    description:
-      "Simulador simples para testar saídas e analisar o desempenho do robô durante o teste.",
+    description: "Simulador simples para testar saídas e analisar o desempenho do robô durante o teste.",
     href: "/fll/partiu-mesa",
     tone: "primary",
   },
   {
     icon: Activity,
-    tag: "TELEMETRIA",
+    tag: "Telemetria",
     title: "Anatix",
     description:
       "Veja sensores, giro, estados e tempos do robô LEGO em tempo real, com Pybricks, por Bluetooth ou cabo USB.",
@@ -202,23 +184,28 @@ const tools: ToolItem[] = [
   },
   {
     icon: ListCheck,
-    tag: "CHECKLIST",
+    tag: "Checklist",
     title: "Confia, mas confira!",
-    description:
-      "Checklist de itens para a preparação antes do torneio e para a avaliação depois do evento.",
+    description: "Checklist de itens para a preparação antes do torneio e para a avaliação depois do evento.",
     href: "/fll/cheklist",
     tone: "secondary",
   },
 ];
 
-const resources = [
-  { icon: School, title: "Iniciantes da Challenge", text: "Primeiros passos para equipes que vão estrear na FLL Challenge.", href: "/fll/begins" },
-  { icon: Telescope, title: "Iniciantes da Explore", text: "Um guia para as equipes mais novas da FLL Explore.", href: "/fll/explore" },
-  { icon: BookOpen, title: "Documentações", text: "Regras e documentos das temporadas da liga, reunidos em um só lugar.", href: "/fll/docs" },
-  { icon: BookCopy, title: "Guia de Missões", text: "As missões da FLL Challenge explicadas uma a uma.", href: "/fll/docs/missions-guide" },
+const resources: { icon: LucideIcon; title: string; text: string; href: string; tone: Tone }[] = [
+  { icon: School, title: "Iniciantes da Challenge", text: "Primeiros passos para equipes que vão estrear na FLL Challenge.", href: "/fll/begins", tone: "primary" },
+  { icon: Telescope, title: "Iniciantes da Explore", text: "Um guia para as equipes mais novas da FLL Explore.", href: "/fll/explore", tone: "accent" },
+  { icon: BookOpen, title: "Documentações", text: "Regras e documentos das temporadas da liga, reunidos em um só lugar.", href: "/fll/docs", tone: "secondary" },
+  { icon: BookCopy, title: "Guia de Missões", text: "As missões da FLL Challenge explicadas uma a uma.", href: "/fll/docs/missions-guide", tone: "primary" },
 ];
 
-/* --------------------------------------------------------------- página */
+/** Modelos da BIOGLOW Future Edition (PNG com fundo transparente). */
+const feModels = [
+  { src: "/images/missions/bioglow-fe/thumb-mission-04.png", className: "left-[2%] top-[30%] w-[40%] -rotate-6" },
+  { src: "/images/missions/bioglow-fe/thumb-mission-03.png", className: "right-[2%] top-[14%] z-10 w-[58%]" },
+];
+
+/* =============================================================== PÁGINA */
 
 export default async function FLLHome() {
   const news = await getLatestNews(3, "FLL");
@@ -226,222 +213,362 @@ export default async function FLLHome() {
   return (
     <main className="mt-16 overflow-x-clip bg-base-100 text-base-content">
       <Hero />
-
-      {/* ========================================================= SOBRE A FLL */}
-      <section className="bg-base-200/40 px-6 py-24">
-        <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
-          <RevealOnScroll>
-            <figure className="relative">
-              <div aria-hidden="true" className="absolute -left-4 -top-4 size-24 -rotate-6 rounded-tl-2xl rounded-br-2xl bg-accent" />
-              <img
-                src="/images/fll/fll_about.jpg"
-                alt="Equipe participando da FIRST LEGO League"
-                className="relative aspect-[4/3] w-full rounded-tl-3xl rounded-br-3xl border border-base-300 object-cover shadow-[8px_8px_0_0_var(--color-primary)]"
-              />
-              <figcaption className="mt-4 text-xs text-base-content/50">
-                Foto: LEGO® Education / FIRST® LEGO® League
-              </figcaption>
-            </figure>
-          </RevealOnScroll>
-          <RevealOnScroll delay={0.1}>
-            <SectionTitle
-              kicker="/ SOBRE A FLL"
-              title="Robótica, ciência e"
-              highlight="trabalho em equipe."
-              highlightClass="bg-secondary text-secondary-content"
-            />
-            <p className="mt-6 text-base leading-7 text-base-content/65 sm:text-lg">
-              A FIRST LEGO League é uma competição internacional de robótica
-              educacional para crianças e adolescentes. As equipes projetam,
-              constroem e programam robôs com peças LEGO e desenvolvem soluções
-              para problemas do mundo real.
-            </p>
-            <p className="mt-4 text-base leading-7 text-base-content/60">
-              São mais de 650 mil estudantes em 77 países, e no Brasil os
-              torneios são organizados pelo SESI desde 2012.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href="https://www.firstinspires.org/robotics/fll"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`btn btn-outline ${cornerBtn} border-base-content/25 hover:border-secondary hover:bg-secondary hover:text-secondary-content`}
-              >
-                Conhecer a competição
-                <ArrowUpRight size={17} />
-              </a>
-              <Link href="/roboticar#dados" className="btn btn-ghost">
-                <Globe2 size={17} />
-                Dados da robótica no Brasil
-              </Link>
-            </div>
-          </RevealOnScroll>
-        </div>
-      </section>
-
-      {/* ===================================================== ÁREAS AVALIADAS */}
-      <section className="px-6 py-24">
-        <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
-            <SectionTitle
-              kicker="/ COMO A EQUIPE É AVALIADA"
-              title="Quatro frentes,"
-              highlight="uma temporada."
-              highlightClass="bg-accent text-accent-content"
-              description="Na FLL Challenge a equipe é avaliada dentro e fora da mesa. Para cada frente, uma ferramenta do RoboStage ajuda a se preparar."
-            />
-          </RevealOnScroll>
-
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {judgedAreas.map(({ icon: Icon, title, text, tools: t, tone }, i) => {
-              const c = toneClasses[tone];
-              return (
-                <RevealOnScroll key={title} delay={i * 0.06} className="h-full">
-                  <article className={`group flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 ${c.hover}`}>
-                    <div className={`flex size-11 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
-                      <Icon size={20} strokeWidth={1.8} />
-                    </div>
-                    <h3 className="mt-6 text-lg font-bold tracking-tight">{title}</h3>
-                    <p className="mt-2 flex-1 text-sm leading-6 text-base-content/60">{text}</p>
-                    <div className="mt-5 border-t border-base-300 pt-4">
-                      <p className="font-mono text-[10px] tracking-[0.15em] text-base-content/40">PREPARE-SE COM</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {t.map((l) => (
-                          <Link
-                            key={l.href}
-                            href={l.href}
-                            className={`inline-flex items-center gap-1 text-sm font-semibold transition-colors hover:underline ${c.tag}`}
-                          >
-                            {l.label}
-                            <ArrowRight size={13} />
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </article>
-                </RevealOnScroll>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
+      <AboutSection />
+      <JudgedAreasSection />
       <FLLHighlightSeason />
+      <ToolsSection />
+      <SeasonsSection />
+      <ResourcesSection />
+      <FutureEditionSection />
+      <NewsSection news={news} kicker="/ NOVIDADES" title="O que há de novo" highlight="na FLL." />
+      <FinalCta />
+    </main>
+  );
+}
 
-      {/* ========================================================= FERRAMENTAS */}
-      <section id="ferramentas" className="scroll-mt-20 px-6 py-24">
-        <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
+/* ============================================================ SOBRE A FLL */
+
+function AboutSection() {
+  return (
+    <Section tone="glow">
+      <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
+        <Reveal effect="pop" className="relative">
+          <StageImage
+            src="/images/fll/fll_about.jpg"
+            alt="Equipe participando da FIRST LEGO League"
+            ratio="4/3"
+            frame="card"
+            tape
+            sizes="(min-width: 1024px) 45vw, 100vw"
+            credit="Foto: LEGO® Education / FIRST® LEGO® League"
+          />
+        </Reveal>
+
+        <Reveal delay={100}>
+          <SectionTitle
+            kicker="/ SOBRE A FLL"
+            title="Robótica, ciência e"
+            highlight="trabalho em equipe."
+            highlightTone="secondary"
+          />
+          <p className="mt-6 text-base leading-7 text-base-content/65 sm:text-lg">
+            A FIRST LEGO League é uma competição internacional de robótica educacional para crianças e
+            adolescentes. As equipes projetam, constroem e programam robôs com peças LEGO e desenvolvem
+            soluções para problemas do mundo real.
+          </p>
+
+          <dl className="mt-8 grid grid-cols-3 divide-x divide-base-300 border-y border-base-300">
+            {facts.map(({ value, label }) => (
+              <div key={label} className="px-3 py-4 first:pl-0">
+                <dt className="sr-only">{label}</dt>
+                <dd className="stage-display text-2xl sm:text-3xl">{value}</dd>
+                <dd className="stage-kicker mt-1 text-base-content/50">{label}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <ButtonLink
+              href="https://www.firstinspires.org/robotics/fll"
+              target="_blank"
+              rel="noopener noreferrer"
+              tone="outline"
+              iconRight={<ArrowUpRight size={17} />}
+            >
+              Conhecer a competição
+            </ButtonLink>
+            <ButtonLink href="/roboticar#dados" tone="ghost" shape="rounded" iconLeft={<Globe2 size={17} />}>
+              Dados da robótica no Brasil
+            </ButtonLink>
+          </div>
+        </Reveal>
+      </div>
+    </Section>
+  );
+}
+
+/* ======================================================= ÁREAS AVALIADAS */
+
+/** Faixa azul com bordas de pino LEGO em cima e embaixo. */
+function JudgedAreasSection() {
+  return (
+    <Section tone="secondary" edgeTop="studs" edgeBottom="studs" innerClassName="stage-grid-on-color">
+      <div className="relative mx-auto max-w-6xl">
+        <Starburst size={72} tone="accent" motion="spin" className="absolute -top-8 right-0 hidden md:inline-grid" />
+
+        <Reveal>
+          <div className="max-w-3xl">
+            <p className="stage-kicker text-secondary-content/70">/ COMO A EQUIPE É AVALIADA</p>
+            <h2 className="stage-display mt-3 text-3xl sm:text-5xl">
+              Quatro frentes,{" "}
+              <span className="mt-2 inline-block -rotate-1 bg-accent px-3 py-1 italic text-accent-content">
+                uma temporada.
+              </span>
+            </h2>
+            <p className="mt-6 max-w-2xl text-base leading-7 text-secondary-content/80 sm:text-lg">
+              Na FLL Challenge a equipe é avaliada dentro e fora da mesa. Para cada frente, uma ferramenta
+              do RoboStage ajuda a se preparar.
+            </p>
+          </div>
+        </Reveal>
+
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {judgedAreas.map(({ icon: Icon, title, text, tools: t, tone }, i) => (
+            <Reveal key={title} delay={i * 60} className="h-full">
+              <article className="stage-paper group flex h-full flex-col rounded-tl-2xl rounded-br-2xl bg-base-100 p-6 text-base-content shadow-[6px_6px_0_0_var(--stage-shadow)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[9px_9px_0_0_var(--stage-shadow)] motion-reduce:hover:translate-y-0">
+                <div className="flex items-start justify-between">
+                  <span
+                    className={cn(
+                      "flex size-11 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300",
+                      toneSoft[tone],
+                    )}
+                  >
+                    <Icon size={20} strokeWidth={1.8} />
+                  </span>
+                  <span className="font-mono text-xs text-base-content/30">0{i + 1}</span>
+                </div>
+                <h3 className="mt-6 text-lg font-black tracking-tight">{title}</h3>
+                <p className="mt-2 flex-1 text-sm leading-6 text-base-content/60">{text}</p>
+                <div className="mt-5 border-t border-dashed border-base-300 pt-4">
+                  <p className="stage-kicker text-[10px] text-base-content/40">PREPARE-SE COM</p>
+                  <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                    {t.map((l) => (
+                      <Link
+                        key={l.href}
+                        href={l.href}
+                        className={cn(
+                          "inline-flex items-center gap-1 text-sm font-bold transition-colors hover:underline",
+                          toneText[tone],
+                        )}
+                      >
+                        {l.label}
+                        <ArrowRight size={13} />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* =========================================================== FERRAMENTAS */
+
+function ToolsSection() {
+  return (
+    <Section id="ferramentas">
+      <div className="mx-auto max-w-6xl">
+        <Reveal>
+          <div className="flex flex-wrap items-end justify-between gap-6">
             <SectionTitle
               kicker="/ FERRAMENTAS DA FLL"
               title="Tudo que uma equipe FLL precisa,"
               highlight="num lugar só."
               description="Planeje missões, acompanhe pontuações, desenvolva o projeto de inovação e prepare-se para o torneio sem alternar entre várias ferramentas."
             />
-          </RevealOnScroll>
-          <ToolGrid tools={tools} />
-        </div>
-      </section>
-
-      <SeasonsSection />
-
-      {/* ============================================================ RECURSOS */}
-      <section className="px-6 py-24">
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
-          <RevealOnScroll>
-            <div className="lg:sticky lg:top-28">
-              <SectionTitle
-                kicker="/ RECURSOS"
-                title="Primeira temporada?"
-                highlight="Comece por aqui."
-                highlightClass="bg-secondary text-secondary-content"
-                description="Guias e documentos para entender a liga, as missões e o caminho até o torneio."
-              />
-            </div>
-          </RevealOnScroll>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {resources.map(({ icon: Icon, title, text, href }, i) => (
-              <RevealOnScroll key={href} delay={i * 0.06} className="h-full">
-                <Link
-                  href={href}
-                  className="group flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-secondary/40 hover:shadow-[6px_6px_0_0_var(--color-secondary)]"
-                >
-                  <Icon size={20} className="text-secondary" />
-                  <h3 className="mt-4 font-bold">{title}</h3>
-                  <p className="mt-1 flex-1 text-sm leading-6 text-base-content/60">{text}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 font-mono text-xs text-base-content/50 transition-colors group-hover:text-secondary">
-                    {href}
-                    <ArrowRight size={13} className="transition-transform group-hover:translate-x-1" />
-                  </span>
-                </Link>
-              </RevealOnScroll>
-            ))}
+            <ButtonLink
+              href="/dashboard"
+              tone="outline"
+              iconLeft={<CalendarDays size={16} />}
+              iconRight={<ArrowUpRight size={15} />}
+              className="font-mono font-medium"
+            >
+              /dashboard
+            </ButtonLink>
           </div>
-        </div>
-      </section>
+        </Reveal>
 
-      {/* ====================================================== FUTURE EDITION */}
-      <section className="px-6 pb-24">
-        <RevealOnScroll>
-          <div className="group relative isolate mx-auto max-w-6xl overflow-hidden rounded-tl-[2.5rem] rounded-br-[2.5rem] bg-[#1d2a10] text-white shadow-[10px_10px_0_0_var(--color-accent)]">
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 -z-20 bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.02]"
-              style={{
-                backgroundImage:
-                  "url('https://www.bischoff-ag.ch/thumbnail/0f/a0/d5/1782169686/45834_Lifestyle_Cons_19_7d6229d67aa1ee63977a4f49a9682fb43b5dfc10_800x800.png?ts=1782173521&nocache=1')",
-              }}
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {tools.map(({ icon: Icon, tag, title, description, href, tone }, i) => (
+            <Reveal key={title} delay={(i % 3) * 60} className="h-full">
+              <FeatureCard
+                title={title}
+                description={description}
+                category={tag}
+                icon={<Icon />}
+                href={href}
+                index={i + 1}
+                tone={tone}
+              />
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ============================================================== RECURSOS */
+
+function ResourcesSection() {
+  return (
+    <Section>
+      <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
+        <Reveal>
+          <div className="relative lg:sticky lg:top-28">
+            <SectionTitle
+              kicker="/ RECURSOS"
+              title="Primeira temporada?"
+              highlight="Comece por aqui."
+              highlightTone="secondary"
+              description="Guias e documentos para entender a liga, as missões e o caminho até o torneio."
             />
-            <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-black/90 via-black/65 to-black/20" />
-            <div className="px-8 py-14 sm:px-14">
-              <p className="font-mono text-xs tracking-[0.2em] text-white/60">/ FUTURE EDITION</p>
-              <img
-                src="https://www.firstinspires.org/hs-fs/hubfs/web/brand/season/2027/first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png?width=1436&height=484&name=first_canopy_fll_bioglow_logo_horizontal_future_edition_rgb_fullcolor.png"
-                alt="FIRST LEGO League BIOGLOW Future Edition"
-                className="mt-6 h-auto w-48 max-w-full drop-shadow-lg sm:w-60"
-              />
-              <h2 className="mt-6 max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-                Uma nova geração de possibilidades para a{" "}
-                <span className="text-[#C8F77A]">FIRST LEGO League.</span>
-              </h2>
-              <p className="mt-5 max-w-xl text-sm leading-7 text-white/80 sm:text-base">
-                Conheça a BIOGLOW™ Future Edition, com os novos kits LEGO®
-                Education Computer Science & AI, hardware sem fio e uma
-                experiência colaborativa baseada em alianças.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  href="/fll/future-edition"
-                  className={`btn border-0 bg-[#C8F77A] px-6 font-bold text-[#20320C] ${cornerBtn} shadow-[4px_4px_0_0_#ffffff] transition-all hover:-translate-y-0.5 hover:bg-[#D8FFA0]`}
-                >
-                  Conheça a Future Edition
-                  <ArrowUpRight size={18} />
-                </Link>
-                <Link
-                  href="/fll/future-edition/score"
-                  className="btn btn-ghost text-white hover:bg-white/10"
-                >
-                  Pontuador da Future Edition
-                  <ArrowRight size={18} />
-                </Link>
-              </div>
-            </div>
+            <StickerTag tone="accent" rotate={-4} className="mt-8">
+              Para iniciantes
+            </StickerTag>
           </div>
-        </RevealOnScroll>
-      </section>
+        </Reveal>
 
-      <NewsSection news={news} kicker="/ NOVIDADES" title="O que há de novo" highlight="na FLL." />
+        <div className="grid gap-4 sm:grid-cols-2">
+          {resources.map(({ icon: Icon, title, text, href, tone }, i) => (
+            <Reveal key={href} delay={i * 60} className="h-full">
+              <Link
+                href={href}
+                className="stage-paper group flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-base-content/40 hover:shadow-[6px_6px_0_0_var(--stage-shadow)] motion-reduce:hover:translate-y-0"
+              >
+                <span
+                  className={cn(
+                    "flex size-10 items-center justify-center rounded-tl-lg rounded-br-lg transition-colors duration-300",
+                    toneSoft[tone],
+                  )}
+                >
+                  <Icon size={19} strokeWidth={1.8} />
+                </span>
+                <h3 className="mt-4 font-bold">{title}</h3>
+                <p className="mt-1 flex-1 text-sm leading-6 text-base-content/60">{text}</p>
+                <span className="mt-4 inline-flex items-center gap-1 font-mono text-xs text-base-content/50 transition-colors group-hover:text-primary">
+                  {href}
+                  <ArrowRight size={13} className="transition-transform group-hover:translate-x-1" />
+                </span>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
 
-      <CtaBlock
-        kicker="SUA PRÓXIMA TEMPORADA"
-        icon={Trophy}
-        title="Sua próxima temporada de FLL começa aqui."
-        text="Do planejamento ao torneio. Do primeiro teste à classificação. Organize a equipe, acompanhe o progresso e evolua durante toda a temporada."
-        actions={[
-          { label: "Criar conta grátis", href: "/sign-up", variant: "accent" },
-          { label: "Iniciativas de outras equipes", href: "/roboticar#iniciativas", variant: "ghost" },
-        ]}
-      />
-    </main>
+/* ======================================================== FUTURE EDITION */
+
+/**
+ * Faixa noturna com borda de circuito (kits de Computer Science & AI).
+ * Só em cima: embaixo vem a NewsSection, que some quando não há notícias,
+ * e a borda de baixo bateria na engrenagem do CTA.
+ */
+function FutureEditionSection() {
+  return (
+    <Section tone="night" edgeTop="circuit">
+      <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1.05fr_1fr] [&>*]:min-w-0">
+        <Reveal>
+          <p className="stage-kicker inline-flex items-center gap-2 text-white/55">
+            <Cpu size={14} /> FUTURE EDITION
+          </p>
+          <Image
+            src="/images/logos/fll/seasons/bioglow_logo_future_edition.webp"
+            alt="FIRST LEGO League BIOGLOW Future Edition"
+            width={1726}
+            height={1225}
+            sizes="240px"
+            className="mt-6 h-auto w-44 drop-shadow-lg sm:w-56"
+          />
+          <h2 className="stage-display mt-6 max-w-2xl text-3xl leading-tight sm:text-4xl">
+            Uma nova geração de possibilidades para a{" "}
+            <span className="mt-1 inline-block -rotate-1 bg-[#C8F77A] px-2 italic text-[#20320C]">
+              FIRST LEGO League.
+            </span>
+          </h2>
+          <p className="mt-5 max-w-xl text-sm leading-7 text-white/75 sm:text-base">
+            Conheça a BIOGLOW™ Future Edition, com os novos kits LEGO® Education Computer Science & AI,
+            hardware sem fio e uma experiência colaborativa baseada em alianças.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <ButtonLink
+              href="/fll/future-edition"
+              flat
+              iconRight={<ArrowUpRight size={18} />}
+              className="border-0 bg-[#C8F77A] text-[#20320C] shadow-[4px_4px_0_0_#ffffff] hover:-translate-y-0.5 hover:bg-[#D8FFA0]"
+            >
+              Conheça a Future Edition
+            </ButtonLink>
+            <ButtonLink
+              href="/fll/future-edition/score"
+              tone="ghost"
+              shape="rounded"
+              iconRight={<ArrowRight size={18} />}
+              className="text-white hover:bg-white/10"
+            >
+              Pontuador da Future Edition
+            </ButtonLink>
+          </div>
+        </Reveal>
+
+        <Reveal delay={120} effect="pop">
+          <div aria-hidden="true" className="relative mx-auto aspect-[5/4] w-full max-w-lg">
+            <div className="absolute inset-x-[8%] bottom-[6%] top-[22%] rounded-tl-[3rem] rounded-br-[3rem] border border-[#C8F77A]/25 bg-[#C8F77A]/[0.06]" />
+            <Sparkle size={34} color="#C8F77A" motion="float" className="absolute right-[6%] top-[4%] z-20" />
+            {feModels.map(({ src, className }) => (
+              <div key={src} className={cn("absolute", className)}>
+                <Image
+                  src={src}
+                  alt=""
+                  width={649}
+                  height={662}
+                  sizes="(min-width: 1024px) 260px, 45vw"
+                  className="h-auto w-full drop-shadow-[0_18px_24px_rgba(0,0,0,0.45)] transition-transform duration-500 hover:-translate-y-1.5 motion-reduce:hover:translate-y-0"
+                />
+              </div>
+            ))}
+            <StickerTag tone="ink" rotate={-6} className="absolute bottom-0 left-[10%] z-20 border-white/30">
+              Missões BIOGLOW FE
+            </StickerTag>
+          </div>
+        </Reveal>
+      </div>
+    </Section>
+  );
+}
+
+/* ============================================================= CTA FINAL */
+
+/** Faixa vermelha com borda de engrenagem só em cima (o rodapé vem logo depois). */
+function FinalCta() {
+  return (
+    <Section tone="primary" edgeTop="gear" innerClassName="stage-grid-on-color relative overflow-hidden">
+      <Gear size={220} tone="accent" motion="spin" className="absolute -right-14 -top-10 hidden sm:inline-block" />
+      <Starburst size={64} tone="paper" rotate={12} className="absolute bottom-10 right-24 hidden md:inline-grid" />
+
+      <Reveal>
+        <div className="relative mx-auto max-w-6xl">
+          <Kicker className="text-primary-content/70">SUA PRÓXIMA TEMPORADA</Kicker>
+          <h2 className="stage-display mt-4 max-w-3xl text-3xl sm:text-5xl">
+            Sua próxima temporada de FLL começa aqui.
+          </h2>
+          <p className="mt-5 max-w-xl text-primary-content/85">
+            Do planejamento ao torneio. Do primeiro teste à classificação. Organize a equipe, acompanhe o
+            progresso e evolua durante toda a temporada.
+          </p>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <ButtonLink href="/sign-up" tone="accent" size="lg" iconLeft={<UserPlus size={20} />}>
+              Criar conta grátis
+            </ButtonLink>
+            <ButtonLink
+              href="/roboticar#iniciativas"
+              tone="ghost"
+              size="lg"
+              shape="rounded"
+              iconRight={<ArrowRight size={18} />}
+              className="text-primary-content hover:bg-primary-content/10"
+            >
+              Iniciativas de outras equipes
+            </ButtonLink>
+          </div>
+        </div>
+      </Reveal>
+    </Section>
   );
 }

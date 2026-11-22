@@ -37,7 +37,7 @@ type HeroBadge = { label: string; href?: string; soon?: boolean };
  * sombra dura, chips das modalidades e dois stickers de tempero.
  */
 export default function HomeHero({
-  kicker = "PLATAFORMA PARA EQUIPES DE ROBÓTICA",
+  kicker = undefined,
   badges = [],
   scrollTarget,
 }: {

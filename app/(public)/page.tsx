@@ -27,7 +27,6 @@ export default async function Page() {
     <>
       <Navbar />
       <HomeHero
-        kicker="PLATAFORMA PARA EQUIPES DE ROBÓTICA"
         badges={[
           { label: "FLL", href: "/fll" },
           { label: "OBR", href: "/obr" },

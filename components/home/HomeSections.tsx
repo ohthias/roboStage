@@ -4,11 +4,14 @@ import {
   Activity,
   ArrowRight,
   ArrowUpRight,
+  Bot,
+  CalendarHeart,
   ChevronRight,
   ClipboardCheck,
   ClipboardList,
   Clock,
   Code,
+  Cog,
   Cuboid,
   FlaskConical,
   FolderGit2,
@@ -19,6 +22,8 @@ import {
   KeyRound,
   LayoutDashboard,
   LifeBuoy,
+  Lightbulb,
+  Megaphone,
   MessageSquare,
   Newspaper,
   NotebookPen,
@@ -29,6 +34,7 @@ import {
   Smartphone,
   Sparkles,
   Swords,
+  ToyBrick,
   Trophy,
   Tv,
   UserPlus,
@@ -59,6 +65,8 @@ import {
   type Tone,
   NewsCard,
   StatusBadge,
+  CoverArt,
+  coverFromSeed,
 } from "@/components/stage";
 import LivePreview from "./LivePreview";
 import PersonaTabs from "./PersonaTabs";
@@ -806,7 +814,6 @@ export function CanopySection() {
     </section>
   );
 }
-
 /* ============================================================= NOVIDADES */
 
 export type HomeNews = {
@@ -829,6 +836,81 @@ function formatDate(date?: string) {
   });
 }
 
+/* ---------- capa gerada para notícia sem imagem ---------- */
+
+type NewsLook = { icon: LucideIcon; tone: Tone };
+
+/**
+ * Ícone e cor pela categoria (comparação sem acento e sem caixa).
+ * A primeira regra que bater vence; sem categoria conhecida, cor e ícone
+ * saem do slug, então cada notícia mantém sempre a mesma capa.
+ */
+const newsLooks: { match: RegExp; look: NewsLook }[] = [
+  { match: /\bfll\b|lego/, look: { icon: ToyBrick, tone: "primary" } },
+  { match: /\bobr\b|olimpiada/, look: { icon: Bot, tone: "secondary" } },
+  { match: /\bftc\b|tech challenge/, look: { icon: Cog, tone: "accent" } },
+  { match: /atualiza|changelog|lancamento|versao|novidade|ferramenta/, look: { icon: Rocket, tone: "info" } },
+  { match: /evento|torneio|showlive|competic|campeonato/, look: { icon: Trophy, tone: "success" } },
+  { match: /comunidade|equipe|parceri|apoio/, look: { icon: HeartHandshake, tone: "secondary" } },
+  { match: /dica|guia|tutorial|aprend|estrategia/, look: { icon: Lightbulb, tone: "accent" } },
+  { match: /aviso|comunicado|importante/, look: { icon: Megaphone, tone: "primary" } },
+  { match: /agenda|calendario|data/, look: { icon: CalendarHeart, tone: "info" } },
+];
+
+const fallbackIcons: LucideIcon[] = [Newspaper, Sparkles, Rocket, Lightbulb, Megaphone];
+
+function newsLook(n: HomeNews): NewsLook {
+  const key = (n.category ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  const hit = key && newsLooks.find((r) => r.match.test(key));
+  if (hit) return hit.look;
+  const auto = coverFromSeed(n.slug);
+  return { icon: fallbackIcons[n.slug.length % fallbackIcons.length], tone: auto.tone };
+}
+
+/** Desenho de fundo (padrão estável pelo slug) + ícone do assunto, no tamanho de cada layout. */
+function newsFallback(n: HomeNews) {
+  const { icon: Icon, tone } = newsLook(n);
+  const { pattern } = coverFromSeed(n.slug);
+  // No amarelo e no "paper" o ícone fica escuro; nos outros, branco.
+  const light = tone === "accent" || tone === "paper";
+  const ink = light ? "text-black/75" : "text-white";
+
+  function NewsFallback(layout: "vertical" | "horizontal" | "featured") {
+    return (
+      <>
+        <CoverArt pattern={pattern} tone={tone} seed={n.slug} className="absolute inset-0 size-full" />
+        {layout === "featured" ? (
+          <>
+            <Icon
+              aria-hidden
+              strokeWidth={1.4}
+              className={cn("absolute -right-6 -top-6 size-56 rotate-12 opacity-25 sm:size-72", ink)}
+            />
+            {/* véu extra: o texto do destaque é branco, inclusive sobre o amarelo */}
+            <span className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+          </>
+        ) : (
+          <span
+            className={cn(
+              "absolute left-1/2 top-1/2 grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-tl-xl rounded-br-xl",
+              light ? "bg-white/55" : "bg-black/25",
+              layout === "horizontal" ? "size-12" : "size-16",
+            )}
+          >
+            <Icon aria-hidden strokeWidth={1.8} className={cn(ink, layout === "horizontal" ? "size-6" : "size-8")} />
+          </span>
+        )}
+      </>
+    );
+  }
+  return NewsFallback;
+}
+
+/* ---------- seção ---------- */
+
 type NewsSectionProps = {
   news: HomeNews[];
   kicker?: string;
@@ -849,7 +931,16 @@ function NewsSectionContent({
   if (news.length === 0) return null;
   const [first, ...rest] = news;
   const sideNews = rest.slice(0, 3);
-  const bottomNews = rest.slice(3);
+  const bottomNews = rest.slice(3, 6);
+
+  const card = (n: HomeNews) => ({
+    title: n.title,
+    href: `/news/${encodeURIComponent(n.slug)}`,
+    image: n.cover ?? "",
+    tag: n.category,
+    date: formatDate(n.date),
+    fallback: newsFallback(n),
+  });
 
   return (
     <Section tone="muted" className="[&>div]:border-b-0">
@@ -874,50 +965,32 @@ function NewsSectionContent({
           </div>
         </Reveal>
 
-        <div className="mt-12 grid gap-5 lg:grid-cols-[1.55fr_1fr]">
+        <div className={cn("mt-12 grid gap-5", sideNews.length > 0 && "lg:grid-cols-[1.55fr_1fr]")}>
           <Reveal className="h-full">
             <NewsCard
-              title={first.title}
-              href={`/news/${encodeURIComponent(first.slug)}`}
+              {...card(first)}
               excerpt={first.description}
-              image={first.cover ?? ""}
-              tag={first.category}
-              date={formatDate(first.date)}
               layout="featured"
               className="h-full min-h-[27rem]"
             />
           </Reveal>
 
-          <div className="flex flex-col gap-5">
-            {sideNews.map((n, i) => (
-              <Reveal key={n.slug} delay={(i + 1) * 80} className="flex-1">
-                <NewsCard
-                  title={n.title}
-                  href={`/news/${encodeURIComponent(n.slug)}`}
-                  image={n.cover ?? ""}
-                  tag={n.category}
-                  date={formatDate(n.date)}
-                  layout="horizontal"
-                  className="h-full min-h-[8.25rem]"
-                />
-              </Reveal>
-            ))}
-          </div>
+          {sideNews.length > 0 && (
+            <div className="flex flex-col gap-5">
+              {sideNews.map((n, i) => (
+                <Reveal key={n.slug} delay={(i + 1) * 80} className="flex-1">
+                  <NewsCard {...card(n)} layout="horizontal" className="h-full min-h-[8.25rem]" />
+                </Reveal>
+              ))}
+            </div>
+          )}
         </div>
 
         {bottomNews.length > 0 && (
           <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {bottomNews.slice(0, 3).map((n, i) => (
+            {bottomNews.map((n, i) => (
               <Reveal key={n.slug} delay={(i + 1) * 80}>
-                <NewsCard
-                  title={n.title}
-                  excerpt={n.description}
-                  href={`/news/${encodeURIComponent(n.slug)}`}
-                  image={n.cover ?? ""}
-                  tag={n.category}
-                  date={formatDate(n.date)}
-                  layout="vertical"
-                />
+                <NewsCard {...card(n)} excerpt={n.description} layout="vertical" />
               </Reveal>
             ))}
           </div>

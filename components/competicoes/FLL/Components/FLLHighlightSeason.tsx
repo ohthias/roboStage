@@ -1,119 +1,181 @@
-import Link from "next/link";
-import { ArrowRight, BookOpen, Leaf, Sparkles } from "lucide-react";
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
+import Image from "next/image";
+import { ArrowRight, BookOpen, Clock, Cuboid, Trophy, Users, type LucideIcon } from "lucide-react";
+import { ButtonLink, Flower, Kicker, Marquee, Reveal, SectionEdge, Sparkle, StickerTag } from "@/components/stage";
 
+/** Verde-noite da BIOGLOW: fundo da faixa e cor da borda de baixo. */
+const NIGHT = "#07110A";
+const LIME = "#8CC63F";
+
+const facts: { icon: LucideIcon; value: string; label: string }[] = [
+  { icon: Trophy, value: "15", label: "missões no tapete" },
+  { icon: Clock, value: "2:30", label: "por rodada" },
+  { icon: Users, value: "4", label: "frentes avaliadas" },
+];
+
+/** Missões da BIOGLOW (mesmos nomes de public/data/missions.json). */
+const missions = [
+  "M01 Inspeção por drone",
+  "M02 Sementes explosivas",
+  "M03 Vire a pedra",
+  "M04 Folhas da sorte",
+  "M05 Raízes compridas",
+  "M06 Formigas-cortadeiras",
+  "M07 Fungo enorme",
+  "M08 Emaranhado",
+  "M09 Plataforma de pesquisa",
+  "M10 Microhabitats frágeis",
+  "M11 Janela para o passado",
+  "M12 Ancião da floresta",
+  "M13 Espécie-chave",
+  "M14 Sementes de renovação",
+  "M15 Arquitetura biocêntrica",
+];
+
+/**
+ * Destaque da temporada atual na home da FLL.
+ *
+ * Foto de fundo com véu escuro que termina em verde-noite sólido, para emendar
+ * na borda de onda (WaveEdge) que desce sobre a seção seguinte. Fecha com uma
+ * fita (Marquee) com as 15 missões.
+ */
 export default function FLLHighlightSeason() {
+  // z-10: a borda de onda desce sobre a seção seguinte, que vem depois no DOM.
   return (
-    <section className="group/season relative isolate w-full overflow-hidden bg-[#07110A]">
-      {/* Background */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-20 bg-cover bg-center transition-transform duration-1000 group-hover/season:scale-[1.02]"
-        style={{
-          backgroundImage:
-            "url('/images/showLive/backgrounds/background_bioglow.webp')",
-        }}
-      />
+    <section className="group/season relative z-10" style={{ backgroundColor: NIGHT }}>
+      <div className="relative isolate overflow-hidden">
+        {/* Fundo: wrapper com -z-20 porque o stage.css põe z-index 0 em <img> de seções texturizadas. */}
+        <div aria-hidden="true" className="absolute inset-0 -z-20 overflow-hidden">
+          <Image
+            src="/images/showLive/backgrounds/background_bioglow.webp"
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover transition-transform duration-1000 ease-out group-hover/season:scale-[1.02] motion-reduce:transition-none"
+          />
+        </div>
+        {/* Véu: escuro à esquerda para o texto e sólido embaixo para a borda de onda. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10"
+          style={{
+            background: `linear-gradient(to top, ${NIGHT} 0%, ${NIGHT} 22%, transparent 58%), linear-gradient(to right, rgb(0 0 0 / 0.9), rgb(0 0 0 / 0.68) 50%, rgb(0 0 0 / 0.35))`,
+          }}
+        />
 
-      {/* Contrast overlay */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-r from-black/90 via-black/70 to-black/45"
-      />
-
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-t from-black/40 via-transparent to-black/20"
-      />
-
-      {/* Decorative elements */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-24 -top-24 -z-10 size-80 rounded-full border border-[#6FA61C]/20"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-12 -top-12 -z-10 size-56 rounded-full border border-[#6FA61C]/15"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-28 -left-20 -z-10 size-80 rounded-full border-[32px] border-[#6FA61C]/5"
-      />
-
-      <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-        <RevealOnScroll>
-          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10 xl:gap-16">
-            {/* Season information */}
-            <div className="min-w-0">
-              <h2 className="mt-6 text-5xl font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-8xl">
-                BIO
-                <span className="text-[#8CC63F]">GLOW</span>
-              </h2>
-
-              <p className="mt-7 max-w-2xl text-base leading-7 text-white/80 sm:text-lg sm:leading-8">
-                A biodiversidade mantém nosso planeta saudável. Das menores
-                espécies às árvores imponentes, a vida depende de um equilíbrio
-                essencial para sobreviver. Nesta temporada, identifique um
-                problema que coloque a biodiversidade em risco e desenvolva
-                uma solução inovadora para ajudar a preservá-la.
-              </p>
-
-              {/* Actions */}
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <Link
-                  href="/fll/quickbrick"
-                  className="group/button inline-flex min-h-12 items-center justify-center gap-3 rounded-tl-xl rounded-br-xl bg-primary px-6 py-3 text-sm font-bold text-primary-content shadow-lg shadow-primary/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:text-base"
-                >
-                  <Sparkles size={18} />
-                  Explorar QuickBrick
-                  <ArrowRight
-                    size={18}
-                    className="transition-transform duration-300 group-hover/button:translate-x-1"
-                  />
-                </Link>
-
-                <Link
-                  href="/fll/docs"
-                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-tl-xl rounded-br-xl border border-white/25 bg-white/5 px-6 py-3 text-sm font-bold text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/50 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:text-base"
-                >
-                  <BookOpen size={18} />
-                  Documentações
-                </Link>
-              </div>
-
-              <div className="mt-8 flex items-center gap-3 text-xs text-white/50">
-                <span className="h-px w-8 bg-[#8CC63F]/70" />
-                Explore. Descubra. Preserve.
-              </div>
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 pb-16 pt-24 sm:pb-20 sm:pt-28 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10 [&>*]:min-w-0">
+          {/* ------------------------------------------------------- texto */}
+          <Reveal>
+            <div className="flex flex-wrap items-center gap-3">
+              <StickerTag tone="accent" size="sm" rotate={-3}>
+                Temporada atual
+              </StickerTag>
+              <Kicker className="text-white/55">FLL CHALLENGE · 2026/2027</Kicker>
             </div>
 
-            {/* Season logo */}
-            <div className="relative flex min-w-0 items-center justify-center py-6 sm:py-10 lg:py-0">
-              <div
-                aria-hidden="true"
-                className="absolute size-56 rounded-full bg-[#6FA61C]/20 blur-3xl transition-all duration-700 group-hover/season:bg-[#6FA61C]/30 sm:size-80 lg:size-96"
-              />
+            <h2 className="stage-display mt-6 text-6xl leading-[0.9] text-white sm:text-7xl xl:text-8xl">
+              BIO
+              <span className="inline-block -rotate-2 italic" style={{ color: LIME }}>
+                GLOW
+              </span>
+              <span className="sr-only">: temporada 2026/2027 da FIRST LEGO League</span>
+            </h2>
 
-              <div
-                aria-hidden="true"
-                className="absolute size-64 rounded-full border border-[#8CC63F]/15 sm:size-80 lg:size-[26rem]"
-              />
+            <p className="mt-7 max-w-xl text-base leading-7 text-white/80 sm:text-lg sm:leading-8">
+              A biodiversidade mantém nosso planeta saudável. Das menores espécies às árvores imponentes, a
+              vida depende de um equilíbrio essencial para sobreviver. Nesta temporada, identifique um
+              problema que coloque a biodiversidade em risco e desenvolva uma solução inovadora para ajudar
+              a preservá-la.
+            </p>
 
-              <div className="relative w-full max-w-[460px] transition-transform duration-500 hover:scale-[1.03]">
-                <img
-                  src="/images/logos/fll/seasons/bioglow_logo.png"
-                  alt="Logo da temporada BIOGLOW da FIRST LEGO League"
-                  className="h-auto w-full object-contain drop-shadow-[0_0_35px_rgba(140,198,63,0.18)]"
-                />
-              </div>
+            <dl className="mt-8 grid max-w-xl grid-cols-3 divide-x divide-white/15 border-y border-white/15">
+              {facts.map(({ icon: Icon, value, label }) => (
+                <div key={label} className="min-w-0 px-3 py-4 first:pl-0">
+                  <dt className="sr-only">{label}</dt>
+                  <dd className="flex items-center gap-2 text-white">
+                    <Icon size={16} className="shrink-0" style={{ color: LIME }} />
+                    <span className="stage-display truncate text-xl sm:text-2xl">{value}</span>
+                  </dd>
+                  <dd className="stage-kicker mt-1 text-white/50">{label}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <ButtonLink
+                href="/fll/score/bioglow"
+                flat
+                iconLeft={<Trophy size={18} />}
+                className="border-0 text-[#0b1a07] shadow-[4px_4px_0_0_#ffffff] hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#ffffff]"
+                style={{ backgroundColor: LIME }}
+              >
+                Pontuar a BIOGLOW
+              </ButtonLink>
+              <ButtonLink
+                href="/fll/quickbrick"
+                tone="outline"
+                iconLeft={<Cuboid size={18} />}
+                className="border-white/40 bg-transparent text-white hover:border-white hover:bg-white hover:text-[#0b1a07]"
+              >
+                Explorar QuickBrick
+              </ButtonLink>
+              <ButtonLink
+                href="/fll/docs"
+                tone="ghost"
+                shape="rounded"
+                iconLeft={<BookOpen size={18} />}
+                iconRight={<ArrowRight size={16} />}
+                className="text-white hover:bg-white/10"
+              >
+                Documentações
+              </ButtonLink>
             </div>
-          </div>
-        </RevealOnScroll>
+          </Reveal>
+
+          {/* ------------------------------------------------------- logo */}
+          <Reveal delay={120} effect="pop" className="relative mx-auto w-full max-w-[300px] sm:max-w-[440px]">
+            {/* Brilho em gradiente radial (sem filter: blur, que pesa) */}
+            <div
+              aria-hidden="true"
+              className="absolute -inset-[15%] -z-10 rounded-full opacity-80 transition-opacity duration-700 group-hover/season:opacity-100"
+              style={{ background: `radial-gradient(closest-side, rgb(111 166 28 / 0.35), transparent)` }}
+            />
+            <div
+              aria-hidden="true"
+              className="absolute -inset-[6%] -z-10 rounded-full border border-dashed"
+              style={{ borderColor: `${LIME}40` }}
+            />
+            <Flower size={58} color={LIME} motion="spin" className="absolute -left-2 -top-6 z-10" />
+            <Sparkle size={30} tone="accent" motion="float" className="absolute -bottom-2 right-4 z-10" />
+            <Image
+              src="/images/logos/fll/seasons/bioglow_logo.png"
+              alt="Logo da temporada BIOGLOW da FIRST LEGO League"
+              width={1725}
+              height={982}
+              sizes="(min-width: 1024px) 440px, 80vw"
+              className="h-auto w-full -rotate-2 object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.45)] transition-transform duration-500 group-hover/season:rotate-0 motion-reduce:transition-none"
+            />
+          </Reveal>
+        </div>
+
+        {/* Fita com as missões da temporada */}
+        <div className="relative z-10 pb-10">
+          <Marquee
+            items={missions}
+            tone="ink"
+            tilt={-1.5}
+            speed={5}
+            render={(item) => (
+              <span className="stage-display whitespace-nowrap text-xl italic uppercase sm:text-2xl">{item}</span>
+            )}
+          />
+        </div>
+
+        <p className="absolute bottom-3 right-4 text-[10px] text-white/40 sm:right-6">Imagem de fundo: Freepik</p>
       </div>
 
-      {/* Image credit */}
-      <div className="absolute bottom-2 right-4 text-[10px] text-white/40 sm:right-6 lg:right-8">
-        Imagem de fundo: Freepik
+      {/* Borda de onda descendo sobre a seção seguinte */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-20 translate-y-full">
+        <SectionEdge variant="wave" color={NIGHT} direction="down" texture="none" />
       </div>
     </section>
   );

@@ -2,7 +2,7 @@ import { FLLIcon } from "@/components/icons/FLLIcon";
 import { FTCIcon } from "@/components/icons/FTCIcon";
 import { OBRIcon } from "@/components/icons/OBRIcon";
 import type { LucideIcon } from "lucide-react";
-import { Activity, BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Code, Bot, UserSearch, LayoutGrid, Clapperboard, Users, ChartLine } from "lucide-react";
+import { Activity, BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, UserSearch, LayoutGrid, Clapperboard, Users, ChartLine, Flower2, ClipboardList, Swords } from "lucide-react";
 
 /** Item de menu de competição: `path` é relativo a `/{competicao}/`. */
 export type NavMenuItem = {

@@ -1,19 +1,67 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Award, BookOpen, CalendarDays, ClipboardList, Cog, Flower2, Hexagon, History, MapPin, School, Swords, Timer, Trophy, Users } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Award,
+  BookOpen,
+  CalendarDays,
+  ClipboardList,
+  Cog,
+  Flower2,
+  Hexagon,
+  History,
+  MapPin,
+  School,
+  Swords,
+  Timer,
+  Trophy,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 
 import Hero from "@/components/Hero";
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import { ACCENT_TEXT, AnimatedBackground, SectionTitle, toneClasses, type Tone } from "@/components/home/shared";
 import { NewsSection } from "@/components/home/HomeSections";
-import { CtaBlock, StepsRow, ToolGrid, cornerBtn, type ToolItem } from "@/components/competicoes/shared/CompetitionSections";
-import { POINTS, RANKING_POINTS, SEASON } from "@/utils/competitions/ftc/biobuzz";
+import {
+  ButtonLink,
+  Card,
+  CountUp,
+  FeatureCard,
+  Gear,
+  Kicker,
+  Reveal,
+  Section,
+  SectionTitle,
+  Sparkle,
+  Squiggle,
+  StageImage,
+  Starburst,
+  StatCard,
+  StickerTag,
+  Timeline,
+  cn,
+  toneSoft,
+  type Tone,
+} from "@/components/stage";
+import { SEASON } from "@/utils/competitions/ftc/biobuzz";
 import { getLatestNews } from "@/utils/institutional/news";
-import "@/components/home/home.css";
 
-const tools: ToolItem[] = [
+/* ================================================================ DADOS */
+
+type FtcTool = {
+  icon: LucideIcon;
+  tag: string;
+  title: string;
+  description: string;
+  href: string;
+  tone: "primary" | "secondary" | "accent";
+  status?: string;
+};
+
+const tools: FtcTool[] = [
   {
     icon: Timer,
-    tag: "CRONÔMETRO",
+    tag: "Cronômetro",
     title: "Partida BIOBUZZ",
     description:
       "0:30 de AUTO, 0:08 de transição e 2:00 de TELEOP, com avisos de 1:00 e 0:20 e contador de TIPs.",
@@ -23,7 +71,7 @@ const tools: ToolItem[] = [
   },
   {
     icon: Trophy,
-    tag: "TREINO",
+    tag: "Treino",
     title: "Pontuador",
     description:
       "Conte AUTO, TIPs, FLOWERS, PARK, faltas e RP de cada treino e acompanhe a evolução das tentativas.",
@@ -33,7 +81,7 @@ const tools: ToolItem[] = [
   },
   {
     icon: Swords,
-    tag: "NA FILA",
+    tag: "Na fila",
     title: "Estratégia TeleOp",
     description:
       "Divida o TELEOP em fases, dê uma função a cada robô e veja pontos e RP estimados antes de entrar.",
@@ -43,7 +91,7 @@ const tools: ToolItem[] = [
   },
   {
     icon: ClipboardList,
-    tag: "SCOUTING",
+    tag: "Scouting",
     title: "Scouting + alianças",
     description:
       "Importa ranking, agenda e OPR da FTCScout, soma as anotações dos seus scouts e sugere as melhores duplas para os playoffs.",
@@ -53,19 +101,17 @@ const tools: ToolItem[] = [
   },
   {
     icon: Flower2,
-    tag: "ARENA",
+    tag: "Arena",
     title: "Elementos da arena",
-    description:
-      "HIVE, CELLS, FLOWERS, GARDENS, POLLEN e NECTAR: o que cada um faz e quanto vale.",
+    description: "HIVE, CELLS, FLOWERS, GARDENS, POLLEN e NECTAR: o que cada um faz e quanto vale.",
     href: "/ftc/arena",
     tone: "secondary",
   },
   {
     icon: BookOpen,
-    tag: "REGRAS",
+    tag: "Regras",
     title: "Documentação",
-    description:
-      "Competition Manual, Team Updates, Field CAD, StarterBots e resultados oficiais.",
+    description: "Competition Manual, Team Updates, Field CAD, StarterBots e resultados oficiais.",
     href: "/ftc/docs",
     tone: "accent",
   },
@@ -73,6 +119,7 @@ const tools: ToolItem[] = [
 
 const steps = [
   {
+    number: "01",
     icon: Trophy,
     title: "Treine e pontue",
     description:
@@ -82,6 +129,7 @@ const steps = [
     link: "Abrir pontuador",
   },
   {
+    number: "02",
     icon: Swords,
     title: "Combine o plano na fila",
     description:
@@ -91,6 +139,7 @@ const steps = [
     link: "Montar estratégia",
   },
   {
+    number: "03",
     icon: Users,
     title: "Escolha bem a aliança",
     description:
@@ -102,12 +151,7 @@ const steps = [
 ];
 
 /** O que é a FTC: quatro características do programa. */
-const ftcTraits: {
-  icon: typeof Cog;
-  title: string;
-  text: string;
-  tone: Tone;
-}[] = [
+const ftcTraits: { icon: LucideIcon; title: string; text: string; tone: Tone }[] = [
   {
     icon: School,
     title: "Do 7º ano ao Ensino Médio",
@@ -135,43 +179,48 @@ const ftcTraits: {
 ];
 
 /** FTC no Brasil (números da temporada 2025/26, divulgados pelo SESI). */
-const brazilStats = [
-  { value: "120", label: "equipes na temporada 2025/26" },
-  { value: "13", label: "estados com seletivas regionais" },
-  { value: "1,2 mil+", label: "estudantes competindo" },
-  { value: "2018/19", label: "primeira temporada no Brasil" },
+const brazilStats: {
+  label: string;
+  value: React.ReactNode;
+  icon: LucideIcon;
+  tone: Tone;
+}[] = [
+  { label: "Equipes na temporada 2025/26", value: <CountUp value={120} />, icon: Users, tone: "accent" },
+  { label: "Estados com seletivas regionais", value: <CountUp value={13} />, icon: MapPin, tone: "secondary" },
+  { label: "Estudantes competindo", value: "1,2 mil+", icon: School, tone: "primary" },
+  { label: "Primeira temporada no Brasil", value: "2018/19", icon: History, tone: "secondary" },
 ];
 
 const brazilTimeline = [
   {
-    when: "2012",
+    time: "2012",
     title: "SESI traz a FIRST ao Brasil",
     text: "O SESI passa a operar os programas da FIRST no país, começando pela FIRST LEGO League.",
   },
   {
-    when: "2018/19",
+    time: "2018/19",
     title: "A FTC estreia",
     text: "Primeira temporada brasileira da FTC, aberta apenas a estudantes do Ensino Médio.",
   },
   {
-    when: "2025/26",
+    time: "2025/26",
     title: "Temporada recorde",
     text: "13 seletivas regionais, 120 equipes e todas as equipes brasileiras da FTC premiadas no FIRST Championship, em Houston.",
   },
   {
-    when: "Jun 2026",
+    time: "Jun 2026",
     title: "Growth Award",
     text: "O SESI recebe o prêmio de crescimento da FTC na categoria Large Region, na FIRST Partner Conference.",
   },
   {
-    when: "2026/27",
+    time: "2026/27",
     title: "BIOBUZZ e o 7º ano",
     text: "Estudantes do 7º ano passam a competir. As regionais classificam para o nacional, em março de 2027, em Salvador.",
     current: true,
   },
 ];
 
-/* --------------------------------------------------------------- página */
+/* =============================================================== PÁGINA */
 
 export default async function FTCHome() {
   const news = await getLatestNews(3, "FTC");
@@ -179,287 +228,394 @@ export default async function FTCHome() {
   return (
     <main className="mt-16 overflow-x-clip bg-base-100 text-base-content">
       <Hero />
-      <FTCSections />
-      <NewsSection
-        news={news}
-        kicker="/ NOVIDADES"
-        title="O que há de novo"
-        highlight="no RoboStage."
-      />
-      <CtaBlock
-        kicker="FTC · BIOBUZZ"
-        icon={Hexagon}
-        title="Seu evento, com mais dados e menos improviso."
-        text="Pontue os treinos, combine a estratégia na fila e chegue na seleção de alianças com as duplas já comparadas."
-        actions={[
-          { label: "Abrir o pontuador", href: "/ftc/score", variant: "accent" },
-          { label: "Scouting", href: "/ftc/scouting", variant: "ghost" },
-          {
-            label: "Estratégia TeleOp",
-            href: "/ftc/estrategia",
-            variant: "ghost",
-          },
-        ]}
-      />
+      <AboutSection />
+      <SeasonBand />
+      <BrazilSection />
+      <ToolsSection />
+      <StepsSection />
+      <NewsSection news={news} kicker="/ NOVIDADES" title="O que há de novo" highlight="no RoboStage." />
+      <FinalCta />
     </main>
   );
 }
 
-function FTCSections() {
+/* ========================================================= SOBRE A FTC */
+
+function AboutSection() {
   return (
-    <>
-      {/* ========================================================= SOBRE A FTC */}
-      <section className="relative isolate overflow-clip px-6 py-24">
-        <AnimatedBackground />
-        <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
-          <figure className="relative h-fit self-start lg:sticky lg:top-24">
-            <img
-              src="https://www.bostontechmom.com/wp-content/uploads/2021/08/first-tech-challenge-robotics-competition.jpg"
-              alt="Partida da FIRST Tech Challenge"
-              className="w-full rounded-tl-3xl rounded-br-3xl shadow-[8px_8px_0_0_var(--color-base-content)]"
-            />
-            <p className="mt-2 text-base-content/50 italic text-sm">Imagem de Boston Tech Mom</p>
-          </figure>
+    <Section tone="glow">
+      <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
+        <Reveal effect="pop" className="relative h-fit self-start lg:sticky lg:top-24">
+          <Sparkle size={36} tone="accent" motion="float" className="absolute -left-3 -top-5 z-10" />
+          <StageImage
+            src="/images/ftc/FTC_hero.png"
+            alt="Desenho da arena da BIOBUZZ, com a HIVE no centro, as FLOWERS e os robôs"
+            ratio="16/9"
+            frame="card"
+            badge="ARENA · BIOBUZZ"
+            sizes="(min-width: 1024px) 45vw, 100vw"
+            imgClassName="!object-contain"
+          />
+        </Reveal>
 
-          <RevealOnScroll delay={0.1}>
-            <SectionTitle
-              kicker="/ O QUE É A FTC"
-              title="Engenharia de verdade,"
-              highlight="em formato de esporte."
-              highlightClass="bg-secondary text-secondary-content"
-            />
-            <p className="mt-6 text-base leading-7 text-base-content/65 sm:text-lg">
-              A FIRST® Tech Challenge é a competição internacional de robótica
-              da FIRST para estudantes do 7º ano ao Ensino Médio. A cada
-              temporada sai um desafio novo, e as equipes têm alguns meses para
-              projetar, construir, programar e pilotar um robô que dispute
-              partidas em alianças contra outras equipes.
-            </p>
+        <Reveal delay={100}>
+          <SectionTitle
+            kicker="/ O QUE É A FTC"
+            title="Engenharia de verdade,"
+            highlight="em formato de esporte."
+            highlightTone="secondary"
+          />
+          <p className="mt-6 text-base leading-7 text-base-content/65 sm:text-lg">
+            A FIRST® Tech Challenge é a competição internacional de robótica da FIRST para estudantes do
+            7º ano ao Ensino Médio. A cada temporada sai um desafio novo, e as equipes têm alguns meses
+            para projetar, construir, programar e pilotar um robô que dispute partidas em alianças contra
+            outras equipes.
+          </p>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              {ftcTraits.map(({ icon: Icon, title, text, tone }) => {
-                const c = toneClasses[tone];
-                return (
-                  <div
-                    key={title}
-                    className={`group flex gap-3 rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 p-4 transition-colors ${c.hover}`}
-                  >
-                    <div
-                      className={`flex size-9 shrink-0 items-center justify-center rounded-tl-lg rounded-br-lg transition-colors ${c.icon}`}
-                    >
-                      <Icon size={17} strokeWidth={1.8} />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-bold">{title}</h3>
-                      <p className="mt-1 text-xs leading-5 text-base-content/60">
-                        {text}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href="https://www.firstinspires.org/programs/ftc"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`btn btn-outline ${cornerBtn} border-base-content/25 hover:border-secondary hover:bg-secondary hover:text-secondary-content`}
+          <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            {ftcTraits.map(({ icon: Icon, title, text, tone }) => (
+              <div
+                key={title}
+                className="stage-paper group flex gap-3 rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 p-4 transition-colors hover:border-base-content/30"
               >
-                Site oficial da FTC <ArrowUpRight size={17} />
-              </a>
-              <Link href="/ftc/docs" className="btn btn-ghost">
-                <BookOpen size={17} /> Regras da temporada
-              </Link>
-            </div>
-          </RevealOnScroll>
-        </div>
-      </section>
-
-      {/* ========================================================== TEMPORADA */}
-      <section className="relative isolate overflow-clip bg-[#fffaba] px-6 py-12 text-[#121212]">
-        <svg aria-hidden="true" className="absolute inset-0 -z-10 size-full opacity-[0.14]">
-          <defs>
-            <pattern id="biobuzz-hex" width="56" height="97" patternUnits="userSpaceOnUse" patternTransform="scale(0.8)">
-              <path d="M28 0 56 16v32L28 64 0 48V16Z M28 64v33 M0 97V80 M56 97V80" fill="none" stroke="#00000044" strokeWidth="3" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#biobuzz-hex)" />
-        </svg>
-        <RevealOnScroll>
-          <div className="mx-auto flex max-w-6xl flex-col items-start gap-8 md:flex-row md:items-center">
-            <img
-              src="/images/logos/ftc/biobuzz_logo.png"
-              alt="Logo da temporada BIOBUZZ da FIRST Tech Challenge"
-              className="h-auto w-36 shrink-0 sm:w-44"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="font-mono text-xs font-bold tracking-[0.2em] text-[#0f1821]/60">
-                / TEMPORADA {SEASON.period} · JÁ NO ROBOSTAGE
-              </p>
-              <h2 className="mt-2 text-2xl font-bold leading-tight tracking-tight sm:text-4xl">
-                A BIOBUZZ chegou.{" "}
-                <span className="inline-block -rotate-1 bg-[#0f1821] px-2 italic text-[#EEE9A5]">Bora virar a HIVE?</span>
-              </h2>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-[#0f1821]/75 sm:text-base">
-                Cronômetro, pontuador, estratégia e scouting da nova temporada já estão prontos para o seu próximo treino.
-              </p>
-            </div>
-            <div className="flex shrink-0 flex-wrap gap-3">
-              <Link
-                href="/ftc/score"
-                className={`btn border-0 bg-[#0f1821] text-[#EEE9A5] ${cornerBtn} shadow-[4px_4px_0_0_#EEE9A5] transition-all hover:-translate-y-0.5 hover:bg-[#0f1821] hover:shadow-[6px_6px_0_0_#EEE9A5]`}
-              >
-                <Trophy size={17} /> Pontuar a BIOBUZZ
-              </Link>
-              <Link
-                href="/ftc/arena"
-                className={`btn btn-outline ${cornerBtn} border-2 border-[#0f1821] text-[#0f1821] hover:border-[#0f1821] hover:bg-[#0f1821] hover:text-[#EEE9A5]`}
-              >
-                Conhecer a arena <ArrowRight size={17} />
-              </Link>
-            </div>
-          </div>
-        </RevealOnScroll>
-      </section>
-
-      {/* ====================================================== FTC NO BRASIL */}
-      <section className="px-6 py-24">
-        <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
-            <SectionTitle
-              kicker="/ FTC NO BRASIL"
-              title="Uma comunidade que"
-              highlight="não para de crescer."
-              highlightClass="bg-accent text-accent-content"
-              description="No Brasil, a FTC é operada pelo SESI. As equipes disputam seletivas regionais entre outubro e dezembro, as melhores seguem para o nacional, e de lá saem as vagas para o FIRST Championship, nos Estados Unidos."
-            />
-          </RevealOnScroll>
-
-          <div className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {brazilStats.map(({ value, label }, i) => (
-              <RevealOnScroll key={label} delay={i * 0.06} className="h-full">
-                <div
-                  className={`h-full rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5 ${i === 0 ? "shadow-[6px_6px_0_0_var(--color-accent)]" : ""}`}
+                <span
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-tl-lg rounded-br-lg transition-colors",
+                    toneSoft[tone],
+                  )}
                 >
-                  <p
-                    className={`font-mono text-3xl font-bold tabular-nums sm:text-4xl ${i === 0 ? ACCENT_TEXT : ""}`}
-                  >
-                    {value}
-                  </p>
-                  <p className="mt-2 text-sm leading-5 text-base-content/60">
-                    {label}
-                  </p>
+                  <Icon size={17} strokeWidth={1.8} />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold">{title}</h3>
+                  <p className="mt-1 text-xs leading-5 text-base-content/60">{text}</p>
                 </div>
-              </RevealOnScroll>
+              </div>
             ))}
           </div>
 
-          <RevealOnScroll delay={0.1}>
-            <div className="mt-14 overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] bg-[#1f1c18] text-[#f3ecdc] shadow-[10px_10px_0_0_var(--color-secondary)]">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-6 py-4 sm:px-8">
-                <p className="flex items-center gap-2 font-mono text-xs tracking-[0.2em] text-white/60">
-                  <History size={14} /> LINHA DO TEMPO
-                </p>
-                <p className="flex items-center gap-2 font-mono text-xs text-white/50">
+          <div className="mt-8 flex flex-wrap gap-3">
+            <ButtonLink
+              href="https://www.firstinspires.org/programs/ftc"
+              target="_blank"
+              rel="noopener noreferrer"
+              tone="outline"
+              iconRight={<ArrowUpRight size={17} />}
+            >
+              Site oficial da FTC
+            </ButtonLink>
+            <ButtonLink href="/ftc/docs" tone="ghost" shape="rounded" iconLeft={<BookOpen size={17} />}>
+              Regras da temporada
+            </ButtonLink>
+          </div>
+        </Reveal>
+      </div>
+    </Section>
+  );
+}
+
+/* =========================================================== TEMPORADA */
+
+/** Faixa da temporada: mantém a identidade da BIOBUZZ (amarelo, colmeia e azul-noite). */
+function SeasonBand() {
+  return (
+    <Section texture="noise" innerClassName="relative isolate overflow-clip bg-[#fffaba] py-12 text-[#121212]">
+      <svg aria-hidden="true" className="absolute inset-0 -z-10 size-full opacity-[0.14]">
+        <defs>
+          <pattern id="biobuzz-hex" width="56" height="97" patternUnits="userSpaceOnUse" patternTransform="scale(0.8)">
+            <path d="M28 0 56 16v32L28 64 0 48V16Z M28 64v33 M0 97V80 M56 97V80" fill="none" stroke="#00000044" strokeWidth="3" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#biobuzz-hex)" />
+      </svg>
+
+      <Reveal>
+        <div className="mx-auto flex max-w-6xl flex-col items-start gap-8 md:flex-row md:items-center">
+          <div className="relative shrink-0">
+            <Image
+              src="/images/logos/ftc/biobuzz_logo.png"
+              alt="Logo da temporada BIOBUZZ da FIRST Tech Challenge"
+              width={176}
+              height={125}
+              className="h-auto w-36 sm:w-44"
+            />
+            <StickerTag tone="ink" size="sm" rotate={-8} className="absolute -right-4 -top-3">
+              Nova
+            </StickerTag>
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="stage-kicker text-[#0f1821]/60">/ TEMPORADA {SEASON.period} · JÁ NO ROBOSTAGE</p>
+            <h2 className="stage-display mt-2 text-2xl leading-tight sm:text-4xl">
+              A BIOBUZZ chegou.{" "}
+              <span className="inline-block -rotate-1 bg-[#0f1821] px-2 italic text-[#EEE9A5]">Bora virar a HIVE?</span>
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-[#0f1821]/75 sm:text-base">
+              Cronômetro, pontuador, estratégia e scouting da nova temporada já estão prontos para o seu
+              próximo treino.
+            </p>
+          </div>
+
+          <div className="flex shrink-0 flex-wrap gap-3">
+            <ButtonLink
+              href="/ftc/score"
+              flat
+              iconLeft={<Trophy size={17} />}
+              className="border-0 bg-[#0f1821] text-[#EEE9A5] shadow-[4px_4px_0_0_#EEE9A5] hover:-translate-y-0.5 hover:bg-[#0f1821] hover:shadow-[6px_6px_0_0_#EEE9A5]"
+            >
+              Pontuar a BIOBUZZ
+            </ButtonLink>
+            <ButtonLink
+              href="/ftc/arena"
+              tone="outline"
+              iconRight={<ArrowRight size={17} />}
+              className="border-2 border-[#0f1821] text-[#0f1821] hover:border-[#0f1821] hover:bg-[#0f1821] hover:text-[#EEE9A5]"
+            >
+              Conhecer a arena
+            </ButtonLink>
+          </div>
+        </div>
+      </Reveal>
+    </Section>
+  );
+}
+
+/* ======================================================= FTC NO BRASIL */
+
+function BrazilSection() {
+  return (
+    <Section>
+      <div className="mx-auto max-w-6xl">
+        <Reveal>
+          <SectionTitle
+            kicker="/ FTC NO BRASIL"
+            title="Uma comunidade que"
+            highlight="não para de crescer."
+            highlightTone="accent"
+            description="No Brasil, a FTC é operada pelo SESI. As equipes disputam seletivas regionais entre outubro e dezembro, as melhores seguem para o nacional, e de lá saem as vagas para o FIRST Championship, nos Estados Unidos."
+          />
+        </Reveal>
+
+        <div className="mt-12 grid items-start gap-6 lg:grid-cols-[1fr_1.15fr]">
+          <div className="grid grid-cols-2 gap-4">
+            {brazilStats.map(({ label, value, icon: Icon, tone }, i) => (
+              <Reveal key={label} delay={i * 60} className="h-full">
+                <StatCard
+                  label={label}
+                  value={value}
+                  icon={<Icon size={17} />}
+                  tone={tone}
+                  className={cn(
+                    "h-full border border-base-300",
+                    i === 0 && "border-accent shadow-[6px_6px_0_0_var(--color-accent)]",
+                  )}
+                />
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={120}>
+            <Card corner className="relative border border-base-300 p-0">
+              <Squiggle size={70} tone="accent" className="absolute -top-8 right-6 hidden sm:block" />
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-base-300 px-6 py-4">
+                <Kicker className="flex items-center gap-2">LINHA DO TEMPO</Kicker>
+                <p className="flex items-center gap-1.5 font-mono text-xs text-base-content/55">
                   <MapPin size={14} /> Nacional 2027 · Salvador (BA)
                 </p>
               </div>
-              <ol className="grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-5">
-                {brazilTimeline.map(({ when, title, text, current }) => (
-                  <li
-                    key={when}
-                    className={`flex flex-col p-6 ${current ? "bg-[#2a2622]" : "bg-[#1f1c18]"}`}
-                  >
-                    <p
-                      className={`font-mono text-sm font-bold ${current ? "text-[#9be15d]" : "text-white/50"}`}
-                    >
-                      {when}
-                      {current && (
-                        <span className="ml-2 rounded bg-[#9be15d] px-1.5 py-0.5 text-[10px] text-[#1f1c18]">
-                          AGORA
-                        </span>
-                      )}
-                    </p>
-                    <h3 className="mt-3 font-bold leading-snug">{title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-white/65">
-                      {text}
-                    </p>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </RevealOnScroll>
+              <Timeline items={brazilTimeline} className="px-4 py-6 sm:px-6" />
+            </Card>
+          </Reveal>
+        </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-            <p className="text-xs text-base-content/45">
-              Números divulgados pelo SESI / Agência de Notícias da Indústria. O
-              RoboStage não é afiliado à FIRST® nem ao SESI.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <a
-                href="https://noticias.portaldaindustria.com.br/noticias/robotica/sesi-recebe-premio-internacional-pelo-crescimento-da-ftc-e-da-robotica-no-brasil/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-ghost btn-sm"
-              >
-                <CalendarDays size={15} /> Calendário e notícias do SESI{" "}
-                <ArrowUpRight size={14} />
-              </a>
-              <Link href="/roboticar#dados" className="btn btn-ghost btn-sm">
-                Dados da robótica no Brasil <ArrowRight size={14} />
-              </Link>
-            </div>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+          <p className="text-xs text-base-content/45">
+            Números divulgados pelo SESI / Agência de Notícias da Indústria. O RoboStage não é afiliado à
+            FIRST® nem ao SESI.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink
+              href="https://noticias.portaldaindustria.com.br/noticias/robotica/sesi-recebe-premio-internacional-pelo-crescimento-da-ftc-e-da-robotica-no-brasil/"
+              target="_blank"
+              rel="noopener noreferrer"
+              tone="ghost"
+              size="sm"
+              shape="rounded"
+              iconLeft={<CalendarDays size={15} />}
+              iconRight={<ArrowUpRight size={14} />}
+            >
+              Calendário e notícias do SESI
+            </ButtonLink>
+            <ButtonLink
+              href="/roboticar#dados"
+              tone="ghost"
+              size="sm"
+              shape="rounded"
+              iconRight={<ArrowRight size={14} />}
+            >
+              Dados da robótica no Brasil
+            </ButtonLink>
           </div>
         </div>
-      </section>
+      </div>
+    </Section>
+  );
+}
 
-      {/* ======================================================= FERRAMENTAS */}
-      <section className="px-6 py-24">
-        <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
-            <div className="flex flex-wrap items-end justify-between gap-6">
-              <SectionTitle
-                kicker="/ FERRAMENTAS DA FTC"
-                title="Feitas para o"
-                highlight="dia do campeonato."
-                highlightClass="bg-accent text-accent-content"
-                description="Funcionam no celular, sem login. O scouting e os planos ficam salvos no aparelho e podem ser exportados para o resto da equipe."
-              />
-              <Link
-                href="/ftc/docs"
-                className="group inline-flex items-center gap-2 rounded-tl-lg rounded-br-lg border border-base-300 bg-base-100 px-4 py-2 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
-              >
-                <Hexagon size={16} />
-                /ftc/docs
-                <ArrowUpRight
-                  size={15}
-                  className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                />
-              </Link>
-            </div>
-          </RevealOnScroll>
-          <ToolGrid tools={tools} columns={3} />
-        </div>
-      </section>
+/* ========================================================= FERRAMENTAS */
 
-      {/* ============================================================ ETAPAS */}
-      <section className="border-t border-base-300 px-6 py-24">
-        <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
+function ToolsSection() {
+  return (
+    <Section tone="muted" edgeTop="circuit">
+      <div className="mx-auto max-w-6xl">
+        <Reveal>
+          <div className="flex flex-wrap items-end justify-between gap-6">
             <SectionTitle
-              kicker="/ NO EVENTO"
-              title="Do treino"
-              highlight="aos playoffs."
-              highlightClass="bg-secondary text-secondary-content"
-              description="Três momentos em que decisão rápida vale ponto: o treino, a fila da partida e a seleção de alianças."
+              kicker="/ FERRAMENTAS DA FTC"
+              title="Feitas para o"
+              highlight="dia do campeonato."
+              highlightTone="accent"
+              description="Funcionam no celular, sem login. O scouting e os planos ficam salvos no aparelho e podem ser exportados para o resto da equipe."
             />
-          </RevealOnScroll>
-          <StepsRow steps={steps} tone="primary" />
-        </div>
-      </section>
+            <ButtonLink
+              href="/ftc/docs"
+              tone="outline"
+              iconLeft={<Hexagon size={16} />}
+              iconRight={<ArrowUpRight size={15} />}
+              className="font-mono font-medium"
+            >
+              /ftc/docs
+            </ButtonLink>
+          </div>
+        </Reveal>
 
-    </>
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {tools.map(({ icon: Icon, tag, title, description, href, tone, status }, i) => (
+            <Reveal key={title} delay={(i % 3) * 60} className="h-full">
+              <FeatureCard
+                title={title}
+                description={description}
+                category={tag}
+                icon={<Icon />}
+                href={href}
+                index={i + 1}
+                badge={status}
+                tone={tone}
+              />
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ============================================================== ETAPAS */
+
+function StepsSection() {
+  return (
+    <Section>
+      <div className="mx-auto max-w-6xl">
+        <Reveal>
+          <SectionTitle
+            kicker="/ NO EVENTO"
+            title="Do treino"
+            highlight="aos playoffs."
+            highlightTone="secondary"
+            description="Três momentos em que decisão rápida vale ponto: o treino, a fila da partida e a seleção de alianças."
+          />
+        </Reveal>
+
+        <div className="relative mt-14 grid gap-10 md:grid-cols-3 md:gap-12">
+          <div
+            aria-hidden="true"
+            className="absolute left-0 right-[30%] top-6 hidden border-t-2 border-dashed border-base-300 md:block"
+          />
+          {steps.map(({ number, icon: Icon, title, description, detail, href, link }, i) => (
+            <Reveal key={number} delay={i * 100}>
+              <article className="group relative">
+                <div className="flex items-center gap-4 md:block">
+                  <div className="stage-noise relative z-10 flex size-12 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 text-primary transition-all duration-300 group-hover:stage-shadow-sm group-hover:border-primary group-hover:bg-primary group-hover:text-primary-content">
+                    <Icon size={21} strokeWidth={1.8} />
+                  </div>
+                  <Kicker className="text-base-content/40 md:mt-4">ETAPA {number}</Kicker>
+                </div>
+                <h3 className="mt-5 text-xl font-black tracking-tight">{title}</h3>
+                <p className="mt-3 max-w-sm text-sm leading-6 text-base-content/60">{description}</p>
+                <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <span className="inline-flex items-center gap-2 text-xs font-bold text-primary">
+                    <span className="size-1.5 rounded-full bg-primary" />
+                    {detail}
+                  </span>
+                  <Link
+                    href={href}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-base-content/70 transition-colors hover:text-primary"
+                  >
+                    {link}
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </article>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* =========================================================== CTA FINAL */
+
+function FinalCta() {
+  return (
+    <Section edgeTop="ticket">
+      <Reveal effect="pop">
+        <Card
+          tone="secondary"
+          featured
+          className="stage-grid-on-color relative mx-auto max-w-6xl overflow-hidden rounded-tl-[2.5rem] rounded-br-[2.5rem] px-8 py-14 sm:px-14"
+        >
+          <Gear size={190} tone="accent" motion="spin" className="absolute -right-12 -top-12 hidden sm:inline-block" />
+          <Starburst size={70} tone="primary" rotate={12} className="absolute bottom-8 right-16 hidden md:inline-grid" />
+
+          <div className="relative max-w-2xl">
+            <div className="stage-kicker inline-flex items-center gap-2 text-secondary-content/70">
+              <Hexagon size={14} />
+              FTC · BIOBUZZ
+            </div>
+            <h2 className="stage-display mt-4 text-3xl sm:text-5xl">Seu evento, com mais dados e menos improviso.</h2>
+            <p className="mt-5 max-w-xl text-secondary-content/80">
+              Pontue os treinos, combine a estratégia na fila e chegue na seleção de alianças com as duplas
+              já comparadas.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <ButtonLink href="/ftc/score" tone="accent" size="lg" iconLeft={<Trophy size={20} />}>
+                Abrir o pontuador
+              </ButtonLink>
+              <ButtonLink
+                href="/ftc/scouting"
+                tone="ghost"
+                size="lg"
+                shape="rounded"
+                iconRight={<ArrowRight size={18} />}
+                className="text-secondary-content hover:bg-secondary-content/10"
+              >
+                Scouting
+              </ButtonLink>
+              <ButtonLink
+                href="/ftc/estrategia"
+                tone="ghost"
+                size="lg"
+                shape="rounded"
+                iconRight={<ArrowRight size={18} />}
+                className="text-secondary-content hover:bg-secondary-content/10"
+              >
+                Estratégia TeleOp
+              </ButtonLink>
+            </div>
+          </div>
+        </Card>
+      </Reveal>
+    </Section>
   );
 }

@@ -1,9 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  Activity,
   ArrowRight,
   ArrowUpRight,
   ChevronRight,
+  ClipboardCheck,
+  ClipboardList,
   Clock,
   Code,
   Cuboid,
@@ -13,14 +16,21 @@ import {
   Globe2,
   HeartHandshake,
   History,
+  KeyRound,
+  LayoutDashboard,
   LifeBuoy,
   MessageSquare,
   Newspaper,
   NotebookPen,
+  Play,
+  QrCode,
   Radio,
   Rocket,
+  Smartphone,
   Sparkles,
+  Swords,
   Trophy,
+  Tv,
   UserPlus,
   Users,
   type LucideIcon,
@@ -48,6 +58,7 @@ import {
   toneText,
   type Tone,
   NewsCard,
+  StatusBadge,
 } from "@/components/stage";
 import LivePreview from "./LivePreview";
 import PersonaTabs from "./PersonaTabs";
@@ -63,6 +74,8 @@ const marqueeItems = [
   "Stagebook",
   "Anatix",
   "ShowLive",
+  "Scouting FTC",
+  "Estratégia TeleOp",
 ];
 
 /** Faixa em marquee com as ferramentas, logo abaixo do hero. */
@@ -135,47 +148,134 @@ export function PlatformIntro() {
 
 /* =========================================================== COMPETIÇÕES */
 
+type CompetitionTone = "primary" | "secondary" | "dark";
+
 type Competition = {
   href: string;
-  path: string;
   title: string;
   text: string;
   cta: string;
   image: string;
-  tone: "primary" | "secondary";
+  tone: CompetitionTone;
+  status: string;
   span: string;
-  shadow: string;
 };
 
 const competitions: Competition[] = [
   {
     href: "/fll",
-    path: "/fll",
     title: "FIRST LEGO League",
     text: "Pontuador por temporada, QuickBrick Studio, Recall, rubricas, timers e guias para equipes iniciantes.",
     cta: "Explorar a FLL",
-    image: "/images/index/hero_banner_fll.jpg",
+    image: "/images/index/banner_hero_fll2.webp",
     tone: "primary",
-    span: "lg:col-span-5",
-    shadow: "stage-shadow-lg hover:shadow-[10px_10px_0_0_var(--stage-shadow)]",
+    status: "Disponível",
+    span: "lg:col-span-7",
   },
   {
     href: "/obr",
-    path: "/obr",
     title: "OBR",
     text: "Pontuador da arena, documentação e o Anatix para ver o robô em tempo real.",
     cta: "Explorar a OBR",
-    image: "/images/index/hero_banner_obr.png",
+    image: "/images/index/banner_hero_obr.webp",
     tone: "secondary",
-    span: "lg:col-span-4",
-    shadow: "shadow-[8px_8px_0_0_var(--color-accent)] hover:shadow-[10px_10px_0_0_var(--color-accent)]",
+    status: "Disponível",
+    span: "lg:col-span-5",
+  },
+  {
+    href: "/ftc",
+    title: "FIRST Tech Challenge",
+    text: "Cronômetro da BIOBUZZ, estratégia do TeleOp, scouting com dados da FTCScout, arena e documentação.",
+    cta: "Explorar a FTC",
+    image: "/images/index/banner_hero_ftc.webp",
+    tone: "dark",
+    status: "Novo",
+    span: "lg:col-span-8",
   },
 ];
 
-const competitionOverlay = {
-  primary: "from-primary via-primary/80 to-primary/20",
-  secondary: "from-secondary via-secondary/85 to-secondary/20",
+/** Cores de cada card: fundo, degradê sobre a foto, sombra dura e foco. */
+const competitionStyle: Record<
+  CompetitionTone,
+  { base: string; overlay: string; shadow: string; arrow: string; kicker: string; tag: Tone }
+> = {
+  primary: {
+    base: "bg-primary text-primary-content focus-visible:ring-primary",
+    overlay: "from-primary via-primary/80 to-primary/20",
+    shadow: "stage-shadow-lg hover:shadow-[10px_10px_0_0_var(--stage-shadow)]",
+    arrow: "group-hover:text-primary",
+    kicker: "text-white/70",
+    tag: "paper",
+  },
+  secondary: {
+    base: "bg-secondary text-secondary-content focus-visible:ring-secondary",
+    overlay: "from-secondary via-secondary/85 to-secondary/20",
+    shadow: "shadow-[8px_8px_0_0_var(--color-accent)] hover:shadow-[10px_10px_0_0_var(--color-accent)]",
+    arrow: "group-hover:text-secondary",
+    kicker: "text-white/70",
+    tag: "paper",
+  },
+  // O amarelo da marca não segura texto branco; a FTC usa véu escuro com detalhes em accent.
+  dark: {
+    base: "bg-neutral text-neutral-content focus-visible:ring-accent",
+    overlay: "from-black via-black/75 to-black/10",
+    shadow: "shadow-[8px_8px_0_0_var(--color-primary)] hover:shadow-[10px_10px_0_0_var(--color-primary)]",
+    arrow: "group-hover:text-neutral",
+    kicker: "text-accent",
+    tag: "accent",
+  },
 };
+
+function CompetitionCard({ c }: { c: Competition }) {
+  const s = competitionStyle[c.tone];
+  return (
+    <Link
+      href={c.href}
+      className={cn(
+        "group relative isolate block h-full min-h-[340px] overflow-hidden rounded-tl-[32px] rounded-br-[32px] transition-all duration-500 ease-out hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 motion-reduce:hover:translate-y-0",
+        s.base,
+        s.shadow,
+      )}
+    >
+      {/* Wrapper com -z-20: dentro de seção texturizada o stage.css põe z-index 0 na <img>. */}
+      <div aria-hidden className="absolute inset-0 -z-20 overflow-hidden">
+        <Image
+          src={c.image}
+          alt=""
+          fill
+          sizes="(min-width: 1024px) 60vw, 100vw"
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+        />
+      </div>
+      <div aria-hidden className={cn("absolute inset-0 -z-10 bg-gradient-to-t", s.overlay)} />
+
+      <div className="flex h-full min-h-[340px] flex-col justify-between p-6 sm:p-8">
+        <div className="flex items-center justify-between gap-3">
+          <StickerTag tone={s.tag} size="sm" shadow={false}>
+            {c.status}
+          </StickerTag>
+          <span
+            className={cn(
+              "flex size-10 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition-all duration-300 group-hover:-rotate-45 group-hover:bg-white",
+              s.arrow,
+            )}
+          >
+            <ChevronRight size={22} />
+          </span>
+        </div>
+        <div className="text-white">
+          <p className={cn("stage-kicker", s.kicker)}>{c.href}</p>
+          <h3 className="stage-display mt-2 text-3xl sm:text-4xl xl:text-5xl">{c.title}</h3>
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">{c.text}</p>
+          <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold">
+            {c.cta}
+            <ChevronRight size={18} className="transition-transform duration-300 group-hover:translate-x-2" />
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 export function CompetitionsSection() {
   return (
@@ -197,97 +297,40 @@ export function CompetitionsSection() {
           />
         </Reveal>
 
-        <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-12">
+        <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-12">
           {competitions.map((c, i) => (
-            <Reveal key={c.href} delay={i * 80} className={c.span}>
-              <Link
-                href={c.href}
-                className={cn(
-                  "group relative isolate block h-full min-h-[340px] overflow-hidden rounded-tl-[32px] rounded-br-[32px] transition-all duration-500 ease-out hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4",
-                  c.tone === "primary"
-                    ? "bg-primary text-primary-content focus-visible:ring-primary"
-                    : "bg-secondary text-secondary-content focus-visible:ring-secondary",
-                  c.shadow,
-                )}
-              >
-                {/* Wrapper com -z-20: dentro de seção texturizada o stage.css põe z-index 0 na <img>. */}
-                <div aria-hidden className="absolute inset-0 -z-20 overflow-hidden">
-                  <Image
-                    src={c.image}
-                    alt=""
-                    fill
-                    sizes="(min-width: 1024px) 40vw, 100vw"
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                  />
-                </div>
-                <div className={cn("absolute inset-0 -z-10 bg-gradient-to-t", competitionOverlay[c.tone])} />
-                <div className="flex h-full min-h-[340px] flex-col justify-between p-6 sm:p-8">
-                  <div className="flex items-center justify-between gap-3">
-                    <StickerTag size="sm" shadow={false}>Disponível</StickerTag>
-                    <span
-                      className={cn(
-                        "flex size-10 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition-all duration-300 group-hover:-rotate-45 group-hover:bg-white",
-                        c.tone === "primary" ? "group-hover:text-primary" : "group-hover:text-secondary",
-                      )}
-                    >
-                      <ChevronRight size={22} />
-                    </span>
-                  </div>
-                  <div className="text-white">
-                    <p className="stage-kicker text-white/70">{c.path}</p>
-                    <h3 className="stage-display mt-2 text-3xl sm:text-4xl xl:text-5xl">{c.title}</h3>
-                    <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">{c.text}</p>
-                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold">
-                      {c.cta}
-                      <ChevronRight size={18} className="transition-transform duration-300 group-hover:translate-x-2" />
-                    </span>
-                  </div>
-                </div>
-              </Link>
+            <Reveal key={c.href} delay={i * 80} className={cn("h-full", c.span)}>
+              <CompetitionCard c={c} />
             </Reveal>
           ))}
 
-          {/* Futuras */}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-1">
-            <Reveal delay={160} className="h-full">
+          {/* Próximas modalidades */}
+          <Reveal delay={competitions.length * 80} className="h-full lg:col-span-4">
+            <Link href="/news" className="group block h-full focus-visible:outline-none">
               <Card
                 corner
-                className="group flex h-full min-h-[150px] flex-col justify-between border border-base-300 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-secondary/50"
-              >
-                <div className="flex items-center justify-between">
-                  <StickerTag tone="accent" size="sm" shadow={false}>Em breve</StickerTag>
-                  <span className="font-mono text-xs text-base-content/30">/ftc</span>
-                </div>
-                <div>
-                  <h3 className="stage-display text-3xl text-base-content/60 transition-colors group-hover:text-secondary">
-                    FTC
-                  </h3>
-                  <p className="mt-1 text-sm leading-relaxed text-base-content/60">
-                    Ferramentas para equipes da FIRST Tech Challenge.
-                  </p>
-                </div>
-              </Card>
-            </Reveal>
-            <Reveal delay={240} className="h-full">
-              <Link
-                href="/news"
-                className="group flex h-full min-h-[150px] flex-col justify-between rounded-tl-[2rem] rounded-br-[2rem] border border-dashed border-base-300 bg-base-100/50 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50"
+                interactive
+                className="flex h-full min-h-[200px] flex-col justify-between border border-dashed border-base-300 bg-base-100/60 group-hover:border-primary/50 group-focus-visible:border-primary"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-3xl font-light text-base-content/40 transition-transform duration-300 group-hover:rotate-90 group-hover:text-primary">
                     +
                   </span>
-                  <span className="stage-kicker text-base-content/45">EM EXPANSÃO</span>
+                  <Kicker className="text-base-content/45">EM EXPANSÃO</Kicker>
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-base-content/75">Mais modalidades</h3>
                   <p className="mt-1 text-sm leading-relaxed text-base-content/60">
                     Acompanhe as novidades para saber o que vem por aí.
                   </p>
+                  <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-base-content/60 transition-colors group-hover:text-primary">
+                    Ver novidades
+                    <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                  </span>
                 </div>
-              </Link>
-            </Reveal>
-          </div>
+              </Card>
+            </Link>
+          </Reveal>
         </div>
       </div>
     </Section>
@@ -340,9 +383,9 @@ const tools: Tool[] = [
     tone: "secondary",
   },
   {
-    icon: MessageSquare,
+    icon: ClipboardCheck,
     tag: "Avaliação",
-    title: "Rúbricas",
+    title: "Rubricas",
     description: "Avalie o projeto, o robô e os valores centrais com rúbricas personalizadas.",
     href: "/fll/rubric",
     tone: "accent",
@@ -379,6 +422,24 @@ const tools: Tool[] = [
     href: "/showlive",
     tone: "primary",
     status: "Disponível",
+  },
+  {
+    icon: ClipboardList,
+    tag: "FTC · Scouting",
+    title: "Scouting",
+    description: "Dados oficiais da FTCScout com as anotações dos scouts, ranking e simulação da seleção de alianças.",
+    href: "/ftc/scouting",
+    tone: "secondary",
+    status: "Novo",
+  },
+  {
+    icon: Swords,
+    tag: "FTC · Estratégia",
+    title: "Estratégia TeleOp",
+    description: "Monte o plano dos 2:00 de TeleOp em três fases, com presets e briefing para a aliança.",
+    href: "/ftc/estrategia",
+    tone: "accent",
+    status: "Novo",
   },
 ];
 
@@ -995,8 +1056,9 @@ const faq = [
       "Sim. Criar a conta é grátis, e várias ferramentas, como o pontuador, os timers e o Recall, podem ser usadas direto pelo site.",
   },
   {
-    q: "Quais competições são atendidas?",
-    a: "Hoje a plataforma tem ferramentas para a FIRST LEGO League, a FIRST Tech Challenge (temporada BIOBUZZ) e a OBR. Outras modalidades estão nos planos; acompanhe pelas notícias.",
+    title: "Quais competições são atendidas?",
+    content:
+      "Hoje a plataforma tem ferramentas para a FIRST LEGO League, a FIRST Tech Challenge (temporada BIOBUZZ) e a OBR. Outras modalidades estão nos planos; acompanhe pelas notícias.",
   },
   {
     title: "Preciso de conta para usar as ferramentas?",
@@ -1096,10 +1158,169 @@ export function FinalCta() {
               >
                 Começar na OBR
               </ButtonLink>
+              <ButtonLink
+                href="/ftc"
+                tone="ghost"
+                size="lg"
+                shape="rounded"
+                iconRight={<ArrowRight size={18} />}
+                className="text-secondary-content hover:bg-secondary-content/10"
+              >
+                Começar na FTC
+              </ButtonLink>
             </div>
           </div>
         </Card>
       </Reveal>
+    </Section>
+  );
+}
+
+export function ShowLiveSection() {
+  const showliveUrl = process.env.NEXT_PUBLIC_SHOWLIVE_URL ?? "https://showlive.robostage.com.br";
+
+  const roles: { icon: LucideIcon; who: string; text: string; tone: Tone }[] = [
+    { icon: LayoutDashboard, who: "Organização", text: "Equipes, rodadas, desafio e aprovação de notas no hub do evento.", tone: "primary" },
+    { icon: Smartphone, who: "Mesa do robô", text: "Voluntários entram com o código e pontuam a súmula pelo celular.", tone: "secondary" },
+    { icon: ClipboardCheck, who: "Avaliação", text: "Cada sala só vê as próprias sessões; as fichas ficam fora do telão.", tone: "accent" },
+    { icon: Tv, who: "Público", text: "O ranking atualiza sozinho no telão e no celular, pelo código ou QR.", tone: "primary" },
+  ];
+
+  const ranking = [
+    { pos: 1, team: "Robôs do Cerrado", score: 412 },
+    { pos: 2, team: "Mecatrônicos", score: 398 },
+    { pos: 3, team: "Byte Bees", score: 365 },
+    { pos: 4, team: "Equipe Ômega", score: 341 },
+    { pos: 5, team: "LEGOlândia", score: 297 },
+  ];
+
+  const formats = ["FLL", "FLL FE", "OBR", "FTC", "Livre"];
+
+  return (
+    <Section tone="muted" edgeTop="checker">
+      <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.1fr] [&>*]:min-w-0">
+        {/* ----------------------------------------------------------- texto */}
+        <Reveal>
+          <SectionTitle
+            kicker="/ SHOWLIVE"
+            title="Seu torneio,"
+            highlight="ao vivo no telão."
+            description="Organize microeventos e seletivas com súmula no celular, notas aprovadas pela organização e ranking em tempo real para o público."
+          />
+
+          <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+            {roles.map(({ icon: Icon, who, text, tone }) => (
+              <li
+                key={who}
+                className="stage-paper group flex gap-3 rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 p-4 transition-colors hover:border-base-content/30"
+              >
+                <span
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-tl-lg rounded-br-lg transition-colors",
+                    toneSoft[tone],
+                  )}
+                >
+                  <Icon size={17} strokeWidth={1.8} />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold">{who}</h3>
+                  <p className="mt-1 text-xs leading-5 text-base-content/60">{text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            <ButtonLink href="/showlive" size="lg" iconLeft={<Radio size={19} />}>
+              Conhecer o ShowLive
+            </ButtonLink>
+            <ButtonLink
+              href={`${showliveUrl}/entrar`}
+              target="_blank"
+              rel="noopener noreferrer"
+              tone="ghost"
+              size="lg"
+              shape="rounded"
+              iconLeft={<KeyRound size={18} />}
+              iconRight={<ArrowUpRight size={16} />}
+            >
+              Entrar com código
+            </ButtonLink>
+          </div>
+        </Reveal>
+
+        {/* ---------------------------------------------------- telão (prévia) */}
+        <Reveal delay={100} effect="pop" className="relative sm:pb-36">
+          <div className="relative">
+            <Sparkle size={40} tone="accent" motion="float" className="absolute -left-4 -top-6 z-20 hidden sm:inline-block" />
+
+            <div
+              aria-hidden="true"
+              className="stage-night stage-noise overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] text-white shadow-[10px_10px_0_0_var(--color-primary)]"
+            >
+              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-4 sm:px-6">
+                <div className="flex items-center gap-2">
+                  <Tv size={16} className="text-white/60" />
+                  <span className="stage-kicker text-white/60">TELÃO · RODADA 2</span>
+                </div>
+                <StatusBadge status="live" />
+              </div>
+
+              <ol className="divide-y divide-white/10">
+                {ranking.map(({ pos, team, score }) => (
+                  <li
+                    key={team}
+                    className={cn("flex items-center gap-4 px-5 py-3 sm:px-6", pos === 1 && "bg-white/[0.06]")}
+                  >
+                    <span
+                      className={cn(
+                        "grid size-8 shrink-0 place-items-center rounded-tl-lg rounded-br-lg font-mono text-sm font-bold",
+                        pos === 1 ? "bg-accent text-accent-content" : "bg-white/10 text-white/70",
+                      )}
+                    >
+                      {pos}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate font-bold">{team}</span>
+                    {pos === 1 && <Trophy size={16} className="shrink-0 text-accent" />}
+                    <span className="stage-display w-16 text-right text-2xl tabular-nums">{score}</span>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="flex flex-wrap items-center justify-end gap-2 border-t border-white/10 px-5 py-4 sm:px-6 sm:pl-56">
+                {formats.map((f) => (
+                  <span key={f} className="stage-label rounded-tl-md rounded-br-md border border-white/20 px-2 py-1 text-white/70">
+                    {f}
+                  </span>
+                ))}
+                <span className="flex w-full items-center justify-end gap-1.5 font-mono text-xs text-white/50">
+                  <QrCode size={14} /> showlive · MESA22
+                </span>
+              </div>
+            </div>
+
+            {/* Celular da mesa, sobreposto ao telão */}
+            <Card
+              aria-hidden="true"
+              corner
+              className="absolute -left-6 top-full hidden w-52 -translate-y-10 border border-base-300 p-4 stage-shadow sm:block"
+            >
+              <div className="flex items-center justify-between">
+                <span className="stage-kicker text-base-content/50">MESA 2</span>
+                <Smartphone size={14} className="text-base-content/40" />
+              </div>
+              <p className="mt-2 text-sm font-bold">Byte Bees · R2</p>
+              <div className="mt-3 space-y-1.5 text-xs text-base-content/65">
+                <p className="flex justify-between"><span>M01 · Coleta</span><span className="font-mono font-bold text-base-content">+30</span></p>
+                <p className="flex justify-between"><span>M04 · Entrega</span><span className="font-mono font-bold text-base-content">+45</span></p>
+              </div>
+              <p className="mt-3 flex items-center justify-between border-t border-base-300 pt-2 text-xs font-bold">
+                Enviar nota <ArrowRight size={14} className="text-primary" />
+              </p>
+            </Card>
+          </div>
+        </Reveal>
+      </div>
     </Section>
   );
 }

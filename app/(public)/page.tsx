@@ -4,12 +4,14 @@ import HomeHero from "@/components/home/HomeHero";
 import {
   CanopySection,
   CommunitySection,
+  CompetitionsSection,
   FaqSection,
   FinalCta,
   NewsSection,
   PersonasSection,
   PlatformIntro,
   SeasonsSection,
+  ShowLiveSection,
   SpotlightSection,
   StepsSection,
   ToolsMarquee,
@@ -43,6 +45,7 @@ export default async function Page() {
         <PersonasSection />
         <SeasonsSection />
         <SpotlightSection />
+        <ShowLiveSection />
         <CanopySection />
         <NewsSection news={news} />
         <CommunitySection />

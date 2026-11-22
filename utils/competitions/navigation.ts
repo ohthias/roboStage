@@ -2,7 +2,7 @@ import { FLLIcon } from "@/components/icons/FLLIcon";
 import { FTCIcon } from "@/components/icons/FTCIcon";
 import { OBRIcon } from "@/components/icons/OBRIcon";
 import type { LucideIcon } from "lucide-react";
-import { Flower2, ClipboardList, Swords, Activity, BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, UserSearch, LayoutGrid, Clapperboard } from "lucide-react";
+import { Activity, BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Code, Bot, UserSearch, LayoutGrid, Clapperboard, Users, ChartLine } from "lucide-react";
 
 /** Item de menu de competição: `path` é relativo a `/{competicao}/`. */
 export type NavMenuItem = {
@@ -48,7 +48,7 @@ export const NAVIGATION = {
           { nome: "Mapa de Empatia", path: "empathy-map", icon: UserSearch, description: "Ferramenta para análise de empatia com o profissional alvo", new: false, update: false },
           { nome: "Timers", path: "timers", icon: Clock, description: "Temporizadores para auxiliar na gestão do tempo durante os treinos", update: false },
           { nome: "Partiu Mesa!", path: "partiu-mesa", icon: MonitorDot, description: "Simulador de simples para teste de saídas. Para análise de desempenho do robô durante um teste de saída." },
-          { nome: "Anatix", path: "anatix", icon: Activity, description: "Telemetria em tempo real do robô LEGO com Pybricks, por Bluetooth ou cabo USB", new: false },
+          { nome: "Anatix", path: "anatix", icon: Activity, description: "Telemetria em tempo real do robô LEGO com Pybricks, por Bluetooth ou cabo USB" },
           { nome: "Confia, mas confira!", path: "cheklist", icon: ListCheck, description: "Checklist de verificação de itens para competições, seja para preparação ou para avaliação pós-evento." },
         ],
       },
@@ -133,7 +133,6 @@ export const NAVIGATION = {
 /** Links simples exibidos fora das competições. */
 export const NAVIGATION_MAIN_LINKS = [
   { href: "/about", label: "Sobre", new: false },
-  { href: "/anatix", label: "Anatix", new: false },
   { href: "/roboticar", label: "Roboticar", new: false },
   { href: "/news", label: "Notícias", icon: NotepadText, new: false, update: false },
   { href: "/help", label: "Ajuda", icon: MessageSquare, new: false },
@@ -145,8 +144,10 @@ export const NAVIGATION_MAIN_MENUS: NavLinkGroup[] = [
     label: "Plataforma",
     icon: LayoutGrid,
     items: [
+      { nome: "Anatix", href: "/anatix", icon: ChartLine, description: "Análise e visualização de dados em tempo real" },
       { nome: "LabTest", href: "/labtest", icon: MonitorDot, description: "Transforme seus testes em resultados concretos com gráficos e análises" },
       { nome: "Stagebook", href: "/stagebook", icon: BookOpen, description: "Documente e organize os seus detalhes e projetos ou da sua equipe" },
+      { nome: "Equipes", href: "/equipe", icon: Users, description: "Gerencie e visualize as equipes participantes das competições" },
       { nome: "ShowLive", href: "/showlive", icon: Telescope, description: "Crie eventos de robótica do seu jeito e compartilhe com o mundo" },
     ],
   },

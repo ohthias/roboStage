@@ -1,6 +1,7 @@
 import { type JSX, useEffect } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useLexicalNodeSelection } from "@lexical/react/useLexicalNodeSelection";
+import { useLexicalEditable } from "@lexical/react/useLexicalEditable";
 import {
   $applyNodeReplacement,
   $getNodeByKey,
@@ -22,6 +23,7 @@ import { ThinkLabEmbed } from "../embeds/thinklab-embed";
 import {
   EMBED_KINDS,
   type EmbedKind,
+  type EmbedLayoutOptions,
   type EmbedOptions,
   type LabTestChartOptions,
 } from "../embeds/embed-types";
@@ -65,6 +67,7 @@ function EmbedComponent({
 }) {
   const [composerEditor] = useLexicalComposerContext();
   const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection(nodeKey);
+  const editable = useLexicalEditable();
 
   // Clique no bloco (fora dos botões/links) seleciona o nó — Delete/Backspace remove.
   useEffect(
@@ -75,7 +78,7 @@ function EmbedComponent({
           const root = composerEditor.getElementByKey(nodeKey);
           const target = event.target as HTMLElement | null;
           if (!root || !target || !root.contains(target)) return false;
-          if (target.closest("button, a, input, select, textarea")) return false;
+          if (target.closest("button, a, input, select, textarea, [role=separator]")) return false;
           if (!event.shiftKey) clearSelection();
           setSelected(true);
           return true;
@@ -103,7 +106,16 @@ function EmbedComponent({
     case "calendar-event":
       return <CalendarEventEmbed refId={refId} label={label} onRemove={onRemove} />;
     case "thinklab-board":
-      return <ThinkLabEmbed refId={refId} label={label} onRemove={onRemove} />;
+      return (
+        <ThinkLabEmbed
+          refId={refId}
+          label={label}
+          options={options}
+          editable={editable}
+          onOptionsChange={onOptionsChange}
+          onRemove={onRemove}
+        />
+      );
     case "quickbrick-photo":
       return (
         <QuickbrickPhotoEmbed
@@ -129,7 +141,8 @@ function EmbedComponent({
         <LabTestChartEmbed
           refId={refId}
           label={label}
-          options={options as LabTestChartOptions}
+          options={options as LabTestChartOptions & EmbedLayoutOptions}
+          editable={editable}
           onOptionsChange={onOptionsChange}
           onRemove={onRemove}
         />

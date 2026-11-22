@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ptBR } from "@clerk/localizations";
+import { ConfirmProvider } from "@/components/stage";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -54,13 +55,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" data-motion="full">
       <body className={`${roboto.variable} antialiased`}>
         <ClerkProvider localization={ptBR}>
           <Analytics />
           <SpeedInsights />
           <ToastProvider>
-            {children}
+            <ConfirmProvider>
+              {children}
+            </ConfirmProvider>
           </ToastProvider>
         </ClerkProvider>
       </body>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import {
   Activity,
   ArrowDownRight,
@@ -47,6 +46,7 @@ import { ConfirmDialog, Modal } from "@/components/stagebook/modal";
 import { PersonAvatar } from "../team-avatar";
 import { RosterGrid } from "./roster-grid";
 import { useActionRunner } from "./use-action";
+import { teamToolHref } from "../team-links";
 
 type Member = { userId: string; name: string | null; avatarUrl: string | null };
 
@@ -233,7 +233,7 @@ export function SessionView({
       </header>
 
       {/* Resumo (encerrada) */}
-      {ended && <SummaryCard summary={summary} memberById={memberById} />}
+      {ended && <SummaryCard teamId={teamId} summary={summary} memberById={memberById} />}
 
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
@@ -277,12 +277,12 @@ export function SessionView({
                 <div className="space-y-4">
                   {[...byTest.entries()].map(([testId, g]) => (
                     <div key={testId}>
-                      <Link
-                        href={`/dashboard/labtest/${testId}`}
+                      <a
+                        href={teamToolHref(teamId, `/dashboard/labtest/${testId}`)}
                         className="mb-1 inline-flex items-center gap-1.5 text-sm font-medium hover:text-primary"
                       >
                         {g.name} <span className="badge badge-ghost badge-xs">{g.items.length}</span>
-                      </Link>
+                      </a>
                       <ul className="divide-y divide-base-200 rounded-lg border border-base-200">
                         {g.items.map((e) => (
                           <li key={e.id} className="flex items-center gap-3 px-3 py-1.5 text-sm">
@@ -327,7 +327,7 @@ export function SessionView({
                 <ul className="divide-y divide-base-200">
                   {anatix.map((a) => (
                     <li key={a.id} className="flex items-center gap-3 py-2 text-sm">
-                      <Link href={`/dashboard/labtest/anatix/${a.labId}`} className="min-w-0 flex-1 hover:text-primary">
+                      <a href={teamToolHref(teamId, `/dashboard/labtest/anatix/${a.labId}`)} className="min-w-0 flex-1 hover:text-primary">
                         <p className="truncate font-medium">{a.labName}</p>
                         <p className="text-xs text-base-content/50" suppressHydrationWarning>
                           {[a.robotName, `${fmtNum(a.frameCount)} frames`, fmtTime(a.startedAt)]
@@ -335,7 +335,7 @@ export function SessionView({
                             .join(" · ")}
                           {!a.endedAt && " · conectado"}
                         </p>
-                      </Link>
+                      </a>
                       <button
                         type="button"
                         className="btn btn-ghost btn-xs btn-square text-base-content/35 hover:text-error"
@@ -480,9 +480,11 @@ export function SessionView({
 // ---------------------------------------------------------------------------
 
 function SummaryCard({
+  teamId,
   summary,
   memberById,
 }: {
+  teamId: string;
   summary: TrainingSessionDetail["session"]["summary"];
   memberById: Map<string, Member>;
 }) {
@@ -527,9 +529,9 @@ function SummaryCard({
                   return (
                     <tr key={t.testId}>
                       <td>
-                        <Link href={`/dashboard/labtest/${t.testId}`} className="hover:text-primary">
+                        <a href={teamToolHref(teamId, `/dashboard/labtest/${t.testId}`)} className="hover:text-primary">
                           {t.name}
-                        </Link>
+                        </a>
                       </td>
                       <td className="text-right tabular-nums">{t.runs}</td>
                       <td className="text-right tabular-nums">{t.best !== null ? fmtNum(t.best) : "—"}</td>

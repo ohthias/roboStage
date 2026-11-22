@@ -11,6 +11,66 @@ Exemplo: `2026.1` corresponde à primeira atualização oficial de 2026.
 
 ---
 
+## Atualizações na autenticação - 2026-11-20
+
+### Adicionado
+- Redirecionamento de usuários autenticados que acessam `/sign-in` ou `/sign-up`: vão para `/dashboard`, ou para `/onboarding` se o onboarding estiver pendente.
+- Bloqueio de acesso a `/onboarding` para usuários que já concluíram o onboarding (redireciona para `/dashboard`).
+- Resposta `403` em JSON (`"Onboarding pendente"`) para requisições de API e não-GET de usuários com onboarding pendente.
+- Variáveis de ambiente de redirecionamento do Clerk:
+  - `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`
+  - `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`
+  - `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard`
+  - `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard` (ou `/onboarding`)
+
+### Alterado
+- Middleware refatorado: helpers `matchesPattern`, `isAuthPage` e `redirectTo`, e constantes `AFTER_AUTH_PATH`, `ONBOARDING_PATH` e `SIGN_IN_PATH`.
+- Matcher do middleware trocado pelo padrão recomendado pelo Clerk: agora ignora só arquivos estáticos por extensão, e não qualquer caminho com ponto.
+- Páginas de autenticação movidas para rotas catch-all: `app/sign-in/[[...sign-in]]` e `app/sign-up/[[...sign-up]]`.
+- `<SignIn />` e `<SignUp />` com `fallbackRedirectUrl="/dashboard"` e links cruzados (`signUpUrl` / `signInUrl`); props redundantes `path` e `routing` removidas.
+- Formulários de autenticação envolvidos em `relative z-10`, para que o `BackgroundStars` não bloqueie os cliques.
+- Caminhos de componentes no painel do Clerk apontando para as páginas do domínio do app.
+
+### Corrigido
+- Novos usuários não pulam mais o onboarding: a flag `onboardingComplete: false` passa a ser gravada no webhook `user.created`.
+- Loop de redirect para `/onboarding` após concluí-lo, resolvido com `user.reload()` antes de redirecionar.
+
+### Configuração necessária
+- Clerk → Sessions → Customize session token: `{ "publicMetadata": "{{user.public_metadata}}" }`
+
+## [2026.8.1] — Correções nas Equipes
+
+**Data:** 11/11/2026
+
+Patch de correção da **v2026.8**. Corrige a entrada de novos membros nas equipes, que podiam ficar com o cargo errado ou nem aparecer depois de aceitar o convite. Corrige também os atalhos do dashboard da equipe, que abriam as ferramentas fora da equipe e falhavam ao criar Kanbans. Não há novas migrações de banco.
+
+### Atalhos do dashboard da equipe
+
+* Corrigida a criação de **Kanbans** pela página da equipe, que sempre falhava. A action usava uma transação, e o driver `neon-http` não tem suporte a transações.
+* Os atalhos da equipe passam a **ativar a equipe antes de abrir a ferramenta**: StageBook, Agenda, cards atribuídos a você, LabTests e sessões Anatix do feed e das sessões de treino, além do botão **Abrir** das abas. Antes, com o espaço pessoal ativo, o que se criava ficava fora da equipe ou o recurso aparecia como "não encontrado".
+* Nova seção **Criar na equipe** na aba Geral, com atalhos para criar um **Kanban**, um **ThinkLab** ou um **LabTest**. Cada atalho abre a aba correspondente com o formulário de criação aberto (`?novo=1`).
+* O link **kanban** de "Atribuído a você" passa a levar à aba Kanban da própria equipe.
+* O aviso de que o espaço ativo é outro foi atualizado: abrir uma ferramenta por ali já torna a equipe o espaço ativo.
+
+### Membros e convites
+
+* O cargo escolhido pelo técnico no convite passa a valer sobre o papel da Organização no Clerk. Antes, **todo mentor convidado entrava como técnico**.
+* Mudanças de papel vindas do Clerk deixam de sobrescrever o cargo na equipe. Um competidor não vira mais colaborador, nem um mentor vira técnico, por causa do `org:admin` ou `org:member`.
+* Quem aceita um convite passa a **aparecer na equipe mesmo que o webhook do Clerk não tenha chegado**. As memberships são sincronizadas ao abrir **Suas equipes** ou a página da equipe.
+* Erros do Clerk ao convidar, cancelar convite, trocar cargo ou remover membro passam a mostrar o motivo real, como limite de membros da Organização, convite duplicado ou excesso de tentativas. Antes aparecia uma mensagem genérica.
+* A lista de **convites pendentes** passa a mostrar todos os convites em aberto. Antes, os mais antigos sumiam, porque só eram consultados os 10 convites mais recentes de qualquer status.
+* Convites enviados por mentores deixam de ser recusados quando o papel do mentor no Clerk diverge do cargo no RoboStage.
+* Remover ou trocar o cargo de um membro que só existe no banco do RoboStage, sem membership no Clerk, não falha mais.
+
+### Infraestrutura
+
+* Nova rota `/dashboard/team/[id]/abrir?to=…`. Ela confirma que a pessoa é membro, ativa a equipe e só redireciona para caminhos internos do `/dashboard`.
+* O mapeamento de cargos do Clerk foi centralizado em `utils/stagebook/clerk-roles.ts`, usado pelo webhook e pela sincronização.
+* Adicionado o `syncClerkMembershipsFor` (`utils/stagebook/team-membership-sync.ts`).
+* Novos testes para a criação de recursos pela página da equipe (incluindo o cenário sem transações), os links dos atalhos e o mapeamento de cargos.
+
+---
+
 ## [2026.8] — Treino em Equipe
 
 **Data:** 08/11/2026

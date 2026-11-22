@@ -1,18 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import {
-  BookOpen,
-  CalendarClock,
-  Check,
-  CircleCheck,
-  Flag,
-  Link2,
-  Milestone as MilestoneIcon,
-  Trash2,
-  UserRound,
-  X,
-} from "lucide-react";
+import { BookOpen, CalendarClock, Check, CircleCheck, Trash2 } from "lucide-react";
 import {
   deleteCard,
   getCardLinks,
@@ -26,6 +15,8 @@ import {
 import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
 import { MilestoneSelector } from "@/components/stagebook/labels/milestone-selector";
 import { DocIcon } from "@/components/editor/doc-icon";
+import { ConfirmDialog } from "@/components/stagebook/modal";
+import { ChipGroup, DialogNote, Field, FieldGroup, FormDialog } from "@/components/UI/Modal/FormDialog";
 import type { MilestoneDTO } from "@/types/labels";
 
 import { unwrapAction } from "@/utils/stagebook/action-result";
@@ -43,37 +34,29 @@ type TeamMember = { userId: string; name: string | null; avatarUrl: string | nul
 type Milestone = { id: string; name: string; color?: string | null; dueAt: string | Date | null };
 
 const PRIORITIES = [
-  { value: "baixa", label: "Baixa" },
-  { value: "media", label: "Média" },
-  { value: "alta", label: "Alta" },
-  { value: "urgente", label: "Urgente" },
+  { value: "baixa", label: "Baixa", dot: "#64748b" },
+  { value: "media", label: "Média", dot: "#2563eb" },
+  { value: "alta", label: "Alta", dot: "#ea580c" },
+  { value: "urgente", label: "Urgente", dot: "#dc2626" },
 ];
 
-export function CardModal({
+const initials = (name: string | null) =>
+  (name ?? "?")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("");
+
+function useCardModalController({
   boardId,
   card,
-  assignees,
-  tags,
-  completed,
-  completionLocked,
-  onToggleCompleted,
-  teamMembers,
-  isTeamScope,
   milestones,
   onClose,
   onChanged,
 }: {
   boardId: string;
   card: Card;
-  assignees: Assignee[];
-  tags: CardTag[];
-  /** Validação de tarefa concluída. */
-  completed: boolean;
-  /** A coluna atual conclui tarefas automaticamente: não dá para reabrir aqui. */
-  completionLocked: boolean;
-  onToggleCompleted: () => void;
-  teamMembers: TeamMember[];
-  isTeamScope: boolean;
   milestones: Milestone[];
   onClose: () => void;
   onChanged: () => void;
@@ -84,6 +67,8 @@ export function CardModal({
   const [dueAt, setDueAt] = useState(card.dueAt ? card.dueAt.slice(0, 10) : "");
   const [milestoneId, setMilestoneId] = useState(card.milestoneId ?? "");
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const [availablePages, setAvailablePages] = useState<{ id: string; title: string; icon: string | null }[]>([]);
   const [availableEvents, setAvailableEvents] = useState<{ id: string; title: string; startAt: Date | string }[]>([]);
@@ -105,24 +90,44 @@ export function CardModal({
     });
   }, [card.id]);
 
-  function save() {
+  function run(fn: () => Promise<void>) {
+    setError(null);
     startTransition(async () => {
-      unwrapAction(await updateCard(boardId, card.id, { title, description, dueAt: dueAt || null, priority, milestoneId: milestoneId || null }));
+      try {
+        await fn();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Não foi possível salvar.");
+      }
+    });
+  }
+
+  function save(patch: Partial<{ priority: string; milestoneId: string | null }> = {}) {
+    if (!title.trim()) return;
+    run(async () => {
+      unwrapAction(
+        await updateCard(boardId, card.id, {
+          title,
+          description,
+          dueAt: dueAt || null,
+          priority: patch.priority ?? priority,
+          milestoneId: patch.milestoneId !== undefined ? patch.milestoneId : milestoneId || null,
+        }),
+      );
       onChanged();
     });
   }
 
   function handleDelete() {
-    if (!window.confirm("Excluir este card?")) return;
-    startTransition(async () => {
+    run(async () => {
       unwrapAction(await deleteCard(boardId, card.id));
+      setConfirmDelete(false);
       onChanged();
       onClose();
     });
   }
 
   function toggleAssignee(userId: string) {
-    startTransition(async () => {
+    run(async () => {
       unwrapAction(await toggleCardAssignee(boardId, card.id, userId));
       onChanged();
     });
@@ -131,7 +136,7 @@ export function CardModal({
   function togglePageLink(pageId: string) {
     const isLinked = linkedPageIds.includes(pageId);
     setLinkedPageIds((prev) => (isLinked ? prev.filter((id) => id !== pageId) : [...prev, pageId]));
-    startTransition(async () => {
+    run(async () => {
       unwrapAction(await toggleCardDocumentLink(boardId, card.id, pageId));
     });
   }
@@ -139,203 +144,333 @@ export function CardModal({
   function toggleEventLink(eventId: string) {
     const isLinked = linkedEventIds.includes(eventId);
     setLinkedEventIds((prev) => (isLinked ? prev.filter((id) => id !== eventId) : [...prev, eventId]));
-    startTransition(async () => {
+    run(async () => {
       unwrapAction(await toggleCardEventLink(boardId, card.id, eventId));
     });
   }
 
+  return {
+    title, setTitle, description, setDescription, priority, setPriority, dueAt, setDueAt,
+    milestoneId, setMilestoneId, isPending, error, confirmDelete, setConfirmDelete,
+    availablePages, availableEvents, linkedPageIds, linkedEventIds, milestone, setMilestone,
+    save, handleDelete, toggleAssignee, togglePageLink, toggleEventLink,
+  };
+}
+
+export function CardModal({
+  boardId,
+  card,
+  columnName,
+  assignees,
+  tags,
+  completed,
+  completionLocked,
+  onToggleCompleted,
+  teamMembers,
+  isTeamScope,
+  milestones,
+  onClose,
+  onChanged,
+}: {
+  boardId: string;
+  card: Card;
+  /** Nome da coluna atual, exibido no cabeçalho. */
+  columnName?: string;
+  assignees: Assignee[];
+  tags: CardTag[];
+  /** Validação de tarefa concluída. */
+  completed: boolean;
+  /** A coluna atual conclui tarefas automaticamente: não dá para reabrir aqui. */
+  completionLocked: boolean;
+  onToggleCompleted: () => void;
+  teamMembers: TeamMember[];
+  isTeamScope: boolean;
+  milestones: Milestone[];
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const {
+    title, setTitle, description, setDescription, priority, setPriority, dueAt, setDueAt,
+    milestoneId, setMilestoneId, isPending, error, confirmDelete, setConfirmDelete,
+    availablePages, availableEvents, linkedPageIds, linkedEventIds, milestone, setMilestone,
+    save, handleDelete, toggleAssignee, togglePageLink, toggleEventLink,
+  } = useCardModalController({ boardId, card, milestones, onClose, onChanged });
+
+  const fmtEventDate = (v: Date | string) =>
+    new Date(v).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+
   return (
-    <div className="modal modal-open" role="dialog" aria-modal="true">
-      <div className="modal-box max-h-[80vh] min-h-0 max-w-2xl overflow-y-auto overscroll-contain p-0">
-        <div className="border-b border-base-300 bg-base-200/40 px-6 py-5">
-          <div className="flex items-start gap-3">
-            <div className="mt-1 flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Flag size={18} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <input
-                className="w-full border-none bg-transparent p-0 text-xl font-bold tracking-tight outline-none"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                onBlur={save}
-                aria-label="Título do card"
-              />
-              <p className="mt-1 text-xs text-base-content/50">Edite os detalhes e acompanhe o progresso desta tarefa.</p>
-            </div>
-            <button type="button" className="btn btn-ghost btn-sm btn-square" onClick={onClose} aria-label="Fechar card">
-              <X size={17} />
-            </button>
+    <>
+      <FormDialog
+        onClose={onClose}
+        eyebrow={columnName ? `Kanban · ${columnName}` : "Kanban"}
+        title={
+          <input
+            className="-mx-1 w-full rounded-md border-none bg-transparent px-1 text-lg font-bold tracking-tight outline-none transition hover:bg-base-200/70 focus:bg-base-200/70"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={() => title !== card.title && save()}
+            onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+            placeholder="Título do card"
+            aria-label="Título do card"
+          />
+        }
+        headerSlot={
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+            <span className={`badge badge-sm gap-1 ${completed ? "badge-success badge-soft" : "badge-ghost"}`}>
+              <CircleCheck size={11} /> {completed ? "Concluída" : "Em andamento"}
+            </span>
+            {PRIORITIES.find((p) => p.value === priority) && (
+              <span className="badge badge-sm badge-ghost gap-1">
+                <span
+                  className="size-1.5 rounded-full"
+                  style={{ background: PRIORITIES.find((p) => p.value === priority)?.dot }}
+                />
+                {PRIORITIES.find((p) => p.value === priority)?.label}
+              </span>
+            )}
+            <span className="ml-auto text-base-content/45">{isPending ? "Salvando…" : "Alterações salvas automaticamente"}</span>
           </div>
+        }
+        size="lg"
+        busy={confirmDelete}
+        footer={
+          <>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm gap-1.5 rounded-lg text-error"
+              onClick={() => setConfirmDelete(true)}
+              disabled={isPending}
+            >
+              <Trash2 size={14} /> Excluir card
+            </button>
+            <button type="button" className="btn btn-primary rounded-lg" onClick={onClose}>
+              Pronto
+            </button>
+          </>
+        }
+      >
+        <Field label="Descrição" optional>
           <textarea
-            className="textarea textarea-bordered mt-4 w-full bg-base-100 text-sm"
+            className="textarea textarea-bordered w-full text-sm"
             rows={3}
-            placeholder="Adicione uma descrição para contextualizar a tarefa..."
+            placeholder="Contexto, critério de pronto, links úteis…"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            onBlur={save}
+            onBlur={() => description !== (card.description ?? "") && save()}
           />
-        </div>
+        </Field>
 
-        <div className="space-y-5 px-6 py-5">
-          <label
-            className={`flex items-start gap-3 rounded-xl border p-4 transition-colors ${
-              completed ? "border-success/30 bg-success/5" : "border-base-300"
-            } ${completionLocked ? "cursor-default" : "cursor-pointer"}`}
+        <label
+          className={`flex items-start gap-3 rounded-tl-xl rounded-br-xl border p-3 transition ${
+            completed ? "border-success bg-success/5 ring-1 ring-success" : "border-base-300 hover:border-base-content/30"
+          } ${completionLocked ? "cursor-default" : "cursor-pointer"}`}
+        >
+          <span
+            className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${
+              completed ? "bg-success text-success-content" : "bg-base-200 text-base-content/60"
+            }`}
           >
-            <input
-              type="checkbox"
-              className="checkbox checkbox-sm checkbox-success mt-0.5"
-              checked={completed}
-              disabled={completionLocked}
-              onChange={onToggleCompleted}
-              aria-describedby="card-completion-hint"
-            />
-            <span className="min-w-0">
-              <span className="flex items-center gap-1.5 text-sm font-semibold">
-                <CircleCheck size={15} className={completed ? "text-success" : "text-base-content/40"} />
-                Tarefa concluída
-              </span>
-              <span id="card-completion-hint" className="mt-0.5 block text-xs text-base-content/55">
-                {completionLocked
-                  ? "Esta coluna conclui automaticamente todas as tarefas. Mova o card para outra coluna para reabri-lo."
-                  : completed
-                    ? "Validada como concluída — aparece no menu “Concluídas” da coluna."
-                    : "Marque quando a tarefa estiver entregue. Ela vai para o menu “Concluídas” da coluna."}
-              </span>
+            <CircleCheck size={18} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold">Tarefa concluída</span>
+            <span id="card-completion-hint" className="block text-xs leading-snug text-base-content/55">
+              {completionLocked
+                ? "Esta coluna conclui automaticamente todas as tarefas. Mova o card para outra coluna para reabri-lo."
+                : completed
+                  ? "Validada como concluída — aparece no menu “Concluídas” da coluna."
+                  : "Marque quando a tarefa estiver entregue. Ela vai para o menu “Concluídas” da coluna."}
             </span>
-          </label>
+          </span>
+          <input
+            type="checkbox"
+            className="toggle toggle-sm toggle-success mt-1"
+            checked={completed}
+            disabled={completionLocked}
+            onChange={onToggleCompleted}
+            aria-describedby="card-completion-hint"
+          />
+        </label>
 
-          <section>
-            <div className="mb-3 flex items-center gap-2">
-              <CalendarClock size={16} className="text-primary" />
-              <h3 className="text-sm font-semibold">Planejamento</h3>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="flex flex-col gap-1.5 text-xs font-medium text-base-content/60">
-                Prioridade
-                <select
-                  className="select select-bordered select-sm w-full"
-                  value={priority}
-                  onChange={(e) => {
-                    setPriority(e.target.value);
-                    startTransition(async () => {
-                      unwrapAction(await updateCard(boardId, card.id, { title, description, dueAt: dueAt || null, priority: e.target.value, milestoneId: milestoneId || null }));
-                      onChanged();
-                    });
-                  }}
-                >
-                  {PRIORITIES.map((p) => (
-                    <option key={p.value} value={p.value}>{p.label}</option>
-                  ))}
-                </select>
-              </label>
+        <FieldGroup legend="Prioridade">
+          <ChipGroup
+            ariaLabel="Prioridade"
+            value={priority}
+            onChange={(value) => {
+              setPriority(value);
+              save({ priority: value });
+            }}
+            options={PRIORITIES}
+          />
+        </FieldGroup>
 
-              <label className="flex flex-col gap-1.5 text-xs font-medium text-base-content/60">
-                Prazo de entrega
-                <input type="date" className="input input-bordered input-sm w-full" value={dueAt} onChange={(e) => setDueAt(e.target.value)} onBlur={save} />
-              </label>
-            </div>
-          </section>
-
-          <section className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-            <div className="mb-3 flex items-start gap-3">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
-                <MilestoneIcon size={16} />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold">Milestone</h3>
-                <p className="mt-0.5 text-xs text-base-content/55">Etapa importante do projeto — compartilhada com páginas, eventos, ThinkLab e LabTest.</p>
-              </div>
-            </div>
-            <MilestoneSelector
-              value={milestone}
-              onChange={async (m) => {
-                setMilestone(m);
-                setMilestoneId(m?.id ?? "");
-                // updateCard valida as regras da coluna (ex.: milestone exigida).
-                unwrapAction(await updateCard(boardId, card.id, { title, description, dueAt: dueAt || null, priority, milestoneId: m?.id ?? null }));
-                onChanged();
-              }}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Prazo de entrega" optional>
+            <input
+              type="date"
+              className="input input-bordered w-full"
+              value={dueAt}
+              onChange={(e) => setDueAt(e.target.value)}
+              onBlur={() => dueAt !== (card.dueAt ? card.dueAt.slice(0, 10) : "") && save()}
             />
-          </section>
-
-          <section>
-            <div className="mb-3 flex items-center gap-2">
-              <UserRound size={16} className="text-primary" />
-              <h3 className="text-sm font-semibold">Pessoas e tags</h3>
-            </div>
-            {isTeamScope && (
-              <div className="rounded-xl border border-base-300 p-4">
-                <p className="mb-2 text-xs font-medium text-base-content/60">Responsáveis</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {teamMembers.map((member) => {
-                    const active = assignees.some((a) => a.userId === member.userId);
-                    return (
-                      <button key={member.userId} type="button" className={`badge gap-1.5 p-3 ${active ? "badge-primary" : "badge-ghost"}`} onClick={() => toggleAssignee(member.userId)}>
-                        {active && <Check size={11} />}
-                        {member.name ?? "Sem nome"}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <div className="mt-3 rounded-xl border border-base-300 p-4">
-              <p className="mb-2 text-xs font-medium text-base-content/60">
-                Tags — as mesmas de páginas, calendário, ThinkLab e LabTest
-              </p>
-              <ResourceLabels
-                kind="kanban-card"
-                resourceId={card.id}
-                showMilestone={false}
-                initialTags={tags.map((t) => ({ id: t.tagId, name: t.name, color: t.color }))}
-                onChange={onChanged}
+          </Field>
+          <div>
+            <p className="text-sm font-medium">
+              Milestone <span className="font-normal text-base-content/45">(opcional)</span>
+            </p>
+            <div className="mt-1.5">
+              <MilestoneSelector
+                value={milestone}
+                onChange={(m) => {
+                  setMilestone(m);
+                  setMilestoneId(m?.id ?? "");
+                  // updateCard valida as regras da coluna (ex.: milestone exigida).
+                  save({ milestoneId: m?.id ?? null });
+                }}
               />
             </div>
-          </section>
-
-          <section>
-            <div className="mb-3 flex items-center gap-2">
-              <Link2 size={16} className="text-primary" />
-              <h3 className="text-sm font-semibold">Recursos vinculados</h3>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-base-300 p-3">
-                <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-base-content/60"><BookOpen size={13} /> Páginas</p>
-                <div className="flex max-h-32 flex-col gap-1 overflow-y-auto">
-                  {availablePages.length === 0 ? <span className="text-xs text-base-content/40">Nenhuma página.</span> : availablePages.map((p) => (
-                    <label key={p.id} className="flex items-center gap-2 rounded-md px-1 py-1 text-xs hover:bg-base-200">
-                      <input type="checkbox" className="checkbox checkbox-xs" checked={linkedPageIds.includes(p.id)} onChange={() => togglePageLink(p.id)} />
-                      <span className="flex min-w-0 items-center gap-1 truncate">
-                        <DocIcon value={p.icon} size={16} />
-                        <span className="truncate">{p.title}</span>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div className="rounded-xl border border-base-300 p-3">
-                <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-base-content/60"><CalendarClock size={13} /> Eventos</p>
-                <div className="flex max-h-32 flex-col gap-1 overflow-y-auto">
-                  {availableEvents.length === 0 ? <span className="text-xs text-base-content/40">Nenhum evento.</span> : availableEvents.map((ev) => (
-                    <label key={ev.id} className="flex items-center gap-2 rounded-md px-1 py-1 text-xs hover:bg-base-200">
-                      <input type="checkbox" className="checkbox checkbox-xs" checked={linkedEventIds.includes(ev.id)} onChange={() => toggleEventLink(ev.id)} />
-                      <span className="truncate">{ev.title}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <div className="flex items-center justify-between border-t border-base-300 pt-4">
-            <button type="button" className="btn btn-ghost btn-sm text-error" onClick={handleDelete}><Trash2 size={14} /> Excluir card</button>
-            <button type="button" className="btn btn-primary btn-sm" onClick={onClose}>Fechar</button>
           </div>
         </div>
+
+        {isTeamScope && (
+          <FieldGroup
+            legend="Responsáveis"
+            aside={assignees.length > 0 && <span className="badge badge-ghost badge-sm font-mono">{assignees.length}</span>}
+          >
+            <div className="flex flex-wrap gap-1.5">
+              {teamMembers.map((member) => {
+                const active = assignees.some((a) => a.userId === member.userId);
+                return (
+                  <button
+                    key={member.userId}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => toggleAssignee(member.userId)}
+                    className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-sm transition ${
+                      active ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-base-300 hover:border-base-content/30"
+                    }`}
+                  >
+                    <span
+                      className={`flex size-6 items-center justify-center overflow-hidden rounded-full text-[10px] font-bold ${
+                        active ? "bg-primary text-primary-content" : "bg-base-200 text-base-content/60"
+                      }`}
+                    >
+                      {active ? (
+                        <Check size={12} />
+                      ) : member.avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={member.avatarUrl} alt="" className="size-full object-cover" />
+                      ) : (
+                        initials(member.name)
+                      )}
+                    </span>
+                    {member.name ?? "Sem nome"}
+                  </button>
+                );
+              })}
+            </div>
+          </FieldGroup>
+        )}
+
+        <FieldGroup legend="Tags" hint="As mesmas de páginas, calendário, ThinkLab e LabTest.">
+          <ResourceLabels
+            kind="kanban-card"
+            resourceId={card.id}
+            showMilestone={false}
+            initialTags={tags.map((t) => ({ id: t.tagId, name: t.name, color: t.color }))}
+            onChange={onChanged}
+          />
+        </FieldGroup>
+
+        <FieldGroup legend="Recursos vinculados">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <LinkList
+              icon={<BookOpen size={13} />}
+              label="Páginas"
+              empty="Nenhuma página."
+              items={availablePages.map((p) => ({
+                id: p.id,
+                label: p.title,
+                leading: <DocIcon value={p.icon} size={16} />,
+              }))}
+              selected={linkedPageIds}
+              onToggle={togglePageLink}
+            />
+            <LinkList
+              icon={<CalendarClock size={13} />}
+              label="Eventos"
+              empty="Nenhum evento."
+              items={availableEvents.map((ev) => ({
+                id: ev.id,
+                label: ev.title,
+                trailing: <span className="font-mono text-[10px] text-base-content/45">{fmtEventDate(ev.startAt)}</span>,
+              }))}
+              selected={linkedEventIds}
+              onToggle={toggleEventLink}
+            />
+          </div>
+        </FieldGroup>
+
+        {error && <DialogNote tone="error">{error}</DialogNote>}
+      </FormDialog>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Excluir card?"
+        description={`“${title || card.title}” some do quadro. Páginas e eventos vinculados continuam existindo.`}
+        pending={isPending}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
+    </>
+  );
+}
+
+function LinkList({
+  icon,
+  label,
+  empty,
+  items,
+  selected,
+  onToggle,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  empty: string;
+  items: { id: string; label: string; leading?: React.ReactNode; trailing?: React.ReactNode }[];
+  selected: string[];
+  onToggle: (id: string) => void;
+}) {
+  const count = items.filter((i) => selected.includes(i.id)).length;
+  return (
+    <div className="rounded-tl-xl rounded-br-xl border border-base-300 p-1.5">
+      <p className="flex items-center gap-1.5 px-1.5 pb-1 pt-0.5 text-xs font-medium text-base-content/60">
+        {icon} {label}
+        {count > 0 && <span className="badge badge-ghost badge-xs ml-auto font-mono">{count}</span>}
+      </p>
+      <div className="flex max-h-36 flex-col gap-0.5 overflow-y-auto">
+        {items.length === 0 ? (
+          <span className="px-1.5 py-1 text-xs text-base-content/40">{empty}</span>
+        ) : (
+          items.map((item) => (
+            <label
+              key={item.id}
+              className="flex cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-xs hover:bg-base-200"
+            >
+              <input
+                type="checkbox"
+                className="checkbox checkbox-xs checkbox-primary"
+                checked={selected.includes(item.id)}
+                onChange={() => onToggle(item.id)}
+              />
+              {item.leading}
+              <span className="min-w-0 flex-1 truncate">{item.label}</span>
+              {item.trailing}
+            </label>
+          ))
+        )}
       </div>
-      <button type="button" className="modal-backdrop" aria-label="Fechar" onClick={onClose} />
     </div>
   );
 }

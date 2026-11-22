@@ -1,9 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
   ArrowUpRight,
-  BookOpen,
-  CalendarDays,
   ChevronRight,
   Clock,
   Code,
@@ -12,7 +11,6 @@ import {
   FolderGit2,
   Gauge,
   Globe2,
-  GraduationCap,
   HeartHandshake,
   History,
   LifeBuoy,
@@ -21,27 +19,60 @@ import {
   NotebookPen,
   Radio,
   Rocket,
-  School,
-  ShieldCheck,
   Sparkles,
-  Telescope,
   Trophy,
   UserPlus,
   Users,
-  Wrench,
   type LucideIcon,
 } from "lucide-react";
 
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import LivePreview from "./LivePreview";
 import {
-  AnimatedBackground,
+  Accordion,
+  ButtonLink,
+  Card,
+  FeatureCard,
+  Flower,
+  Gear,
+  Kicker,
+  Marquee,
+  Reveal,
+  Section,
   SectionTitle,
-  toneClasses,
+  Sparkle,
+  StageImage,
+  Starburst,
+  StickerTag,
+  Squiggle,
+  cn,
+  toneSoft,
+  toneText,
   type Tone,
-} from "./shared";
+  NewsCard,
+} from "@/components/stage";
+import LivePreview from "./LivePreview";
+import PersonaTabs from "./PersonaTabs";
 
-const cornerBtn = "rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none";
+/* ================================================================ FAIXA */
+
+const marqueeItems = [
+  "Pontuador",
+  "QuickBrick Studio",
+  "LabTest",
+  "Recall",
+  "Timers",
+  "Stagebook",
+  "Anatix",
+  "ShowLive",
+];
+
+/** Faixa em marquee com as ferramentas, logo abaixo do hero. */
+export function ToolsMarquee() {
+  return (
+    <div className="relative z-10 -my-2 overflow-hidden py-2">
+      <Marquee items={marqueeItems} tone="ink" tilt={-1} speed={40} />
+    </div>
+  );
+}
 
 /* ================================================================ SOBRE */
 
@@ -53,13 +84,9 @@ const platformPoints = [
 
 export function PlatformIntro() {
   return (
-    <section
-      id="conheca"
-      className="relative isolate scroll-mt-20 overflow-hidden border-b border-base-300 px-6 py-24"
-    >
-      <AnimatedBackground />
+    <Section id="conheca" tone="glow" className="border-b border-base-300">
       <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1.05fr_1fr] [&>*]:min-w-0">
-        <RevealOnScroll>
+        <Reveal>
           <SectionTitle
             kicker="/ O QUE É O ROBOSTAGE"
             title="Muito mais que uma"
@@ -82,25 +109,188 @@ export function PlatformIntro() {
           </ul>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">
-            <Link
-              href="/sign-up"
-              className={`btn btn-primary btn-lg ${cornerBtn} shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--color-base-content)]`}
-            >
-              <UserPlus size={20} />
+            <ButtonLink href="/sign-up" size="lg" iconLeft={<UserPlus size={20} />}>
               Criar conta grátis
-            </Link>
-            <Link href="/about" className="btn btn-ghost btn-lg">
+            </ButtonLink>
+            <ButtonLink
+              href="/about"
+              tone="ghost"
+              size="lg"
+              shape="rounded"
+              iconRight={<ArrowRight size={18} />}
+            >
               Sobre o projeto
-              <ArrowRight size={18} />
-            </Link>
+            </ButtonLink>
           </div>
-        </RevealOnScroll>
+        </Reveal>
 
-        <RevealOnScroll delay={0.1}>
+        <Reveal delay={100} effect="pop" className="relative">
+          <Sparkle size={40} tone="accent" motion="float" className="absolute -left-4 -top-6 z-10" />
           <LivePreview />
-        </RevealOnScroll>
+        </Reveal>
       </div>
-    </section>
+    </Section>
+  );
+}
+
+/* =========================================================== COMPETIÇÕES */
+
+type Competition = {
+  href: string;
+  path: string;
+  title: string;
+  text: string;
+  cta: string;
+  image: string;
+  tone: "primary" | "secondary";
+  span: string;
+  shadow: string;
+};
+
+const competitions: Competition[] = [
+  {
+    href: "/fll",
+    path: "/fll",
+    title: "FIRST LEGO League",
+    text: "Pontuador por temporada, QuickBrick Studio, Recall, rubricas, timers e guias para equipes iniciantes.",
+    cta: "Explorar a FLL",
+    image: "/images/index/hero_banner_fll.jpg",
+    tone: "primary",
+    span: "lg:col-span-5",
+    shadow: "stage-shadow-lg hover:shadow-[10px_10px_0_0_var(--stage-shadow)]",
+  },
+  {
+    href: "/obr",
+    path: "/obr",
+    title: "OBR",
+    text: "Pontuador da arena, documentação e o Anatix para ver o robô em tempo real.",
+    cta: "Explorar a OBR",
+    image: "/images/index/hero_banner_obr.png",
+    tone: "secondary",
+    span: "lg:col-span-4",
+    shadow: "shadow-[8px_8px_0_0_var(--color-accent)] hover:shadow-[10px_10px_0_0_var(--color-accent)]",
+  },
+];
+
+const competitionOverlay = {
+  primary: "from-primary via-primary/80 to-primary/20",
+  secondary: "from-secondary via-secondary/85 to-secondary/20",
+};
+
+export function CompetitionsSection() {
+  return (
+    <Section tone="muted">
+      <div className="relative mx-auto max-w-6xl">
+        <Flower
+          size={64}
+          tone="primary"
+          motion="spin"
+          className="absolute -top-6 right-0 hidden md:inline-block"
+        />
+        <Reveal>
+          <SectionTitle
+            kicker="/ MODALIDADES"
+            title="Um lar para cada"
+            highlight="competição."
+            highlightTone="accent"
+            description="Ferramentas pensadas para as regras, os tempos e a rotina de cada modalidade."
+          />
+        </Reveal>
+
+        <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-12">
+          {competitions.map((c, i) => (
+            <Reveal key={c.href} delay={i * 80} className={c.span}>
+              <Link
+                href={c.href}
+                className={cn(
+                  "group relative isolate block h-full min-h-[340px] overflow-hidden rounded-tl-[32px] rounded-br-[32px] transition-all duration-500 ease-out hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4",
+                  c.tone === "primary"
+                    ? "bg-primary text-primary-content focus-visible:ring-primary"
+                    : "bg-secondary text-secondary-content focus-visible:ring-secondary",
+                  c.shadow,
+                )}
+              >
+                {/* Wrapper com -z-20: dentro de seção texturizada o stage.css põe z-index 0 na <img>. */}
+                <div aria-hidden className="absolute inset-0 -z-20 overflow-hidden">
+                  <Image
+                    src={c.image}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 40vw, 100vw"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                  />
+                </div>
+                <div className={cn("absolute inset-0 -z-10 bg-gradient-to-t", competitionOverlay[c.tone])} />
+                <div className="flex h-full min-h-[340px] flex-col justify-between p-6 sm:p-8">
+                  <div className="flex items-center justify-between gap-3">
+                    <StickerTag size="sm" shadow={false}>Disponível</StickerTag>
+                    <span
+                      className={cn(
+                        "flex size-10 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition-all duration-300 group-hover:-rotate-45 group-hover:bg-white",
+                        c.tone === "primary" ? "group-hover:text-primary" : "group-hover:text-secondary",
+                      )}
+                    >
+                      <ChevronRight size={22} />
+                    </span>
+                  </div>
+                  <div className="text-white">
+                    <p className="stage-kicker text-white/70">{c.path}</p>
+                    <h3 className="stage-display mt-2 text-3xl sm:text-4xl xl:text-5xl">{c.title}</h3>
+                    <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">{c.text}</p>
+                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold">
+                      {c.cta}
+                      <ChevronRight size={18} className="transition-transform duration-300 group-hover:translate-x-2" />
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            </Reveal>
+          ))}
+
+          {/* Futuras */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-1">
+            <Reveal delay={160} className="h-full">
+              <Card
+                corner
+                className="group flex h-full min-h-[150px] flex-col justify-between border border-base-300 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-secondary/50"
+              >
+                <div className="flex items-center justify-between">
+                  <StickerTag tone="accent" size="sm" shadow={false}>Em breve</StickerTag>
+                  <span className="font-mono text-xs text-base-content/30">/ftc</span>
+                </div>
+                <div>
+                  <h3 className="stage-display text-3xl text-base-content/60 transition-colors group-hover:text-secondary">
+                    FTC
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed text-base-content/60">
+                    Ferramentas para equipes da FIRST Tech Challenge.
+                  </p>
+                </div>
+              </Card>
+            </Reveal>
+            <Reveal delay={240} className="h-full">
+              <Link
+                href="/news"
+                className="group flex h-full min-h-[150px] flex-col justify-between rounded-tl-[2rem] rounded-br-[2rem] border border-dashed border-base-300 bg-base-100/50 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl font-light text-base-content/40 transition-transform duration-300 group-hover:rotate-90 group-hover:text-primary">
+                    +
+                  </span>
+                  <span className="stage-kicker text-base-content/45">EM EXPANSÃO</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-base-content/75">Mais modalidades</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-base-content/60">
+                    Acompanhe as novidades para saber o que vem por aí.
+                  </p>
+                </div>
+              </Link>
+            </Reveal>
+          </div>
+        </div>
+      </div>
+    </Section>
   );
 }
 
@@ -112,91 +302,91 @@ type Tool = {
   title: string;
   description: string;
   href: string;
-  tone: Tone;
+  tone: "primary" | "secondary" | "accent";
   status?: string;
 };
 
 const tools: Tool[] = [
   {
     icon: Trophy,
-    tag: "PONTUAÇÃO",
+    tag: "Pontuação",
     title: "Pontuador",
-    description:
-      "Simule missões ou rodadas completas com cronômetro de 2:30, temporada por temporada.",
+    description: "Simule missões ou rodadas completas com cronômetro de 2:30, temporada por temporada.",
     href: "/fll/score",
     tone: "primary",
   },
   {
     icon: Cuboid,
-    tag: "ESTRATÉGIA",
+    tag: "Estratégia",
     title: "QuickBrick Studio",
-    description:
-      "Desenhe trajetórias no tapete, monte matrizes SWOT e de risco e simule saídas.",
+    description: "Desenhe trajetórias no tapete, monte matrizes SWOT e de risco e simule saídas.",
     href: "/fll/quickbrick",
     tone: "secondary",
   },
   {
     icon: FlaskConical,
-    tag: "TESTES",
+    tag: "Testes",
     title: "LabTest",
-    description:
-      "Registre execuções, calibre o robô e compare versões com dados, não com achismo.",
+    description: "Registre execuções, calibre o robô e compare versões com dados, não com achismo.",
     href: "/labtest",
     tone: "accent",
   },
   {
     icon: MessageSquare,
-    tag: "AVALIAÇÃO",
+    tag: "Avaliação",
     title: "Recall",
-    description:
-      "Treine a sala de avaliação com perguntas cronometradas de Core Values, Projeto e Robô.",
+    description: "Treine a sala de avaliação com perguntas cronometradas de Core Values, Projeto e Robô.",
     href: "/fll/recall",
     tone: "secondary",
   },
   {
-    icon: Clock,
-    tag: "TEMPO",
-    title: "Timers",
-    description:
-      "Round do Robô, Sala de Avaliação e timer ajustável com alertas sonoros e visuais.",
-    href: "/fll/timers",
+    icon: MessageSquare,
+    tag: "Avaliação",
+    title: "Rúbricas",
+    description: "Avalie o projeto, o robô e os valores centrais com rúbricas personalizadas.",
+    href: "/fll/rubric",
     tone: "accent",
   },
   {
-    icon: NotebookPen,
-    tag: "PROCESSO",
-    title: "Stagebook",
-    description:
-      "Registre ideias, organize projetos e acompanhe tarefas para virar conhecimento da equipe.",
-    href: "/stagebook",
+    icon: Clock,
+    tag: "Tempo",
+    title: "Timers",
+    description: "Round do Robô, Sala de Avaliação e timer ajustável com alertas sonoros e visuais.",
+    href: "/fll/timers",
     tone: "primary",
+  },
+  {
+    icon: NotebookPen,
+    tag: "Processo",
+    title: "Stagebook",
+    description: "Registre ideias, organize projetos e acompanhe tarefas para virar conhecimento da equipe.",
+    href: "/stagebook",
+    tone: "secondary",
   },
   {
     icon: Code,
-    tag: "TELEMETRIA",
+    tag: "Telemetria",
     title: "Anatix",
-    description:
-      "Biblioteca aberta para ver sensores, estados e tempos do robô da FLL e OBR enquanto ele roda.",
+    description: "Biblioteca aberta para ver sensores, estados e tempos do robô da FLL e OBR enquanto ele roda.",
     href: "/anatix",
-    tone: "primary",
+    tone: "accent",
   },
   {
     icon: Radio,
-    tag: "EVENTOS",
+    tag: "Eventos",
     title: "ShowLive",
-    description:
-      "Ranking no telão atualizado em tempo real e regras configuráveis para torneios e microeventos.",
+    description: "Ranking no telão atualizado em tempo real e regras configuráveis para torneios e microeventos.",
     href: "/showlive",
-    tone: "secondary",
-    status: "Em manutenção",
+    tone: "primary",
+    status: "Disponível",
   },
 ];
 
 export function ToolsSection() {
   return (
-    <section className="px-6 py-24">
+    <Section>
       <div className="mx-auto max-w-6xl">
-        <RevealOnScroll>
+        <Reveal>
           <div className="flex flex-wrap items-end justify-between gap-6">
             <SectionTitle
               kicker="/ ECOSSISTEMA"
@@ -204,85 +394,37 @@ export function ToolsSection() {
               highlight="num lugar só."
               description="Cada ferramenta resolve uma parte da temporada. Comece pela que faz mais falta hoje."
             />
-            <Link
+            <ButtonLink
               href="/dashboard"
-              className="group inline-flex items-center gap-2 rounded-tl-lg rounded-br-lg border border-base-300 bg-base-100 px-4 py-2 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
+              tone="outline"
+              shape="corner"
+              iconLeft={<Gauge size={16} />}
+              iconRight={<ArrowUpRight size={15} />}
+              className="font-mono font-medium"
             >
-              <Gauge size={16} />
               /dashboard
-              <ArrowUpRight
-                size={15}
-                className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-              />
-            </Link>
+            </ButtonLink>
           </div>
-        </RevealOnScroll>
+        </Reveal>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {tools.map(
-            (
-              { icon: Icon, tag, title, description, href, tone, status },
-              i,
-            ) => {
-              const c = toneClasses[tone];
-              return (
-                <RevealOnScroll
-                  key={title}
-                  delay={(i % 4) * 0.06}
-                  className="h-full"
-                >
-                  <Link
-                    href={href}
-                    className={`group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-base-content/[0.04] ${c.hover}`}
-                  >
-                    <div
-                      aria-hidden="true"
-                      className={`pointer-events-none absolute -right-10 -top-10 size-32 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 ${c.ring}`}
-                    />
-                    <div className="relative flex items-center justify-between">
-                      <div
-                        className={`flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}
-                      >
-                        <Icon size={22} strokeWidth={1.8} />
-                      </div>
-                      <span className="font-mono text-xs text-base-content/35">
-                        /{String(i + 1).padStart(2, "0")}
-                      </span>
-                    </div>
-                    <p
-                      className={`relative mt-7 text-[10px] font-bold tracking-[0.18em] ${c.tag}`}
-                    >
-                      {tag}
-                    </p>
-                    <h3 className="relative mt-2 flex items-center gap-2 text-xl font-bold tracking-tight">
-                      {title}
-                      {status && (
-                        <span className="badge badge-warning badge-outline badge-xs gap-1 font-normal">
-                          <Wrench size={10} />
-                          {status}
-                        </span>
-                      )}
-                    </h3>
-                    <p className="relative mt-3 flex-1 text-sm leading-6 text-base-content/60">
-                      {description}
-                    </p>
-                    <div className="relative mt-6 flex items-center justify-between">
-                      <code className="rounded-md bg-base-200 px-2 py-1 font-mono text-xs text-base-content/70">
-                        {href}
-                      </code>
-                      <ArrowRight
-                        size={16}
-                        className="text-base-content/40 transition-all group-hover:translate-x-1 group-hover:text-base-content"
-                      />
-                    </div>
-                  </Link>
-                </RevealOnScroll>
-              );
-            },
-          )}
+          {tools.map(({ icon: Icon, tag, title, description, href, tone, status }, i) => (
+            <Reveal key={title} delay={(i % 4) * 60} className="h-full">
+              <FeatureCard
+                title={title}
+                description={description}
+                category={tag}
+                icon={<Icon />}
+                href={href}
+                index={i + 1}
+                badge={status}
+                tone={tone}
+              />
+            </Reveal>
+          ))}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
 
@@ -323,251 +465,97 @@ const steps = [
 
 export function StepsSection() {
   return (
-    <section className="border-y border-base-300 bg-base-200/40 px-6 py-24">
+    <Section tone="muted" edgeTop="torn" edgeBottom="torn">
       <div className="mx-auto max-w-6xl">
-        <RevealOnScroll>
+        <Reveal>
           <SectionTitle
             kicker="/ COMO COMEÇAR"
             title="Três passos até"
             highlight="o primeiro treino."
-            highlightClass="bg-secondary text-secondary-content"
+            highlightTone="secondary"
           />
-        </RevealOnScroll>
+        </Reveal>
 
         <div className="relative mt-14 grid gap-10 md:grid-cols-3 md:gap-12">
           <div
             aria-hidden="true"
             className="absolute left-0 right-[30%] top-6 hidden border-t-2 border-dashed border-base-300 md:block"
           />
-          {steps.map(
-            (
-              { number, icon: Icon, title, description, detail, href, link },
-              i,
-            ) => (
-              <RevealOnScroll key={number} delay={i * 0.1}>
-                <article className="group relative">
-                  <div className="flex items-center gap-4 md:block">
-                    <div className="relative z-10 flex size-12 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 text-secondary transition-all duration-300 group-hover:border-secondary group-hover:bg-secondary group-hover:text-secondary-content">
-                      <Icon size={21} strokeWidth={1.8} />
-                    </div>
-                    <span className="font-mono text-xs tracking-widest text-base-content/40 md:mt-4 md:block">
-                      ETAPA {number}
-                    </span>
+          <Squiggle
+            size={80}
+            tone="secondary"
+            className="absolute -top-14 right-0 hidden md:inline-block"
+          />
+          {steps.map(({ number, icon: Icon, title, description, detail, href, link }, i) => (
+            <Reveal key={number} delay={i * 100}>
+              <article className="group relative">
+                <div className="flex items-center gap-4 md:block">
+                  <div className="stage-noise relative z-10 flex size-12 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 text-secondary transition-all duration-300 group-hover:stage-shadow-sm group-hover:border-secondary group-hover:bg-secondary group-hover:text-secondary-content">
+                    <Icon size={21} strokeWidth={1.8} />
                   </div>
-                  <h3 className="mt-5 text-xl font-bold tracking-tight">
-                    {title}
-                  </h3>
-                  <p className="mt-3 max-w-sm text-sm leading-6 text-base-content/60">
-                    {description}
-                  </p>
-                  <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-                    <span className="inline-flex items-center gap-2 text-xs font-bold text-secondary">
-                      <span className="size-1.5 rounded-full bg-secondary" />
-                      {detail}
-                    </span>
-                    <Link
-                      href={href}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-base-content/70 transition-colors hover:text-primary"
-                    >
-                      {link}
-                      <ArrowRight size={14} />
-                    </Link>
-                  </div>
-                </article>
-              </RevealOnScroll>
-            ),
-          )}
+                  <Kicker className="text-base-content/40 md:mt-4">ETAPA {number}</Kicker>
+                </div>
+                <h3 className="mt-5 text-xl font-black tracking-tight">{title}</h3>
+                <p className="mt-3 max-w-sm text-sm leading-6 text-base-content/60">{description}</p>
+                <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <span className="inline-flex items-center gap-2 text-xs font-bold text-secondary">
+                    <span className="size-1.5 rounded-full bg-secondary" />
+                    {detail}
+                  </span>
+                  <Link
+                    href={href}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-base-content/70 transition-colors hover:text-primary"
+                  >
+                    {link}
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </article>
+            </Reveal>
+          ))}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
 
 /* ============================================================ PARA QUEM */
 
-const personas = [
-  {
-    id: "iniciantes",
-    label: "Equipes iniciantes",
-    image: "/images/icons/EquipesIniciantes.svg",
-    text: "Comecem com uma estrutura simples para os primeiros passos: entendam a competição, conheçam as missões e organizem os treinos.",
-    links: [
-      { label: "Iniciantes da Challenge", href: "/fll/begins", icon: School },
-      { label: "Iniciantes da Explore", href: "/fll/explore", icon: Telescope },
-      {
-        label: "Guia de Missões",
-        href: "/fll/docs/missions-guide",
-        icon: BookOpen,
-      },
-    ],
-  },
-  {
-    id: "tecnicos",
-    label: "Técnicos",
-    image: "/images/icons/Tecnicos.svg",
-    text: "Acompanhem a evolução técnica da equipe com treinos cronometrados, rubricas e testes registrados.",
-    links: [
-      {
-        label: "Rubrica de Avaliação",
-        href: "/fll/rubric",
-        icon: GraduationCap,
-      },
-      { label: "Timers", href: "/fll/timers", icon: Clock },
-      { label: "Recall", href: "/fll/recall", icon: MessageSquare },
-    ],
-  },
-  {
-    id: "organizadores",
-    label: "Organizadores",
-    image: "/images/icons/Organizadores.svg",
-    text: "Centralizem partidas e resultados de torneios e microeventos em um ambiente pensado para a operação.",
-    links: [
-      { label: "ShowLive", href: "/showlive", icon: Radio },
-      { label: "Entrar em um evento", href: "/universe", icon: Sparkles },
-      {
-        label: "Checklist de evento",
-        href: "/fll/cheklist",
-        icon: ShieldCheck,
-      },
-    ],
-  },
-  {
-    id: "avancadas",
-    label: "Equipes avançadas",
-    image: "/images/icons/EquipesAvancadas.svg",
-    text: "Transformem dados de desempenho em decisões: compare versões do robô e encontre onde está a perda de pontos.",
-    links: [
-      { label: "LabTest", href: "/labtest", icon: FlaskConical },
-      { label: "QuickBrick Studio", href: "/fll/quickbrick", icon: Cuboid },
-      { label: "Anatix", href: "/obr/anatix", icon: Code },
-    ],
-  },
-];
-
 export function PersonasSection() {
   return (
-    <section className="px-6 py-24">
+    <Section>
       <div className="mx-auto max-w-6xl">
-        <RevealOnScroll>
+        <Reveal>
           <SectionTitle
             kicker="/ PARA QUEM"
             title="Cada equipe vive a robótica"
             highlight="de um jeito."
-            highlightClass="bg-accent text-accent-content"
+            highlightTone="accent"
             description="Escolha o seu perfil e veja por onde começar."
           />
-        </RevealOnScroll>
-
-        <RevealOnScroll delay={0.1}>
-          <div className="tabs tabs-box mt-12 rounded-tl-2xl rounded-br-2xl bg-base-200/60 p-2">
-            {personas.map(({ id, label, image, text, links }, i) => (
-              <PersonaTab
-                key={id}
-                label={label}
-                image={image}
-                text={text}
-                links={links}
-                index={i}
-              />
-            ))}
-          </div>
-        </RevealOnScroll>
+        </Reveal>
+        <Reveal delay={100}>
+          <PersonaTabs />
+        </Reveal>
       </div>
-    </section>
-  );
-}
-
-function PersonaTab({
-  label,
-  image,
-  text,
-  links,
-  index,
-}: Omit<(typeof personas)[number], "id"> & { index: number }) {
-  return (
-    <>
-      <input
-        type="radio"
-        name="home_personas"
-        className="tab font-semibold"
-        aria-label={label}
-        defaultChecked={index === 0}
-      />
-      <div className="tab-content pt-2">
-        <div className="grid items-center gap-8 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 sm:p-8 md:grid-cols-[220px_1fr]">
-          <div className="grid aspect-square w-40 place-items-center justify-self-center rounded-tl-3xl rounded-br-3xl bg-base-200 p-6 md:w-full">
-            <img
-              src={image}
-              alt=""
-              aria-hidden="true"
-              className="h-full w-full object-contain"
-            />
-          </div>
-          <div>
-            <p className="font-mono text-xs tracking-[0.2em] text-base-content/45">
-              /{String(index + 1).padStart(2, "0")} · {label.toUpperCase()}
-            </p>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-base-content/75 sm:text-lg sm:leading-8">
-              {text}
-            </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              {links.map(({ label: l, href, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="group flex items-center gap-3 rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 px-4 py-3 text-sm font-semibold transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-[4px_4px_0_0_var(--color-primary)]"
-                >
-                  <Icon size={17} className="shrink-0 text-primary" />
-                  <span className="flex-1">{l}</span>
-                  <ArrowRight
-                    size={15}
-                    className="text-base-content/35 transition-transform group-hover:translate-x-1 group-hover:text-primary"
-                  />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+    </Section>
   );
 }
 
 /* ============================================================ TEMPORADAS */
 
 const seasons = [
-  {
-    key: "bioglow",
-    name: "BIOGLOW",
-    period: "2026/2027",
-    logo: "/images/logos/fll/seasons/bioglow_logo.png",
-    current: true,
-  },
-  {
-    key: "unearthed",
-    name: "UNEARTHED",
-    period: "2025/2026",
-    logo: "/images/logos/fll/seasons/Unearthed.webp",
-  },
-  {
-    key: "submerged",
-    name: "SUBMERGED",
-    period: "2024/2025",
-    logo: "/images/logos/fll/seasons/Submerged.webp",
-  },
-  {
-    key: "masterpiece",
-    name: "MASTERPIECE",
-    period: "2023/2024",
-    logo: "/images/logos/fll/seasons/Masterpiece.png",
-  },
+  { key: "bioglow", name: "BIOGLOW", period: "2026/2027", logo: "/images/logos/fll/seasons/bioglow_logo.png", current: true },
+  { key: "unearthed", name: "UNEARTHED", period: "2025/2026", logo: "/images/logos/fll/seasons/Unearthed.webp" },
+  { key: "submerged", name: "SUBMERGED", period: "2024/2025", logo: "/images/logos/fll/seasons/Submerged.webp" },
+  { key: "masterpiece", name: "MASTERPIECE", period: "2023/2024", logo: "/images/logos/fll/seasons/Masterpiece.png" },
 ];
 
 export function SeasonsSection() {
   return (
-    <section className="border-y border-base-300 bg-base-200/40 px-6 py-24">
+    <Section tone="muted">
       <div className="mx-auto max-w-6xl">
-        <RevealOnScroll>
+        <Reveal>
           <div className="flex flex-wrap items-end justify-between gap-6">
             <SectionTitle
               kicker="/ TEMPORADAS DA FLL"
@@ -575,48 +563,45 @@ export function SeasonsSection() {
               highlight="temporada."
               description="Missões da temporada atual e das anteriores, prontas para treinar ou rever estratégias."
             />
-            <Link
-              href="/fll/future-edition"
-              className={`btn btn-outline ${cornerBtn} border-base-content/20 hover:border-primary hover:bg-primary hover:text-primary-content`}
-            >
-              <Sparkles size={17} />
+            <ButtonLink href="/fll/future-edition" tone="outline" iconLeft={<Sparkles size={17} />}>
               Future Edition
-            </Link>
+            </ButtonLink>
           </div>
-        </RevealOnScroll>
+        </Reveal>
 
         <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
           {seasons.map(({ key, name, period, logo, current }, i) => (
-            <RevealOnScroll key={key} delay={i * 0.06} className="h-full">
+            <Reveal key={key} delay={i * 60} className="h-full">
               <Link
                 href={`/fll/score/${key}`}
-                className={`group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border bg-base-100 p-4 transition-all sm:p-5 duration-300 hover:-translate-y-1 ${
+                className={cn(
+                  "stage-paper group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border bg-base-100 p-4 transition-all duration-300 hover:-translate-y-1 sm:p-5",
                   current
                     ? "border-primary shadow-[6px_6px_0_0_var(--color-primary)]"
-                    : "border-base-300 hover:border-secondary/40"
-                }`}
+                    : "border-base-300 hover:border-secondary/40",
+                )}
               >
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-xs text-base-content/45">
                     {period}
                   </span>
                   {current && (
-                    <span className="rounded-tl-md rounded-br-md bg-primary px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.15em] text-primary-content">
-                      ATUAL
-                    </span>
+                    <StickerTag tone="primary" size="sm" rotate={3}>
+                      Atual
+                    </StickerTag>
                   )}
                 </div>
                 <div className="my-5 grid h-28 place-items-center rounded-tl-xl rounded-br-xl bg-[#f7f4ec] p-2">
-                  <img
+                  <Image
                     src={logo}
                     alt={`Logo da temporada ${name}`}
+                    width={192}
+                    height={96}
                     className="max-h-24 w-auto object-contain transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
                 <div className="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-                  <h3 className="text-sm font-bold tracking-tight sm:text-base">
-                    {name}
-                  </h3>
+                  <h3 className="text-sm font-black tracking-tight sm:text-base">{name}</h3>
                   <span className="inline-flex items-center gap-1 text-xs font-bold text-base-content/55 transition-colors group-hover:text-primary">
                     Pontuar
                     <ArrowRight
@@ -626,80 +611,82 @@ export function SeasonsSection() {
                   </span>
                 </div>
               </Link>
-            </RevealOnScroll>
+            </Reveal>
           ))}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
 
 /* ============================================================= DESTAQUES */
 
-export function SpotlightSection() {
-  const items = [
-    {
-      kicker: "/ LABTEST",
-      title: "Teste antes da competição.",
-      text: "Runs, CalibraBot e testes personalizados: execute em condições controladas, meça, compare e decida.",
-      image: "/images/index/banner_labtest.png",
-      href: "/labtest",
-      cta: "Conhecer o LabTest",
-      tone: "secondary" as Tone,
-    },
-    {
-      kicker: "/ STAGEBOOK",
-      title: "A ideia começa aqui.",
-      text: "Registre ideias, organize projetos e acompanhe tarefas, transformando o processo da equipe em conhecimento.",
-      image: "/images/index/banner_stagebook.png",
-      href: "/stagebook",
-      cta: "Conhecer o Stagebook",
-      tone: "primary" as Tone,
-    },
-  ];
+const spotlight: {
+  kicker: string;
+  title: string;
+  text: string;
+  image: string;
+  href: string;
+  cta: string;
+  tone: "primary" | "secondary";
+}[] = [
+  {
+    kicker: "LABTEST",
+    title: "Teste antes da competição.",
+    text: "Runs, CalibraBot e testes personalizados: execute em condições controladas, meça, compare e decida.",
+    image: "/images/index/banner_labtest.png",
+    href: "/labtest",
+    cta: "Conhecer o LabTest",
+    tone: "secondary",
+  },
+  {
+    kicker: "STAGEBOOK",
+    title: "A ideia começa aqui.",
+    text: "Registre ideias, organize projetos e acompanhe tarefas, transformando o processo da equipe em conhecimento.",
+    image: "/images/index/banner_stagebook.png",
+    href: "/stagebook",
+    cta: "Conhecer o Stagebook",
+    tone: "primary",
+  },
+];
 
+export function SpotlightSection() {
   return (
-    <section className="px-6 py-24">
+    <Section>
       <div className="mx-auto max-w-6xl">
-        <RevealOnScroll>
+        <Reveal>
           <SectionTitle
             kicker="/ EM DESTAQUE"
             title="Do teste no tapete"
             highlight="ao caderno da equipe."
-            highlightClass="bg-secondary text-secondary-content"
+            highlightTone="secondary"
           />
-        </RevealOnScroll>
+        </Reveal>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-2">
-          {items.map(({ kicker, title, text, image, href, cta, tone }, i) => (
-            <RevealOnScroll key={href} delay={i * 0.1} className="h-full">
+          {spotlight.map(({ kicker, title, text, image, href, cta, tone }, i) => (
+            <Reveal key={href} delay={i * 100} className="h-full">
               <Link
                 href={href}
-                className={`group flex h-full flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 transition-all duration-300 hover:-translate-y-1 ${
+                className={cn(
+                  "stage-paper group flex h-full flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 transition-all duration-300 hover:-translate-y-1",
                   tone === "primary"
                     ? "hover:shadow-[8px_8px_0_0_var(--color-primary)]"
-                    : "hover:shadow-[8px_8px_0_0_var(--color-secondary)]"
-                }`}
+                    : "hover:shadow-[8px_8px_0_0_var(--color-secondary)]",
+                )}
               >
-                <div className="relative aspect-[16/8] overflow-hidden border-b border-base-300 bg-base-200">
-                  <img
-                    src={image}
-                    alt=""
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </div>
+                <StageImage
+                  src={image}
+                  alt=""
+                  ratio="21/9"
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="border-b border-base-300"
+                  imgClassName="transition-transform duration-700 group-hover:scale-105"
+                />
                 <div className="flex flex-1 flex-col p-6 sm:p-8">
-                  <p
-                    className={`font-mono text-xs tracking-[0.2em] ${toneClasses[tone].tag}`}
-                  >
-                    {kicker}
-                  </p>
-                  <h3 className="mt-2 text-2xl font-bold tracking-tight">
-                    {title}
-                  </h3>
-                  <p className="mt-3 flex-1 text-sm leading-6 text-base-content/60 sm:text-base">
-                    {text}
-                  </p>
+                  <Kicker className={toneText[tone]}>{kicker}</Kicker>
+                  <h3 className="mt-2 text-2xl font-black tracking-tight">{title}</h3>
+                  <p className="mt-3 flex-1 text-sm leading-6 text-base-content/60 sm:text-base">{text}</p>
                   <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold">
                     {cta}
                     <ArrowRight
@@ -709,11 +696,11 @@ export function SpotlightSection() {
                   </span>
                 </div>
               </Link>
-            </RevealOnScroll>
+            </Reveal>
           ))}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
 
@@ -724,25 +711,22 @@ export function CanopySection() {
     <section className="relative isolate overflow-hidden bg-[#091A07] text-white">
       <div className="mx-auto grid max-w-6xl items-stretch md:grid-cols-2">
         <div className="relative z-10 flex flex-col justify-center gap-4 px-6 py-20">
-          <p className="font-mono text-xs tracking-[0.2em] text-white/50">
-            / ESPECIAL
-          </p>
-          <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
-            FIRST® CANOPY™
-          </h2>
+          <p className="stage-kicker text-white/50">/ ESPECIAL</p>
+          <h2 className="stage-display text-3xl sm:text-5xl">FIRST® CANOPY™</h2>
           <p className="max-w-md text-sm leading-7 text-white/75 sm:text-base">
             Nada na Terra prospera sozinha. Cada gene, espécie e ecossistema faz
             parte de uma teia viva de diversidade biológica. Com STEM como
             ferramenta e a natureza como inspiração.
           </p>
           <div>
-            <Link
+            <ButtonLink
               href="/robostage-canopy"
-              className={`btn mt-2 ${cornerBtn} border-none bg-[#9BE15D] text-[#091A07] shadow-[4px_4px_0_0_#ffffff] transition-all hover:-translate-y-0.5 hover:bg-[#b4ec80]`}
+              flat
+              iconRight={<ArrowRight size={18} />}
+              className="mt-2 border-none bg-[#9BE15D] text-[#091A07] shadow-[4px_4px_0_0_#ffffff] hover:-translate-y-0.5 hover:bg-[#b4ec80]"
             >
               Conhecer
-              <ArrowRight size={18} />
-            </Link>
+            </ButtonLink>
           </div>
           <a
             href="https://www.magnific.com/br/vetores-gratis/fundo-organico-de-selva-plana_13839964.htm"
@@ -755,11 +739,7 @@ export function CanopySection() {
         </div>
       </div>
       <div className="absolute inset-y-0 right-0 -z-10 w-full md:w-1/2">
-        <img
-          src="/images/index/canopy.webp"
-          alt=""
-          className="h-full w-full object-cover opacity-40 md:opacity-100"
-        />
+        <Image src="/images/index/canopy.webp" alt="" fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover opacity-40 md:opacity-100" />
         <div className="absolute inset-0 hidden bg-gradient-to-l from-transparent to-[#091A07] md:block" />
       </div>
     </section>
@@ -807,167 +787,142 @@ function NewsSectionContent({
 }: NewsSectionProps) {
   if (news.length === 0) return null;
   const [first, ...rest] = news;
+  const sideNews = rest.slice(0, 3);
+  const bottomNews = rest.slice(3);
 
   return (
-    <section className="border-t border-base-300 bg-base-200/40 px-6 py-24">
+    <Section tone="muted" className="[&>div]:border-b-0">
       <div className="mx-auto max-w-6xl">
-        <RevealOnScroll>
+        <Reveal>
           <div className="flex flex-wrap items-end justify-between gap-6">
             <SectionTitle kicker={kicker} title={title} highlight={highlight} />
             <div className="flex flex-wrap gap-2">
-              <Link
-                href="/news"
-                className="group inline-flex items-center gap-2 rounded-tl-lg rounded-br-lg border border-base-300 bg-base-100 px-4 py-2 text-sm font-semibold transition-colors hover:border-primary hover:text-primary"
-              >
-                <Newspaper size={16} />
+              <ButtonLink href="/news" tone="outline" size="sm" iconLeft={<Newspaper size={16} />}>
                 Todas as notícias
-              </Link>
-              <Link
+              </ButtonLink>
+              <ButtonLink
                 href="/changelog"
-                className="group inline-flex items-center gap-2 rounded-tl-lg rounded-br-lg border border-base-300 bg-base-100 px-4 py-2 text-sm font-semibold transition-colors hover:border-secondary hover:text-secondary"
+                tone="outline"
+                size="sm"
+                iconLeft={<History size={16} />}
+                className="hover:border-secondary hover:text-secondary"
               >
-                <History size={16} />
                 Changelog
-              </Link>
+              </ButtonLink>
             </div>
           </div>
-        </RevealOnScroll>
+        </Reveal>
 
-        <div className="mt-12 grid gap-5 lg:grid-cols-[1.3fr_1fr]">
-          <RevealOnScroll className="h-full">
-            <Link
+        <div className="mt-12 grid gap-5 lg:grid-cols-[1.55fr_1fr]">
+          <Reveal className="h-full">
+            <NewsCard
+              title={first.title}
               href={`/news/${encodeURIComponent(first.slug)}`}
-              className="group flex h-full flex-col overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-[8px_8px_0_0_var(--color-primary)]"
-            >
-              {first.cover && (
-                <div className="aspect-[16/8] overflow-hidden bg-base-200">
-                  <img
-                    src={first.cover}
-                    alt=""
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </div>
-              )}
-              <div className="flex flex-1 flex-col p-6 sm:p-8">
-                <NewsMeta date={first.date} category={first.category} />
-                <h3 className="mt-3 text-2xl font-bold leading-tight tracking-tight">
-                  {first.title}
-                </h3>
-                {first.description && (
-                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-base-content/60">
-                    {first.description}
-                  </p>
-                )}
-                <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold">
-                  Ler notícia
-                  <ArrowRight
-                    size={16}
-                    className="transition-transform group-hover:translate-x-1"
-                  />
-                </span>
-              </div>
-            </Link>
-          </RevealOnScroll>
+              excerpt={first.description}
+              image={first.cover ?? ""}
+              tag={first.category}
+              date={formatDate(first.date)}
+              layout="featured"
+              className="h-full min-h-[27rem]"
+            />
+          </Reveal>
 
           <div className="flex flex-col gap-5">
-            {rest.map((n, i) => (
-              <RevealOnScroll
-                key={n.slug}
-                delay={(i + 1) * 0.08}
-                className="flex-1"
-              >
-                <Link
+            {sideNews.map((n, i) => (
+              <Reveal key={n.slug} delay={(i + 1) * 80} className="flex-1">
+                <NewsCard
+                  title={n.title}
                   href={`/news/${encodeURIComponent(n.slug)}`}
-                  className="group flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-secondary/40"
-                >
-                  <NewsMeta date={n.date} category={n.category} />
-                  <h3 className="mt-3 text-lg font-bold leading-snug tracking-tight">
-                    {n.title}
-                  </h3>
-                  {n.description && (
-                    <p className="mt-2 line-clamp-2 flex-1 text-sm leading-6 text-base-content/60">
-                      {n.description}
-                    </p>
-                  )}
-                  <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-base-content/60 transition-colors group-hover:text-secondary">
-                    Ler
-                    <ArrowRight
-                      size={14}
-                      className="transition-transform group-hover:translate-x-1"
-                    />
-                  </span>
-                </Link>
-              </RevealOnScroll>
+                  image={n.cover ?? ""}
+                  tag={n.category}
+                  date={formatDate(n.date)}
+                  layout="horizontal"
+                  className="h-full min-h-[8.25rem]"
+                />
+              </Reveal>
             ))}
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
 
-function NewsMeta({ date, category }: { date?: string; category?: string }) {
-  return (
-    <div className="flex flex-wrap items-center gap-3 font-mono text-[11px] text-base-content/50">
-      {category && (
-        <span className="rounded-tl-md rounded-br-md bg-base-200 px-2 py-0.5 font-bold tracking-wider text-base-content/70">
-          {category.toUpperCase()}
-        </span>
-      )}
-      {date && (
-        <span className="inline-flex items-center gap-1">
-          <CalendarDays size={12} />
-          {formatDate(date)}
-        </span>
-      )}
-    </div>
+        {bottomNews.length > 0 && (
+          <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {bottomNews.slice(0, 3).map((n, i) => (
+              <Reveal key={n.slug} delay={(i + 1) * 80}>
+                <NewsCard
+                  title={n.title}
+                  excerpt={n.description}
+                  href={`/news/${encodeURIComponent(n.slug)}`}
+                  image={n.cover ?? ""}
+                  tag={n.category}
+                  date={formatDate(n.date)}
+                  layout="vertical"
+                />
+              </Reveal>
+            ))}
+          </div>
+        )}
+      </div>
+    </Section>
   );
 }
 
 /* ============================================================ COMUNIDADE */
 
-const communityLinks = [
+const communityLinks: {
+  icon: LucideIcon;
+  title: string;
+  text: string;
+  href: string;
+  external?: boolean;
+  tone: Tone;
+}[] = [
   {
     icon: FolderGit2,
     title: "Código aberto",
     text: "Acompanhe o desenvolvimento e sugira melhorias no GitHub.",
     href: "https://github.com/ohthias/roboStage",
     external: true,
-    tone: "primary" as Tone,
+    tone: "primary",
   },
   {
     icon: HeartHandshake,
     title: "Apoie o projeto",
     text: "Veja como contribuir com código, divulgação ou apoio financeiro.",
     href: "/sponsors",
-    tone: "accent" as Tone,
+    tone: "accent",
   },
   {
     icon: Globe2,
     title: "Roboticar",
     text: "Iniciativas de equipes do Brasil e do mundo e os números da robótica no país.",
     href: "/roboticar",
-    tone: "primary" as Tone,
+    tone: "primary",
   },
   {
     icon: LifeBuoy,
     title: "Central de ajuda",
     text: "Tire dúvidas sobre as ferramentas e o uso da plataforma.",
     href: "/help",
-    tone: "secondary" as Tone,
+    tone: "secondary",
   },
 ];
 
+const communityHover: Partial<Record<Tone, string>> = {
+  primary: "hover:border-primary/40",
+  secondary: "hover:border-secondary/40",
+  accent: "hover:border-accent/60",
+};
+
 export function CommunitySection() {
   return (
-    <section className="px-6 py-24">
+    <Section>
       <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.1fr] [&>*]:min-w-0">
-        <RevealOnScroll>
+        <Reveal>
           <SectionTitle
             kicker="/ COMUNIDADE"
             title="Um projeto independente,"
             highlight="feito com a comunidade."
-            highlightClass="bg-secondary text-secondary-content"
+            highlightTone="secondary"
           />
           <div className="mt-8 border-l-2 border-secondary pl-5">
             <p className="text-base leading-7 text-base-content/70">
@@ -979,62 +934,55 @@ export function CommunitySection() {
               Cada atualização parte de situações reais vividas nas competições.
             </p>
           </div>
-        </RevealOnScroll>
+        </Reveal>
 
         <div className="grid content-center gap-4">
-          {communityLinks.map(
-            ({ icon: Icon, title, text, href, external, tone }, i) => {
-              const c = toneClasses[tone];
-              const inner = (
-                <>
-                  <div
-                    className={`flex size-12 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}
-                  >
-                    <Icon size={21} strokeWidth={1.8} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-bold">{title}</h3>
-                    <p className="mt-1 text-sm leading-6 text-base-content/60">
-                      {text}
-                    </p>
-                  </div>
-                  {external ? (
-                    <ArrowUpRight
-                      size={18}
-                      className="shrink-0 text-base-content/35 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                    />
-                  ) : (
-                    <ArrowRight
-                      size={18}
-                      className="shrink-0 text-base-content/35 transition-transform group-hover:translate-x-1"
-                    />
+          {communityLinks.map(({ icon: Icon, title, text, href, external, tone }, i) => {
+            const inner = (
+              <>
+                <div
+                  className={cn(
+                    "flex size-12 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300",
+                    toneSoft[tone],
                   )}
-                </>
-              );
-              const cls = `group flex items-center gap-4 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-0.5 ${c.hover}`;
-              return (
-                <RevealOnScroll key={title} delay={i * 0.08}>
-                  {external ? (
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={cls}
-                    >
-                      {inner}
-                    </a>
-                  ) : (
-                    <Link href={href} className={cls}>
-                      {inner}
-                    </Link>
-                  )}
-                </RevealOnScroll>
-              );
-            },
-          )}
+                >
+                  <Icon size={21} strokeWidth={1.8} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold">{title}</h3>
+                  <p className="mt-1 text-sm leading-6 text-base-content/60">{text}</p>
+                </div>
+                {external ? (
+                  <ArrowUpRight
+                    size={18}
+                    className="shrink-0 text-base-content/35 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  />
+                ) : (
+                  <ArrowRight size={18} className="shrink-0 text-base-content/35 transition-transform group-hover:translate-x-1" />
+                )}
+              </>
+            );
+            const cls = cn(
+              "stage-paper group flex items-center gap-4 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-0.5",
+              communityHover[tone],
+            );
+            return (
+              <Reveal key={title} delay={i * 80}>
+                {external ? (
+                  <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
+                    {inner}
+                  </a>
+                ) : (
+                  <Link href={href} className={cls}>
+                    {inner}
+                  </Link>
+                )}
+              </Reveal>
+            );
+          })}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
 
@@ -1042,32 +990,36 @@ export function CommunitySection() {
 
 const faq = [
   {
-    q: "O RoboStage é gratuito?",
-    a: "Sim. Criar a conta é grátis, e várias ferramentas, como o pontuador, os timers e o Recall, podem ser usadas direto pelo site.",
+    title: "O RoboStage é gratuito?",
+    content:
+      "Sim. Criar a conta é grátis, e várias ferramentas, como o pontuador, os timers e o Recall, podem ser usadas direto pelo site.",
   },
   {
     q: "Quais competições são atendidas?",
     a: "Hoje a plataforma tem ferramentas para a FIRST LEGO League, a FIRST Tech Challenge (temporada BIOBUZZ) e a OBR. Outras modalidades estão nos planos; acompanhe pelas notícias.",
   },
   {
-    q: "Preciso de conta para usar as ferramentas?",
-    a: "Não para todas. As ferramentas públicas abrem sem login. A conta é necessária para recursos da equipe, como o painel, o LabTest e o Stagebook.",
+    title: "Preciso de conta para usar as ferramentas?",
+    content:
+      "Não para todas. As ferramentas públicas abrem sem login. A conta é necessária para recursos da equipe, como o painel, o LabTest e o Stagebook.",
   },
   {
-    q: "Funciona no celular?",
-    a: "Sim, mas algumas ferramentas, como as do QuickBrick Studio, foram pensadas para telas maiores. Para elas, prefira o notebook ou o computador.",
+    title: "Funciona no celular?",
+    content:
+      "Sim, mas algumas ferramentas, como as do QuickBrick Studio, foram pensadas para telas maiores. Para elas, prefira o notebook ou o computador.",
   },
   {
-    q: "Como sugerir uma ferramenta ou relatar um problema?",
-    a: "Abra uma issue no repositório do GitHub ou consulte a central de ajuda. As sugestões da comunidade orientam as próximas atualizações.",
+    title: "Como sugerir uma ferramenta ou relatar um problema?",
+    content:
+      "Abra uma issue no repositório do GitHub ou consulte a central de ajuda. As sugestões da comunidade orientam as próximas atualizações.",
   },
 ];
 
 export function FaqSection() {
   return (
-    <section className="border-t border-base-300 bg-base-200/40 px-6 py-24">
+    <Section tone="muted" className="[&>div]:border-b-0">
       <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
-        <RevealOnScroll>
+        <Reveal>
           <div className="lg:sticky lg:top-28">
             <SectionTitle
               kicker="/ DÚVIDAS"
@@ -1083,31 +1035,13 @@ export function FaqSection() {
               <ArrowRight size={15} />
             </Link>
           </div>
-        </RevealOnScroll>
+        </Reveal>
 
-        <RevealOnScroll delay={0.1}>
-          <div className="space-y-3">
-            {faq.map(({ q, a }, i) => (
-              <div
-                key={q}
-                className="collapse collapse-plus rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100"
-              >
-                <input
-                  type="radio"
-                  name="home_faq"
-                  defaultChecked={i === 0}
-                  aria-label={q}
-                />
-                <div className="collapse-title pr-12 font-semibold">{q}</div>
-                <div className="collapse-content text-sm leading-6 text-base-content/65">
-                  <p>{a}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </RevealOnScroll>
+        <Reveal delay={100}>
+          <Accordion items={faq} defaultOpen={0} />
+        </Reveal>
       </div>
-    </section>
+    </Section>
   );
 }
 
@@ -1115,31 +1049,23 @@ export function FaqSection() {
 
 export function FinalCta() {
   return (
-    <section className="px-6 py-24">
-      <RevealOnScroll>
-        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-tl-[2.5rem] rounded-br-[2.5rem] bg-secondary px-8 py-14 text-secondary-content sm:px-14">
-          <div
-            aria-hidden="true"
-            className="absolute -right-16 -top-16 size-64 rounded-full border-[28px] border-accent/90"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute -bottom-10 right-40 size-24 rotate-12 rounded-tl-2xl rounded-br-2xl bg-primary"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute bottom-8 right-12 size-10 rounded-full border-2 border-dashed border-secondary-content/40"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] bg-[size:22px_22px] opacity-[0.08]"
-          />
+    <Section>
+      <Reveal effect="pop">
+        <Card
+          tone="secondary"
+          featured
+          className="stage-grid-on-color relative mx-auto max-w-6xl overflow-hidden rounded-tl-[2.5rem] rounded-br-[2.5rem] px-8 py-14 sm:px-14"
+        >
+          <Gear size={190} tone="accent" motion="spin" className="absolute -right-12 -top-12 hidden sm:inline-block" />
+          <Starburst size={70} tone="primary" rotate={12} className="absolute bottom-8 right-16 hidden md:inline-grid" />
+          <Sparkle size={28} tone="paper" shadow={false} className="absolute bottom-24 right-56 hidden md:inline-block" />
 
           <div className="relative max-w-2xl">
-            <div className="inline-flex items-center gap-2 font-mono text-xs tracking-[0.2em] text-secondary-content/70">
-              <Trophy size={14} />O PRÓXIMO EVENTO COMEÇA AQUI
+            <div className="stage-kicker inline-flex items-center gap-2 text-secondary-content/70">
+              <Trophy size={14} />
+              O PRÓXIMO EVENTO COMEÇA AQUI
             </div>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
+            <h2 className="stage-display mt-4 text-3xl sm:text-5xl">
               Existe um lugar esperando pela sua equipe.
             </h2>
             <p className="mt-5 max-w-xl text-secondary-content/80">
@@ -1147,31 +1073,33 @@ export function FinalCta() {
               robótica, comece agora e leve a equipe mais longe nesta temporada.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <Link
-                href="/sign-up"
-                className={`btn btn-accent btn-lg ${cornerBtn} shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5`}
-              >
-                <UserPlus size={20} />
+              <ButtonLink href="/sign-up" tone="accent" size="lg" iconLeft={<UserPlus size={20} />}>
                 Criar conta grátis
-              </Link>
-              <Link
+              </ButtonLink>
+              <ButtonLink
                 href="/fll"
-                className="btn btn-ghost btn-lg text-secondary-content hover:bg-secondary-content/10"
+                tone="ghost"
+                size="lg"
+                shape="rounded"
+                iconRight={<ArrowRight size={18} />}
+                className="text-secondary-content hover:bg-secondary-content/10"
               >
                 Começar na FLL
-                <ArrowRight size={18} />
-              </Link>
-              <Link
+              </ButtonLink>
+              <ButtonLink
                 href="/obr"
-                className="btn btn-ghost btn-lg text-secondary-content hover:bg-secondary-content/10"
+                tone="ghost"
+                size="lg"
+                shape="rounded"
+                iconRight={<ArrowRight size={18} />}
+                className="text-secondary-content hover:bg-secondary-content/10"
               >
                 Começar na OBR
-                <ArrowRight size={18} />
-              </Link>
+              </ButtonLink>
             </div>
           </div>
-        </div>
-      </RevealOnScroll>
-    </section>
+        </Card>
+      </Reveal>
+    </Section>
   );
 }

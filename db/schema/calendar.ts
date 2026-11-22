@@ -43,6 +43,8 @@ export const calendarEvents = pgTable(
     type: text("type").notNull().default("evento"),
     status: text("status").notNull().default("confirmado"),
     color: text("color"),
+    // Ícone opcional, mesmo formato do ícone das páginas (utils/stagebook/doc-icon).
+    icon: text("icon"),
     location: text("location"),
     // Milestone universal (opcional).
     milestoneId: uuid("milestone_id"),

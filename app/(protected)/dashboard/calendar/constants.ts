@@ -4,11 +4,16 @@
 // um array de objetos de lá quebra a regra do Next.js sobre esse tipo de
 // arquivo.
 export const EVENT_TYPES = [
-  { value: "treino", label: "Treino" },
-  { value: "reuniao", label: "Reunião" },
-  { value: "competicao", label: "Competição" },
-  { value: "deadline", label: "Prazo" },
-  { value: "projeto", label: "Projeto" },
-  { value: "evento", label: "Evento" },
-  { value: "outro", label: "Outro" },
+  { value: "treino", label: "Treino", color: "#2563eb" },
+  { value: "reuniao", label: "Reunião", color: "#7c3aed" },
+  { value: "competicao", label: "Competição", color: "#dc2626" },
+  { value: "deadline", label: "Prazo", color: "#ea580c" },
+  { value: "projeto", label: "Projeto", color: "#0891b2" },
+  { value: "evento", label: "Evento", color: "#16a34a" },
+  { value: "outro", label: "Outro", color: "#475569" },
 ] as const;
+
+/** Cor de cada tipo — usada no calendário e no modal de evento. */
+export const EVENT_TYPE_COLOR: Record<string, string> = Object.fromEntries(
+  EVENT_TYPES.map((t) => [t.value, t.color]),
+);

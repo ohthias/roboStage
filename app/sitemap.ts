@@ -31,6 +31,7 @@ const INSTITUTIONAL_ROUTES = [
   "/sponsors",
   "/stagebook",
   "/labtest",
+  "/equipe",
   "/showlive",
   "/legal",
 ];

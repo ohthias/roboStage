@@ -23,9 +23,18 @@ import {
   type ListNode,
   type ListType,
 } from "@lexical/list";
-import { $createCodeNode } from "@lexical/code";
+import { $createCodeNode, $isCodeNode } from "@lexical/code";
 import { $findMatchingParent } from "@lexical/utils";
 import { $isLayoutItemNode } from "./nodes/layout-nodes";
+import {
+  $isCollapsibleContainerNode,
+  $isCollapsibleContentNode,
+  $unwrapCollapsible,
+  $wrapInCollapsible,
+} from "./nodes/collapsible-nodes";
+import { $createCalloutNode, $isCalloutNode } from "./nodes/callout-node";
+import { $isTimelineItemNode } from "./nodes/timeline-nodes";
+import { $isTabNode } from "./nodes/tabs-nodes";
 
 /** Tipos de bloco que o editor sabe criar / converter. */
 export type BlockType =
@@ -33,22 +42,36 @@ export type BlockType =
   | "h1"
   | "h2"
   | "h3"
+  | "h4"
+  | "h5"
+  | "h6"
   | "bullet"
   | "number"
   | "check"
   | "quote"
-  | "code";
+  | "code"
+  | "toggle"
+  | "callout";
+
+export const HEADING_TYPES = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
+export const isHeadingType = (t: BlockType): t is (typeof HEADING_TYPES)[number] =>
+  (HEADING_TYPES as readonly string[]).includes(t);
 
 export const BLOCK_LABELS: Record<BlockType, string> = {
   paragraph: "Texto",
   h1: "Título 1",
   h2: "Título 2",
   h3: "Título 3",
+  h4: "Título 4",
+  h5: "Título 5",
+  h6: "Título 6",
   bullet: "Lista com marcadores",
   number: "Lista numerada",
   check: "Lista de tarefas",
   quote: "Citação",
   code: "Código",
+  toggle: "Bloco recolhível",
+  callout: "Destaque",
 };
 
 const LIST_TYPES: Partial<Record<BlockType, ListType>> = {
@@ -62,7 +85,12 @@ function createTextBlock(type: BlockType): ElementNode {
     case "h1":
     case "h2":
     case "h3":
+    case "h4":
+    case "h5":
+    case "h6":
       return $createHeadingNode(type as HeadingTagType);
+    case "callout":
+      return $createCalloutNode("info");
     case "quote":
       return $createQuoteNode();
     case "code":
@@ -76,7 +104,8 @@ function createTextBlock(type: BlockType): ElementNode {
  * Retorna o bloco que contém o nó: filho direto do root ou, dentro de uma
  * seção de colunas, filho direto da coluna.
  */
-const isBlockParent = (p: LexicalNode | null) => $isRootNode(p) || $isLayoutItemNode(p);
+const isBlockParent = (p: LexicalNode | null) =>
+  $isRootNode(p) || $isLayoutItemNode(p) || $isCollapsibleContentNode(p) || $isTimelineItemNode(p) || $isTabNode(p);
 
 export function $getTopLevelBlock(node: LexicalNode): LexicalNode | null {
   const top = $findMatchingParent(node, (p) => isBlockParent(p.getParent()));
@@ -91,6 +120,8 @@ export function $getBlockType(node: LexicalNode): BlockType | null {
     const t = node.getListType();
     return t === "bullet" ? "bullet" : t === "number" ? "number" : "check";
   }
+  if ($isCollapsibleContainerNode(node)) return "toggle";
+  if ($isCalloutNode(node)) return "callout";
   switch (node.getType()) {
     case "layout-container":
       return null;
@@ -136,6 +167,26 @@ export function $transformBlock(key: string, type: BlockType): void {
   if (current === null || current === type) return;
 
   const listType = LIST_TYPES[type];
+
+  // Sai de um recolhível: o título vira o novo bloco, o conteúdo segue abaixo.
+  if ($isCollapsibleContainerNode(node)) {
+    const paragraph = $unwrapCollapsible(node);
+    if (type !== "paragraph") $transformBlock(paragraph.getKey(), type);
+    return;
+  }
+
+  // Vira recolhível: o texto do bloco passa a ser o título.
+  if (type === "toggle") {
+    if ($isListNode(node)) {
+      const blocks = $listToBlocks(node, "paragraph");
+      if (blocks[0]) $wrapInCollapsible(blocks[0]);
+      return;
+    }
+    if (!$isElementNode(node) || $isCodeNode(node)) return;
+    const level = $isHeadingNode(node) ? (node.getTag() as "h1") : "p";
+    $wrapInCollapsible(node, level);
+    return;
+  }
 
   if ($isListNode(node)) {
     if (listType) {

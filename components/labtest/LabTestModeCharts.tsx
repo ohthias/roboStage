@@ -25,6 +25,13 @@ import {
 } from "@/utils/labtest/chart-data";
 import { SeriesChartPanel } from "./charts/SeriesChart";
 import { CategoryChartPanel, type CategoryDatum } from "./charts/CategoryChart";
+import type { SeriesChartType } from "./charts/chart-panel";
+
+/** Opções vindas dos embeds do Stagebook (partes escondidas e tipo inicial). */
+type EmbedDisplayProps = {
+  hiddenSections?: string[];
+  seriesType?: SeriesChartType;
+};
 import { EmptyState } from "./shared";
 
 function fieldSeries(fields: FieldDefinition[]): ChartSeries[] {
@@ -162,11 +169,14 @@ function MotorsCharts({
   fields,
   entries,
   accent,
+  hiddenSections,
+  seriesType,
 }: {
   fields: FieldDefinition[];
   entries: TestEntry[];
   accent: AccentColor;
-}) {
+} & EmbedDisplayProps) {
+  const show = (id: string) => !hiddenSections?.includes(id);
   const style = ACCENT_STYLES[accent];
   const rotationFields = fields.filter((f) => f.fieldKey.endsWith("__rotacao"));
   const timeFields = fields.filter((f) => f.fieldKey.endsWith("__tempo"));
@@ -207,19 +217,20 @@ function MotorsCharts({
 
   return (
     <div className="flex flex-col gap-4">
-      {rotationFields.length > 0 && (
+      {rotationFields.length > 0 && show("evolution") && (
         <SeriesChartPanel
+          key={seriesType ?? "line"}
           icon={TrendingUp}
           title="Rotação por execução"
           subtitle="Evolução da rotação de cada motor/dupla"
           series={evolutionSeries}
           rows={evolutionRows}
-          defaultType="line"
+          defaultType={seriesType ?? "line"}
           types={["line", "area", "bar", "stacked", "step", "scatter", "radar"]}
         />
       )}
 
-      {groups.length > 0 && (
+      {groups.length > 0 && show("rotation") && (
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           {groups.map((group) => (
             <CategoryChartPanel
@@ -235,7 +246,7 @@ function MotorsCharts({
         </div>
       )}
 
-      {timeFields.length > 0 && timeData.length > 0 && (
+      {timeFields.length > 0 && timeData.length > 0 && show("time") && (
         <CategoryChartPanel
           icon={Timer}
           title="Tempo médio de execução"
@@ -246,6 +257,7 @@ function MotorsCharts({
         />
       )}
 
+      {show("badges") && (
       <div className="flex flex-wrap gap-2">
         {combinations.map((combination) => {
           const rotation = average(
@@ -270,6 +282,7 @@ function MotorsCharts({
           );
         })}
       </div>
+      )}
     </div>
   );
 }
@@ -282,11 +295,12 @@ function CalibrabotVariablesChart({
   fields,
   entries,
   accent,
+  seriesType,
 }: {
   fields: FieldDefinition[];
   entries: TestEntry[];
   accent: AccentColor;
-}) {
+} & EmbedDisplayProps) {
   const comparable = useMemo(() => fields.filter(isNumeric), [fields]);
   const series = useMemo(() => fieldSeries(comparable), [comparable]);
   const rows = useMemo(
@@ -304,12 +318,13 @@ function CalibrabotVariablesChart({
 
   return (
     <SeriesChartPanel
+      key={seriesType ?? "line"}
       icon={Gauge}
       title="Comparativo entre variáveis"
       subtitle="Clique nas legendas para ocultar séries"
       series={series}
       rows={rows}
-      defaultType="line"
+      defaultType={seriesType ?? "line"}
       footer={<FieldStatBadges fields={comparable} entries={entries} accent={accent} />}
     />
   );
@@ -323,11 +338,12 @@ function CustomComparisonChart({
   fields,
   entries,
   accent,
+  seriesType,
 }: {
   fields: FieldDefinition[];
   entries: TestEntry[];
   accent: AccentColor;
-}) {
+} & EmbedDisplayProps) {
   const comparable = useMemo(() => fields.filter(isNumeric), [fields]);
   const [selected, setSelected] = useState<string[]>(() =>
     comparable.slice(0, 3).map((f) => f.fieldKey),
@@ -389,11 +405,12 @@ function CustomComparisonChart({
         <EmptyState>Selecione ao menos um parâmetro acima para montar o gráfico.</EmptyState>
       ) : (
         <SeriesChartPanel
+          key={seriesType ?? "line"}
           icon={TrendingUp}
           title="Comparativo de parâmetros"
           series={series}
           rows={rows}
-          defaultType="line"
+          defaultType={seriesType ?? "line"}
           footer={<FieldStatBadges fields={active} entries={entries} accent={accent} />}
         />
       )}
@@ -411,25 +428,28 @@ export function LabTestModeCharts({
   fields,
   entries,
   accent,
+  hiddenSections,
+  seriesType,
 }: {
   mode: string;
   config: unknown;
   fields: FieldDefinition[];
   entries: TestEntry[];
   accent: AccentColor;
-}) {
+} & EmbedDisplayProps) {
+  const display = { hiddenSections, seriesType };
   const cfg = (config && typeof config === "object" ? config : {}) as Record<string, unknown>;
 
   if (mode === "individual" || (mode === "calibrabot" && cfg.tipo === "motores")) {
-    return <MotorsCharts fields={fields} entries={entries} accent={accent} />;
+    return <MotorsCharts fields={fields} entries={entries} accent={accent} {...display} />;
   }
 
   if (mode === "calibrabot") {
-    return <CalibrabotVariablesChart fields={fields} entries={entries} accent={accent} />;
+    return <CalibrabotVariablesChart fields={fields} entries={entries} accent={accent} {...display} />;
   }
 
   if (mode === "custom") {
-    return <CustomComparisonChart fields={fields} entries={entries} accent={accent} />;
+    return <CustomComparisonChart fields={fields} entries={entries} accent={accent} {...display} />;
   }
 
   return null;

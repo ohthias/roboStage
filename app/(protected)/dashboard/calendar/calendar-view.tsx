@@ -15,7 +15,8 @@ import {
   X,
 } from "lucide-react";
 import { EventModal } from "./event-modal";
-import { EVENT_TYPES } from "./constants";
+import { DocIcon } from "@/components/editor/doc-icon";
+import { EVENT_TYPES, EVENT_TYPE_COLOR } from "./constants";
 import { TagList } from "@/components/stagebook/labels/tag-chip";
 import { MilestoneChip } from "@/components/stagebook/labels/milestone-chip";
 import type { MilestoneDTO, TagDTO } from "@/types/labels";
@@ -30,6 +31,8 @@ export type CalendarEventClient = {
   type: string;
   status: string;
   color: string | null;
+  /** Ícone escolhido pelo usuário (formato do DocIcon). */
+  icon?: string | null;
   location: string | null;
   teamId: string | null;
   teamName?: string | null;
@@ -40,15 +43,7 @@ export type CalendarEventClient = {
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-const TYPE_COLOR: Record<string, string> = {
-  treino: "#2563eb",
-  reuniao: "#7c3aed",
-  competicao: "#dc2626",
-  deadline: "#ea580c",
-  projeto: "#0891b2",
-  evento: "#16a34a",
-  outro: "#475569",
-};
+const TYPE_COLOR = EVENT_TYPE_COLOR;
 
 function toDateKey(iso: string) {
   return iso.slice(0, 10);
@@ -419,6 +414,9 @@ export function CalendarView({
                             {isFirstSegment && !event.allDay
                               ? `${new Date(event.startAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} `
                               : ""}
+                            {event.icon && (
+                              <DocIcon value={event.icon} size={12} fallback={null} className="mr-1 inline-flex align-[-2px]" />
+                            )}
                             {event.title}
                           </button>
                         );
@@ -513,8 +511,9 @@ export function CalendarView({
                                   }
                                 }}
                               >
-                                <span className="block truncate">
-                                  {event.title}
+                                <span className="flex items-center gap-1 truncate">
+                                  {event.icon && <DocIcon value={event.icon} size={13} fallback={null} />}
+                                  <span className="truncate">{event.title}</span>
                                 </span>
                                 <span className="mt-1 block text-[10px] opacity-80">
                                   {event.allDay
@@ -597,15 +596,19 @@ export function CalendarView({
                     }}
                   >
                     <div className="flex items-start gap-3">
-                      <span
-                        className="mt-1 h-3 w-3 shrink-0 rounded-full"
-                        style={{
-                          backgroundColor:
-                            event.color ||
-                            TYPE_COLOR[event.type] ||
-                            TYPE_COLOR.outro,
-                        }}
-                      />
+                      {event.icon ? (
+                        <DocIcon value={event.icon} size={20} fallback={null} className="shrink-0" />
+                      ) : (
+                        <span
+                          className="mt-1 h-3 w-3 shrink-0 rounded-full"
+                          style={{
+                            backgroundColor:
+                              event.color ||
+                              TYPE_COLOR[event.type] ||
+                              TYPE_COLOR.outro,
+                          }}
+                        />
+                      )}
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-semibold">
                           {event.title}

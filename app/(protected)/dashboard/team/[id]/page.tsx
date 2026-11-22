@@ -1,5 +1,11 @@
 import { ShieldAlert } from "lucide-react";
-import { resolveStagebookScope, requireStagebookAccess, StagebookAuthError } from "@/utils/stagebook/scope";
+import {
+  requireAuthenticatedUser,
+  resolveStagebookScope,
+  requireStagebookAccess,
+  StagebookAuthError,
+} from "@/utils/stagebook/scope";
+import { syncClerkMembershipsFor } from "@/utils/stagebook/team-membership-sync";
 import { TeamContent, parseTab } from "../team-content";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -9,9 +15,9 @@ export default async function TeamByIdPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string; feed?: string }>;
+  searchParams: Promise<{ tab?: string; feed?: string; novo?: string }>;
 }) {
-  const [{ id }, { tab, feed }] = await Promise.all([params, searchParams]);
+  const [{ id }, { tab, feed, novo }] = await Promise.all([params, searchParams]);
 
   if (!UUID_RE.test(id)) {
     return <NoAccess />;
@@ -21,8 +27,12 @@ export default async function TeamByIdPage({
   try {
     scope = await requireStagebookAccess(id);
   } catch (error) {
-    if (error instanceof StagebookAuthError) return <NoAccess />;
-    throw error;
+    if (!(error instanceof StagebookAuthError)) throw error;
+    // Pode ser um convite recém-aceito cujo webhook do Clerk ainda não chegou:
+    // sincroniza as memberships e tenta de novo antes de negar o acesso.
+    const joined = await syncClerkMembershipsFor(await requireAuthenticatedUser());
+    if (!joined.includes(id)) return <NoAccess />;
+    scope = await requireStagebookAccess(id);
   }
 
   if (scope.type !== "team") {
@@ -35,7 +45,13 @@ export default async function TeamByIdPage({
   const isActiveScope = activeScope.type === "team" && activeScope.teamId === id;
 
   return (
-    <TeamContent scope={scope} isActiveScope={isActiveScope} tab={parseTab(tab)} feed={feed === "all"} />
+    <TeamContent
+      scope={scope}
+      isActiveScope={isActiveScope}
+      tab={parseTab(tab)}
+      feed={feed === "all"}
+      create={novo === "1"}
+    />
   );
 }
 

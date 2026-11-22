@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { InlineAlert, ToolDialog } from "@/components/stage";
 import { listTagsWithUsage } from "@/utils/stagebook/actions/tags";
 import { listMilestonesWithUsage } from "@/utils/stagebook/actions/milestones";
 import type { MilestoneWithUsage, TagWithUsage } from "@/types/labels";
@@ -35,20 +36,14 @@ export function LabelsManagerModal({
   }, []);
 
   return (
-    <div className="modal modal-open" role="dialog" aria-modal="true" aria-label="Tags e milestones">
-      <div className="modal-box max-h-[85vh] max-w-3xl overflow-y-auto">
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm btn-square absolute right-3 top-3"
-          aria-label="Fechar"
-          onClick={() => onClose(true)}
-        >
-          <X size={16} />
-        </button>
+    <ToolDialog open onClose={() => onClose(true)} size="lg" title="Tags e metas" description="O mesmo catálogo vale para todas as ferramentas deste espaço.">
+      <div className="pb-2">
         {error ? (
-          <p className="py-10 text-center text-sm text-error">{error}</p>
+          <InlineAlert type="error">{error}</InlineAlert>
         ) : !data ? (
-          <p className="py-10 text-center text-sm text-base-content/50">Carregando…</p>
+          <p className="flex items-center justify-center gap-2 py-10 text-[13px] text-base-content/50">
+            <Loader2 size={14} className="animate-spin" /> Carregando…
+          </p>
         ) : (
           <LabelsManager
             embedded
@@ -59,7 +54,6 @@ export function LabelsManagerModal({
           />
         )}
       </div>
-      <button type="button" className="modal-backdrop" aria-label="Fechar" onClick={() => onClose(true)} />
-    </div>
+    </ToolDialog>
   );
 }

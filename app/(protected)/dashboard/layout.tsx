@@ -4,6 +4,7 @@ import { NavFooter, NavLinks } from "./nav-links";
 import { SidebarTooltips } from "./sidebar-tooltips";
 import Logo from "@/components/UI/Logo";
 import {
+  BookMarkedIcon,
   CalendarDays,
   EllipsisVertical,
   FoldersIcon,
@@ -95,6 +96,14 @@ export default async function DashboardLayout({
           <div className="ml-auto flex min-w-0 items-center gap-1 sm:gap-2">
             {/* Atalhos visíveis a partir de sm */}
             <Link
+              href="/dashboard/diario"
+              className="btn btn-ghost btn-sm btn-square hidden sm:inline-flex"
+              title="Abrir seu diário"
+              aria-label="Diário"
+            >
+              <BookMarkedIcon size={18} />
+            </Link>
+            <Link
               href="/dashboard/calendar"
               className="btn btn-ghost btn-sm btn-square hidden sm:inline-flex"
               title="Abrir seu calendário"
@@ -125,6 +134,12 @@ export default async function DashboardLayout({
                 tabIndex={0}
                 className="menu dropdown-content z-50 mt-2 w-48 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
               >
+                <li>
+                  <Link href="/dashboard/diario">
+                    <BookMarkedIcon size={16} />
+                    Diário
+                  </Link>
+                </li>
                 <li>
                   <Link href="/dashboard/calendar">
                     <CalendarDays size={16} />

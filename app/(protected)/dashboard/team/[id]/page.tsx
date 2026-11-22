@@ -15,9 +15,9 @@ export default async function TeamByIdPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string; feed?: string; novo?: string }>;
+  searchParams: Promise<{ tab?: string; feed?: string; novo?: string; aba?: string }>;
 }) {
-  const [{ id }, { tab, feed, novo }] = await Promise.all([params, searchParams]);
+  const [{ id }, { tab, feed, novo, aba }] = await Promise.all([params, searchParams]);
 
   if (!UUID_RE.test(id)) {
     return <NoAccess />;
@@ -51,6 +51,7 @@ export default async function TeamByIdPage({
       tab={parseTab(tab)}
       feed={feed === "all"}
       create={novo === "1"}
+      chapterId={typeof aba === "string" && UUID_RE.test(aba) ? aba : null}
     />
   );
 }

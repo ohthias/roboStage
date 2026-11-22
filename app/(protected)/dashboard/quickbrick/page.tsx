@@ -1,9 +1,10 @@
 import { NotebookShelf } from "@/components/QuickBrick/Notebook/NotebookShelf";
 import { listNotebooks, listQuickbrickLeagues } from "./actions";
+import { PersonalTransferButton } from "@/components/stagebook/transfer/personal-transfer-button";
 
 export const metadata = { title: "QuickBrick Studio · RoboStage" };
 
 export default async function QuickBrickStudioPage() {
   const [notebooks, leagues] = await Promise.all([listNotebooks(), listQuickbrickLeagues()]);
-  return <NotebookShelf notebooks={notebooks} leagues={leagues} />;
+  return <NotebookShelf notebooks={notebooks} leagues={leagues} headerAction={<PersonalTransferButton kind="quickbrick" />} />;
 }

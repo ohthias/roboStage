@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   Activity,
+  ArrowRightLeft,
+  Archive,
   CalendarCheck,
   CalendarPlus,
   CircleStop,
@@ -11,6 +13,7 @@ import {
   KanbanSquare,
   Lightbulb,
   ListChecks,
+  NotebookPen,
   Play,
   ShieldCheck,
   Trash2,
@@ -21,6 +24,7 @@ import {
 } from "lucide-react";
 import { roleLabel } from "@/utils/stagebook/team-permissions";
 import { sessionKindLabel, type TeamActivityItem } from "@/types/training";
+import { formatJournalDate } from "@/types/journal";
 import { PersonAvatar } from "./team-avatar";
 import { teamToolHref } from "./team-links";
 
@@ -59,7 +63,57 @@ function ToolRes({ teamId, path, children }: { teamId: string; path: string | nu
 const sessionHref = ({ teamId, item }: Ctx) =>
   item.entityId ? `/dashboard/team/${teamId}/treinos/${item.entityId}` : null;
 
+const legacyHref = ({ teamId, item }: Ctx) =>
+  `/dashboard/team/${teamId}?tab=legado${item.entityId ? `&aba=${item.entityId}` : ""}`;
+
 const VERBS: Record<string, { Icon: LucideIcon; tone: string; render: (c: Ctx) => ReactNode }> = {
+  "resource.transferred": {
+    Icon: ArrowRightLeft,
+    tone: "text-secondary",
+    render: ({ d }) => {
+      const total = num(d.count) ?? 1;
+      const rest = total - 1;
+      return (
+        <>
+          trouxe do espaço pessoal <Res>{str(d.first) ?? "arquivos"}</Res>
+          {rest > 0 && ` e mais ${rest} ${rest === 1 ? "item" : "itens"}`}
+        </>
+      );
+    },
+  },
+  "legacy.chapter_created": {
+    Icon: Archive,
+    tone: "text-accent",
+    render: (c) => (
+      <>
+        abriu {c.d.kind === "competition" ? "a competição" : "a temporada"} <Res href={legacyHref(c)}>{str(c.d.name)}</Res> no legado
+      </>
+    ),
+  },
+  "legacy.items_added": {
+    Icon: Archive,
+    tone: "text-accent",
+    render: (c) => {
+      const n = num(c.d.count) ?? c.item.count;
+      return (
+        <>
+          guardou {n === 1 ? "um item" : `${n} itens`} em <Res href={legacyHref(c)}>{str(c.d.name)}</Res>
+        </>
+      );
+    },
+  },
+  "journal.created": {
+    Icon: NotebookPen,
+    tone: "text-primary",
+    render: ({ teamId, item, d }) => (
+      <>
+        escreveu no diário{" "}
+        <ToolRes teamId={teamId} path={item.entityId ? `/dashboard/diario/${item.entityId}` : null}>
+          {str(d.name) ?? (str(d.entryDate) ? formatJournalDate(str(d.entryDate)!, "weekday") : "do dia")}
+        </ToolRes>
+      </>
+    ),
+  },
   "board.created": {
     Icon: KanbanSquare,
     tone: "text-primary",
@@ -125,6 +179,28 @@ const VERBS: Record<string, { Icon: LucideIcon; tone: string; render: (c: Ctx) =
               · {fmtNum(score)} pts{prev !== null && ` (antes ${fmtNum(prev)})`}
             </span>
           )}
+        </>
+      );
+    },
+  },
+  "milestone.completed": {
+    Icon: Trophy,
+    tone: "text-success",
+    render: ({ teamId, d }) => (
+      <>concluiu a meta <Res href={`/dashboard/team/${teamId}?tab=marcos`}>{str(d.name)}</Res></>
+    ),
+  },
+  "milestone.criterion_done": {
+    Icon: ListChecks,
+    tone: "text-secondary",
+    render: ({ teamId, d }) => {
+      const done = num(d.done);
+      const total = num(d.total);
+      return (
+        <>
+          marcou <span className="font-medium">“{str(d.criterion)}”</span> na meta{" "}
+          <Res href={`/dashboard/team/${teamId}?tab=marcos`}>{str(d.name)}</Res>
+          {done !== null && total !== null && <span className="text-base-content/55"> · {done}/{total}</span>}
         </>
       );
     },

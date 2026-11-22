@@ -18,6 +18,7 @@ import {
   findTagByName,
   getOrCreateTag,
   requireResourceInScope,
+  requireResourceWritable,
   requireTagInScope,
   tagScope,
   tagUsageByKind,
@@ -155,6 +156,7 @@ export async function mergeTags(fromId: string, intoId: string): Promise<ActionR
       ["thinklab_tags", "thinklab_id"],
       ["test_tags", "test_id"],
       ["quickbrick_notebook_tags", "notebook_id"],
+      ["journal_entry_tags", "entry_id"],
     ] as const;
     for (const [table, col] of links) {
       const t = sql.identifier(table);
@@ -218,7 +220,7 @@ export async function toggleResourceTag(
     requireUuid(id, "item");
     requireUuid(tagId, "tag");
     const scope = await resolveStagebookScope();
-    await requireResourceInScope(scope, kind, id);
+    await requireResourceWritable(scope, kind, id);
     await requireTagInScope(scope, tagId);
 
     const adapter = adapterFor(kind);
@@ -242,7 +244,7 @@ export async function addResourceTagByName(
     assertKind(kind);
     requireUuid(id, "item");
     const scope = await resolveStagebookScope();
-    await requireResourceInScope(scope, kind, id);
+    await requireResourceWritable(scope, kind, id);
 
     const tag = await getOrCreateTag(scope, parseName(name), parseColor(color));
     await adapterFor(kind).addTag(id, tag.id);
@@ -261,7 +263,7 @@ export async function removeResourceTag(
     requireUuid(id, "item");
     requireUuid(tagId, "tag");
     const scope = await resolveStagebookScope();
-    await requireResourceInScope(scope, kind, id);
+    await requireResourceWritable(scope, kind, id);
     await adapterFor(kind).removeTag(id, tagId);
     refresh();
     return (await tagsForResources(kind, [id])).get(id) ?? [];

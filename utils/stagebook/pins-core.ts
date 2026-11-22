@@ -193,3 +193,44 @@ export async function searchPinCandidates(
   );
   return lists.flat().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
+
+// ---------------------------------------------------------------------------
+// Itens do espaço (genérico): também usado pelos vínculos do Diário.
+// ---------------------------------------------------------------------------
+
+export type WorkspaceItem = {
+  kind: PinKind;
+  id: string;
+  title: string;
+  icon: string | null;
+  href: string;
+  updatedAt: string;
+};
+
+const toItem = (kind: PinKind, row: Row): WorkspaceItem => ({
+  kind,
+  id: row.id,
+  title: row.title || "Sem título",
+  icon: row.icon,
+  href: pinHref(kind, row.id),
+  updatedAt: row.updatedAt.toISOString(),
+});
+
+/** Itens por id, só os que existem e pertencem ao espaço. */
+export async function workspaceItemsByIds(scope: StagebookScope, kind: PinKind, ids: string[]): Promise<WorkspaceItem[]> {
+  if (!ids.length) return [];
+  const rows = await SOURCES[kind].byIds(ids);
+  return rows.filter((row) => isOwnedByScope(scope, row)).map((row) => toItem(kind, row));
+}
+
+/** Busca por título nas ferramentas escolhidas, mais recentes primeiro. */
+export async function searchWorkspaceItems(
+  scope: StagebookScope,
+  { q = "", kinds, perKind = 6 }: { q?: string; kinds: PinKind[]; perKind?: number },
+): Promise<WorkspaceItem[]> {
+  const query = q.trim().slice(0, 80);
+  const lists = await Promise.all(
+    kinds.map(async (kind) => (await SOURCES[kind].search(scope, query, perKind)).map((row) => toItem(kind, row))),
+  );
+  return lists.flat().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}

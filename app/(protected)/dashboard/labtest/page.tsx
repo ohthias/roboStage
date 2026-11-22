@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LabTestCard } from "@/components/labtest/LabTestCard";
 import { StatCard } from "@/components/labtest/shared";
 import { LabTestToolbar } from "@/components/labtest/LabTestToolbar";
+import { PersonalTransferButton } from "@/components/stagebook/transfer/personal-transfer-button";
 import { LabTestTabs } from "@/components/labtest/LabTestTabs";
 import { LabTestFilters } from "@/components/labtest/LabTestFilters";
 import { normalizeStatus } from "@/utils/labtest/catalog";
@@ -85,7 +86,10 @@ export default async function LabTestPage({
             teste, seja nos desafios das competições ou testes isolados.
           </p>
         </div>
-        <LabTestToolbar viewMode={viewMode} params={params} />
+        <div className="flex flex-wrap items-center gap-2">
+          <PersonalTransferButton kind="labtest" />
+          <LabTestToolbar viewMode={viewMode} params={params} />
+        </div>
       </header>
 
       <section className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Resumo dos testes">

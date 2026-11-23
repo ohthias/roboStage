@@ -1,17 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Activity,
   ArrowRight,
   ArrowUpRight,
-  Bot,
-  CalendarHeart,
   ChevronRight,
   ClipboardCheck,
-  ClipboardList,
   Clock,
   Code,
-  Cog,
   Cuboid,
   FlaskConical,
   FolderGit2,
@@ -22,19 +17,14 @@ import {
   KeyRound,
   LayoutDashboard,
   LifeBuoy,
-  Lightbulb,
-  Megaphone,
   MessageSquare,
   Newspaper,
   NotebookPen,
-  Play,
   QrCode,
   Radio,
   Rocket,
   Smartphone,
   Sparkles,
-  Swords,
-  ToyBrick,
   Trophy,
   Tv,
   UserPlus,
@@ -65,8 +55,6 @@ import {
   type Tone,
   NewsCard,
   StatusBadge,
-  CoverArt,
-  coverFromSeed,
 } from "@/components/stage";
 import LivePreview from "./LivePreview";
 import PersonaTabs from "./PersonaTabs";
@@ -82,8 +70,6 @@ const marqueeItems = [
   "Stagebook",
   "Anatix",
   "ShowLive",
-  "Scouting FTC",
-  "Estratégia TeleOp",
 ];
 
 /** Faixa em marquee com as ferramentas, logo abaixo do hero. */
@@ -117,10 +103,7 @@ export function PlatformIntro() {
 
           <ul className="mt-8 space-y-3">
             {platformPoints.map(({ icon: Icon, text }) => (
-              <li
-                key={text}
-                className="flex items-center gap-3 text-sm sm:text-base"
-              >
+              <li key={text} className="flex items-center gap-3 text-sm sm:text-base">
                 <span className="grid size-8 shrink-0 place-items-center rounded-tl-lg rounded-br-lg bg-base-200 text-primary">
                   <Icon size={16} strokeWidth={2} />
                 </span>
@@ -163,7 +146,7 @@ type Competition = {
   text: string;
   cta: string;
   image: string;
-  tone: "primary" | "secondary";
+  tone: "primary" | "secondary" | "accent";
   span: string;
   shadow: string;
 };
@@ -171,118 +154,44 @@ type Competition = {
 const competitions: Competition[] = [
   {
     href: "/fll",
+    path: "/fll",
     title: "FIRST LEGO League",
     text: "Pontuador por temporada, QuickBrick Studio, Recall, rubricas, timers e guias para equipes iniciantes.",
     cta: "Explorar a FLL",
-    image: "/images/index/banner_hero_fll2.webp",
+    image: "/images/index/hero_banner_fll.jpg",
     tone: "primary",
-    status: "Disponível",
-    span: "lg:col-span-7",
+    span: "lg:col-span-5",
+    shadow: "stage-shadow-lg hover:shadow-[10px_10px_0_0_var(--stage-shadow)]",
   },
   {
     href: "/obr",
+    path: "/obr",
     title: "OBR",
     text: "Pontuador da arena, documentação e o Anatix para ver o robô em tempo real.",
     cta: "Explorar a OBR",
-    image: "/images/index/banner_hero_obr.webp",
+    image: "/images/index/hero_banner_obr.png",
     tone: "secondary",
-    status: "Disponível",
-    span: "lg:col-span-5",
+    span: "lg:col-span-4",
+    shadow: "shadow-[8px_8px_0_0_var(--color-accent)] hover:shadow-[10px_10px_0_0_var(--color-accent)]",
   },
   {
     href: "/ftc",
+    path: "/ftc",
     title: "FIRST Tech Challenge",
     text: "Cronômetro da BIOBUZZ, estratégia do TeleOp, scouting com dados da FTCScout, arena e documentação.",
     cta: "Explorar a FTC",
-    image: "/images/index/banner_hero_ftc.webp",
-    tone: "dark",
-    status: "Novo",
-    span: "lg:col-span-8",
-  },
+    image: "/images/index/hero_banner_ftc.png",
+    tone: "accent",
+    span: "lg:col-span-3",
+    shadow: "stage-shadow-lg hover:shadow-[10px_10px_0_0_var(--stage-shadow)]",
+  }
 ];
 
-/** Cores de cada card: fundo, degradê sobre a foto, sombra dura e foco. */
-const competitionStyle: Record<
-  CompetitionTone,
-  { base: string; overlay: string; shadow: string; arrow: string; kicker: string; tag: Tone }
-> = {
-  primary: {
-    base: "bg-primary text-primary-content focus-visible:ring-primary",
-    overlay: "from-primary via-primary/80 to-primary/20",
-    shadow: "stage-shadow-lg hover:shadow-[10px_10px_0_0_var(--stage-shadow)]",
-    arrow: "group-hover:text-primary",
-    kicker: "text-white/70",
-    tag: "paper",
-  },
-  secondary: {
-    base: "bg-secondary text-secondary-content focus-visible:ring-secondary",
-    overlay: "from-secondary via-secondary/85 to-secondary/20",
-    shadow: "shadow-[8px_8px_0_0_var(--color-accent)] hover:shadow-[10px_10px_0_0_var(--color-accent)]",
-    arrow: "group-hover:text-secondary",
-    kicker: "text-white/70",
-    tag: "paper",
-  },
-  // O amarelo da marca não segura texto branco; a FTC usa véu escuro com detalhes em accent.
-  dark: {
-    base: "bg-neutral text-neutral-content focus-visible:ring-accent",
-    overlay: "from-black via-black/75 to-black/10",
-    shadow: "shadow-[8px_8px_0_0_var(--color-primary)] hover:shadow-[10px_10px_0_0_var(--color-primary)]",
-    arrow: "group-hover:text-neutral",
-    kicker: "text-accent",
-    tag: "accent",
-  },
+const competitionOverlay = {
+  primary: "from-primary via-primary/80 to-primary/20",
+  secondary: "from-secondary via-secondary/85 to-secondary/20",
+  accent: "from-accent via-accent/80 to-accent/20",
 };
-
-function CompetitionCard({ c }: { c: Competition }) {
-  const s = competitionStyle[c.tone];
-  return (
-    <Link
-      href={c.href}
-      className={cn(
-        "group relative isolate block h-full min-h-[340px] overflow-hidden rounded-tl-[32px] rounded-br-[32px] transition-all duration-500 ease-out hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 motion-reduce:hover:translate-y-0",
-        s.base,
-        s.shadow,
-      )}
-    >
-      {/* Wrapper com -z-20: dentro de seção texturizada o stage.css põe z-index 0 na <img>. */}
-      <div aria-hidden className="absolute inset-0 -z-20 overflow-hidden">
-        <Image
-          src={c.image}
-          alt=""
-          fill
-          sizes="(min-width: 1024px) 60vw, 100vw"
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-        />
-      </div>
-      <div aria-hidden className={cn("absolute inset-0 -z-10 bg-gradient-to-t", s.overlay)} />
-
-      <div className="flex h-full min-h-[340px] flex-col justify-between p-6 sm:p-8">
-        <div className="flex items-center justify-between gap-3">
-          <StickerTag tone={s.tag} size="sm" shadow={false}>
-            {c.status}
-          </StickerTag>
-          <span
-            className={cn(
-              "flex size-10 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition-all duration-300 group-hover:-rotate-45 group-hover:bg-white",
-              s.arrow,
-            )}
-          >
-            <ChevronRight size={22} />
-          </span>
-        </div>
-        <div className="text-white">
-          <p className={cn("stage-kicker", s.kicker)}>{c.href}</p>
-          <h3 className="stage-display mt-2 text-3xl sm:text-4xl xl:text-5xl">{c.title}</h3>
-          <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">{c.text}</p>
-          <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold">
-            {c.cta}
-            <ChevronRight size={18} className="transition-transform duration-300 group-hover:translate-x-2" />
-          </span>
-        </div>
-      </div>
-    </Link>
-  );
-}
 
 export function CompetitionsSection() {
   return (
@@ -304,40 +213,97 @@ export function CompetitionsSection() {
           />
         </Reveal>
 
-        <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-12">
+        <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-12">
           {competitions.map((c, i) => (
-            <Reveal key={c.href} delay={i * 80} className={cn("h-full", c.span)}>
-              <CompetitionCard c={c} />
+            <Reveal key={c.href} delay={i * 80} className={c.span}>
+              <Link
+                href={c.href}
+                className={cn(
+                  "group relative isolate block h-full min-h-[340px] overflow-hidden rounded-tl-[32px] rounded-br-[32px] transition-all duration-500 ease-out hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4",
+                  c.tone === "primary"
+                    ? "bg-primary text-primary-content focus-visible:ring-primary"
+                    : "bg-secondary text-secondary-content focus-visible:ring-secondary",
+                  c.shadow,
+                )}
+              >
+                {/* Wrapper com -z-20: dentro de seção texturizada o stage.css põe z-index 0 na <img>. */}
+                <div aria-hidden className="absolute inset-0 -z-20 overflow-hidden">
+                  <Image
+                    src={c.image}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 40vw, 100vw"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                  />
+                </div>
+                <div className={cn("absolute inset-0 -z-10 bg-gradient-to-t", competitionOverlay[c.tone])} />
+                <div className="flex h-full min-h-[340px] flex-col justify-between p-6 sm:p-8">
+                  <div className="flex items-center justify-between gap-3">
+                    <StickerTag size="sm" shadow={false}>Disponível</StickerTag>
+                    <span
+                      className={cn(
+                        "flex size-10 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition-all duration-300 group-hover:-rotate-45 group-hover:bg-white",
+                        c.tone === "primary" ? "group-hover:text-primary" : "group-hover:text-secondary",
+                      )}
+                    >
+                      <ChevronRight size={22} />
+                    </span>
+                  </div>
+                  <div className="text-white">
+                    <p className="stage-kicker text-white/70">{c.path}</p>
+                    <h3 className="stage-display mt-2 text-3xl sm:text-4xl xl:text-5xl">{c.title}</h3>
+                    <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">{c.text}</p>
+                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold">
+                      {c.cta}
+                      <ChevronRight size={18} className="transition-transform duration-300 group-hover:translate-x-2" />
+                    </span>
+                  </div>
+                </div>
+              </Link>
             </Reveal>
           ))}
 
-          {/* Próximas modalidades */}
-          <Reveal delay={competitions.length * 80} className="h-full lg:col-span-4">
-            <Link href="/news" className="group block h-full focus-visible:outline-none">
+          {/* Futuras */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-1">
+            <Reveal delay={160} className="h-full">
               <Card
                 corner
-                interactive
-                className="flex h-full min-h-[200px] flex-col justify-between border border-dashed border-base-300 bg-base-100/60 group-hover:border-primary/50 group-focus-visible:border-primary"
+                className="group flex h-full min-h-[150px] flex-col justify-between border border-base-300 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-secondary/50"
+              >
+                <div className="flex items-center justify-between">
+                  <StickerTag tone="accent" size="sm" shadow={false}>Em breve</StickerTag>
+                  <span className="font-mono text-xs text-base-content/30">/ftc</span>
+                </div>
+                <div>
+                  <h3 className="stage-display text-3xl text-base-content/60 transition-colors group-hover:text-secondary">
+                    FTC
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed text-base-content/60">
+                    Ferramentas para equipes da FIRST Tech Challenge.
+                  </p>
+                </div>
+              </Card>
+            </Reveal>
+            <Reveal delay={240} className="h-full">
+              <Link
+                href="/news"
+                className="group flex h-full min-h-[150px] flex-col justify-between rounded-tl-[2rem] rounded-br-[2rem] border border-dashed border-base-300 bg-base-100/50 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-3xl font-light text-base-content/40 transition-transform duration-300 group-hover:rotate-90 group-hover:text-primary">
                     +
                   </span>
-                  <Kicker className="text-base-content/45">EM EXPANSÃO</Kicker>
+                  <span className="stage-kicker text-base-content/45">EM EXPANSÃO</span>
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-base-content/75">Mais modalidades</h3>
                   <p className="mt-1 text-sm leading-relaxed text-base-content/60">
                     Acompanhe as novidades para saber o que vem por aí.
                   </p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-base-content/60 transition-colors group-hover:text-primary">
-                    Ver novidades
-                    <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-                  </span>
                 </div>
-              </Card>
-            </Link>
-          </Reveal>
+              </Link>
+            </Reveal>
+          </div>
         </div>
       </div>
     </Section>
@@ -390,9 +356,9 @@ const tools: Tool[] = [
     tone: "secondary",
   },
   {
-    icon: ClipboardCheck,
+    icon: MessageSquare,
     tag: "Avaliação",
-    title: "Rubricas",
+    title: "Rúbricas",
     description: "Avalie o projeto, o robô e os valores centrais com rúbricas personalizadas.",
     href: "/fll/rubric",
     tone: "accent",
@@ -429,24 +395,6 @@ const tools: Tool[] = [
     href: "/showlive",
     tone: "primary",
     status: "Disponível",
-  },
-  {
-    icon: ClipboardList,
-    tag: "FTC · Scouting",
-    title: "Scouting",
-    description: "Dados oficiais da FTCScout com as anotações dos scouts, ranking e simulação da seleção de alianças.",
-    href: "/ftc/scouting",
-    tone: "secondary",
-    status: "Novo",
-  },
-  {
-    icon: Swords,
-    tag: "FTC · Estratégia",
-    title: "Estratégia TeleOp",
-    description: "Monte o plano dos 2:00 de TeleOp em três fases, com presets e briefing para a aliança.",
-    href: "/ftc/estrategia",
-    tone: "accent",
-    status: "Novo",
   },
 ];
 
@@ -503,8 +451,7 @@ const steps = [
     number: "01",
     icon: UserPlus,
     title: "Crie sua conta",
-    description:
-      "O cadastro é gratuito e libera o painel com as ferramentas da equipe.",
+    description: "O cadastro é gratuito e libera o painel com as ferramentas da equipe.",
     detail: "Leva um minuto",
     href: "/sign-up",
     link: "Cadastrar",
@@ -513,8 +460,7 @@ const steps = [
     number: "02",
     icon: Users,
     title: "Monte a equipe",
-    description:
-      "Convide os integrantes, escolha a modalidade e organize documentos e tarefas.",
+    description: "Convide os integrantes, escolha a modalidade e organize documentos e tarefas.",
     detail: "Todos no mesmo lugar",
     href: "/dashboard/team",
     link: "Ver equipes",
@@ -523,8 +469,7 @@ const steps = [
     number: "03",
     icon: Rocket,
     title: "Treine e evolua",
-    description:
-      "Pontue rodadas, registre testes no LabTest e compare a evolução ao longo da temporada.",
+    description: "Pontue rodadas, registre testes no LabTest e compare a evolução ao longo da temporada.",
     detail: "Decisões com dados",
     href: "/labtest",
     link: "Conhecer o LabTest",
@@ -650,9 +595,7 @@ export function SeasonsSection() {
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-base-content/45">
-                    {period}
-                  </span>
+                  <span className="font-mono text-xs text-base-content/45">{period}</span>
                   {current && (
                     <StickerTag tone="primary" size="sm" rotate={3}>
                       Atual
@@ -672,10 +615,7 @@ export function SeasonsSection() {
                   <h3 className="text-sm font-black tracking-tight sm:text-base">{name}</h3>
                   <span className="inline-flex items-center gap-1 text-xs font-bold text-base-content/55 transition-colors group-hover:text-primary">
                     Pontuar
-                    <ArrowRight
-                      size={14}
-                      className="transition-transform group-hover:translate-x-1"
-                    />
+                    <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
               </Link>
@@ -757,10 +697,7 @@ export function SpotlightSection() {
                   <p className="mt-3 flex-1 text-sm leading-6 text-base-content/60 sm:text-base">{text}</p>
                   <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold">
                     {cta}
-                    <ArrowRight
-                      size={16}
-                      className="transition-transform group-hover:translate-x-1"
-                    />
+                    <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
               </Link>
@@ -813,6 +750,7 @@ export function CanopySection() {
     </section>
   );
 }
+
 /* ============================================================= NOVIDADES */
 
 export type HomeNews = {
@@ -828,118 +766,24 @@ function formatDate(date?: string) {
   if (!date) return "";
   const d = new Date(`${date}T12:00:00`);
   if (Number.isNaN(d.getTime())) return date;
-  return d.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-/* ---------- capa gerada para notícia sem imagem ---------- */
-
-type NewsLook = { icon: LucideIcon; tone: Tone };
-
-/**
- * Ícone e cor pela categoria (comparação sem acento e sem caixa).
- * A primeira regra que bater vence; sem categoria conhecida, cor e ícone
- * saem do slug, então cada notícia mantém sempre a mesma capa.
- */
-const newsLooks: { match: RegExp; look: NewsLook }[] = [
-  { match: /\bfll\b|lego/, look: { icon: ToyBrick, tone: "primary" } },
-  { match: /\bobr\b|olimpiada/, look: { icon: Bot, tone: "secondary" } },
-  { match: /\bftc\b|tech challenge/, look: { icon: Cog, tone: "accent" } },
-  { match: /atualiza|changelog|lancamento|versao|novidade|ferramenta/, look: { icon: Rocket, tone: "info" } },
-  { match: /evento|torneio|showlive|competic|campeonato/, look: { icon: Trophy, tone: "success" } },
-  { match: /comunidade|equipe|parceri|apoio/, look: { icon: HeartHandshake, tone: "secondary" } },
-  { match: /dica|guia|tutorial|aprend|estrategia/, look: { icon: Lightbulb, tone: "accent" } },
-  { match: /aviso|comunicado|importante/, look: { icon: Megaphone, tone: "primary" } },
-  { match: /agenda|calendario|data/, look: { icon: CalendarHeart, tone: "info" } },
-];
-
-const fallbackIcons: LucideIcon[] = [Newspaper, Sparkles, Rocket, Lightbulb, Megaphone];
-
-function newsLook(n: HomeNews): NewsLook {
-  const key = (n.category ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-  const hit = key && newsLooks.find((r) => r.match.test(key));
-  if (hit) return hit.look;
-  const auto = coverFromSeed(n.slug);
-  return { icon: fallbackIcons[n.slug.length % fallbackIcons.length], tone: auto.tone };
-}
-
-/** Desenho de fundo (padrão estável pelo slug) + ícone do assunto, no tamanho de cada layout. */
-function newsFallback(n: HomeNews) {
-  const { icon: Icon, tone } = newsLook(n);
-  const { pattern } = coverFromSeed(n.slug);
-  // No amarelo e no "paper" o ícone fica escuro; nos outros, branco.
-  const light = tone === "accent" || tone === "paper";
-  const ink = light ? "text-black/75" : "text-white";
-
-  function NewsFallback(layout: "vertical" | "horizontal" | "featured") {
-    return (
-      <>
-        <CoverArt pattern={pattern} tone={tone} seed={n.slug} className="absolute inset-0 size-full" />
-        {layout === "featured" ? (
-          <>
-            <Icon
-              aria-hidden
-              strokeWidth={1.4}
-              className={cn("absolute -right-6 -top-6 size-56 rotate-12 opacity-25 sm:size-72", ink)}
-            />
-            {/* véu extra: o texto do destaque é branco, inclusive sobre o amarelo */}
-            <span className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-          </>
-        ) : (
-          <span
-            className={cn(
-              "absolute left-1/2 top-1/2 grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-tl-xl rounded-br-xl",
-              light ? "bg-white/55" : "bg-black/25",
-              layout === "horizontal" ? "size-12" : "size-16",
-            )}
-          >
-            <Icon aria-hidden strokeWidth={1.8} className={cn(ink, layout === "horizontal" ? "size-6" : "size-8")} />
-          </span>
-        )}
-      </>
-    );
-  }
-  return NewsFallback;
-}
-
-/* ---------- seção ---------- */
-
-type NewsSectionProps = {
-  news: HomeNews[];
-  kicker?: string;
-  title?: string;
-  highlight?: string;
-};
-
-export function NewsSection(props: NewsSectionProps) {
-  return <NewsSectionContent {...props} />;
-}
-
-function NewsSectionContent({
+export function NewsSection({
   news,
   kicker = "/ NOVIDADES",
   title = "O que mudou",
   highlight = "por aqui.",
-}: NewsSectionProps) {
+}: {
+  news: HomeNews[];
+  kicker?: string;
+  title?: string;
+  highlight?: string;
+}) {
   if (news.length === 0) return null;
   const [first, ...rest] = news;
   const sideNews = rest.slice(0, 3);
-  const bottomNews = rest.slice(3, 6);
-
-  const card = (n: HomeNews) => ({
-    title: n.title,
-    href: `/news/${encodeURIComponent(n.slug)}`,
-    image: n.cover ?? "",
-    tag: n.category,
-    date: formatDate(n.date),
-    fallback: newsFallback(n),
-  });
+  const bottomNews = rest.slice(3);
 
   return (
     <Section tone="muted" className="[&>div]:border-b-0">
@@ -964,32 +808,50 @@ function NewsSectionContent({
           </div>
         </Reveal>
 
-        <div className={cn("mt-12 grid gap-5", sideNews.length > 0 && "lg:grid-cols-[1.55fr_1fr]")}>
+        <div className="mt-12 grid gap-5 lg:grid-cols-[1.55fr_1fr]">
           <Reveal className="h-full">
             <NewsCard
-              {...card(first)}
+              title={first.title}
+              href={`/news/${encodeURIComponent(first.slug)}`}
               excerpt={first.description}
+              image={first.cover ?? ""}
+              tag={first.category}
+              date={formatDate(first.date)}
               layout="featured"
               className="h-full min-h-[27rem]"
             />
           </Reveal>
 
-          {sideNews.length > 0 && (
-            <div className="flex flex-col gap-5">
-              {sideNews.map((n, i) => (
-                <Reveal key={n.slug} delay={(i + 1) * 80} className="flex-1">
-                  <NewsCard {...card(n)} layout="horizontal" className="h-full min-h-[8.25rem]" />
-                </Reveal>
-              ))}
-            </div>
-          )}
+          <div className="flex flex-col gap-5">
+            {sideNews.map((n, i) => (
+              <Reveal key={n.slug} delay={(i + 1) * 80} className="flex-1">
+                <NewsCard
+                  title={n.title}
+                  href={`/news/${encodeURIComponent(n.slug)}`}
+                  image={n.cover ?? ""}
+                  tag={n.category}
+                  date={formatDate(n.date)}
+                  layout="horizontal"
+                  className="h-full min-h-[8.25rem]"
+                />
+              </Reveal>
+            ))}
+          </div>
         </div>
 
         {bottomNews.length > 0 && (
           <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {bottomNews.map((n, i) => (
+            {bottomNews.slice(0, 3).map((n, i) => (
               <Reveal key={n.slug} delay={(i + 1) * 80}>
-                <NewsCard {...card(n)} excerpt={n.description} layout="vertical" />
+                <NewsCard
+                  title={n.title}
+                  excerpt={n.description}
+                  href={`/news/${encodeURIComponent(n.slug)}`}
+                  image={n.cover ?? ""}
+                  tag={n.category}
+                  date={formatDate(n.date)}
+                  layout="vertical"
+                />
               </Reveal>
             ))}
           </div>
@@ -1130,7 +992,7 @@ const faq = [
   {
     title: "Quais competições são atendidas?",
     content:
-      "Hoje a plataforma tem ferramentas para a FIRST LEGO League, a FIRST Tech Challenge (temporada BIOBUZZ) e a OBR. Outras modalidades estão nos planos; acompanhe pelas notícias.",
+      "Hoje a plataforma tem ferramentas para a FIRST LEGO League e para a OBR. A FTC e outras modalidades estão nos planos; acompanhe pelas notícias.",
   },
   {
     title: "Preciso de conta para usar as ferramentas?",
@@ -1155,11 +1017,7 @@ export function FaqSection() {
       <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
         <Reveal>
           <div className="lg:sticky lg:top-28">
-            <SectionTitle
-              kicker="/ DÚVIDAS"
-              title="Antes de"
-              highlight="começar."
-            />
+            <SectionTitle kicker="/ DÚVIDAS" title="Antes de" highlight="começar." />
             <Link
               href="/help"
               className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-base-content/70 transition-colors hover:text-primary"
@@ -1229,16 +1087,6 @@ export function FinalCta() {
                 className="text-secondary-content hover:bg-secondary-content/10"
               >
                 Começar na OBR
-              </ButtonLink>
-              <ButtonLink
-                href="/ftc"
-                tone="ghost"
-                size="lg"
-                shape="rounded"
-                iconRight={<ArrowRight size={18} />}
-                className="text-secondary-content hover:bg-secondary-content/10"
-              >
-                Começar na FTC
               </ButtonLink>
             </div>
           </div>

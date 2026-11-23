@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useId,
   useMemo,
   useRef,
@@ -10,7 +11,7 @@ import {
   type ReactNode,
   type SelectHTMLAttributes,
 } from "react";
-import { AnimatePresence, motion } from "../core/lazy-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, ArrowDown, ArrowUp, ArrowUpDown, CheckCircle2, ChevronDown, Info, TriangleAlert, X } from "lucide-react";
 import { cn, type Tone } from "../lib";
 import { useDialogBehavior } from "../core/Interactive";
@@ -724,4 +725,102 @@ export function ToolDialog({
       )}
     </AnimatePresence>
   );
+}
+
+/* ================================================= CONFIRMAÇÃO (v0.9) */
+
+export type ToolConfirmOptions = {
+  title: string;
+  message?: ReactNode;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  /** danger = botão vermelho e ícone de alerta (padrão). */
+  intent?: "danger" | "default";
+};
+
+/**
+ * ToolConfirmDialog — confirmação sóbria (kit ferramenta). Com `pending`, os
+ * botões travam e o diálogo não fecha por Esc/fundo até a ação terminar.
+ */
+export function ToolConfirmDialog({
+  open,
+  title,
+  message,
+  confirmLabel = "Confirmar",
+  cancelLabel = "Cancelar",
+  intent = "danger",
+  pending = false,
+  onConfirm,
+  onCancel,
+}: ToolConfirmOptions & { open: boolean; pending?: boolean; onConfirm: () => void; onCancel: () => void }) {
+  const danger = intent === "danger";
+  return (
+    <ToolDialog
+      open={open}
+      onClose={pending ? () => {} : onCancel}
+      title={title}
+      size="sm"
+      footer={
+        <>
+          <ToolButton onClick={onCancel} disabled={pending}>
+            {cancelLabel}
+          </ToolButton>
+          <ToolButton
+            variant={danger ? "danger" : "primary"}
+            className={danger ? "border-error bg-error text-error-content hover:bg-error/90" : undefined}
+            onClick={onConfirm}
+            disabled={pending}
+            icon={pending ? <span className="loading loading-spinner loading-xs" /> : undefined}
+            data-autofocus
+          >
+            {confirmLabel}
+          </ToolButton>
+        </>
+      }
+    >
+      {message != null && (
+        <div className="flex gap-3 pb-1">
+          {danger && (
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-error/10 text-error">
+              <TriangleAlert size={18} />
+            </span>
+          )}
+          <div className="text-[13px] leading-relaxed text-base-content/75">{message}</div>
+        </div>
+      )}
+    </ToolDialog>
+  );
+}
+
+/**
+ * useToolConfirm — confirmação por Promise sem provider:
+ * `const { confirm, dialog } = useToolConfirm()`, renderize `{dialog}` e
+ * `if (await confirm({ title: "Excluir?" })) …`.
+ */
+export function useToolConfirm() {
+  const [opts, setOpts] = useState<ToolConfirmOptions | null>(null);
+  const resolver = useRef<((v: boolean) => void) | null>(null);
+  const confirm = useCallback((o: ToolConfirmOptions) => {
+    resolver.current?.(false);
+    setOpts(o);
+    return new Promise<boolean>((resolve) => (resolver.current = resolve));
+  }, []);
+  const finish = (value: boolean) => {
+    resolver.current?.(value);
+    resolver.current = null;
+    setOpts(null);
+  };
+  const dialog = (
+    <ToolConfirmDialog
+      open={!!opts}
+      title={opts?.title ?? ""}
+      message={opts?.message}
+      confirmLabel={opts?.confirmLabel}
+      cancelLabel={opts?.cancelLabel}
+      intent={opts?.intent}
+      onConfirm={() => finish(true)}
+      onCancel={() => finish(false)}
+    />
+  );
+  return { confirm, dialog };
 }

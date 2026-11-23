@@ -11,6 +11,136 @@ Exemplo: `2026.1` corresponde à primeira atualização oficial de 2026.
 
 ---
 
+## [2026.9] — Três ligas, uma história
+
+**Data:** 23/11/2026
+
+A nona atualização de 2026 traz a terceira competição para o RoboStage e dá às equipes um lugar para guardar o que viveram. A **FIRST Tech Challenge** chega com arena, montador de estratégia, scouting com dados da FTCScout, pontuador e cronômetro da temporada **BIOBUZZ**. No espaço da equipe nascem o **Diário**, as **Metas** com critérios e o **Legado**, e tudo o que foi criado no espaço pessoal pode ser **transferido para a equipe**. O editor do Stagebook ganha paleta de comandos, abas, blocos sincronizados, blocos inteligentes e menções entre páginas. O **ShowLive entra no painel**, as configurações da conta ganham senha, e-mails, sessões e verificação em duas etapas, e a **Stage UI** passa a desenhar as páginas públicas e os modais do dashboard.
+
+### FTC — FIRST Tech Challenge
+
+* Adicionado o suporte à **FIRST Tech Challenge**, com página própria (`/ftc`), navegação, rotas públicas, banners e ícone da modalidade.
+* Nova página da **Arena BIOBUZZ 2026/2027** (`/ftc/arena`), com os elementos de campo, o `ArenaExplorer` interativo, as fases da partida, a tabela de pontos, Ranking Points, faltas e regras-chave.
+* Novo **Strategy Builder** (`/ftc/estrategia`) para planejar o TeleOp da aliança em três fases (ciclos, FLOWERS e fechamento), com funções de cada robô, presets, estimativa de pontos e briefing. Os planos ficam salvos no navegador.
+* Novo **Scouting** (`/ftc/scouting`), que junta os dados oficiais da **FTCScout** às anotações dos scouts: ranking, OPR, comparação entre equipes, melhores parceiros e simulação da seleção de alianças e dos playoffs. Os registros podem ser importados e exportados em JSON (juntando scouts diferentes) e em CSV.
+* As consultas à FTCScout passam pelo servidor, com cache, nas rotas `/api/data/ftcscout/event`, `/search` e `/team-events`. A atribuição à FTCScout aparece em todas as telas que usam os dados.
+* Novo **pontuador da FTC**, com as regras da BIOBUZZ, objetivos e faltas por aliança, cálculo automático, registro de execuções de treino e exportação em CSV.
+* Novo modo **FTC Match** nos Timers (`/ftc/timers/match`): 0:30 de autônomo, transição de 0:08 e 2:00 de TeleOp, com avisos sonoros a 1:00 e 0:20 e modos só autônomo ou só TeleOp.
+* Adicionada a biblioteca de documentos da FTC (`/ftc/docs`, `ftcDocs.json`).
+* Os números da temporada (tempos, pontos, RP e faltas) ficam centralizados em `utils/competitions/ftc/biobuzz.ts`.
+
+### Diário
+
+* Adicionado o **Diário** (`/dashboard/diario`), para registrar o que foi feito em cada dia, no espaço pessoal ou da equipe.
+* Na equipe, todos os membros leem as entradas de todos, cada um edita só as suas, e técnicos e mentores podem excluir qualquer uma. Criar uma entrada aparece no feed da equipe.
+* **Escrever hoje** abre a entrada do dia ou cria uma nova a partir de um template. Os templates prontos podem ser complementados por templates salvos da equipe.
+* As entradas são feitas de seções de texto, checklist e itens resolvidos por tipo. O editor salva sozinho, aceita Ctrl+S e avisa ao sair com alterações pendentes. Nada é gravado enquanto a entrada está vazia.
+* As entradas aceitam **tags e metas** do sistema universal de etiquetas e **vínculos** com páginas do Stagebook, testes do LabTest, cadernos do QuickBrick e quadros do ThinkLab (até 30 por entrada).
+* A página inicial mostra os números do mês, um calendário, o resumo por tipo, filtros por pessoa, meta, tag, dia e tipo, e busca no texto.
+
+### Metas
+
+* Os marcos passaram a se chamar **Metas** e ganharam **critérios de conclusão**. Qualquer membro marca um critério, inclusive pelo Diário. Só técnicos e mentores editam os critérios e concluem ou reabrem a meta.
+* A aba **Metas** da equipe foi refeita: números do topo, filtro Em andamento / Concluídas / Todas e um card por meta com prazo, progresso (critérios e cards concluídos do Kanban), itens vinculados e o bloco **No diário**, com mini-gráfico das últimas 8 semanas e atalho para registrar no diário.
+* Concluir um critério e concluir uma meta passam a aparecer no feed de atividade.
+
+### Legado da equipe
+
+* Nova aba **Legado**, com a história da equipe por **temporada** e por **competição** (regional, estadual, nacional, internacional ou amistoso), com liga, local, datas e cor.
+* Temporadas prontas para FLL (BIOGLOW, UNEARTHED, SUBMERGED e MASTERPIECE), OBR (2023 a 2026) e FTC (BIOBUZZ).
+* Cada capítulo guarda resumo, resultado, robô, modalidade, prêmios, momentos marcantes, aprendizados, participantes e **seções de documentação**: texto, links e mídia, placar, ficha técnica, projeto, avaliação dos juízes, linha do tempo, pessoas e apoio. Há modelos de seção por liga.
+* Os capítulos guardam referências vivas a páginas, pastas, testes, cadernos, quadros, entradas do Diário, Kanbans, sessões de treino e metas.
+* **Sincronizar** sugere os itens do período: testes da temporada ou com rodadas nas datas, sessões de treino, metas concluídas e entradas do diário. Na OBR, entram só os testes OBR do ano.
+* Cada capítulo mostra os números do período: rodadas do LabTest, melhor pontuação, entradas do diário, treinos e metas concluídas.
+
+### Transferência para a equipe
+
+* Novo botão **Transferir para equipe** no LabTest, no QuickBrick, no Stagebook, no ThinkLab e em Pastas, visível no espaço pessoal para quem participa de alguma equipe. Na aba Legado, a mesma ação aparece como **Trazer do pessoal**.
+* A transferência muda o dono do item, sem fazer cópia: histórico, execuções, fotos e diagramas continuam iguais. Dá para levar até 50 itens por vez.
+* Pastas levam junto as subpastas, as páginas e os testes e quadros guardados nelas. Páginas levam as subpáginas.
+* As tags viram as tags da equipe com o mesmo nome, os blocos sincronizados usados nas páginas ganham uma cópia na equipe e os vínculos que só fazem sentido no pessoal são removidos. Nomes repetidos recebem " (2)".
+
+### Stagebook — Editor
+
+* Nova **paleta de comandos** (Ctrl/⌘+K) para inserir blocos, ir para um título e buscar no texto de todas as páginas, com o trecho encontrado em destaque.
+* Novos blocos: **destaques** (Info, Alerta e Fazer), **seções e títulos recolhíveis**, **equações** em LaTeX (inline e em bloco), **emojis** (`:` + termo ou grade com busca), **sumário**, **linha do tempo**, **abas** e títulos H4 a H6.
+* **Colunas** de 2 a 4, ajustáveis, e marcadores personalizados por lista.
+* **Blocos sincronizados**: um bloco transformado em sincronizado pode ser usado em várias páginas, e editar em uma muda todas. A barra do bloco mostra onde ele é usado e permite desvincular.
+* **Blocos inteligentes**: Ficha do robô (ligada a um caderno do QuickBrick), Checklist de competição, Estratégia de programação (sensores, parâmetros, código e taxa de acerto) e **Decisões**, com o bloco **Histórico de decisões** listando as decisões do espaço.
+* **Menções e backlinks**: `@` ou `[[` menciona outra página, e o rodapé lista as páginas que apontam para ela, inclusive as que citam o título sem link.
+* **Propriedades da página** (status, prazo, responsável, prioridade e outras).
+* Exportação em PDF, HTML e Markdown, com todas as abas e os novos blocos.
+* Incorporações do **ThinkLab e do LabTest** com largura, posição e altura ajustáveis. O ThinkLab pode mostrar ou esconder nome e descrição. O gráfico do LabTest permite escolher o tipo, mostrar a média e os valores, filtrar execuções e esconder partes do painel.
+
+### ShowLive
+
+* O **ShowLive entra no painel** (`/dashboard/showlive`): lista os seus eventos com status e atalhos para o hub e o telão, e cria eventos novos com os modelos de desafio e os seus templates.
+* A integração usa a mesma conta do RoboStage: o painel chama a API do ShowLive pelo servidor, com a sessão do Clerk.
+* Nova opção **ShowLive** em Configurações → Integrações, que mostra ou esconde a ferramenta no menu do painel. Desligar não apaga eventos.
+* A página pública do **ShowLive** foi refeita, e a página `/universe` foi removida. O botão **Acessar evento** no menu do site leva direto à entrada de eventos do ShowLive.
+
+### Equipes
+
+* O modal **Nova equipe** foi refeito, com escola ou organização e temporada opcionais e um resumo de como a equipe se organiza.
+* Novos verbos no feed de atividade: entradas do diário, critérios e metas concluídos, capítulos do legado, itens guardados no legado e recursos transferidos.
+
+### Calendário
+
+* Os eventos aceitam um **ícone personalizado**, mostrado na grade, nas dicas e nos detalhes. Sem ícone, continua o ponto colorido.
+* O modal de eventos foi refeito: não salva sem título ou com o fim antes do início, e mostra mensagens de erro mais claras.
+* As cores dos tipos de evento ficaram centralizadas.
+
+### LabTest
+
+* A lista de testes passou a vir ordenada pela **execução mais recente**, e os cards mostram a última pontuação e o número de execuções.
+* Novos filtros por nome, modalidade, status (incluindo os ainda não executados) e temporada, e ordenação por execução recente, criação ou mais executados. A busca usa debounce, e os filtros ficam na URL, para compartilhar e voltar pelo navegador.
+* Melhorias nos gráficos e nas opções de exibição dos resultados.
+
+### Kanban e QuickBrick
+
+* O modal do card foi refeito, com prioridade em chips coloridos, metas, prazo e confirmação antes de excluir.
+* Os formulários de caderno do QuickBrick passaram a usar o novo `FormDialog`.
+
+### Conta e segurança
+
+* Nova seção **E-mail**: adicionar endereços, verificar por código, escolher o principal e remover.
+* Nova seção **Senha**: trocar, criar (para quem entra com Google ou outro provedor) ou redefinir com um código no e-mail, com indicador de força e opção de sair dos outros dispositivos.
+* **Sessões ativas** com dispositivo, local e IP, e a opção de encerrar as que você não reconhece.
+* **Verificação em duas etapas** com app autenticador.
+* As ações sensíveis pedem a confirmação de identidade num diálogo próprio do RoboStage, e os erros do Clerk aparecem traduzidos.
+* O **tipo de conta** pode ser trocado livremente nas primeiras 48 horas. Depois disso, a troca é pedida à equipe do RoboStage. O servidor valida a regra.
+* O avatar no menu leva às configurações da conta, e o rodapé do menu ganhou **Sair da conta**.
+
+### Site e Stage UI
+
+* Adicionada a **Stage UI** (`components/stage`), a biblioteca de componentes do RoboStage, com tipografia, cards, capas, mídia, modais, avisos, animações e o kit para telas de trabalho.
+* Nova página inicial, com hero, abas por perfil, cards das competições e ícones próprios para FLL, FTC e OBR.
+* Páginas públicas do **LabTest**, do **Stagebook** e do **ShowLive** refeitas, e nova página **Equipe** (`/equipe`).
+* As páginas da FLL e da OBR foram reorganizadas, e os componentes de notícias ganharam categorias e imagens alternativas.
+* O modal comum do dashboard, as tags, as metas e os avisos (toasts) passaram a usar a Stage UI, sem mudar as chamadas existentes.
+* As dicas do menu lateral recolhido não são mais cortadas.
+
+### Desempenho
+
+* As animações respeitam a preferência de movimento reduzido e pausam quando saem da tela.
+* O `framer-motion` passou a carregar sob demanda (`LazyMotion`).
+* Novo `AmbientVideo`: o vídeo de fundo só baixa perto da tela e pausa fora dela.
+* Os banners da página inicial passaram para WebP, e as imagens do Supabase Storage passam pela otimização do `next/image`.
+
+### Infraestrutura
+
+* Novas migrações: `0009_calendar_event_icon`, `0009_showlive_pref`, `0009_synced_blocks`, `0010_journal`, `0011_journal_labels_goals`, `0012_team_legacy` e `0013_team_legacy_obr_docs`, com as versões manuais em `drizzle/manual/`.
+* Novas dependências: `katex` e `emojibase-data`.
+* Novas rotas: `/api/data/ftcDocs` e `/api/data/ftcscout/*`, adicionadas às rotas públicas do `proxy.ts`.
+* Adicionados o `transfer-core`, o `legacy-core`, o `journal-queries`, o `page-links` e o cliente do ShowLive (`utils/showlive/`).
+* O adaptador de etiquetas ganhou o método opcional `canWrite`, usado pelo Diário para que só o autor altere as tags e a meta.
+* Novos testes para a FTC BIOBUZZ, o Diário, tags e metas do Diário, o Legado e a transferência, os blocos e as ações do editor, as opções de incorporação, os filtros do LabTest, a trava do tipo de conta e o ShowLive no painel.
+* Ajustes de segurança na codificação de conteúdo apontados pelo CodeQL.
+
+> **A v2026.9 coloca a FTC ao lado da FLL e da OBR e dá às equipes um jeito de lembrar: o que foi feito no dia, as metas que fecharam e as temporadas que ficam no legado.**
+
+---
+
 ## Atualizações na autenticação - 2026-11-20
 
 ### Adicionado

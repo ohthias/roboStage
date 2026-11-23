@@ -10,7 +10,7 @@ Planeje estratégias, registre testes, colete telemetria do robô, documente a t
 
 [**🌐 Acessar a plataforma**](https://www.robostage.com.br/) · [Documentação](https://www.docs.robostage.com.br/) · [Changelog](.github/CHANGELOG.md) · [Reportar bug](https://github.com/ohthias/roboStage/issues) · [Contribuir](.github/CONTRIBUTING.md)
 
-![Version](https://img.shields.io/badge/version-v2026.8-informational)
+![Version](https://img.shields.io/badge/version-v2026.9-informational)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![GitHub stars](https://img.shields.io/github/stars/ohthias/roboStage?style=social)
 ![Last commit](https://img.shields.io/github/last-commit/ohthias/roboStage)

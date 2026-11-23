@@ -12,6 +12,7 @@ const publicRoutePatterns = [
   "/obr(.*)",
   "/help(.*)",
   "/labtest(.*)",
+  "/equipe(.*)",
   "/legal(.*)",
   "/licences(.*)",
   "/news(.*)",

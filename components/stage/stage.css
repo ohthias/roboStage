@@ -97,6 +97,30 @@
 
 }
 
+/* motion-safe: / motion-reduce: seguem a mesma regra de data-motion
+   (FlipNumber, caret do Typewriter, Shake, hovers dos cards). Os variantes
+   padrão do Tailwind só olham a media query e ignoravam data-motion="full". */
+@custom-variant motion-safe {
+  &:where([data-motion="full"] *) {
+    @slot;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    &:where(:not([data-motion="off"] *)) {
+      @slot;
+    }
+  }
+}
+@custom-variant motion-reduce {
+  &:where([data-motion="off"] *) {
+    @slot;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &:where(:not([data-motion="full"] *)) {
+      @slot;
+    }
+  }
+}
+
 /* Tokens de movimento (fora do @theme para não serem removidos no build) */
 :root {
   --ease-stage: cubic-bezier(0.2, 1.4, 0.4, 1); /* com "quique": stickers, conquistas */
@@ -417,19 +441,25 @@
 
 /* Reveal (core/Motion.tsx): só esconde depois que o JS "arma" o elemento,
    então sem JS — ou com prefers-reduced-motion — o conteúdo aparece normal. */
-[data-reveal="armed"] {
-  opacity: 0;
+/* A transição fica em [data-reveal] (os dois estados): o navegador usa a
+   transição do estado NOVO, então com ela só no "armed" a troca para
+   "shown" pulava direto para o fim, sem animar. */
+[data-reveal] {
   transition:
     opacity var(--reveal-duration, var(--duration-slow)) var(--ease-out) var(--reveal-delay, 0ms),
     transform var(--reveal-duration, var(--duration-slow)) var(--reveal-ease, var(--ease-out)) var(--reveal-delay, 0ms),
     filter var(--reveal-duration, var(--duration-slow)) var(--ease-out) var(--reveal-delay, 0ms);
+}
+[data-reveal="armed"] {
+  opacity: 0;
+  will-change: opacity, transform;
 }
 [data-reveal="armed"][data-effect="fade-up"] { transform: translateY(28px); }
 [data-reveal="armed"][data-effect="fade-down"] { transform: translateY(-28px); }
 [data-reveal="armed"][data-effect="slide-left"] { transform: translateX(40px); }
 [data-reveal="armed"][data-effect="slide-right"] { transform: translateX(-40px); }
 [data-reveal="armed"][data-effect="pop"] { transform: scale(0.85); --reveal-ease: var(--ease-stage); }
-[data-reveal="armed"][data-effect="blur"] { filter: blur(12px); transform: scale(1.03); }
+[data-reveal="armed"][data-effect="blur"] { filter: blur(6px); transform: scale(1.03); }
 [data-reveal="armed"][data-effect="drop"] { transform: translateY(-36px) rotate(-10deg); --reveal-ease: var(--ease-stage); }
 [data-reveal="shown"] { opacity: 1; transform: none; filter: none; }
 @keyframes stage-marquee {
@@ -475,7 +505,35 @@
   to { transform: none; opacity: 1; }
 }
 
+/* ---------- Menos movimento ----------
+   Mesma regra do prefersReducedMotion() em core/Motion.tsx:
+   · <html data-motion="full">  → ignora o pedido do sistema, tudo anima;
+   · <html data-motion="off">   → tudo para, até o marquee;
+   · sem atributo + sistema pede reduce → enfeites param e o marquee
+     continua, 3× mais lento (é conteúdo; pausa no hover e no foco).
+   Antes a media query desligava tudo mesmo com data-motion="full" (o que o
+   app/layout.tsx usa), e quem tem "Efeitos de animação" desligado no
+   Windows via o marquee, os stickers e o fundo parados. */
 @media (prefers-reduced-motion: reduce) {
+  html:not([data-motion="full"]) :is(
+    .animate-spin-slow,
+    .animate-wiggle,
+    .animate-float,
+    .animate-live,
+    .animate-shake,
+    .animate-drop,
+    .animate-rise,
+    .animate-blink,
+    .rs-glow,
+    .rs-grid
+  ) {
+    animation: none !important;
+  }
+  html:not([data-motion="full"]) :is(.animate-marquee, .animate-marquee-reverse) {
+    animation-duration: calc(var(--marquee-speed, 30s) * 3) !important;
+  }
+}
+html[data-motion="off"] :is(
   .animate-marquee,
   .animate-marquee-reverse,
   .animate-spin-slow,
@@ -487,8 +545,41 @@
   .animate-rise,
   .animate-blink,
   .rs-glow,
-  .rs-grid {
-    animation: none !important;
+  .rs-grid
+) {
+  animation: none !important;
+}
+html[data-motion="off"] [data-reveal] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition: none;
+}
+
+/* ---------- Pausa fora da tela ----------
+   usePauseOffscreen() põe data-paused em Section, Marquee,
+   AnimatedBackground e stickers quando saem da tela; sem esta regra o
+   atributo não fazia nada e os enfeites rodavam fora da tela. Só os laços
+   infinitos param — entradas (rise, pop, drop) não ficam congeladas. */
+:is([data-paused], [data-paused] *):is(
+  .animate-marquee,
+  .animate-marquee-reverse,
+  .animate-spin-slow,
+  .animate-wiggle,
+  .animate-float,
+  .animate-live,
+  .animate-blink,
+  .rs-glow,
+  .rs-grid
+) {
+  animation-play-state: paused;
+}
+
+@media print {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
   }
 }
 

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { ArrowRight, BookOpen, Clock, Cuboid, Trophy, Users, type LucideIcon } from "lucide-react";
-import { ButtonLink, Flower, Kicker, Marquee, Reveal, SectionEdge, Sparkle, StickerTag } from "@/components/stage";
+import { ButtonLink, Flower, Kicker, Reveal, SectionEdge, Sparkle, StickerTag } from "@/components/stage";
 
 /** Verde-noite da BIOGLOW: fundo da faixa e cor da borda de baixo. */
 const NIGHT = "#07110A";
@@ -155,19 +155,6 @@ export default function FLLHighlightSeason() {
               className="h-auto w-full -rotate-2 object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.45)] transition-transform duration-500 group-hover/season:rotate-0 motion-reduce:transition-none"
             />
           </Reveal>
-        </div>
-
-        {/* Fita com as missões da temporada */}
-        <div className="relative z-10 pb-10">
-          <Marquee
-            items={missions}
-            tone="ink"
-            tilt={-1.5}
-            speed={5}
-            render={(item) => (
-              <span className="stage-display whitespace-nowrap text-xl italic uppercase sm:text-2xl">{item}</span>
-            )}
-          />
         </div>
 
         <p className="absolute bottom-3 right-4 text-[10px] text-white/40 sm:right-6">Imagem de fundo: Freepik</p>

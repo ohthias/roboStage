@@ -11,6 +11,7 @@ import {
   PersonasSection,
   PlatformIntro,
   SeasonsSection,
+  ShowLiveSection,
   SpotlightSection,
   StepsSection,
   ToolsMarquee,
@@ -26,11 +27,11 @@ export default async function Page() {
     <>
       <Navbar />
       <HomeHero
-        kicker="PLATAFORMA PARA EQUIPES DE ROBÓTICA"
         badges={[
           { label: "FLL", href: "/fll" },
           { label: "OBR", href: "/obr" },
-          { label: "FTC", soon: true },
+          { label: "FTC", href: "/ftc" },
+          { label: "WRO", soon: true },
         ]}
         scrollTarget="#conheca"
       />
@@ -43,6 +44,7 @@ export default async function Page() {
         <PersonasSection />
         <SeasonsSection />
         <SpotlightSection />
+        <ShowLiveSection />
         <CanopySection />
         <NewsSection news={news} />
         <CommunitySection />

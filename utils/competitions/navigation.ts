@@ -1,5 +1,8 @@
+import { FLLIcon } from "@/components/icons/FLLIcon";
+import { FTCIcon } from "@/components/icons/FTCIcon";
+import { OBRIcon } from "@/components/icons/OBRIcon";
 import type { LucideIcon } from "lucide-react";
-import { Activity, BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, ToyBrick, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, Code, Bot, UserSearch, LayoutGrid, Clapperboard, Users, ChartLine } from "lucide-react";
+import { Activity, BookOpen, Clock, Cuboid, Fish, Gamepad2, Leaf, MessageSquare, Palette, Pickaxe, School, Telescope, NotepadText, ToolCase, ListCheck, MonitorDot, BookCopy, UserSearch, LayoutGrid, Clapperboard, Users, ChartLine, Flower2, ClipboardList, Swords } from "lucide-react";
 
 /** Item de menu de competição: `path` é relativo a `/{competicao}/`. */
 export type NavMenuItem = {
@@ -28,7 +31,7 @@ export type NavLinkGroup = Omit<NavMenuGroup, "items"> & { items: NavLinkItem[] 
 export const NAVIGATION = {
   fll: {
     label: "FLL",
-    icon: ToyBrick,
+    icon: FLLIcon,
     scorePath: "score",
     options: [
       { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false, update: false },
@@ -68,9 +71,37 @@ export const NAVIGATION = {
       { key: "masterpiece", name: "MASTERPIECE", period: "2023/2024", icon: Palette },
     ],
   },
+  ftc: {
+    label: "FTC",
+    icon: FTCIcon,
+    scorePath: "score",
+    options: [
+      { nome: "Estratégia TeleOp", path: "estrategia", icon: Swords, new: true },
+      { nome: "Scouting", path: "scouting", icon: ClipboardList, new: true },
+    ],
+    menus: [
+      {
+        key: "tools",
+        label: "Ferramentas",
+        icon: ToolCase,
+        items: [
+          { nome: "Timers", path: "timers", icon: Clock, description: "Cronômetro da partida BIOBUZZ: 0:30 de AUTO, 0:08 de transição e 2:00 de TELEOP", new: true },
+        ],
+      },
+      {
+        key: "resources",
+        label: "Recursos",
+        icon: BookOpen,
+        items: [
+          { nome: "Arena BIOBUZZ", path: "arena", icon: Flower2, description: "Elementos da arena desta temporada e como pontuar em cada um", new: true },
+          { nome: "Documentações", path: "docs", icon: BookCopy, description: "Manual, campo, recursos de equipe e Team Updates da temporada" },
+        ],
+      },
+    ] satisfies NavMenuGroup[],
+  },
   obr: {
     label: "OBR",
-    icon: Bot,
+    icon: OBRIcon,
     scorePath: "score",
     options: [
       { nome: "QuickBrick Studio", path: "quickbrick", icon: Cuboid, new: false },

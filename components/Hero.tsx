@@ -1,117 +1,128 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import type { CSSProperties } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowDownRight, ArrowUpRight, MoveUpRight } from "lucide-react";
+import { useParams } from "next/navigation";
+import { ArrowRight } from "lucide-react";
+import { ButtonLink, Sparkle, StickerTag } from "@/components/stage";
 import { HERO_CONFIG } from "@/utils/competitions/hero";
 
 type Competicao = keyof typeof HERO_CONFIG;
 
+/** Garante caminho absoluto: "images/x.webp" quebraria em /ftc/arena (viraria /ftc/images/...). */
+const absolute = (src: string) => (src.startsWith("/") || src.startsWith("http") ? src : `/${src}`);
+
+/**
+ * Hero das páginas de competição.
+ *
+ * A ilustração (PNG/WebP 1:1 com fundo transparente, recorte branco e manchas
+ * próprias) é a protagonista: fica sobre uma "placa de arena" com canto
+ * recortado, quadriculado na cor da competição e sombra dura, e passa um pouco
+ * das bordas da placa para dar a sensação de sticker saltando do tapete.
+ */
 export default function Hero() {
   const params = useParams();
   const paramCompeticao = params?.competicao as string | undefined;
 
   const competicao: Competicao =
-    paramCompeticao && paramCompeticao in HERO_CONFIG
-      ? (paramCompeticao as Competicao)
-      : "fll";
+    paramCompeticao && paramCompeticao in HERO_CONFIG ? (paramCompeticao as Competicao) : "fll";
 
   const hero = HERO_CONFIG[competicao];
-  const palavras = hero.titulo.trim().split(/\s+/);
-  const ultimaPalavra = palavras.pop() ?? "";
-  const tituloPrincipal = palavras.join(" ");
+  const vars = { "--hero-accent": hero.accent } as CSSProperties;
 
   return (
-    <section className="relative isolate overflow-hidden px-4 pb-12 pt-8 sm:px-6 sm:pb-16 sm:pt-12 lg:pb-20 lg:pt-16">
+    <section
+      style={vars}
+      className="stage-noise relative isolate overflow-hidden border-b border-base-300 px-6 pb-16 pt-10 sm:pb-20 md:pt-14"
+    >
+      {/* Fundo: degradê radial na cor da competição (sem filter: blur, que pesa). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full overflow-hidden"
-      >
-        <div
-          className="absolute inset-0 opacity-[0.07]"
-          style={{
-            background: `linear-gradient(180deg, ${hero.accent} 0%, transparent 100%)`,
-          }}
-        />
+        className="absolute inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(60% 70% at 78% 45%, color-mix(in oklab, var(--hero-accent) 16%, transparent), transparent 70%), linear-gradient(to bottom, var(--color-base-100), color-mix(in oklab, var(--hero-accent) 6%, var(--color-base-100)))",
+        }}
+      />
 
-        <div
-          className="absolute -right-24 top-0 size-72 rounded-full border opacity-40 sm:-right-16 sm:size-96"
-          style={{ borderColor: hero.accent }}
-        />
+      <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-[1fr_1.05fr] lg:gap-16 [&>*]:min-w-0">
+        {/* ------------------------------------------------------------ TEXTO */}
+        <div className="flex flex-col items-center text-center md:items-start md:text-left">
+          <p className="stage-kicker inline-flex items-center gap-2 text-base-content/55">
+            <span aria-hidden="true" className="size-2 rounded-full bg-[var(--hero-accent)]" />
+            {hero.badge.toUpperCase()}
+          </p>
 
-        <div
-          className="absolute -right-12 top-12 size-48 rounded-full border opacity-30 sm:right-8 sm:top-20 sm:size-64"
-          style={{ borderColor: hero.accent }}
-        />
-
-        <div className="absolute bottom-0 left-0 h-px w-full bg-base-300" />
-      </div>
-
-      <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[1.05fr_0.95fr] md:gap-8 lg:gap-16">
-        <div className="relative z-10 flex w-full flex-col items-center text-center md:items-start md:text-left">
-          <div className="inline-flex items-center gap-2 rounded-tl-lg rounded-br-lg border border-base-content/15 bg-base-100/80 px-3 py-1.5 font-mono text-[11px] tracking-[0.15em] text-base-content/70">
-            <span
-              className="size-2 rounded-full"
-              style={{ backgroundColor: hero.accent }}
-            />
-            {hero.badge}
-          </div>
-          <h1 className="mt-6 max-w-2xl text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl">
-            {tituloPrincipal && <>{tituloPrincipal} </>}
-            <span
-              className="relative inline-block"
-              style={{ color: hero.accent }}
-            >
-              {ultimaPalavra}
-              <span
-                aria-hidden="true"
-                className="absolute -bottom-1 left-0 h-1 w-1/2 rounded-full opacity-70 sm:-bottom-2 sm:h-1.5"
-                style={{ backgroundColor: hero.accent }}
-              />
-            </span>
+          <h1 className="stage-display mt-5 text-5xl leading-[0.98] sm:text-6xl lg:text-7xl">
+            {hero.titulo}
+            <span className="text-[var(--hero-accent)]">.</span>
           </h1>
 
-          <p className="mt-6 max-w-xl text-sm leading-7 text-base-content/65 sm:text-base sm:leading-8 lg:text-lg">
-            {hero.descricao}
+          <p className="mt-5 flex items-center gap-3 text-lg font-black tracking-tight text-base-content/80 sm:text-xl">
+            <span aria-hidden="true" className="h-1 w-8 shrink-0 rounded-full bg-[var(--hero-accent)]" />
+            {hero.destaque}
           </p>
-          {/* Ações */}
-          <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row md:max-w-none">
-            <Link
-              href={hero.ctaPrimario.href}
-              className="btn btn-primary group min-h-12 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none px-5 shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--color-base-content)]"
-            >
-              {hero.ctaPrimario.label}
-            </Link>
 
+          <p className="mt-6 max-w-md text-base leading-relaxed text-base-content/65">{hero.descricao}</p>
+
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-4 md:justify-start">
+            <ButtonLink href={hero.ctaPrimario.href} size="lg" iconRight={<ArrowRight size={20} />}>
+              {hero.ctaPrimario.label}
+            </ButtonLink>
             <Link
               href={hero.ctaSecundario.href}
-              className="btn btn-outline min-h-12 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none border-base-300 px-5 transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+              className="group inline-flex items-center gap-1.5 font-semibold text-base-content/70 underline-offset-4 transition-colors hover:text-primary hover:underline"
             >
               {hero.ctaSecundario.label}
-              <ArrowUpRight size={16} />
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
         </div>
 
-        {/* Imagem */}
-        <div className="relative mx-auto w-full max-w-lg md:max-w-none">
+        {/* ------------------------------------------------------- ILUSTRAÇÃO */}
+        <div className="group/hero relative mx-auto w-full max-w-sm sm:max-w-md md:max-w-none">
+          {/* Placa de arena: quadriculado + canto recortado + sombra dura na cor da competição */}
           <div
             aria-hidden="true"
-            className="absolute -left-3 -top-3 size-16 rounded-tl-xl border-l-2 border-t-2 sm:-left-4 sm:-top-4 sm:size-20"
-            style={{ borderColor: hero.accent }}
+            className="stage-paper absolute bottom-[3%] left-[16%] right-[-1%] top-[16%] rotate-3 rounded-tl-[3rem] rounded-br-[3rem] border-2 border-[color-mix(in_oklab,var(--hero-accent)_45%,transparent)] shadow-[10px_10px_0_0_var(--hero-accent)] transition-transform duration-500 ease-out motion-safe:group-hover/hero:rotate-2"
+            style={{
+              backgroundColor: "color-mix(in oklab, var(--hero-accent) 10%, var(--color-base-100))",
+              backgroundImage:
+                "linear-gradient(to right, color-mix(in oklab, var(--hero-accent) 22%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in oklab, var(--hero-accent) 22%, transparent) 1px, transparent 1px)",
+              backgroundSize: "28px 28px",
+            }}
           />
 
+          {/* Sombra de chão, para a ilustração "pousar" na placa */}
           <div
             aria-hidden="true"
-            className="absolute -bottom-3 -right-3 size-16 rounded-br-xl border-b-2 border-r-2 sm:-bottom-4 sm:-right-4 sm:size-20"
-            style={{ borderColor: hero.accent }}
+            className="absolute inset-x-[22%] bottom-[9%] h-[7%] rounded-[50%] bg-base-content/15 blur-md"
           />
 
-          <img
-            src={hero.imagem}
-            alt={hero.titulo}
-            className="relative flex min-h-[240px] items-center justify-center overflow-hidden rounded-tl-xl rounded-br-xl sm:min-h-[320px] lg:min-h-[370px] object-contain transition-transform duration-300 hover:scale-105"
+          {/* Wrapper com z-10: em seção texturizada o stage.css põe z-index 0 na <img>. */}
+          <div className="relative z-10 transition-transform duration-500 ease-out motion-safe:group-hover/hero:-translate-y-1.5">
+            <Image
+              src={absolute(hero.imagem)}
+              alt=""
+              width={1080}
+              height={1080}
+              priority
+              sizes="(min-width: 1152px) 560px, (min-width: 768px) 48vw, 90vw"
+              className="mx-auto aspect-square h-auto w-full max-w-[560px] object-contain drop-shadow-[0_14px_18px_rgba(0,0,0,0.14)]"
+            />
+          </div>
+
+          {/* Tempero: 2 stickers no máximo */}
+          <Sparkle
+            size={44}
+            color={hero.accent}
+            motion="float"
+            className="absolute left-[2%] top-[4%] z-20 hidden sm:inline-block"
           />
+          <StickerTag tone="ink" rotate={-6} className="absolute bottom-[1%] right-[6%] z-20">
+            {hero.abr}
+          </StickerTag>
         </div>
       </div>
     </section>

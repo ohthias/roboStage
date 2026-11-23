@@ -35,8 +35,10 @@
 .rs-grid {
   position: absolute;
   inset: -100%;
-  color: var(--color-base-content);
-  background-image: radial-gradient(currentColor 0.8px, transparent 0.8px);
+  color: color-mix(in oklab, var(--color-base-content) 30%, transparent);
+  background-image:
+    linear-gradient(to right, currentColor 1px, transparent 1px),
+    linear-gradient(to bottom, currentColor 1px, transparent 1px);
   background-size: 30px 30px;
   opacity: 0.1;
   mask-image: radial-gradient(ellipse at center, black 0%, transparent 60%);

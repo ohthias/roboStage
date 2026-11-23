@@ -4,6 +4,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   ChevronRight,
+  ClipboardCheck,
   Clock,
   Code,
   Cuboid,
@@ -13,14 +14,19 @@ import {
   Globe2,
   HeartHandshake,
   History,
+  KeyRound,
+  LayoutDashboard,
   LifeBuoy,
   MessageSquare,
   Newspaper,
   NotebookPen,
+  QrCode,
   Radio,
   Rocket,
+  Smartphone,
   Sparkles,
   Trophy,
+  Tv,
   UserPlus,
   Users,
   type LucideIcon,
@@ -48,6 +54,7 @@ import {
   toneText,
   type Tone,
   NewsCard,
+  StatusBadge,
 } from "@/components/stage";
 import LivePreview from "./LivePreview";
 import PersonaTabs from "./PersonaTabs";
@@ -139,7 +146,7 @@ type Competition = {
   text: string;
   cta: string;
   image: string;
-  tone: "primary" | "secondary";
+  tone: "primary" | "secondary" | "accent";
   span: string;
   shadow: string;
 };
@@ -167,11 +174,23 @@ const competitions: Competition[] = [
     span: "lg:col-span-4",
     shadow: "shadow-[8px_8px_0_0_var(--color-accent)] hover:shadow-[10px_10px_0_0_var(--color-accent)]",
   },
+  {
+    href: "/ftc",
+    path: "/ftc",
+    title: "FIRST Tech Challenge",
+    text: "Cronômetro da BIOBUZZ, estratégia do TeleOp, scouting com dados da FTCScout, arena e documentação.",
+    cta: "Explorar a FTC",
+    image: "/images/index/hero_banner_ftc.png",
+    tone: "accent",
+    span: "lg:col-span-3",
+    shadow: "stage-shadow-lg hover:shadow-[10px_10px_0_0_var(--stage-shadow)]",
+  }
 ];
 
 const competitionOverlay = {
   primary: "from-primary via-primary/80 to-primary/20",
   secondary: "from-secondary via-secondary/85 to-secondary/20",
+  accent: "from-accent via-accent/80 to-accent/20",
 };
 
 export function CompetitionsSection() {
@@ -1073,6 +1092,155 @@ export function FinalCta() {
           </div>
         </Card>
       </Reveal>
+    </Section>
+  );
+}
+
+export function ShowLiveSection() {
+  const showliveUrl = process.env.NEXT_PUBLIC_SHOWLIVE_URL ?? "https://showlive.robostage.com.br";
+
+  const roles: { icon: LucideIcon; who: string; text: string; tone: Tone }[] = [
+    { icon: LayoutDashboard, who: "Organização", text: "Equipes, rodadas, desafio e aprovação de notas no hub do evento.", tone: "primary" },
+    { icon: Smartphone, who: "Mesa do robô", text: "Voluntários entram com o código e pontuam a súmula pelo celular.", tone: "secondary" },
+    { icon: ClipboardCheck, who: "Avaliação", text: "Cada sala só vê as próprias sessões; as fichas ficam fora do telão.", tone: "accent" },
+    { icon: Tv, who: "Público", text: "O ranking atualiza sozinho no telão e no celular, pelo código ou QR.", tone: "primary" },
+  ];
+
+  const ranking = [
+    { pos: 1, team: "Robôs do Cerrado", score: 412 },
+    { pos: 2, team: "Mecatrônicos", score: 398 },
+    { pos: 3, team: "Byte Bees", score: 365 },
+    { pos: 4, team: "Equipe Ômega", score: 341 },
+    { pos: 5, team: "LEGOlândia", score: 297 },
+  ];
+
+  const formats = ["FLL", "FLL FE", "OBR", "FTC", "Livre"];
+
+  return (
+    <Section tone="muted" edgeTop="checker">
+      <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.1fr] [&>*]:min-w-0">
+        {/* ----------------------------------------------------------- texto */}
+        <Reveal>
+          <SectionTitle
+            kicker="/ SHOWLIVE"
+            title="Seu torneio,"
+            highlight="ao vivo no telão."
+            description="Organize microeventos e seletivas com súmula no celular, notas aprovadas pela organização e ranking em tempo real para o público."
+          />
+
+          <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+            {roles.map(({ icon: Icon, who, text, tone }) => (
+              <li
+                key={who}
+                className="stage-paper group flex gap-3 rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 p-4 transition-colors hover:border-base-content/30"
+              >
+                <span
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-tl-lg rounded-br-lg transition-colors",
+                    toneSoft[tone],
+                  )}
+                >
+                  <Icon size={17} strokeWidth={1.8} />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold">{who}</h3>
+                  <p className="mt-1 text-xs leading-5 text-base-content/60">{text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            <ButtonLink href="/showlive" size="lg" iconLeft={<Radio size={19} />}>
+              Conhecer o ShowLive
+            </ButtonLink>
+            <ButtonLink
+              href={`${showliveUrl}/entrar`}
+              target="_blank"
+              rel="noopener noreferrer"
+              tone="ghost"
+              size="lg"
+              shape="rounded"
+              iconLeft={<KeyRound size={18} />}
+              iconRight={<ArrowUpRight size={16} />}
+            >
+              Entrar com código
+            </ButtonLink>
+          </div>
+        </Reveal>
+
+        {/* ---------------------------------------------------- telão (prévia) */}
+        <Reveal delay={100} effect="pop" className="relative sm:pb-36">
+          <div className="relative">
+            <Sparkle size={40} tone="accent" motion="float" className="absolute -left-4 -top-6 z-20 hidden sm:inline-block" />
+
+            <div
+              aria-hidden="true"
+              className="stage-night stage-noise overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] text-white shadow-[10px_10px_0_0_var(--color-primary)]"
+            >
+              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-4 sm:px-6">
+                <div className="flex items-center gap-2">
+                  <Tv size={16} className="text-white/60" />
+                  <span className="stage-kicker text-white/60">TELÃO · RODADA 2</span>
+                </div>
+                <StatusBadge status="live" />
+              </div>
+
+              <ol className="divide-y divide-white/10">
+                {ranking.map(({ pos, team, score }) => (
+                  <li
+                    key={team}
+                    className={cn("flex items-center gap-4 px-5 py-3 sm:px-6", pos === 1 && "bg-white/[0.06]")}
+                  >
+                    <span
+                      className={cn(
+                        "grid size-8 shrink-0 place-items-center rounded-tl-lg rounded-br-lg font-mono text-sm font-bold",
+                        pos === 1 ? "bg-accent text-accent-content" : "bg-white/10 text-white/70",
+                      )}
+                    >
+                      {pos}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate font-bold">{team}</span>
+                    {pos === 1 && <Trophy size={16} className="shrink-0 text-accent" />}
+                    <span className="stage-display w-16 text-right text-2xl tabular-nums">{score}</span>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="flex flex-wrap items-center justify-end gap-2 border-t border-white/10 px-5 py-4 sm:px-6 sm:pl-56">
+                {formats.map((f) => (
+                  <span key={f} className="stage-label rounded-tl-md rounded-br-md border border-white/20 px-2 py-1 text-white/70">
+                    {f}
+                  </span>
+                ))}
+                <span className="flex w-full items-center justify-end gap-1.5 font-mono text-xs text-white/50">
+                  <QrCode size={14} /> showlive · MESA22
+                </span>
+              </div>
+            </div>
+
+            {/* Celular da mesa, sobreposto ao telão */}
+            <Card
+              aria-hidden="true"
+              corner
+              className="absolute -left-6 top-full hidden w-52 -translate-y-10 border border-base-300 p-4 stage-shadow sm:block"
+            >
+              <div className="flex items-center justify-between">
+                <span className="stage-kicker text-base-content/50">MESA 2</span>
+                <Smartphone size={14} className="text-base-content/40" />
+              </div>
+              <p className="mt-2 text-sm font-bold">Byte Bees · R2</p>
+              <div className="mt-3 space-y-1.5 text-xs text-base-content/65">
+                <p className="flex justify-between"><span>M01 · Coleta</span><span className="font-mono font-bold text-base-content">+30</span></p>
+                <p className="flex justify-between"><span>M04 · Entrega</span><span className="font-mono font-bold text-base-content">+45</span></p>
+              </div>
+              <p className="mt-3 flex items-center justify-between border-t border-base-300 pt-2 text-xs font-bold">
+                Enviar nota <ArrowRight size={14} className="text-primary" />
+              </p>
+            </Card>
+          </div>
+        </Reveal>
+      </div>
     </Section>
   );
 }

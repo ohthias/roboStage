@@ -6,12 +6,11 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { DraggableBlockPlugin_EXPERIMENTAL } from "@lexical/react/LexicalDraggableBlockPlugin";
-import { $isListItemNode } from "@lexical/list";
+import { $isListItemNode, $isListNode, type ListNode } from "@lexical/list";
 import { $isHeadingNode } from "@lexical/rich-text";
 import { $findMatchingParent, mergeRegister } from "@lexical/utils";
 import {
@@ -28,18 +27,11 @@ import {
   ArrowDown,
   ArrowUp,
   ChevronRight,
-  Code2,
   Copy,
   GripVertical,
-  Heading1,
-  Heading2,
-  Heading3,
-  List,
-  ListChecks,
-  ListOrdered,
-  Pilcrow,
+  List as ListIcon,
   Plus,
-  Quote,
+  RefreshCcw,
   Repeat2,
   Trash2,
 } from "lucide-react";
@@ -55,36 +47,27 @@ import {
   BLOCK_LABELS,
   type BlockType,
 } from "../block-utils";
+import { blockTypeIcon, TURN_INTO_TYPES } from "../block-icons";
+import { CONVERT_TO_SYNCED_COMMAND } from "./synced-blocks-plugin";
+import {
+  $getListMarker,
+  $setListMarker,
+  BULLET_MARKERS,
+  EMOJI_MARKERS,
+  NUMBER_MARKERS,
+} from "../list-markers";
 
-const TYPE_ICONS: Record<BlockType, ReactNode> = {
-  paragraph: <Pilcrow size={15} />,
-  h1: <Heading1 size={15} />,
-  h2: <Heading2 size={15} />,
-  h3: <Heading3 size={15} />,
-  bullet: <List size={15} />,
-  number: <ListOrdered size={15} />,
-  check: <ListChecks size={15} />,
-  quote: <Quote size={15} />,
-  code: <Code2 size={15} />,
-};
-
-const TURN_INTO: BlockType[] = [
-  "paragraph",
-  "h1",
-  "h2",
-  "h3",
-  "bullet",
-  "number",
-  "check",
-  "quote",
-  "code",
-];
+const TYPE_ICONS = (type: BlockType) => blockTypeIcon(type);
+const TURN_INTO = TURN_INTO_TYPES;
 
 type OpenMenu = {
   key: string;
   blockType: BlockType | null;
   isHeading: boolean;
   label: string;
+  /** Tipo da lista (para o menu de marcadores) e marcador atual. */
+  listType: "bullet" | "number" | null;
+  marker: string;
   top: number;
   left: number;
 };
@@ -109,6 +92,8 @@ export function BlockSelectionPlugin({
   const hoveredRef = useRef<HTMLElement | null>(null);
   const [menu, setMenu] = useState<OpenMenu | null>(null);
   const [showTurnInto, setShowTurnInto] = useState(false);
+  const [showMarkers, setShowMarkers] = useState(false);
+  const [customMarker, setCustomMarker] = useState("");
 
   const isOnMenu = useCallback(
     (el: HTMLElement) =>
@@ -153,22 +138,37 @@ export function BlockSelectionPlugin({
     let blockType: BlockType | null = null;
     let isHeading = false;
     let label = "Bloco";
+    let listType: "bullet" | "number" | null = null;
+    let marker = "";
     editor.read(() => {
       const node = $getNodeByKey(key);
       if (!node) return;
+      if ($isListNode(node) && node.getListType() !== "check") {
+        listType = node.getListType() as "bullet" | "number";
+        marker = $getListMarker(node);
+      }
       blockType = $getBlockType(node);
       isHeading = $isHeadingNode(node);
       if (blockType) label = BLOCK_LABELS[blockType];
       else if (node.getType() === "layout-container") label = "Seção de colunas";
       else if (node.getType() === "divider") label = "Divisor";
       else if (node.getType() === "table") label = "Tabela";
+      else if (node.getType() === "toc") label = "Sumário";
+      else if (node.getType() === "timeline") label = "Linha do tempo";
+      else if (node.getType() === "tabs") label = "Abas";
+      else if (node.getType() === "synced-block") label = "Bloco sincronizado";
+      else if (node.getType() === "smart-block") label = "Bloco inteligente";
+      else if (node.getType() === "equation") label = "Equação";
     });
     setShowTurnInto(false);
+    setShowMarkers(false);
     setMenu({
       key,
       blockType,
       isHeading,
       label,
+      listType,
+      marker,
       top: rect.top,
       left: rect.right + 8,
     });
@@ -177,6 +177,17 @@ export function BlockSelectionPlugin({
   const closeMenu = () => {
     setMenu(null);
     setShowTurnInto(false);
+    setShowMarkers(false);
+    setCustomMarker("");
+  };
+
+  const setMarker = (value: string) => {
+    if (!menu) return;
+    const key = menu.key;
+    run(() => {
+      const node = $getNodeByKey(key);
+      if ($isListNode(node)) $setListMarker(node as ListNode, value);
+    });
   };
 
   // Destaca o bloco selecionado enquanto o menu estiver aberto.
@@ -217,7 +228,7 @@ export function BlockSelectionPlugin({
     if (menu.left + w > window.innerWidth - 8) {
       el.style.left = `${Math.max(8, window.innerWidth - w - 8)}px`;
     }
-  }, [menu, showTurnInto]);
+  }, [menu, showTurnInto, showMarkers]);
 
   // Atalho: Ctrl/Cmd + Shift + ↑/↓ move o bloco (ou o item da lista).
   useEffect(
@@ -317,7 +328,7 @@ export function BlockSelectionPlugin({
             ref={popoverRef}
             role="menu"
             aria-label="Opções do bloco"
-            className={`${MENU_CLASS} fixed z-[80] w-60 rounded-xl border border-base-300 bg-base-100 p-1 shadow-xl`}
+            className={`${MENU_CLASS} fixed z-[80] max-h-[calc(100vh-16px)] w-60 overflow-y-auto rounded-xl border border-base-300 bg-base-100 p-1 shadow-xl`}
             style={{ top: menu.top, left: menu.left }}
             onMouseDown={(e) => e.preventDefault()}
           >
@@ -352,10 +363,93 @@ export function BlockSelectionPlugin({
                         className={`${itemClass} ${menu.blockType === type ? "bg-base-200 font-medium" : ""}`}
                         onClick={() => run(() => $transformBlock(menu.key, type))}
                       >
-                        {TYPE_ICONS[type]}
+                        {TYPE_ICONS(type)}
                         {BLOCK_LABELS[type]}
                       </button>
                     ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {menu.listType && (
+              <>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className={itemClass}
+                  aria-expanded={showMarkers}
+                  onClick={() => setShowMarkers((v) => !v)}
+                >
+                  <ListIcon size={15} />
+                  <span className="flex-1">Estilo do marcador</span>
+                  <ChevronRight size={14} className={`transition-transform ${showMarkers ? "rotate-90" : ""}`} />
+                </button>
+                {showMarkers && (
+                  <div className="mb-1 space-y-1.5 px-1 pb-1" onMouseDown={(e) => e.stopPropagation()}>
+                    <div className="grid grid-cols-3 gap-1">
+                      {(menu.listType === "number" ? NUMBER_MARKERS : BULLET_MARKERS).map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          role="menuitemradio"
+                          aria-checked={menu.marker === m.id}
+                          title={m.label}
+                          className={`flex h-9 flex-col items-center justify-center rounded-lg text-sm leading-none transition-colors ${
+                            menu.marker === m.id ? "bg-primary/10 text-primary ring-1 ring-primary/40" : "hover:bg-base-200"
+                          }`}
+                          onClick={() => setMarker(m.id)}
+                        >
+                          <span className="text-base">{m.preview}</span>
+                          <span className="mt-0.5 text-[9px] text-base-content/50">{m.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                    {menu.listType === "bullet" && (
+                      <>
+                        <div className="grid grid-cols-5 gap-1">
+                          {EMOJI_MARKERS.map((emoji) => (
+                            <button
+                              key={emoji}
+                              type="button"
+                              role="menuitemradio"
+                              aria-checked={menu.marker === `c:${emoji}`}
+                              className={`flex h-8 items-center justify-center rounded-lg text-base ${
+                                menu.marker === `c:${emoji}` ? "bg-primary/10 ring-1 ring-primary/40" : "hover:bg-base-200"
+                              }`}
+                              onClick={() => setMarker(`c:${emoji}`)}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                        <form
+                          className="flex gap-1"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const value = customMarker.trim();
+                            if (value) setMarker(`c:${value.slice(0, 4)}`);
+                          }}
+                        >
+                          <input
+                            className="input input-xs input-bordered min-w-0 flex-1"
+                            placeholder="Outro (ex.: ▸, 🔧)"
+                            maxLength={4}
+                            value={customMarker}
+                            onChange={(e) => setCustomMarker(e.target.value)}
+                            aria-label="Marcador personalizado"
+                          />
+                          <button type="submit" className="btn btn-xs">OK</button>
+                        </form>
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      className="w-full rounded-md px-2 py-1 text-left text-xs text-base-content/60 hover:bg-base-200"
+                      onClick={() => setMarker("")}
+                    >
+                      Voltar ao padrão
+                    </button>
                   </div>
                 )}
               </>
@@ -389,6 +483,22 @@ export function BlockSelectionPlugin({
               Duplicar
             </button>
 
+            {menu.label !== "Bloco sincronizado" && (
+              <button
+                type="button"
+                role="menuitem"
+                className={itemClass}
+                title="O mesmo conteúdo poderá ser usado em outras páginas; editar em uma muda todas"
+                onClick={() => {
+                  const key = menu.key;
+                  closeMenu();
+                  editor.dispatchCommand(CONVERT_TO_SYNCED_COMMAND, { key });
+                }}
+              >
+                <RefreshCcw size={15} />
+                Transformar em bloco sincronizado
+              </button>
+            )}
             <div className="my-1 border-t border-base-300" />
 
             <button

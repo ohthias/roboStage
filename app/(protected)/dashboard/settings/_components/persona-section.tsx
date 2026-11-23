@@ -2,24 +2,38 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Shapes } from "lucide-react";
+import { Clock, Loader2, Lock, Mail } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
 import { updatePersonaType } from "@/utils/stagebook/actions/account";
 import { PERSONA_META, PERSONA_TYPES, personaCanCreateTeam, type PersonaType } from "@/utils/stagebook/persona";
-import { SettingsCard } from "./settings-card";
+import { PERSONA_LOCK_HOURS, PERSONA_SUPPORT_EMAIL, formatLockCountdown } from "@/utils/stagebook/persona-lock";
+import { FieldRow, SettingsGroup } from "./settings-card";
 
-/** Tipo de conta: os quatro perfis do RoboStage. Valida regras de negócio no servidor. */
-export function PersonaSection({ current }: { current: PersonaType | null }) {
+/**
+ * Tipo de conta: os quatro perfis do RoboStage. Livre nas primeiras 48 h;
+ * depois fica travado e só a equipe troca. O servidor valida as duas regras.
+ */
+export function PersonaSection({
+  current,
+  locked,
+  msLeft,
+}: {
+  current: PersonaType | null;
+  locked: boolean;
+  msLeft: number;
+}) {
   const router = useRouter();
   const { addToast } = useToast();
   const [selected, setSelected] = useState<PersonaType | null>(current);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // Sem tipo ainda (onboarding pendente) a escolha continua livre.
+  const frozen = locked && current !== null;
   const dirty = selected !== null && selected !== current;
 
   function save() {
-    if (!selected) return;
+    if (!selected || frozen) return;
     setError(null);
     startTransition(async () => {
       const result = await updatePersonaType(selected);
@@ -32,24 +46,52 @@ export function PersonaSection({ current }: { current: PersonaType | null }) {
     });
   }
 
+  const subject = encodeURIComponent("Trocar tipo de conta no RoboStage");
+  const body = encodeURIComponent(
+    `Olá! Quero trocar meu tipo de conta de "${current ? PERSONA_META[current].label : "—"}" para: \n\nMotivo: `,
+  );
+
   return (
-    <SettingsCard icon={Shapes} title="Tipo de conta" description="Seu perfil no universo de robótica. Define, por exemplo, se você pode criar equipes.">
-      <div className="space-y-4 p-5">
-        <div role="radiogroup" aria-label="Tipo de conta" className="grid gap-3 sm:grid-cols-2">
+    <SettingsGroup
+      title="Tipo de conta"
+      description="Seu perfil no universo de robótica. Define a sua tela inicial e se você pode criar equipes."
+    >
+      <FieldRow
+        title="Perfil"
+        badge={
+          frozen ? (
+            <span className="badge badge-ghost badge-sm gap-1">
+              <Lock size={11} /> Travado
+            </span>
+          ) : current ? (
+            <span className="badge badge-warning badge-soft badge-sm gap-1">
+              <Clock size={11} /> Trava em {formatLockCountdown(msLeft)}
+            </span>
+          ) : null
+        }
+        description={
+          frozen
+            ? `A troca é livre só nas primeiras ${PERSONA_LOCK_HOURS} horas da conta. Para mudar agora, fale com a equipe.`
+            : `Você pode trocar à vontade nas primeiras ${PERSONA_LOCK_HOURS} horas. Depois disso, só pela equipe do RoboStage.`
+        }
+      >
+        <div role="radiogroup" aria-label="Tipo de conta" className="grid gap-2.5 sm:grid-cols-2">
           {PERSONA_TYPES.map((persona) => {
             const active = selected === persona;
+            const disabled = frozen && persona !== current;
             return (
               <label
                 key={persona}
-                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition-colors ${
-                  active ? "border-primary bg-primary/5" : "border-base-300 hover:border-primary/40"
-                }`}
+                className={`flex items-start gap-3 rounded-box border p-3.5 transition-colors ${
+                  active ? "border-primary bg-primary/5" : "border-base-300"
+                } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:border-primary/40"}`}
               >
                 <input
                   type="radio"
                   name="persona"
                   className="radio radio-primary radio-sm mt-0.5"
                   checked={active}
+                  disabled={disabled}
                   onChange={() => {
                     setSelected(persona);
                     setError(null);
@@ -71,18 +113,27 @@ export function PersonaSection({ current }: { current: PersonaType | null }) {
         </div>
 
         {error && (
-          <div role="alert" className="alert alert-error alert-soft py-2 text-sm">
+          <div role="alert" className="alert alert-error alert-soft mt-3 py-2 text-sm">
             {error}
           </div>
         )}
 
-        <div className="flex justify-end">
-          <button type="button" className="btn btn-primary btn-sm" onClick={save} disabled={!dirty || isPending}>
-            {isPending && <Loader2 size={14} className="animate-spin" />}
-            Salvar tipo de conta
-          </button>
+        <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
+          {frozen ? (
+            <a
+              className="btn btn-outline btn-sm gap-2"
+              href={`mailto:${PERSONA_SUPPORT_EMAIL}?subject=${subject}&body=${body}`}
+            >
+              <Mail size={14} /> Pedir troca à equipe
+            </a>
+          ) : (
+            <button type="button" className="btn btn-primary btn-sm" onClick={save} disabled={!dirty || isPending}>
+              {isPending && <Loader2 size={14} className="animate-spin" />}
+              Salvar tipo de conta
+            </button>
+          )}
         </div>
-      </div>
-    </SettingsCard>
+      </FieldRow>
+    </SettingsGroup>
   );
 }

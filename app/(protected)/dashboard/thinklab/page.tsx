@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ComponentProps } from "react";
 import { ArrowUpRight, Edit, FlaskConical, Plus, Trash } from "lucide-react";
+import { PersonalTransferButton } from "@/components/stagebook/transfer/personal-transfer-button";
 
 import {
   createThinkLab,
@@ -57,6 +58,8 @@ export default async function ThinkLabDashboard({
             </p>
           </div>
 
+          <div className="flex flex-wrap items-center gap-2">
+          <PersonalTransferButton kind="thinklab" />
           <form action={create}>
             {selectedFolderId && (
               <input type="hidden" name="folderId" value={selectedFolderId} />
@@ -69,6 +72,7 @@ export default async function ThinkLabDashboard({
               Novo quadro
             </button>
           </form>
+          </div>
         </header>
         <div className="h-px bg-gradient-to-r from-primary/30 via-base-300 to-transparent" />
         {thinkLabs.length === 0 ? (

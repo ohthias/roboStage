@@ -3,42 +3,40 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Trophy } from "lucide-react";
-import { Modal } from "@/components/stagebook/modal";
+import { BookPlus, Check, Trophy } from "lucide-react";
+import { DialogNote, ChipGroup, Field, FieldGroup, FormDialog, OptionCard } from "@/components/UI/Modal/FormDialog";
 import { useToast } from "@/app/context/ToastContext";
 import { createNotebook, updateNotebook } from "@/app/(protected)/dashboard/quickbrick/actions";
 import {
   COVER_COLORS,
   NOTEBOOK_SEASONS,
   matchSeason,
+  seasonName,
   type NotebookDTO,
   type QuickbrickLeague,
 } from "@/utils/quickbrick/notebook";
 
 type Values = { leagueId: string; name: string; robotName: string; description: string; season: string; coverColor: string };
 
-/** Criar ou editar os dados do caderno (nome, robô, temporada, capa). */
-export function NotebookFormModal({
-  open,
-  onClose,
-  notebook,
-  leagues,
-  onSaved,
-}: {
-  /** Competições do usuário (Ligas e Competições). */
-  leagues: QuickbrickLeague[];
-  open: boolean;
-  onClose: () => void;
-  /** Ausente = criar um caderno novo. */
+/** "Bioglow (2026/27)" → ["Bioglow", "2026/27"] */
+const splitSeason = (name: string) => {
+  const m = /^(.*?)\s*\((.+)\)$/.exec(name);
+  return m ? [m[1], m[2]] : [name, undefined];
+};
+
+type NotebookFormProps = {
   notebook?: NotebookDTO;
+  leagues: QuickbrickLeague[];
+  onClose: () => void;
   onSaved?: (values: Values) => void;
-}) {
+};
+
+function useNotebookForm({ notebook, leagues, onClose, onSaved }: NotebookFormProps) {
   const router = useRouter();
   const { addToast } = useToast();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  // A liga atual do caderno sempre aparece, mesmo que o usuário não a acompanhe
-  // (ex.: caderno criado por outra pessoa da equipe).
+  // A liga atual do caderno sempre aparece, mesmo que o usuário não a acompanhe.
   const current = notebook?.league;
   const options: QuickbrickLeague[] =
     current && !leagues.some((l) => l.id === current.id)
@@ -57,9 +55,10 @@ export function NotebookFormModal({
     };
   });
   const set = (patch: Partial<Values>) => setValues((v) => ({ ...v, ...patch }));
+  const league = options.find((l) => l.id === values.leagueId);
+  const noLeague = supported.length === 0 && !current;
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = () => {
     setError(null);
     start(async () => {
       if (notebook) {
@@ -77,71 +76,109 @@ export function NotebookFormModal({
     });
   };
 
+  return { error, league, noLeague, options, pending, set, submit, values };
+}
+
+/** Criar ou editar os dados do caderno (nome, robô, temporada, capa). */
+export function NotebookFormModal({
+  open,
+  onClose,
+  notebook,
+  leagues,
+  onSaved,
+}: {
+  /** Competições do usuário (Ligas e Competições). */
+  leagues: QuickbrickLeague[];
+  open: boolean;
+  onClose: () => void;
+  /** Ausente = criar um caderno novo. */
+  notebook?: NotebookDTO;
+  onSaved?: (values: Values) => void;
+}) {
+  const { error, league, noLeague, options, pending, set, submit, values } = useNotebookForm({
+    notebook,
+    leagues,
+    onClose,
+    onSaved,
+  });
+
   return (
-    <Modal
+    <FormDialog
       open={open}
-      onClose={pending ? () => {} : onClose}
+      onClose={onClose}
+      eyebrow="QuickBrick · Caderno"
       title={notebook ? "Editar caderno" : "Novo caderno do robô"}
       description={
         notebook
           ? "Fotos, diagramas e o projeto do Studio continuam no caderno."
           : "Um caderno por robô: registre as versões, o projeto 3D e as estratégias."
       }
-    >
-      <form onSubmit={submit} className="space-y-4">
-        {supported.length === 0 && !current ? (
-          <div className="rounded-xl border border-dashed border-base-300 bg-base-200/40 p-4 text-sm">
-            <p className="flex items-center gap-2 font-semibold">
-              <Trophy className="size-4 text-primary" /> Nenhuma competição com suporte
-            </p>
-            <p className="mt-1 text-base-content/65">
-              Por enquanto o QuickBrick Studio funciona só na <b>FIRST LEGO League Challenge</b>. Adicione a FLL em
-              Ligas e Competições para criar cadernos.
-            </p>
-            <Link href="/dashboard/leagues" className="btn btn-sm btn-primary mt-3">
-              Abrir Ligas e Competições
-            </Link>
-          </div>
-        ) : (
-          <label className="block">
-            <span className="mb-1 block text-sm font-semibold">Competição</span>
-            <select
-              className="select select-bordered w-full"
-              value={values.leagueId}
-              onChange={(e) => {
-                const league = options.find((l) => l.id === e.target.value);
-                set({ leagueId: e.target.value, season: matchSeason(league?.season) ?? values.season });
-              }}
-              required
+      size="lg"
+      busy={pending}
+      onSubmit={submit}
+      footer={
+        <>
+          <span />
+          <div className="flex gap-2">
+            <button type="button" className="btn btn-ghost rounded-lg" onClick={onClose} disabled={pending}>
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary gap-2 rounded-lg"
+              disabled={pending || !values.name.trim() || !values.leagueId}
             >
-              {!values.leagueId && <option value="">Escolha a competição</option>}
-              {options.map((l) => (
-                <option key={l.id} value={l.id} disabled={!l.supported}>
-                  {l.code} — {l.name}
-                  {l.supported ? "" : " (em breve)"}
-                </option>
-              ))}
-            </select>
-            <span className="mt-1 block text-xs text-base-content/50">
-              Suas competições de Ligas e Competições. Só a FLL tem suporte por enquanto.
-            </span>
-          </label>
-        )}
-        <label className="block">
-          <span className="mb-1 block text-sm font-semibold">Nome do caderno</span>
-          <input
-            className="input input-bordered w-full"
-            value={values.name}
-            onChange={(e) => set({ name: e.target.value })}
-            maxLength={100}
-            required
-            autoFocus
-            placeholder="Ex.: Caderno do Robô 2026"
-          />
-        </label>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block">
-            <span className="mb-1 block text-sm font-semibold">Nome do robô</span>
+              {pending ? <span className="loading loading-spinner loading-sm" /> : !notebook && <BookPlus size={16} />}
+              {notebook ? "Salvar" : "Criar caderno"}
+            </button>
+          </div>
+        </>
+      }
+    >
+      {noLeague ? (
+        <DialogNote icon={<Trophy className="size-4 text-primary" />}>
+          <p className="font-semibold text-base-content">Nenhuma competição com suporte</p>
+          <p className="mt-0.5">
+            Por enquanto o QuickBrick Studio funciona só na <b>FIRST LEGO League Challenge</b>. Adicione a FLL em Ligas e
+            Competições para criar cadernos.
+          </p>
+          <Link href="/dashboard/leagues" className="btn btn-sm btn-primary mt-3 rounded-lg">
+            Abrir Ligas e Competições
+          </Link>
+        </DialogNote>
+      ) : (
+        <FieldGroup legend="Competição" hint="Suas competições de Ligas e Competições. Só a FLL tem suporte por enquanto.">
+          <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Competição">
+            {options.map((l) => (
+              <OptionCard
+                key={l.id}
+                active={values.leagueId === l.id}
+                disabled={!l.supported}
+                onClick={() => set({ leagueId: l.id, season: matchSeason(l.season) ?? values.season })}
+                icon={<Trophy size={18} />}
+                title={l.code}
+                badge={l.supported ? undefined : "Em breve"}
+                description={l.name}
+              />
+            ))}
+          </div>
+        </FieldGroup>
+      )}
+
+      <div className="grid gap-5 sm:grid-cols-[1fr_168px]">
+        <div className="space-y-4">
+          <Field label="Nome do caderno">
+            <input
+              className="input input-bordered w-full"
+              value={values.name}
+              onChange={(e) => set({ name: e.target.value })}
+              maxLength={100}
+              required
+              autoFocus
+              placeholder="Ex.: Caderno do Robô 2026"
+            />
+          </Field>
+          <Field label="Nome do robô" optional>
             <input
               className="input input-bordered w-full"
               value={values.robotName}
@@ -149,65 +186,79 @@ export function NotebookFormModal({
               maxLength={80}
               placeholder="Ex.: Tatu-bola"
             />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-semibold">Temporada</span>
-            <select
-              className="select select-bordered w-full"
-              value={values.season}
-              onChange={(e) => set({ season: e.target.value })}
-            >
-              {NOTEBOOK_SEASONS.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
+          </Field>
+          <FieldGroup legend="Cor da capa">
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Cor da capa">
+              {COVER_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  role="radio"
+                  onClick={() => set({ coverColor: c })}
+                  aria-label={`Cor ${c}`}
+                  aria-checked={values.coverColor === c}
+                  className="grid size-8 place-items-center rounded-tl-lg rounded-br-lg ring-offset-2 ring-offset-base-100 transition hover:scale-105 aria-checked:ring-2 aria-checked:ring-base-content/50"
+                  style={{ background: c }}
+                >
+                  {values.coverColor === c && <Check className="size-4 text-white" />}
+                </button>
               ))}
-            </select>
-          </label>
+            </div>
+          </FieldGroup>
         </div>
-        <label className="block">
-          <span className="mb-1 block text-sm font-semibold">
-            Descrição <span className="font-normal text-base-content/45">(opcional)</span>
-          </span>
-          <textarea
-            className="textarea textarea-bordered min-h-20 w-full"
-            value={values.description}
-            onChange={(e) => set({ description: e.target.value })}
-            maxLength={1000}
-            placeholder="Objetivo do robô, base, sensores principais…"
-          />
-        </label>
-        <fieldset>
-          <legend className="mb-2 text-sm font-semibold">Cor da capa</legend>
-          <div className="flex flex-wrap gap-2">
-            {COVER_COLORS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => set({ coverColor: c })}
-                aria-label={`Cor ${c}`}
-                aria-pressed={values.coverColor === c}
-                className="grid size-9 place-items-center rounded-lg ring-offset-2 ring-offset-base-100 transition aria-pressed:ring-2 aria-pressed:ring-base-content/40"
-                style={{ background: c }}
-              >
-                {values.coverColor === c && <Check className="size-4 text-white" />}
-              </button>
-            ))}
+
+        {/* Prévia da capa — o mesmo desenho da estante. */}
+        <div className="hidden sm:block" aria-hidden>
+          <p className="mb-2 text-sm font-medium">Prévia</p>
+          <div
+            className="qb-spiral relative aspect-[4/5] overflow-hidden rounded-l-md rounded-r-2xl shadow-[0_14px_30px_-18px_rgba(0,0,0,0.55)] transition-colors"
+            style={{ background: `linear-gradient(135deg, ${values.coverColor}, color-mix(in oklab, ${values.coverColor} 70%, black))` }}
+          >
+            <span
+              className="absolute inset-0 opacity-25 mix-blend-overlay"
+              style={{ backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,.25) 0 1px, transparent 1px 6px)" }}
+            />
+            {league && (
+              <span className="absolute left-5 top-4 rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-black/70">
+                {league.code}
+              </span>
+            )}
+            <span className="absolute bottom-0 right-4 top-0 w-1.5 bg-black/25" />
+            <span className="absolute bottom-4 left-5 right-8 rounded-md bg-base-100 px-2.5 py-2 shadow-md">
+              <span className="qb-serif block truncate text-base leading-tight text-base-content">
+                {values.name.trim() || "Seu caderno"}
+              </span>
+              <span className="qb-hand block truncate text-sm text-base-content/55">
+                {values.robotName.trim() ? `Robô ${values.robotName.trim()}` : (seasonName(values.season) ?? "Caderno do robô")}
+              </span>
+            </span>
           </div>
-        </fieldset>
-
-        {error && <p className="text-sm text-error">{error}</p>}
-
-        <div className="modal-action">
-          <button type="button" className="btn btn-ghost" onClick={onClose} disabled={pending}>
-            Cancelar
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={pending || !values.name.trim() || !values.leagueId}>
-            {pending && <span className="loading loading-spinner loading-xs" />}
-            {notebook ? "Salvar" : "Criar caderno"}
-          </button>
         </div>
-      </form>
-    </Modal>
+      </div>
+
+      <FieldGroup legend="Temporada">
+        <ChipGroup
+          ariaLabel="Temporada"
+          value={values.season}
+          onChange={(season) => set({ season })}
+          options={NOTEBOOK_SEASONS.map((s) => {
+            const [label, meta] = splitSeason(s.name);
+            return { value: s.id as string, label, meta };
+          })}
+        />
+      </FieldGroup>
+
+      <Field label="Descrição" optional>
+        <textarea
+          className="textarea textarea-bordered min-h-20 w-full"
+          value={values.description}
+          onChange={(e) => set({ description: e.target.value })}
+          maxLength={1000}
+          placeholder="Objetivo do robô, base, sensores principais…"
+        />
+      </Field>
+
+      {error && <DialogNote tone="error">{error}</DialogNote>}
+    </FormDialog>
   );
 }

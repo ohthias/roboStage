@@ -10,6 +10,8 @@ import {
   calendarEventTags,
   documents,
   documentTags,
+  journalEntries,
+  journalEntryTags,
   milestones,
   tags,
   tests,
@@ -23,6 +25,7 @@ import { resolveLabelColor } from "./label-colors";
 import { ValidationError } from "./validation";
 import {
   LABELABLE_KINDS,
+  normalizeCriteria,
   type LabelableKind,
   type MilestoneDTO,
   type TagDTO,
@@ -54,6 +57,11 @@ type Adapter = {
   setMilestone(id: string, milestoneId: string | null): Promise<void>;
   milestoneOf(ids: string[]): Promise<{ resourceId: string; milestoneId: string | null }[]>;
   milestoneUsage(milestoneIds: string[]): Promise<{ milestoneId: string; count: number }[]>;
+  /**
+   * Quem pode mudar tags/marco do item, além de estar no mesmo espaço.
+   * Ausente = qualquer membro (regra das demais ferramentas).
+   */
+  canWrite?(scope: StagebookScope, id: string): Promise<boolean>;
 };
 
 const tagColumns = { id: tags.id, name: tags.name, color: tags.color };
@@ -394,6 +402,68 @@ const ADAPTERS: Record<LabelableKind, Adapter> = {
       return rows.flatMap((r) => (r.milestoneId ? [{ milestoneId: r.milestoneId, count: r.count }] : []));
     },
   },
+  journal: {
+    async owner(id) {
+      const [row] = await db
+        .select({ userId: journalEntries.userId, teamId: journalEntries.teamId })
+        .from(journalEntries)
+        .where(eq(journalEntries.id, id))
+        .limit(1);
+      return row ?? null;
+    },
+    async tagsOf(ids) {
+      if (!ids.length) return [];
+      const rows = await db
+        .select({ resourceId: journalEntryTags.entryId, ...tagColumns })
+        .from(journalEntryTags)
+        .innerJoin(tags, eq(tags.id, journalEntryTags.tagId))
+        .where(inArray(journalEntryTags.entryId, ids))
+        .orderBy(tags.name);
+      return rows.map(({ resourceId, ...tag }) => ({ resourceId, tag }));
+    },
+    async addTag(id, tagId) {
+      await db.insert(journalEntryTags).values({ entryId: id, tagId }).onConflictDoNothing();
+    },
+    async removeTag(id, tagId) {
+      await db.delete(journalEntryTags).where(and(eq(journalEntryTags.entryId, id), eq(journalEntryTags.tagId, tagId)));
+    },
+    async tagUsage(tagIds) {
+      if (!tagIds.length) return [];
+      return db
+        .select({ tagId: journalEntryTags.tagId, count: sql<number>`count(*)::int` })
+        .from(journalEntryTags)
+        .where(inArray(journalEntryTags.tagId, tagIds))
+        .groupBy(journalEntryTags.tagId);
+    },
+    async setMilestone(id, milestoneId) {
+      await db.update(journalEntries).set({ milestoneId, updatedAt: new Date() }).where(eq(journalEntries.id, id));
+    },
+    async milestoneOf(ids) {
+      if (!ids.length) return [];
+      return db
+        .select({ resourceId: journalEntries.id, milestoneId: journalEntries.milestoneId })
+        .from(journalEntries)
+        .where(inArray(journalEntries.id, ids));
+    },
+    async milestoneUsage(ids) {
+      if (!ids.length) return [];
+      const rows = await db
+        .select({ milestoneId: journalEntries.milestoneId, count: sql<number>`count(*)::int` })
+        .from(journalEntries)
+        .where(inArray(journalEntries.milestoneId, ids))
+        .groupBy(journalEntries.milestoneId);
+      return rows.flatMap((r) => (r.milestoneId ? [{ milestoneId: r.milestoneId, count: r.count }] : []));
+    },
+    // Diário: no espaço da equipe todos leem, mas só o autor mexe na entrada.
+    async canWrite(scope, id) {
+      const [row] = await db
+        .select({ authorId: journalEntries.authorId })
+        .from(journalEntries)
+        .where(eq(journalEntries.id, id))
+        .limit(1);
+      return row?.authorId === scope.userId;
+    },
+  },
 };
 
 export function assertKind(kind: unknown): asserts kind is LabelableKind {
@@ -408,6 +478,15 @@ export const adapterFor = (kind: LabelableKind) => ADAPTERS[kind];
 export async function requireResourceInScope(scope: StagebookScope, kind: LabelableKind, id: string) {
   const owner = await ADAPTERS[kind].owner(id);
   if (!owner || !isOwnedByScope(scope, owner)) throw new ValidationError("Item não encontrado.");
+}
+
+/** Como `requireResourceInScope`, e também confere quem pode alterar o item (ex.: só o autor no Diário). */
+export async function requireResourceWritable(scope: StagebookScope, kind: LabelableKind, id: string) {
+  await requireResourceInScope(scope, kind, id);
+  const check = ADAPTERS[kind].canWrite;
+  if (check && !(await check(scope, id))) {
+    throw new ValidationError("Só quem escreveu pode alterar as tags e o marco deste item.");
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -497,6 +576,8 @@ export const milestoneColumns = {
   description: milestones.description,
   color: milestones.color,
   dueAt: milestones.dueAt,
+  criteria: milestones.criteria,
+  completedAt: milestones.completedAt,
 };
 
 export const toMilestoneDTO = (row: {
@@ -505,12 +586,16 @@ export const toMilestoneDTO = (row: {
   description: string | null;
   color: string | null;
   dueAt: Date | string | null;
+  criteria?: unknown;
+  completedAt?: Date | string | null;
 }): MilestoneDTO => ({
   id: row.id,
   name: row.name,
   description: row.description,
   color: row.color,
   dueAt: row.dueAt ? new Date(row.dueAt).toISOString() : null,
+  criteria: normalizeCriteria(row.criteria),
+  completedAt: row.completedAt ? new Date(row.completedAt).toISOString() : null,
 });
 
 export async function requireMilestoneInScope(scope: StagebookScope, milestoneId: string) {

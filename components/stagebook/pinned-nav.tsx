@@ -9,6 +9,7 @@ import {
   ArrowUp,
   Book,
   Cuboid,
+  FileText,
   FlaskConical,
   Lightbulb,
   Loader2,
@@ -28,20 +29,19 @@ export const PIN_KIND_META: Record<PinKind, { Icon: LucideIcon; tone: string }> 
   labtest: { Icon: FlaskConical, tone: "bg-primary/12 text-primary" },
   thinklab: { Icon: Lightbulb, tone: "bg-accent/30 text-[color-mix(in_oklab,var(--color-accent)_50%,var(--color-base-content))]" },
   quickbrick: { Icon: Cuboid, tone: "bg-secondary/12 text-secondary" },
-  stagebook: { Icon: Book, tone: "bg-success/15 text-success" },
+  stagebook: { Icon: FileText, tone: "bg-success/15 text-success" },
 };
 
 // Mesmas medidas das linhas de ferramentas (nav-links.tsx).
 const ROW =
   "group relative flex h-9 w-full items-center gap-3 rounded-lg px-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 lg:is-drawer-close:justify-center lg:is-drawer-close:px-0";
-const TIP = "lg:is-drawer-close:tooltip lg:is-drawer-close:tooltip-right lg:is-drawer-close:z-50";
 
 /** Ladrilho colorido por tipo: é o que separa fixados de ferramentas, em especial com a barra recolhida. */
 function KindTile({ kind, icon, size = "size-[22px]" }: { kind: PinKind; icon?: string | null; size?: string }) {
   const { Icon, tone } = PIN_KIND_META[kind];
   return (
     <span className={`flex shrink-0 items-center justify-center rounded-tl-md rounded-br-md rounded-tr-sm rounded-bl-sm ${size} ${tone}`}>
-      {icon ? <span className="text-[12px] leading-none">{icon}</span> : <Icon size={12} strokeWidth={2.2} />}
+      {kind === "stagebook" ? <Icon size={12} strokeWidth={2.2} /> : icon ? <span className="text-[12px] leading-none">{icon}</span> : <Icon size={12} strokeWidth={2.2} />}
     </span>
   );
 }
@@ -96,7 +96,7 @@ export function PinnedSection({
         {pins.map((pin) => {
           const active = pathname === pin.href || pathname.startsWith(`${pin.href}/`);
           return (
-            <li key={pin.id} data-tip={pin.title} className={`group/pin relative ${TIP}`}>
+            <li key={pin.id} data-tip={pin.title} className="group/pin relative">
               <Link
                 href={pin.href}
                 onClick={onNavigate}
@@ -127,7 +127,7 @@ export function PinnedSection({
 
         {/* Vazio (expandida) ou "+" (recolhida) */}
         {pins.length === 0 ? (
-          <li data-tip="Fixar um item" className={TIP}>
+          <li data-tip="Fixar um item">
             <button
               type="button"
               onClick={() => setOpen(true)}
@@ -141,7 +141,7 @@ export function PinnedSection({
             </button>
           </li>
         ) : (
-          <li data-tip={full ? "Gerenciar fixados" : "Fixar mais um"} className={`hidden lg:is-drawer-close:block ${TIP}`}>
+          <li data-tip={full ? "Gerenciar fixados" : "Fixar mais um"} className="hidden lg:is-drawer-close:block">
             <button
               type="button"
               onClick={() => setOpen(true)}

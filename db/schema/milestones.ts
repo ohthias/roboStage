@@ -3,6 +3,7 @@ import {
   uuid,
   text,
   timestamp,
+  jsonb,
   index,
   foreignKey,
   check,
@@ -10,6 +11,7 @@ import {
 import { sql } from "drizzle-orm";
 import { users } from "./users";
 import { teams } from "./teams";
+import type { MilestoneCriterion } from "@/types/labels";
 
 /**
  * Milestones UNIVERSAIS do Stagebook.
@@ -34,6 +36,10 @@ export const milestones = pgTable(
     // Cor de destaque (#rrggbb). Null = cor padrão da interface.
     color: text("color"),
     dueAt: timestamp("due_at", { withTimezone: true }),
+    // Metas: critérios de conclusão (checklist) e a conclusão do marco.
+    criteria: jsonb("criteria").$type<MilestoneCriterion[]>().notNull().default([]),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    completedBy: text("completed_by"),
     createdBy: text("created_by"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

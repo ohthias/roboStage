@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
-import { Loader2, X } from "lucide-react";
+import type { ReactNode } from "react";
+import { ToolConfirmDialog, ToolDialog } from "@/components/stage";
 
-/** Modal do daisyUI controlado por estado, com Esc e clique fora para fechar. */
+/**
+ * Modal do dashboard — agora o `ToolDialog` da Stage UI (kit ferramenta):
+ * foco preso, Esc, trava de rolagem, devolve o foco ao fechar.
+ *
+ * Mesma API de antes, então todas as telas que usam `Modal` mudam juntas.
+ * Os tamanhos continuam os mesmos (sm = 24rem, md = 32rem, lg = 42rem).
+ */
 export function Modal({
   open,
   onClose,
@@ -11,6 +17,7 @@ export function Modal({
   description,
   children,
   size = "md",
+  footer,
 }: {
   open: boolean;
   onClose: () => void;
@@ -18,41 +25,17 @@ export function Modal({
   description?: string;
   children: ReactNode;
   size?: "sm" | "md" | "lg";
+  /** Opcional: barra de ações fixa no rodapé (estilo Stage UI). */
+  footer?: ReactNode;
 }) {
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
-  if (!open) return null;
-
-  const width = size === "sm" ? "max-w-sm" : size === "lg" ? "max-w-2xl" : "max-w-lg";
-
   return (
-    <dialog className="modal modal-open" aria-labelledby="team-modal-title">
-      <div className={`modal-box w-full ${width}`}>
-        <button
-          type="button"
-          className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3"
-          onClick={onClose}
-          aria-label="Fechar"
-        >
-          <X size={16} />
-        </button>
-        <h3 id="team-modal-title" className="text-lg font-semibold">
-          {title}
-        </h3>
-        {description && <p className="mt-1 text-sm text-base-content/60">{description}</p>}
-        <div className="mt-4">{children}</div>
-      </div>
-      <button type="button" className="modal-backdrop" onClick={onClose} aria-label="Fechar" />
-    </dialog>
+    <ToolDialog open={open} onClose={onClose} title={title} description={description} size={size} footer={footer}>
+      <div className="stage-modal-body pb-2 text-sm">{children}</div>
+    </ToolDialog>
   );
 }
 
-/** Confirmação destrutiva (substitui `window.confirm`). */
+/** Confirmação destrutiva (substitui `window.confirm`): o `ToolConfirmDialog` da Stage UI. */
 export function ConfirmDialog({
   open,
   title,
@@ -71,17 +54,14 @@ export function ConfirmDialog({
   onCancel: () => void;
 }) {
   return (
-    <Modal open={open} onClose={pending ? () => {} : onCancel} title={title} size="sm">
-      <p className="text-sm text-base-content/70">{description}</p>
-      <div className="modal-action">
-        <button type="button" className="btn btn-ghost btn-sm" onClick={onCancel} disabled={pending}>
-          Cancelar
-        </button>
-        <button type="button" className="btn btn-error btn-sm" onClick={onConfirm} disabled={pending}>
-          {pending && <Loader2 size={14} className="animate-spin" />}
-          {confirmLabel}
-        </button>
-      </div>
-    </Modal>
+    <ToolConfirmDialog
+      open={open}
+      title={title}
+      message={description}
+      confirmLabel={confirmLabel}
+      pending={pending}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    />
   );
 }

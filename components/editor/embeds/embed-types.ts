@@ -47,13 +47,56 @@ export const EMBED_HREF: Record<EmbedKind, (id: string, extra?: string) => strin
   "quickbrick-diagram": (id, notebookId) => `/dashboard/quickbrick/${notebookId ?? ""}/diagramas/${id}`,
 };
 
+/** Posição do bloco na largura da página. */
+export type EmbedAlign = "left" | "center" | "right";
+
+/** Tamanho e posição do bloco (ThinkLab e LabTest). */
+export type EmbedLayoutOptions = {
+  /** Largura em % da coluna do texto (30–100). Ausente = 100. */
+  width?: number;
+  /** Posição quando a largura é menor que 100%. Ausente = centro. */
+  align?: EmbedAlign;
+};
+
+/** Tipos de gráfico do resumo do LabTest (mesmos do kit de gráficos do módulo). */
+export type LabTestChartType = "line" | "area" | "bar" | "stacked" | "step" | "scatter" | "radar";
+
+/** Altura do gráfico / da miniatura. */
+export type EmbedHeight = "sm" | "md" | "lg" | "xl";
+
+/** Filtros aplicados às execuções antes de montar os gráficos. */
+export type LabTestFilter = {
+  /** Só as últimas N execuções (depois dos outros filtros). */
+  last?: number;
+  /** Intervalo de execuções (#de – #até), inclusivo. */
+  fromExec?: number;
+  toExec?: number;
+  /** Intervalo de datas (AAAA-MM-DD), inclusivo. */
+  dateFrom?: string;
+  dateTo?: string;
+  /** Condição sobre um valor (parâmetro ou pontuação total). */
+  value?: { key: string; op: "gte" | "lte"; value: number };
+};
+
 /** Opções por bloco, guardadas junto da referência. */
 export type LabTestChartOptions = {
   /** "resumo" = um gráfico compacto; "completo" = mesmos gráficos da página do teste. */
   view?: "resumo" | "completo";
-  chartType?: "line" | "bar";
+  chartType?: LabTestChartType;
   /** Parâmetros exibidos no resumo (vazio = todos os numéricos). */
   fieldKeys?: string[];
+  filter?: LabTestFilter;
+  /** Partes escondidas (ids de `labTestSections`). Novas partes aparecem por padrão. */
+  hiddenSections?: string[];
+  chartHeight?: EmbedHeight;
+  showAverage?: boolean;
+  showLabels?: boolean;
+};
+
+export type ThinkLabEmbedOptions = {
+  thumbHeight?: EmbedHeight;
+  /** Mostra nome, contagem e descrição abaixo da miniatura. Ausente = sim. */
+  showDetails?: boolean;
 };
 
 /** Tamanho da imagem nos embeds de imagem (foto do robô / diagrama). */
@@ -64,7 +107,10 @@ export type QuickbrickEmbedOptions = {
   size?: ImageEmbedSize;
 };
 
-export type EmbedOptions = LabTestChartOptions & QuickbrickEmbedOptions & { boardId?: string };
+export type EmbedOptions = LabTestChartOptions &
+  QuickbrickEmbedOptions &
+  ThinkLabEmbedOptions &
+  EmbedLayoutOptions & { boardId?: string };
 
 // ---------------------------------------------------------------------------
 // Itens do seletor (listas leves)

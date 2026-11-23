@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Clock, FilePlus, FileText, Loader2, Trash2 } from "lucide-react";
@@ -43,7 +43,7 @@ function relative(ts: number, now: number) {
   return rtf.format(Math.round(diff / (86400 * 30)), "month");
 }
 
-export function DocumentsHome({ docs }: { docs: HomeDocument[] }) {
+export function DocumentsHome({ docs, headerAction }: { docs: HomeDocument[]; headerAction?: ReactNode }) {
   const { trashCount } = useNotebook();
   const router = useRouter();
   const { addToast } = useToast();
@@ -105,7 +105,8 @@ export function DocumentsHome({ docs }: { docs: HomeDocument[] }) {
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {headerAction}
           <Link
             href="/dashboard/documents/trash"
             className="btn btn-ghost btn-sm gap-1.5 text-base-content/60"

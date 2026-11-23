@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Box, Camera, Layers3, NotebookPen, Plus, Search, Trophy } from "lucide-react";
 import { TagChip, TagList } from "@/components/stagebook/labels/tag-chip";
@@ -18,8 +18,11 @@ import { fmtDate } from "./upload";
 export function NotebookShelf({
   notebooks,
   leagues,
+  headerAction,
 }: {
   notebooks: NotebookCardDTO[];
+  /** Ação extra no cabeçalho (ex.: "Transferir para equipe", no espaço pessoal). */
+  headerAction?: ReactNode;
   /** Competições do usuário, com a marca de suporte ao QuickBrick. */
   leagues: QuickbrickLeague[];
 }) {
@@ -65,6 +68,7 @@ export function NotebookShelf({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            {headerAction}
             <Link href="/fll/quickbrick" className="btn btn-ghost border-base-300">
               Ferramentas avulsas
             </Link>

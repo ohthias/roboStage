@@ -16,4 +16,6 @@ export * from "./anatix";
 export * from "./thinklab";
 export * from "./quickbrick";
 export * from "./user-preferences";
+export * from "./journal";
+export * from "./legacy";
 export * from "./relations";

@@ -1,4 +1,4 @@
-import type { MilestoneDTO } from "@/types/labels";
+import type { LabelableKind, MilestoneDTO } from "@/types/labels";
 import type { TeamRole } from "@/utils/stagebook/team-permissions";
 
 /** Tipos dos dados que a página da equipe passa do servidor para a UI (tudo serializável). */
@@ -43,3 +43,21 @@ export type TeamMemberSummary = {
 };
 
 export type TeamMilestoneSummary = MilestoneDTO & { usageTotal: number };
+
+/** Uma meta (marco) da equipe com progresso e o que a equipe registrou no Diário. */
+export type TeamGoal = TeamMilestoneSummary & {
+  /** Itens vinculados por ferramenta. */
+  usage: Record<LabelableKind, number>;
+  /** Cards do Kanban vinculados (concluídos / total). */
+  cards: { done: number; total: number };
+  /** Critérios + cards. Null quando não há o que medir. */
+  progress: { done: number; total: number; pct: number } | null;
+  journal: {
+    count: number;
+    contributors: number;
+    lastDate: string | null;
+    recent: { id: string; title: string | null; entryDate: string; author: { id: string; name: string | null; avatarUrl: string | null } }[];
+    /** Entradas por semana, das 8 últimas semanas (a última é a atual). */
+    weeks: number[];
+  };
+};

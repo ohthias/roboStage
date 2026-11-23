@@ -77,7 +77,7 @@ function useCardModalController({
   const [milestone, setMilestone] = useState<MilestoneDTO | null>(() => {
     const found = milestones.find((m) => m.id === (card.milestoneId ?? ""));
     return found
-      ? { id: found.id, name: found.name, color: found.color ?? null, description: null, dueAt: found.dueAt ? new Date(found.dueAt).toISOString() : null }
+      ? { id: found.id, name: found.name, color: found.color ?? null, description: null, dueAt: found.dueAt ? new Date(found.dueAt).toISOString() : null, criteria: [], completedAt: null }
       : null;
   });
 

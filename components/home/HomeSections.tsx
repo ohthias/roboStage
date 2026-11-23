@@ -156,17 +156,16 @@ export function PlatformIntro() {
 
 /* =========================================================== COMPETIÇÕES */
 
-type CompetitionTone = "primary" | "secondary" | "dark";
-
 type Competition = {
   href: string;
+  path: string;
   title: string;
   text: string;
   cta: string;
   image: string;
-  tone: CompetitionTone;
-  status: string;
+  tone: "primary" | "secondary";
   span: string;
+  shadow: string;
 };
 
 const competitions: Competition[] = [

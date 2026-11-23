@@ -31,9 +31,10 @@ import {
   milestonesForResources,
   requireMilestoneInScope,
   requireResourceInScope,
+  requireResourceWritable,
   toMilestoneDTO,
 } from "../labels-core";
-import type { LabelableKind, MilestoneDTO, MilestoneWithUsage } from "@/types/labels";
+import { normalizeCriteria, type LabelableKind, type MilestoneDTO, type MilestoneWithUsage } from "@/types/labels";
 
 /**
  * Milestones UNIVERSAIS: um marco criado em qualquer ferramenta pode ser
@@ -76,6 +77,8 @@ type MilestoneInput = {
   dueAt?: string | null;
   color?: string | null;
   description?: string | null;
+  /** Critérios de conclusão (checklist da meta). Marcações já feitas são preservadas pelo id. */
+  criteria?: unknown;
 };
 
 /**
@@ -93,6 +96,7 @@ async function insertMilestone(scope: StagebookScope, input: MilestoneInput): Pr
       dueAt: parseDueAt(input.dueAt),
       color: parseColor(input.color),
       description: optionalText(input.description, 1000),
+      criteria: normalizeCriteria(input.criteria).map((c) => ({ ...c, done: false, doneAt: null, doneBy: null })),
       createdBy: scope.userId,
     })
     .returning(milestoneColumns);
@@ -117,9 +121,17 @@ async function patchMilestone(
 ): Promise<MilestoneDTO> {
   requireCapability(scope, "milestone.manage");
   requireUuid(id, "milestone");
-  await requireMilestoneInScope(scope, id);
+  const current = await requireMilestoneInScope(scope, id);
 
   const patch: Partial<typeof milestones.$inferInsert> = { updatedAt: new Date() };
+  if (input.criteria !== undefined) {
+    // Quem edita o texto não "desfaz" o que a equipe já marcou: o estado vem do banco.
+    const before = new Map(current.criteria.map((c) => [c.id, c]));
+    patch.criteria = normalizeCriteria(input.criteria).map((c) => {
+      const prev = before.get(c.id);
+      return prev ? { ...c, done: prev.done, doneAt: prev.doneAt ?? null, doneBy: prev.doneBy ?? null } : { ...c, done: false, doneAt: null, doneBy: null };
+    });
+  }
   if (input.name !== undefined) {
     patch.name = requireText(input.name, "o nome da milestone", { maxLength: 100 });
   }
@@ -182,6 +194,78 @@ export async function getMilestoneAccess(): Promise<{ canManage: boolean }> {
   return { canManage: scope.type === "personal" || roleCan(scope.role, "milestone.manage") };
 }
 
+/**
+ * Marca/desmarca um critério da meta. Qualquer membro pode (é assim que o
+ * progresso anda, inclusive de dentro do Diário); editar o texto dos
+ * critérios continua sendo de técnico/mentor.
+ */
+async function markCriterion(scope: StagebookScope, id: string, criterionId: string, done: boolean): Promise<MilestoneDTO> {
+  requireUuid(id, "milestone");
+  if (typeof criterionId !== "string" || !criterionId) throw new ValidationError("Critério inválido.");
+  const current = await requireMilestoneInScope(scope, id);
+  const target = current.criteria.find((c) => c.id === criterionId);
+  if (!target) throw new ValidationError("Critério não encontrado.");
+  if (target.done === done) return current;
+
+  const criteria = current.criteria.map((c) =>
+    c.id === criterionId
+      ? { ...c, done, doneAt: done ? new Date().toISOString() : null, doneBy: done ? scope.userId : null }
+      : c,
+  );
+  const [updated] = await db
+    .update(milestones)
+    .set({ criteria, updatedAt: new Date() })
+    .where(and(eq(milestones.id, id), milestoneScope(scope)))
+    .returning(milestoneColumns);
+  if (scope.type === "team" && done) {
+    await recordTeamActivity({
+      teamId: scope.teamId,
+      actorId: scope.userId,
+      verb: "milestone.criterion_done",
+      entityType: "milestone",
+      entityId: id,
+      data: { name: current.name, criterion: target.text, done: criteria.filter((c) => c.done).length, total: criteria.length },
+      aggregate: false,
+    });
+  }
+  refresh();
+  return toMilestoneDTO(updated);
+}
+
+/** Conclui (ou reabre) a meta. Técnico/mentor na equipe. */
+async function markCompleted(scope: StagebookScope, id: string, completed: boolean): Promise<MilestoneDTO> {
+  requireCapability(scope, "milestone.manage");
+  requireUuid(id, "milestone");
+  const current = await requireMilestoneInScope(scope, id);
+  if (!!current.completedAt === completed) return current;
+  const [updated] = await db
+    .update(milestones)
+    .set({ completedAt: completed ? new Date() : null, completedBy: completed ? scope.userId : null, updatedAt: new Date() })
+    .where(and(eq(milestones.id, id), milestoneScope(scope)))
+    .returning(milestoneColumns);
+  if (scope.type === "team" && completed) {
+    await recordTeamActivity({
+      teamId: scope.teamId,
+      actorId: scope.userId,
+      verb: "milestone.completed",
+      entityType: "milestone",
+      entityId: id,
+      data: { name: current.name },
+      aggregate: false,
+    });
+  }
+  refresh();
+  return toMilestoneDTO(updated);
+}
+
+export async function toggleMilestoneCriterion(id: string, criterionId: string, done: boolean): Promise<ActionResult<MilestoneDTO>> {
+  return runAction(async () => markCriterion(await resolveStagebookScope(), id, criterionId, done === true));
+}
+
+export async function setMilestoneCompleted(id: string, completed: boolean): Promise<ActionResult<MilestoneDTO>> {
+  return runAction(async () => markCompleted(await resolveStagebookScope(), id, completed === true));
+}
+
 // ---------------------------------------------------------------------------
 // Variantes com `teamId` explícito — usadas pela página da equipe, que pode
 // estar aberta numa equipe diferente do espaço ativo (cookie). Devolvem
@@ -207,6 +291,19 @@ export async function deleteTeamMilestone(teamId: string, id: string): Promise<A
   return runAction(async () => removeMilestone(await requireTeamAccess(teamId), id));
 }
 
+export async function toggleTeamMilestoneCriterion(
+  teamId: string,
+  id: string,
+  criterionId: string,
+  done: boolean,
+): Promise<ActionResult<MilestoneDTO>> {
+  return runAction(async () => markCriterion(await requireTeamAccess(teamId), id, criterionId, done === true));
+}
+
+export async function setTeamMilestoneCompleted(teamId: string, id: string, completed: boolean): Promise<ActionResult<MilestoneDTO>> {
+  return runAction(async () => markCompleted(await requireTeamAccess(teamId), id, completed === true));
+}
+
 export async function getResourceMilestone(
   kind: LabelableKind,
   id: string,
@@ -228,7 +325,7 @@ export async function setResourceMilestone(
     assertKind(kind);
     requireUuid(id, "item");
     const scope = await resolveStagebookScope();
-    await requireResourceInScope(scope, kind, id);
+    await requireResourceWritable(scope, kind, id);
 
     let milestone: MilestoneDTO | null = null;
     if (milestoneId) {

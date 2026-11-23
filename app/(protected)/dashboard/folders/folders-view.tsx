@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import {
   ChevronDown,
@@ -22,7 +22,7 @@ import { FolderAppearanceMenu, type FolderAppearance } from "./folder-appearance
 import type { FolderItem } from "@/types/folders";
 
 import { unwrapAction, type ActionResult } from "@/utils/stagebook/action-result";
-export function FoldersView({ folders: serverFolders }: { folders: FolderItem[] }) {
+export function FoldersView({ folders: serverFolders, headerAction }: { folders: FolderItem[]; headerAction?: ReactNode }) {
   const { addToast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -98,15 +98,18 @@ export function FoldersView({ folders: serverFolders }: { folders: FolderItem[] 
           </p>
         </div>
 
-        <button
-          type="button"
-          className="btn btn-primary btn-sm shrink-0 gap-2 self-start sm:self-auto"
-          onClick={() => addFolder(null)}
-          disabled={isPending}
-        >
-          <Plus size={16} strokeWidth={2} />
-          Nova pasta
-        </button>
+        <div className="flex shrink-0 flex-wrap items-center gap-2 self-start sm:self-auto">
+          {headerAction}
+          <button
+            type="button"
+            className="btn btn-primary btn-sm shrink-0 gap-2"
+            onClick={() => addFolder(null)}
+            disabled={isPending}
+          >
+            <Plus size={16} strokeWidth={2} />
+            Nova pasta
+          </button>
+        </div>
       </header>
       <div className="h-px bg-gradient-to-r from-primary/30 via-base-300 to-transparent" />
 

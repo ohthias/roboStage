@@ -4,6 +4,7 @@ import { documents, folders } from "@/db/schema";
 import { scopeWhere } from "@/utils/stagebook/permissions";
 import { resolveStagebookScope } from "@/utils/stagebook/scope";
 import { FoldersView } from "./folders-view";
+import { PersonalTransferButton } from "@/components/stagebook/transfer/personal-transfer-button";
 import type { FolderItem } from "@/types/folders";
 
 export default async function FoldersPage() {
@@ -51,5 +52,5 @@ export default async function FoldersPage() {
     documentCount: counts.get(folder.id) ?? 0,
   }));
 
-  return <FoldersView folders={items} />;
+  return <FoldersView folders={items} headerAction={<PersonalTransferButton kind="folder" size="sm" />} />;
 }

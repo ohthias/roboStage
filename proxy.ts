@@ -27,6 +27,7 @@ const publicRoutePatterns = [
   "/api/data/toolsAbout(.*)",
   "/api/webhooks(.*)",
   "/api/revalidate(.*)",
+  "/data/_file(.*)",
   "/roboticar(.*)",
   "/anatix(.*)",
   "/robostage-canopy(.*)",

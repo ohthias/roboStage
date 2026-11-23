@@ -53,6 +53,24 @@ type Step = "pick" | "review" | "done";
 type KindFilter = "all" | TransferKind;
 const key = (c: { kind: TransferKind; id: string }) => `${c.kind}:${c.id}`;
 
+function safeTeamToolHref(teamId: string, href: string) {
+  const teamSegment = encodeURIComponent(teamId);
+  const fallback = `/dashboard/team/${teamSegment}?tab=legado`;
+
+  // Only internal paths are allowed. This blocks javascript:, protocol-relative,
+  // backslash, and other control-character URL variants from result data.
+  if (typeof href !== "string" || !/^\/(?!\/)[^\u0000-\u001F\u007F\\]*$/.test(href)) {
+    return fallback;
+  }
+
+  const routed = teamToolHref(teamSegment, href);
+  if (typeof routed !== "string" || !/^\/[^/\\]|^\/\/(?!\/)/.test(routed)) {
+    return fallback;
+  }
+
+  return routed;
+}
+
 /**
  * Diálogo "Transferir para a equipe": escolhe itens do espaço PESSOAL (pastas,
  * páginas, testes, cadernos, quadros), revisa o que acontece e transfere.
@@ -172,7 +190,7 @@ function TransferDialogBody({ onClose, teams, fixedTeamId, initialKind, onDone }
     ) : (
       <>
         {!fixedTeamId && teamId && (
-          <a href={`/dashboard/team/${teamId}?tab=legado`} className="mr-auto self-center text-[12px] font-semibold text-primary hover:underline">
+          <a href={`/dashboard/team/${encodeURIComponent(teamId)}?tab=legado`} className="mr-auto self-center text-[12px] font-semibold text-primary hover:underline">
             Ver o legado da equipe
           </a>
         )}
@@ -305,7 +323,7 @@ function TransferDialogBody({ onClose, teams, fixedTeamId, initialKind, onDone }
               return (
                 <li key={`${m.kind}:${m.id}`}>
                   <a
-                    href={teamToolHref(teamId, m.href)}
+                    href={safeTeamToolHref(teamId, m.href)}
                     className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-[13px] hover:bg-base-content/[0.05]"
                   >
                     <span className="grid size-7 shrink-0 place-items-center rounded-md bg-base-200 text-base-content/70">

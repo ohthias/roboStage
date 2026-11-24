@@ -91,10 +91,12 @@ export default clerkMiddleware(async (auth, req) => {
       return redirectTo(req, onboardingPending ? ONBOARDING_PATH : AFTER_AUTH_PATH);
     }
 
-    // Onboarding já concluído → não deixa voltar ao /onboarding.
-    if (pathname === ONBOARDING_PATH && onboardingComplete === true) {
-      return redirectTo(req, AFTER_AUTH_PATH);
-    }
+    // Não redirecionamos /onboarding → /dashboard pela flag do token: ela
+    // pode estar `true` (versão antiga do onboarding) enquanto o banco ainda
+    // tem campos faltando. O guard de (protected)/layout.tsx manda de volta
+    // para /onboarding e isso virava um loop infinito de redirects (tela em
+    // branco, 429). A própria página /onboarding confere o banco e manda
+    // para o dashboard quando está tudo preenchido.
   }
 
   if (isPublicRoute(pathname)) return NextResponse.next();

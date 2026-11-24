@@ -1,7 +1,5 @@
 import type { ReactNode } from "react";
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import { getOnboardingMissing } from "@/utils/onboarding/status";
+import { requireOnboardingComplete } from "@/utils/onboarding/status";
 
 /**
  * Guard de todas as rotas protegidas (dashboard e ThinkLab).
@@ -10,13 +8,12 @@ import { getOnboardingMissing } from "@/utils/onboarding/status";
  * desatualizada ou ter sido marcada por uma versão antiga do onboarding.
  * Aqui conferimos no banco se todos os campos obrigatórios estão preenchidos
  * e, se faltar algo, mandamos a pessoa de volta para /onboarding.
+ *
+ * Atenção: layouts filhos e páginas rodam em paralelo com este layout, então
+ * eles também chamam `requireOnboardingComplete()` antes de buscar dados
+ * (a consulta é memorizada por requisição).
  */
 export default async function ProtectedLayout({ children }: { children: ReactNode }) {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-
-  const missing = await getOnboardingMissing(userId);
-  if (missing.length > 0) redirect("/onboarding");
-
+  await requireOnboardingComplete();
   return children;
 }

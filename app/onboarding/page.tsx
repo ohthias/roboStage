@@ -14,7 +14,7 @@ export default async function OnboardingPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const [dbUser, leagueCatalog, interests, [prefs], clerkUser] = await Promise.all([
+  const [dbUser, leagueCatalog, interests, [prefs]] = await Promise.all([
     db.query.users.findFirst({ where: eq(users.id, userId) }),
     db.select().from(leagues).orderBy(leagues.name),
     db.select().from(userLeagueInterests).where(eq(userLeagueInterests.userId, userId)),
@@ -27,7 +27,6 @@ export default async function OnboardingPage() {
       .from(userPreferences)
       .where(eq(userPreferences.userId, userId))
       .limit(1),
-    currentUser(),
   ]);
 
   // Mesma regra do guard de (protected)/layout.tsx: só vai para o dashboard
@@ -43,6 +42,11 @@ export default async function OnboardingPage() {
 
   // Quem já tinha concluído uma versão antiga e voltou por falta de dados.
   const returning = Boolean(dbUser?.onboardingCompletedAt);
+
+  // Só consulta a Backend API do Clerk quando o banco não tem os dados
+  // (webhook atrasado). Chamar sempre era uma fonte de 429.
+  const clerkUser =
+    dbUser?.name && dbUser.email ? null : await currentUser().catch(() => null);
 
   const clerkName = [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ");
 

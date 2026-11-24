@@ -2,6 +2,7 @@ import "server-only";
 
 import { and, asc, desc, eq, gte, isNotNull, sql, isNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { requireOnboardingComplete } from "@/utils/onboarding/status";
 import { db } from "@/db/client";
 import {
   users,
@@ -46,12 +47,14 @@ export type PersonaType =
   | "organizador";
 
 export async function getDashboardData() {
+  // Mesma regra do guard de (protected)/layout.tsx, antes das consultas pesadas.
+  await requireOnboardingComplete();
   const userId = await requireAuthenticatedUser();
   const currentUser = await db.query.users.findFirst({
     where: eq(users.id, userId),
   });
-
-  if (!currentUser?.onboardingCompletedAt) redirect("/onboarding");
+  // Já garantido pelo guard acima; mantém o tipo estreitado.
+  if (!currentUser) redirect("/onboarding");
 
   const scope = await resolveStagebookScope();
   const activeTeamName =

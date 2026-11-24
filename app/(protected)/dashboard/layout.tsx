@@ -33,12 +33,16 @@ import {
 } from "@/components/stagebook/layout-prefs";
 import Link from "next/link";
 import { SHOWLIVE_URL } from "@/utils/showlive-url";
+import { requireOnboardingComplete } from "@/utils/onboarding/status";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: ReactNode;
 }) {
+  // Para antes das consultas do sidebar se o onboarding não estiver completo.
+  await requireOnboardingComplete();
+
   const [scope, teams, notifications, canCreateTeam, prefs] = await Promise.all(
     [
       resolveStagebookScope(),

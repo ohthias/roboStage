@@ -78,7 +78,7 @@ export function DisplayHeading({
 
 /**
  * SectionTitle — mesma API e mesmo visual do SectionTitle da home
- * (components/home/shared.tsx), aceitando também `highlightTone`.
+ * (features/home/components/shared.tsx), aceitando também `highlightTone`.
  */
 export function SectionTitle({
   kicker,

@@ -90,7 +90,7 @@ export function CardHeader({
   );
 }
 
-/** Section do Panel Kit — mesma API de `Section` em components/UI/panel-kit.tsx. */
+/** Section do Panel Kit — mesma API de `Section` em components/stage/tool/panel-kit.tsx. */
 export function PanelSection({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
     <section className="space-y-3">

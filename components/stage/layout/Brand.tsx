@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cn } from "../lib";
 
 /* ------------------------------------------------------------------ */
-/*  Logo — idêntico ao components/UI/Logo.tsx (black, itálico, caixa- */
+/*  Logo — idêntico ao components/stage/layout/Logo.tsx (black, itálico, caixa- */
 /*  alta, "Stage" em vermelho). Mesma API: logoSize + redirectIndex.  */
 /* ------------------------------------------------------------------ */
 

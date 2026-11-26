@@ -7,7 +7,7 @@ import { Starburst } from "../decor/Stickers";
 
 /* ------------------------------------------------------------------ */
 /*  MissionScorer — card de missão do pontuador FLL.                   */
-/*  Lê o mesmo formato de public/data/missions.json:                   */
+/*  Lê o mesmo formato de data/leagues/fll/seasons/*.json:                   */
 /*   type ["switch", null, null]     → Sim / Não                       */
 /*   type ["switch", "Azul", ...]    → escolha (points[i])             */
 /*   type ["range", min, max]        → contador (n × pts ou points[n]) */

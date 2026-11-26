@@ -61,29 +61,29 @@ import { Button, SectionTitle, MissionScorer } from "@/components/stage";
 
 | Hoje | Na Stage UI | Observação |
 |---|---|---|
-| `components/UI/Logo.tsx` | `Logo` | Mesma API (`logoSize`, `redirectIndex`), agora com `next/link`. |
-| `components/home/shared.tsx` → `SectionTitle` | `SectionTitle` | Mesma API e visual; aceita também `highlightTone`. |
-| `components/home/shared.tsx` → `AnimatedBackground` | `AnimatedBackground` | Mesmo CSS (`rs-*`). |
-| `components/UI/Modal/BaseModal.tsx` | `Modal` | Mesma API (`open`, `onClose`, `title`, `description`, `size`, `footer`). |
-| `components/UI/Accordion.tsx` | `Accordion` | Mesma API (`items: {title, content}`), com animação. |
+| `components/ui/Logo.tsx` | `Logo` | Mesma API (`logoSize`, `redirectIndex`), agora com `next/link`. |
+| `components/site/home/shared.tsx` → `SectionTitle` | `SectionTitle` | Mesma API e visual; aceita também `highlightTone`. |
+| `components/site/home/shared.tsx` → `AnimatedBackground` | `AnimatedBackground` | Mesmo CSS (`rs-*`). |
+| `components/ui/modal/BaseModal.tsx` | `Modal` | Mesma API (`open`, `onClose`, `title`, `description`, `size`, `footer`). |
+| `components/ui/Accordion.tsx` | `Accordion` | Mesma API (`items: {title, content}`), com animação. |
 | `app/context/ToastContext.tsx` | `ToastProvider` + `useToast()` | Mesmo `addToast(message, type, duration)`; ganha título, ação, `promise()`, pausa no hover e barra de tempo. |
-| `components/UI/Modal/ModalConfirm.tsx` | `ConfirmModal` ou `useConfirm()` | Sem ref: `if (await confirm({ title })) …`; aceita ação assíncrona e `requireText`. |
-| `components/UI/Modal/ModalAlert.tsx` | `AlertModal` | |
-| `components/UI/Modal/ModalInput.tsx` | `InputModal` | Com `validate`. |
-| `components/UI/Modal/ModalPoints.tsx`, `components/Timers/CompletionModal.tsx` | `ResultModal` | Pontuação grande, detalhamento e selo de recorde. |
+| `components/ui/modal/ModalConfirm.tsx` | `ConfirmModal` ou `useConfirm()` | Sem ref: `if (await confirm({ title })) …`; aceita ação assíncrona e `requireText`. |
+| `components/ui/modal/ModalAlert.tsx` | `AlertModal` | |
+| `components/ui/modal/ModalInput.tsx` | `InputModal` | Com `validate`. |
+| `components/ui/modal/ModalPoints.tsx`, `components/competitions/shared/timers/CompletionModal.tsx` | `ResultModal` | Pontuação grande, detalhamento e selo de recorde. |
 | `components/dashboard/create-project-modal.tsx` | `StepsModal` | Assistente em etapas. |
-| `components/QuickBrick/FerramentasSection.tsx` → `FerramentaCard` | `FeatureCard` | Mesmo visual e acessibilidade (link esticado, aba "Abrir ferramenta"); ganhou `tone`. |
-| `components/UI/MessageCard.tsx` | `Toast` | Usava verde/vermelho fixos do Tailwind; agora usa os tokens do tema. |
-| `components/UI/Cards/CardDefault.tsx` | `Card` + `CardHeader` | |
-| `components/UI/Cards/CardSeason.tsx` | `SeasonCard` | |
-| `components/UI/Cards/EventCardSkeleton.tsx` | `EventCard` / `EventCardSkeleton` | |
-| `components/UI/panel-kit.tsx` | `PanelSection`, `SwitchRow`, `Button` | `ToggleRow` → `SwitchRow` (usa o `toggle` do daisyUI e é acessível). |
-| `components/Timers/TimerCircle.tsx` + `ControlBar.tsx` | `TimerDial` + `TimerControls` | |
-| `components/Rubric/IndicatorRow.tsx` (botões de nível) | `RubricLevelPicker` | Mesmo `LEVEL_LABELS`. |
+| `components/quickbrick/FerramentasSection.tsx` → `FerramentaCard` | `FeatureCard` | Mesmo visual e acessibilidade (link esticado, aba "Abrir ferramenta"); ganhou `tone`. |
+| `components/ui/MessageCard.tsx` | `Toast` | Usava verde/vermelho fixos do Tailwind; agora usa os tokens do tema. |
+| `components/ui/cards/CardDefault.tsx` | `Card` + `CardHeader` | |
+| `components/ui/cards/CardSeason.tsx` | `SeasonCard` | |
+| `components/ui/cards/EventCardSkeleton.tsx` | `EventCard` / `EventCardSkeleton` | |
+| `components/ui/panel-kit.tsx` | `PanelSection`, `SwitchRow`, `Button` | `ToggleRow` → `SwitchRow` (usa o `toggle` do daisyUI e é acessível). |
+| `components/competitions/shared/timers/TimerCircle.tsx` + `ControlBar.tsx` | `TimerDial` + `TimerControls` | |
+| `components/competitions/fll/rubric/IndicatorRow.tsx` (botões de nível) | `RubricLevelPicker` | Mesmo `LEVEL_LABELS`. |
 | `components/dashboard/sidebar.tsx` | `Sidebar` | Recebe `user` por props (passe o `useUser()` da Clerk). |
 | `components/dashboard/banner.tsx` | `DashboardBanner` | |
 | `components/dashboard/recent-projects.tsx` | `ProjectCard` | |
-| Pontuador FLL | `MissionScorer` | Lê o formato de `public/data/missions.json` (`switch`, opções, `range`, sub-missões). Confira `scoreTask` com a regra do pontuador atual antes de trocar. |
+| Pontuador FLL | `MissionScorer` | Lê o formato de `data/leagues/fll/seasons/*.json` (`switch`, opções, `range`, sub-missões). Confira `scoreTask` com a regra do pontuador atual antes de trocar. |
 
 ## Notas sobre os cards
 
@@ -245,7 +245,7 @@ As intensidades ficam em variáveis CSS (`--stage-noise-opacity`, `--stage-paper
 ## Imagens e vídeos
 
 ```tsx
-<StageImage src="/images/fll/fll_about.jpg" alt="Equipe na mesa" frame="polaroid" tape tilt={-3} caption="Round 2" />
+<StageImage src="/images/competitions/fll/fll_about.jpg" alt="Equipe na mesa" frame="polaroid" tape tilt={-3} caption="Round 2" />
 <StageImage src="…" alt="…" frame="card" effect="duotone" tone="secondary" badge="FLL" />
 <MediaGrid layout="bento" items={[{ src, alt }, …]} />
 <ImageGallery columns={4} items={[{ src, alt, caption, credit }, …]} />

@@ -1,0 +1,155 @@
+{
+  "version": "1.0.0",
+  "modes": [
+    {
+      "id": "daily",
+      "name": "Treinos Diários",
+      "shortName": "Treinos",
+      "description": "Organize a preparação da equipe no dia a dia.",
+      "icon": "calendar",
+      "color": "primary",
+      "checklists": [
+        {
+          "id": "daily-robot",
+          "title": "Robô",
+          "description": "Confira se o robô está pronto para treinar.",
+          "items": [
+            { "id": "daily-robot-01", "text": "Bateria carregada", "important": true },
+            { "id": "daily-robot-02", "text": "Hub ligado" },
+            { "id": "daily-robot-03", "text": "Motores funcionando" },
+            { "id": "daily-robot-04", "text": "Sensores funcionando" },
+            { "id": "daily-robot-05", "text": "Cabos conferidos" },
+            { "id": "daily-robot-06", "text": "Rodas conferidas" }
+          ]
+        },
+        {
+          "id": "daily-table",
+          "title": "Mesa",
+          "description": "Confira se a mesa de treino está pronta.",
+          "items": [
+            { "id": "daily-table-01", "text": "Mesa organizada" },
+            { "id": "daily-table-02", "text": "Modelos posicionados" },
+            { "id": "daily-table-03", "text": "Tapete conferido", "important": true },
+            { "id": "daily-table-04", "text": "Peças extras disponíveis" }
+          ]
+        },
+        {
+          "id": "daily-programming",
+          "title": "Programação",
+          "description": "Confira se os programas estão prontos para rodar.",
+          "items": [
+            { "id": "daily-prog-01", "text": "Programa principal carregado", "important": true },
+            { "id": "daily-prog-02", "text": "Backup do programa disponível" },
+            { "id": "daily-prog-03", "text": "Calibração realizada" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pre-championship",
+      "name": "Pré-Campeonato",
+      "shortName": "Pré-Campeonato",
+      "description": "Prepare tudo antes de sair para a competição.",
+      "icon": "clipboard-check",
+      "color": "secondary",
+      "checklists": [
+        {
+          "id": "pre-robot",
+          "title": "Robô",
+          "description": "Tudo relacionado ao robô e seus acessórios.",
+          "items": [
+            { "id": "pre-robot-01", "text": "Robô principal", "important": true },
+            { "id": "pre-robot-02", "text": "Anexos" },
+            { "id": "pre-robot-03", "text": "Bateria", "important": true },
+            { "id": "pre-robot-04", "text": "Carregador" },
+            { "id": "pre-robot-05", "text": "Cabos" },
+            { "id": "pre-robot-06", "text": "Hub" }
+          ]
+        },
+        {
+          "id": "pre-competition",
+          "title": "Competição",
+          "description": "Estratégia e planejamento das partidas.",
+          "items": [
+            { "id": "pre-comp-01", "text": "Estratégia revisada", "important": true },
+            { "id": "pre-comp-02", "text": "Missões revisadas" },
+            { "id": "pre-comp-03", "text": "Programas revisados" },
+            { "id": "pre-comp-04", "text": "Plano de runs" },
+            { "id": "pre-comp-05", "text": "Plano B" }
+          ]
+        },
+        {
+          "id": "pre-materials",
+          "title": "Materiais",
+          "description": "Itens físicos que a equipe deve levar.",
+          "items": [
+            { "id": "pre-mat-01", "text": "Kit de peças", "important": true },
+            { "id": "pre-mat-02", "text": "Peças extras" },
+            { "id": "pre-mat-03", "text": "Ferramentas" },
+            { "id": "pre-mat-04", "text": "Fita" },
+            { "id": "pre-mat-05", "text": "Material de organização" }
+          ]
+        },
+        {
+          "id": "pre-team",
+          "title": "Equipe",
+          "description": "Documentação e itens da equipe.",
+          "items": [
+            { "id": "pre-team-01", "text": "Uniformes" },
+            { "id": "pre-team-02", "text": "Identificação" },
+            { "id": "pre-team-03", "text": "Documentação", "important": true },
+            { "id": "pre-team-04", "text": "Materiais do projeto" },
+            { "id": "pre-team-05", "text": "Caderno/documentação da equipe" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "championship",
+      "name": "Campeonato",
+      "shortName": "Campeonato",
+      "description": "Checklist rápido para o dia da competição.",
+      "icon": "trophy",
+      "color": "accent",
+      "checklists": [
+        {
+          "id": "champ-before",
+          "title": "Antes da partida",
+          "description": "Conferência rápida antes de cada run.",
+          "items": [
+            { "id": "champ-before-01", "text": "Robô", "important": true },
+            { "id": "champ-before-02", "text": "Bateria", "important": true },
+            { "id": "champ-before-03", "text": "Anexo correto" },
+            { "id": "champ-before-04", "text": "Programa correto" },
+            { "id": "champ-before-05", "text": "Estratégia definida" },
+            { "id": "champ-before-06", "text": "Posicionamento inicial conferido" }
+          ]
+        },
+        {
+          "id": "champ-after",
+          "title": "Depois da partida",
+          "description": "O que fazer logo após cada run.",
+          "items": [
+            { "id": "champ-after-01", "text": "Registrar resultado" },
+            { "id": "champ-after-02", "text": "Registrar problema" },
+            { "id": "champ-after-03", "text": "Conferir robô" },
+            { "id": "champ-after-04", "text": "Reorganizar anexos" },
+            { "id": "champ-after-05", "text": "Preparar próximo run" }
+          ]
+        },
+        {
+          "id": "champ-equipment",
+          "title": "Equipamentos",
+          "description": "Conferência geral dos equipamentos da equipe.",
+          "items": [
+            { "id": "champ-equip-01", "text": "Robô", "important": true },
+            { "id": "champ-equip-02", "text": "Hub" },
+            { "id": "champ-equip-03", "text": "Bateria", "important": true },
+            { "id": "champ-equip-04", "text": "Anexos" },
+            { "id": "champ-equip-05", "text": "Peças" }
+          ]
+        }
+      ]
+    }
+  ]
+}

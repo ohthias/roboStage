@@ -1,0 +1,15 @@
+{
+  "season": "bioglow",
+  "missions": {
+    "M01": {
+      "mechanism": "O drone é ativado pelo movimento do robô e deve ser levado para fora da área de lançamento.",
+      "objective": "Retirar o drone do contato com o tapete.",
+      "strategy": "Planeje o posicionamento do robô para realizar o lançamento de forma consistente.",
+      "tips": [
+        "Confira o posicionamento inicial.",
+        "Evite tocar o modelo manualmente.",
+        "Teste o mecanismo antes da competição."
+      ]
+    }
+  }
+}

@@ -1,0 +1,160 @@
+{
+  "season": "BIOGLOW",
+  "edition": "future-edition",
+  "title": "BIOGLOW - Future Edition",
+  "missions": [
+    {
+      "id": "m01",
+      "code": "M01",
+      "title": "Microbiomas Poderosos",
+      "description": "Espécies-chave posicionadas corretamente em cada microbioma.",
+      "image": "/images/missions/bioglow-fe/thumb-mission-01.png",
+      "objectives": [
+        {
+          "id": "m01-floresta-jovem",
+          "label": "Espécies-chave na Floresta Jovem",
+          "type": "counter",
+          "min": 0,
+          "max": 3,
+          "pointsPerUnit": 20
+        },
+        {
+          "id": "m01-arvore-grande",
+          "label": "Espécies-chave na Árvore Grande",
+          "type": "counter",
+          "min": 0,
+          "max": 3,
+          "pointsPerUnit": 20
+        },
+        {
+          "id": "m01-arvore-oca",
+          "label": "Espécies-chave na Árvore Oca",
+          "type": "counter",
+          "min": 0,
+          "max": 3,
+          "pointsPerUnit": 20
+        },
+        {
+          "id": "m01-bonus",
+          "label": "Bônus: 3+ espécies-chave na Floresta Jovem E rainha invasora derrubada",
+          "type": "toggle",
+          "points": 40
+        }
+      ]
+    },
+    {
+      "id": "m02",
+      "code": "M02",
+      "title": "Raízes da Renovação",
+      "description": "Recursos entregues na base e na câmara da copa da árvore grande.",
+      "image": "/images/missions/bioglow-fe/thumb-mission-02.png",
+      "objectives": [
+        {
+          "id": "m02-base-arvore-grande",
+          "label": "Recursos na base da Árvore Grande",
+          "type": "counter",
+          "min": 0,
+          "pointsPerUnit": 5
+        },
+        {
+          "id": "m02-camara-copa",
+          "label": "Recursos na câmara da copa",
+          "type": "counter",
+          "min": 0,
+          "max": 15,
+          "pointsPerUnit": 10
+        }
+      ]
+    },
+    {
+      "id": "m03",
+      "code": "M03",
+      "title": "Cachoeira da Caverna",
+      "description": "Espécies-chave cicladas pela cachoeira da caverna.",
+        "image": "/images/missions/bioglow-fe/thumb-mission-03.png",
+      "objectives": [
+        {
+          "id": "m03-especies-cicladas",
+          "label": "Espécies-chave cicladas",
+          "type": "counter",
+          "min": 0,
+          "max": 50,
+          "pointsPerUnit": 5
+        }
+      ]
+    },
+    {
+      "id": "m04",
+      "code": "M04",
+      "title": "Despertar da Floresta Tropical",
+      "description": "Liberação de espécies-chave e recursos.",
+      "image": "/images/missions/bioglow-fe/thumb-mission-04.png",
+      "objectives": [
+        {
+          "id": "m04-especies-liberadas-ninho",
+          "label": "Todas as espécies-chave liberadas do ninho",
+          "type": "toggle",
+          "points": 30
+        },
+        {
+          "id": "m04-recursos-liberados-arvore-oca",
+          "label": "Todos os recursos liberados da árvore oca",
+          "type": "toggle",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "id": "m05",
+      "code": "M05",
+      "title": "Refúgio Central",
+      "description": "Espécies-chave ou recursos totalmente parados no refúgio central.",
+      "image": "/images/missions/bioglow-fe/thumb-mission-05.png",
+      "objectives": [
+        {
+          "id": "m05-refugio-central",
+          "label": "Espécies-chave ou recursos parados no refúgio",
+          "type": "counter",
+          "min": 0,
+          "pointsPerUnit": 5
+        }
+      ]
+    },
+    {
+      "id": "level-up",
+      "code": "LEVEL UP",
+      "title": "Desafio Level Up: Ataque Invasor",
+      "description": "Espécies invasoras adicionadas e contidas na zona de contenção.",
+      "image": "/images/missions/bioglow-fe/thumb-mission-level-up.png",
+      "objectives": [
+        {
+          "id": "levelup-especies-adicionadas",
+          "label": "Espécies invasoras adicionadas",
+          "type": "counter",
+          "min": 0,
+          "max": 5,
+          "pointsPerUnit": 20
+        },
+        {
+          "id": "levelup-zona-contencao",
+          "label": "Espécies invasoras na zona de contenção",
+          "type": "counter",
+          "min": 0,
+          "max": 5,
+          "pointsPerUnit": 10
+        }
+      ]
+    }
+  ],
+  "penalties": {
+    "id": "penalties",
+    "code": "PEN",
+    "title": "Penalidades",
+    "table": [
+      { "count": 0, "points": 0 },
+      { "count": 1, "points": -10 },
+      { "count": 2, "points": -30 },
+      { "count": 3, "points": 0, "zeroesTotal": true }
+    ]
+  }
+}

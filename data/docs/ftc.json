@@ -1,0 +1,112 @@
+{
+  "BIOBUZZ 2026/2027": [
+    {
+      "title": "Competition Manual (PDF)",
+      "description": "Manual oficial da temporada BIOBUZZ: regras de jogo, construção do robô, pontuação, faltas, prêmios e formato dos torneios.",
+      "url": "https://ftc.game/manual/",
+      "category": "regras"
+    },
+    {
+      "title": "Competition Manual (HTML)",
+      "description": "Versão navegável do manual, com link direto para cada regra (ex.: G407, G410). A melhor forma de citar uma regra para o juiz.",
+      "url": "https://ftc.game/cm-html",
+      "category": "regras"
+    },
+    {
+      "title": "Team Updates mais recentes",
+      "description": "Correções e mudanças oficiais nas regras ao longo da temporada. Confira antes de cada evento.",
+      "url": "https://ftc.game/tu-latest",
+      "category": "regras"
+    },
+    {
+      "title": "Resumo combinado dos Team Updates",
+      "description": "Todas as mudanças de regra da temporada reunidas em um só documento.",
+      "url": "https://ftc.game/tu-combined",
+      "category": "regras"
+    },
+    {
+      "title": "Assistente de regras com IA (oficial)",
+      "description": "Chatbot da FIRST para encontrar rapidamente a regra do manual que responde a uma dúvida.",
+      "url": "https://ftc-cmchatbot.firstinspires.org/",
+      "category": "regras"
+    },
+    {
+      "title": "Recursos do campo e Field CAD",
+      "description": "Guia de montagem do campo, desenhos e o CAD oficial da arena BIOBUZZ (HIVE, FLOWERS, GARDENS e LOADING ZONES).",
+      "url": "https://ftc-resources.firstinspires.org/ftc/field",
+      "category": "campo"
+    },
+    {
+      "title": "Animação do jogo BIOBUZZ",
+      "description": "Vídeo oficial que mostra uma partida completa: AUTO, TELEOP, TIPs da HIVE e a disputa pelas FLOWERS.",
+      "url": "https://www.youtube.com/watch?v=sUH3z5a5S9I",
+      "category": "campo"
+    },
+    {
+      "title": "Transmissão do Kickoff 2026/2027",
+      "description": "Revelação oficial do jogo, com destaques das regras e da temporada FIRST CANOPY.",
+      "url": "https://www.youtube.com/watch?v=gO98TkgY0kI",
+      "category": "campo"
+    },
+    {
+      "title": "Recursos da equipe e StarterBots",
+      "description": "Links dos StarterBots da temporada, webinars e materiais para começar a construir.",
+      "url": "https://ftc-resources.firstinspires.org/ftc/team",
+      "category": "equipe"
+    },
+    {
+      "title": "Vídeo dos StarterBots",
+      "description": "Apresentação dos robôs base da temporada, pensados para equipes novas pontuarem na BIOBUZZ.",
+      "url": "https://www.youtube.com/watch?v=HQwDTDON5I4",
+      "category": "equipe"
+    },
+    {
+      "title": "FTC Docs",
+      "description": "Documentação do sistema de controle: Control Hub, Driver Station, SDK, AprilTags e programação em Java/Blocks.",
+      "url": "https://ftc-docs.firstinspires.org/",
+      "category": "equipe"
+    },
+    {
+      "title": "Fórum técnico da comunidade",
+      "description": "Perguntas e respostas sobre o sistema de controle e problemas técnicos, com ajuda de voluntários da FIRST.",
+      "url": "https://ftc-community.firstinspires.org/",
+      "category": "equipe"
+    },
+    {
+      "title": "Calculadora de pontuação para treino",
+      "description": "Calculadora oficial para conferir a pontuação de uma partida de treino.",
+      "url": "https://ftc.game/calculator",
+      "category": "equipe"
+    },
+    {
+      "title": "Eventos e resultados (FTC Events)",
+      "description": "Lista de eventos, rankings, partidas e resultados oficiais de todas as competições da temporada.",
+      "url": "https://ftc-events.firstinspires.org/",
+      "category": "eventos"
+    },
+    {
+      "title": "Recursos de eventos",
+      "description": "Materiais para quem organiza eventos: cronogramas, scoring system e guias de produção.",
+      "url": "https://ftc-resources.firstinspires.org/ftc/event",
+      "category": "eventos"
+    },
+    {
+      "title": "Recursos de voluntários",
+      "description": "Manuais e treinamentos para árbitros, inspetores, juízes e demais funções de voluntário.",
+      "url": "https://ftc-resources.firstinspires.org/ftc/volunteer",
+      "category": "eventos"
+    },
+    {
+      "title": "FTCScout",
+      "description": "Resultados, rankings, OPR e partidas de todos os eventos. É a fonte dos dados oficiais do Scouting FTC do RoboStage (projeto independente da comunidade).",
+      "url": "https://ftcscout.org/",
+      "category": "eventos"
+    },
+    {
+      "title": "Página da temporada (ftc.game)",
+      "description": "Atalho oficial para tudo da temporada BIOBUZZ.",
+      "url": "https://ftc.game/",
+      "category": "geral"
+    }
+  ]
+}

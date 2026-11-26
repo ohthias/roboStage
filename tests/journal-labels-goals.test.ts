@@ -17,8 +17,8 @@ import {
   createJournalEntry,
   removeJournalLink,
   searchJournalLinkTargets,
-} from "@/utils/stagebook/actions/journal";
-import { addResourceTagByName, listTagsWithUsage, toggleResourceTag } from "@/utils/stagebook/actions/tags";
+} from "@/features/stagebook/actions/journal";
+import { addResourceTagByName, listTagsWithUsage, toggleResourceTag } from "@/features/stagebook/actions/tags";
 import {
   createTeamMilestone,
   setResourceMilestone,
@@ -26,12 +26,12 @@ import {
   toggleMilestoneCriterion,
   toggleTeamMilestoneCriterion,
   updateTeamMilestone,
-} from "@/utils/stagebook/actions/milestones";
-import { getJournalEntry, listJournalEntries } from "@/utils/stagebook/journal-queries";
-import { getTeamGoals } from "@/utils/stagebook/team-queries";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { milestoneProgress, normalizeCriteria } from "@/types/labels";
-import type { JournalContent } from "@/types/journal";
+} from "@/features/stagebook/actions/milestones";
+import { getJournalEntry, listJournalEntries } from "@/features/stagebook/lib/journal-queries";
+import { getTeamGoals } from "@/features/stagebook/lib/team-queries";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { milestoneProgress, normalizeCriteria } from "@/features/stagebook/types/labels";
+import type { JournalContent } from "@/features/stagebook/types/journal";
 import { call } from "./helpers/actions";
 import { actAs } from "./helpers/context";
 import { applySchema, createTeam } from "./helpers/db";

@@ -2,19 +2,19 @@ import { describe, expect, it } from "vitest";
 import { $createParagraphNode, $createTextNode, $getRoot, createEditor, type LexicalEditor } from "lexical";
 import { $createHeadingNode, $isHeadingNode } from "@lexical/rich-text";
 import { $createListItemNode, $createListNode, $isListNode, type ListNode } from "@lexical/list";
-import { EDITOR_NODES } from "@/components/editor/editor-nodes";
-import { $transformBlock, $getBlockType } from "@/components/editor/block-utils";
+import { EDITOR_NODES } from "@/features/stagebook/editor/editor-nodes";
+import { $transformBlock, $getBlockType } from "@/features/stagebook/editor/block-utils";
 import {
   $isCollapsibleContainerNode,
   type CollapsibleContainerNode,
-} from "@/components/editor/nodes/collapsible-nodes";
-import { $createCalloutNode } from "@/components/editor/nodes/callout-node";
-import { $createEquationNode } from "@/components/editor/nodes/equation-node";
-import { $createTocNode } from "@/components/editor/nodes/toc-node";
-import { $getListMarker, $setListMarker, markerToCss } from "@/components/editor/list-markers";
-import { documentToHtml, documentToMarkdown, exportFileName } from "@/components/editor/export-document";
-import { EQUATION_INLINE } from "@/components/editor/markdown-transformers";
-import { searchEmojis, type Emoji } from "@/components/editor/emoji-data";
+} from "@/features/stagebook/editor/nodes/collapsible-nodes";
+import { $createCalloutNode } from "@/features/stagebook/editor/nodes/callout-node";
+import { $createEquationNode } from "@/features/stagebook/editor/nodes/equation-node";
+import { $createTocNode } from "@/features/stagebook/editor/nodes/toc-node";
+import { $getListMarker, $setListMarker, markerToCss } from "@/features/stagebook/editor/list-markers";
+import { documentToHtml, documentToMarkdown, exportFileName } from "@/features/stagebook/editor/export-document";
+import { EQUATION_INLINE } from "@/features/stagebook/editor/markdown-transformers";
+import { searchEmojis, type Emoji } from "@/features/stagebook/editor/emoji-data";
 import {
   $addTimelineItem,
   $insertTimeline,
@@ -22,7 +22,7 @@ import {
   $unwrapTimeline,
   type TimelineItemNode,
   type TimelineNode,
-} from "@/components/editor/nodes/timeline-nodes";
+} from "@/features/stagebook/editor/nodes/timeline-nodes";
 import {
   $addLayoutColumn,
   $insertLayout,
@@ -30,8 +30,8 @@ import {
   $removeLayoutColumn,
   type LayoutContainerNode,
   type LayoutItemNode,
-} from "@/components/editor/nodes/layout-nodes";
-import { dueLabel, propertiesForExport } from "@/app/(protected)/dashboard/documents/[documentId]/doc-properties";
+} from "@/features/stagebook/editor/nodes/layout-nodes";
+import { dueLabel, propertiesForExport } from "@/features/stagebook/documents/components/doc-properties";
 
 function makeEditor(): LexicalEditor {
   return createEditor({ namespace: "test", nodes: EDITOR_NODES, onError: (e) => { throw e; } });

@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db/client";
 import { trainingSessions } from "@/db/schema";
-import { getMyTeamsSummary } from "@/utils/stagebook/team-queries";
+import { getMyTeamsSummary } from "@/features/stagebook/lib/team-queries";
 import { applySchema, createTeam } from "./helpers/db";
 
 describe("hub de equipes", () => {

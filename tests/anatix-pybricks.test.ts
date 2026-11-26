@@ -5,13 +5,13 @@ import {
   parsePybricksStatus,
   startProgramCommand,
   stdinCommands,
-} from "@/utils/labtest/anatix/pybricks";
+} from "@/features/labtest/anatix/lib/pybricks";
 import {
   ANATIX_COMMANDS,
   normalizeAnatixConfig,
   parseAnatixLine,
-} from "@/utils/labtest/anatix/protocol";
-import { featureLevel } from "@/utils/stagebook/league-features";
+} from "@/features/labtest/anatix/lib/protocol";
+import { featureLevel } from "@/features/stagebook/lib/league-features";
 
 describe("protocolo Pybricks (Bluetooth/USB)", () => {
   it("lê o evento de status: flags, programa rodando e slot", () => {

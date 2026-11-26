@@ -11,17 +11,17 @@ import {
   tests,
   trainingSessions,
 } from "@/db/schema";
-import { roleCan, canEditRoster, TEAM_ROLES } from "@/utils/stagebook/team-permissions";
-import { recordTeamActivity } from "@/utils/stagebook/team-activity";
-import { getTeamActivity } from "@/utils/stagebook/team-queries";
+import { roleCan, canEditRoster, TEAM_ROLES } from "@/features/stagebook/lib/team-permissions";
+import { recordTeamActivity } from "@/features/stagebook/lib/team-activity";
+import { getTeamActivity } from "@/features/stagebook/lib/team-queries";
 import {
   getMemberDutyHistory,
   getTeamDutyRoles,
   getTeamTrainingSessions,
   getTrainingSessionDetail,
   getUpcomingDutiesFor,
-} from "@/utils/stagebook/training-queries";
-import { getActiveTrainingSession } from "@/utils/stagebook/training-core";
+} from "@/features/stagebook/lib/training-queries";
+import { getActiveTrainingSession } from "@/features/stagebook/lib/training-core";
 import {
   checkIn,
   createTrainingSession,
@@ -31,7 +31,7 @@ import {
   sessionFromCalendarEvent,
   startTrainingSession,
   unlinkExecution,
-} from "@/utils/stagebook/actions/training";
+} from "@/features/stagebook/actions/training";
 import {
   assignDuty,
   getExecutionContext,
@@ -39,11 +39,11 @@ import {
   setCurrentRound,
   setRoundCount,
   unassignDuty,
-} from "@/utils/stagebook/actions/roster";
-import { createTeamBoard } from "@/utils/stagebook/actions/team-resources";
-import { createTestExecution } from "@/app/(protected)/dashboard/labtest/new/actions";
-import { startAnatixSession } from "@/app/(protected)/dashboard/labtest/anatix/actions";
-import type { TrainingSummary } from "@/types/training";
+} from "@/features/stagebook/actions/roster";
+import { createTeamBoard } from "@/features/stagebook/actions/team-resources";
+import { createTestExecution } from "@/features/labtest/actions/create";
+import { startAnatixSession } from "@/features/labtest/anatix/actions";
+import type { TrainingSummary } from "@/features/stagebook/types/training";
 import { call } from "./helpers/actions";
 import { actAs } from "./helpers/context";
 import { applySchema, createTeam, createUser } from "./helpers/db";

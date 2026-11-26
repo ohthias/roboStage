@@ -10,7 +10,7 @@ import {
   deleteDocument,
   renameDocument,
   updateDocumentContent,
-} from "@/app/(protected)/dashboard/documents/actions";
+} from "@/features/stagebook/documents/actions/documents";
 import {
   deleteDocumentForever,
   emptyTrash,
@@ -19,9 +19,9 @@ import {
   restoreDocument,
   restoreDocumentVersion,
   saveDocumentVersion,
-} from "@/app/(protected)/dashboard/documents/history-actions";
-import { MAX_DOCUMENT_VERSIONS, VERSION_INTERVAL_MS } from "@/utils/stagebook/document-history";
-import { lexicalToPlainText } from "@/utils/stagebook/lexical-text";
+} from "@/features/stagebook/documents/actions/history";
+import { MAX_DOCUMENT_VERSIONS, VERSION_INTERVAL_MS } from "@/features/stagebook/lib/document-history";
+import { lexicalToPlainText } from "@/features/stagebook/lib/lexical-text";
 import { call } from "./helpers/actions";
 import { actAs } from "./helpers/context";
 import { applySchema, createUser } from "./helpers/db";

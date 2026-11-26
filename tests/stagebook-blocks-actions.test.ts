@@ -7,7 +7,7 @@ import {
   createDocument,
   renameDocument,
   updateDocumentContent,
-} from "@/app/(protected)/dashboard/documents/actions";
+} from "@/features/stagebook/documents/actions/documents";
 import {
   createSyncedBlock,
   getBacklinks,
@@ -18,7 +18,7 @@ import {
   listSyncedBlocks,
   searchPages,
   updateSyncedBlock,
-} from "@/app/(protected)/dashboard/documents/blocks-actions";
+} from "@/features/stagebook/documents/actions/blocks";
 import { call } from "./helpers/actions";
 import { actAs } from "./helpers/context";
 import { applySchema, createTeam, createUser } from "./helpers/db";

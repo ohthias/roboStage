@@ -1,19 +1,18 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import type { TestEntry } from "@/types/labtest.types";
-import type { FllMissionDefinition } from "@/utils/labtest/fll";
+import type { TestEntry } from "@/features/labtest/types";
+import type { FllMissionDefinition } from "@/features/labtest/lib/fll";
 import {
   fllEntryScore,
   fllMissionGrid,
   fllMissionStats,
   missionMaxPoints,
   missionsForTest,
-} from "@/utils/labtest/fll-analysis";
-import { buildViewMetrics, defaultWidgets, presetsFor, resolveWidgetMetrics, createViewWidget } from "@/utils/labtest/view-dashboard";
+} from "@/features/labtest/lib/fll-analysis";
+import { buildViewMetrics, defaultWidgets, presetsFor, resolveWidgetMetrics, createViewWidget } from "@/features/labtest/lib/view-dashboard";
 
-const catalog = JSON.parse(fs.readFileSync(path.join(process.cwd(), "public/data/missions.json"), "utf8")) as Record<string, FllMissionDefinition[]>;
-const bioglow = catalog.bioglow;
+const bioglow = JSON.parse(fs.readFileSync(path.join(process.cwd(), "data/leagues/fll/seasons/bioglow.json"), "utf8")) as FllMissionDefinition[];
 const byId = (id: string) => bioglow.find((m) => m.id === id)!;
 
 function entry(n: number, answers: TestEntry["fllAnswers"], extra: Partial<TestEntry> = {}): TestEntry {

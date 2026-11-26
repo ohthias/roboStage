@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { FieldDefinition, TestEntry } from "@/types/labtest.types";
+import type { FieldDefinition, TestEntry } from "@/features/labtest/types";
 import {
   VIEW_PRESETS,
   VIEW_WIDGET_SPECS,
@@ -10,7 +10,7 @@ import {
   normalizeViewState,
   resolveWidgetMetrics,
   summarize,
-} from "@/utils/labtest/view-dashboard";
+} from "@/features/labtest/lib/view-dashboard";
 
 const fields: FieldDefinition[] = [
   { fieldKey: "pts", label: "Pontos", type: "number", unit: "pts", targetValue: 100, order: 1 },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { analyzePath } from "@/utils/quickbrick/ArenaBuilder/analysis";
-import { defaultProject, sanitizeProject } from "@/utils/quickbrick/ArenaBuilder/project";
+import { analyzePath } from "@/features/quickbrick/arena-builder/lib/analysis";
+import { defaultProject, sanitizeProject } from "@/features/quickbrick/arena-builder/lib/project";
 import {
   emptyTile,
   hazardAllowed,
@@ -10,8 +10,8 @@ import {
   SHAPES,
   sideGroups,
   toggleHazard,
-} from "@/utils/quickbrick/ArenaBuilder/tiles";
-import type { Project, Rot, Shape, Tile } from "@/utils/quickbrick/ArenaBuilder/types";
+} from "@/features/quickbrick/arena-builder/lib/tiles";
+import type { Project, Rot, Shape, Tile } from "@/features/quickbrick/arena-builder/lib/types";
 
 const t = (shape: Shape, rot: Rot = 0, extra: Partial<Tile> = {}): Tile => ({ ...emptyTile(), shape, rot, ...extra });
 

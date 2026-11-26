@@ -27,7 +27,10 @@ const publicRoutePatterns = [
   "/api/data/toolsAbout(.*)",
   "/api/webhooks(.*)",
   "/api/revalidate(.*)",
-  "/data/_file(.*)",
+  // Arquivos estáticos sem extensão ignorada no matcher (pdf, py, mp3).
+  "/files(.*)",
+  "/audio(.*)",
+  "/brand(.*)",
   "/roboticar(.*)",
   "/anatix(.*)",
   "/robostage-canopy(.*)",

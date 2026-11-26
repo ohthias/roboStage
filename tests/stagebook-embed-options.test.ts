@@ -20,8 +20,8 @@ import {
   FLL_SECTIONS,
   MOTOR_SECTIONS,
   SUMMARY_SECTIONS,
-} from "@/components/editor/embeds/embed-options";
-import { documentToHtml } from "@/components/editor/export-document";
+} from "@/features/stagebook/editor/embeds/embed-options";
+import { documentToHtml } from "@/features/stagebook/editor/export-document";
 
 describe("tamanho e posição", () => {
   it("limita a largura entre 30 e 100", () => {

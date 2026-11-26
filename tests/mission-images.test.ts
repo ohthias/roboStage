@@ -1,15 +1,15 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { renderMissionImages } from "../scripts/generate-mission-images.mjs";
-import { getTestImage } from "@/utils/labtest/catalog";
+import { readMissionCatalog, renderMissionImages } from "../scripts/generate-mission-images.mjs";
+import { getTestImage } from "@/features/labtest/lib/catalog";
 
 const root = path.resolve(__dirname, "..");
 
-describe("utils/labtest/mission-images.ts", () => {
-  it("está em dia com public/data/missions.json (rode npm run data:mission-images)", () => {
-    const catalog = JSON.parse(readFileSync(path.join(root, "public/data/missions.json"), "utf8"));
-    const current = readFileSync(path.join(root, "utils/labtest/mission-images.ts"), "utf8");
+describe("features/labtest/lib/mission-images.ts", () => {
+  it("está em dia com data/leagues/fll/seasons (rode npm run data:mission-images)", () => {
+    const catalog = readMissionCatalog();
+    const current = readFileSync(path.join(root, "features/labtest/lib/mission-images.ts"), "utf8");
     expect(current).toBe(renderMissionImages(catalog));
   });
 

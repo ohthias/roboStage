@@ -8,13 +8,13 @@ import {
   nectarAllowed,
   scoreAlliance,
   teleopPoints,
-} from "@/utils/competitions/ftc/biobuzz";
+} from "@/features/leagues/ftc/lib/biobuzz";
 import {
   initialMatchTimer,
   matchSecondsLeft,
   matchTimerReducer,
   type MatchTimerState,
-} from "@/utils/competitions/ftc/matchTimer";
+} from "@/features/leagues/ftc/lib/matchTimer";
 import {
   allTeamStats,
   emptyScouting,
@@ -27,10 +27,10 @@ import {
   qualificationOrder,
   simulateSelection,
   type ScoutingData,
-} from "@/utils/competitions/ftc/scouting";
-import { eventPhase, namesFromGraphql, normalizeEvent, normalizeMatch, normalizeQuickStats, upcomingFor } from "@/utils/competitions/ftc/ftcscout";
-import { emptySheet, makeRun, runSummary, scoreMatch, sheetWarnings } from "@/utils/competitions/ftc/score";
-import { applyPreset, briefing, newPlan, planWarnings, scorePlan } from "@/utils/competitions/ftc/strategy";
+} from "@/features/leagues/ftc/lib/scouting";
+import { eventPhase, namesFromGraphql, normalizeEvent, normalizeMatch, normalizeQuickStats, upcomingFor } from "@/features/leagues/ftc/lib/ftcscout";
+import { emptySheet, makeRun, runSummary, scoreMatch, sheetWarnings } from "@/features/leagues/ftc/lib/score";
+import { applyPreset, briefing, newPlan, planWarnings, scorePlan } from "@/features/leagues/ftc/lib/strategy";
 
 describe("pontuação BIOBUZZ", () => {
   it("soma AUTO, TELEOP e RP da tabela 10-2", () => {

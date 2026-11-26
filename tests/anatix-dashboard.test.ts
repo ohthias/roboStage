@@ -12,16 +12,16 @@ import {
   sliceWindow,
   timeInStates,
   toCsv,
-} from "@/utils/labtest/anatix/analysis";
+} from "@/features/labtest/anatix/lib/analysis";
 import {
   DASHBOARD_PRESETS,
   WIDGET_SPECS,
   createWidget,
   normalizeDashboard,
   normalizeWidget,
-} from "@/utils/labtest/anatix/dashboard";
-import { normalizeAnatixConfig } from "@/utils/labtest/anatix/protocol";
-import { ANATIX_MAX_WIDGETS } from "@/types/anatix.types";
+} from "@/features/labtest/anatix/lib/dashboard";
+import { normalizeAnatixConfig } from "@/features/labtest/anatix/lib/protocol";
+import { ANATIX_MAX_WIDGETS } from "@/features/labtest/anatix/types";
 
 describe("análises do painel Anatix", () => {
   it("calcula estatísticas completas", () => {

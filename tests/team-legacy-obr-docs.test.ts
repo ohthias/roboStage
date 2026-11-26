@@ -8,7 +8,7 @@ import {
   getLegacySuggestions,
   listTeamLegacy,
   updateLegacyChapter,
-} from "@/utils/stagebook/actions/legacy";
+} from "@/features/stagebook/actions/legacy";
 import {
   formatSeconds,
   normalizeLegacyContent,
@@ -17,7 +17,7 @@ import {
   scoreSummary,
   sectionFromTemplate,
   stageLabel,
-} from "@/types/legacy";
+} from "@/features/stagebook/types/legacy";
 import { call } from "./helpers/actions";
 import { actAs } from "./helpers/context";
 import { applySchema, createTeam } from "./helpers/db";

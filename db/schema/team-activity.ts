@@ -21,7 +21,7 @@ import { teams } from "./teams";
  *
  * Agregação na escrita: o mesmo ator + verbo + recurso dentro de 30 min
  * incrementa `count` e avança `updated_at` em vez de criar outra linha
- * (ver `utils/stagebook/team-activity.ts`). Por isso o feed é ordenado por
+ * (ver `features/stagebook/lib/team-activity.ts`). Por isso o feed é ordenado por
  * `updated_at`.
  */
 export const teamActivity = pgTable(

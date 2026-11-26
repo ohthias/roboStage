@@ -20,7 +20,7 @@ import { documents } from "./notebook";
 import { tests } from "./labtest";
 import { thinklab } from "./thinklab";
 import { quickbrickNotebooks } from "./quickbrick";
-import type { JournalContent } from "@/types/journal";
+import type { JournalContent } from "@/features/stagebook/types/journal";
 
 const ownershipCheck = (name: string, userIdCol: any, teamIdCol: any) =>
   check(
@@ -90,7 +90,7 @@ export const journalEntries = pgTable(
 
 /**
  * Templates salvos do Diário (os prontos ficam no código, em
- * `types/journal.ts`). Mesmo XOR de scope: um template da equipe aparece para
+ * `features/stagebook/types/journal.ts`). Mesmo XOR de scope: um template da equipe aparece para
  * todos os membros; editar/excluir é do criador ou de técnico/mentor.
  */
 export const journalTemplates = pgTable(

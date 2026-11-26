@@ -3,8 +3,8 @@ import { headers } from "next/headers";
 import { and, eq } from "drizzle-orm";
 import { db } from "./client";
 import { users, teams, teamMembers } from "./schema";
-import { mapClerkOrgRole, reconcileClerkOrgRole } from "@/utils/stagebook/clerk-roles";
-import { recordTeamActivity } from "@/utils/stagebook/team-activity";
+import { mapClerkOrgRole, reconcileClerkOrgRole } from "@/features/stagebook/lib/clerk-roles";
+import { recordTeamActivity } from "@/features/stagebook/lib/team-activity";
 
 async function ensureMembershipUser(userData: {
   user_id?: string;

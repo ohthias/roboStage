@@ -113,7 +113,7 @@ export const documents = pgTable(
     icon: text("icon"), // emoji, ex: "📝"
     cover: text("cover"), // URL da capa (opcional)
     description: text("description"),
-    // Fonte da página inteira (ver utils/stagebook/doc-fonts.ts). Null = padrão.
+    // Fonte da página inteira (ver features/stagebook/lib/doc-fonts.ts). Null = padrão.
     font: text("font"),
     // Estado serializado do editor Lexical (editorState.toJSON()).
     content: jsonb("content").$type<Record<string, unknown> | null>(),
@@ -137,7 +137,7 @@ export const documents = pgTable(
       .defaultNow(),
     // Lixeira: preenchido quando a página é excluída. A página some da árvore
     // e de todas as listagens, mas pode ser restaurada por 7 dias; depois disso
-    // é apagada de vez (ver utils/stagebook/document-history.ts).
+    // é apagada de vez (ver features/stagebook/lib/document-history.ts).
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (table) => ({

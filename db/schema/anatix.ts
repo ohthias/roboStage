@@ -97,7 +97,7 @@ export const anatixFrames = pgTable(
       .references(() => anatixSessions.id, { onDelete: "cascade" }),
     // Ordem do lote dentro da sessão.
     batch: integer("batch").notNull(),
-    // Array de frames já decodificados (ver AnatixFrame em types/anatix.types.ts).
+    // Array de frames já decodificados (ver AnatixFrame em features/labtest/anatix/types.ts).
     frames: jsonb("frames").notNull().default([]),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

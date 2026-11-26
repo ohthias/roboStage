@@ -11,7 +11,7 @@ import {
 import { sql } from "drizzle-orm";
 import { users } from "./users";
 import { teams } from "./teams";
-import type { MilestoneCriterion } from "@/types/labels";
+import type { MilestoneCriterion } from "@/features/stagebook/types/labels";
 
 /**
  * Milestones UNIVERSAIS do Stagebook.

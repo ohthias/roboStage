@@ -22,7 +22,6 @@ Planeje estratégias, registre testes, colete telemetria do robô, documente a t
 
 </div>
 
-
 ## Por que o RoboStage?
 
 Equipes de robótica costumam espalhar o trabalho da temporada entre planilhas, cadernos, grupos de mensagem e a memória de quem estava no treino. O RoboStage junta tudo:

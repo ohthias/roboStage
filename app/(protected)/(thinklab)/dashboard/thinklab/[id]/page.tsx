@@ -1,22 +1,22 @@
 'use client';
 import { useParams } from 'next/navigation';
-import { getThinkLabById, saveThinkLab } from '../../../../dashboard/thinklab/actions';
+import { getThinkLabById, saveThinkLab } from '@/features/thinklab/actions/thinklab';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { elementDisplayName } from '@/components/thinklab/LayersPanel';
-import { Navbar, SaveStatus } from '@/components/thinklab/Navbar';
-import { Toolbar } from '@/components/thinklab/Toolbar';
-import { PropertiesPanel } from '@/components/thinklab/PropertiesPanel';
-import { ExportModal } from '@/components/thinklab/ExportModal';
-import { DatabaseJsonbModal } from '@/components/thinklab/DatabaseJsonbModal';
-import { TemplatesModal } from '@/components/thinklab/TemplatesModal';
-import { ShortcutsModal } from '@/components/thinklab/ShortcutsModal';
-import { EditorSidebar } from '@/components/thinklab/EditorSidebar';
-import { CanvasControls, SelectionActions } from '@/components/thinklab/CanvasControls';
-import { cn } from '@/components/thinklab/editor-ui';
-import { EditorLoader } from '@/components/thinklab/EditorLoader';
-import { GraphicAssetsModal } from '@/components/thinklab/GraphicAssetsModal';
-import { Canvas } from '@/components/thinklab/Canvas';
+import { elementDisplayName } from '@/features/thinklab/components/LayersPanel';
+import { Navbar, SaveStatus } from '@/features/thinklab/components/Navbar';
+import { Toolbar } from '@/features/thinklab/components/Toolbar';
+import { PropertiesPanel } from '@/features/thinklab/components/PropertiesPanel';
+import { ExportModal } from '@/features/thinklab/components/ExportModal';
+import { DatabaseJsonbModal } from '@/features/thinklab/components/DatabaseJsonbModal';
+import { TemplatesModal } from '@/features/thinklab/components/TemplatesModal';
+import { ShortcutsModal } from '@/features/thinklab/components/ShortcutsModal';
+import { EditorSidebar } from '@/features/thinklab/components/EditorSidebar';
+import { CanvasControls, SelectionActions } from '@/features/thinklab/components/CanvasControls';
+import { cn } from '@/features/thinklab/components/editor-ui';
+import { EditorLoader } from '@/features/thinklab/components/EditorLoader';
+import { GraphicAssetsModal } from '@/features/thinklab/components/GraphicAssetsModal';
+import { Canvas } from '@/features/thinklab/components/Canvas';
 import {
   CanvasElement,
   FillStyle,
@@ -28,10 +28,10 @@ import {
   TextAlign,
   ToolType,
   ViewportState,
-} from '@/types/thinklab.types';
-import { DIAGRAM_TEMPLATES } from '@/utils/thinklab/templates';
+} from '@/features/thinklab/types';
+import { DIAGRAM_TEMPLATES } from '@/features/thinklab/lib/templates';
 
-import { unwrapAction } from "@/utils/stagebook/action-result";
+import { unwrapAction } from "@/lib/action-result";
 const STORAGE_KEY = 'excaliflow_saved_diagram_v1';
 
 // Chaves de estilo que também viram o padrão dos próximos elementos desenhados

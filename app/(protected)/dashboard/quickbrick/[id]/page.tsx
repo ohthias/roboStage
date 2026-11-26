@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { NotebookStudio } from "@/components/QuickBrick/Notebook/NotebookStudio";
-import { getNotebook } from "../actions";
+import { NotebookStudio } from "@/features/quickbrick/notebook/components/NotebookStudio";
+import { getNotebook } from "@/features/quickbrick/shared/actions";
 
 export const metadata = { title: "Caderno · QuickBrick Studio" };
 

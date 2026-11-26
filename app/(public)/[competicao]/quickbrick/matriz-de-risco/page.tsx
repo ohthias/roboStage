@@ -1,16 +1,16 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import MatrizRisco from "@/components/QuickBrick/MatrizRisco/MatrizRisco";
-import { Impacto, Probabilidade, Risco } from "@/types/MatrizRisco";
-import { INITIAL_RISCOS } from "./constants";
-import RiscoDetalhesModal from "@/components/QuickBrick/MatrizRisco/RiscoDetalhesModal";
-import RiscoModal from "@/components/QuickBrick/MatrizRisco/MatrizModal";
-import Breadcrumbs from "@/components/UI/Breadcrumbs";
+import MatrizRisco from "@/features/quickbrick/matriz-risco/components/MatrizRisco";
+import { Impacto, Probabilidade, Risco } from "@/features/quickbrick/matriz-risco/types";
+import { INITIAL_RISCOS } from "@/features/quickbrick/matriz-risco/lib/constants";
+import RiscoDetalhesModal from "@/features/quickbrick/matriz-risco/components/RiscoDetalhesModal";
+import RiscoModal from "@/features/quickbrick/matriz-risco/components/MatrizModal";
+import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import html2canvas from "html2canvas-pro";
-import { useToast } from "@/app/context/ToastContext";
+import { useToast } from "@/components/providers/ToastContext";
 import { PlusIcon, Image, RotateCcw, Grid2X2 } from "lucide-react";
-import CardMobileNotUse from "@/components/MobileNotUse";
-import HeaderTool from "@/components/QuickBrick/HeaderTool";
+import CardMobileNotUse from "@/components/stage/platform/MobileNotUse";
+import HeaderTool from "@/features/quickbrick/shared/components/HeaderTool";
 
 export default function MatrizDeRiscoPage() {
   const [riscos, setRiscos] = useState<Risco[]>(INITIAL_RISCOS);

@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, History, Newspaper, Sparkles, Star } from "lucide-react";
 
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import PageHero, { heroBtn } from "@/components/UI/PageHero";
-import { CtaBlock } from "@/components/competicoes/shared/CompetitionSections";
-import { NewsCard, NewsCover, NewsMeta, categorySlug } from "@/components/news/NewsUI";
-import { getPublishedNews, newsHref, type NewsSummary } from "@/utils/institutional/news";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
+import PageHero, { heroBtn } from "@/components/layout/PageHero";
+import { CtaBlock } from "@/features/leagues/shared/components/CompetitionSections";
+import { NewsCard, NewsCover, NewsMeta, categorySlug } from "@/features/institutional/components/news/NewsUI";
+import { getPublishedNews, newsHref, type NewsSummary } from "@/features/institutional/lib/news";
 
 export const metadata: Metadata = {
   title: "Notícias",

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
 import {
   findMyJournalEntryOn,
   getJournalScopeInfo,
   listJournalTemplates,
-} from "@/utils/stagebook/journal-queries";
-import { DEFAULT_JOURNAL_TEMPLATE_KEY, isIsoDate } from "@/types/journal";
-import { requireMilestoneInScope } from "@/utils/stagebook/labels-core";
-import { JournalEditor } from "../_components/journal-editor";
+} from "@/features/stagebook/lib/journal-queries";
+import { DEFAULT_JOURNAL_TEMPLATE_KEY, isIsoDate } from "@/features/stagebook/types/journal";
+import { requireMilestoneInScope } from "@/features/stagebook/lib/labels-core";
+import { JournalEditor } from "@/features/stagebook/journal/components/journal-editor";
 
 export const metadata: Metadata = { title: "Nova entrada · Diário" };
 

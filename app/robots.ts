@@ -1,4 +1,4 @@
-import { IS_PRODUCTION_DEPLOY, SITE_URL } from "@/utils/competitions/site";
+import { IS_PRODUCTION_DEPLOY, SITE_URL } from "@/features/leagues/shared/lib/site";
 import type { MetadataRoute } from "next";
 
 

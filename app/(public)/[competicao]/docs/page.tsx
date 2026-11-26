@@ -13,13 +13,13 @@ import {
   Map as MapIcon,
 } from "lucide-react";
 
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import PageHero, { heroBtn } from "@/components/UI/PageHero";
-import { toneClasses, type Tone } from "@/components/home/shared";
-import { CtaBlock } from "@/components/competicoes/shared/CompetitionSections";
-import DocsSearch from "@/components/competicoes/shared/DocsSearch";
-import { COMPETICOES } from "@/utils/competitions/competicoes";
-import { getCompetitionDocs, isCompeticao, type DocItem } from "@/utils/competitions/docs";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
+import PageHero, { heroBtn } from "@/components/layout/PageHero";
+import { toneClasses, type Tone } from "@/features/home/components/shared";
+import { CtaBlock } from "@/features/leagues/shared/components/CompetitionSections";
+import DocsSearch from "@/features/leagues/shared/components/DocsSearch";
+import { COMPETICOES } from "@/features/leagues/shared/lib/competicoes";
+import { getCompetitionDocs, isCompeticao, type DocItem } from "@/features/leagues/shared/lib/docs";
 
 type Params = { params: Promise<{ competicao: string }> };
 

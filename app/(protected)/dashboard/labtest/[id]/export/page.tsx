@@ -19,14 +19,14 @@ import {
 } from "recharts";
 import "./style.css"
 
-import type { FieldDefinition, TestEntry } from "@/types/labtest.types";
-import { getFieldValue } from "@/types/labtest.types";
-import { formatWithUnit, toNumber } from "@/utils/labtest/chart-data";
-import { getModeDefinition } from "@/utils/labtest/modes";
-import { entryTotal, maxPossibleTotal } from "@/utils/labtest/stats";
-import { getLabTestViewData } from "../../actions";
-import { FllRunsCharts } from "@/components/labtest/FllRunsCharts";
-import { LabTestModeCharts } from "@/components/labtest/LabTestModeCharts";
+import type { FieldDefinition, TestEntry } from "@/features/labtest/types";
+import { getFieldValue } from "@/features/labtest/types";
+import { formatWithUnit, toNumber } from "@/features/labtest/lib/chart-data";
+import { getModeDefinition } from "@/features/labtest/lib/modes";
+import { entryTotal, maxPossibleTotal } from "@/features/labtest/lib/stats";
+import { getLabTestViewData } from "@/features/labtest/actions/labtest";
+import { FllRunsCharts } from "@/features/labtest/components/FllRunsCharts";
+import { LabTestModeCharts } from "@/features/labtest/components/LabTestModeCharts";
 
 function formatValue(field: FieldDefinition, value: unknown) {
   if (value === null || value === undefined || value === "") return "—";

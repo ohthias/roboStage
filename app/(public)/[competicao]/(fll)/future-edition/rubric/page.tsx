@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { RUBRIC, LevelKey } from "./rubric";
-import RubricSheet from "@/components/Rubric/RubricSheet";
-import ScorePanel from "@/components/Rubric/ScorePanel";
-import TitleBlock from "@/components/Rubric/TitleBlock";
-import Header from "@/components/UI/Header";
+import { RUBRIC, LevelKey } from "@/features/rubric/lib/future-edition";
+import RubricSheet from "@/features/rubric/components/RubricSheet";
+import ScorePanel from "@/features/rubric/components/ScorePanel";
+import TitleBlock from "@/features/rubric/components/TitleBlock";
+import Header from "@/components/layout/Header";
 
 type TabId = "projeto" | (typeof RUBRIC)[number]["id"];
 

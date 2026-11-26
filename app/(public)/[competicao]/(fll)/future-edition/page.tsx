@@ -18,15 +18,15 @@ import {
   Wifi,
 } from "lucide-react";
 
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import { AnimatedBackground, SectionTitle, toneClasses, type Tone } from "@/components/home/shared";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
+import { AnimatedBackground, SectionTitle, toneClasses, type Tone } from "@/features/home/components/shared";
 import {
   CtaBlock,
   ToolCard,
   cornerBtn,
   type ToolItem,
-} from "@/components/competicoes/shared/CompetitionSections";
-import "@/components/home/home.css";
+} from "@/features/leagues/shared/components/CompetitionSections";
+import "@/features/home/components/home.css";
 
 type Params = { params: Promise<{ competicao: string }> };
 

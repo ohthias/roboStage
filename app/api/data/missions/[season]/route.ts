@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { MISSIONS_CATALOG } from "@/utils/data/static-data";
+import { MISSIONS_CATALOG } from "@/lib/data/static-data";
 
 // Uma rota estática por temporada: quem usa uma temporada não baixa todas.
 export const dynamic = "force-static";

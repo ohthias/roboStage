@@ -1,3 +1,4 @@
+import { asset } from "@/lib/assets";
 import {
   ArrowRight,
   BarChart3,
@@ -17,10 +18,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
-import { ProductHero } from "@/components/product/ProductHero";
-import { CoverCard, CycleSteps, FaqBlock, ProductCta, type CycleStep } from "@/components/product/ProductBlocks";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import { ProductHero } from "@/features/institutional/components/product/ProductHero";
+import { CoverCard, CycleSteps, FaqBlock, ProductCta, type CycleStep } from "@/features/institutional/components/product/ProductBlocks";
 import {
   ButtonLink,
   Callout,
@@ -44,7 +45,7 @@ import {
   type CoverPattern,
   type Tone,
 } from "@/components/stage";
-import { CalibraTabs, GrowBar } from "./labtest-interactive";
+import { CalibraTabs, GrowBar } from "@/features/labtest/components/landing/labtest-interactive";
 
 /* -------------------------------------------------------------- dados */
 
@@ -198,7 +199,7 @@ export default function LabTestPage() {
         title="Seu robô,"
         highlight="seus dados."
         description="Teste diferentes configurações, registre execuções e transforme o comportamento do seu robô em informações que ajudam sua equipe a tomar decisões melhores."
-        image="/images/index/banner_labtest.png"
+        image={asset("/images/home/banner_labtest.png")}
         primary={{ label: "Abrir meu LabTest", href: "/dashboard" }}
         secondary={{ label: "Como funciona", href: "#como-funciona" }}
         badges={[

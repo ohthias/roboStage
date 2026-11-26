@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import BeginnerGuide from "@/components/competicoes/FLL/guides/BeginnerGuide";
-import { exploreGuide } from "@/utils/competitions/fll/guides";
+import BeginnerGuide from "@/features/leagues/fll/guides/components/BeginnerGuide";
+import { exploreGuide } from "@/features/leagues/fll/guides/lib/guides";
 
 export const metadata: Metadata = {
   title: "Iniciando na FLL Explore | RoboStage",

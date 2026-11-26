@@ -3,9 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
-import Scouting from "@/components/competicoes/FTC/Scouting";
-import { FTCSCOUT } from "@/utils/competitions/ftc/ftcscout";
-import Header from "@/components/UI/Header";
+import Scouting from "@/features/leagues/ftc/components/Scouting";
+import { FTCSCOUT } from "@/features/leagues/ftc/lib/ftcscout";
+import Header from "@/components/layout/Header";
 
 type Params = { params: Promise<{ competicao: string }> };
 

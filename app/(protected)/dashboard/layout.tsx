@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { UserAvatar, UserButton } from "@clerk/nextjs";
-import { NavFooter, NavLinks } from "./nav-links";
-import { SidebarTooltips } from "./sidebar-tooltips";
-import Logo from "@/components/UI/Logo";
+import { NavFooter, NavLinks } from "@/features/stagebook/shell/components/nav-links";
+import { SidebarTooltips } from "@/features/stagebook/shell/components/sidebar-tooltips";
+import Logo from "@/components/stage/layout/Logo";
 import {
   BookMarkedIcon,
   CalendarDays,
@@ -13,27 +13,27 @@ import {
   PanelLeft,
   X,
 } from "lucide-react";
-import { ThemeController } from "@/components/UI/themeController";
-import { SidebarSpaceSwitcher } from "@/components/stagebook/sidebar-space-switcher";
-import { getPinsForScope } from "@/utils/stagebook/pins-core";
+import { ThemeController } from "@/components/providers/ThemeController";
+import { SidebarSpaceSwitcher } from "@/features/stagebook/components/sidebar-space-switcher";
+import { getPinsForScope } from "@/features/stagebook/lib/pins-core";
 import { db } from "@/db/client";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { NotificationsBell } from "@/components/stagebook/notifications-bell";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { NotificationsBell } from "@/features/stagebook/components/notifications-bell";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
 import {
   listMyTeams,
   canCurrentUserCreateTeam,
-} from "@/utils/stagebook/actions/teams";
-import { listUnreadNotifications } from "@/utils/stagebook/actions/notifications";
-import { getUserPreferences } from "@/utils/stagebook/actions/preferences";
+} from "@/features/stagebook/actions/teams";
+import { listUnreadNotifications } from "@/features/stagebook/actions/notifications";
+import { getUserPreferences } from "@/features/stagebook/actions/preferences";
 import {
   LayoutPrefsProvider,
   SidebarPosition,
-} from "@/components/stagebook/layout-prefs";
+} from "@/features/stagebook/components/layout-prefs";
 import Link from "next/link";
-import { SHOWLIVE_URL } from "@/utils/showlive-url";
-import { requireOnboardingComplete } from "@/utils/onboarding/status";
+import { SHOWLIVE_URL } from "@/features/showlive/lib/url";
+import { requireOnboardingComplete } from "@/features/onboarding/lib/status";
 
 export default async function DashboardLayout({
   children,

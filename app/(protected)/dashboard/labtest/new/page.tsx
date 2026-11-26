@@ -14,22 +14,22 @@ import {
   SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
-import { useToast } from "@/app/context/ToastContext";
+import { useToast } from "@/components/providers/ToastContext";
 import {
   CALIBRA_OPTIONS,
   useCreateTest,
   type CreateTestMode,
-} from "./Usecreatetest";
-import { createTest, type CreateTestInput } from "./actions";
-import { getKitPreset } from "@/utils/labtest/kit-ia";
-import { getObrPreset } from "@/utils/labtest/obr-presets";
-import { TestDetailsSection } from "./components/TestDetailsSection";
-import { RunsSection } from "./components/RunsSection";
-import { CalibrabotSection } from "./components/CalibrabotSection";
-import { CustomSection } from "./components/CustomSection";
-import { Note, Step } from "./components/FormBits";
+} from "@/features/labtest/hooks/useCreateTest";
+import { createTest, type CreateTestInput } from "@/features/labtest/actions/create";
+import { getKitPreset } from "@/features/labtest/lib/kit-ia";
+import { getObrPreset } from "@/features/labtest/lib/obr-presets";
+import { TestDetailsSection } from "@/features/labtest/components/new/TestDetailsSection";
+import { RunsSection } from "@/features/labtest/components/new/RunsSection";
+import { CalibrabotSection } from "@/features/labtest/components/new/CalibrabotSection";
+import { CustomSection } from "@/features/labtest/components/new/CustomSection";
+import { Note, Step } from "@/features/labtest/components/new/FormBits";
 
-import { unwrapAction } from "@/utils/stagebook/action-result";
+import { unwrapAction } from "@/lib/action-result";
 type CustomParamMeta = {
   required: boolean;
   description: string;

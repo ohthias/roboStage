@@ -4,9 +4,9 @@ import {
   resolveStagebookScope,
   requireStagebookAccess,
   StagebookAuthError,
-} from "@/utils/stagebook/scope";
-import { syncClerkMembershipsFor } from "@/utils/stagebook/team-membership-sync";
-import { TeamContent, parseTab } from "../team-content";
+} from "@/features/stagebook/lib/scope";
+import { syncClerkMembershipsFor } from "@/features/stagebook/lib/team-membership-sync";
+import { TeamContent, parseTab } from "@/features/stagebook/team/components/team-content";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

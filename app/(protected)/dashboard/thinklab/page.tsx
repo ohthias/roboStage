@@ -2,21 +2,21 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ComponentProps } from "react";
 import { ArrowUpRight, Edit, FlaskConical, Plus, Trash } from "lucide-react";
-import { PersonalTransferButton } from "@/components/stagebook/transfer/personal-transfer-button";
+import { PersonalTransferButton } from "@/features/stagebook/components/transfer/personal-transfer-button";
 
 import {
   createThinkLab,
   listThinkLabsByUserId,
   deleteThinkLabAction,
   updateThinkLabDetails,
-} from "./actions";
-import { ThinkLabThumbnail } from "@/components/thinklab/ThinkLabThumbnail";
-import { ConfirmSubmitButton } from "./confirm-submit-button";
-import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
-import { TagList } from "@/components/stagebook/labels/tag-chip";
-import { MilestoneChip } from "@/components/stagebook/labels/milestone-chip";
-import { getResourcesTags } from "@/utils/stagebook/actions/tags";
-import { listMilestones } from "@/utils/stagebook/actions/milestones";
+} from "@/features/thinklab/actions/thinklab";
+import { ThinkLabThumbnail } from "@/features/thinklab/components/ThinkLabThumbnail";
+import { ConfirmSubmitButton } from "@/features/thinklab/components/confirm-submit-button";
+import { ResourceLabels } from "@/features/stagebook/components/labels/resource-labels";
+import { TagList } from "@/features/stagebook/components/labels/tag-chip";
+import { MilestoneChip } from "@/features/stagebook/components/labels/milestone-chip";
+import { getResourcesTags } from "@/features/stagebook/actions/tags";
+import { listMilestones } from "@/features/stagebook/actions/milestones";
 
 export default async function ThinkLabDashboard({
   searchParams,

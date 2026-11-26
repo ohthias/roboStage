@@ -1,7 +1,8 @@
 "use client";
-import FerramentasSection from "../../../../components/QuickBrick/FerramentasSection";
-import Header from "@/components/UI/Header";
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
+import { asset } from "@/lib/assets";
+import FerramentasSection from "@/features/quickbrick/shared/components/FerramentasSection";
+import Header from "@/components/layout/Header";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
 import { ArrowRight, Cuboid } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -9,15 +10,15 @@ import { useParams } from "next/navigation";
 const seasonLogos: Record<string, { name: string; image: string }> = {
   bioglow: {
     name: "Bioglow (2026/27)",
-    image: "/images/logos/fll/seasons/bioglow_logo_founders_edition.webp",
+    image: asset("/images/seasons/fll/bioglow_logo_founders_edition.webp"),
   },
   unearthed: {
     name: "Unearthed (2025/26)",
-    image: "/images/logos/fll/seasons/Unearthed.webp",
+    image: asset("/images/seasons/fll/Unearthed.webp"),
   },
   submerged: {
     name: "Submerged (2024/25)",
-    image: "/images/logos/fll/seasons/Submerged.webp",
+    image: asset("/images/seasons/fll/Submerged.webp"),
   },
 };
 

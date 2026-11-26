@@ -1,6 +1,6 @@
-import { NotebookShelf } from "@/components/QuickBrick/Notebook/NotebookShelf";
-import { listNotebooks, listQuickbrickLeagues } from "./actions";
-import { PersonalTransferButton } from "@/components/stagebook/transfer/personal-transfer-button";
+import { NotebookShelf } from "@/features/quickbrick/notebook/components/NotebookShelf";
+import { listNotebooks, listQuickbrickLeagues } from "@/features/quickbrick/shared/actions";
+import { PersonalTransferButton } from "@/features/stagebook/components/transfer/personal-transfer-button";
 
 export const metadata = { title: "QuickBrick Studio · RoboStage" };
 

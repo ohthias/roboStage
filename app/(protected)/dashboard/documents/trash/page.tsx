@@ -1,6 +1,6 @@
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { loadTrash } from "../history-core";
-import { TrashView } from "./trash-view";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { loadTrash } from "@/features/stagebook/documents/lib/history-core";
+import { TrashView } from "@/features/stagebook/documents/components/trash-view";
 
 export const metadata = { title: "Lixeira" };
 

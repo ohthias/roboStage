@@ -17,13 +17,13 @@ import {
   Newspaper,
 } from "lucide-react";
 
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import { AnimatedBackground, SectionTitle, toneClasses } from "@/components/home/shared";
-import { NewsCard, NewsCover, categorySlug, categoryStyle } from "@/components/news/NewsUI";
-import { ReadingProgress, ShareArticle } from "@/components/news/ArticleClient";
-import "@/components/home/home.css";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
+import { AnimatedBackground, SectionTitle, toneClasses } from "@/features/home/components/shared";
+import { NewsCard, NewsCover, categorySlug, categoryStyle } from "@/features/institutional/components/news/NewsUI";
+import { ReadingProgress, ShareArticle } from "@/features/institutional/components/news/ArticleClient";
+import "@/features/home/components/home.css";
 import {
   extractHeadings,
   formatNewsDate,
@@ -34,7 +34,7 @@ import {
   headingId,
   newsHref,
   readingMinutes,
-} from "@/utils/institutional/news";
+} from "@/features/institutional/lib/news";
 
 type Params = { params: Promise<{ slug: string }> };
 

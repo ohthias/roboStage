@@ -1,16 +1,17 @@
 "use client";
+import { asset } from "@/lib/assets";
 import { useEffect, useState } from "react";
-import FormMission from "@/components/FormMission/FormMission";
-import Loader from "@/components/Loader";
-import { sumAllMissions } from "@/utils/scores";
-import SubmergedLogo from "@/public/images/logos/fll/seasons/Submerged.webp";
-import MasterpieceLogo from "@/public/images/logos/fll/seasons/Masterpiece.png";
-import UnearthedLogo from "@/public/images/logos/fll/seasons/Unearthed.webp";
-import BioglowLogo from "@/public/images/logos/fll/seasons/bioglow_logo.png";
+import FormMission from "@/features/scoring/components/FormMission";
+import Loader from "@/components/stage/core/Loader";
+import { sumAllMissions } from "@/features/scoring/lib/scores";
+import SubmergedLogo from "@/public/images/seasons/fll/Submerged.webp";
+import MasterpieceLogo from "@/public/images/seasons/fll/Masterpiece.png";
+import UnearthedLogo from "@/public/images/seasons/fll/Unearthed.webp";
+import BioglowLogo from "@/public/images/seasons/fll/bioglow_logo.png";
 import { useParams } from "next/navigation";
 import Image, { type StaticImageData } from "next/image";
-import { loadSeasonMissions } from "@/utils/data/missions-client";
-import Timer from "@/components/FormMission/Timer";
+import { loadSeasonMissions } from "@/lib/data/missions-client";
+import Timer from "@/features/scoring/components/Timer";
 
 interface SubMission {
   submission: string;
@@ -149,8 +150,8 @@ export default function Page() {
 
         <Timer
           duration={150}
-          endSound="/sounds/end.mp3"
-          startSound="/sounds/start.mp3"
+          endSound={asset("/audio/end.mp3")}
+          startSound={asset("/audio/start.mp3")}
           showResetScore={true}
           onResetScore={resetScores}
           onFinish={() => {
@@ -166,7 +167,7 @@ export default function Page() {
           <div className="flex flex-col sm:flex-row items-start gap-4 bg-info/10 backdrop-blur px-6 py-4 rounded-2xl border border-info/30 shadow-sm">
             <figure className="flex items-center gap-3">
               <Image
-                src="/images/icons/NoEquip.png"
+                src={asset("/images/icons/NoEquip.png")}
                 alt="Ícone de sem restrição de equipamento"
                 width={48}
                 height={48}

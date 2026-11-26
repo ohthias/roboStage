@@ -1,3 +1,4 @@
+import { PUBLIC_DIRS } from "@/lib/assets";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,9 +17,9 @@ import {
   Workflow,
 } from "lucide-react";
 
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import { SectionTitle, toneClasses, type Tone } from "@/components/home/shared";
-import { CodeBlock } from "@/app/(public)/anatix/anatix-interactive";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
+import { SectionTitle, toneClasses, type Tone } from "@/features/home/components/shared";
+import { CodeBlock } from "@/features/labtest/anatix/components/anatix-interactive";
 
 export const metadata: Metadata = {
   title: "Anatix para FLL | RoboStage",
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
     "Telemetria em tempo real para robôs LEGO com Pybricks: veja giro, sensores, estados das missões e tempos de execução por Bluetooth ou cabo USB, direto no LabTest.",
 };
 
-const BASE = "/anatix/pybricks";
+const BASE = PUBLIC_DIRS.anatixPybricks;
 const LAB_HREF = "/dashboard/labtest/anatix?novo=pybricks";
 
 const downloads = [

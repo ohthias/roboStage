@@ -38,43 +38,43 @@ import {
   Clock,
 } from "lucide-react";
 
-import { getModeDefinition, ACCENT_STYLES, type AccentColor } from "@/utils/labtest/modes";
-import { computeFieldStats, entryTotal, maxPossibleTotal } from "@/utils/labtest/stats";
-import { buildExecutionRows, toNumber, type ChartSeries } from "@/utils/labtest/chart-data";
-import { getFieldValue } from "@/types/labtest.types";
-import { EmptyState, SectionHeader, StatCard, fmtDate } from "@/components/labtest/shared";
-import { LabTestModeCharts } from "@/components/labtest/LabTestModeCharts";
-import { FllRunsCharts } from "@/components/labtest/FllRunsCharts";
-import FutureEditionAnalysis from "@/components/labtest/future-edition/FutureEditionAnalysis";
-import ObrRoundAnalysis from "@/components/labtest/obr/ObrRoundAnalysis";
-import ObrEntryDetails from "@/components/labtest/obr/ObrEntryDetails";
-import { getObrArena, isObrConfig } from "@/utils/labtest/obr";
-import { missionsForTest } from "@/utils/labtest/fll-analysis";
-import { formatClock, isFutureEditionConfig } from "@/utils/labtest/future-edition";
-import { normalizeStatus } from "@/utils/labtest/catalog";
-import { loadSeasonMissions } from "@/utils/data/missions-client";
-import { SeriesChartPanel } from "@/components/labtest/charts/SeriesChart";
-import type { FieldDefinition, ModeId, TestEntry } from "@/types/labtest.types";
-import { getLabTestViewData } from "../actions";
-import { ResourceLabels } from "@/components/stagebook/labels/resource-labels";
-import { getResourceTags } from "@/utils/stagebook/actions/tags";
-import { getResourceMilestone } from "@/utils/stagebook/actions/milestones";
-import type { MilestoneDTO, TagDTO } from "@/types/labels";
+import { getModeDefinition, ACCENT_STYLES, type AccentColor } from "@/features/labtest/lib/modes";
+import { computeFieldStats, entryTotal, maxPossibleTotal } from "@/features/labtest/lib/stats";
+import { buildExecutionRows, toNumber, type ChartSeries } from "@/features/labtest/lib/chart-data";
+import { getFieldValue } from "@/features/labtest/types";
+import { EmptyState, SectionHeader, StatCard, fmtDate } from "@/features/labtest/components/shared";
+import { LabTestModeCharts } from "@/features/labtest/components/LabTestModeCharts";
+import { FllRunsCharts } from "@/features/labtest/components/FllRunsCharts";
+import FutureEditionAnalysis from "@/features/labtest/components/future-edition/FutureEditionAnalysis";
+import ObrRoundAnalysis from "@/features/labtest/components/obr/ObrRoundAnalysis";
+import ObrEntryDetails from "@/features/labtest/components/obr/ObrEntryDetails";
+import { getObrArena, isObrConfig } from "@/features/labtest/lib/obr";
+import { missionsForTest } from "@/features/labtest/lib/fll-analysis";
+import { formatClock, isFutureEditionConfig } from "@/features/labtest/lib/future-edition";
+import { normalizeStatus } from "@/features/labtest/lib/catalog";
+import { loadSeasonMissions } from "@/lib/data/missions-client";
+import { SeriesChartPanel } from "@/features/labtest/components/charts/SeriesChart";
+import type { FieldDefinition, ModeId, TestEntry } from "@/features/labtest/types";
+import { getLabTestViewData } from "@/features/labtest/actions/labtest";
+import { ResourceLabels } from "@/features/stagebook/components/labels/resource-labels";
+import { getResourceTags } from "@/features/stagebook/actions/tags";
+import { getResourceMilestone } from "@/features/stagebook/actions/milestones";
+import type { MilestoneDTO, TagDTO } from "@/features/stagebook/types/labels";
 import {
   FllMissionDefinition,
   FllSubMissionDefinition,
   getSubMissionKey,
   scoreFllExecution,
   scoreFllMission,
-} from "@/utils/labtest/fll";
-import { deleteTest } from "../new/actions";
-import { PinToggle } from "@/components/stagebook/pin-toggle";
+} from "@/features/labtest/lib/fll";
+import { deleteTest } from "@/features/labtest/actions/create";
+import { PinToggle } from "@/features/stagebook/components/pin-toggle";
 
-import { unwrapAction } from "@/utils/stagebook/action-result";
-import { useChartTheme } from "@/components/labtest/charts/chart-theme";
-import { ViewFilterBar } from "@/components/labtest/view/ViewFilterBar";
-import { ViewDashboard } from "@/components/labtest/view/ViewDashboard";
-import { ViewWidgetBody, type ViewContext } from "@/components/labtest/view/ViewWidgets";
+import { unwrapAction } from "@/lib/action-result";
+import { useChartTheme } from "@/features/labtest/components/charts/chart-theme";
+import { ViewFilterBar } from "@/features/labtest/components/view/ViewFilterBar";
+import { ViewDashboard } from "@/features/labtest/components/view/ViewDashboard";
+import { ViewWidgetBody, type ViewContext } from "@/features/labtest/components/view/ViewWidgets";
 import {
   DEFAULT_VIEW_STATE,
   VIEW_PRESETS,
@@ -84,7 +84,7 @@ import {
   normalizeViewState,
   type ViewState,
   type ViewTab,
-} from "@/utils/labtest/view-dashboard";
+} from "@/features/labtest/lib/view-dashboard";
 
 const STATUS_LABEL: Record<string, { label: string; badge: string }> = {
   planejamento: { label: "Planejamento", badge: "badge-ghost" },

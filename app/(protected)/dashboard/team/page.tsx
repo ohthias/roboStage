@@ -1,9 +1,9 @@
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { canCurrentUserCreateTeam } from "@/utils/stagebook/actions/teams";
-import { getMyTeamsSummary } from "@/utils/stagebook/team-queries";
-import { syncClerkMembershipsFor } from "@/utils/stagebook/team-membership-sync";
-import { TeamContent, parseTab } from "./team-content";
-import { TeamsHub } from "./_components/teams-hub";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { canCurrentUserCreateTeam } from "@/features/stagebook/actions/teams";
+import { getMyTeamsSummary } from "@/features/stagebook/lib/team-queries";
+import { syncClerkMembershipsFor } from "@/features/stagebook/lib/team-membership-sync";
+import { TeamContent, parseTab } from "@/features/stagebook/team/components/team-content";
+import { TeamsHub } from "@/features/stagebook/team/components/teams-hub";
 
 /**
  * /dashboard/team: com uma equipe ativa abre o workspace dela; sem equipe ativa

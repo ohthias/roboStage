@@ -1,18 +1,18 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Column, Mission } from "@/types/TableAnalytics";
-import { INITIAL_COLUMNS, INITIAL_MISSIONS } from "./constants";
+import { Column, Mission } from "@/features/scoring/types";
+import { INITIAL_COLUMNS, INITIAL_MISSIONS } from "@/features/quickbrick/tabela-de-missoes/lib/constants";
 import { RotateCcw, Table } from "lucide-react";
-import { MissionTable } from "@/components/QuickBrick/Tabela-de-analise-de-missoes/MissionTable";
+import { MissionTable } from "@/features/quickbrick/tabela-de-missoes/components/MissionTable";
 import { useParams } from "next/navigation";
-import { useToast } from "@/app/context/ToastContext";
-import Loader from "@/components/Loader";
+import { useToast } from "@/components/providers/ToastContext";
+import Loader from "@/components/stage/core/Loader";
 import ModalConfirm, {
   ModalConfirmRef,
-} from "@/components/UI/Modal/ModalConfirm";
-import HeaderTool from "@/components/QuickBrick/HeaderTool";
-import { missionsFromRaw, RawMission } from "@/utils/quickbrick/scoring";
-import { loadSeasonMissions } from "@/utils/data/missions-client";
+} from "@/components/stage/core/ModalConfirm";
+import HeaderTool from "@/features/quickbrick/shared/components/HeaderTool";
+import { missionsFromRaw, RawMission } from "@/features/scoring/lib/mission-scoring";
+import { loadSeasonMissions } from "@/lib/data/missions-client";
 
 function MissionTablePage() {
   const params = useParams();

@@ -4,12 +4,12 @@ import { db } from "@/db/client";
 import { documents, folders } from "@/db/schema";
 import { tests } from "@/db/schema/labtest";
 import { thinklab } from "@/db/schema/thinklab";
-import { creatorScopeWhere, scopeWhere } from "@/utils/stagebook/permissions";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { getResourcesTags } from "@/utils/stagebook/actions/tags";
-import type { TagDTO } from "@/types/labels";
-import { FolderExplorer } from "./folder-explorer";
-import type { Crumb, ExplorerEntry } from "./explorer-types";
+import { creatorScopeWhere, scopeWhere } from "@/features/stagebook/lib/permissions";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { getResourcesTags } from "@/features/stagebook/actions/tags";
+import type { TagDTO } from "@/features/stagebook/types/labels";
+import { FolderExplorer } from "@/features/stagebook/folders/components/folder-explorer";
+import type { Crumb, ExplorerEntry } from "@/features/stagebook/folders/lib/explorer-types";
 
 export default async function FolderPage({
   params,

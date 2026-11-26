@@ -3,13 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, ArrowUpRight, Clock, Flower2, Hexagon, ShieldAlert, Sparkles, Trophy } from "lucide-react";
 
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import ArenaExplorer from "@/components/competicoes/FTC/ArenaExplorer";
-import { AnimatedBackground, SectionTitle } from "@/components/home/shared";
-import { CtaBlock, cornerBtn } from "@/components/competicoes/shared/CompetitionSections";
-import { FIELD_COUNTS, MATCH_TIMING, POINTS, RANKING_POINTS, SEASON } from "@/utils/competitions/ftc/biobuzz";
-import { KEY_RULES } from "@/utils/competitions/ftc/arena";
-import "@/components/home/home.css";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
+import ArenaExplorer from "@/features/leagues/ftc/components/ArenaExplorer";
+import { AnimatedBackground, SectionTitle } from "@/features/home/components/shared";
+import { CtaBlock, cornerBtn } from "@/features/leagues/shared/components/CompetitionSections";
+import { FIELD_COUNTS, MATCH_TIMING, POINTS, RANKING_POINTS, SEASON } from "@/features/leagues/ftc/lib/biobuzz";
+import { KEY_RULES } from "@/features/leagues/ftc/lib/arena";
+import "@/features/home/components/home.css";
 
 type Params = { params: Promise<{ competicao: string }> };
 

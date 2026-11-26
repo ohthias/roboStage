@@ -1,7 +1,7 @@
 "use client";
-import HeaderTool from "@/components/QuickBrick/HeaderTool";
-import ViewSection from "@/components/QuickBrick/SharksSimulator/ViewSection";
-import ViewSectionMobile from "@/components/QuickBrick/SharksSimulator/ViewSectionMobile";
+import HeaderTool from "@/features/quickbrick/shared/components/HeaderTool";
+import ViewSection from "@/features/quickbrick/sharks-simulator/components/ViewSection";
+import ViewSectionMobile from "@/features/quickbrick/sharks-simulator/components/ViewSectionMobile";
 import { Bot } from "lucide-react";
 import { useEffect, useState } from "react";
 

@@ -1,14 +1,15 @@
+import { asset } from "@/lib/assets";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { ArrowDown, Check, Download, FileArchive, Image as ImageIcon, Printer, Monitor, Type, X } from "lucide-react";
 
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import PageHero, { heroBtn } from "@/components/UI/PageHero";
-import { SectionTitle } from "@/components/home/shared";
-import { CtaBlock } from "@/components/competicoes/shared/CompetitionSections";
-import ColorCard, { CopyPaletteButton, type BrandColor } from "./ColorCard";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
+import PageHero, { heroBtn } from "@/components/layout/PageHero";
+import { SectionTitle } from "@/features/home/components/shared";
+import { CtaBlock } from "@/features/leagues/shared/components/CompetitionSections";
+import ColorCard, { CopyPaletteButton, type BrandColor } from "@/features/institutional/components/ColorCard";
 
 export const metadata: Metadata = {
   title: "Assets",
@@ -26,7 +27,7 @@ const downloads = [
   {
     name: "Pacote completo",
     text: "Logos e ícones em todas as versões, para tela e para impressão.",
-    href: "/assets/downloads/robostage-assets.zip",
+    href: asset("/files/downloads/robostage-assets.zip"),
     size: "3,8 MB",
     files: "73 arquivos",
     featured: true,
@@ -34,14 +35,14 @@ const downloads = [
   {
     name: "Kit de logos",
     text: "Logo principal, versão clara, outline e símbolo com e sem fundo.",
-    href: "/assets/downloads/robostage-logos.zip",
+    href: asset("/files/downloads/robostage-logos.zip"),
     size: "3,3 MB",
     files: "45 arquivos",
   },
   {
     name: "Kit de ícones",
     text: "Símbolo do RoboStage nas versões padrão, inversa e outline.",
-    href: "/assets/downloads/robostage-icones.zip",
+    href: asset("/files/downloads/robostage-icones.zip"),
     size: "556 KB",
     files: "27 arquivos",
   },
@@ -95,7 +96,7 @@ export default function BrandPage() {
           description="Recursos oficiais da identidade visual do RoboStage para projetos, apresentações, documentos, eventos e materiais digitais."
           actions={
             <>
-              <a href="/assets/downloads/robostage-assets.zip" download className={heroBtn}>
+              <a href={asset("/files/downloads/robostage-assets.zip")} download className={heroBtn}>
                 <FileArchive size={20} />
                 Baixar pacote completo
               </a>
@@ -112,7 +113,7 @@ export default function BrandPage() {
                 <span className="font-mono text-[10px] tracking-widest text-base-content/35">3,8 MB</span>
               </div>
               <div className="grid place-items-center bg-[#f7f4ec] p-8">
-                <Image src="/images/logos/logo_padrao.png" alt="Símbolo do RoboStage" width={180} height={180} className="h-auto w-36 sm:w-44" priority />
+                <Image src={asset("/brand/logo_padrao.png")} alt="Símbolo do RoboStage" width={180} height={180} className="h-auto w-36 sm:w-44" priority />
               </div>
               <div className="flex h-3">
                 {colors.map((c) => (
@@ -162,19 +163,19 @@ export default function BrandPage() {
                       <h3 className="mt-1 text-2xl font-bold">Logo principal</h3>
                       <p className="mt-1 text-sm text-base-content/60">Símbolo acompanhado do nome RoboStage. Use sempre que possível.</p>
                     </div>
-                    <DownloadButton href="/assets/logo/full_logo_primary.png" label="PNG" />
+                    <DownloadButton href={asset("/brand/full_logo_primary.png")} label="PNG" />
                   </div>
                   <div className="flex flex-1 flex-col px-6 pb-6">
                     <Checker className="min-h-64 flex-1">
-                      <Image src="/images/logos/full_logo_primary.png" alt="Logo principal do RoboStage" width={520} height={132} className="h-auto w-full max-w-md" />
+                      <Image src={asset("/brand/full_logo_primary.png")} alt="Logo principal do RoboStage" width={520} height={132} className="h-auto w-full max-w-md" />
                     </Checker>
                   </div>
                 </article>
               </RevealOnScroll>
               <div className="grid gap-5">
                 {[
-                  { title: "Versão clara", text: "Para fundos escuros.", href: "/assets/logo/full_logo_secondary.png", img: "/images/logos/full_logo_secondary.png", dark: true },
-                  { title: "Versão outline", text: "Alternativa com contorno colorido.", href: "/assets/logo/logo_outline_colorido.png", img: "/images/logos/logo_outline_colorido.png", dark: false },
+                  { title: "Versão clara", text: "Para fundos escuros.", href: asset("/brand/full_logo_secondary.png"), img: asset("/brand/full_logo_secondary.png"), dark: true },
+                  { title: "Versão outline", text: "Alternativa com contorno colorido.", href: asset("/brand/logo_outline_colorido.png"), img: asset("/brand/logo_outline_colorido.png"), dark: false },
                 ].map((l, i) => (
                   <RevealOnScroll key={l.title} delay={0.08 * (i + 1)} className="h-full">
                     <article className="flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5">
@@ -208,7 +209,7 @@ export default function BrandPage() {
               <div className="relative grid aspect-square w-full max-w-md place-items-center justify-self-center rounded-tl-3xl rounded-br-3xl border border-base-300 bg-[#f7f4ec] p-12">
                 <div aria-hidden="true" className="absolute inset-8 rounded-tl-2xl rounded-br-2xl border-2 border-dashed border-primary/40" />
                 <span aria-hidden="true" className="absolute left-8 top-3 font-mono text-[10px] tracking-widest text-primary/70">ÁREA DE PROTEÇÃO</span>
-                <Image src="/images/logos/logo_padrao.png" alt="Ícone do RoboStage" width={260} height={260} className="relative h-auto w-3/5" />
+                <Image src={asset("/brand/logo_padrao.png")} alt="Ícone do RoboStage" width={260} height={260} className="relative h-auto w-3/5" />
               </div>
             </RevealOnScroll>
             <RevealOnScroll delay={0.1}>
@@ -233,7 +234,7 @@ export default function BrandPage() {
                 ))}
               </dl>
               <div className="mt-6">
-                <DownloadButton href="/assets/downloads/robostage-icones.zip" label="Baixar kit de ícones" />
+                <DownloadButton href={asset("/files/downloads/robostage-icones.zip")} label="Baixar kit de ícones" />
               </div>
             </RevealOnScroll>
           </div>

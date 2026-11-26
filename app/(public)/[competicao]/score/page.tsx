@@ -1,11 +1,12 @@
-import Header from "@/components/UI/Header";
+import { asset } from "@/lib/assets";
+import Header from "@/components/layout/Header";
 import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import PontuadorOBR from "@/components/competicoes/OBR/score/Pontuador";
-import FtcScore from "@/components/competicoes/FTC/FtcScore";
-import { AnimatedBackground } from "@/components/home/shared";
-import { SEASON } from "@/utils/competitions/ftc/biobuzz";
+import PontuadorOBR from "@/features/leagues/obr/score/components/Pontuador";
+import FtcScore from "@/features/leagues/ftc/components/FtcScore";
+import { AnimatedBackground } from "@/features/home/components/shared";
+import { SEASON } from "@/features/leagues/ftc/lib/biobuzz";
 
 export async function generateMetadata({
   params,
@@ -44,7 +45,7 @@ const seasons = [
     title: "BIOGLOW",
     description:
       "Descubra a vibração dos ecossistemas do mundo natural e como a ciência pode ajudar a preservá-los.",
-    image: "/images/logos/fll/seasons/bioglow_logo_founders_edition.webp",
+    image: asset("/images/seasons/fll/bioglow_logo_founders_edition.webp"),
     badge: "2026–2027",
     accent: "secondary",
   },
@@ -53,7 +54,7 @@ const seasons = [
     title: "UNEARTHED",
     description:
       "Descubra o passado para construir o futuro através da arqueologia e tecnologia.",
-    image: "/images/logos/fll/seasons/Unearthed.webp",
+    image: asset("/images/seasons/fll/Unearthed.webp"),
     badge: "2025–2026",
     accent: "primary",
   },
@@ -62,7 +63,7 @@ const seasons = [
     title: "SUBMERGED",
     description:
       "Explore os oceanos e desenvolva soluções para proteger nossos ecossistemas aquáticos.",
-    image: "/images/logos/fll/seasons/Submerged.webp",
+    image: asset("/images/seasons/fll/Submerged.webp"),
     badge: "2024–2025",
     accent: "secondary",
   },
@@ -71,7 +72,7 @@ const seasons = [
     title: "MASTERPIECE",
     description:
       "Celebre a criatividade, arte e inovação através da tecnologia.",
-    image: "/images/logos/fll/seasons/Masterpiece.png",
+    image: asset("/images/seasons/fll/Masterpiece.png"),
     badge: "2023–2024",
     accent: "accent",
   },

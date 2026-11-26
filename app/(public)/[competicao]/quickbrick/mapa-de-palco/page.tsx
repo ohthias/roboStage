@@ -1,7 +1,7 @@
 "use client";
-import CardMobileNotUse from "@/components/MobileNotUse";
-import HeaderTool from "@/components/QuickBrick/HeaderTool";
-import StageMap from "@/components/QuickBrick/StageMap/StageMap";
+import CardMobileNotUse from "@/components/stage/platform/MobileNotUse";
+import HeaderTool from "@/features/quickbrick/shared/components/HeaderTool";
+import StageMap from "@/features/quickbrick/stage-map/components/StageMap";
 import { Theater } from "lucide-react";
 import { useEffect, useState } from "react";
 

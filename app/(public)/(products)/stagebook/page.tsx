@@ -1,3 +1,4 @@
+import { asset } from "@/lib/assets";
 import Link from "next/link";
 import {
   ArrowDown,
@@ -20,10 +21,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
-import { ProductHero } from "@/components/product/ProductHero";
-import { CoverCard, CycleSteps, ProductCta } from "@/components/product/ProductBlocks";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import { ProductHero } from "@/features/institutional/components/product/ProductHero";
+import { CoverCard, CycleSteps, ProductCta } from "@/features/institutional/components/product/ProductBlocks";
 import {
   ActionCard,
   ActivityCard,
@@ -286,7 +287,7 @@ export default function StagebookPage() {
         highlight="antes da solução."
         highlightTone="secondary"
         description="O Stagebook é o espaço da sua equipe para registrar pensamentos, organizar projetos, acompanhar tarefas e transformar cada etapa da temporada em conhecimento."
-        image="/images/index/banner_stagebook.png"
+        image={asset("/images/home/banner_stagebook.png")}
         primary={{ label: "Abrir meu Stagebook", href: "/dashboard" }}
         secondary={{ label: "Explorar recursos", href: "#recursos" }}
         badges={[

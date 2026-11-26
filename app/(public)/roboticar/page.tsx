@@ -14,12 +14,12 @@ import {
   Trophy,
 } from "lucide-react";
 
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import ObrChart from "@/components/roboticar/ObrChart";
-import InitiativesExplorer from "@/components/roboticar/InitiativesExplorer";
-import { AnimatedBackground, SectionTitle, toneClasses } from "@/components/home/shared";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
+import ObrChart from "@/features/institutional/components/roboticar/ObrChart";
+import InitiativesExplorer from "@/features/institutional/components/roboticar/InitiativesExplorer";
+import { AnimatedBackground, SectionTitle, toneClasses } from "@/features/home/components/shared";
 import {
   brazilStats,
   initiatives,
@@ -27,8 +27,8 @@ import {
   worldStats,
   SUGGEST_URL,
   type Stat,
-} from "@/utils/institutional/roboticar";
-import "@/components/home/home.css";
+} from "@/features/institutional/lib/roboticar";
+import "@/features/home/components/home.css";
 
 export const metadata: Metadata = {
   title: "Roboticar",

@@ -1,9 +1,9 @@
-import Header from "@/components/UI/Header";
-import { MenuCard } from "@/components/Timers/MenuCard";
+import Header from "@/components/layout/Header";
+import { MenuCard } from "@/features/timers/components/MenuCard";
 import Link from "next/link";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTimers } from "./config";
+import { getTimers } from "@/features/timers/lib/config";
 
 type Props = {
   params: Promise<{ competicao: string }>;

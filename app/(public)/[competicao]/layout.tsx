@@ -1,9 +1,9 @@
-import { Navbar } from "@/components/UI/Navbar";
-import { COMPETICOES } from "@/utils/competitions/competicoes";
+import { Navbar } from "@/components/layout/Navbar";
+import { COMPETICOES } from "@/features/leagues/shared/lib/competicoes";
 import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
-import { Footer } from "@/components/UI/Footer";
+import { Footer } from "@/components/layout/Footer";
 
 interface PageProps {
   params: Promise<{

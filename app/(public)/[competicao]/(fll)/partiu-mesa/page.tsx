@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import MissionTimer from "@/components/competicoes/FLL/partiu-mesa/MissionTimer";
-import Header from "@/components/UI/Header";
+import MissionTimer from "@/features/leagues/fll/partiu-mesa/components/MissionTimer";
+import Header from "@/components/layout/Header";
 
 export const metadata: Metadata = {
   title: "Partiu Mesa! — Treine suas missões da FLL | RoboStage",

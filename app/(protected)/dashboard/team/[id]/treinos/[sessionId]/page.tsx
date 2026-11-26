@@ -3,12 +3,12 @@ import { eq } from "drizzle-orm";
 import { ArrowLeft, SearchX, ShieldAlert } from "lucide-react";
 import { db } from "@/db/client";
 import { teams } from "@/db/schema";
-import { requireStagebookAccess, StagebookAuthError } from "@/utils/stagebook/scope";
-import { canEditRoster, roleCan } from "@/utils/stagebook/team-permissions";
-import { getTeamMembers } from "@/utils/stagebook/team-queries";
-import { getTrainingSessionDetail } from "@/utils/stagebook/training-queries";
-import { LiveRefresh } from "@/components/stagebook/live-refresh";
-import { SessionView } from "../../../_components/session/session-view";
+import { requireStagebookAccess, StagebookAuthError } from "@/features/stagebook/lib/scope";
+import { canEditRoster, roleCan } from "@/features/stagebook/lib/team-permissions";
+import { getTeamMembers } from "@/features/stagebook/lib/team-queries";
+import { getTrainingSessionDetail } from "@/features/stagebook/lib/training-queries";
+import { LiveRefresh } from "@/features/stagebook/components/live-refresh";
+import { SessionView } from "@/features/stagebook/team/components/session/session-view";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

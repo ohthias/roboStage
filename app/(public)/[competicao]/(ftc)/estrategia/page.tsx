@@ -3,10 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
-import StrategyBuilder from "@/components/competicoes/FTC/StrategyBuilder";
-import { AnimatedBackground } from "@/components/home/shared";
-import "@/components/home/home.css";
-import Header from "@/components/UI/Header";
+import StrategyBuilder from "@/features/leagues/ftc/components/StrategyBuilder";
+import { AnimatedBackground } from "@/features/home/components/shared";
+import "@/features/home/components/home.css";
+import Header from "@/components/layout/Header";
 
 type Params = { params: Promise<{ competicao: string }> };
 

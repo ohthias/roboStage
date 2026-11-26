@@ -2,13 +2,13 @@ import type { ReactNode } from "react";
 import { count } from "drizzle-orm";
 import { db } from "@/db/client";
 import { folders, documents } from "@/db/schema";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { scopeWhere } from "@/utils/stagebook/permissions";
-import { NotebookTree } from "./notebook-tree";
-import { NotebookProvider, type TreeNode } from "./notebook-context";
-import { liveDocumentWhere, trashedDocumentWhere } from "./history-core";
-import { docFontVariables } from "./doc-fonts";
-import type { FolderRow } from "@/types/folders";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { scopeWhere } from "@/features/stagebook/lib/permissions";
+import { NotebookTree } from "@/features/stagebook/documents/components/notebook-tree";
+import { NotebookProvider, type TreeNode } from "@/features/stagebook/documents/components/notebook-context";
+import { liveDocumentWhere, trashedDocumentWhere } from "@/features/stagebook/documents/lib/history-core";
+import { docFontVariables } from "@/features/stagebook/documents/lib/doc-fonts";
+import type { FolderRow } from "@/features/stagebook/types/folders";
 
 type DocumentRow = {
   id: string;

@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 
-import RobotGame from "../views/RobotGame";
-import { JudgingRoom } from "../views/JudgingRoom";
-import { CustomTimer } from "../views/CustomTimer";
-import { ObrRound } from "../views/ObrRound";
-import { FtcMatch } from "../views/FtcMatch";
-import { getTimers } from "../config";
+import RobotGame from "@/features/timers/components/views/RobotGame";
+import { JudgingRoom } from "@/features/timers/components/views/JudgingRoom";
+import { CustomTimer } from "@/features/timers/components/views/CustomTimer";
+import { ObrRound } from "@/features/timers/components/views/ObrRound";
+import { FtcMatch } from "@/features/timers/components/views/FtcMatch";
+import { getTimers } from "@/features/timers/lib/config";
 
 type Props = {
   params: Promise<{

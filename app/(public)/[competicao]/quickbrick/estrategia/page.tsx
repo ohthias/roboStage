@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import QuickBrickCanvas from "@/components/QuickBrick/Estrategia/QuickBrickCanva";
-import CardMobileNotUse from "@/components/MobileNotUse";
-import HeaderTool from "@/components/QuickBrick/HeaderTool";
+import QuickBrickCanvas from "@/features/quickbrick/estrategia/components/QuickBrickCanva";
+import CardMobileNotUse from "@/components/stage/platform/MobileNotUse";
+import HeaderTool from "@/features/quickbrick/shared/components/HeaderTool";
 import { Brush } from "lucide-react";
 
 export default function StrategyPage() {

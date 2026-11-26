@@ -1,6 +1,6 @@
-import CurvedLoop from "@/components/UI/CurvedLoop/CurvedLoop";
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
+import CurvedLoop from "@/components/stage/decor/curved-loop/CurvedLoop";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
 import {
   Leaf,
   Bot,
@@ -79,7 +79,7 @@ export default function Page() {
   return (
     <>
       <Navbar />
-      <header className="bg-[url(/images/heroImage.webp)] bg-cover bg-bottom bg-no-repeat flex flex-col justify-center items-center h-[calc(100vh-80px)] bg-[#203935] relative overflow-hidden">
+      <header className="bg-[url(/images/home/heroImage.webp)] bg-cover bg-bottom bg-no-repeat flex flex-col justify-center items-center h-[calc(100vh-80px)] bg-[#203935] relative overflow-hidden">
         <div className="flex justify-center items-center flex-col gap-2 text-center relative z-10">
           <p className="italic text-md text-white">Temporada 2026 - 2027</p>
           <h1 className="italic text-white font-black text-5xl sm:text-6xl md:text-7xl lg:text-8xl">

@@ -3,10 +3,10 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { leagues, userLeagueInterests, userPreferences, users } from "@/db/schema";
-import { AnimatedBackground } from "@/components/home/shared";
-import { OnboardingForm, type OnboardingInitial } from "./onboarding-form";
-import { missingOnboardingFields } from "@/utils/onboarding/completeness";
-import "@/components/home/home.css";
+import { AnimatedBackground } from "@/features/home/components/shared";
+import { OnboardingForm, type OnboardingInitial } from "@/features/onboarding/components/onboarding-form";
+import { missingOnboardingFields } from "@/features/onboarding/lib/completeness";
+import "@/features/home/components/home.css";
 
 export const metadata = { title: "Boas-vindas · RoboStage" };
 

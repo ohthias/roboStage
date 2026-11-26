@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
-import { ToastProvider } from "./context/ToastContext";
+import { AppProviders } from "@/components/providers";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { ClerkProvider } from "@clerk/nextjs";
-import { ptBR } from "@clerk/localizations";
-import { ConfirmProvider } from "@/components/stage";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -57,15 +54,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" data-motion="full">
       <body className={`${roboto.variable} antialiased`}>
-        <ClerkProvider localization={ptBR}>
+        <AppProviders>
           <Analytics />
           <SpeedInsights />
-          <ToastProvider>
-            <ConfirmProvider>
-              {children}
-            </ConfirmProvider>
-          </ToastProvider>
-        </ClerkProvider>
+          {children}
+        </AppProviders>
       </body>
     </html>
   );

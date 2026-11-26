@@ -1,4 +1,4 @@
-import { EditorLoader } from "@/components/thinklab/EditorLoader";
+import { EditorLoader } from "@/features/thinklab/components/EditorLoader";
 
 export default function Loading() {
   return <EditorLoader />;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import SWOTCanvasWrapper from "./SWOTCanvasWrapper";
+import SWOTCanvasWrapper from "@/features/quickbrick/swot/components/SWOTCanvasWrapper";
 
 export default function SwotPage() {
   const params = useParams();

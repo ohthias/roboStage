@@ -31,12 +31,12 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import PageHero, { heroBtn } from "@/components/UI/PageHero";
-import { ACCENT_TEXT, SectionTitle, toneClasses, type Tone } from "@/components/home/shared";
-import { CtaBlock, ToolGrid, cornerBtn, type ToolItem } from "@/components/competicoes/shared/CompetitionSections";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
+import PageHero, { heroBtn } from "@/components/layout/PageHero";
+import { ACCENT_TEXT, SectionTitle, toneClasses, type Tone } from "@/features/home/components/shared";
+import { CtaBlock, ToolGrid, cornerBtn, type ToolItem } from "@/features/leagues/shared/components/CompetitionSections";
 
 export const metadata: Metadata = {
   title: "Sobre",

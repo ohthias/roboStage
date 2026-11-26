@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 // @ts-ignore: allow side-effect CSS import without type declarations
 import "./style.css";
-import { RECALL_MODES, isRecallCompetition } from "./modes";
+import { RECALL_MODES, isRecallCompetition } from "@/features/flashqa/lib/modes";
 
 type Props = {
   params: Promise<{ competicao: string }>;

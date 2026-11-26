@@ -1,5 +1,5 @@
-import { listBoards } from "./actions";
-import { BoardList } from "./board-list";
+import { listBoards } from "@/features/stagebook/kanban/actions/boards";
+import { BoardList } from "@/features/stagebook/kanban/components/board-list";
 
 export default async function KanbanPage() {
   const boards = await listBoards();

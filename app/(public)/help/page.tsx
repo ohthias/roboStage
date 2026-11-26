@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Accordion from "@/components/UI/Accordion";
-import { Footer } from "@/components/UI/Footer";
-import Loader from "@/components/Loader";
-import Header from "@/components/UI/Header";
-import { Navbar } from "@/components/UI/Navbar";
+import Accordion from "@/components/stage/core/Accordion";
+import { Footer } from "@/components/layout/Footer";
+import Loader from "@/components/stage/core/Loader";
+import Header from "@/components/layout/Header";
+import { Navbar } from "@/components/layout/Navbar";
 import {
   BookOpen,
   ClipboardCheck,

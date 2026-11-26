@@ -1,0 +1,160 @@
+import "server-only";
+
+import { cache } from "react";
+import { cookies } from "next/headers";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { and, eq } from "drizzle-orm";
+import { db } from "@/db/client";
+import { teamMembers, users } from "@/db/schema";
+
+import { isTeamRole, type TeamRole } from "./team-permissions";
+import { StagebookAuthError } from "./scope-errors";
+import { requireUuid } from "./validation";
+
+export type { TeamRole };
+export { StagebookAuthError };
+
+/**
+ * Seção 4 da spec: todo o Stagebook opera sobre um scope explícito, nunca
+ * sobre um userId "solto". Um recurso ou pertence a `personal.userId`, ou a
+ * `team.teamId` — nunca aos dois (ver CHECK de ownership no schema).
+ */
+export type StagebookScope =
+  | { type: "personal"; userId: string }
+  | { type: "team"; teamId: string; userId: string; role: TeamRole };
+
+export type TeamScope = Extract<StagebookScope, { type: "team" }>;
+
+/** Valor vindo do banco → TeamRole, falhando fechado (sem privilégio) se for desconhecido. */
+function toTeamRole(value: string): TeamRole {
+  return isTeamRole(value) ? value : "colaborador";
+}
+
+/** Nome do cookie que guarda qual equipe está selecionada no momento. */
+export const STAGEBOOK_SCOPE_COOKIE = "stagebook_team_id";
+const SCOPE_COOKIE = STAGEBOOK_SCOPE_COOKIE;
+
+export async function requireAuthenticatedUser(): Promise<string> {
+  const { userId } = await auth();
+  if (!userId) throw new StagebookAuthError("Usuário não autenticado.");
+  await ensureUserSynced(userId);
+  return userId;
+}
+
+/**
+ * Rede de segurança contra o webhook do Clerk (`db/clerk-sync.ts`) não ter
+ * rodado ainda para este usuário — comum em dev local sem túnel público, ou
+ * em produção se a entrega do webhook atrasar/falhar. Sem isso, a primeira
+ * ação do Stagebook que grava algo com FK para `users` (criar página, time,
+ * evento...) quebra com "violates foreign key constraint ... is not present
+ * in table users", que é exatamente o "userId não encontrado" só que vindo
+ * direto do Postgres em vez de uma mensagem amigável.
+ *
+ * Idempotente e barato: só faz a chamada ao Clerk quando a linha realmente
+ * não existe ainda. Memorizado por requisição com `cache()`: layout, página e
+ * actions chamam `requireAuthenticatedUser()` várias vezes no mesmo render.
+ */
+const ensureUserSynced = cache(async (userId: string) => {
+  const existing = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: { id: true },
+  });
+  if (existing) return;
+
+  const clerkUser = await currentUser();
+  if (!clerkUser) {
+    throw new StagebookAuthError("Não foi possível validar a sessão do Clerk.");
+  }
+
+  const email = clerkUser.emailAddresses[0]?.emailAddress ?? "";
+  const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") || null;
+
+  await db
+    .insert(users)
+    .values({ id: userId, email, name, avatarUrl: clerkUser.imageUrl ?? null })
+    .onConflictDoNothing({ target: users.id });
+});
+
+/**
+ * Lê o cookie de contexto atual (seção 32: `resolveStagebookScope()`).
+ * Se o cookie apontar para uma equipe da qual o usuário não é mais membro,
+ * cai silenciosamente de volta para o espaço pessoal — nunca dá acesso
+ * indevido.
+ */
+export async function resolveStagebookScope(): Promise<StagebookScope> {
+  const userId = await requireAuthenticatedUser();
+  const cookieStore = await cookies();
+  const teamId = cookieStore.get(SCOPE_COOKIE)?.value || null;
+
+  if (!teamId) return { type: "personal", userId };
+  return resolveTeamScope(userId, teamId);
+}
+
+/**
+ * Layout, página e actions resolvem o scope no mesmo render; `cache()` faz a
+ * consulta de membership uma vez por requisição. A chave inclui o teamId do
+ * cookie, então trocar de equipe (`switchStagebookScope`) nunca reaproveita
+ * o resultado anterior.
+ */
+const resolveTeamScope = cache(
+  async (userId: string, teamId: string): Promise<StagebookScope> => {
+    const membership = await db.query.teamMembers.findFirst({
+      where: and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)),
+    });
+
+    if (!membership) return { type: "personal", userId };
+
+    return {
+      type: "team",
+      teamId,
+      userId,
+      role: toTeamRole(membership.role),
+    };
+  },
+);
+
+/**
+ * Seção 32: `requireStagebookAccess()` — resolve o scope a partir de um
+ * teamId explícito (vindo de um Server Action, por exemplo) e garante
+ * membership. Lança StagebookAuthError se o usuário não puder acessar.
+ */
+export async function requireStagebookAccess(
+  teamId?: string | null
+): Promise<StagebookScope> {
+  const userId = await requireAuthenticatedUser();
+  if (!teamId) return { type: "personal", userId };
+
+  const membership = await db.query.teamMembers.findFirst({
+    where: and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)),
+  });
+
+  if (!membership) {
+    throw new StagebookAuthError("Você não é membro desta equipe.");
+  }
+
+  return { type: "team", teamId, userId, role: toTeamRole(membership.role) };
+}
+
+/**
+ * Scope de uma equipe a partir de um `teamId` explícito (vindo do navegador,
+ * por exemplo da página da equipe, que pode estar aberta numa equipe diferente
+ * do espaço ativo): valida o id, exige ser membro e devolve o scope de equipe.
+ */
+export async function requireTeamAccess(teamId: unknown): Promise<TeamScope> {
+  const scope = await requireStagebookAccess(requireUuid(teamId, "equipe"));
+  if (scope.type !== "team") {
+    throw new StagebookAuthError("Esta ação só existe dentro do espaço de uma equipe.");
+  }
+  return scope;
+}
+
+/** Retorna o par { userId, teamId } a gravar em INSERTs, respeitando o scope. */
+export function scopeOwnership(scope: StagebookScope) {
+  return scope.type === "personal"
+    ? { userId: scope.userId, teamId: null }
+    : { userId: null, teamId: scope.teamId };
+}
+
+export function scopeKey(scope: StagebookScope): string {
+  return scope.type === "personal" ? "personal" : `team:${scope.teamId}`;
+}

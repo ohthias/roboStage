@@ -1,0 +1,262 @@
+import type {
+  FieldDefinition,
+  TestEntry,
+  TestRecord,
+} from "@/features/labtest/types";
+import type { CanvasElement } from "@/features/thinklab/types";
+import type { DiagramKind } from "@/features/quickbrick/notebook/lib/notebook";
+
+/**
+ * Blocos "embed" do editor de documentos: referências vivas a itens de outros
+ * módulos do Stagebook. O documento guarda só o id (+ um rótulo de reserva);
+ * os dados são buscados no momento da exibição, então card, evento, gráfico e
+ * quadro sempre aparecem atualizados.
+ */
+export type EmbedKind =
+  | "kanban-card"
+  | "calendar-event"
+  | "labtest-chart"
+  | "thinklab-board"
+  | "quickbrick-photo"
+  | "quickbrick-diagram";
+
+export const EMBED_KINDS: EmbedKind[] = [
+  "kanban-card",
+  "calendar-event",
+  "labtest-chart",
+  "thinklab-board",
+  "quickbrick-photo",
+  "quickbrick-diagram",
+];
+
+export const EMBED_LABELS: Record<EmbedKind, string> = {
+  "kanban-card": "Card do Kanban",
+  "calendar-event": "Evento do calendário",
+  "labtest-chart": "Gráfico do LabTest",
+  "thinklab-board": "Quadro do ThinkLab",
+  "quickbrick-photo": "Foto do robô · QuickBrick",
+  "quickbrick-diagram": "Diagrama do QuickBrick",
+};
+
+export const EMBED_HREF: Record<EmbedKind, (id: string, extra?: string) => string> = {
+  "kanban-card": (_id, boardId) => `/dashboard/kanban/${boardId ?? ""}`,
+  "calendar-event": () => `/dashboard/calendar`,
+  "labtest-chart": (id) => `/dashboard/labtest/${id}`,
+  "thinklab-board": (id) => `/dashboard/thinklab/${id}`,
+  "quickbrick-photo": (_id, notebookId) => `/dashboard/quickbrick/${notebookId ?? ""}`,
+  "quickbrick-diagram": (id, notebookId) => `/dashboard/quickbrick/${notebookId ?? ""}/diagramas/${id}`,
+};
+
+/** Posição do bloco na largura da página. */
+export type EmbedAlign = "left" | "center" | "right";
+
+/** Tamanho e posição do bloco (ThinkLab e LabTest). */
+export type EmbedLayoutOptions = {
+  /** Largura em % da coluna do texto (30–100). Ausente = 100. */
+  width?: number;
+  /** Posição quando a largura é menor que 100%. Ausente = centro. */
+  align?: EmbedAlign;
+};
+
+/** Tipos de gráfico do resumo do LabTest (mesmos do kit de gráficos do módulo). */
+export type LabTestChartType = "line" | "area" | "bar" | "stacked" | "step" | "scatter" | "radar";
+
+/** Altura do gráfico / da miniatura. */
+export type EmbedHeight = "sm" | "md" | "lg" | "xl";
+
+/** Filtros aplicados às execuções antes de montar os gráficos. */
+export type LabTestFilter = {
+  /** Só as últimas N execuções (depois dos outros filtros). */
+  last?: number;
+  /** Intervalo de execuções (#de – #até), inclusivo. */
+  fromExec?: number;
+  toExec?: number;
+  /** Intervalo de datas (AAAA-MM-DD), inclusivo. */
+  dateFrom?: string;
+  dateTo?: string;
+  /** Condição sobre um valor (parâmetro ou pontuação total). */
+  value?: { key: string; op: "gte" | "lte"; value: number };
+};
+
+/** Opções por bloco, guardadas junto da referência. */
+export type LabTestChartOptions = {
+  /** "resumo" = um gráfico compacto; "completo" = mesmos gráficos da página do teste. */
+  view?: "resumo" | "completo";
+  chartType?: LabTestChartType;
+  /** Parâmetros exibidos no resumo (vazio = todos os numéricos). */
+  fieldKeys?: string[];
+  filter?: LabTestFilter;
+  /** Partes escondidas (ids de `labTestSections`). Novas partes aparecem por padrão. */
+  hiddenSections?: string[];
+  chartHeight?: EmbedHeight;
+  showAverage?: boolean;
+  showLabels?: boolean;
+};
+
+export type ThinkLabEmbedOptions = {
+  thumbHeight?: EmbedHeight;
+  /** Mostra nome, contagem e descrição abaixo da miniatura. Ausente = sim. */
+  showDetails?: boolean;
+};
+
+/** Tamanho da imagem nos embeds de imagem (foto do robô / diagrama). */
+export type ImageEmbedSize = "small" | "medium" | "full";
+
+export type QuickbrickEmbedOptions = {
+  notebookId?: string;
+  size?: ImageEmbedSize;
+};
+
+export type EmbedOptions = LabTestChartOptions &
+  QuickbrickEmbedOptions &
+  ThinkLabEmbedOptions &
+  EmbedLayoutOptions & { boardId?: string };
+
+// ---------------------------------------------------------------------------
+// Itens do seletor (listas leves)
+// ---------------------------------------------------------------------------
+
+export type CardPickerItem = {
+  id: string;
+  boardId: string;
+  title: string;
+  boardName: string;
+  columnName: string;
+  priority: string;
+  dueAt: string | null;
+};
+
+export type EventPickerItem = {
+  id: string;
+  title: string;
+  startAt: string;
+  endAt: string | null;
+  allDay: boolean;
+  type: string;
+  color: string | null;
+};
+
+export type LabTestPickerItem = {
+  id: string;
+  name: string;
+  mode: string;
+  season: string | null;
+  updatedAt: string;
+};
+
+export type ThinkLabPickerItem = {
+  id: string;
+  name: string;
+  description: string | null;
+  updatedAt: string;
+};
+
+export type QuickbrickPhotoPickerItem = {
+  id: string;
+  notebookId: string;
+  notebookName: string;
+  robotName: string | null;
+  title: string | null;
+  takenAt: string;
+  thumbUrl: string;
+};
+
+export type QuickbrickDiagramPickerItem = {
+  id: string;
+  notebookId: string;
+  notebookName: string;
+  kind: DiagramKind;
+  title: string;
+  summary: string;
+  updatedAt: string;
+};
+
+export type PickerItemMap = {
+  "kanban-card": CardPickerItem;
+  "calendar-event": EventPickerItem;
+  "labtest-chart": LabTestPickerItem;
+  "thinklab-board": ThinkLabPickerItem;
+  "quickbrick-photo": QuickbrickPhotoPickerItem;
+  "quickbrick-diagram": QuickbrickDiagramPickerItem;
+};
+
+// ---------------------------------------------------------------------------
+// Dados completos de cada embed
+// ---------------------------------------------------------------------------
+
+export type CardEmbedData = {
+  id: string;
+  boardId: string;
+  boardName: string;
+  title: string;
+  description: string | null;
+  priority: string;
+  dueAt: string | null;
+  columnName: string;
+  columnColor: string | null;
+  milestone: { name: string; color: string | null; dueAt: string | null } | null;
+  tags: { name: string; color: string | null }[];
+  assignees: { userId: string; name: string | null; avatarUrl: string | null }[];
+};
+
+export type EventEmbedData = {
+  id: string;
+  title: string;
+  description: string | null;
+  startAt: string;
+  endAt: string | null;
+  allDay: boolean;
+  type: string;
+  status: string;
+  color: string | null;
+  location: string | null;
+};
+
+export type LabTestEmbedData = {
+  test: TestRecord;
+  fields: FieldDefinition[];
+  entries: TestEntry[];
+};
+
+export type ThinkLabEmbedData = {
+  id: string;
+  name: string;
+  description: string | null;
+  updatedAt: string;
+  elements: CanvasElement[];
+};
+
+export type QuickbrickPhotoEmbedData = {
+  id: string;
+  notebookId: string;
+  notebookName: string;
+  robotName: string | null;
+  url: string;
+  title: string | null;
+  notes: string | null;
+  takenAt: string;
+  /** Posição desta foto entre as versões do robô (1 = primeira). */
+  version: number;
+  totalVersions: number;
+};
+
+export type QuickbrickDiagramEmbedData = {
+  id: string;
+  notebookId: string;
+  notebookName: string;
+  kind: DiagramKind;
+  title: string;
+  season: string | null;
+  summary: string;
+  data: unknown;
+  updatedAt: string;
+};
+
+export type EmbedDataMap = {
+  "kanban-card": CardEmbedData;
+  "calendar-event": EventEmbedData;
+  "labtest-chart": LabTestEmbedData;
+  "thinklab-board": ThinkLabEmbedData;
+  "quickbrick-photo": QuickbrickPhotoEmbedData;
+  "quickbrick-diagram": QuickbrickDiagramEmbedData;
+};

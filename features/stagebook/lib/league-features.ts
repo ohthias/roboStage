@@ -1,0 +1,223 @@
+/**
+ * Catálogo de recursos por liga/competição.
+ *
+ * As ligas em si vivem no banco (tabela `leagues`) e novas ligas são só novas
+ * linhas. O que cada liga libera dentro do Stagebook é definido aqui, em um
+ * único lugar, a partir de um "perfil" reconhecido pelo código/nome da liga.
+ * Ligas sem perfil conhecido caem no perfil `generic` (recursos gerais +
+ * "em breve" para os recursos específicos de competição).
+ *
+ * Para liberar um recurso novo para uma liga: edite PROFILES abaixo.
+ */
+
+export type AccessLevel = "full" | "simple" | "paused" | "soon";
+
+export type FeatureId = "runs" | "calibrabot" | "custom" | "anatix" | "quickbrick";
+
+export const FEATURES: {
+  id: FeatureId;
+  label: string;
+  tool: string;
+  description: string;
+}[] = [
+  {
+    id: "runs",
+    label: "Testes de Runs",
+    tool: "LabTest",
+    description: "Testes vinculados à competição e à temporada da liga.",
+  },
+  {
+    id: "calibrabot",
+    label: "CalibraBot",
+    tool: "LabTest",
+    description: "Calibração de motores, giroscópio e PID do robô.",
+  },
+  {
+    id: "custom",
+    label: "Testes personalizados",
+    tool: "LabTest",
+    description: "Testes com parâmetros e indicadores definidos por você.",
+  },
+  {
+    id: "anatix",
+    label: "Testes em tempo real via Anatix",
+    tool: "Anatix",
+    description: "Testes com dados do robô em tempo real, via Anatix.",
+  },
+  {
+    id: "quickbrick",
+    label: "Caderno do robô",
+    tool: "QuickBrick Studio",
+    description: "Versões do robô, projeto 3D do Studio 2.0 e diagramas de estratégia e missões.",
+  },
+];
+
+/** Recursos disponíveis em qualquer liga (não dependem da competição). */
+export const GENERAL_FEATURES = [
+  "StageBook",
+  "ThinkLab",
+  "Kanban",
+  "Calendário",
+  "Tags e milestones",
+];
+
+export const ACCESS_META: Record<
+  AccessLevel,
+  { label: string; badge: string }
+> = {
+  full: { label: "Completo", badge: "badge-primary" },
+  simple: { label: "Simplificado", badge: "badge-info" },
+  paused: { label: "Pausado", badge: "badge-warning" },
+  soon: { label: "Em breve", badge: "badge-ghost" },
+};
+
+/** Texto curto explicando o nível de acesso de cada recurso. */
+const RUNS_DETAIL: Record<AccessLevel, string> = {
+  full: "Missões, valores e pontuação da temporada",
+  simple: "Vínculo com a competição e a temporada",
+  paused: "Criação temporariamente desabilitada",
+  soon: "Ainda sem implementação para esta liga",
+};
+
+export type ProfileKey = "fll" | "fll-future" | "generic" | "obr" | "obr-resgate";
+
+type Profile = {
+  key: ProfileKey;
+  access: Record<FeatureId, AccessLevel>;
+  note?: string;
+};
+
+const PROFILES: Record<ProfileKey, Profile> = {
+  fll: {
+    key: "fll",
+    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "full", quickbrick: "full" },
+    note: "Founders Edition com configuração completa de missões e Anatix para robôs LEGO com Pybricks.",
+  },
+  "fll-future": {
+    key: "fll-future",
+    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "soon", quickbrick: "soon" },
+    note: "Funciona de forma semelhante à FRC e à FTC, sem missões.",
+  },
+  "obr": {
+    key: "obr",
+    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "full", quickbrick: "soon" },
+    note: "Rodadas de resgate com a pontuação do Pontuador, mapa de falhas e testes de CalibraBot próprios.",
+  },
+  "obr-resgate": {
+    key: "obr-resgate",
+    access: { runs: "full", calibrabot: "full", custom: "full", anatix: "full", quickbrick: "soon" },
+    note: "Rodadas de resgate com a pontuação do Pontuador, mapa de falhas e testes de CalibraBot próprios.",
+  },
+  generic: {
+    key: "generic",
+    access: { runs: "soon", calibrabot: "full", custom: "full", anatix: "soon", quickbrick: "soon" },
+  },
+};
+
+/** Descobre o perfil de uma liga pelo código e pelo nome cadastrados. */
+export function resolveProfileKey(league: {
+  code: string;
+  name: string;
+}): ProfileKey {
+  const haystack = `${league.code} ${league.name}`.toLowerCase();
+  if (/\b(fll|lego league)\b/.test(haystack) || haystack.includes("fll")) {
+    return haystack.includes("future") ? "fll-future" : "fll";
+  }
+  if (/\b(obr|olimpíada brasileira de robótica)\b/.test(haystack)) {
+    return haystack.includes("resgate") ? "obr-resgate" : "obr";
+  }
+  return "generic";
+}
+
+export type LeagueAccess = {
+  profile: ProfileKey;
+  note?: string;
+  features: {
+    id: FeatureId;
+    label: string;
+    tool: string;
+    level: AccessLevel;
+    detail: string;
+  }[];
+};
+
+export function getLeagueAccess(league: {
+  code: string;
+  name: string;
+}): LeagueAccess {
+  const profile = PROFILES[resolveProfileKey(league)];
+  return {
+    profile: profile.key,
+    note: profile.note,
+    features: FEATURES.map((feature) => {
+      const level = profile.access[feature.id];
+      return {
+        id: feature.id,
+        label: feature.label,
+        tool: feature.tool,
+        level,
+        detail:
+          feature.id === "runs"
+            ? profile.key.startsWith("obr") && level === "full"
+              ? "Rodadas com pontuação, falhas no percurso e sala de resgate"
+              : RUNS_DETAIL[level]
+            : feature.description,
+      };
+    }),
+  };
+}
+
+/** Nível de acesso de um recurso numa liga. */
+export function featureLevel(league: { code: string; name: string }, feature: FeatureId): AccessLevel {
+  return PROFILES[resolveProfileKey(league)].access[feature];
+}
+
+/** O QuickBrick Studio (caderno do robô) só está liberado por completo na FLL Challenge. */
+export function supportsQuickbrick(league: { code: string; name: string }) {
+  return featureLevel(league, "quickbrick") === "full";
+}
+
+// ---------------------------------------------------------------------------
+// Funções padrão da escala (catálogo inicial de `team_duty_roles`)
+// ---------------------------------------------------------------------------
+
+export type DutyRoleSeed = { label: string; description?: string; maxPerSlot?: number };
+
+/**
+ * Funções que uma equipe recebe na primeira vez que abre a escala, pela liga.
+ * A primeira função de cada lista é a de "quem opera o robô": é ela que sugere
+ * o operador das execuções do LabTest durante a sessão.
+ *
+ * Evitar o rótulo "Técnico": já é o nome do cargo `owner` (ver `ROLE_META`).
+ */
+const DUTY_SEEDS: Record<"fll" | "obr" | "generic", DutyRoleSeed[]> = {
+  fll: [
+    { label: "Piloto", description: "Opera o robô na mesa.", maxPerSlot: 2 },
+    { label: "Co-piloto", description: "Prepara os anexos e ajuda na base.", maxPerSlot: 2 },
+    { label: "Estrategista de mesa", description: "Decide a ordem das missões e acompanha o tempo." },
+    { label: "Apresentação do projeto", description: "Conduz a apresentação do projeto de inovação." },
+    { label: "Apresentação do robô", description: "Explica o design e a programação do robô." },
+    { label: "Peças/pit", description: "Cuida das peças, baterias e reparos no pit." },
+  ],
+  obr: [
+    { label: "Operador", description: "Posiciona e inicia o robô na arena.", maxPerSlot: 1 },
+    { label: "Ajuste de sensores", description: "Calibra os sensores antes de cada rodada." },
+    { label: "Estratégia de resgate", description: "Planeja a rota e o resgate das vítimas." },
+    { label: "Peças/pit", description: "Cuida das peças, baterias e reparos no pit." },
+  ],
+  generic: [
+    { label: "Piloto", description: "Opera o robô." },
+    { label: "Estrategista", description: "Planeja a estratégia das rodadas." },
+    { label: "Mecânica", description: "Montagem e reparos do robô." },
+    { label: "Programação", description: "Ajustes no código durante a sessão." },
+    { label: "Documentação", description: "Registra resultados e decisões." },
+  ],
+};
+
+export function dutyRoleSeedsFor(league: { code: string; name: string } | null): DutyRoleSeed[] {
+  if (!league) return DUTY_SEEDS.generic;
+  const key = resolveProfileKey(league);
+  if (key === "fll" || key === "fll-future") return DUTY_SEEDS.fll;
+  if (key === "obr" || key === "obr-resgate") return DUTY_SEEDS.obr;
+  return DUTY_SEEDS.generic;
+}

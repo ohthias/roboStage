@@ -1,10 +1,11 @@
+import { PillChoice } from "@/components/stage";
 import type { MissionFilterKey } from "@/features/leagues/fll/mission-guide/lib/types";
 
-const FILTER_OPTIONS: { key: MissionFilterKey; label: string }[] = [
-  { key: "all", label: "Todas" },
-  { key: "equipment", label: "Com equipamento" },
-  { key: "no-equipment", label: "Sem equipamento" },
-  { key: "bonus", label: "Com bônus" },
+const FILTER_OPTIONS: { value: MissionFilterKey; label: string }[] = [
+  { value: "all", label: "Todas" },
+  { value: "equipment", label: "Com equipamento" },
+  { value: "no-equipment", label: "Sem equipamento" },
+  { value: "bonus", label: "Com bônus" },
 ];
 
 interface MissionFiltersProps {
@@ -13,18 +14,5 @@ interface MissionFiltersProps {
 }
 
 export function MissionFilters({ value, onChange }: MissionFiltersProps) {
-  return (
-    <select
-      value={value}
-      onChange={(event) => onChange(event.target.value as MissionFilterKey)}
-      aria-label="Filtrar missões"
-      className="select select-bordered w-full sm:max-w-sm"
-    >
-      {FILTER_OPTIONS.map((option) => (
-        <option key={option.key} value={option.key}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  );
+  return <PillChoice options={FILTER_OPTIONS} value={value} onChange={onChange} size="sm" label="Filtrar missões" />;
 }

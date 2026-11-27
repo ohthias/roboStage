@@ -1,4 +1,6 @@
 "use client";
+import { IconButton, Kbd, PropertyRow, ToolBadge, ToolInput, ToolScope, ToolSelect, cn } from "@/components/stage";
+import { ActionButton, IconToggle, PanelCard, Section, ToggleRow } from "@/components/stage/tool/panel-kit";
 import React, {
   useState,
   useEffect,
@@ -52,45 +54,15 @@ import {
   Coordinate,
 } from "@/features/quickbrick/sharks-simulator/types";
 
-const Panel: React.FC<{
-  title: string;
-  className?: string;
-  onDragOver?: (e: React.DragEvent) => void;
-  onDragLeave?: () => void;
-  onDrop?: (e: React.DragEvent) => void;
-  children: React.ReactNode;
-}> = ({ title, className = "", onDragOver, onDragLeave, onDrop, children }) => (
-  <section
-    onDragOver={onDragOver}
-    onDragLeave={onDragLeave}
-    onDrop={onDrop}
-    className={`rounded-lg bg-base-100 border border-base-content/10 p-3.5 space-y-3 transition-shadow ${className}`}
-  >
-    <h2 className="text-[11px] font-bold uppercase tracking-wider text-base-content/60">
-      {title}
-    </h2>
-    {children}
-  </section>
+/** Campo numérico compacto do kit (dentro de PropertyRow). */
+const NumberField: React.FC<{ value: number; onChange: (v: number) => void }> = ({ value, onChange }) => (
+  <ToolInput
+    type="number"
+    className="w-full font-mono text-xs"
+    value={value}
+    onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+  />
 );
-
-const NumberField: React.FC<{
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-}> = ({ label, value, onChange }) => (
-  <label className="form-control w-full">
-    <span className="text-[10px] font-medium text-base-content/50 mb-1">
-      {label}
-    </span>
-    <input
-      type="number"
-      className="input input-bordered input-sm font-mono text-xs w-full"
-      value={value}
-      onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-    />
-  </label>
-);
-
 
 const ViewSection: React.FC = () => {
   const [history, setHistory] = useState<string[]>([DEFAULT_CODE]);
@@ -425,115 +397,114 @@ const ViewSection: React.FC = () => {
     .map((m) => m.name);
   const SPEEDS = [0.5, 1, 2, 5];
 
+  const statusPlay = isPlaying ? "Pausar" : time > 0 && time < totalDuration ? "Continuar" : "Iniciar";
+  const missionsShown = showMissions ? missions.length : 0;
+
   return (
-    <div className="flex flex-col w-full gap-3 font-sans">
-      {/* ===================== Barra de controle ===================== */}
-      <header className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-base-content/10 bg-base-100 px-3 py-2">
-        <div className="join">
-          <button
-            onClick={togglePlay}
-            disabled={segments.length === 0}
-            className={`join-item btn btn-sm ${isPlaying ? "btn-warning" : "btn-primary"} gap-1.5 w-28`}
+    <ToolScope className="flex h-[calc(100dvh-9rem)] min-h-[600px] w-full overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] border border-base-300">
+      {/* ===================== Barra lateral (igual à Estratégia) ===================== */}
+      <aside className="flex h-full w-72 shrink-0 flex-col border-r border-base-300 bg-base-100 xl:w-80">
+        <div className="space-y-5 border-b border-base-300 p-3">
+          {/* SIMULAÇÃO */}
+          <Section
+            title="Simulação"
+            action={
+              <ToolBadge tone={missionsDone > 0 ? "success" : "ink"} className="font-mono">
+                <Flag className="size-3" /> {missionsDone}/{missions.length}
+              </ToolBadge>
+            }
           >
-            {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-            {isPlaying ? "Pausar" : time > 0 && time < totalDuration ? "Continuar" : "Iniciar"}
-          </button>
-          <button onClick={handleReset} className="join-item btn btn-sm btn-ghost" title="Reiniciar">
-            <RotateCcw size={14} />
-          </button>
-        </div>
-
-        {/* Linha do tempo */}
-        <div className="flex min-w-[220px] flex-1 items-center gap-2">
-          <span className="w-14 text-right font-mono text-xs font-semibold text-primary">{time.toFixed(2)}s</span>
-          <input
-            type="range"
-            min={0}
-            max={Math.max(totalDuration, 0.01)}
-            step={0.01}
-            value={Math.min(time, totalDuration)}
-            onChange={(e) => seekTo(parseFloat(e.target.value))}
-            className="range range-xs range-primary flex-1"
-            aria-label="Linha do tempo"
-            disabled={segments.length === 0}
-          />
-          <span className="w-14 font-mono text-xs text-base-content/50">{totalDuration.toFixed(2)}s</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-base-content/50">Velocidade</span>
-          <div className="join">
-            {SPEEDS.map((v) => (
-              <button
-                key={v}
-                onClick={() => setSpeed(v)}
-                className={`join-item btn btn-xs font-mono ${speed === v ? "btn-neutral" : "btn-ghost border-base-content/10"}`}
-              >
-                {v}x
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <button
-          onClick={() => setRightTab("missions")}
-          className="btn btn-sm btn-ghost gap-1.5"
-          title="Missões concluídas"
-        >
-          <Flag size={14} className={missionsDone > 0 ? "text-success" : ""} />
-          <span className="font-mono text-xs">
-            <span className="font-semibold text-success">{missionsDone}</span>
-            <span className="text-base-content/40">/{missions.length}</span>
-          </span>
-        </button>
-      </header>
-
-      {/* ===================== Área de trabalho ===================== */}
-      <main className="grid h-[calc(100dvh-9rem)] min-h-[560px] w-full grid-cols-[260px_minmax(0,1fr)_320px] gap-3 xl:grid-cols-[300px_minmax(0,1fr)_340px]">
-        {/* --- Editor de rota --- */}
-        <aside className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-base-content/10 bg-base-200">
-          <div className="flex items-center justify-between border-b border-base-content/10 bg-base-300 p-1.5">
-            <div className="flex gap-0.5 rounded-md p-0.5">
-              <button
-                className={`btn btn-xs h-6 min-h-0 text-[11px] ${editorMode === "code" ? "btn-default" : "btn-ghost"}`}
-                onClick={() => setEditorMode("code")}
-              >
-                <Code2 size={11} className="mr-1" /> Código
-              </button>
-              <button
-                className={`btn btn-xs h-6 min-h-0 text-[11px] ${editorMode === "visual" ? "btn-default" : "btn-ghost"}`}
-                onClick={() => setEditorMode("visual")}
-              >
-                <MousePointerClick size={11} className="mr-1" /> Visual
-              </button>
+            <div className="flex gap-2">
+              <ActionButton
+                onClick={togglePlay}
+                disabled={segments.length === 0}
+                Icon={isPlaying ? Pause : Play}
+                label={statusPlay}
+                variant="primary"
+                className="flex-1"
+              />
+              <ActionButton onClick={handleReset} Icon={RotateCcw} label="Reiniciar" />
             </div>
-            <div className="join">
-              <button
-                onClick={undo}
-                disabled={historyIndex === 0}
-                className="btn btn-xs h-6 min-h-0 btn-ghost join-item"
-                title="Desfazer"
-              >
-                <Undo2 size={11} />
-              </button>
-              <button
-                onClick={redo}
-                disabled={historyIndex === history.length - 1}
-                className="btn btn-xs h-6 min-h-0 btn-ghost join-item"
-                title="Refazer"
-              >
-                <Redo2 size={11} />
-              </button>
+
+            <div className="flex items-center gap-2 pt-1">
+              <span className="w-12 font-mono text-[11px] font-semibold tabular-nums text-primary">{time.toFixed(2)}s</span>
+              <input
+                type="range"
+                min={0}
+                max={Math.max(totalDuration, 0.01)}
+                step={0.01}
+                value={Math.min(time, totalDuration)}
+                onChange={(e) => seekTo(parseFloat(e.target.value))}
+                className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full accent-primary [&::-webkit-slider-thumb]:size-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:bg-base-100"
+                style={{
+                  background: `linear-gradient(to right, var(--color-primary) ${totalDuration ? (Math.min(time, totalDuration) / totalDuration) * 100 : 0}%, var(--color-base-300) 0)`,
+                }}
+                aria-label="Linha do tempo"
+                disabled={segments.length === 0}
+              />
+              <span className="w-12 text-right font-mono text-[11px] tabular-nums text-base-content/50">{totalDuration.toFixed(2)}s</span>
             </div>
-          </div>
+
+            <div className="grid grid-cols-4 gap-1">
+              {SPEEDS.map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setSpeed(v)}
+                  aria-pressed={speed === v}
+                  title={`Velocidade ${v}x`}
+                  className={cn(
+                    "inline-flex h-8 items-center justify-center rounded-md border font-mono text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary",
+                    speed === v
+                      ? "border-base-content bg-base-content text-base-100"
+                      : "border-base-300 bg-base-100 text-base-content/75 hover:border-base-content/30 hover:text-base-content",
+                  )}
+                >
+                  {v}x
+                </button>
+              ))}
+            </div>
+          </Section>
+
+          {/* VISUALIZAÇÃO */}
+          <Section title="Visualização">
+            <ToggleRow label="Mostrar missões" checked={showMissions} onChange={setShowMissions} />
+            <div className="flex items-center justify-between gap-2 text-[13px]">
+              <span className="text-base-content/80">Zoom</span>
+              <div className="flex items-center gap-0.5">
+                <IconButton label="Diminuir zoom" size="xs" icon={<Minus />} onClick={() => setZoomFactor((z) => Math.max(0.5, +(z - 0.1).toFixed(2)))} />
+                <span className="w-11 text-center font-mono text-[11px] tabular-nums">{Math.round(zoomFactor * 100)}%</span>
+                <IconButton label="Aumentar zoom" size="xs" icon={<Plus />} onClick={() => setZoomFactor((z) => Math.min(3, +(z + 0.1).toFixed(2)))} />
+                <IconButton label="Ajustar à tela" size="xs" icon={<Maximize2 />} onClick={() => setZoomFactor(1)} />
+              </div>
+            </div>
+          </Section>
+        </div>
+
+        {/* ROTA — ocupa o resto da barra */}
+        <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
+          <Section
+            title="Rota"
+            action={
+              <div className="flex items-center gap-0.5">
+                <IconButton label="Desfazer" size="xs" icon={<Undo2 />} onClick={undo} disabled={historyIndex === 0} />
+                <IconButton label="Refazer" size="xs" icon={<Redo2 />} onClick={redo} disabled={historyIndex === history.length - 1} />
+              </div>
+            }
+          >
+            <div className="grid grid-cols-2 gap-1">
+              <IconToggle active={editorMode === "code"} onClick={() => setEditorMode("code")} Icon={Code2} label="Código" showLabel />
+              <IconToggle active={editorMode === "visual"} onClick={() => setEditorMode("visual")} Icon={MousePointerClick} label="Visual" showLabel />
+            </div>
+          </Section>
 
           {editorMode === "visual" && (
-            <p className="border-b border-base-content/10 bg-info/10 px-3 py-1.5 text-[10px] text-base-content/70">
+            <p className="rounded-md bg-info/10 px-2.5 py-1.5 text-[11px] text-base-content/70">
               Clique no tapete para adicionar um ponto à rota.
             </p>
           )}
 
-          <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="min-h-[180px] flex-1 overflow-hidden rounded-lg border border-base-300 bg-base-200">
             {editorMode === "code" ? (
               <CodeEditor code={code} onChange={updateCode} />
             ) : (
@@ -541,95 +512,70 @@ const ViewSection: React.FC = () => {
             )}
           </div>
 
-          <footer className="flex items-center justify-between border-t border-base-content/10 bg-base-300 px-3 py-1.5 font-mono text-[10px] text-base-content/60">
+          <div className="flex items-center justify-between font-mono text-[11px] text-base-content/55">
             <span>{commands.length} comandos</span>
-            <span>{totalDistance.toFixed(0)} cm percorridos</span>
-          </footer>
-        </aside>
-
-        {/* --- Tapete --- */}
-        <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-base-content/10 bg-base-200">
-          <div ref={stageRef} className="relative min-h-0 flex-1 overflow-auto">
-            <div className="flex min-h-full min-w-max items-center justify-center pb-4 pl-12 pr-4 pt-9">
-              <Mat
-                trajectory={trajectory}
-                robotState={robotState}
-                robotConfig={robotConfig}
-                scale={scale}
-                onMapClick={handleMapClick}
-                isInteractive={editorMode === "visual" || isSettingStart || missionEdit !== null}
-                isSettingStart={isSettingStart}
-                isMoving={isPlaying}
-                time={time}
-                missions={missions}
-                completedMissions={missionProgress.completed}
-                touchingMissions={missionProgress.touching}
-                selectedMissionId={selectedMissionId}
-                missionDraftVertices={missionEdit?.kind === "zone" ? missionDraft : null}
-                showMissions={showMissions}
-                editHint={
-                  isSettingStart
-                    ? "PARTIDA: clique para posicionar · Shift+clique define o ângulo"
-                    : missionEditHint
-                }
-                showInfoPanel={false}
-                onPointerCm={setPointerCm}
-              />
-            </div>
+            <span>{totalDistance.toFixed(0)} cm</span>
           </div>
+        </div>
+      </aside>
 
-          {/* Barra de status */}
-          <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-base-content/10 bg-base-100 px-3 py-1.5 font-mono text-[10px] text-base-content/70">
-            <span className="flex items-center gap-1" title="Posição do robô (cm)">
-              <Bot size={11} className="text-info" />
-              {robotState.x.toFixed(1)}, {robotState.y.toFixed(1)}
-            </span>
-            <span className="flex items-center gap-1" title="Ângulo do robô">
-              <Crosshair size={11} className="text-success" />
-              {(((robotState.angle % 360) + 360) % 360).toFixed(1)}°
-            </span>
-            <span className="flex items-center gap-1" title="Cursor (cm)">
-              <MousePointer2 size={11} />
-              {pointerCm ? `${pointerCm.x.toFixed(1)}, ${pointerCm.y.toFixed(1)}` : "—"}
-            </span>
-            {touchingNames.length > 0 && (
-              <span className="badge badge-warning badge-xs font-sans">contato: {touchingNames.join(", ")}</span>
-            )}
+      {/* ===================== Tapete ===================== */}
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col bg-base-200">
+        <div ref={stageRef} className="relative min-h-0 flex-1 overflow-auto">
+          <div className="flex min-h-full min-w-max items-center justify-center pb-4 pl-12 pr-4 pt-9">
+            <Mat
+              trajectory={trajectory}
+              robotState={robotState}
+              robotConfig={robotConfig}
+              scale={scale}
+              onMapClick={handleMapClick}
+              isInteractive={editorMode === "visual" || isSettingStart || missionEdit !== null}
+              isSettingStart={isSettingStart}
+              isMoving={isPlaying}
+              time={time}
+              missions={missions}
+              completedMissions={missionProgress.completed}
+              touchingMissions={missionProgress.touching}
+              selectedMissionId={selectedMissionId}
+              missionDraftVertices={missionEdit?.kind === "zone" ? missionDraft : null}
+              showMissions={showMissions}
+              editHint={
+                isSettingStart
+                  ? "PARTIDA: clique para posicionar · Shift+clique define o ângulo"
+                  : missionEditHint
+              }
+              showInfoPanel={false}
+              onPointerCm={setPointerCm}
+            />
+          </div>
+        </div>
 
-            <span className="ml-auto hidden items-center gap-1 text-base-content/40 xl:flex">
-              <Keyboard size={11} /> Espaço+arrastar move · Esc cancela
-            </span>
+        {/* Barra de status */}
+        <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-base-300 bg-base-100 px-3 py-1.5 font-mono text-[11px] text-base-content/65">
+          <span className="flex items-center gap-1" title="Posição do robô (cm)">
+            <Bot size={12} className="text-info" />
+            {robotState.x.toFixed(1)}, {robotState.y.toFixed(1)}
+          </span>
+          <span className="flex items-center gap-1" title="Ângulo do robô">
+            <Crosshair size={12} className="text-success" />
+            {(((robotState.angle % 360) + 360) % 360).toFixed(1)}°
+          </span>
+          <span className="flex items-center gap-1" title="Cursor (cm)">
+            <MousePointer2 size={12} />
+            {pointerCm ? `${pointerCm.x.toFixed(1)}, ${pointerCm.y.toFixed(1)}` : "—"}
+          </span>
+          <span title="Missões no tapete">{missionsShown} missões</span>
+          {touchingNames.length > 0 && <ToolBadge tone="warning">contato: {touchingNames.join(", ")}</ToolBadge>}
+          <span className="ml-auto hidden items-center gap-1 text-base-content/40 xl:flex">
+            <Keyboard size={12} /> Espaço+arrastar move · Esc cancela
+          </span>
+        </footer>
+      </section>
 
-            <div className="join ml-auto xl:ml-0">
-              <button
-                onClick={() => setZoomFactor((z) => Math.max(0.5, +(z - 0.1).toFixed(2)))}
-                className="btn btn-xs join-item btn-ghost"
-                aria-label="Diminuir zoom"
-              >
-                <Minus size={11} />
-              </button>
-              <span className="join-item flex w-11 items-center justify-center">{Math.round(zoomFactor * 100)}%</span>
-              <button
-                onClick={() => setZoomFactor((z) => Math.min(3, +(z + 0.1).toFixed(2)))}
-                className="btn btn-xs join-item btn-ghost"
-                aria-label="Aumentar zoom"
-              >
-                <Plus size={11} />
-              </button>
-              <button
-                onClick={() => setZoomFactor(1)}
-                className="btn btn-xs join-item btn-ghost"
-                title="Ajustar à tela"
-              >
-                <Maximize2 size={11} />
-              </button>
-            </div>
-          </footer>
-        </section>
-
-        {/* --- Painel lateral em abas --- */}
-        <aside className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-base-content/10 bg-base-200">
-          <div role="tablist" className="grid grid-cols-3 gap-0.5 border-b border-base-content/10 bg-base-300 p-1">
+      {/* ===================== Painel de propriedades ===================== */}
+      <aside className="flex h-full w-80 shrink-0 flex-col border-l border-base-300 bg-base-100">
+        <div className="border-b border-base-300 p-2">
+          <div role="tablist" className="grid grid-cols-3 gap-1">
             {(
               [
                 ["missions", "Missões", Flag],
@@ -639,151 +585,151 @@ const ViewSection: React.FC = () => {
             ).map(([id, label, Icon]) => (
               <button
                 key={id}
+                type="button"
                 role="tab"
                 aria-selected={rightTab === id}
                 onClick={() => setRightTab(id)}
-                className={`btn btn-xs h-7 min-h-0 gap-1 text-[11px] ${rightTab === id ? "btn-default" : "btn-ghost"}`}
+                className={cn(
+                  "inline-flex h-8 items-center justify-center gap-1.5 rounded-md border text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary",
+                  rightTab === id
+                    ? "border-base-content bg-base-content text-base-100"
+                    : "border-base-300 bg-base-100 text-base-content/75 hover:border-base-content/30 hover:text-base-content",
+                )}
               >
-                <Icon size={12} /> {label}
+                <Icon size={14} /> {label}
               </button>
             ))}
           </div>
+        </div>
 
-          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
-            {rightTab === "missions" && (
-              <MissionsPanel
-                missions={missions}
-                completed={missionProgress.completed}
-                touching={missionProgress.touching}
-                completionTimes={missionProgress.completionTimes}
-                selectedId={selectedMissionId}
-                onSelect={(id) => {
-                  if (missionEdit && missionEdit.missionId !== id) cancelMissionEdit();
-                  setSelectedMissionId(id);
-                }}
-                editMode={missionEdit}
-                draftCount={missionDraft.length}
-                onStartEdit={startMissionEdit}
-                onFinishZone={finishMissionZone}
-                onCancelEdit={cancelMissionEdit}
-                onUpdate={updateMission}
-                onRemove={handleRemoveMission}
-                onAdd={handleAddMission}
-                onReset={() => {
-                  cancelMissionEdit();
-                  setSelectedMissionId(null);
-                  resetMissions();
-                }}
-                onImport={(list) => {
-                  cancelMissionEdit();
-                  setSelectedMissionId(null);
-                  replaceMissions(list);
-                }}
-                showMissions={showMissions}
-                onToggleShow={() => setShowMissions((v) => !v)}
+        <div className="custom-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto p-3">
+          {rightTab === "missions" && (
+            <MissionsPanel
+              missions={missions}
+              completed={missionProgress.completed}
+              touching={missionProgress.touching}
+              completionTimes={missionProgress.completionTimes}
+              selectedId={selectedMissionId}
+              onSelect={(id) => {
+                if (missionEdit && missionEdit.missionId !== id) cancelMissionEdit();
+                setSelectedMissionId(id);
+              }}
+              editMode={missionEdit}
+              draftCount={missionDraft.length}
+              onStartEdit={startMissionEdit}
+              onFinishZone={finishMissionZone}
+              onCancelEdit={cancelMissionEdit}
+              onUpdate={updateMission}
+              onRemove={handleRemoveMission}
+              onAdd={handleAddMission}
+              onReset={() => {
+                cancelMissionEdit();
+                setSelectedMissionId(null);
+                resetMissions();
+              }}
+              onImport={(list) => {
+                cancelMissionEdit();
+                setSelectedMissionId(null);
+                replaceMissions(list);
+              }}
+              showMissions={showMissions}
+              onToggleShow={() => setShowMissions((v) => !v)}
+            />
+          )}
+
+          {rightTab === "start" && (
+            <Section title="Posição de partida">
+              <ActionButton
+                onClick={toggleSettingStart}
+                Icon={Target}
+                label={isSettingStart ? "Definindo no mapa… (Esc)" : "Definir no mapa"}
+                variant={isSettingStart ? "primary" : "neutral"}
+                className="w-full"
               />
-            )}
+              <p className="text-[11px] leading-relaxed text-base-content/55">
+                Clique para posicionar. <Kbd>Shift</Kbd>+clique aponta o robô na direção do cursor.
+              </p>
+              <PanelCard className="p-2">
+                <PropertyRow label="X (cm)">
+                  <NumberField value={startConfig.x} onChange={(v) => setStartConfig((p) => ({ ...p, x: v }))} />
+                </PropertyRow>
+                <PropertyRow label="Y (cm)">
+                  <NumberField value={startConfig.y} onChange={(v) => setStartConfig((p) => ({ ...p, y: v }))} />
+                </PropertyRow>
+                <PropertyRow label="Ângulo (°)">
+                  <NumberField value={startConfig.angle} onChange={(v) => setStartConfig((p) => ({ ...p, angle: v }))} />
+                </PropertyRow>
+              </PanelCard>
+            </Section>
+          )}
 
-            {rightTab === "start" && (
-              <Panel title="Posição de partida">
-                <button
-                  onClick={toggleSettingStart}
-                  className={`btn btn-sm w-full text-xs gap-1.5 ${isSettingStart ? "btn-warning" : "btn-outline"}`}
-                >
-                  <Target size={13} />
-                  {isSettingStart ? "Definindo no mapa… (Esc)" : "Definir no mapa"}
-                </button>
-                <p className="text-[10px] text-base-content/50">
-                  Clique para posicionar. Shift+clique aponta o robô na direção do cursor.
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  <NumberField
-                    label="X (cm)"
-                    value={startConfig.x}
-                    onChange={(v) => setStartConfig((p) => ({ ...p, x: v }))}
-                  />
-                  <NumberField
-                    label="Y (cm)"
-                    value={startConfig.y}
-                    onChange={(v) => setStartConfig((p) => ({ ...p, y: v }))}
-                  />
-                  <NumberField
-                    label="Ângulo (°)"
-                    value={startConfig.angle}
-                    onChange={(v) => setStartConfig((p) => ({ ...p, angle: v }))}
-                  />
-                </div>
-              </Panel>
-            )}
+          {rightTab === "robot" && (
+            <>
+              <Section title="Dimensões">
+                <PanelCard className="p-2">
+                  <PropertyRow label="Largura (cm)">
+                    <NumberField value={robotConfig.widthCm} onChange={(v) => setRobotConfig((p) => ({ ...p, widthCm: v }))} />
+                  </PropertyRow>
+                  <PropertyRow label="Comprim. (cm)" hint="Comprimento (cm)">
+                    <NumberField value={robotConfig.lengthCm} onChange={(v) => setRobotConfig((p) => ({ ...p, lengthCm: v }))} />
+                  </PropertyRow>
+                </PanelCard>
+              </Section>
 
-            {rightTab === "robot" && (
-              <Panel title="Robô">
-                <div className="grid grid-cols-2 gap-2">
-                  <NumberField
-                    label="Largura (cm)"
-                    value={robotConfig.widthCm}
-                    onChange={(v) => setRobotConfig((p) => ({ ...p, widthCm: v }))}
-                  />
-                  <NumberField
-                    label="Comprimento (cm)"
-                    value={robotConfig.lengthCm}
-                    onChange={(v) => setRobotConfig((p) => ({ ...p, lengthCm: v }))}
-                  />
-                </div>
-
-                <label className="form-control w-full">
-                  <span className="text-[10px] font-medium text-base-content/50 mb-1">Chassi</span>
-                  <select
-                    className="select select-bordered select-sm w-full text-xs"
-                    value={robotConfig.shape}
-                    onChange={(e) =>
-                      setRobotConfig({ ...robotConfig, shape: e.target.value as RobotConfig["shape"] })
-                    }
-                  >
-                    <option value="tank">Esteiras (Tank Drive)</option>
-                    <option value="4x4">4x4 Tração integral</option>
-                    <option value="fwd">Tração dianteira (FWD)</option>
-                    <option value="rwd">Tração traseira (RWD)</option>
-                    <option value="custom">Desenho SVG customizado</option>
-                  </select>
-                </label>
-
-                <label className="form-control w-full">
-                  <span className="text-[10px] font-medium text-base-content/50 mb-1">Cor</span>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      className="w-9 h-9 rounded border border-base-content/20 bg-transparent cursor-pointer shrink-0"
-                      value={robotConfig.color}
-                      onChange={(e) => setRobotConfig({ ...robotConfig, color: e.target.value })}
-                    />
-                    <input
-                      type="text"
-                      className="input input-bordered input-sm flex-1 font-mono uppercase text-xs"
-                      value={robotConfig.color}
-                      onChange={(e) => setRobotConfig({ ...robotConfig, color: e.target.value })}
-                    />
-                  </div>
-                </label>
+              <Section title="Aparência">
+                <PanelCard className="space-y-1 p-2">
+                  <PropertyRow label="Chassi">
+                    <ToolSelect
+                      className="w-full"
+                      value={robotConfig.shape}
+                      onChange={(e) => setRobotConfig({ ...robotConfig, shape: e.target.value as RobotConfig["shape"] })}
+                    >
+                      <option value="tank">Esteiras (Tank)</option>
+                      <option value="4x4">4x4 Tração integral</option>
+                      <option value="fwd">Tração dianteira</option>
+                      <option value="rwd">Tração traseira</option>
+                      <option value="custom">SVG customizado</option>
+                    </ToolSelect>
+                  </PropertyRow>
+                  <PropertyRow label="Cor">
+                    <div className="flex items-center gap-2">
+                      <span className="relative size-8 shrink-0 overflow-hidden rounded-md ring-1 ring-base-content/15">
+                        <span className="pointer-events-none absolute inset-0" style={{ background: robotConfig.color }} />
+                        <input
+                          aria-label="Cor do robô"
+                          type="color"
+                          value={robotConfig.color}
+                          onChange={(e) => setRobotConfig({ ...robotConfig, color: e.target.value })}
+                          className="absolute inset-0 size-full cursor-pointer opacity-0"
+                        />
+                      </span>
+                      <ToolInput
+                        className="w-full font-mono uppercase"
+                        value={robotConfig.color}
+                        onChange={(e) => setRobotConfig({ ...robotConfig, color: e.target.value })}
+                      />
+                    </div>
+                  </PropertyRow>
+                </PanelCard>
 
                 {robotConfig.shape === "custom" && (
-                  <label className="form-control w-full">
-                    <span className="text-[10px] font-medium text-base-content/50 mb-1">Path SVG</span>
+                  <label className="block space-y-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">Path SVG</span>
                     <textarea
                       value={robotConfig.customPath}
                       onChange={(e) => setRobotConfig({ ...robotConfig, customPath: e.target.value })}
-                      className="textarea textarea-bordered textarea-xs w-full font-mono text-[10px]"
+                      className="w-full rounded-md border border-base-300 bg-base-100 px-2.5 py-1.5 font-mono text-[11px] transition-colors hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                       placeholder="M 50 0 L..."
-                      rows={2}
+                      rows={3}
                     />
                   </label>
                 )}
-              </Panel>
-            )}
-          </div>
-        </aside>
-      </main>
-    </div>
+              </Section>
+            </>
+          )}
+        </div>
+      </aside>
+    </ToolScope>
   );
 };
 

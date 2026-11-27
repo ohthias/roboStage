@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useId, useState } from "react";
+import { ToolButton, ToolDialog, ToolInput } from "@/components/stage";
 
 interface AddItemModalProps {
   open: boolean;
@@ -9,15 +10,10 @@ interface AddItemModalProps {
   onConfirm: (text: string) => void;
 }
 
-export default function AddItemModal({
-  open,
-  checklistTitle,
-  onClose,
-  onConfirm,
-}: AddItemModalProps) {
+export default function AddItemModal({ open, checklistTitle, onClose, onConfirm }: AddItemModalProps) {
   const [text, setText] = useState("");
-
-  if (!open) return null;
+  const formId = useId();
+  const inputId = useId();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -33,48 +29,37 @@ export default function AddItemModal({
   }
 
   return (
-    <dialog className="modal modal-open" aria-labelledby="add-item-title">
-      <div className="modal-box">
-        <h3 id="add-item-title" className="text-lg font-bold">
-          Adicionar item
-        </h3>
-        <p className="mt-1 text-sm text-base-content/60">Checklist: {checklistTitle}</p>
-
-        <form onSubmit={handleSubmit} className="mt-4">
-          <label className="form-control w-full">
-            <div className="label">
-              <span className="label-text">Nome</span>
-            </div>
-            <input
-              type="text"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Ex.: Conferir sensor de cor"
-              className="input input-bordered w-full"
-              autoFocus
-              maxLength={140}
-              required
-            />
-          </label>
-
-          <div className="modal-action">
-            <button type="button" className="btn btn-ghost" onClick={handleClose}>
-              Cancelar
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={!text.trim()}>
-              Adicionar
-            </button>
-          </div>
-        </form>
-      </div>
-      <button
-        type="button"
-        aria-label="Fechar"
-        className="modal-backdrop"
-        onClick={handleClose}
-      >
-        close
-      </button>
-    </dialog>
+    <ToolDialog
+      open={open}
+      onClose={handleClose}
+      title="Adicionar item"
+      description={`Checklist: ${checklistTitle}`}
+      footer={
+        <>
+          <ToolButton variant="ghost" onClick={handleClose}>
+            Cancelar
+          </ToolButton>
+          <ToolButton type="submit" form={formId} variant="primary" disabled={!text.trim()}>
+            Adicionar
+          </ToolButton>
+        </>
+      }
+    >
+      <form id={formId} onSubmit={handleSubmit} className="space-y-1.5 pb-2">
+        <label htmlFor={inputId} className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
+          Nome
+        </label>
+        <ToolInput
+          id={inputId}
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Ex.: Conferir sensor de cor"
+          autoFocus
+          maxLength={140}
+          required
+        />
+      </form>
+    </ToolDialog>
   );
 }

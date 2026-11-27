@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, X, ArrowRight, Circle } from "lucide-react";
+import { ArrowRight, Check, Circle, X } from "lucide-react";
+import { cn } from "@/components/stage";
 import type { MissionAttempt } from "@/features/leagues/fll/partiu-mesa/lib/types";
 
 interface RunProgressProps {
@@ -13,44 +14,44 @@ export default function RunProgress({ sequence, currentIndex, attempts }: RunPro
   const attemptByMission = new Map(attempts.map((a) => [a.missionId, a]));
 
   return (
-    <div className="flex flex-wrap justify-center gap-2" aria-label="Progresso da sequência">
+    <ol className="flex flex-wrap justify-center gap-1.5" aria-label="Progresso da sequência">
       {sequence.map((missionId, index) => {
         const attempt = attemptByMission.get(missionId);
         const isCurrent = index === currentIndex && !attempt;
 
-        let icon = <Circle className="w-3.5 h-3.5" aria-hidden="true" />;
-        let colorClass = "text-base-content/40";
+        let icon = <Circle className="size-3" aria-hidden="true" />;
+        let cls = "border-base-300 text-base-content/45";
         let statusLabel = "pendente";
 
         if (attempt?.result === "success") {
-          icon = <Check className="w-3.5 h-3.5" aria-hidden="true" />;
-          colorClass = "text-success";
+          icon = <Check className="size-3" aria-hidden="true" />;
+          cls = "border-success/30 bg-success/10 text-success";
           statusLabel = "sucesso";
         } else if (attempt?.result === "failure") {
-          icon = <X className="w-3.5 h-3.5" aria-hidden="true" />;
-          colorClass = "text-error";
+          icon = <X className="size-3" aria-hidden="true" />;
+          cls = "border-error/30 bg-error/10 text-error";
           statusLabel = "falha";
         } else if (attempt?.result === "skipped") {
-          icon = <Circle className="w-3.5 h-3.5" aria-hidden="true" />;
-          colorClass = "text-base-content/30";
+          cls = "border-dashed border-base-300 text-base-content/30";
           statusLabel = "não executada";
         } else if (isCurrent) {
-          icon = <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />;
-          colorClass = "text-primary";
+          icon = <ArrowRight className="size-3" aria-hidden="true" />;
+          cls = "border-primary bg-primary text-primary-content";
           statusLabel = "atual";
         }
 
         return (
-          <span
+          <li
             key={`${missionId}-${index}`}
-            className={`inline-flex items-center gap-1 text-xs font-mono ${colorClass}`}
+            className={cn("inline-flex h-6 items-center gap-1 rounded-md border px-1.5 font-mono text-[11px] font-semibold", cls)}
             title={`${missionId}: ${statusLabel}`}
           >
             {missionId}
             {icon}
-          </span>
+            <span className="sr-only">{statusLabel}</span>
+          </li>
         );
       })}
-    </div>
+    </ol>
   );
 }

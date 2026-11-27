@@ -1,88 +1,65 @@
 "use client";
 
-import { Check, X, Minus } from "lucide-react";
+import { Check, Minus, X } from "lucide-react";
+import { DataTable, Panel, ToolBadge, type Column } from "@/components/stage";
 import type { MissionAttempt } from "@/features/leagues/fll/partiu-mesa/lib/types";
 
 interface LaunchHistoryProps {
   attempts: MissionAttempt[];
 }
 
+type Row = {
+  id: string;
+  n: number;
+  missionId: string;
+  result: MissionAttempt["result"];
+  seconds: number;
+};
+
 function resultBadge(result: MissionAttempt["result"]) {
-  if (result === "success") {
+  if (result === "success")
     return (
-      <span className="badge badge-success gap-1">
-        <Check className="w-3 h-3" /> Sucesso
-      </span>
+      <ToolBadge tone="success">
+        <Check className="size-3" /> Sucesso
+      </ToolBadge>
     );
-  }
-  if (result === "failure") {
+  if (result === "failure")
     return (
-      <span className="badge badge-error gap-1">
-        <X className="w-3 h-3" /> Falha
-      </span>
+      <ToolBadge tone="primary" className="bg-error/10 text-error">
+        <X className="size-3" /> Falha
+      </ToolBadge>
     );
-  }
   return (
-    <span className="badge badge-ghost gap-1">
-      <Minus className="w-3 h-3" /> Não executada
-    </span>
+    <ToolBadge>
+      <Minus className="size-3" /> Não executada
+    </ToolBadge>
   );
 }
 
-function durationLabel(attempt: MissionAttempt): string {
-  return attempt.durationMs !== undefined ? `${Math.round(attempt.durationMs / 1000)}s` : "—";
-}
+const columns: Column<Row>[] = [
+  { key: "n", header: "#", width: "3rem", render: (r) => <span className="font-mono text-base-content/50">{r.n}</span> },
+  { key: "missionId", header: "Missão", render: (r) => <span className="font-mono font-semibold">{r.missionId}</span> },
+  { key: "result", header: "Resultado", render: (r) => resultBadge(r.result) },
+  {
+    key: "seconds",
+    header: "Tempo",
+    align: "right",
+    render: (r) => <span className="font-mono tabular-nums">{r.seconds >= 0 ? `${r.seconds}s` : "—"}</span>,
+  },
+];
 
 export default function LaunchHistory({ attempts }: LaunchHistoryProps) {
-  if (attempts.length === 0) {
-    return <p className="text-sm text-base-content/60">Nenhum lançamento registrado.</p>;
-  }
+  const rows: Row[] = attempts.map((a, i) => ({
+    id: a.id,
+    n: i + 1,
+    missionId: a.missionId,
+    result: a.result,
+    seconds: a.durationMs !== undefined ? Math.round(a.durationMs / 1000) : -1,
+  }));
 
   return (
-    <div>
-      <h3 className="font-semibold mb-3">Lançamentos</h3>
-
-      {/* Desktop / tablet: tabela */}
-      <div className="hidden sm:block overflow-x-auto">
-        <table className="table table-zebra">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Missão</th>
-              <th>Resultado</th>
-              <th>Tempo</th>
-            </tr>
-          </thead>
-          <tbody>
-            {attempts.map((attempt, index) => (
-              <tr key={attempt.id}>
-                <td>{index + 1}</td>
-                <td className="font-mono">{attempt.missionId}</td>
-                <td>{resultBadge(attempt.result)}</td>
-                <td>{durationLabel(attempt)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile: cards compactos */}
-      <ul className="sm:hidden space-y-2">
-        {attempts.map((attempt, index) => (
-          <li key={attempt.id} className="card bg-base-200">
-            <div className="card-body py-3 flex-row items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-base-content/50">#{index + 1}</span>
-                <span className="font-mono font-medium">{attempt.missionId}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {resultBadge(attempt.result)}
-                <span className="text-xs text-base-content/60">{durationLabel(attempt)}</span>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Panel title="Lançamentos" padded={false}>
+      <DataTable columns={columns} rows={rows} rowKey={(r) => r.id} empty="Nenhum lançamento registrado." className="rounded-none border-0" />
+    </Panel>
   );
 }

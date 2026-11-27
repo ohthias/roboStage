@@ -25,9 +25,28 @@ import {
 } from "@/features/scoring/types";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import ModalConfirm, {
-  ModalConfirmRef,
-} from "@/components/stage/core/ModalConfirm";
+import {
+  Panel,
+  ToolBadge,
+  ToolButton,
+  ToolInput,
+  ToolScope,
+  ToolSelect,
+  Toolbar,
+  ToolbarDivider,
+  ToolbarGroup,
+  ToolbarSpacer,
+  cn,
+  useToolConfirm,
+} from "@/components/stage";
+
+// Classes do kit ferramenta para os campos dentro das células da tabela.
+const kitField =
+  "rounded-md border border-base-300 bg-base-100 px-2 text-[13px] transition-colors hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+const kitGhost =
+  "h-8 rounded-md border border-transparent bg-transparent px-2 text-[13px] transition-colors placeholder:text-base-content/30 hover:border-base-300 focus:border-primary focus:bg-base-100 focus:outline-none focus:ring-2 focus:ring-primary/20";
+const kitIcon =
+  "inline-grid size-7 place-items-center rounded-md text-base-content/60 transition-colors hover:bg-base-content/[0.06] hover:text-base-content focus-visible:outline-2 focus-visible:outline-primary";
 import { useToast } from "@/components/providers/ToastContext";
 import {
   updateMissionValue,
@@ -68,7 +87,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
   const [editingColId, setEditingColId] = useState<string | null>(null);
   const [editLabel, setEditLabel] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
-  const modalClearColl = useRef<ModalConfirmRef>(null);
+  const { confirm, dialog } = useToolConfirm();
 
   const { addToast } = useToast();
 
@@ -184,13 +203,11 @@ export const MissionTable: React.FC<MissionTableProps> = ({
     addToast("Coluna criada!", "success");
   };
 
-  const removeColumn = (colId: string) => {
-    modalClearColl.current?.open(
-      "Tem certeza que deseja excluir esta coluna?",
-      () => {
-        actuallyRemoveColumn(colId);
-      },
-    );
+  const removeColumn = async (colId: string) => {
+    setActiveMenuColId(null);
+    if (await confirm({ title: "Excluir coluna?", message: "Os valores dessa coluna serão apagados de todas as missões.", confirmLabel: "Excluir" })) {
+      actuallyRemoveColumn(colId);
+    }
   };
 
   const actuallyRemoveColumn = (colId: string) => {
@@ -332,7 +349,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
     if (scoring.kind === "options") {
       return (
         <select
-          className="select select-bordered select-xs w-full max-w-[160px]"
+          className={cn(kitField, "h-7 w-full max-w-[160px] pr-6")}
           value={typeof mission.value === "string" ? mission.value : ""}
           onChange={(e) =>
             handleValueChange(mission.id, "self", e.target.value || undefined)
@@ -356,7 +373,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
           type="number"
           min={scoring.min}
           max={scoring.max}
-          className="input input-bordered input-xs w-16"
+          className={cn(kitField, "h-7 w-16 font-mono")}
           value={val}
           onChange={(e) => {
             const n = Math.max(
@@ -397,7 +414,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
     if (scoring.kind === "options") {
       return (
         <select
-          className="select select-bordered select-xs w-full max-w-[160px]"
+          className={cn(kitField, "h-7 w-full max-w-[160px] pr-6")}
           disabled={!unlocked}
           value={typeof value === "string" ? value : ""}
           onChange={(e) =>
@@ -421,7 +438,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
         min={scoring.min}
         max={scoring.max}
         disabled={!unlocked}
-        className="input input-bordered input-xs w-16"
+        className={cn(kitField, "h-7 w-16 font-mono")}
         value={val}
         onChange={(e) => {
           const n = Math.max(
@@ -444,7 +461,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
       <tr className="bg-base-200/40">
         <td colSpan={columns.length + 3} className="px-6 py-3">
           {gateFailed && (
-            <div className="alert alert-warning py-1.5 px-3 mb-2 text-xs">
+            <div className="mb-2 flex items-start gap-2 rounded-md border border-warning/40 bg-warning/10 px-3 py-1.5 text-xs">
               Condição obrigatória não cumprida — esta missão está pontuando 0
               até que seja satisfeita.
             </div>
@@ -493,137 +510,94 @@ export const MissionTable: React.FC<MissionTableProps> = ({
   };
 
   return (
-    <div className="bg-base-100 rounded-xl shadow-sm border border-base-200 overflow-hidden flex flex-col h-full">
+    <ToolScope className="flex h-full flex-col overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] border border-base-300">
       {/* Toolbar */}
-      <div className="p-4 border-b border-base-200 flex flex-wrap gap-3 justify-between items-center bg-base-200">
-        <h2 className="text-lg font-semibold text-base-content">
-          Quadro de Missões
-        </h2>
-        <div className="flex gap-2 flex-wrap items-center">
-          <label className="input input-bordered input-sm flex items-center gap-2 w-48">
-            <Search size={14} className="text-base-content/40" />
-            <input
-              type="text"
-              className="grow"
-              placeholder="Buscar missão..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </label>
-          <button
-            onClick={exportToPdf}
-            className="btn btn-ghost btn-sm gap-2"
-            title="Exportar como PDF"
-          >
-            <FileDown size={16} />
+      <Toolbar label="Ações da tabela de missões" className="px-3">
+        <ToolbarGroup>
+          <span className="px-1 text-[13px] font-bold">Quadro de missões</span>
+          <ToolBadge>{missions.length}</ToolBadge>
+        </ToolbarGroup>
+        <ToolbarSpacer />
+        <ToolbarGroup className="flex-wrap">
+          <ToolInput
+            icon={<Search />}
+            type="search"
+            placeholder="Buscar missão..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-48"
+            aria-label="Buscar missão"
+          />
+          <ToolButton variant="ghost" icon={<FileDown />} onClick={exportToPdf}>
             Exportar PDF
-          </button>
-          <button
-            onClick={() => setIsAddingColumn(!isAddingColumn)}
-            className={`btn btn-sm ${
-              isAddingColumn ? "btn-secondary" : "btn-ghost"
-            }`}
-          >
-            <Settings size={16} />
-            Gerenciar Colunas
-          </button>
-          <button
-            onClick={addMission}
-            className="btn btn-primary btn-sm flex items-center gap-2"
-          >
-            <Plus size={16} />
-            Nova Missão
-          </button>
-        </div>
-      </div>
+          </ToolButton>
+          <ToolButton variant="ghost" icon={<Settings />} active={isAddingColumn} onClick={() => setIsAddingColumn(!isAddingColumn)}>
+            Colunas
+          </ToolButton>
+          <ToolbarDivider />
+          <ToolButton variant="primary" icon={<Plus />} onClick={addMission}>
+            Nova missão
+          </ToolButton>
+        </ToolbarGroup>
+      </Toolbar>
 
       {/* Add Column Form */}
       {isAddingColumn && (
-        <div className="bg-base-300/50 py-4 px-6 border-b border-base-200 animate-in fade-in slide-in-from-top-2 transition-all">
-          <h3 className="text-sm font-semibold text-base-content/70 mb-3 flex items-center gap-2">
-            <Plus size={16} />
-            Adicionar Nova Coluna
-          </h3>
-          <div className="flex flex-wrap gap-4 items-end p-4 bg-base-100 rounded-lg border border-base-200 shadow-sm">
-            <div className="flex-1">
-              <label className="block text-xs font-bold text-base-content/70 uppercase tracking-wider mb-1.5">
-                Nome
-              </label>
-              <input
-                type="text"
-                value={newColData.label}
-                onChange={(e) =>
-                  setNewColData({ ...newColData, label: e.target.value })
-                }
-                onKeyDown={(e) => e.key === "Enter" && addColumn()}
-                className="input input-bordered input-sm w-full"
-                placeholder="Ex: Prioridade"
-                autoFocus
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-base-content/70 uppercase tracking-wider mb-1.5">
-                Tipo
-              </label>
-              <select
-                value={newColData.type}
-                onChange={(e) =>
-                  setNewColData({
-                    ...newColData,
-                    type: e.target.value as ColumnType,
-                  })
-                }
-                className="select select-bordered select-sm w-36 px-2 rounded-box"
-              >
-                <option value="text">Texto (Abc)</option>
-                <option value="number">Número (123)</option>
-                <option value="select">Lista (Opções)</option>
-              </select>
-            </div>
-            {newColData.type === "select" && (
-              <div className="flex-1 min-w-[200px]">
-                <label className="block text-xs font-bold text-base-content/70 uppercase tracking-wider mb-1.5">
-                  Opções{" "}
-                  <span className="text-base-content/40 font-normal normal-case">
-                    (separadas por vírgula)
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  value={newColData.options}
-                  onChange={(e) =>
-                    setNewColData({ ...newColData, options: e.target.value })
-                  }
+        <div className="border-b border-base-300 bg-base-200/50 p-3">
+          <Panel title="Nova coluna" icon={<Plus />}>
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="min-w-[180px] flex-1 space-y-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">Nome</span>
+                <ToolInput
+                  value={newColData.label}
+                  onChange={(e) => setNewColData({ ...newColData, label: e.target.value })}
                   onKeyDown={(e) => e.key === "Enter" && addColumn()}
-                  className="input input-bordered input-sm w-full"
-                  placeholder="Ex: Alta, Média, Baixa"
+                  placeholder="Ex.: Prioridade"
+                  autoFocus
                 />
+              </label>
+              <label className="space-y-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">Tipo</span>
+                <ToolSelect
+                  value={newColData.type}
+                  onChange={(e) => setNewColData({ ...newColData, type: e.target.value as ColumnType })}
+                  className="w-40"
+                >
+                  <option value="text">Texto (Abc)</option>
+                  <option value="number">Número (123)</option>
+                  <option value="select">Lista (opções)</option>
+                </ToolSelect>
+              </label>
+              {newColData.type === "select" && (
+                <label className="min-w-[200px] flex-1 space-y-1">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
+                    Opções <span className="normal-case tracking-normal text-base-content/40">(separadas por vírgula)</span>
+                  </span>
+                  <ToolInput
+                    value={newColData.options}
+                    onChange={(e) => setNewColData({ ...newColData, options: e.target.value })}
+                    onKeyDown={(e) => e.key === "Enter" && addColumn()}
+                    placeholder="Ex.: Alta, Média, Baixa"
+                  />
+                </label>
+              )}
+              <div className="ml-auto flex gap-2">
+                <ToolButton variant="ghost" onClick={() => setIsAddingColumn(false)}>
+                  Cancelar
+                </ToolButton>
+                <ToolButton variant="primary" icon={<Check />} onClick={addColumn} disabled={!newColData.label}>
+                  Criar
+                </ToolButton>
               </div>
-            )}
-            <div className="flex gap-2 pb-0.5 ml-auto">
-              <button
-                onClick={() => setIsAddingColumn(false)}
-                className="btn btn-ghost btn-sm"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={addColumn}
-                disabled={!newColData.label}
-                className="btn btn-primary btn-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                <Check size={16} />
-                Criar
-              </button>
             </div>
-          </div>
+          </Panel>
         </div>
       )}
 
       {/* Table */}
-      <div className="overflow-auto flex-1 custom-scrollbar relative bg-base-100/50">
-        <table className="table w-full text-sm">
-          <thead className="text-xs text-base-content/70 uppercase bg-base-200 sticky top-0 z-10">
+      <div className="custom-scrollbar relative flex-1 overflow-auto bg-base-100">
+        <table className="w-full border-collapse text-[13px]">
+          <thead className="sticky top-0 z-10 border-b border-base-300 bg-base-200/90 text-left text-[11px] uppercase tracking-wider text-base-content/55 backdrop-blur">
             <tr>
               <th className="px-2 py-3 w-8"></th>
               {columns.map((col) => (
@@ -633,12 +607,12 @@ export const MissionTable: React.FC<MissionTableProps> = ({
                       Pontuação
                     </th>
                   )}
-                  <th className="px-4 py-3 font-semibold min-w-[150px] group">
+                  <th className={cn("group px-4 py-3 font-semibold", col.id === "name" ? "min-w-[260px]" : "min-w-[150px]")}>
                     <div className="flex items-center justify-between gap-2">
                       {editingColId === col.id ? (
                         <div className="flex items-center gap-1 flex-1">
                           <input
-                            className="input input-sm w-full"
+                            className={cn(kitField, "h-7 w-full")}
                             value={editLabel}
                             onChange={(e) => setEditLabel(e.target.value)}
                             onBlur={saveColEdit}
@@ -663,7 +637,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
                                 activeMenuColId === col.id ? null : col.id,
                               )
                             }
-                            className={`btn btn-ghost btn-xs p-1 rounded ${
+                            className={`${kitIcon} ${
                               activeMenuColId === col.id
                                 ? "bg-base-200"
                                 : "opacity-0 group-hover:opacity-100"
@@ -674,17 +648,17 @@ export const MissionTable: React.FC<MissionTableProps> = ({
                           {activeMenuColId === col.id && (
                             <div
                               ref={menuRef}
-                              className="absolute right-0 top-full mt-1 w-36 bg-base-100 rounded-lg shadow-lg border border-base-200 z-50 py-1 flex flex-col"
+                              className="absolute right-0 top-full z-50 mt-1 flex w-36 flex-col rounded-md border border-base-300 bg-base-100 p-1 shadow-lg"
                             >
                               <button
                                 onClick={() => startEditing(col)}
-                                className="px-3 py-2 text-left hover:bg-base-200 text-base-content flex items-center gap-2 text-sm w-full"
+                                className="flex h-8 w-full items-center gap-2 rounded px-2 text-left text-[13px] hover:bg-base-content/[0.05]"
                               >
                                 <Settings size={12} /> Renomear
                               </button>
                               <button
                                 onClick={() => removeColumn(col.id)}
-                                className="px-3 py-2 text-left hover:bg-red-50 text-red-600 flex items-center gap-2 text-sm w-full"
+                                className="flex h-8 w-full items-center gap-2 rounded px-2 text-left text-[13px] text-error hover:bg-error/10"
                               >
                                 <Trash2 size={12} /> Excluir
                               </button>
@@ -723,7 +697,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
                     {!search && (
                       <button
                         onClick={addMission}
-                        className="btn btn-link text-primary"
+                        className="text-[13px] font-semibold text-primary underline-offset-2 hover:underline"
                       >
                         Adicionar primeira missão
                       </button>
@@ -738,12 +712,12 @@ export const MissionTable: React.FC<MissionTableProps> = ({
               const isOpen = expanded.has(mission.id);
               return (
                 <React.Fragment key={mission.id}>
-                  <tr className="group hover:bg-primary/10 transition-colors">
+                  <tr className="group border-b border-base-300 transition-colors hover:bg-base-200/50">
                     <td className="px-2 py-2 text-center">
                       {hasSubs && (
                         <button
                           onClick={() => toggleExpanded(mission.id)}
-                          className="btn btn-ghost btn-xs p-1"
+                          className={kitIcon}
                           title={
                             isOpen
                               ? "Ocultar sub-missões"
@@ -796,7 +770,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
                                   e.target.value,
                                 )
                               }
-                              className="select select-ghost select-sm w-full"
+                              className={cn(kitGhost, "w-full")}
                             >
                               <option value="" className="text-base-content/40">
                                 Selecione...
@@ -819,7 +793,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
                                   val === "" ? "" : parseFloat(val),
                                 );
                               }}
-                              className="input input-ghost input-sm w-full font-mono"
+                              className={cn(kitGhost, "w-full font-mono")}
                               placeholder="-"
                             />
                           ) : (
@@ -833,19 +807,17 @@ export const MissionTable: React.FC<MissionTableProps> = ({
                                   e.target.value,
                                 )
                               }
-                              className={`input input-ghost input-sm w-full ${
-                                col.id === "name" ? "font-semibold" : ""
-                              }`}
+                              className={cn(kitGhost, "w-full", col.id === "name" && "font-semibold")}
                               placeholder="..."
                             />
                           )}
                         </td>
                       </React.Fragment>
                     ))}
-                    <td className="px-2 py-2 sticky right-0 bg-base-100 group-hover:bg-primary/10 text-center">
+                    <td className="sticky right-0 bg-base-100 px-2 py-1.5 text-center group-hover:bg-base-200">
                       <button
                         onClick={() => removeMission(mission.id)}
-                        className="btn btn-ghost btn-xs text-error hover:bg-error/10"
+                        className={cn(kitIcon, "text-error hover:bg-error/10")}
                         title="Remover Missão"
                       >
                         <Trash2 size={16} />
@@ -859,12 +831,7 @@ export const MissionTable: React.FC<MissionTableProps> = ({
           </tbody>
         </table>
       </div>
-      <ModalConfirm
-        ref={modalClearColl}
-        title="Excluir Coluna"
-        confirmLabel="Sim"
-        cancelLabel="Cancelar"
-      />
-    </div>
+      {dialog}
+    </ToolScope>
   );
 };

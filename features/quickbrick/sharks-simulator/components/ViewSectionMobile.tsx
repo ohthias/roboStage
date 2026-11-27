@@ -230,14 +230,14 @@ const ViewSectionMobile: React.FC = () => {
             <span className="text-base-content/40"> / {totalDuration.toFixed(1)}s</span>
           </span>
         </div>
-        <div className="join">
-          <button onClick={undo} disabled={historyIndex === 0} className="join-item btn btn-xs btn-ghost">
+        <div className="inline-flex items-center gap-0.5 rounded-md border border-base-300 bg-base-200/60 p-0.5">
+          <button onClick={undo} disabled={historyIndex === 0} className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content h-7 px-2 text-xs">
             <Undo2 size={13} />
           </button>
           <button
             onClick={redo}
             disabled={historyIndex === history.length - 1}
-            className="join-item btn btn-xs btn-ghost"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content h-7 px-2 text-xs"
           >
             <Redo2 size={13} />
           </button>
@@ -264,22 +264,22 @@ const ViewSectionMobile: React.FC = () => {
         />
 
         {/* Zoom controls */}
-        <div className="absolute bottom-3 right-3 z-20 card card-compact bg-base-100/90 backdrop-blur shadow-sm border border-base-300">
-          <div className="card-body p-1">
-            <div className="join">
+        <div className="absolute bottom-3 right-3 z-20 rounded-lg border border-base-300 bg-base-100/90 shadow-sm backdrop-blur">
+          <div className="p-1">
+            <div className="inline-flex items-center gap-0.5 rounded-md border border-base-300 bg-base-200/60 p-0.5">
               <button
                 onClick={() => setZoomFactor((z) => Math.max(0.6, z - 0.15))}
-                className="join-item btn btn-xs btn-square"
+                className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content size-7 px-0"
                 aria-label="Diminuir zoom"
               >
                 <Minus size={12} />
               </button>
-              <div className="join-item flex items-center justify-center px-1.5 font-mono text-[10px]">
+              <div className="flex items-center justify-center px-1.5 font-mono text-[10px]">
                 {(zoomFactor * 100).toFixed(0)}%
               </div>
               <button
                 onClick={() => setZoomFactor((z) => Math.min(2.5, z + 0.15))}
-                className="join-item btn btn-xs btn-square"
+                className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content size-7 px-0"
                 aria-label="Aumentar zoom"
               >
                 <Plus size={12} />
@@ -292,14 +292,14 @@ const ViewSectionMobile: React.FC = () => {
         {isSettingStart && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-base-100/95 backdrop-blur border border-base-300 rounded-xl shadow-lg px-3 py-2 flex items-center gap-3">
             <span className="text-[10px] font-bold uppercase text-base-content/60">📍 Toque para posicionar</span>
-            <div className="join">
-              <button onClick={() => rotateStart(-15)} className="join-item btn btn-xs btn-square">
+            <div className="inline-flex items-center gap-0.5 rounded-md border border-base-300 bg-base-200/60 p-0.5">
+              <button onClick={() => rotateStart(-15)} className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content size-7 px-0">
                 ↺
               </button>
-              <div className="join-item flex items-center justify-center px-2 font-mono text-[10px] min-w-[38px]">
+              <div className="flex min-w-[38px] items-center justify-center px-2 font-mono text-[10px]">
                 {startConfig.angle.toFixed(0)}°
               </div>
-              <button onClick={() => rotateStart(15)} className="join-item btn btn-xs btn-square">
+              <button onClick={() => rotateStart(15)} className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content size-7 px-0">
                 ↻
               </button>
             </div>
@@ -311,34 +311,34 @@ const ViewSectionMobile: React.FC = () => {
       <div className="grid grid-cols-4 gap-1.5 px-3 py-2 border-t border-base-content/10 shrink-0">
         <button
           onClick={() => setIsSettingStart((v) => !v)}
-          className={`btn btn-sm gap-1.5 ${isSettingStart ? "btn-warning" : "btn-outline"}`}
+          className={`inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 h-9 px-3 text-[13px] ${isSettingStart ? "border-transparent bg-warning text-warning-content" : "border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60"}`}
         >
           <Target size={14} /> Início
         </button>
-        <button onClick={() => setSheet("missions")} className="btn btn-sm btn-outline gap-1 px-1">
+        <button onClick={() => setSheet("missions")} className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 h-9 px-1.5 text-[13px]">
           <Flag size={14} /> {missionsDone}/{missions.length}
         </button>
-        <button onClick={() => setSheet("waypoints")} className="btn btn-sm btn-outline gap-1.5">
+        <button onClick={() => setSheet("waypoints")} className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 h-9 px-3 text-[13px]">
           <MapPin size={14} /> Pontos ({waypoints.length})
         </button>
-        <button onClick={() => setSheet("robot")} className="btn btn-sm btn-outline gap-1.5">
+        <button onClick={() => setSheet("robot")} className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 h-9 px-3 text-[13px]">
           <Bot size={14} /> Robô
         </button>
       </div>
 
       {/* Playback bar */}
       <div className="flex items-center gap-2 px-3 pb-3 pt-1 shrink-0" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.5rem)" }}>
-        <button onClick={handleReset} className="btn btn-square btn-ghost" title="Reiniciar">
+        <button onClick={handleReset} className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content size-10 px-0" title="Reiniciar">
           <RotateCcw size={16} />
         </button>
         <button
           onClick={togglePlay}
-          className={`btn flex-1 gap-2 ${isPlaying ? "btn-warning" : "btn-primary"}`}
+          className={`inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 h-11 flex-1 px-4 text-sm ${isPlaying ? "border-transparent bg-warning text-warning-content" : "rounded-tl-lg rounded-br-lg rounded-tr-sm rounded-bl-sm border-transparent bg-primary text-primary-content hover:brightness-110"}`}
         >
           {isPlaying ? <Pause size={16} /> : <Play size={16} />}
           {isPlaying ? "Pausar" : "Iniciar"}
         </button>
-        <button onClick={() => setSheet("speed")} className="btn btn-square btn-ghost" title="Velocidade">
+        <button onClick={() => setSheet("speed")} className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content size-10 px-0" title="Velocidade">
           <Gauge size={16} />
         </button>
       </div>
@@ -367,7 +367,7 @@ const ViewSectionMobile: React.FC = () => {
         headerRight={
           <button
             onClick={() => setShowMissions((v) => !v)}
-            className="btn btn-ghost btn-sm btn-circle"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content size-9 rounded-full px-0"
             aria-label={showMissions ? "Ocultar missões no tapete" : "Mostrar missões no tapete"}
           >
             {showMissions ? <Eye size={16} /> : <EyeOff size={16} />}
@@ -411,7 +411,7 @@ const ViewSectionMobile: React.FC = () => {
               step={0.1}
               value={speed}
               onChange={(e) => setSpeed(parseFloat(e.target.value))}
-              className="range range-primary flex-1"
+              className="h-2 flex-1 cursor-pointer accent-primary"
             />
             <span className="text-sm font-mono w-12 text-right">{speed.toFixed(1)}x</span>
           </div>

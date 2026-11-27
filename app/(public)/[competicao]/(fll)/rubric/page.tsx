@@ -7,10 +7,12 @@ import FeedbackSheet from "@/features/rubric/components/FeedbackSheet";
 import ScorePanel from "@/features/rubric/components/ScorePanel";
 import TitleBlock from "@/features/rubric/components/TitleBlock";
 import Header from "@/components/layout/Header";
+import { ToolScope, ToolTabs, useToolConfirm } from "@/components/stage";
 
 type TabId = "feedback" | (typeof RUBRIC)[number]["id"];
 
 export default function Home() {
+  const { confirm, dialog } = useToolConfirm();
   const [activeTab, setActiveTab] = useState<TabId>("feedback");
 
   const [teamNumber, setTeamNumber] = useState("");
@@ -65,11 +67,14 @@ export default function Home() {
     setAwards((prev) => ({ ...prev, [awardId]: !prev[awardId] }));
   }
 
-  function handleReset() {
+  async function handleReset() {
     if (
-      confirm(
-        "Limpar todas as pontuações, comentários e feedbacks preenchidos?",
-      )
+      await confirm({
+        title: "Limpar a rubrica?",
+        message:
+          "Todas as pontuações, comentários e feedbacks preenchidos serão apagados.",
+        confirmLabel: "Limpar",
+      })
     ) {
       setScores({});
       setComments({});
@@ -83,8 +88,7 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+    <main className="mx-auto min-h-screen w-full max-w-6xl space-y-8 px-4 pb-24 pt-8">
       <Header
         type="Avaliação"
         name="Rubricas"
@@ -92,7 +96,7 @@ export default function Home() {
         description="Preencha a identificação da equipe, registre o feedback da sessão e marque o nível de cada indicador (1 a 4) observado na apresentação. A pontuação é calculada automaticamente no painel ao lado."
       />
 
-      <div className="mb-6">
+      <ToolScope className="space-y-4 rounded-tl-[1.5rem] rounded-br-[1.5rem] border border-base-300 p-4 sm:p-5">
         <TitleBlock
           teamNumber={teamNumber}
           setTeamNumber={setTeamNumber}
@@ -101,68 +105,59 @@ export default function Home() {
           room={room}
           setRoom={setRoom}
         />
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-        <div>
-          <div
-            role="tablist"
-            className="tabs tabs-box bg-base-200/70 mb-4 no-print w-fit flex-wrap"
-          >
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={activeTab === tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`tab font-mono-tech text-xs sm:text-sm gap-2 ${
-                  activeTab === tab.id ? "tab-active" : ""
-                }`}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px] [&>*]:min-w-0">
+          <div>
+            <ToolTabs
+              tabs={tabs.map((t) => ({ value: t.id, label: t.label }))}
+              value={activeTab}
+              onChange={setActiveTab}
+              className="no-print mb-4"
+            />
+
+            <section
+              className={
+                activeTab === "feedback" ? "block" : "hidden print:block"
+              }
+            >
+              <FeedbackSheet
+                feedback={feedback}
+                onChange={handleFeedbackChange}
+                awards={awards}
+                onToggleAward={handleToggleAward}
+              />
+            </section>
+
+            {RUBRIC.map((cat) => (
+              <section
+                key={cat.id}
+                className={
+                  cat.id === activeTab ? "block" : "hidden print:block"
+                }
               >
-                {tab.label}
-              </button>
+                <RubricSheet
+                  category={cat}
+                  scores={scores}
+                  comments={comments}
+                  onSelect={handleSelect}
+                  onComment={handleComment}
+                />
+              </section>
             ))}
           </div>
 
-          <section
-            className={
-              activeTab === "feedback" ? "block" : "hidden print:block"
-            }
-          >
-            <FeedbackSheet
-              feedback={feedback}
-              onChange={handleFeedbackChange}
-              awards={awards}
-              onToggleAward={handleToggleAward}
+          <aside className="self-start lg:sticky lg:top-20">
+            <ScorePanel
+              scores={scores}
+              comments={comments}
+              onReset={handleReset}
+              onPrint={handlePrint}
+              rubric={RUBRIC}
             />
-          </section>
-
-          {RUBRIC.map((cat) => (
-            <section
-              key={cat.id}
-              className={cat.id === activeTab ? "block" : "hidden print:block"}
-            >
-              <RubricSheet
-                category={cat}
-                scores={scores}
-                comments={comments}
-                onSelect={handleSelect}
-                onComment={handleComment}
-              />
-            </section>
-          ))}
+          </aside>
         </div>
-
-        <aside className="lg:sticky lg:top-4 self-start">
-          <ScorePanel
-            scores={scores}
-            comments={comments}
-            onReset={handleReset}
-            onPrint={handlePrint}
-          />
-        </aside>
-      </div>
+      </ToolScope>
+      {dialog}
     </main>
   );
 }

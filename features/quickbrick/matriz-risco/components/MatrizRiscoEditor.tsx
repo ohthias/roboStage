@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import html2canvas from "html2canvas-pro";
-import { Image as ImageIcon, PlusIcon, RotateCcw } from "lucide-react";
+import { Image as ImageIcon, Plus, RotateCcw } from "lucide-react";
+import { ToolBadge, ToolButton, ToolScope, Toolbar, ToolbarDivider, ToolbarGroup, ToolbarSpacer, useToolConfirm } from "@/components/stage";
+import { getRiskLevel } from "@/features/quickbrick/matriz-risco/lib/constants";
 import MatrizRisco from "./MatrizRisco";
 import RiscoModal from "./MatrizModal";
 import RiscoDetalhesModal from "./RiscoDetalhesModal";
@@ -30,6 +32,7 @@ export default function MatrizRiscoEditor({
   const [riscos, setRiscos] = useState<Risco[]>(initialRiscos);
   const { addToast } = useToast();
   useChangeNotifier(riscos, onRiscosChange);
+  const { confirm, dialog } = useToolConfirm();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [riscoToEdit, setRiscoToEdit] = useState<Risco | null>(null);
@@ -66,8 +69,9 @@ export default function MatrizRiscoEditor({
     }
   };
 
-  const handleRemoveRisco = (riskId: number) => {
-    if (window.confirm("Tem certeza que deseja remover este risco?")) {
+  const handleRemoveRisco = async (riskId: number) => {
+    const alvo = riscos.find((r) => r.id === riskId);
+    if (await confirm({ title: "Remover risco?", message: `“${alvo?.titulo ?? "Risco"}” sai da matriz.`, confirmLabel: "Remover" })) {
       setRiscos((prev) => prev.filter((r) => r.id !== riskId));
       addToast("Risco removido com sucesso!", "success");
     }
@@ -90,30 +94,45 @@ export default function MatrizRiscoEditor({
     addToast("Matriz exportada com sucesso!", "success");
   };
 
-  const handleResetRiscos = () => {
-    if (window.confirm("Tem certeza que deseja resetar todos os riscos? Esta ação não pode ser desfeita.")) {
+  const handleResetRiscos = async () => {
+    if (await confirm({ title: "Resetar a matriz?", message: "Todos os riscos voltam ao estado inicial. Esta ação não pode ser desfeita.", confirmLabel: "Resetar" })) {
       setRiscos(resetRiscos);
     }
   };
 
-  return (
-    <>
-      <section className="flex flex-wrap items-center justify-end gap-4">
-        <button onClick={() => handleOpenModal()} className="btn btn-primary btn-soft gap-2 shadow-sm">
-          <PlusIcon className="size-5" />
-          Adicionar Risco
-        </button>
-        <button onClick={handleExport} className="btn btn-outline btn-success gap-2">
-          <ImageIcon className="size-5" />
-          Exportar
-        </button>
-        <button onClick={handleResetRiscos} className="btn btn-outline btn-error gap-2">
-          <RotateCcw className="size-5" />
-          Resetar
-        </button>
-      </section>
+  const counts = riscos.reduce<Record<string, number>>((acc, r) => {
+    const k = getRiskLevel(r.impacto, r.probabilidade).key;
+    acc[k] = (acc[k] ?? 0) + 1;
+    return acc;
+  }, {});
 
-      <section className="mt-8 mb-16 flex w-full justify-center">
+  return (
+    <ToolScope className="mt-6 overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] border border-base-300">
+      <Toolbar label="Ações da matriz de risco" className="px-3">
+        <ToolbarGroup>
+          <span className="px-1 text-[13px] font-bold">Riscos</span>
+          <ToolBadge>{riscos.length}</ToolBadge>
+          <ToolBadge tone="success" dot>{counts.baixo ?? 0} baixo</ToolBadge>
+          <ToolBadge tone="warning" dot>{counts.moderado ?? 0} moderado</ToolBadge>
+          <ToolBadge tone="accent" dot>{counts.alto ?? 0} alto</ToolBadge>
+          <ToolBadge tone="primary" dot>{counts.critico ?? 0} crítico</ToolBadge>
+        </ToolbarGroup>
+        <ToolbarSpacer />
+        <ToolbarGroup>
+          <ToolButton variant="ghost" icon={<RotateCcw />} onClick={handleResetRiscos}>
+            Resetar
+          </ToolButton>
+          <ToolButton variant="ghost" icon={<ImageIcon />} onClick={handleExport}>
+            Exportar PNG
+          </ToolButton>
+          <ToolbarDivider />
+          <ToolButton variant="primary" icon={<Plus />} onClick={() => handleOpenModal()}>
+            Adicionar risco
+          </ToolButton>
+        </ToolbarGroup>
+      </Toolbar>
+
+      <div className="flex w-full justify-center p-2">
         <MatrizRisco
           ref={matrixRef}
           riscos={riscos}
@@ -122,7 +141,12 @@ export default function MatrizRiscoEditor({
           onRemoveRisco={handleRemoveRisco}
           onViewRisco={handleOpenDetalhesModal}
         />
-      </section>
+      </div>
+
+      <footer className="border-t border-base-300 bg-base-100 px-4 py-2 text-xs text-base-content/55">
+        Arraste os cartões entre as células para mudar impacto e probabilidade. Clique para ver os detalhes.
+      </footer>
+
       <RiscoModal
         isOpen={isModalOpen}
         onClose={() => {
@@ -139,7 +163,9 @@ export default function MatrizRiscoEditor({
           setRiscoToView(null);
         }}
         risco={riscoToView}
+        onEdit={handleOpenModal}
       />
-    </>
+      {dialog}
+    </ToolScope>
   );
 }

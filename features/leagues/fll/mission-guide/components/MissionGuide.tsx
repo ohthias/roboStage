@@ -15,6 +15,8 @@ import { MissionCardSkeletonGrid } from "./MissionCardSkeleton";
 import { MissionModal } from "./MissionModal";
 import { MissionSearch } from "./MissionSearch";
 import Header from "@/components/layout/Header";
+import { RefreshCw } from "lucide-react";
+import { Button, EmptyState } from "@/components/stage";
 import { loadMissionGuide, loadSeasonMissions } from "@/lib/data/missions-client";
 
 // Only BIOGLOW™ Future Edition ships in this first version. The season key is
@@ -72,43 +74,48 @@ export function MissionGuide() {
   const handleCloseModal = useCallback(() => setSelectedMissionId(null), []);
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8 w-full">
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 pb-24 pt-8">
       <Header name="Guia de Missões" highlight="BIOGLOW™ Founders Edition" description="Explore as missões da temporada e descubra dicas, estratégias e mecanismos para cada uma delas." type="Documentos" />
       {state.status === "error" ? (
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-error/40 py-16 text-center">
-          <p className="text-lg font-semibold">Não foi possível carregar as missões.</p>
-          <p className="text-sm text-base-content/60">
-            Verifique sua conexão e tente novamente.
-          </p>
-          <button type="button" className="btn btn-primary btn-sm" onClick={fetchData}>
-            Tentar novamente
-          </button>
-        </div>
+        <EmptyState
+          title="Não foi possível carregar as missões."
+          description="Verifique sua conexão e tente novamente."
+          action={
+            <Button tone="primary" size="sm" onClick={fetchData} iconLeft={<RefreshCw size={16} />}>
+              Tentar novamente
+            </Button>
+          }
+        />
       ) : (
         <>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <MissionSearch value={search} onChange={setSearch} />
             <MissionFilters value={filter} onChange={setFilter} />
           </div>
 
           {state.status === "loading" ? (
             <>
-              <p className="text-sm text-base-content/60" role="status">
-                Carregando missões...
+              <p className="stage-kicker text-base-content/45" role="status">
+                / CARREGANDO MISSÕES...
               </p>
               <MissionCardSkeletonGrid />
             </>
           ) : (
-            <MissionGrid
-              missions={filteredMissions}
-              onSelect={setSelectedMissionId}
-              onClearSearch={handleClearSearch}
-            />
+            <>
+              <p className="stage-kicker -mb-4 text-base-content/45" aria-live="polite">
+                / {filteredMissions.length} DE {missions.length} MISSÕES
+              </p>
+              <MissionGrid
+                missions={filteredMissions}
+                onSelect={setSelectedMissionId}
+                onClearSearch={handleClearSearch}
+              />
+            </>
           )}
         </>
       )}
 
       <MissionModal mission={selectedMission} onClose={handleCloseModal} />
-    </div>
+    </main>
   );
 }

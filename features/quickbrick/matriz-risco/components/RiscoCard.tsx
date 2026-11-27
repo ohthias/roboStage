@@ -1,6 +1,8 @@
-import React from 'react';
-import { Risco } from '@/features/quickbrick/matriz-risco/types';
-import { getRiskTextColor } from '@/features/quickbrick/matriz-risco/lib/constants';
+import React from "react";
+import { GripVertical, Pencil, Trash2 } from "lucide-react";
+import { Risco } from "@/features/quickbrick/matriz-risco/types";
+import { getRiskTextColor } from "@/features/quickbrick/matriz-risco/lib/constants";
+import { IconButton, cn } from "@/components/stage";
 
 interface RiscoCardProps {
   risco: Risco;
@@ -11,26 +13,16 @@ interface RiscoCardProps {
 
 const RiscoCard: React.FC<RiscoCardProps> = ({ risco, onEdit, onRemove, onView }) => {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-    e.dataTransfer.setData('riskId', risco.id.toString());
+    e.dataTransfer.setData("riskId", risco.id.toString());
   };
 
-  const handleEdit = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onEdit(risco);
-  }
-
-  const handleRemove = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onRemove(risco.id);
-  }
-  
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault(); // Prevent space from scrolling the page
+    if (e.target !== e.currentTarget) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
       onView(risco);
     }
   };
-
 
   return (
     <div
@@ -38,19 +30,36 @@ const RiscoCard: React.FC<RiscoCardProps> = ({ risco, onEdit, onRemove, onView }
       onClick={() => onView(risco)}
       onKeyDown={handleKeyDown}
       onDragStart={handleDragStart}
-      className={`p-2 my-1 group rounded-md shadow-sm cursor-grab active:cursor-grabbing border relative ${getRiskTextColor(risco.impacto, risco.probabilidade)} bg-white/80 backdrop-blur-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500`}
+      className={cn(
+        "group relative my-1 flex cursor-grab items-center gap-1 rounded-md border bg-base-100 py-1.5 pl-1 pr-1 shadow-sm transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-primary active:cursor-grabbing",
+        getRiskTextColor(risco.impacto, risco.probabilidade),
+      )}
       role="button"
       tabIndex={0}
       aria-label={`Ver detalhes de ${risco.titulo}`}
     >
-      <p className="font-semibold text-sm leading-tight pr-8">{risco.titulo}</p>
-      <div className="absolute top-1 right-1 flex flex-col opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-        <button onClick={handleEdit} aria-label={`Editar risco: ${risco.titulo}`} className="p-1 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" /></svg>
-        </button>
-        <button onClick={handleRemove} aria-label={`Remover risco: ${risco.titulo}`} className="p-1 rounded-full text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-        </button>
+      <GripVertical className="size-3.5 shrink-0 opacity-40" aria-hidden="true" />
+      <p className="min-w-0 flex-1 text-[13px] font-semibold leading-tight">{risco.titulo}</p>
+      <div className="flex shrink-0 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+        <IconButton
+          label={`Editar risco: ${risco.titulo}`}
+          icon={<Pencil />}
+          size="xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(risco);
+          }}
+        />
+        <IconButton
+          label={`Remover risco: ${risco.titulo}`}
+          icon={<Trash2 />}
+          size="xs"
+          variant="danger"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove(risco.id);
+          }}
+        />
       </div>
     </div>
   );

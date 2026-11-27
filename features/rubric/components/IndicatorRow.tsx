@@ -1,11 +1,8 @@
 "use client";
 
-import {
-  RubricIndicator,
-  LevelKey,
-  LEVEL_LABELS,
-} from "@/features/rubric/lib/fll";
-import { Settings } from "lucide-react";
+import { Check, Settings } from "lucide-react";
+import { cn } from "@/components/stage";
+import { RubricIndicator, LevelKey, LEVEL_LABELS } from "@/features/rubric/lib/fll";
 
 interface IndicatorRowProps {
   indicator: RubricIndicator;
@@ -17,86 +14,53 @@ interface IndicatorRowProps {
 
 const LEVELS: LevelKey[] = [1, 2, 3, 4];
 
-export default function IndicatorRow({
-  indicator,
-  selected,
-  comment,
-  onSelect,
-  onCommentChange,
-}: IndicatorRowProps) {
+// Mesmos tons do RubricLevelPicker da Stage UI.
+const levelFill: Record<LevelKey, string> = {
+  1: "bg-warning text-warning-content",
+  2: "bg-accent text-accent-content",
+  3: "bg-success text-success-content",
+  4: "bg-secondary text-secondary-content",
+};
+
+export default function IndicatorRow({ indicator, selected, comment, onSelect, onCommentChange }: IndicatorRowProps) {
   return (
-    <div className="mb-2.5 last:mb-0">
-      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-4">
+    <div>
+      <div role="radiogroup" className="grid grid-cols-1 gap-2 sm:grid-cols-4">
         {LEVELS.map((level) => {
           const isActive = selected === level;
           const isExcedente = level === 4;
           const text = isExcedente ? null : indicator.descriptions[level - 1];
-          const Icon = indicator.gear ? Settings : null;
 
           return (
             <button
               key={level}
               type="button"
-              aria-pressed={isActive}
+              role="radio"
+              aria-checked={isActive}
+              aria-label={`${LEVEL_LABELS[level]}${text ? `: ${text}` : ""}`}
               onClick={() => onSelect(level)}
-              className={[
-                "btn btn-outline h-auto min-h-0 w-full justify-start gap-2 rounded-box border px-2.5 py-2 normal-case text-left shadow-none",
+              className={cn(
+                "stage-paper flex w-full flex-col gap-1.5 rounded-tl-xl rounded-br-xl border p-2.5 text-left transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                 isActive
-                  ? "btn-active border-secondary bg-secondary/10"
-                  : "border-base-300 bg-base-100",
-              ].join(" ")}
+                  ? cn(levelFill[level], "stage-shadow-sm -translate-y-0.5 border-transparent")
+                  : "border-base-300 bg-base-100 hover:border-secondary/40",
+              )}
             >
-              <span
-                className={[
-                  "mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border",
-                  isActive
-                    ? "border-secondary bg-secondary"
-                    : "border-base-content/40 bg-base-100/40",
-                ].join(" ")}
-              >
-                {indicator.gear ? (
-                  <Settings
-                    className={[
-                      "h-3.5 w-3.5",
-                      isActive ? "text-secondary-content" : "text-base-content/40",
-                    ].join(" ")}
-                    size={16}
-                  />
-                ) : (
-                  <span
-                    className={[
-                      "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border",
-                      isActive
-                        ? "border-secondary bg-secondary"
-                        : "border-base-content/40 bg-base-100/40",
-                    ].join(" ")}
-                  >
-                    {isActive ? (
-                      <svg
-                        viewBox="0 0 12 12"
-                        className="h-3 w-3 text-secondary-content"
-                        fill="none"
-                      >
-                        <path
-                          d="M2 6.5L4.8 9L10 3"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    ) : null}
-                  </span>
-                )}
+              <span className="flex items-center justify-between">
+                <span className="stage-display text-2xl leading-none">{level}</span>
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "grid size-5 place-items-center rounded-sm border",
+                    isActive ? "border-transparent bg-base-100 text-base-content" : "border-base-content/30",
+                  )}
+                >
+                  {indicator.gear ? <Settings className="size-3" /> : isActive ? <Check className="size-3" strokeWidth={4} /> : null}
+                </span>
               </span>
-              <span className="text-[13px] leading-snug">
-                {isExcedente ? (
-                  <span className="italic text-base-content/60">
-                    {LEVEL_LABELS[4]}*
-                  </span>
-                ) : (
-                  <p className="text-base-content text-xs">{text}</p>
-                )}
+              <span className="stage-label text-[10px] opacity-80">{LEVEL_LABELS[level]}</span>
+              <span className="text-xs leading-snug opacity-90">
+                {isExcedente ? "A equipe foi além do esperado — descreva no comentário." : text}
               </span>
             </button>
           );
@@ -104,16 +68,14 @@ export default function IndicatorRow({
       </div>
 
       {selected === 4 && (
-        <div className="mt-1.5">
-          <textarea
-            value={comment}
-            onChange={(e) => onCommentChange(e.target.value)}
-            rows={2}
-            maxLength={200}
-            placeholder="De que maneiras a equipe demonstrou excelência? (200 caracteres)"
-            className="textarea textarea-bordered w-full bg-base-100/70 text-sm text-base-content border-base-300/60 focus:border-secondary focus:outline-none"
-          />
-        </div>
+        <textarea
+          value={comment}
+          onChange={(e) => onCommentChange(e.target.value)}
+          rows={2}
+          maxLength={200}
+          placeholder="De que maneiras a equipe demonstrou excelência? (200 caracteres)"
+          className="mt-1.5 w-full resize-none rounded-md border border-warning/50 bg-base-100 px-2.5 py-1.5 text-[13px] placeholder:text-base-content/40 focus:border-warning focus:outline-none focus:ring-2 focus:ring-warning/20"
+        />
       )}
     </div>
   );

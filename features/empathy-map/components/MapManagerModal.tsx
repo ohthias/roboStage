@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { X, Plus, Folder, Trash2, RotateCcw } from 'lucide-react';
+import { Plus, Folder, Trash2, RotateCcw } from 'lucide-react';
+import { IconButton, ToolButton, ToolDialog, ToolInput, cn, useToolConfirm } from '@/components/stage';
 import { EmpathyMap } from '@/features/empathy-map/types';
 
 interface MapManagerModalProps {
@@ -28,7 +29,7 @@ export const MapManagerModal: React.FC<MapManagerModalProps> = ({
   const [newTitle, setNewTitle] = useState('');
   const [newPersonaName, setNewPersonaName] = useState('');
 
-  if (!isOpen) return null;
+  const { confirm, dialog } = useToolConfirm();
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,154 +42,103 @@ export const MapManagerModal: React.FC<MapManagerModalProps> = ({
     onClose();
   };
 
+  const label = 'mb-1 block text-[11px] font-semibold uppercase tracking-wider text-base-content/50';
+
   return (
-    <div className="modal modal-open modal-bottom sm:modal-middle">
-      <div className="modal-box max-w-md relative bg-base-100">
-        <button
-          onClick={onClose}
-          type="button"
-          className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3 text-base-content/60"
-        >
-          <X className="w-4 h-4" />
-        </button>
-
-        <h3 className="font-bold text-base text-base-content">
-          Projetos & Personas
-        </h3>
-        <p className="text-xs text-base-content/60 mt-1 mb-4">
-          Escolha um mapa existente ou crie um novo projeto.
-        </p>
-
-        {/* Create new map button / form */}
+    <>
+      <ToolDialog
+        open={isOpen}
+        onClose={onClose}
+        title="Projetos e personas"
+        description="Escolha um mapa existente ou crie um novo."
+        size="md"
+        footer={
+          <div className="flex w-full items-center justify-between">
+            <ToolButton
+              variant="ghost"
+              size="xs"
+              icon={<RotateCcw />}
+              onClick={async () => {
+                if (await confirm({ title: 'Restaurar exemplos?', message: 'Os mapas de exemplo voltam ao estado original.', confirmLabel: 'Restaurar' })) {
+                  onResetTemplates();
+                  onClose();
+                }
+              }}
+            >
+              Restaurar exemplos
+            </ToolButton>
+            <ToolButton onClick={onClose}>Fechar</ToolButton>
+          </div>
+        }
+      >
         {!showCreateForm ? (
-          <button
-            onClick={() => setShowCreateForm(true)}
-            type="button"
-            className="btn btn-outline btn-primary btn-sm w-full mb-3 gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Criar Novo Mapa de Empatia</span>
-          </button>
+          <ToolButton variant="outline" size="md" icon={<Plus />} onClick={() => setShowCreateForm(true)} className="mb-3 w-full">
+            Criar novo mapa de empatia
+          </ToolButton>
         ) : (
-          <form onSubmit={handleCreate} className="card bg-base-200/50 border border-base-300 p-3.5 mb-3.5 space-y-2.5">
-            <div>
-              <label className="label py-0.5 text-xs font-bold text-base-content">
-                Nome do Projeto
-              </label>
-              <input
-                type="text"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                required
-                placeholder="Ex: Novo Usuário Onboarding"
-                className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
-                autoFocus
-              />
-            </div>
-            <div>
-              <label className="label py-0.5 text-xs font-bold text-base-content">
-                Nome da Persona
-              </label>
-              <input
-                type="text"
-                value={newPersonaName}
-                onChange={(e) => setNewPersonaName(e.target.value)}
-                placeholder="Ex: Carlos Silva"
-                className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
-              />
-            </div>
+          <form onSubmit={handleCreate} className="mb-3 space-y-2.5 rounded-lg border border-base-300 bg-base-200/40 p-3">
+            <label className="block">
+              <span className={label}>Nome do projeto</span>
+              <ToolInput type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required placeholder="Ex: Professores da escola" autoFocus />
+            </label>
+            <label className="block">
+              <span className={label}>Nome da persona</span>
+              <ToolInput type="text" value={newPersonaName} onChange={(e) => setNewPersonaName(e.target.value)} placeholder="Ex: Carlos Silva" />
+            </label>
             <div className="flex justify-end gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => setShowCreateForm(false)}
-                className="btn btn-xs btn-ghost"
-              >
+              <ToolButton size="xs" variant="ghost" onClick={() => setShowCreateForm(false)}>
                 Cancelar
-              </button>
-              <button
-                type="submit"
-                className="btn btn-xs btn-primary font-bold"
-              >
+              </ToolButton>
+              <ToolButton size="xs" type="submit" variant="primary">
                 Criar
-              </button>
+              </ToolButton>
             </div>
           </form>
         )}
 
-        {/* Maps list */}
-        <div className="space-y-2 mb-4 max-h-[40vh] sm:max-h-56 overflow-y-auto">
+        <div className="max-h-[40vh] space-y-0.5 overflow-y-auto pb-2 sm:max-h-64">
           {maps.map((m) => {
-            const isActive = m.id === activeMapId;
+            const active = m.id === activeMapId;
             return (
-              <div
-                key={m.id}
-                onClick={() => {
-                  onSelectMap(m.id);
-                  onClose();
-                }}
-                className={`card border p-3 transition-all cursor-pointer flex flex-row items-center justify-between gap-2.5 ${
-                  isActive
-                    ? 'border-primary bg-primary/10 text-primary-content'
-                    : 'border-base-200 hover:bg-base-200/50 text-base-content'
-                }`}
-              >
-                <div className="flex items-center gap-2.5 overflow-hidden">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                    isActive ? 'bg-primary text-primary-content' : 'bg-base-200 text-base-content/60'
-                  }`}>
-                    <Folder className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="truncate">
-                    <div className="text-xs font-bold text-base-content truncate">{m.title}</div>
-                    <div className="text-[11px] text-base-content/60 font-normal">
+              <div key={m.id} className={cn('flex items-center gap-1 rounded-md pr-1 transition-colors', active ? 'bg-primary/10' : 'hover:bg-base-content/[0.05]')}>
+                <button
+                  type="button"
+                  aria-current={active ? 'true' : undefined}
+                  onClick={() => {
+                    onSelectMap(m.id);
+                    onClose();
+                  }}
+                  className="flex min-w-0 flex-1 items-center gap-2.5 rounded-md px-2 py-1.5 text-left focus-visible:outline-2 focus-visible:outline-primary"
+                >
+                  <span className={cn('grid size-7 shrink-0 place-items-center rounded-md [&>svg]:size-4', active ? 'bg-primary text-primary-content' : 'bg-base-200 text-base-content/70')}>
+                    <Folder />
+                  </span>
+                  <span className="min-w-0">
+                    <span className={cn('block truncate text-[13px] font-semibold', active && 'text-primary')}>{m.title}</span>
+                    <span className="block truncate text-[11px] text-base-content/55">
                       {m.persona.name} · {m.notes.length} notas
-                    </div>
-                  </div>
-                </div>
-
+                    </span>
+                  </span>
+                </button>
                 {maps.length > 1 && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteMap(m.id);
+                  <IconButton
+                    label={`Excluir ${m.title}`}
+                    icon={<Trash2 />}
+                    size="xs"
+                    variant="danger"
+                    onClick={async () => {
+                      if (await confirm({ title: 'Excluir mapa?', message: `“${m.title}” e todas as notas serão apagados.`, confirmLabel: 'Excluir' })) {
+                        onDeleteMap(m.id);
+                      }
                     }}
-                    type="button"
-                    className="btn btn-ghost btn-circle btn-xs text-error hover:bg-error/10"
-                    title="Excluir"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  />
                 )}
               </div>
             );
           })}
         </div>
-
-        {/* Reset / Close */}
-        <div className="modal-action pt-2 border-t border-base-200 flex items-center justify-between mt-3">
-          <button
-            onClick={() => {
-              if (confirm('Restaurar modelos de exemplo?')) {
-                onResetTemplates();
-                onClose();
-              }
-            }}
-            type="button"
-            className="btn btn-xs btn-ghost gap-1 text-base-content/60"
-          >
-            <RotateCcw className="w-3 h-3" />
-            <span>Restaurar Exemplos</span>
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="btn btn-sm"
-          >
-            Fechar
-          </button>
-        </div>
-      </div>
-      <div className="modal-backdrop bg-black/40" onClick={onClose} />
-    </div>
+      </ToolDialog>
+      {dialog}
+    </>
   );
 };

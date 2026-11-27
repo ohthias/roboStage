@@ -1,5 +1,4 @@
 import { LucideIcon } from "lucide-react";
-import Breadcrumbs from "@/components/layout/Breadcrumbs";
 
 interface HeaderToolProps {
   NameTool: string;
@@ -7,26 +6,19 @@ interface HeaderToolProps {
   IconTool: LucideIcon;
 }
 
-export default function HeaderTool({
-  NameTool,
-  DescriptionTool,
-  IconTool,
-}: HeaderToolProps) {
+// Cabeçalho das telas do QuickBrick na Stage UI: kicker mono, ícone em caixa
+// com canto recortado e sombra dura, título em Roboto black.
+export default function HeaderTool({ NameTool, DescriptionTool, IconTool }: HeaderToolProps) {
   return (
-    <div className="flex flex-col items-start justify-start gap-3 px-4 pt-8">
-      <div className="flex flex-col items-start justify-start gap-2">
-        <div className="flex items-center justify-start gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/10">
-            <IconTool size={22} />
-          </div>
-          <h3 className="text-2xl font-bold tracking-tight text-primary">
-            {NameTool}
-          </h3>
-        </div>
-        <p className="max-w-2xl text-base leading-relaxed text-base-content/70">
-          {DescriptionTool}
-        </p>
+    <header className="flex flex-col items-start gap-3 px-4 pt-8">
+      <p className="stage-kicker text-base-content/45">/ QUICKBRICK STUDIO</p>
+      <div className="flex items-center gap-3">
+        <span className="grid size-12 shrink-0 place-items-center rounded-tl-xl rounded-br-xl bg-primary text-primary-content shadow-[4px_4px_0_0_var(--stage-shadow)]">
+          <IconTool size={22} />
+        </span>
+        <h1 className="stage-display text-3xl sm:text-4xl">{NameTool}</h1>
       </div>
-    </div>
+      <p className="max-w-2xl text-base leading-relaxed text-base-content/65">{DescriptionTool}</p>
+    </header>
   );
 }

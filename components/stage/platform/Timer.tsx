@@ -4,6 +4,10 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Maximize2, Pause, Play, RotateCcw } from "lucide-react";
 import { cn } from "../lib";
 
+// Arredonda as coordenadas: o servidor (Node) e o navegador podem divergir na
+// última casa do float e quebrar a hidratação.
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
 /* ------------------------------------------------------------------ */
 /*  Timer — mostrador de partida (substitui TimerCircle + ControlBar). */
 /* ------------------------------------------------------------------ */
@@ -65,10 +69,10 @@ export function TimerDial({
           return (
             <line
               key={i}
-              x1={130 + r1 * Math.cos(a)}
-              y1={130 + r1 * Math.sin(a)}
-              x2={130 + r2 * Math.cos(a)}
-              y2={130 + r2 * Math.sin(a)}
+              x1={round2(130 + r1 * Math.cos(a))}
+              y1={round2(130 + r1 * Math.sin(a))}
+              x2={round2(130 + r2 * Math.cos(a))}
+              y2={round2(130 + r2 * Math.sin(a))}
               stroke="var(--color-base-content)"
               strokeWidth={i % 6 === 0 ? 3 : 1.5}
               strokeLinecap="round"

@@ -1,11 +1,13 @@
 "use client";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Minus, ArrowLeftCircleIcon, Bell, BellOff, Pencil } from "lucide-react";
+import { Plus, Minus, Pencil, Timer as TimerIcon } from "lucide-react";
+import { cn } from "@/components/stage";
 import { playSound } from "@/lib/audio";
 import { CompletionModal } from "@/features/timers/components/CompletionModal";
 import { ConfirmModal } from "@/features/timers/components/ConfirmModal";
 import { ControlBar } from "@/features/timers/components/ControlBar";
 import { TimerCircle } from "@/features/timers/components/TimerCircle";
+import { TimerShell, formatTimer, toggleFullscreen, type TimerStatusTone } from "@/features/timers/components/TimerShell";
 
 type TimerStatus = "idle" | "running" | "finished" | "paused";
 
@@ -26,11 +28,11 @@ const STATUS_LABEL: Record<TimerStatus, string> = {
   finished: "Concluído",
 };
 
-const STATUS_DOT: Record<TimerStatus, string> = {
-  idle: "bg-base-content/30",
-  running: "bg-success animate-pulse",
-  paused: "bg-warning",
-  finished: "bg-error animate-pulse",
+const STATUS_TONE: Record<TimerStatus, TimerStatusTone> = {
+  idle: "idle",
+  running: "running",
+  paused: "paused",
+  finished: "finished",
 };
 
 export const CustomTimer: React.FC<{ backHref?: string }> = ({
@@ -67,15 +69,7 @@ export const CustomTimer: React.FC<{ backHref?: string }> = ({
     }
   }, []);
 
-  const formatTime = useCallback((seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0) {
-      return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-    }
-    return `${m}:${s.toString().padStart(2, "0")}`;
-  }, []);
+  const formatTime = formatTimer;
 
   const clamp = useCallback(
     (value: number) => Math.max(MIN_TIME, Math.min(MAX_TIME, value)),
@@ -200,11 +194,18 @@ export const CustomTimer: React.FC<{ backHref?: string }> = ({
       ? "text-warning"
       : "text-error";
 
-  return (
-    <div className="relative flex min-h-[100dvh] w-full flex-col overflow-hidden bg-base-200/60">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.04]" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-base-100/40 via-transparent to-base-200/60" />
+  const stepLabel = (v: number) => (v < 60 ? `${v}s` : `${v / 60}min`);
+  const sliderPct = ((initialTime - MIN_TIME) / (MAX_TIME - MIN_TIME)) * 100;
 
+  return (
+    <TimerShell
+      kicker="Timer personalizado"
+      status={{ tone: STATUS_TONE[status], label: STATUS_LABEL[status] }}
+      onBack={handleBack}
+      muted={muted}
+      onToggleMute={() => setMuted((m) => !m)}
+      onFullscreen={() => toggleFullscreen()}
+    >
       <ConfirmModal
         isOpen={showExitModal}
         onCancel={() => setShowExitModal(false)}
@@ -217,36 +218,14 @@ export const CustomTimer: React.FC<{ backHref?: string }> = ({
       <CompletionModal
         isOpen={status === "finished"}
         title="Tempo encerrado"
-        subTitle="Tempo finalizado."
+        subTitle={`${formatTime(initialTime)} concluídos.`}
         onReset={reset}
         onMenu={handleBack}
+        onSilence={muted ? undefined : () => setMuted(true)}
       />
 
-      {/* ===== BARRA SUPERIOR ===== */}
-      <header className="relative z-10 flex items-center justify-between px-4 py-4 sm:px-6">
-        <button
-          onClick={handleBack}
-          className="btn btn-ghost btn-circle btn-sm"
-          aria-label="Voltar"
-        >
-          <ArrowLeftCircleIcon size={20} />
-        </button>
-
-        <div className="flex items-center gap-2 rounded-full border border-base-300 bg-base-100/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-base-content/70 backdrop-blur">
-          <span className={`h-2 w-2 rounded-full ${STATUS_DOT[status]}`} />
-          {STATUS_LABEL[status]}
-        </div>
-
-        <button
-          onClick={() => setMuted((m) => !m)}
-          className="btn btn-ghost btn-circle btn-sm"
-          aria-label={muted ? "Ativar som" : "Silenciar"}
-        >
-          {muted ? <BellOff size={18} /> : <Bell size={18} />}
-        </button>
-      </header>
-
-      <main className="relative z-10 flex flex-1 flex-col gap-6 px-4 pb-8 sm:px-6 lg:flex-row lg:items-stretch lg:gap-8 lg:px-10">
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 pb-10 sm:px-6 lg:flex-row lg:items-center lg:gap-12">
+        {/* ===== CRONÔMETRO ===== */}
         <section className="order-1 flex flex-1 flex-col items-center justify-center py-4 lg:order-2">
           <TimerCircle totalTime={initialTime} currentTime={timeLeft} colorClass={circleColor}>
             {isEditing ? (
@@ -259,7 +238,8 @@ export const CustomTimer: React.FC<{ backHref?: string }> = ({
                   if (e.key === "Enter") commitEdit();
                   if (e.key === "Escape") setIsEditing(false);
                 }}
-                className="input input-ghost w-40 text-center font-mono text-5xl font-bold tabular-nums sm:text-6xl"
+                aria-label="Tempo (mm:ss)"
+                className="stage-display w-48 rounded-lg border-2 border-primary bg-base-100 text-center text-5xl tabular-nums outline-none sm:text-6xl"
                 inputMode="numeric"
                 placeholder="mm:ss"
               />
@@ -267,106 +247,91 @@ export const CustomTimer: React.FC<{ backHref?: string }> = ({
               <button
                 onClick={startEditing}
                 disabled={!isIdle}
-                className="group flex items-center gap-2 font-mono text-6xl font-bold tabular-nums text-base-content disabled:cursor-default sm:text-7xl"
-                title={isIdle ? "Clique para editar o tempo" : undefined}
+                className="group flex flex-col items-center disabled:cursor-default"
+                title={isIdle ? "Clique para digitar o tempo" : undefined}
               >
-                {formatTime(timeLeft)}
-                {isIdle && (
-                  <Pencil
-                    size={18}
-                    className="opacity-0 transition-opacity group-hover:opacity-40"
-                  />
-                )}
+                <span className="stage-display text-6xl leading-none tabular-nums text-base-content sm:text-7xl">{formatTime(timeLeft)}</span>
+                <span className="mt-2 flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.18em] text-base-content/45">
+                  {isIdle ? (
+                    <>
+                      <Pencil size={11} className="transition-transform group-hover:-rotate-12" /> toque para editar
+                    </>
+                  ) : (
+                    `de ${formatTime(initialTime)}`
+                  )}
+                </span>
               </button>
             )}
           </TimerCircle>
 
-          {status === "finished" && (
-            <button
-              onClick={() => setMuted(true)}
-              className="btn btn-outline btn-error btn-sm mt-6"
-            >
-              Parar alarme
-            </button>
-          )}
-
-          <div className="mt-8 w-full max-w-md">
-            <ControlBar
-              isRunning={status === "running"}
-              onToggle={toggle}
-              onReset={reset}
-              onBack={handleBack}
-              onFullscreen={() => {
-                if (!document.fullscreenElement) {
-                  document.documentElement.requestFullscreen();
-                } else {
-                  document.exitFullscreen();
-                }
-              }}
-            />
-          </div>
+          <ControlBar isRunning={status === "running"} onToggle={toggle} onReset={reset} onBack={handleBack} onFullscreen={() => toggleFullscreen()} />
         </section>
 
+        {/* ===== AJUSTES (só parado) ===== */}
         <aside
-          className={`order-2 w-full shrink-0 transition-all duration-300 ease-out lg:order-1 lg:w-[340px] ${
-            isIdle
-              ? "max-h-[900px] opacity-100"
-              : "pointer-events-none max-h-0 overflow-hidden opacity-0 lg:max-h-[900px] lg:w-0 lg:opacity-0"
-          }`}
+          aria-hidden={!isIdle}
+          className={cn(
+            "order-2 w-full shrink-0 transition-all duration-300 ease-out lg:order-1 lg:w-[360px]",
+            isIdle ? "opacity-100" : "pointer-events-none max-h-0 overflow-hidden opacity-0 lg:max-h-none lg:opacity-30 lg:grayscale",
+          )}
         >
-          <div className="rounded-3xl border border-base-300 bg-base-100/80 p-6 shadow-xl backdrop-blur-xl">
-            <p className="mb-4 font-mono text-xs font-semibold uppercase tracking-widest text-base-content/50">
-              Ajustar tempo
-            </p>
+          <div className="stage-ink stage-shadow rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-lg rounded-bl-lg bg-base-100 p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="stage-kicker text-base-content/50">/ Ajustar tempo</p>
+              <TimerIcon size={16} className="text-base-content/40" />
+            </div>
 
-            {/* mostrador estilo LCD */}
-            <div className="mb-5 flex items-center justify-between rounded-2xl bg-neutral px-5 py-3 text-neutral-content">
-              <span className="font-mono text-3xl font-bold tabular-nums">
-                {formatTime(initialTime)}
-              </span>
+            {/* visor */}
+            <div className="stage-night mb-5 flex items-center justify-between rounded-tl-xl rounded-br-xl rounded-tr-sm rounded-bl-sm px-5 py-3 text-white">
+              <span className="stage-display text-4xl leading-none tabular-nums">{formatTime(initialTime)}</span>
               <button
                 onClick={startEditing}
-                className="btn btn-ghost btn-circle btn-xs text-neutral-content/70 hover:text-neutral-content"
+                disabled={!isIdle}
+                className="grid size-8 place-items-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                 aria-label="Digitar tempo"
+                title="Digitar tempo"
               >
                 <Pencil size={14} />
               </button>
             </div>
 
-            {/* incremento configurável */}
-            <div className="mb-5 flex items-center justify-center gap-3">
+            {/* passo + / − */}
+            <div className="mb-5 flex items-center gap-2">
               <button
                 onClick={() => adjustTime(-step)}
-                className="btn btn-circle btn-sm border border-base-300 bg-base-200 hover:text-error"
-                aria-label={`Diminuir ${step}s`}
+                disabled={!isIdle || initialTime <= MIN_TIME}
+                className="stage-ink stage-press grid size-11 shrink-0 place-items-center rounded-tl-lg rounded-br-lg bg-base-100 text-base-content hover:text-primary disabled:opacity-40"
+                aria-label={`Diminuir ${stepLabel(step)}`}
               >
-                <Minus size={18} />
+                <Minus size={18} strokeWidth={2.5} />
               </button>
-
-              <div className="join">
+              <div role="radiogroup" aria-label="Passo" className="grid flex-1 grid-cols-3 gap-1 rounded-lg border border-base-300 bg-base-200/70 p-1">
                 {STEP_OPTIONS.map((s) => (
                   <button
                     key={s}
+                    role="radio"
+                    aria-checked={step === s}
                     onClick={() => setStep(s)}
-                    className={`btn btn-xs join-item ${
-                      step === s ? "btn-primary" : "btn-ghost"
-                    }`}
+                    className={cn(
+                      "h-8 rounded-md font-mono text-xs font-bold transition-colors",
+                      step === s ? "bg-base-content text-base-100" : "text-base-content/60 hover:text-base-content",
+                    )}
                   >
-                    {s < 60 ? `${s}s` : `${s / 60}min`}
+                    {stepLabel(s)}
                   </button>
                 ))}
               </div>
-
               <button
                 onClick={() => adjustTime(step)}
-                className="btn btn-circle btn-sm border border-base-300 bg-base-200 hover:text-success"
-                aria-label={`Aumentar ${step}s`}
+                disabled={!isIdle || initialTime >= MAX_TIME}
+                className="stage-ink stage-press grid size-11 shrink-0 place-items-center rounded-tl-lg rounded-br-lg bg-base-100 text-base-content hover:text-success disabled:opacity-40"
+                aria-label={`Aumentar ${stepLabel(step)}`}
               >
-                <Plus size={18} />
+                <Plus size={18} strokeWidth={2.5} />
               </button>
             </div>
 
-            {/* slider fino */}
+            {/* slider */}
             <input
               type="range"
               min={MIN_TIME}
@@ -374,33 +339,42 @@ export const CustomTimer: React.FC<{ backHref?: string }> = ({
               step={10}
               value={initialTime}
               onChange={(e) => setBothTimes(parseInt(e.target.value, 10))}
-              className="range range-primary range-xs mb-1 w-full"
+              disabled={!isIdle}
+              aria-label="Duração"
+              className="h-2 w-full cursor-pointer appearance-none rounded-full accent-primary [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-base-content [&::-moz-range-thumb]:bg-primary [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-base-content [&::-webkit-slider-thumb]:bg-primary"
+              style={{ background: `linear-gradient(to right, var(--color-primary) ${sliderPct}%, var(--color-base-300) ${sliderPct}%)` }}
             />
-            <div className="mb-5 flex justify-between text-[10px] text-base-content/40">
+            <div className="mb-5 mt-1 flex justify-between font-mono text-[10px] text-base-content/45">
               <span>10s</span>
               <span>2h</span>
             </div>
 
-            <div className="divider my-2 text-xs text-base-content/40">presets</div>
-
-            {/* teclado de presets */}
+            {/* presets */}
+            <p className="stage-kicker mb-2 text-base-content/50">/ Atalhos</p>
             <div className="grid grid-cols-5 gap-2">
-              {PRESETS.map((p) => (
-                <button
-                  key={p.seconds}
-                  onClick={() => applyPreset(p.seconds)}
-                  className={`btn btn-sm flex-col gap-0 ${
-                    initialTime === p.seconds ? "btn-primary" : "btn-ghost border border-base-300"
-                  }`}
-                >
-                  <span className="font-mono text-sm leading-none">{p.label}</span>
-                  <span className="text-[9px] leading-none opacity-60">{p.unit}</span>
-                </button>
-              ))}
+              {PRESETS.map((p) => {
+                const on = initialTime === p.seconds;
+                return (
+                  <button
+                    key={p.seconds}
+                    onClick={() => applyPreset(p.seconds)}
+                    aria-pressed={on}
+                    className={cn(
+                      "flex h-12 flex-col items-center justify-center rounded-tl-lg rounded-br-lg rounded-tr-sm rounded-bl-sm border transition-[transform,background-color,border-color] active:translate-y-px",
+                      on
+                        ? "stage-shadow-sm border-base-content bg-primary text-primary-content"
+                        : "border-base-300 bg-base-100 hover:border-base-content/40",
+                    )}
+                  >
+                    <span className="font-mono text-sm font-bold leading-none">{p.label}</span>
+                    <span className="mt-0.5 text-[9px] leading-none opacity-60">{p.unit}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </aside>
-      </main>
-    </div>
+      </div>
+    </TimerShell>
   );
 };

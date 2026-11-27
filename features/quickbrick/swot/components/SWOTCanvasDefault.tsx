@@ -3,7 +3,8 @@ import { useState, useRef } from "react";
 import { useChangeNotifier } from "@/lib/hooks/useChangeNotifier";
 import html2canvas from "html2canvas-pro";
 import { useToast } from "@/components/providers/ToastContext";
-import { Image, RotateCcw, Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Image, RotateCcw, Plus, Pencil, Trash2, Check, X, GripVertical } from "lucide-react";
+import { IconButton, ToolBadge, ToolButton, ToolInput, ToolScope, Toolbar, ToolbarGroup, ToolbarSpacer, cn } from "@/components/stage";
 
 type SwotItem = {
   id: string;
@@ -23,31 +24,11 @@ export const SWOTCanvasDefault = ({
   /** Avisado a cada mudança — usado para salvar no banco. */
   onSwotChange?: (swot: SwotDefaultState) => void;
 } = {}) => {
-  const quadrants: {
-    id: QuadrantId;
-    label: string;
-    color: [string, string, string];
-  }[] = [
-    {
-      id: "strengths",
-      label: "Forças",
-      color: ["bg-success/20", "border-success", "text-success"],
-    },
-    {
-      id: "weaknesses",
-      label: "Fraquezas",
-      color: ["bg-error/20", "border-error", "text-error"],
-    },
-    {
-      id: "opportunities",
-      label: "Oportunidades",
-      color: ["bg-info/20", "border-info", "text-info"],
-    },
-    {
-      id: "threats",
-      label: "Ameaças",
-      color: ["bg-warning/20", "border-warning", "text-warning"],
-    },
+  const quadrants: { id: QuadrantId; letter: string; label: string; hint: string; bar: string; chip: string }[] = [
+    { id: "strengths", letter: "S", label: "Forças", hint: "Interno · ajuda", bar: "border-t-success", chip: "bg-success text-success-content" },
+    { id: "weaknesses", letter: "W", label: "Fraquezas", hint: "Interno · atrapalha", bar: "border-t-error", chip: "bg-error text-error-content" },
+    { id: "opportunities", letter: "O", label: "Oportunidades", hint: "Externo · ajuda", bar: "border-t-info", chip: "bg-info text-info-content" },
+    { id: "threats", letter: "T", label: "Ameaças", hint: "Externo · atrapalha", bar: "border-t-warning", chip: "bg-warning text-warning-content" },
   ];
 
   const { addToast } = useToast();
@@ -60,8 +41,9 @@ export const SWOTCanvasDefault = ({
   }));
   useChangeNotifier(swot, onSwotChange);
 
-  // texto do input principal
-  const [draft, setDraft] = useState("");
+  // texto do campo de cada quadrante
+  const [drafts, setDrafts] = useState<Record<QuadrantId, string>>({ strengths: "", weaknesses: "", opportunities: "", threats: "" });
+  const [dragOver, setDragOver] = useState<QuadrantId | null>(null);
 
   // controle de edição inline
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -73,7 +55,7 @@ export const SWOTCanvasDefault = ({
     `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   const handleAddItem = (quadrantId: QuadrantId) => {
-    const text = draft.trim();
+    const text = drafts[quadrantId].trim();
     if (!text) return;
 
     const newItem: SwotItem = { id: makeId(), text };
@@ -81,7 +63,7 @@ export const SWOTCanvasDefault = ({
       ...prev,
       [quadrantId]: [...prev[quadrantId], newItem],
     }));
-    setDraft("");
+    setDrafts((d) => ({ ...d, [quadrantId]: "" }));
   };
 
   const handleDeleteItem = (quadrantId: QuadrantId, itemId: string) => {
@@ -132,6 +114,7 @@ export const SWOTCanvasDefault = ({
 
   const handleDrop = (e: React.DragEvent, targetQuadrant: QuadrantId) => {
     e.preventDefault();
+    setDragOver(null);
     const transferData = e.dataTransfer.getData("item");
     const fromQuadrant = e.dataTransfer.getData("fromQuadrant") as QuadrantId;
     if (!transferData || !fromQuadrant) return;
@@ -185,140 +168,125 @@ export const SWOTCanvasDefault = ({
 
   const resetSwot = () => {
     setSwot({ strengths: [], weaknesses: [], opportunities: [], threats: [] });
-    setDraft("");
+    setDrafts({ strengths: "", weaknesses: "", opportunities: "", threats: "" });
     setEditingId(null);
     setEditingText("");
     addToast("Matriz SWOT limpa!", "warning");
   };
 
+  const total = swot.strengths.length + swot.weaknesses.length + swot.opportunities.length + swot.threats.length;
+
   return (
-    <div className="space-y-6">
-      <section className="flex flex-wrap items-center justify-end gap-4 w-full">
-        <div className="flex-1 w-full md:w-auto flex gap-2">
-          <input
-            type="text"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleAddItem("strengths");
-            }}
-            placeholder="Adicionar item..."
-            className="input input-neutral w-full "
-          />
-          <button
-            onClick={() => handleAddItem("strengths")}
-            className="btn btn-neutral"
-            title="Adicionar em Forças"
-          >
-            <Plus className="size-4 inline mr-2" />
-            Adicionar
-          </button>
-        </div>
-        <button
-          onClick={exportPNG}
-          className="btn btn-outline btn-success gap-2"
-        >
-          <Image className="size-5" />
-          Exportar
-        </button>
+    <ToolScope className="overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] border border-base-300">
+      <Toolbar label="Ações da matriz SWOT" className="px-3">
+        <ToolbarGroup>
+          <span className="px-1 text-[13px] font-bold">Matriz SWOT</span>
+          <ToolBadge>{total} itens</ToolBadge>
+        </ToolbarGroup>
+        <ToolbarSpacer />
+        <ToolbarGroup>
+          <ToolButton variant="ghost" icon={<RotateCcw />} onClick={resetSwot}>
+            Resetar
+          </ToolButton>
+          <ToolButton variant="primary" icon={<Image />} onClick={exportPNG}>
+            Exportar PNG
+          </ToolButton>
+        </ToolbarGroup>
+      </Toolbar>
 
-        <button onClick={resetSwot} className="btn btn-outline btn-error gap-2">
-          <RotateCcw className="size-5" />
-          Resetar
-        </button>
-      </section>
-
-      {/* Quadrantes SWOT */}
-      <div
-        ref={quadrantsRef}
-        className="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-auto"
-      >
+      <div ref={quadrantsRef} className="grid grid-cols-1 gap-3 p-3 md:grid-cols-2">
         {quadrants.map((q) => (
-          <div
+          <section
             key={q.id}
-            onDragOver={(e) => e.preventDefault()}
+            aria-label={q.label}
+            onDragOver={(e) => {
+              e.preventDefault();
+              if (dragOver !== q.id) setDragOver(q.id);
+            }}
+            onDragLeave={() => setDragOver((d) => (d === q.id ? null : d))}
             onDrop={(e) => handleDrop(e, q.id)}
-            className={`relative flex flex-col rounded-lg border ${q.color[0]} ${q.color[1]} bg-base-100/80 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300 min-h-[220px]`}
+            className={cn(
+              "flex min-h-[240px] flex-col overflow-hidden rounded-lg border border-t-[3px] border-base-300 bg-base-100 transition-shadow",
+              q.bar,
+              dragOver === q.id && "ring-2 ring-primary/40",
+            )}
           >
-            <div className="card-body p-3 gap-3">
-              <h2 className={"card-title text-black text-base " + q.color[2]}>
-                {q.label}
-              </h2>
-
-              {/* lista de itens */}
-              <div className="flex flex-col gap-2 overflow-y-auto max-h-64">
-                {swot[q.id].length === 0 && (
-                  <p className="text-xs italic text-base-content/50">
-                    Nenhum item ainda.
-                  </p>
-                )}
-
-                {swot[q.id].map((item) => (
-                  <div
-                    key={item.id}
-                    draggable={editingId !== item.id}
-                    onDragStart={(e) => handleDragStart(e, item, q.id)}
-                    className={`flex items-center gap-2 rounded-lg bg-white shadow px-3 py-2 ${
-                      editingId === item.id ? "" : "cursor-grab"
-                    }`}
-                  >
-                    {editingId === item.id ? (
-                      <>
-                        <input
-                          autoFocus
-                          type="text"
-                          value={editingText}
-                          onChange={(e) => setEditingText(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter")
-                              confirmEditing(q.id, item.id);
-                            if (e.key === "Escape") cancelEditing();
-                          }}
-                          className="input input-xs input-bordered flex-1 text-black"
-                        />
-                        <button
-                          onClick={() => confirmEditing(q.id, item.id)}
-                          className="btn btn-xs btn-square btn-success"
-                          title="Confirmar"
-                        >
-                          <Check className="size-3" />
-                        </button>
-                        <button
-                          onClick={cancelEditing}
-                          className="btn btn-xs btn-square btn-ghost"
-                          title="Cancelar"
-                        >
-                          <X className="size-3" />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <span className="flex-1 text-sm text-black break-words">
-                          {item.text}
-                        </span>
-                        <button
-                          onClick={() => startEditing(item)}
-                          className="btn btn-xs btn-square btn-ghost"
-                          title="Editar"
-                        >
-                          <Pencil className="size-3" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteItem(q.id, item.id)}
-                          className="btn btn-xs btn-square btn-ghost text-error"
-                          title="Excluir"
-                        >
-                          <Trash2 className="size-3" />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                ))}
+            <header className="flex items-center justify-between gap-2 border-b border-base-300 px-3 py-2">
+              <div className="flex items-center gap-2">
+                <span className={cn("grid size-7 place-items-center rounded-tl-md rounded-br-md font-mono text-sm font-bold", q.chip)}>{q.letter}</span>
+                <div>
+                  <h3 className="text-[13px] font-bold leading-tight">{q.label}</h3>
+                  <p className="text-[11px] leading-tight text-base-content/50">{q.hint}</p>
+                </div>
               </div>
+              <ToolBadge className="font-mono">{swot[q.id].length}</ToolBadge>
+            </header>
+
+            <div className="flex flex-1 flex-col gap-1.5 overflow-y-auto p-3">
+              {swot[q.id].length === 0 && (
+                <p className="rounded-md border border-dashed border-base-300 px-3 py-4 text-center text-xs text-base-content/45">
+                  Nenhum item ainda. Escreva abaixo ou arraste de outro quadrante.
+                </p>
+              )}
+
+              {swot[q.id].map((item) => (
+                <div
+                  key={item.id}
+                  draggable={editingId !== item.id}
+                  onDragStart={(e) => handleDragStart(e, item, q.id)}
+                  className={cn(
+                    "group flex items-center gap-1.5 rounded-md border border-base-300 bg-base-100 py-1 pl-1.5 pr-1 shadow-sm",
+                    editingId !== item.id && "cursor-grab active:cursor-grabbing",
+                  )}
+                >
+                  {editingId === item.id ? (
+                    <>
+                      <ToolInput
+                        autoFocus
+                        value={editingText}
+                        onChange={(e) => setEditingText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") confirmEditing(q.id, item.id);
+                          if (e.key === "Escape") cancelEditing();
+                        }}
+                        className="h-7"
+                      />
+                      <IconButton label="Confirmar" icon={<Check />} size="xs" variant="primary" onClick={() => confirmEditing(q.id, item.id)} />
+                      <IconButton label="Cancelar" icon={<X />} size="xs" onClick={cancelEditing} />
+                    </>
+                  ) : (
+                    <>
+                      <GripVertical className="size-3.5 shrink-0 text-base-content/30" aria-hidden="true" />
+                      <span className="flex-1 break-words text-[13px]">{item.text}</span>
+                      <span className="flex opacity-60 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                        <IconButton label="Editar" icon={<Pencil />} size="xs" onClick={() => startEditing(item)} />
+                        <IconButton label="Excluir" icon={<Trash2 />} size="xs" variant="danger" onClick={() => handleDeleteItem(q.id, item.id)} />
+                      </span>
+                    </>
+                  )}
+                </div>
+              ))}
             </div>
-          </div>
+
+            <form
+              data-html2canvas-ignore
+              className="flex items-center gap-1.5 border-t border-base-300 bg-base-200/40 px-3 py-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAddItem(q.id);
+              }}
+            >
+              <ToolInput
+                value={drafts[q.id]}
+                onChange={(e) => setDrafts((d) => ({ ...d, [q.id]: e.target.value }))}
+                placeholder={`+ Adicionar em ${q.label}`}
+                aria-label={`Adicionar item em ${q.label}`}
+              />
+              <IconButton type="submit" label={`Adicionar em ${q.label}`} icon={<Plus />} variant="primary" disabled={!drafts[q.id].trim()} />
+            </form>
+          </section>
         ))}
       </div>
-    </div>
+    </ToolScope>
   );
 };

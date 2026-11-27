@@ -4,6 +4,7 @@ import { useChangeNotifier } from "@/lib/hooks/useChangeNotifier";
 import html2canvas from "html2canvas-pro";
 import { useToast } from "@/components/providers/ToastContext";
 import { Image, RotateCcw } from "lucide-react";
+import { Panel, ToolBadge, ToolButton, ToolScope, Toolbar, ToolbarGroup, ToolbarSpacer, cn } from "@/components/stage";
 
 export const SWOTCanvas = ({
   missions,
@@ -18,32 +19,16 @@ export const SWOTCanvas = ({
   onSwotChange?: (swot: Record<string, any[]>) => void;
   missions: any[];
   setMissions: (missions: any[]) => void;
-  seasons: string[];
-  selectedSeason: string | "unearthed";
-  setSelectedSeason: (id: string) => void;
+  /** Temporada vem da rota (/matriz-swot/[season]); não há seletor aqui. */
+  selectedSeason: string;
 }) => {
   const quadrants = [
-    {
-      id: "strengths",
-      label: "Forças",
-      color: ["bg-success/20", "border-success", "text-success"],
-    },
-    {
-      id: "weaknesses",
-      label: "Fraquezas",
-      color: ["bg-error/20", "border-error", "text-error"],
-    },
-    {
-      id: "opportunities",
-      label: "Oportunidades",
-      color: ["bg-info/20", "border-info", "text-info"],
-    },
-    {
-      id: "threats",
-      label: "Ameaças",
-      color: ["bg-warning/20", "border-warning", "text-warning"],
-    },
+    { id: "strengths", letter: "S", label: "Forças", hint: "Interno · ajuda", bar: "border-t-success", chip: "bg-success text-success-content", drop: "bg-success/[0.06]" },
+    { id: "weaknesses", letter: "W", label: "Fraquezas", hint: "Interno · atrapalha", bar: "border-t-error", chip: "bg-error text-error-content", drop: "bg-error/[0.06]" },
+    { id: "opportunities", letter: "O", label: "Oportunidades", hint: "Externo · ajuda", bar: "border-t-info", chip: "bg-info text-info-content", drop: "bg-info/[0.06]" },
+    { id: "threats", letter: "T", label: "Ameaças", hint: "Externo · atrapalha", bar: "border-t-warning", chip: "bg-warning text-warning-content", drop: "bg-warning/[0.08]" },
   ];
+  const [dragOver, setDragOver] = useState<string | null>(null);
 
   const { addToast } = useToast();
   const [swot, setSwot] = useState<Record<string, any[]>>(() => ({
@@ -57,6 +42,7 @@ export const SWOTCanvas = ({
 
   const handleDrop = (e: React.DragEvent, targetQuadrant: string) => {
     e.preventDefault();
+    setDragOver(null);
     const transferData = e.dataTransfer.getData("mission");
     const fromQuadrant = e.dataTransfer.getData("fromQuadrant");
     if (!transferData) return;
@@ -134,92 +120,101 @@ export const SWOTCanvas = ({
     addToast("Matriz SWOT limpa!", "warning");
   };
 
+  const placed = swot.strengths.length + swot.weaknesses.length + swot.opportunities.length + swot.threats.length;
+
   return (
-    <div className="space-y-6">
-      <section className="flex flex-wrap items-center justify-end gap-4">
-        <button
-          onClick={exportPNG}
-          className="btn btn-outline btn-success gap-2"
-        >
-          <Image className="size-5" />
-          Exportar
-        </button>
+    <ToolScope className="overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] border border-base-300">
+      <Toolbar label="Ações da matriz SWOT" className="px-3">
+        <ToolbarGroup>
+          <span className="px-1 text-[13px] font-bold capitalize">{selectedSeason}</span>
+          <ToolBadge>
+            {placed}/{placed + missions.length} na matriz
+          </ToolBadge>
+        </ToolbarGroup>
+        <ToolbarSpacer />
+        <ToolbarGroup>
+          <ToolButton variant="ghost" icon={<RotateCcw />} onClick={resetSwot}>
+            Resetar
+          </ToolButton>
+          <ToolButton variant="primary" icon={<Image />} onClick={exportPNG}>
+            Exportar PNG
+          </ToolButton>
+        </ToolbarGroup>
+      </Toolbar>
 
-        <button
-          onClick={resetSwot}
-          className="btn btn-outline btn-error gap-2"
-        >
-          <RotateCcw className="size-5" />
-          Resetar
-        </button>
-      </section>
-
-      <div className="flex flex-col lg:flex-row gap-6 max-h-[600px]">
+      <div className="flex flex-col gap-3 p-3 lg:flex-row">
         {/* Missões disponíveis */}
-        <div className="w-40 h-[600px] overflow-y-auto p-3 bg-base-200 border border-base-300 rounded-lg">
-          <h3 className="text-sm font-bold mb-2">Missões</h3>
-          <div className="grid grid-cols-1 gap-3">
+        <Panel title="Missões" actions={<ToolBadge>{missions.length}</ToolBadge>} className="lg:w-44 lg:shrink-0" padded={false}>
+          <div className="grid max-h-[560px] grid-cols-3 gap-2 overflow-y-auto p-2 sm:grid-cols-6 lg:grid-cols-1">
             {missions.map((m) => (
               <div
                 key={m.id}
                 draggable
                 onDragStart={(e) => handleDragStart(e, m)}
-                className="card w-full aspect-square bg-white rounded-xl shadow-md cursor-grab hover:scale-105 transition-transform"
+                className="group relative aspect-square cursor-grab overflow-hidden rounded-md border border-base-300 bg-white transition-[border-color,box-shadow] hover:border-primary hover:shadow-[3px_3px_0_0_var(--color-primary)] active:cursor-grabbing"
                 title={m.name}
               >
-                <figure>
-                  <img
-                    src={m.image}
-                    alt={m.name}
-                    className="w-full h-full object-contain p-2"
-                  />
-                </figure>
-                <div className="absolute bottom-2 right-2 badge badge-primary text-xs">
-                  {m.id}
-                </div>
+                <img src={m.image} alt={m.name} className="h-full w-full object-contain p-2" />
+                <span className="absolute bottom-1 right-1 rounded bg-base-content px-1 font-mono text-[10px] font-bold text-base-100">{m.id}</span>
               </div>
             ))}
+            {missions.length === 0 && (
+              <p className="col-span-full px-1 py-4 text-center text-xs text-base-content/50">Todas as missões já estão na matriz.</p>
+            )}
           </div>
-        </div>
+        </Panel>
 
         {/* Quadrantes SWOT */}
-        <div
-          ref={quadrantsRef}
-          className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-auto"
-        >
+        <div ref={quadrantsRef} className="grid flex-1 grid-cols-1 gap-3 bg-base-200/0 md:grid-cols-2">
           {quadrants.map((q) => (
-            <div
+            <section
               key={q.id}
-              onDragOver={(e) => e.preventDefault()}
+              aria-label={q.label}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (dragOver !== q.id) setDragOver(q.id);
+              }}
+              onDragLeave={() => setDragOver((d) => (d === q.id ? null : d))}
               onDrop={(e) => handleDrop(e, q.id)}
-              className={`relative flex flex-col rounded-lg border ${q.color[0]} ${q.color[1]} ${q.color[2]} bg-base-100/80 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300`}
+              className={cn(
+                "flex min-h-[260px] flex-col overflow-hidden rounded-lg border border-t-[3px] border-base-300 bg-base-100 transition-[box-shadow,background-color]",
+                q.bar,
+                dragOver === q.id && cn("ring-2 ring-primary/40", q.drop),
+              )}
             >
-              <div className="card-body p-3 overflow-hidden">
-                <h2 className="card-title text-base">{q.label}</h2>
-                <div className="flex flex-wrap gap-2 overflow-y-auto">
-                  {swot[q.id].map((m) => (
-                    <div
-                      key={m.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, m, q.id)}
-                      className="relative w-20 aspect-square rounded-lg overflow-hidden shadow bg-white cursor-grab"
-                    >
-                      <img
-                        src={m.image}
-                        alt={m.name}
-                        className="w-full h-full object-contain"
-                      />
-                      <span className="absolute bottom-1 right-1 badge badge-secondary text-[10px]">
-                        {m.id}
-                      </span>
-                    </div>
-                  ))}
+              <header className="flex items-center justify-between gap-2 border-b border-base-300 px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className={cn("grid size-7 place-items-center rounded-tl-md rounded-br-md font-mono text-sm font-bold", q.chip)}>{q.letter}</span>
+                  <div>
+                    <h3 className="text-[13px] font-bold leading-tight">{q.label}</h3>
+                    <p className="text-[11px] leading-tight text-base-content/50">{q.hint}</p>
+                  </div>
                 </div>
+                <ToolBadge className="font-mono">{swot[q.id].length}</ToolBadge>
+              </header>
+              <div className="flex flex-1 flex-wrap content-start gap-2 overflow-y-auto p-3">
+                {swot[q.id].map((m) => (
+                  <div
+                    key={m.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, m, q.id)}
+                    className="relative aspect-square w-20 cursor-grab overflow-hidden rounded-md border border-base-300 bg-white shadow-sm active:cursor-grabbing"
+                    title={m.name}
+                  >
+                    <img src={m.image} alt={m.name} className="h-full w-full object-contain" />
+                    <span className="absolute bottom-1 right-1 rounded bg-base-content px-1 font-mono text-[10px] font-bold text-base-100">{m.id}</span>
+                  </div>
+                ))}
+                {swot[q.id].length === 0 && (
+                  <p className="m-auto rounded-md border border-dashed border-base-300 px-3 py-4 text-center text-xs text-base-content/45">
+                    Arraste missões para cá
+                  </p>
+                )}
               </div>
-            </div>
+            </section>
           ))}
         </div>
       </div>
-    </div>
+    </ToolScope>
   );
 };

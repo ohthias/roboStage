@@ -70,7 +70,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({
     <div
       draggable={!isEditing}
       onDragStart={(e) => onDragStart && onDragStart(e, note.id)}
-      className={`group relative rounded-xl border p-3 transition-all duration-150 ${
+      className={`group relative rounded-tl-xl rounded-br-xl rounded-tr-sm rounded-bl-sm border p-3 transition-all duration-150 ${
         isEditing
           ? 'ring-2 ring-primary shadow-md'
           : '[@media(hover:hover)]:hover:-translate-y-0.5 hover:shadow-md [@media(hover:hover)]:cursor-grab active:cursor-grabbing shadow-2xs'
@@ -84,7 +84,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({
         }}
         type="button"
         data-html2canvas-ignore
-        className={`btn btn-ghost btn-circle btn-sm sm:btn-xs absolute top-0.5 right-0.5 sm:top-1 sm:right-1 opacity-60 hover:opacity-100 focus-visible:opacity-100 text-slate-700 transition-opacity ${HOVER_REVEAL}`}
+        className={`absolute right-1 top-1 grid size-8 place-items-center rounded-md text-slate-700 opacity-60 transition-opacity hover:bg-black/5 hover:opacity-100 focus-visible:opacity-100 sm:size-6 ${HOVER_REVEAL}`}
         title="Excluir nota"
         aria-label="Excluir nota"
       >
@@ -102,7 +102,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({
             onKeyDown={handleKeyDown}
             rows={3}
             enterKeyHint="done"
-            className="textarea textarea-bordered textarea-sm sm:textarea-xs w-full bg-white/90 text-slate-900 leading-relaxed text-base sm:text-xs"
+            className="w-full resize-none rounded-md border border-black/15 bg-white/90 px-2 py-1 text-base leading-relaxed text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-xs"
           />
         ) : (
           <p
@@ -145,7 +145,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({
         {onChangeCategory && categoryOrder && (
           <label
             data-html2canvas-ignore
-            className={`relative btn btn-ghost btn-circle btn-sm sm:btn-xs text-slate-700 opacity-70 hover:opacity-100 focus-within:opacity-100 ${HOVER_REVEAL}`}
+            className={`relative grid size-8 cursor-pointer place-items-center rounded-md text-slate-700 opacity-70 hover:bg-black/5 hover:opacity-100 focus-within:opacity-100 sm:size-6 ${HOVER_REVEAL}`}
             title="Mover para outro quadrante"
           >
             <ArrowRightLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5" />

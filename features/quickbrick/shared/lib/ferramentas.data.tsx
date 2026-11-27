@@ -39,29 +39,29 @@ function renderSeletorDeTemporadas(
   rota: string,
 ) {
   return (
-    <div className="grid grid-cols-3 gap-2 mt-2 w-full mx-auto">
+    <div className="mt-1 grid w-full grid-cols-3 gap-2">
       {seasons.map((s: string) => {
         const season = seasonLogos[s];
+        const [nome, ano] = (season?.name ?? s).split(" (");
 
         return (
           <button
             key={s}
+            type="button"
             onClick={() => router.push(`${rota}/${s}`)}
-            className="group/card w-full flex items-center justify-center flex-col gap-2 px-2 py-1 rounded-xl border border-base-300/60 bg-base-100 hover:border-primary hover:bg-base-200/50 transition-all duration-300 cursor-pointer"
+            className="group/season stage-paper flex flex-col items-center gap-1.5 rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 px-1.5 pb-2 pt-1.5 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:border-base-content hover:shadow-[4px_4px_0_0_var(--color-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
           >
-            <div className="flex items-center gap-2 flex-col justify-center">
+            <span className="stage-dots grid h-16 w-full place-items-center rounded-tl-lg rounded-br-lg bg-base-200/70 [background-size:10px_10px]">
               <Image
                 src={season?.image || "/images/icons/default-season.png"}
-                alt={season?.name || "Temporada FLL"}
-                width={75}
-                height={75}
-                className="object-contain rounded-lg bg-base-200/70 p-1 h-20 w-20 mx-auto"
+                alt=""
+                width={64}
+                height={64}
+                className="h-12 w-12 object-contain transition-transform duration-300 group-hover/season:scale-110 motion-reduce:group-hover/season:scale-100"
               />
-              <p className="text-[12px] text-center">{season?.name}</p>
-            </div>
-            <span className="text-xs font-semibold text-primary opacity-0 group-hover/card:opacity-100 transition-opacity mt-1">
-              Abrir →
             </span>
+            <span className="text-[11px] font-black uppercase leading-none tracking-tight">{nome}</span>
+            {ano && <span className="font-mono text-[9px] leading-none text-base-content/45">{ano.replace(")", "")}</span>}
           </button>
         );
       })}

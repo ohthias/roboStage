@@ -29,17 +29,17 @@ const Stepper: React.FC<{ label: string; value: number; onChange: (v: number) =>
 }) => (
   <div>
     <span className="text-[10px] font-medium text-base-content/50 mb-1 block">{label}</span>
-    <div className="join w-full">
+    <div className="inline-flex items-center gap-0.5 rounded-md border border-base-300 bg-base-200/60 p-0.5 flex w-full">
       <button
-        className="join-item btn btn-sm btn-outline"
+        className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content h-8 px-3 text-[13px]"
         onClick={() => onChange(Math.max(5, value - step))}
       >
         −
       </button>
-      <div className="join-item flex-1 flex items-center justify-center border border-base-300 text-sm font-mono">
+      <div className="flex flex-1 items-center justify-center font-mono text-sm">
         {value} {unit}
       </div>
-      <button className="join-item btn btn-sm btn-outline" onClick={() => onChange(value + step)}>
+      <button className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content h-8 px-3 text-[13px]" onClick={() => onChange(value + step)}>
         +
       </button>
     </div>
@@ -70,7 +70,7 @@ const MobileRobotSheet: React.FC<MobileRobotSheetProps> = ({ open, onClose, robo
               <button
                 key={s.value}
                 onClick={() => onChange({ ...robotConfig, shape: s.value })}
-                className={`btn btn-sm ${robotConfig.shape === s.value ? "btn-primary" : "btn-outline"}`}
+                className={`inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 h-9 px-3 text-[13px] ${robotConfig.shape === s.value ? "rounded-tl-lg rounded-br-lg rounded-tr-sm rounded-bl-sm border-transparent bg-primary text-primary-content hover:brightness-110" : "border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60"}`}
               >
                 {s.label}
               </button>
@@ -107,7 +107,7 @@ const MobileRobotSheet: React.FC<MobileRobotSheetProps> = ({ open, onClose, robo
             <textarea
               value={robotConfig.customPath}
               onChange={(e) => onChange({ ...robotConfig, customPath: e.target.value })}
-              className="textarea textarea-bordered textarea-sm w-full font-mono text-xs"
+              className="rounded-md border border-base-300 bg-base-100 px-2.5 transition-colors placeholder:text-base-content/40 hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 w-full py-1.5 font-mono text-xs"
               rows={2}
             />
           </label>

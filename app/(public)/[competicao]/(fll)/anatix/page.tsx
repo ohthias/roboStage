@@ -1,6 +1,5 @@
 import { PUBLIC_DIRS } from "@/lib/assets";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Activity,
@@ -17,8 +16,26 @@ import {
   Workflow,
 } from "lucide-react";
 
-import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
-import { SectionTitle, toneClasses, type Tone } from "@/features/home/components/shared";
+import {
+  Accordion,
+  Bolt,
+  ButtonLink,
+  Callout,
+  Code,
+  Gear,
+  Kicker,
+  Marquee,
+  Reveal,
+  Section,
+  SectionTitle,
+  Starburst,
+  StickerTag,
+  buttonClasses,
+  cn,
+  toneSoft,
+  toneText,
+  type Tone,
+} from "@/components/stage";
 import { CodeBlock } from "@/features/labtest/anatix/components/anatix-interactive";
 
 export const metadata: Metadata = {
@@ -155,6 +172,15 @@ const faq = [
   },
 ];
 
+const card =
+  "stage-paper group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 transition-[transform,box-shadow,border-color] duration-200 motion-reduce:hover:translate-y-0";
+
+const hoverShadow: Record<string, string> = {
+  primary: "hover:border-primary hover:shadow-[6px_6px_0_0_var(--color-primary)]",
+  secondary: "hover:border-secondary hover:shadow-[6px_6px_0_0_var(--color-secondary)]",
+  accent: "hover:border-accent hover:shadow-[6px_6px_0_0_var(--color-accent)]",
+};
+
 export default async function FllAnatixPage({
   params,
 }: {
@@ -165,230 +191,225 @@ export default async function FllAnatixPage({
   if (competicao !== "fll") notFound();
 
   return (
-    <main className="overflow-x-clip">
+    <main className="overflow-x-clip bg-base-100 text-base-content">
       {/* ================================================================ HERO */}
-      <section className="relative isolate px-6 pb-20 pt-16 sm:pt-24">
+      <Section tone="glow" innerClassName="pb-20 pt-16 sm:pt-24">
         <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.1fr_1fr] [&>*]:min-w-0">
-          <RevealOnScroll>
-            <p className="inline-flex items-center gap-2 rounded-tl-lg rounded-br-lg border border-base-300 bg-base-100 px-3 py-1 font-mono text-xs tracking-[0.15em] text-base-content/60">
+          <Reveal>
+            <StickerTag tone="paper" rotate={-2} className="inline-flex items-center gap-2">
               <ToyBrick size={14} className="text-primary" /> FLL · PYBRICKS
-            </p>
-            <h1 className="mt-6 text-4xl font-black tracking-tight sm:text-6xl">
+            </StickerTag>
+            <h1 className="stage-display mt-6 text-4xl sm:text-6xl">
               Seu robô LEGO{" "}
-              <span className="mt-2 inline-block -rotate-1 bg-primary px-3 py-1 italic text-primary-content">
-                em tempo real.
-              </span>
+              <span className="mt-2 inline-block -rotate-1 bg-primary px-3 py-1 italic text-primary-content">em tempo real.</span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-7 text-base-content/65 sm:text-lg">
-              O Anatix agora roda no Pybricks. Coloque algumas linhas no programa das missões, conecte por{" "}
-              <b>Bluetooth</b> ou <b>cabo USB</b> e veja giro, sensores, estados e tempos de cada missão no LabTest,
-              enquanto o robô corre na mesa.
+              O Anatix agora roda no Pybricks. Coloque algumas linhas no programa das missões, conecte por <b>Bluetooth</b> ou{" "}
+              <b>cabo USB</b> e veja giro, sensores, estados e tempos de cada missão no LabTest, enquanto o robô corre na mesa.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={LAB_HREF} className="btn btn-primary rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none">
-                Criar laboratório <ArrowRight size={16} />
-              </Link>
-              <a
-                href={`${BASE}/anatix.py`}
-                download
-                className="btn btn-ghost border-base-300 bg-base-100 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none"
-              >
-                <Download size={16} /> Baixar anatix.py
+              <ButtonLink href={LAB_HREF} tone="primary" size="lg" iconRight={<ArrowRight size={18} />}>
+                Criar laboratório
+              </ButtonLink>
+              <a href={`${BASE}/anatix.py`} download className={buttonClasses({ tone: "outline", size: "lg" })}>
+                <Download size={18} /> Baixar anatix.py
               </a>
             </div>
-          </RevealOnScroll>
-          <RevealOnScroll delay={0.1}>
-            <CodeBlock lines={exemploLoop} />
-          </RevealOnScroll>
+          </Reveal>
+          <Reveal delay={100} effect="pop" className="relative">
+            <Starburst size={70} tone="accent" motion="spin" className="absolute -right-4 -top-8 z-10 hidden sm:inline-grid" />
+            <Bolt size={44} tone="secondary" motion="wiggle" className="absolute -bottom-6 -left-4 z-10 hidden sm:inline-grid" />
+            <div className="rounded-tl-2xl rounded-br-2xl shadow-[8px_8px_0_0_var(--color-secondary)]">
+              <CodeBlock lines={exemploLoop} />
+            </div>
+          </Reveal>
         </div>
-      </section>
+      </Section>
+
+      <Marquee items={["GIRO", "SENSORES", "ESTADOS", "TEMPOS", "EVENTOS", "BLUETOOTH", "USB", "PYBRICKS"]} />
 
       {/* ============================================================ RECURSOS */}
-      <section className="border-t border-base-300 bg-base-200/40 px-6 py-24">
+      <Section tone="muted">
         <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
+          <Reveal>
             <SectionTitle
               kicker="/ O QUE VOCÊ VÊ"
               title="Pare de adivinhar"
               highlight="na mesa."
               description="Quando uma missão falha, o Anatix mostra o que o robô estava medindo e decidindo naquele instante."
             />
-          </RevealOnScroll>
+          </Reveal>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 [&>*]:min-w-0">
-            {features.map(({ icon: Icon, tag, title, text, tone }, i) => {
-              const c = toneClasses[tone];
-              return (
-                <RevealOnScroll key={title} delay={i * 0.06}>
-                  <article className={`group h-full rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 ${c.hover}`}>
-                    <div className={`flex size-11 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
-                      <Icon size={20} strokeWidth={1.8} />
-                    </div>
-                    <p className={`mt-5 font-mono text-[11px] font-bold tracking-[0.2em] ${c.tag}`}>{tag}</p>
-                    <h3 className="mt-1 text-lg font-bold">{title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-base-content/60">{text}</p>
-                  </article>
-                </RevealOnScroll>
-              );
-            })}
+            {features.map(({ icon: Icon, tag, title, text, tone }, i) => (
+              <Reveal key={title} delay={i * 60} className="h-full">
+                <article className={cn(card, "p-6 hover:-translate-y-1", hoverShadow[tone])}>
+                  <span className={cn("grid size-11 place-items-center rounded-tl-xl rounded-br-xl transition-colors duration-300", toneSoft[tone])}>
+                    <Icon size={20} strokeWidth={1.8} />
+                  </span>
+                  <p className={cn("stage-kicker mt-5 text-[11px] font-bold", toneText[tone])}>{tag}</p>
+                  <h3 className="mt-1 text-lg font-black tracking-tight">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-base-content/60">{text}</p>
+                </article>
+              </Reveal>
+            ))}
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* ============================================================== ETAPAS */}
-      <section className="px-6 py-24">
+      <Section>
         <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
-            <SectionTitle kicker="/ COMO USAR" title="Três passos," highlight="uma vez só." highlightClass="bg-secondary text-secondary-content" />
-          </RevealOnScroll>
+          <Reveal>
+            <SectionTitle kicker="/ COMO USAR" title="Três passos," highlight="uma vez só." highlightTone="secondary" />
+          </Reveal>
           <ol className="mt-12 grid gap-5 md:grid-cols-3 [&>*]:min-w-0">
             {steps.map(({ number, icon: Icon, title, description }, i) => (
-              <RevealOnScroll key={number} delay={i * 0.08}>
-                <li className="h-full rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6">
+              <Reveal key={number} delay={i * 80} className="h-full">
+                <li className="h-full border-t-2 border-base-content pt-5">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-3xl font-black text-base-content/15">{number}</span>
-                    <Icon size={20} className="text-primary" />
+                    <span className="stage-display text-5xl text-primary">{number}</span>
+                    <span className="grid size-10 place-items-center rounded-tl-lg rounded-br-lg bg-base-content text-base-100">
+                      <Icon size={18} />
+                    </span>
                   </div>
-                  <h3 className="mt-4 text-lg font-bold">{title}</h3>
+                  <h3 className="mt-4 text-lg font-black tracking-tight">{title}</h3>
                   <p className="mt-2 text-sm leading-6 text-base-content/60">{description}</p>
                 </li>
-              </RevealOnScroll>
+              </Reveal>
             ))}
           </ol>
 
           <div className="mt-16 grid gap-8 lg:grid-cols-[1.15fr_1fr] [&>*]:min-w-0">
-            <RevealOnScroll>
-              <h3 className="mb-3 font-mono text-xs tracking-[0.2em] text-base-content/50">MISSÕES SEM LOOP</h3>
+            <Reveal>
+              <Kicker className="mb-3">MISSÕES SEM LOOP</Kicker>
               <CodeBlock lines={exemploMissoes} />
-              <p className="mt-3 text-sm text-base-content/60">
-                Programas de FLL costumam ser uma sequência de movimentos, sem um loop para chamar{" "}
-                <code>anx.update()</code>. O <code>anx.keep_alive()</code> roda em paralelo com{" "}
-                <code>multitask()</code> e mantém a conexão viva.
-              </p>
-            </RevealOnScroll>
-            <RevealOnScroll delay={0.08}>
-              <h3 className="mb-3 font-mono text-xs tracking-[0.2em] text-base-content/50">REFERÊNCIA</h3>
-              <div className="overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100">
-                <table className="table table-sm">
-                  <tbody>
-                    {api.map(([call, what]) => (
-                      <tr key={call}>
-                        <td className="whitespace-nowrap font-mono text-xs text-primary">{call}</td>
-                        <td className="text-xs text-base-content/65">{what}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <Callout type="tip" title="Por que keep_alive?" className="mt-4">
+                Programas de FLL costumam ser uma sequência de movimentos, sem um loop para chamar <Code>anx.update()</Code>. O{" "}
+                <Code>anx.keep_alive()</Code> roda em paralelo com <Code>multitask()</Code> e mantém a conexão viva.
+              </Callout>
+            </Reveal>
+            <Reveal delay={80}>
+              <Kicker className="mb-3">REFERÊNCIA</Kicker>
+              <div className="stage-paper overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100">
+                <dl className="divide-y divide-base-300">
+                  {api.map(([call, what]) => (
+                    <div key={call} className="grid gap-1 px-4 py-2.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-4">
+                      <dt className="break-all font-mono text-xs font-semibold text-primary">{call}</dt>
+                      <dd className="text-xs text-base-content/65">{what}</dd>
+                    </div>
+                  ))}
+                </dl>
               </div>
-            </RevealOnScroll>
+            </Reveal>
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* ============================================================ CONEXÃO */}
-      <section className="border-t border-base-300 bg-base-200/40 px-6 py-24">
+      <Section tone="secondary" edgeTop="circuit" edgeBottom="circuit" innerClassName="stage-grid-on-color">
         <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
-            <SectionTitle
-              kicker="/ CONEXÃO"
-              title="Com fio ou"
-              highlight="sem fio."
-              highlightClass="bg-accent text-accent-content"
-              description="O LabTest conecta direto no hub pelo navegador (Chrome ou Edge no computador). Não precisa instalar nada."
-            />
-          </RevealOnScroll>
+          <Reveal>
+            <div className="max-w-3xl">
+              <p className="stage-kicker text-secondary-content/70">/ CONEXÃO</p>
+              <h2 className="stage-display mt-3 text-3xl sm:text-5xl">
+                Com fio ou{" "}
+                <span className="mt-2 inline-block -rotate-1 bg-accent px-3 py-1 italic text-accent-content">sem fio.</span>
+              </h2>
+              <p className="mt-6 max-w-2xl text-base leading-7 text-secondary-content/80 sm:text-lg">
+                O LabTest conecta direto no hub pelo navegador (Chrome ou Edge no computador). Não precisa instalar nada.
+              </p>
+            </div>
+          </Reveal>
           <div className="mt-12 grid gap-5 md:grid-cols-2 [&>*]:min-w-0">
-            {connections.map(({ icon: Icon, title, tone, hubs, text }, i) => {
-              const c = toneClasses[tone];
-              return (
-                <RevealOnScroll key={title} delay={i * 0.08}>
-                  <article className={`group h-full rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 ${c.hover}`}>
-                    <div className="flex items-center gap-3">
-                      <div className={`flex size-11 items-center justify-center rounded-tl-xl rounded-br-xl ${c.icon}`}>
-                        <Icon size={20} strokeWidth={1.8} />
-                      </div>
-                      <h3 className="text-lg font-bold">{title}</h3>
-                    </div>
-                    <p className={`mt-4 text-xs font-semibold ${c.tag}`}>{hubs}</p>
-                    <p className="mt-2 text-sm leading-6 text-base-content/60">{text}</p>
-                  </article>
-                </RevealOnScroll>
-              );
-            })}
+            {connections.map(({ icon: Icon, title, tone, hubs, text }, i) => (
+              <Reveal key={title} delay={i * 80} className="h-full">
+                <article className="stage-paper group h-full rounded-tl-2xl rounded-br-2xl bg-base-100 p-6 text-base-content shadow-[6px_6px_0_0_var(--stage-shadow)]">
+                  <div className="flex items-center gap-3">
+                    <span className={cn("grid size-11 place-items-center rounded-tl-xl rounded-br-xl", toneSoft[tone])}>
+                      <Icon size={20} strokeWidth={1.8} />
+                    </span>
+                    <h3 className="text-lg font-black tracking-tight">{title}</h3>
+                  </div>
+                  <p className={cn("mt-4 text-xs font-semibold", toneText[tone])}>{hubs}</p>
+                  <p className="mt-2 text-sm leading-6 text-base-content/60">{text}</p>
+                </article>
+              </Reveal>
+            ))}
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* ========================================================= DOWNLOADS */}
-      <section id="baixar" className="scroll-mt-24 px-6 py-24">
+      <Section id="baixar" className="scroll-mt-24">
         <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
+          <Reveal>
             <div className="flex flex-wrap items-end justify-between gap-6">
               <SectionTitle kicker="/ ONDE PEGAR" title="Biblioteca e" highlight="exemplos." />
               <a
                 href="https://github.com/ohthias/Anatix_C/blob/master/docs/PROTOCOLO.md"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-tl-lg rounded-br-lg border border-base-300 bg-base-100 px-4 py-2 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
+                className={buttonClasses({ tone: "outline", className: "font-mono font-medium" })}
               >
                 Protocolo Anatix v1 <ArrowUpRight size={15} />
               </a>
             </div>
-          </RevealOnScroll>
+          </Reveal>
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 [&>*]:min-w-0">
             {downloads.map(({ file, title, text }, i) => (
-              <RevealOnScroll key={file} delay={i * 0.06}>
-                <a
-                  href={`${BASE}/${file}`}
-                  download
-                  className="group flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5 transition-all hover:-translate-y-1 hover:border-primary/40"
-                >
-                  <span className="font-mono text-xs text-base-content/50">{file}</span>
-                  <span className="mt-2 font-bold">{title}</span>
+              <Reveal key={file} delay={i * 60} className="h-full">
+                <a href={`${BASE}/${file}`} download className={cn(card, "p-5 hover:-translate-y-1", hoverShadow.primary)}>
+                  <span className="inline-flex w-fit rounded-tl-md rounded-br-md bg-base-content px-2 py-0.5 font-mono text-[11px] text-base-100">
+                    {file}
+                  </span>
+                  <span className="mt-3 font-black tracking-tight">{title}</span>
                   <span className="mt-1 flex-1 text-sm text-base-content/60">{text}</span>
-                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold group-hover:text-primary">
+                  <span className="mt-4 inline-flex items-center gap-2 border-t border-dashed border-base-300 pt-3 text-sm font-bold group-hover:text-primary">
                     <Download size={15} /> Baixar
                   </span>
                 </a>
-              </RevealOnScroll>
+              </Reveal>
             ))}
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* ================================================================ FAQ */}
-      <section className="border-t border-base-300 bg-base-200/40 px-6 py-24">
+      <Section tone="muted">
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
-          <RevealOnScroll>
-            <SectionTitle kicker="/ DÚVIDAS" title="Perguntas" highlight="frequentes." highlightClass="bg-secondary text-secondary-content" />
-          </RevealOnScroll>
-          <div className="flex flex-col gap-3">
-            {faq.map(({ q, a }) => (
-              <details key={q} className="group rounded-tl-xl rounded-br-xl border border-base-300 bg-base-100 p-5">
-                <summary className="cursor-pointer list-none font-semibold">{q}</summary>
-                <p className="mt-3 text-sm leading-6 text-base-content/65">{a}</p>
-              </details>
-            ))}
-          </div>
+          <Reveal>
+            <SectionTitle kicker="/ DÚVIDAS" title="Perguntas" highlight="frequentes." highlightTone="secondary" />
+          </Reveal>
+          <Reveal delay={80}>
+            <Accordion
+              defaultOpen={0}
+              items={faq.map(({ q, a }) => ({ title: q, content: <p className="text-sm leading-6 text-base-content/65">{a}</p> }))}
+            />
+          </Reveal>
         </div>
-      </section>
+      </Section>
 
       {/* ========================================================= CTA FINAL */}
-      <section className="px-6 py-24">
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 text-center">
-          <h2 className="text-3xl font-black tracking-tight sm:text-5xl">Pronto para a próxima rodada?</h2>
-          <p className="max-w-2xl text-base-content/65">
-            Crie um laboratório LEGO no LabTest. Cada execução do programa vira uma sessão gravada para comparar depois.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link href={LAB_HREF} className="btn btn-primary">
-              Criar laboratório <ArrowRight size={16} />
-            </Link>
-            <Link href="/anatix" className="btn btn-ghost border-base-300 bg-base-100">
-              Anatix para Arduino
-            </Link>
+      <Section tone="primary" edgeTop="gear" innerClassName="stage-grid-on-color relative overflow-hidden">
+        <Gear size={200} tone="accent" motion="spin" className="absolute -right-12 -top-10 hidden sm:inline-block" />
+        <Reveal>
+          <div className="relative mx-auto max-w-6xl">
+            <Kicker className="text-primary-content/70">PRÓXIMA RODADA</Kicker>
+            <h2 className="stage-display mt-4 max-w-3xl text-3xl sm:text-5xl">Pronto para a próxima rodada?</h2>
+            <p className="mt-5 max-w-xl text-primary-content/85">
+              Crie um laboratório LEGO no LabTest. Cada execução do programa vira uma sessão gravada para comparar depois.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <ButtonLink href={LAB_HREF} tone="accent" size="lg" iconRight={<ArrowRight size={18} />}>
+                Criar laboratório
+              </ButtonLink>
+              <ButtonLink href="/anatix" tone="ghost" size="lg" shape="rounded" className="text-primary-content hover:bg-primary-content/10">
+                Anatix para Arduino
+              </ButtonLink>
+            </div>
           </div>
-        </div>
-      </section>
+        </Reveal>
+      </Section>
     </main>
   );
 }

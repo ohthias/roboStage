@@ -12,21 +12,31 @@ import {
   Leaf,
   NotepadText,
   Plus,
-  TriangleAlert,
   Trophy,
   Users,
   Wifi,
 } from "lucide-react";
 
-import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
-import { AnimatedBackground, SectionTitle, toneClasses, type Tone } from "@/features/home/components/shared";
 import {
-  CtaBlock,
-  ToolCard,
-  cornerBtn,
-  type ToolItem,
-} from "@/features/leagues/shared/components/CompetitionSections";
-import "@/features/home/components/home.css";
+  ButtonLink,
+  Callout,
+  Chip,
+  FeatureCard,
+  Kicker,
+  Reveal,
+  Section,
+  SectionTitle,
+  Sparkle,
+  StickerTag,
+  VideoEmbed,
+  cn,
+  toneSoft,
+  toneText,
+  type Tone,
+} from "@/components/stage";
+
+const LIME = "#C8F77A";
+const LIME_INK = "#20320C";
 
 type Params = { params: Promise<{ competicao: string }> };
 
@@ -77,7 +87,7 @@ const pillars: { icon: typeof Cpu; tag: string; title: string; text: string; ton
   },
 ];
 
-const tools: ToolItem[] = [
+const tools: { icon: typeof Cpu; tag: string; title: string; description: string; href: string; tone: "primary" | "secondary" | "accent" }[] = [
   {
     icon: Trophy,
     tag: "PONTUAÇÃO",
@@ -110,6 +120,15 @@ const alsoFll = [
   { icon: Globe2, title: "Roboticar", text: "Iniciativas de equipes e dados da robótica no Brasil.", href: "/roboticar" },
 ];
 
+const card =
+  "stage-paper group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 transition-[transform,box-shadow,border-color] duration-200 motion-reduce:hover:translate-y-0";
+
+const hoverShadow: Record<string, string> = {
+  primary: "hover:border-primary hover:shadow-[6px_6px_0_0_var(--color-primary)]",
+  secondary: "hover:border-secondary hover:shadow-[6px_6px_0_0_var(--color-secondary)]",
+  accent: "hover:border-accent hover:shadow-[6px_6px_0_0_var(--color-accent)]",
+};
+
 export default async function FutureEditionPage({ params }: Params) {
   const { competicao } = await params;
   // Página exclusiva da FLL.
@@ -117,168 +136,146 @@ export default async function FutureEditionPage({ params }: Params) {
 
   return (
     <main className="overflow-x-clip bg-base-100 text-base-content">
-      <section className="relative isolate overflow-hidden px-6 pb-20 pt-14 sm:pt-20">
-        <AnimatedBackground />
+      {/* ============================================================== HERO */}
+      <Section tone="night" edgeBottom="circuit" innerClassName="pb-24 pt-14 sm:pt-20">
         <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.05fr] [&>*]:min-w-0">
-          <div>
-            <nav aria-label="Trilha" className="font-mono text-xs tracking-[0.15em] text-base-content/45">
-              <Link href="/fll" className="hover:text-primary">/FLL</Link>
+          <Reveal>
+            <nav aria-label="Trilha" className="stage-kicker text-white/55">
+              <Link href="/fll" className="hover:text-white">
+                /FLL
+              </Link>
               <span> / FUTURE EDITION</span>
             </nav>
-            <h1 className="mt-5 text-5xl font-bold tracking-tight sm:text-7xl">
+            <h1 className="stage-display mt-5 text-5xl text-white sm:text-7xl">
               Future{" "}
-              <span className="inline-block -rotate-1 bg-secondary px-3 py-1 italic text-secondary-content">
+              <span className="inline-block -rotate-1 px-3 py-1 italic" style={{ background: LIME, color: LIME_INK }}>
                 Edition
               </span>
             </h1>
-            <p className="mt-5 text-lg font-semibold text-secondary sm:text-xl">
+            <p className="mt-5 text-lg font-semibold sm:text-xl" style={{ color: LIME }}>
               Baseada nos kits LEGO® Education Computer Science &amp; AI
             </p>
-            <p className="mt-5 max-w-xl text-base leading-relaxed text-base-content/65 sm:text-lg">
-              Na BIOGLOW™ Future Edition, as equipes da FIRST LEGO League
-              participam de uma experiência sobre biodiversidade, com hardware
-              sem fio e partidas em um novo formato cooperativo baseado em
-              alianças.
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
+              Na BIOGLOW™ Future Edition, as equipes da FIRST LEGO League participam de uma experiência sobre biodiversidade,
+              com hardware sem fio e partidas em um novo formato cooperativo baseado em alianças.
             </p>
 
             <div className="mt-7 flex flex-wrap gap-2">
               {heroBadges.map(({ label, icon: Icon }) => (
-                <span
-                  key={label}
-                  className="inline-flex items-center gap-1.5 rounded-tl-md rounded-br-md border border-base-300 bg-base-100 px-2.5 py-1 font-mono text-xs text-base-content/70"
-                >
-                  <Icon size={13} />
+                <Chip key={label} icon={<Icon size={13} />} className="border-white/20 bg-white/5 text-white/80">
                   {label}
-                </span>
+                </Chip>
               ))}
             </div>
 
             <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Link
+              <ButtonLink
                 href="/fll/future-edition/score"
-                className={`btn btn-secondary btn-lg ${cornerBtn} shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--color-base-content)]`}
+                size="lg"
+                flat
+                iconLeft={<Trophy size={20} />}
+                className="border-0 shadow-[4px_4px_0_0_#ffffff] hover:-translate-y-0.5"
+                style={{ background: LIME, color: LIME_INK }}
               >
-                <Trophy size={20} />
                 Pontuar uma partida
-              </Link>
-              <a href="#ferramentas" className="btn btn-ghost btn-lg">
+              </ButtonLink>
+              <ButtonLink href="#ferramentas" tone="ghost" size="lg" shape="rounded" iconRight={<ArrowDown size={18} />} className="text-white hover:bg-white/10">
                 Ver ferramentas
-                <ArrowDown size={18} />
-              </a>
+              </ButtonLink>
             </div>
-          </div>
+          </Reveal>
 
-          {/* vídeo */}
-          <div className="relative">
-            <div aria-hidden="true" className="absolute -right-4 -top-4 size-24 rotate-12 rounded-tl-2xl rounded-br-2xl bg-accent" />
-            <div aria-hidden="true" className="absolute -bottom-5 -left-5 size-20 rounded-full border-2 border-dashed border-secondary/50" />
-            <figure className="relative overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 shadow-[8px_8px_0_0_var(--color-secondary)]">
-              <div className="flex items-center justify-between border-b border-base-300 px-5 py-3">
-                <span className="inline-flex items-center gap-2 font-mono text-xs text-base-content/60">
-                  <span className="size-2 rounded-full bg-primary" />
-                  Apresentação · BIOGLOW Future Edition
-                </span>
-                <span className="font-mono text-[10px] tracking-widest text-base-content/35">VÍDEO</span>
-              </div>
-              <iframe
-                src="https://www.youtube.com/embed/vHT9L_x9P_E?si=YCe6R02B70qVlMEZ"
+          <Reveal delay={120} effect="pop" className="relative">
+            <Sparkle size={40} color={LIME} motion="float" className="absolute -right-3 -top-6 z-10" />
+            <StickerTag tone="ink" rotate={-5} className="absolute -bottom-4 left-6 z-10 border-white/30">
+              Apresentação oficial
+            </StickerTag>
+            <div className="rounded-tl-3xl rounded-br-3xl" style={{ boxShadow: `8px 8px 0 0 ${LIME}` }}>
+              <VideoEmbed
+                provider="youtube"
+                id="vHT9L_x9P_E"
                 title="Apresentação da BIOGLOW Future Edition"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-                loading="lazy"
-                className="block aspect-video w-full border-0 bg-base-200"
+                frame="plain"
+                tone="accent"
+                className="rounded-tl-3xl rounded-br-3xl"
               />
-            </figure>
-          </div>
+            </div>
+          </Reveal>
         </div>
-      </section>
+      </Section>
 
       {/* ============================================================ AVISO */}
-      <section className="px-6 pt-8">
-        <div
-          role="note"
-          className="mx-auto flex max-w-6xl items-start gap-4 rounded-tl-2xl rounded-br-2xl border border-warning/50 bg-warning/10 p-5 sm:p-6"
-        >
-          <span className="grid size-10 shrink-0 place-items-center rounded-tl-lg rounded-br-lg bg-warning text-warning-content">
-            <TriangleAlert size={20} />
-          </span>
-          <div>
-            <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-base-content/60">CONTEÚDO NÃO OFICIAL</p>
-            <p className="mt-1.5 text-sm leading-6 text-base-content/75">
-              A Future Edition é operada pela <a href="https://www.educacional.com.br" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Educacional</a>. As ferramentas do RoboStage têm caráter
-              educacional e experimental, feitas para ajudar equipes, técnicos e
-              estudantes interessados em conhecer o formato da competição.
-            </p>
-          </div>
-        </div>
-      </section>
+      <div className="px-6 pt-20">
+        <Callout type="warning" title="Conteúdo não oficial" className="mx-auto max-w-6xl">
+          A Future Edition é operada pela{" "}
+          <a href="https://www.educacional.com.br" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
+            Educacional
+          </a>
+          . As ferramentas do RoboStage têm caráter educacional e experimental, feitas para ajudar equipes, técnicos e estudantes
+          interessados em conhecer o formato da competição.
+        </Callout>
+      </div>
 
       {/* ======================================================= O QUE MUDA */}
-      <section className="px-6 py-24">
+      <Section>
         <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
+          <Reveal>
             <SectionTitle
               kicker="/ O QUE MUDA"
               title="Uma nova geração"
               highlight="para a FLL."
-              highlightClass="bg-secondary text-secondary-content"
+              highlightTone="secondary"
               description="Quatro ideias resumem a Future Edition. Além das missões do robô, o Projeto de Inovação também faz parte da temporada."
             />
-          </RevealOnScroll>
+          </Reveal>
 
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {pillars.map(({ icon: Icon, tag, title, text, tone }, i) => {
-              const c = toneClasses[tone];
-              return (
-                <RevealOnScroll key={title} delay={i * 0.06} className="h-full">
-                  <article className={`group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 ${c.hover}`}>
-                    <div aria-hidden="true" className={`pointer-events-none absolute -right-10 -top-10 size-28 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 ${c.ring}`} />
-                    <div className="relative flex items-center justify-between">
-                      <div className={`flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
-                        <Icon size={22} strokeWidth={1.8} />
-                      </div>
-                      <span className="font-mono text-xs text-base-content/35">/{String(i + 1).padStart(2, "0")}</span>
-                    </div>
-                    <p className={`relative mt-7 text-[10px] font-bold tracking-[0.18em] ${c.tag}`}>{tag}</p>
-                    <h3 className="relative mt-2 text-xl font-bold tracking-tight">{title}</h3>
-                    <p className="relative mt-3 text-sm leading-6 text-base-content/60">{text}</p>
-                  </article>
-                </RevealOnScroll>
-              );
-            })}
+            {pillars.map(({ icon: Icon, tag, title, text, tone }, i) => (
+              <Reveal key={title} delay={i * 60} className="h-full">
+                <article className={cn(card, "p-6 hover:-translate-y-1", hoverShadow[tone])}>
+                  <div className="flex items-center justify-between">
+                    <span className={cn("grid size-12 place-items-center rounded-tl-xl rounded-br-xl transition-colors duration-300", toneSoft[tone])}>
+                      <Icon size={22} strokeWidth={1.8} />
+                    </span>
+                    <span className="font-mono text-xs text-base-content/35">/{String(i + 1).padStart(2, "0")}</span>
+                  </div>
+                  <p className={cn("stage-kicker mt-7 text-[10px] font-bold", toneText[tone])}>{tag}</p>
+                  <h3 className="mt-2 text-xl font-black tracking-tight">{title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-base-content/60">{text}</p>
+                </article>
+              </Reveal>
+            ))}
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* ====================================================== FERRAMENTAS */}
-      <section id="ferramentas" className="scroll-mt-20 border-y border-base-300 bg-base-200/40 px-6 py-24">
+      <Section id="ferramentas" tone="muted" edgeTop="studs" className="scroll-mt-20">
         <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
+          <Reveal>
             <SectionTitle
               kicker="/ FERRAMENTAS"
               title="Prepare a equipe"
               highlight="para o novo formato."
               description="Recursos desenvolvidos para apoiar equipes durante a temporada."
             />
-          </RevealOnScroll>
+          </Reveal>
 
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {tools.map((tool, i) => (
-              <RevealOnScroll key={tool.href} delay={i * 0.06} className="h-full">
-                <ToolCard tool={tool} index={i} />
-              </RevealOnScroll>
+            {tools.map(({ icon: Icon, tag, title, description, href, tone }, i) => (
+              <Reveal key={href} delay={i * 60} className="h-full">
+                <FeatureCard title={title} description={description} category={tag} icon={<Icon />} href={href} index={i + 1} tone={tone} />
+              </Reveal>
             ))}
-            <RevealOnScroll delay={0.18} className="h-full">
-              <div className="flex h-full flex-col justify-between rounded-tl-2xl rounded-br-2xl border border-dashed border-base-300 bg-base-100/50 p-6">
-                <span className="grid size-12 place-items-center rounded-tl-xl rounded-br-xl border border-dashed border-base-300 text-base-content/40">
+            <Reveal delay={180} className="h-full">
+              <div className="stage-paper flex h-full flex-col justify-between rounded-tl-[30px] rounded-br-[30px] border border-dashed border-base-content/25 bg-base-100/60 p-6">
+                <span className="grid size-12 place-items-center rounded-tl-xl rounded-br-xl border border-dashed border-base-content/25 text-base-content/40">
                   <Plus size={22} />
                 </span>
                 <div className="mt-7">
-                  <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-base-content/45">EM BREVE</p>
+                  <Kicker>EM BREVE</Kicker>
                   <p className="mt-2 text-sm leading-6 text-base-content/60">
-                    Mais ferramentas chegam ao longo da temporada. Acompanhe pelas
-                    notícias.
+                    Mais ferramentas chegam ao longo da temporada. Acompanhe pelas notícias.
                   </p>
                   <Link href="/news" className="mt-4 inline-flex items-center gap-1 text-sm font-bold hover:text-primary">
                     Ver notícias
@@ -286,56 +283,78 @@ export default async function FutureEditionPage({ params }: Params) {
                   </Link>
                 </div>
               </div>
-            </RevealOnScroll>
+            </Reveal>
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* ===================================================== TAMBÉM NA FLL */}
-      <section className="px-6 py-24">
+      <Section>
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
-          <RevealOnScroll>
+          <Reveal>
             <SectionTitle
               kicker="/ TAMBÉM NA FLL"
               title="Compete na"
               highlight="Challenge?"
-              highlightClass="bg-accent text-accent-content"
+              highlightTone="accent"
               description="A BIOGLOW também tem a versão Challenge. Veja as ferramentas do RoboStage para ela."
             />
-          </RevealOnScroll>
+          </Reveal>
           <div className="grid content-center gap-4">
             {alsoFll.map(({ icon: Icon, title, text, href }, i) => (
-              <RevealOnScroll key={href} delay={i * 0.08}>
-                <Link
-                  href={href}
-                  className="group flex items-center gap-4 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-secondary/40 hover:shadow-[6px_6px_0_0_var(--color-secondary)]"
-                >
-                  <div className="flex size-12 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl bg-secondary/10 text-secondary transition-colors group-hover:bg-secondary group-hover:text-secondary-content">
+              <Reveal key={href} delay={i * 80}>
+                <Link href={href} className={cn(card, "flex-row items-center gap-4 p-5 hover:-translate-y-0.5", hoverShadow.secondary)}>
+                  <span className={cn("grid size-12 shrink-0 place-items-center rounded-tl-xl rounded-br-xl transition-colors", toneSoft.secondary)}>
                     <Icon size={21} strokeWidth={1.8} />
-                  </div>
+                  </span>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-bold">{title}</h3>
+                    <h3 className="font-black tracking-tight">{title}</h3>
                     <p className="mt-1 text-sm leading-6 text-base-content/60">{text}</p>
                   </div>
                   <ArrowRight size={18} className="shrink-0 text-base-content/35 transition-transform group-hover:translate-x-1" />
                 </Link>
-              </RevealOnScroll>
+              </Reveal>
             ))}
           </div>
         </div>
-      </section>
+      </Section>
 
-      <CtaBlock
-        kicker="VAMOS COMEÇAR?"
-        icon={Trophy}
-        title="Explore as ferramentas e prepare sua equipe."
-        text="Pontue partidas, avalie a equipe com as rubricas e conheça de perto o formato da Future Edition."
-        actions={[
-          { label: "Pontuar uma partida", href: "/fll/future-edition/score", variant: "accent" },
-          { label: "Rubricas", href: "/fll/future-edition/rubric", variant: "ghost" },
-          { label: "Voltar para a FLL", href: "/fll", variant: "ghost" },
-        ]}
-      />
+      {/* ============================================================ CTA */}
+      <Section tone="night" edgeTop="circuit" innerClassName="relative overflow-hidden">
+        <Sparkle size={44} color={LIME} motion="float" className="absolute right-16 top-16 hidden sm:inline-grid" />
+        <Reveal>
+          <div className="relative mx-auto max-w-6xl">
+            <Kicker className="text-white/55">VAMOS COMEÇAR?</Kicker>
+            <h2 className="stage-display mt-4 max-w-3xl text-3xl text-white sm:text-5xl">
+              Explore as ferramentas e{" "}
+              <span className="mt-2 inline-block -rotate-1 px-3 py-1 italic" style={{ background: LIME, color: LIME_INK }}>
+                prepare sua equipe.
+              </span>
+            </h2>
+            <p className="mt-5 max-w-xl text-white/75">
+              Pontue partidas, avalie a equipe com as rubricas e conheça de perto o formato da Future Edition.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <ButtonLink
+                href="/fll/future-edition/score"
+                size="lg"
+                flat
+                iconRight={<ArrowRight size={18} />}
+                className="border-0 shadow-[4px_4px_0_0_#ffffff] hover:-translate-y-0.5"
+                style={{ background: LIME, color: LIME_INK }}
+              >
+                Pontuar uma partida
+              </ButtonLink>
+              <ButtonLink href="/fll/future-edition/rubric" tone="ghost" size="lg" shape="rounded" className="text-white hover:bg-white/10">
+                Rubricas
+              </ButtonLink>
+              <ButtonLink href="/fll" tone="ghost" size="lg" shape="rounded" className="text-white hover:bg-white/10">
+                Voltar para a FLL
+              </ButtonLink>
+            </div>
+          </div>
+        </Reveal>
+      </Section>
     </main>
   );
 }

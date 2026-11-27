@@ -1,17 +1,21 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Column, Mission } from "@/features/scoring/types";
-import { INITIAL_COLUMNS, INITIAL_MISSIONS } from "@/features/quickbrick/tabela-de-missoes/lib/constants";
+import {
+  INITIAL_COLUMNS,
+  INITIAL_MISSIONS,
+} from "@/features/quickbrick/tabela-de-missoes/lib/constants";
 import { RotateCcw, Table } from "lucide-react";
 import { MissionTable } from "@/features/quickbrick/tabela-de-missoes/components/MissionTable";
 import { useParams } from "next/navigation";
 import { useToast } from "@/components/providers/ToastContext";
 import Loader from "@/components/stage/core/Loader";
-import ModalConfirm, {
-  ModalConfirmRef,
-} from "@/components/stage/core/ModalConfirm";
+import { ToolButton, useToolConfirm } from "@/components/stage";
 import HeaderTool from "@/features/quickbrick/shared/components/HeaderTool";
-import { missionsFromRaw, RawMission } from "@/features/scoring/lib/mission-scoring";
+import {
+  missionsFromRaw,
+  RawMission,
+} from "@/features/scoring/lib/mission-scoring";
 import { loadSeasonMissions } from "@/lib/data/missions-client";
 
 function MissionTablePage() {
@@ -20,13 +24,13 @@ function MissionTablePage() {
     typeof params?.season === "string"
       ? params.season
       : Array.isArray(params?.season)
-      ? params.season[0] || ""
-      : "";
+        ? params.season[0] || ""
+        : "";
 
   const season = selectedSeason || "unearthed"; // Default season
   const [missions, setMissions] = useState<Mission[] | null>(null);
   const [columns, setColumns] = useState<Column[]>(INITIAL_COLUMNS);
-  const modalClearAll = useRef<ModalConfirmRef>(null);
+  const { confirm, dialog } = useToolConfirm();
 
   const { addToast } = useToast();
 
@@ -48,19 +52,24 @@ function MissionTablePage() {
           return;
         }
 
-        const seasonData = (await loadSeasonMissions<RawMission>(season)).filter(
-          (mission) => mission.id?.includes("M")
-        );
+        const seasonData = (
+          await loadSeasonMissions<RawMission>(season)
+        ).filter((mission) => mission.id?.includes("M"));
 
         const built =
-          seasonData.length > 0 ? missionsFromRaw(seasonData) : INITIAL_MISSIONS;
+          seasonData.length > 0
+            ? missionsFromRaw(seasonData)
+            : INITIAL_MISSIONS;
 
         if (!cancelled) setMissions(built);
       } catch (err) {
         console.error("Erro ao carregar missões:", err);
         if (!cancelled) {
           setMissions(INITIAL_MISSIONS);
-          addToast("Não foi possível carregar as missões dessa temporada.", "error");
+          addToast(
+            "Não foi possível carregar as missões dessa temporada.",
+            "error",
+          );
         }
       }
     }
@@ -79,28 +88,35 @@ function MissionTablePage() {
     }
   }, [missions, season]);
 
-  const handleReset = () => {
-    modalClearAll.current?.open(
-      "Tem certeza que deseja restaurar os dados da tabela? Isso irá apagar todas as suas alterações.",
-      async () => {
-        try {
-          const seasonData = (await loadSeasonMissions<RawMission>(season)).filter(
-            (mission) => mission.id?.includes("M")
-          );
+  const handleReset = async () => {
+    if (
+      !(await confirm({
+        title: "Restaurar a tabela?",
+        message:
+          "Isso apaga todas as suas alterações e volta aos dados da temporada.",
+        confirmLabel: "Restaurar",
+      }))
+    )
+      return;
+    try {
+      const seasonData = (await loadSeasonMissions<RawMission>(season)).filter(
+        (mission) => mission.id?.includes("M"),
+      );
 
-          const built =
-            seasonData.length > 0 ? missionsFromRaw(seasonData) : INITIAL_MISSIONS;
+      const built =
+        seasonData.length > 0 ? missionsFromRaw(seasonData) : INITIAL_MISSIONS;
 
-          setMissions(built);
-          setColumns(INITIAL_COLUMNS);
-          localStorage.removeItem(`fll_missions_${season}`);
-          addToast("Dados restaurados!", "success");
-        } catch (err) {
-          console.error("Erro ao restaurar missões:", err);
-          addToast("Não foi possível restaurar os dados. Tente novamente.", "error");
-        }
-      }
-    );
+      setMissions(built);
+      setColumns(INITIAL_COLUMNS);
+      localStorage.removeItem(`fll_missions_${season}`);
+      addToast("Dados restaurados!", "success");
+    } catch (err) {
+      console.error("Erro ao restaurar missões:", err);
+      addToast(
+        "Não foi possível restaurar os dados. Tente novamente.",
+        "error",
+      );
+    }
   };
 
   if (!missions) {
@@ -112,39 +128,27 @@ function MissionTablePage() {
   }
 
   return (
-    <div className="">
-      <div className="px-4 md:px-8 space-y-4">
-        <HeaderTool
-          NameTool="Tabela de Missões"
-          DescriptionTool="Documente e analise as missões da temporada. Preencha a pontuação obtida em cada missão (incluindo sub-missões e bônus) e crie colunas personalizadas para acompanhar sua estratégia."
-          IconTool={Table}
-        />
-
-        <MissionTable
-          missions={missions}
-          setMissions={setMissions}
-          columns={columns}
-          setColumns={setColumns}
-          season={season}
-        />
-
-        <div className="flex items-center gap-2 justify-end mb-12">
-          <button
-            onClick={handleReset}
-            className="btn btn-sm btn-soft btn-warning"
-            title="Resetar Dados"
-          >
-            <RotateCcw size={18} />
-            Limpar
-          </button>
-        </div>
-      </div>
-      <ModalConfirm
-        ref={modalClearAll}
-        title="Restaurar tabela"
-        confirmLabel="Sim"
-        cancelLabel="Cancelar"
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pb-16 md:px-8">
+      <HeaderTool
+        NameTool="Tabela de Missões"
+        DescriptionTool="Documente e analise as missões da temporada. Preencha a pontuação obtida em cada missão (incluindo sub-missões e bônus) e crie colunas personalizadas para acompanhar sua estratégia."
+        IconTool={Table}
       />
+
+      <MissionTable
+        missions={missions}
+        setMissions={setMissions}
+        columns={columns}
+        setColumns={setColumns}
+        season={season}
+      />
+
+      <div className="flex justify-end">
+        <ToolButton variant="ghost" icon={<RotateCcw />} onClick={handleReset}>
+          Restaurar dados da temporada
+        </ToolButton>
+      </div>
+      {dialog}
     </div>
   );
 }

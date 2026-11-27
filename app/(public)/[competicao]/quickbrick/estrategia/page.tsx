@@ -30,7 +30,7 @@ export default function StrategyPage() {
 
   return (
     <>
-      <div className="px-4 md:px-8">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-16 md:px-8">
         <HeaderTool
           NameTool="Estratégia de Mesa"
           DescriptionTool="Planeje e visualize a estratégia da sua equipe utilizando camadas, zonas. Posicionando seu robô em cada lançamento."

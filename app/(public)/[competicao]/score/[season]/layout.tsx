@@ -15,7 +15,7 @@ export async function generateMetadata(
     season.toUpperCase();
 
   return {
-    title: `${seasonFormatted} | RoboStage Score`,
+    title: `${seasonFormatted} | RoboStage`,
     description: `Pontuador da temporada ${seasonFormatted} da FLL`,
   };
 }
@@ -26,7 +26,7 @@ export default function FllScoreLayout({
   children: React.ReactNode;
 }) {
   return (
-    <section className="min-h-screen bg-base-200">
+    <section className="min-h-screen bg-base-100">
       {children}
     </section>
   );

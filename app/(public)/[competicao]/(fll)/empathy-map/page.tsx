@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { HeaderEM } from "@/features/empathy-map/components/Header";
 import Header from "@/components/layout/Header";
+import { ToolScope } from "@/components/stage";
 import { PersonaBar } from "@/features/empathy-map/components/PersonaBar";
 import { BoardView } from "@/features/empathy-map/components/BoardView";
 import { AnalysisView } from "@/features/empathy-map/components/AnalysisView";
@@ -47,7 +48,8 @@ export default function EmpathyMapPage() {
     // é justamente o objetivo deste efeito.
     /* eslint-disable react-hooks/set-state-in-effect */
     if (savedMaps) setMaps(savedMaps);
-    if (savedId && loadedMaps.some((m) => m.id === savedId)) setActiveMapId(savedId);
+    if (savedId && loadedMaps.some((m) => m.id === savedId))
+      setActiveMapId(savedId);
     else setActiveMapId(loadedMaps[0]?.id || INITIAL_MAPS[0].id);
     setStorageLoaded(true);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -233,53 +235,53 @@ export default function EmpathyMapPage() {
   };
 
   return (
-    <main className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col space-y-4 sm:space-y-8 px-4 pt-6 sm:pt-8 pb-16 font-sans text-base-content">
+    <main className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col space-y-8 px-4 pb-24 pt-8 text-base-content">
       <Header
         type="Diagramas"
-        name="Mapa de Empatia"
-        highlight=""
+        name="Mapa de"
+        highlight="Empatia"
         description="Explore insights sobre o profissional/usuário, suas dores, ganhos e sentimentos. Crie notas, organize ideias e analise padrões para entender melhor a persona."
       />
 
-      <HeaderEM
-        currentView={currentView}
-        onViewChange={setCurrentView}
-        onOpenExport={() => setIsExportModalOpen(true)}
-        onOpenMapManager={() => setIsMapManagerModalOpen(true)}
-        onOpenHelp={() => setIsHelpModalOpen(true)}
-        mapTitle={activeMap.title}
-      />
+      <ToolScope className="overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] border border-base-300">
+        <HeaderEM
+          currentView={currentView}
+          onViewChange={setCurrentView}
+          onOpenExport={() => setIsExportModalOpen(true)}
+          onOpenMapManager={() => setIsMapManagerModalOpen(true)}
+          onOpenHelp={() => setIsHelpModalOpen(true)}
+          mapTitle={activeMap.title}
+        />
 
-      {/* Main Content */}
-      <section className="min-w-0 flex-1 space-y-4 sm:space-y-6">
-        {currentView === "board" ? (
-          <>
-            {/* Persona and Search */}
-            <PersonaBar
-              persona={activeMap.persona}
-              onEditPersona={() => setIsPersonaModalOpen(true)}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              totalNotes={activeMap.notes.length}
-            />
+        {/* Main Content */}
+        <section className="min-w-0 flex-1 space-y-3 p-3 sm:p-4">
+          {currentView === "board" ? (
+            <>
+              {/* Persona and Search */}
+              <PersonaBar
+                persona={activeMap.persona}
+                onEditPersona={() => setIsPersonaModalOpen(true)}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                totalNotes={activeMap.notes.length}
+              />
 
-            <BoardView
-              notes={filteredNotes}
-              onAddNote={handleAddNote}
-              onUpdateNoteText={handleUpdateNoteText}
-              onChangeNoteColor={handleChangeNoteColor}
-              onDeleteNote={handleDeleteNote}
-              onVoteNote={handleVoteNote}
-              onChangeCategory={handleChangeCategory}
-              boardRef={boardRef}
-            />
-          </>
-        ) : (
-          <section className="rounded-box border border-base-300/60 bg-base-100/70 p-4 shadow-sm sm:p-6">
+              <BoardView
+                notes={filteredNotes}
+                onAddNote={handleAddNote}
+                onUpdateNoteText={handleUpdateNoteText}
+                onChangeNoteColor={handleChangeNoteColor}
+                onDeleteNote={handleDeleteNote}
+                onVoteNote={handleVoteNote}
+                onChangeCategory={handleChangeCategory}
+                boardRef={boardRef}
+              />
+            </>
+          ) : (
             <AnalysisView map={activeMap} />
-          </section>
-        )}
-      </section>
+          )}
+        </section>
+      </ToolScope>
 
       {/* Modals */}
       <PersonaModal

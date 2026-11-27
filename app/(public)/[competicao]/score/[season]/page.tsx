@@ -12,6 +12,7 @@ import { useParams } from "next/navigation";
 import Image, { type StaticImageData } from "next/image";
 import { loadSeasonMissions } from "@/lib/data/missions-client";
 import Timer from "@/features/scoring/components/Timer";
+import { Callout, ScoreBar, Starburst } from "@/components/stage";
 
 interface SubMission {
   submission: string;
@@ -98,114 +99,69 @@ export default function Page() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-base-100">
+      <div className="flex min-h-screen items-center justify-center bg-base-100">
         <Loader />
       </div>
     );
   }
 
+  const seasonName = String(seasonKey ?? "").toUpperCase();
+
   return (
-    <>
-      <main className="flex flex-col items-center justify-center px-4 pb-16 pt-8 sm:px-6 lg:px-8 space-y-6 min-h-screen">
-        <header className="sticky top-4 z-30 w-full max-w-4xl mx-auto animate-fade-in-down">
-          <section className="flex flex-row items-center justify-between gap-4 bg-base-100/80 backdrop-blur-md px-8 py-4 rounded-box shadow-md border border-base-300">
-            {/* IDENTIDADE */}
-            <div className="flex flex-1 items-center gap-4 text-left">
-              {seasonLogo && (
-                <Image
-                  src={seasonLogo}
-                  className="w-20 h-20 object-contain hidden sm:block"
-                  alt="Logo da temporada FLL"
-                  sizes="80px"
-                  priority
-                />
-              )}
-
-              <div className="flex flex-col">
-                <h1 className="text-sm font-semibold text-base-content opacity-70">
-                  Pontuador FLL
-                </h1>
-
-                <span className="uppercase font-extrabold text-primary text-xl sm:text-3xl lg:text-4xl leading-tight">
-                  {params.season}
-                </span>
-              </div>
+    <main className="mx-auto w-full max-w-6xl space-y-6 px-4 pb-10 pt-8">
+      <header className="stage-paper relative isolate overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] border border-base-300 bg-base-100 shadow-[8px_8px_0_0_var(--color-secondary)]">
+        <Starburst size={64} tone="accent" motion="spin" className="pointer-events-none absolute right-6 top-6 hidden md:inline-grid" />
+        <div className="flex flex-col gap-6 px-6 py-8 sm:flex-row sm:items-center sm:px-10">
+          {seasonLogo && (
+            <div className="stage-dots grid size-28 shrink-0 place-items-center rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-200/60 [background-size:14px_14px]">
+              <Image src={seasonLogo} className="h-20 w-20 object-contain" alt={`Logo da temporada ${seasonName}`} sizes="80px" priority />
             </div>
-
-            {/* PONTUAÇÃO */}
-            <aside
-              aria-label="Pontuação total"
-              className="flex flex-col items-center justify-center rounded-xl bg-base-200 px-6 py-3 min-w-[140px] shadow-inner"
-            >
-              <span className="text-xs uppercase font-bold tracking-wide opacity-70 font-mono">
-                Pontos
-              </span>
-
-              <strong className="text-3xl font-extrabold text-primary">
-                {totalPoints}
-              </strong>
-            </aside>
-          </section>
-        </header>
-
-        <Timer
-          duration={150}
-          endSound={asset("/audio/end.mp3")}
-          startSound={asset("/audio/start.mp3")}
-          showResetScore={true}
-          onResetScore={resetScores}
-          onFinish={() => {
-            console.log("Tempo encerrado!");
-          }}
-          className="animate-fade-in-down max-w-4xl w-full"
-        />
-
-        <section
-          aria-labelledby="info-no-equipment"
-          className="w-full max-w-4xl mx-auto animate-fade-in-down"
-        >
-          <div className="flex flex-col sm:flex-row items-start gap-4 bg-info/10 backdrop-blur px-6 py-4 rounded-2xl border border-info/30 shadow-sm">
-            <figure className="flex items-center gap-3">
-              <Image
-                src={asset("/images/icons/NoEquip.png")}
-                alt="Ícone de sem restrição de equipamento"
-                width={48}
-                height={48}
-                className="w-12 h-12 object-contain"
-              />
-
-              <figcaption id="info-no-equipment" className="sr-only">
-                Regra de missão sem restrição de equipamento
-              </figcaption>
-            </figure>
-
-            <p className="text-sm text-base-content leading-relaxed">
-              <strong className="font-semibold">
-                Sem restrição de equipamento:
-              </strong>{" "}
-              Quando este símbolo aparece, aplica-se a seguinte regra:{" "}
-              <em className="text-info font-medium">
-                “Um modelo de missão não pode ganhar pontos se estiver tocando
-                no equipamento no final da partida.”
-              </em>
+          )}
+          <div className="min-w-0">
+            <p className="stage-kicker text-base-content/45">/ PONTUADOR FLL</p>
+            <h1 className="stage-display mt-2 text-4xl sm:text-5xl">
+              <span className="inline-block -rotate-1 bg-primary px-3 py-1 italic text-primary-content">{seasonName}</span>
+            </h1>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-base-content/65 sm:text-base">
+              Marque o estado do tapete ao fim da rodada. A pontuação soma sozinha, missão por missão.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row items-start gap-4 bg-warning/10 backdrop-blur px-6 py-4 rounded-2xl border border-warning/30 shadow-sm mt-4">
-            <p className="text-sm text-base-content leading-relaxed">
-              Esta regra se aplica somente à missão específica em que a restrição aparece. Se o mesmo modelo for usado em outra missão em que não se aplica a restrição, ele poderá ganhar pontos como de costume. Cada modelo de missão é avaliado separadamente dentro de sua respectiva missão.
+        </div>
+      </header>
+
+      <Timer
+        duration={150}
+        endSound={asset("/audio/end.mp3")}
+        startSound={asset("/audio/start.mp3")}
+      />
+
+      <section aria-labelledby="info-no-equipment" className="grid gap-3 sm:grid-cols-[1.4fr_1fr]">
+        <Callout type="rule" title="Sem restrição de equipamento">
+          <div className="flex items-start gap-3">
+            <Image
+              src={asset("/images/icons/NoEquip.png")}
+              alt=""
+              width={40}
+              height={40}
+              className="size-10 shrink-0 object-contain"
+            />
+            <p id="info-no-equipment">
+              Quando este símbolo aparece:{" "}
+              <em>“Um modelo de missão não pode ganhar pontos se estiver tocando no equipamento no final da partida.”</em>
             </p>
           </div>
-        </section>
+        </Callout>
+        <Callout type="warning" title="Vale só para aquela missão">
+          Se o mesmo modelo for usado em outra missão sem a restrição, ele pontua como de costume. Cada modelo é avaliado
+          dentro da sua missão.
+        </Callout>
+      </section>
 
-        {/* Lista de Missões */}
-        <FormMission
-          missions={missions}
-          imagesEnabled
-          onSelect={handleSelect}
-          responses={responses}
-          className="animate-fade-in-down"
-        />
-      </main>
-    </>
+      <FormMission missions={missions} imagesEnabled onSelect={handleSelect} responses={responses} className="px-4" />
+
+      <div className="sticky bottom-4 z-20 pt-4 p">
+        <ScoreBar total={totalPoints} onReset={resetScores} className="mx-auto max-w-3xl" />
+      </div>
+    </main>
   );
 }

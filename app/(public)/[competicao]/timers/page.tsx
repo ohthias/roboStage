@@ -1,8 +1,8 @@
-import Header from "@/components/layout/Header";
-import { MenuCard } from "@/features/timers/components/MenuCard";
-import Link from "next/link";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+
+import Header from "@/components/layout/Header";
+import { FeatureCard, Reveal } from "@/components/stage";
 import { getTimers } from "@/features/timers/lib/config";
 
 type Props = {
@@ -15,6 +15,11 @@ export const metadata: Metadata = {
     "Controle o tempo do treino à competição com timers pensados para a realidade das equipes.",
 };
 
+// O FeatureCard aceita estes tons; o resto cai em primary.
+const TONES = ["primary", "secondary", "accent", "success", "info"] as const;
+type CardTone = (typeof TONES)[number];
+const toTone = (c: string): CardTone => ((TONES as readonly string[]).includes(c) ? (c as CardTone) : "primary");
+
 export default async function TimersPage({ params }: Props) {
   const { competicao } = await params;
   const timers = getTimers(competicao);
@@ -22,8 +27,7 @@ export default async function TimersPage({ params }: Props) {
   if (timers.length === 0) notFound();
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl px-4 space-y-8 pt-8 pb-16 px-4">
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+    <main className="mx-auto min-h-screen w-full max-w-6xl space-y-12 px-4 pb-24 pt-8">
       <Header
         type="Timers"
         name="Controle o tempo"
@@ -31,21 +35,21 @@ export default async function TimersPage({ params }: Props) {
         description="Timers pensados para a realidade das equipes."
       />
 
-      <section className="my-8">
-        <div
-          className={`grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 w-full`}
-        >
-          {timers.map((timer) => (
-            <Link key={timer.slug} href={`/${competicao}/timers/${timer.slug}`}>
-              <MenuCard
-                title={timer.title}
-                description={timer.description}
-                icon={timer.icon}
-                color={timer.color}
-              />
-            </Link>
-          ))}
-        </div>
+      <section aria-label="Timers disponíveis" className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+        {timers.map(({ slug, title, description, icon: Icon, color }, i) => (
+          <Reveal key={slug} delay={(i % 3) * 60} className="h-full">
+            <FeatureCard
+              title={title}
+              description={description}
+              category="Timer"
+              icon={<Icon />}
+              href={`/${competicao}/timers/${slug}`}
+              index={i + 1}
+              tone={toTone(color)}
+              ctaLabel="Abrir timer"
+            />
+          </Reveal>
+        ))}
       </section>
     </main>
   );

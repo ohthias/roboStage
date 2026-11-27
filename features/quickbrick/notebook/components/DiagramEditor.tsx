@@ -275,9 +275,7 @@ function MissionSwot({
     <SWOTCanvas
       missions={missions}
       setMissions={(m) => setMissions(m as SwotMission[])}
-      seasons={[season]}
       selectedSeason={season}
-      setSelectedSeason={() => undefined}
       initialSwot={initial}
       onSwotChange={(swot) => onChange(swot as Record<string, SwotMission[]>)}
     />

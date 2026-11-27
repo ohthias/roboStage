@@ -1,7 +1,7 @@
 import { db } from "@/db/client";
 import * as schema from "@/db/schema";
 import { teamMembers, teams, users } from "@/db/schema";
-import type { TeamRole } from "@/utils/stagebook/team-permissions";
+import type { TeamRole } from "@/features/stagebook/lib/team-permissions";
 
 let applied = false;
 

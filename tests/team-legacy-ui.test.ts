@@ -4,12 +4,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh() {}, push() {} }), usePathname: () => "/", redirect() {}, unstable_rethrow() {} }));
 vi.mock("next/image", () => ({ default: (p: any) => createElement("img", { src: p.src, alt: p.alt, className: p.className, width: p.width, height: p.height }) }));
-vi.mock("@/app/context/ToastContext", () => ({ useToast: () => ({ addToast() {} }) }));
+vi.mock("@/components/providers/ToastContext", () => ({ useToast: () => ({ addToast() {} }) }));
 
 // Render no servidor (sem navegador): pega erro de hook/props e confere o que aparece em cada estado.
 it("renderiza a aba Legado (temporada, competição, vazio) e o botão de transferir", async () => {
-  const { LegacyTab } = await import("@/app/(protected)/dashboard/team/_components/legacy-tab");
-  const { TransferToTeamButton } = await import("@/components/stagebook/transfer/transfer-dialog");
+  const { LegacyTab } = await import("@/features/stagebook/team/components/legacy-tab");
+  const { TransferToTeamButton } = await import("@/features/stagebook/components/transfer/transfer-dialog");
   const base = { color: null, location: null, createdBy: "u1", updatedAt: new Date().toISOString(), members: [], league: null, stage: null };
   const chapters: any[] = [
     { ...base, league: "fll", id: "s1", kind: "season", parentId: null, title: "Unearthed 2025/26", seasonKey: "unearthed", startDate: "2025-08-01", endDate: "2026-07-31",

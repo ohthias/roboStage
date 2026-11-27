@@ -6,9 +6,9 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { licenses, visualAssets } from "./licenses";
-import { Navbar } from "@/components/UI/Navbar";
-import { Footer } from "@/components/UI/Footer";
+import { licenses, visualAssets } from "@/features/institutional/lib/licenses";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
   title: "Licenças",

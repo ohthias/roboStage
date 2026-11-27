@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getLegalDocument } from "@/utils/institutional/legal";
+import { getLegalDocument } from "@/features/institutional/lib/legal";
 
 export async function GET(
   _: Request,

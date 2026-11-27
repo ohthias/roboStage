@@ -8,15 +8,15 @@ import {
   deleteJournalTemplate,
   saveJournalTemplate,
   updateJournalEntry,
-} from "@/utils/stagebook/actions/journal";
+} from "@/features/stagebook/actions/journal";
 import {
   findMyJournalEntryOn,
   getJournalEntry,
   listJournalEntries,
   listJournalTemplates,
   listMyJournalDates,
-} from "@/utils/stagebook/journal-queries";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
+} from "@/features/stagebook/lib/journal-queries";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
 import {
   BUILTIN_JOURNAL_TEMPLATES,
   contentFromTemplate,
@@ -25,7 +25,7 @@ import {
   normalizeJournalContent,
   templateFromContent,
   type JournalContent,
-} from "@/types/journal";
+} from "@/features/stagebook/types/journal";
 import { call } from "./helpers/actions";
 import { actAs } from "./helpers/context";
 import { applySchema, createTeam, createUser } from "./helpers/db";

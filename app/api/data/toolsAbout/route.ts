@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { TOOLS_ABOUT } from "@/utils/data/static-data";
+import { TOOLS_ABOUT } from "@/lib/data/static-data";
 
 export const dynamic = "force-static";
 

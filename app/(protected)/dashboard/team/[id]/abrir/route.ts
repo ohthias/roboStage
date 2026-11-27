@@ -4,8 +4,8 @@ import {
   STAGEBOOK_SCOPE_COOKIE,
   requireStagebookAccess,
   StagebookAuthError,
-} from "@/utils/stagebook/scope";
-import { safeDashboardPath } from "../../_components/team-links";
+} from "@/features/stagebook/lib/scope";
+import { safeDashboardPath } from "@/features/stagebook/team/lib/team-links";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

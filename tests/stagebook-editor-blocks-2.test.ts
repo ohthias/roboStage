@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { $createParagraphNode, $createTextNode, $getRoot, createEditor, type LexicalEditor } from "lexical";
 import { $createHeadingNode, $isHeadingNode } from "@lexical/rich-text";
-import { EDITOR_NODES } from "@/components/editor/editor-nodes";
-import { $insertTabs, $isTabsNode, $revealInTabs, $unwrapTabs, type TabNode, type TabsNode } from "@/components/editor/nodes/tabs-nodes";
-import { $createPageMentionNode } from "@/components/editor/nodes/page-mention-node";
-import { $createSmartBlockNode } from "@/components/editor/nodes/smart-block-node";
-import { $createSyncedBlockNode } from "@/components/editor/nodes/synced-block-node";
-import { documentToHtml, documentToMarkdown } from "@/components/editor/export-document";
-import { lexicalToPlainText } from "@/utils/stagebook/lexical-text";
-import { collectDecisions, collectSyncIds, findReferenceSnippets, searchSnippet } from "@/utils/stagebook/page-links";
+import { EDITOR_NODES } from "@/features/stagebook/editor/editor-nodes";
+import { $insertTabs, $isTabsNode, $revealInTabs, $unwrapTabs, type TabNode, type TabsNode } from "@/features/stagebook/editor/nodes/tabs-nodes";
+import { $createPageMentionNode } from "@/features/stagebook/editor/nodes/page-mention-node";
+import { $createSmartBlockNode } from "@/features/stagebook/editor/nodes/smart-block-node";
+import { $createSyncedBlockNode } from "@/features/stagebook/editor/nodes/synced-block-node";
+import { documentToHtml, documentToMarkdown } from "@/features/stagebook/editor/export-document";
+import { lexicalToPlainText } from "@/features/stagebook/lib/lexical-text";
+import { collectDecisions, collectSyncIds, findReferenceSnippets, searchSnippet } from "@/features/stagebook/lib/page-links";
 
 const makeEditor = (): LexicalEditor => createEditor({ namespace: "t", nodes: EDITOR_NODES, onError: (e) => { throw e; } });
 const PAGE = "11111111-1111-4111-8111-111111111111";

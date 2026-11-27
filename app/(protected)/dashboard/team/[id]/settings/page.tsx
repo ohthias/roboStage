@@ -1,10 +1,10 @@
-import { requireStagebookAccess, StagebookAuthError } from "@/utils/stagebook/scope";
-import { roleCan } from "@/utils/stagebook/team-permissions";
-import { getTeamSettingsInfo } from "../../actions";
-import { GeneralSettingsPanel } from "./general-settings-panel";
-import { DutyRolesPanel } from "./duty-roles-panel";
-import { getTeamDutyRoles } from "@/utils/stagebook/training-queries";
-import { SettingsNoAccess, SettingsShell } from "../../_components/settings-shell";
+import { requireStagebookAccess, StagebookAuthError } from "@/features/stagebook/lib/scope";
+import { roleCan } from "@/features/stagebook/lib/team-permissions";
+import { getTeamSettingsInfo } from "@/features/stagebook/team/actions";
+import { GeneralSettingsPanel } from "@/features/stagebook/team/components/settings/general-settings-panel";
+import { DutyRolesPanel } from "@/features/stagebook/team/components/settings/duty-roles-panel";
+import { getTeamDutyRoles } from "@/features/stagebook/lib/training-queries";
+import { SettingsNoAccess, SettingsShell } from "@/features/stagebook/team/components/settings-shell";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

@@ -1,4 +1,4 @@
-import type { ActionResult } from "@/utils/stagebook/action-result";
+import type { ActionResult } from "@/lib/action-result";
 
 function isActionResult(value: unknown): value is ActionResult<unknown> {
   return (

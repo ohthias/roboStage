@@ -2,9 +2,9 @@
  * Aba /dashboard/showlive: validação local e conversa com a API do ShowLive.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildCreatePayload } from "@/utils/showlive/input";
-import { ShowLiveError, showliveFetch } from "@/utils/showlive/client";
-import { ValidationError } from "@/utils/stagebook/validation";
+import { buildCreatePayload } from "@/features/showlive/lib/input";
+import { ShowLiveError, showliveFetch } from "@/features/showlive/lib/client";
+import { ValidationError } from "@/features/stagebook/lib/validation";
 
 describe("buildCreatePayload", () => {
   it("monta um evento FLL com temporada e rodadas", () => {

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { FileText } from "lucide-react";
-import { getAllLegalDocuments } from "@/utils/institutional/legal";
-import Header from "@/components/UI/Header";
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
+import { getAllLegalDocuments } from "@/features/institutional/lib/legal";
+import Header from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
 
 export const metadata = {
   title: "Documentos Legais",

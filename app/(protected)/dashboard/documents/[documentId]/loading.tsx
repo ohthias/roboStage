@@ -1,4 +1,4 @@
-import { DocumentSkeleton } from "@/components/editor/editor-skeleton";
+import { DocumentSkeleton } from "@/features/stagebook/editor/editor-skeleton";
 
 export default function Loading() {
   return <DocumentSkeleton />;

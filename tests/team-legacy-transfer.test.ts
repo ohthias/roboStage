@@ -19,7 +19,7 @@ import {
   thinklab,
   userPins,
 } from "@/db/schema";
-import { searchTransferCandidates, transferItemsToTeam } from "@/utils/stagebook/actions/transfer";
+import { searchTransferCandidates, transferItemsToTeam } from "@/features/stagebook/actions/transfer";
 import {
   addLegacyItems,
   createLegacyChapter,
@@ -30,9 +30,9 @@ import {
   searchLegacyCandidates,
   updateLegacyChapter,
   updateLegacyItemNote,
-} from "@/utils/stagebook/actions/legacy";
-import { chapterRange } from "@/utils/stagebook/legacy-core";
-import { normalizeLegacyContent } from "@/types/legacy";
+} from "@/features/stagebook/actions/legacy";
+import { chapterRange } from "@/features/stagebook/lib/legacy-core";
+import { normalizeLegacyContent } from "@/features/stagebook/types/legacy";
 import { call } from "./helpers/actions";
 import { actAs } from "./helpers/context";
 import { applySchema, createTeam, createUser } from "./helpers/db";

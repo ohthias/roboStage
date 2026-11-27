@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { FtcScoutError, searchEvents } from "@/utils/competitions/ftc/ftcscout-server";
+import { FtcScoutError, searchEvents } from "@/features/leagues/ftc/lib/ftcscout-server";
 
 // Proxy da API pública da FTCScout (ftcscout.org). O cache fica no fetch.
 export const dynamic = "force-dynamic";

@@ -6,13 +6,13 @@ import {
   createTeamBoard,
   createTeamLabTest,
   createTeamThinkLab,
-} from "@/utils/stagebook/actions/team-resources";
-import { isClerkAdminRole, mapClerkOrgRole, reconcileClerkOrgRole } from "@/utils/stagebook/clerk-roles";
-import { pickRoleKeys } from "@/utils/stagebook/clerk-org-roles";
+} from "@/features/stagebook/actions/team-resources";
+import { isClerkAdminRole, mapClerkOrgRole, reconcileClerkOrgRole } from "@/features/stagebook/lib/clerk-roles";
+import { pickRoleKeys } from "@/features/stagebook/lib/clerk-org-roles";
 import {
   safeDashboardPath,
   teamToolHref,
-} from "@/app/(protected)/dashboard/team/_components/team-links";
+} from "@/features/stagebook/team/lib/team-links";
 import { call } from "./helpers/actions";
 import { actAs } from "./helpers/context";
 import { applySchema, createTeam } from "./helpers/db";

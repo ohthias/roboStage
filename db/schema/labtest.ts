@@ -77,7 +77,7 @@ export const testExecutions = pgTable("test_executions", {
   notes: text("notes"),
   results: jsonb("results").notNull().default({}),
   // Sessão de treino em que a execução aconteceu (vínculo automático com a
-  // sessão em andamento da equipe; ver utils/stagebook/training-core.ts).
+  // sessão em andamento da equipe; ver features/stagebook/lib/training-core.ts).
   trainingSessionId: uuid("training_session_id").references(() => trainingSessions.id, {
     onDelete: "set null",
   }),

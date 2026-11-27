@@ -6,11 +6,11 @@
 // ---------------------------------------------------------------------------
 
 import { notFound } from "next/navigation";
-import { getResourceTags } from "@/utils/stagebook/actions/tags";
-import { getResourceMilestone } from "@/utils/stagebook/actions/milestones";
-import { getModeMeta, summarizeConfig } from "@/utils/labtest/catalog";
-import { getTestEditData } from "../../actions";
-import { EditTestForm } from "./edit-form";
+import { getResourceTags } from "@/features/stagebook/actions/tags";
+import { getResourceMilestone } from "@/features/stagebook/actions/milestones";
+import { getModeMeta, summarizeConfig } from "@/features/labtest/lib/catalog";
+import { getTestEditData } from "@/features/labtest/actions/labtest";
+import { EditTestForm } from "@/features/labtest/components/edit/edit-form";
 
 export const metadata = { title: "Editar teste · LabTest" };
 

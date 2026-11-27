@@ -14,8 +14,8 @@ import {
   listPagesForLinking,
   unlinkDocumentFromEvent,
   updateEvent,
-} from "@/app/(protected)/dashboard/calendar/actions";
-import { createDocument, renameDocument } from "@/app/(protected)/dashboard/documents/actions";
+} from "@/features/stagebook/calendar/actions";
+import { createDocument, renameDocument } from "@/features/stagebook/documents/actions/documents";
 import { call } from "./helpers/actions";
 import { actAs } from "./helpers/context";
 import { applySchema, createTeam, createUser } from "./helpers/db";

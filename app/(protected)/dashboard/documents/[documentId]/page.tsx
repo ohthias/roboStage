@@ -2,14 +2,14 @@ import { notFound } from "next/navigation";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { documents } from "@/db/schema";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { scopeWhere } from "@/utils/stagebook/permissions";
-import { requireUuid, ValidationError } from "@/utils/stagebook/validation";
-import { trashDaysLeft } from "@/utils/stagebook/document-history";
-import { NotebookEditor } from "./document-editor";
-import { TrashedDocumentNotice } from "./trashed-document-notice";
-import { getResourceTags } from "@/utils/stagebook/actions/tags";
-import { getResourceMilestone } from "@/utils/stagebook/actions/milestones";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { scopeWhere } from "@/features/stagebook/lib/permissions";
+import { requireUuid, ValidationError } from "@/features/stagebook/lib/validation";
+import { trashDaysLeft } from "@/features/stagebook/lib/document-history";
+import { NotebookEditor } from "@/features/stagebook/documents/components/document-editor";
+import { TrashedDocumentNotice } from "@/features/stagebook/documents/components/trashed-document-notice";
+import { getResourceTags } from "@/features/stagebook/actions/tags";
+import { getResourceMilestone } from "@/features/stagebook/actions/milestones";
 
 export default async function NotebookDocumentPage({
   params,

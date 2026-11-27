@@ -1,12 +1,12 @@
 import { Activity, CheckCircle2, FlaskConical, Layers, Plus, Trophy } from "lucide-react";
 import Link from "next/link";
-import { LabTestCard } from "@/components/labtest/LabTestCard";
-import { StatCard } from "@/components/labtest/shared";
-import { LabTestToolbar } from "@/components/labtest/LabTestToolbar";
-import { PersonalTransferButton } from "@/components/stagebook/transfer/personal-transfer-button";
-import { LabTestTabs } from "@/components/labtest/LabTestTabs";
-import { LabTestFilters } from "@/components/labtest/LabTestFilters";
-import { normalizeStatus } from "@/utils/labtest/catalog";
+import { LabTestCard } from "@/features/labtest/components/LabTestCard";
+import { StatCard } from "@/features/labtest/components/shared";
+import { LabTestToolbar } from "@/features/labtest/components/LabTestToolbar";
+import { PersonalTransferButton } from "@/features/stagebook/components/transfer/personal-transfer-button";
+import { LabTestTabs } from "@/features/labtest/components/LabTestTabs";
+import { LabTestFilters } from "@/features/labtest/components/LabTestFilters";
+import { normalizeStatus } from "@/features/labtest/lib/catalog";
 import {
   LIST_SORT_LABEL,
   activeListFilterCount,
@@ -14,10 +14,10 @@ import {
   listHref,
   parseListFilters,
   type ListParams,
-} from "@/utils/labtest/list-filters";
-import { getLatestExecutionScores, listTests } from "./new/actions";
-import { getResourcesTags } from "@/utils/stagebook/actions/tags";
-import { listMilestones } from "@/utils/stagebook/actions/milestones";
+} from "@/features/labtest/lib/list-filters";
+import { getLatestExecutionScores, listTests } from "@/features/labtest/actions/create";
+import { getResourcesTags } from "@/features/stagebook/actions/tags";
+import { listMilestones } from "@/features/stagebook/actions/milestones";
 
 export default async function LabTestPage({
   searchParams,

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
 import {
   getJournalScopeInfo,
   listJournalEntries,
   listJournalTemplates,
   listMyJournalDates,
   parseJournalMonth,
-} from "@/utils/stagebook/journal-queries";
-import { requireMilestoneInScope } from "@/utils/stagebook/labels-core";
-import { JournalHome } from "./_components/journal-home";
+} from "@/features/stagebook/lib/journal-queries";
+import { requireMilestoneInScope } from "@/features/stagebook/lib/labels-core";
+import { JournalHome } from "@/features/stagebook/journal/components/journal-home";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

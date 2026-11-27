@@ -1,8 +1,8 @@
 import { readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { COMPETICOES } from "@/utils/competitions/competicoes";
-import { isPublicPath, publicSitemapPaths } from "@/utils/competitions/routes";
+import { COMPETICOES } from "@/features/leagues/shared/lib/competicoes";
+import { isPublicPath, publicSitemapPaths } from "@/features/leagues/shared/lib/routes";
 
 const appDir = path.resolve(__dirname, "../app");
 

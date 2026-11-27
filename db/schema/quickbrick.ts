@@ -14,7 +14,7 @@ import { teams } from "./teams";
 import { milestones } from "./milestones";
 import { tags } from "./tags";
 import { leagues } from "./leagues";
-import type { DiagramKind } from "@/utils/quickbrick/notebook";
+import type { DiagramKind } from "@/features/quickbrick/notebook/lib/notebook";
 
 // ---------------------------------------------------------------------------
 // QuickBrick Studio — caderno do robô.

@@ -10,14 +10,14 @@ import {
   createDocument,
   duplicateDocument,
   updateDocumentFont,
-} from "@/app/(protected)/dashboard/documents/actions";
+} from "@/features/stagebook/documents/actions/documents";
 import {
   getEmbedQuickbrickDiagram,
   getEmbedQuickbrickPhoto,
   listEmbeddableQuickbrickDiagrams,
   listEmbeddableQuickbrickPhotos,
-} from "@/app/(protected)/dashboard/documents/embed-actions";
-import { docFontFamily, docFontFromFamily, DOC_FONTS } from "@/utils/stagebook/doc-fonts";
+} from "@/features/stagebook/documents/actions/embeds";
+import { docFontFamily, docFontFromFamily, DOC_FONTS } from "@/features/stagebook/lib/doc-fonts";
 import { call } from "./helpers/actions";
 import { actAs } from "./helpers/context";
 import { applySchema, createUser } from "./helpers/db";

@@ -45,7 +45,7 @@ const edgeColor: Record<SectionTone, string> = {
 /**
  * Section — bloco padrão do site (px-6 py-24, conteúdo max-w-6xl).
  * `edgeTop` / `edgeBottom` desenham a borda recortada da referência na
- * cor desta seção — use com moderação, em faixas de destaque.
+ * cor desta seção, sobrepondo a seção vizinha sem deixar uma emenda.
  */
 export function Section({
   tone = "base",
@@ -74,9 +74,9 @@ export function Section({
   const hasEdge = !!(Top || Bottom);
   const edgeTex = tex;
   return (
-    <PauseOffscreen as="section" id={id} className={cn("relative scroll-mt-20", className)}>
+    <PauseOffscreen as="section" id={id} className={cn("relative scroll-mt-20", hasEdge && "z-10", className)}>
       {Top && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 -translate-y-full">
+        <div className="pointer-events-none absolute inset-x-0 top-px z-20 -translate-y-full">
           <Top color={color} direction="up" texture={edgeTex} />
         </div>
       )}
@@ -85,7 +85,7 @@ export function Section({
         {children}
       </div>
       {Bottom && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 translate-y-full">
+        <div className="pointer-events-none absolute inset-x-0 bottom-px z-20 translate-y-full">
           <Bottom color={color} direction="down" texture={edgeTex} />
         </div>
       )}

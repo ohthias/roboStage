@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { requireOnboardingComplete } from "@/utils/onboarding/status";
+import { requireOnboardingComplete } from "@/features/onboarding/lib/status";
 
 /**
  * Guard de todas as rotas protegidas (dashboard e ThinkLab).

@@ -22,7 +22,7 @@ import { journalEntries } from "./journal";
 import { boards } from "./boards";
 import { trainingSessions } from "./training";
 import { milestones } from "./milestones";
-import type { LegacyContent } from "@/types/legacy";
+import type { LegacyContent } from "@/features/stagebook/types/legacy";
 
 /**
  * Legado da equipe: uma "aba" por temporada e por competição de que a equipe

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { ShowLiveError, SHOWLIVE_URL, showliveFetch } from "@/utils/showlive/client";
-import type { ShowLiveOverview } from "@/utils/showlive/types";
-import { ShowLiveView } from "./showlive-view";
+import { ShowLiveError, SHOWLIVE_URL, showliveFetch } from "@/features/showlive/lib/client";
+import type { ShowLiveOverview } from "@/features/showlive/lib/types";
+import { ShowLiveView } from "@/features/showlive/components/showlive-view";
 
 export const metadata: Metadata = { title: "ShowLive · Dashboard" };
 export const dynamic = "force-dynamic";

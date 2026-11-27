@@ -1,7 +1,7 @@
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { listTagsWithUsage } from "@/utils/stagebook/actions/tags";
-import { listMilestonesWithUsage } from "@/utils/stagebook/actions/milestones";
-import { LabelsManager } from "@/components/stagebook/labels/labels-manager";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { listTagsWithUsage } from "@/features/stagebook/actions/tags";
+import { listMilestonesWithUsage } from "@/features/stagebook/actions/milestones";
+import { LabelsManager } from "@/features/stagebook/components/labels/labels-manager";
 
 export default async function LabelsPage() {
   const scope = await resolveStagebookScope();

@@ -1,6 +1,6 @@
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
-import HomeHero from "@/components/home/HomeHero";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import HomeHero from "@/features/home/components/HomeHero";
 import {
   CanopySection,
   CommunitySection,
@@ -17,8 +17,8 @@ import {
   ToolsMarquee,
   ToolsSection,
   type HomeNews,
-} from "@/components/home/HomeSections";
-import { getLatestNews } from "@/utils/institutional/news";
+} from "@/features/home/components/HomeSections";
+import { getLatestNews } from "@/features/institutional/lib/news";
 
 export default async function Page() {
   const news: HomeNews[] = await getLatestNews(3);

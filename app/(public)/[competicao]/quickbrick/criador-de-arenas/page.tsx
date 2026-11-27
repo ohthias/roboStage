@@ -1,7 +1,7 @@
 "use client";
-import CardMobileNotUse from "@/components/MobileNotUse";
-import ArenaBuilder from "@/components/QuickBrick/ArenaBuilder/ArenaBuilder";
-import HeaderTool from "@/components/QuickBrick/HeaderTool";
+import CardMobileNotUse from "@/components/stage/platform/MobileNotUse";
+import ArenaBuilder from "@/features/quickbrick/arena-builder/components/ArenaBuilder";
+import HeaderTool from "@/features/quickbrick/shared/components/HeaderTool";
 import { Puzzle } from "lucide-react";
 import { useState, useEffect } from "react";
 

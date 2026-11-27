@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { AnatixLabView } from "@/components/labtest/anatix/AnatixLabView";
-import { TrainingSessionBanner } from "@/components/stagebook/training-session-banner";
-import { getActiveSessionFor } from "@/utils/stagebook/actions/training";
-import { getAnatixLab } from "../actions";
+import { AnatixLabView } from "@/features/labtest/anatix/components/AnatixLabView";
+import { TrainingSessionBanner } from "@/features/stagebook/components/training-session-banner";
+import { getActiveSessionFor } from "@/features/stagebook/actions/training";
+import { getAnatixLab } from "@/features/labtest/anatix/actions";
 
 export default async function AnatixLabPage({
   params,

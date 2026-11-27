@@ -22,8 +22,8 @@ import {
   updateDocumentIcon,
   updateDocumentProperty,
   updateFolderAppearance,
-} from "@/app/(protected)/dashboard/documents/actions";
-import { FOLDER_COLORS } from "@/utils/stagebook/folder-colors";
+} from "@/features/stagebook/documents/actions/documents";
+import { FOLDER_COLORS } from "@/features/stagebook/lib/folder-colors";
 import { call } from "./helpers/actions";
 import { actAs, requestContext } from "./helpers/context";
 import { applySchema, createTeam, createUser } from "./helpers/db";

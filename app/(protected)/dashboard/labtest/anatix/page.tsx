@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Activity, Cable, Database, Radio } from "lucide-react";
-import { StatCard } from "@/components/labtest/shared";
-import { LabTestTabs } from "@/components/labtest/LabTestTabs";
-import { AnatixLabSlots } from "@/components/labtest/anatix/AnatixLabSlots";
+import { StatCard } from "@/features/labtest/components/shared";
+import { LabTestTabs } from "@/features/labtest/components/LabTestTabs";
+import { AnatixLabSlots } from "@/features/labtest/anatix/components/AnatixLabSlots";
 import { ANATIX_MAX_LABS } from "@/db/schema/anatix";
-import type { AnatixTransport } from "@/types/anatix.types";
-import { listAnatixLabs } from "./actions";
+import type { AnatixTransport } from "@/features/labtest/anatix/types";
+import { listAnatixLabs } from "@/features/labtest/anatix/actions";
 
 export const metadata = { title: "Anatix · LabTest" };
 

@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
 
-import { getAllLegalDocuments } from "@/utils/institutional/legal";
-import { getPublishedNews, newsHref, type NewsSummary } from "@/utils/institutional/news";
-import { NAVIGATION } from "@/utils/competitions/navigation";
-import { TIMERS_BY_COMPETITION } from "@/app/(public)/[competicao]/timers/config";
-import { SITE_URL } from "@/utils/competitions/site";
+import { getAllLegalDocuments } from "@/features/institutional/lib/legal";
+import { getPublishedNews, newsHref, type NewsSummary } from "@/features/institutional/lib/news";
+import { NAVIGATION } from "@/features/leagues/shared/lib/navigation";
+import { TIMERS_BY_COMPETITION } from "@/features/timers/lib/config";
+import { SITE_URL } from "@/features/leagues/shared/lib/site";
 
 /**
  * As notícias vêm do Supabase (editor RoboStage News). O sitemap é regerado a
@@ -38,7 +38,7 @@ const INSTITUTIONAL_ROUTES = [
 
 /**
  * Ferramentas do QuickBrick por competição (espelha `ferramentasPorCompeticao`
- * em components/QuickBrick/ferramentas.data.tsx). Cada competição só lista as
+ * em features/quickbrick/shared/lib/ferramentas.data.tsx). Cada competição só lista as
  * ferramentas que de fato oferece.
  */
 const QUICKBRICK_TOOLS: Record<Competition, string[]> = {

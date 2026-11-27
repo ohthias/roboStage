@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { MissionGuide } from "@/components/competicoes/FLL/mission-guide/MissionGuide";
+import { MissionGuide } from "@/features/leagues/fll/mission-guide/components/MissionGuide";
 
 export const metadata: Metadata = {
   title: "Guia de Missões | FLL | RoboStage",

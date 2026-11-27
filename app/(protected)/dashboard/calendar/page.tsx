@@ -1,9 +1,9 @@
-import { listEventsInRange } from "./actions";
-import { CalendarView } from "./calendar-view";
-import { listMyTeams } from "@/utils/stagebook/actions/teams";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { getResourcesTags } from "@/utils/stagebook/actions/tags";
-import { listMilestones } from "@/utils/stagebook/actions/milestones";
+import { listEventsInRange } from "@/features/stagebook/calendar/actions";
+import { CalendarView } from "@/features/stagebook/calendar/components/calendar-view";
+import { listMyTeams } from "@/features/stagebook/actions/teams";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { getResourcesTags } from "@/features/stagebook/actions/tags";
+import { listMilestones } from "@/features/stagebook/actions/milestones";
 
 function parseMonthParam(month?: string) {
   if (month && /^\d{4}-\d{2}$/.test(month)) {

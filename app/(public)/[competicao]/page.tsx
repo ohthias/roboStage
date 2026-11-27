@@ -1,4 +1,4 @@
-import { COMPETICOES_COMPONENTES } from "@/utils/competitions/competicoes-map";
+import { COMPETICOES_COMPONENTES } from "@/features/leagues/shared/lib/competicoes-map";
 
 type Competicao = keyof typeof COMPETICOES_COMPONENTES;
 

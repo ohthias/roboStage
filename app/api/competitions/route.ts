@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getUserLeagues } from "@/utils/stagebook/user-leagues";
+import { getUserLeagues } from "@/features/stagebook/lib/user-leagues";
 
 const RELATION_TYPES = ["participante", "interessado"] as const;
 type RelationType = (typeof RELATION_TYPES)[number];

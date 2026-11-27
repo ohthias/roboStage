@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { getBoardDetail, listTeamMembersForAssignment } from "./actions";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { BoardView } from "./board-view";
+import { getBoardDetail, listTeamMembersForAssignment } from "@/features/stagebook/kanban/actions/board";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { BoardView } from "@/features/stagebook/kanban/components/board-view";
 
 export default async function BoardPage({
   params,

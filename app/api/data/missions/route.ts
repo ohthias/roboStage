@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { MISSIONS_CATALOG } from "@/utils/data/static-data";
+import { MISSIONS_CATALOG } from "@/lib/data/static-data";
 
 // Gerada no build: o arquivo só muda a cada deploy.
 export const dynamic = "force-static";

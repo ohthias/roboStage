@@ -1,6 +1,6 @@
 "use client";
-import HeatmapPage from "@/components/QuickBrick/heatmap/HeatmapPage";
-import CardMobileNotUse from "@/components/MobileNotUse";
+import HeatmapPage from "@/features/quickbrick/heatmap/components/HeatmapPage";
+import CardMobileNotUse from "@/components/stage/platform/MobileNotUse";
 import { useEffect, useState } from "react";
 
 export default function Page() {

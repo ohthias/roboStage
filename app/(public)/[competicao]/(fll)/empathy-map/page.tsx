@@ -1,13 +1,13 @@
 "use client";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { HeaderEM } from "@/components/EmpathyMap/Header";
-import Header from "@/components/UI/Header";
-import { PersonaBar } from "@/components/EmpathyMap/PersonaBar";
-import { BoardView } from "@/components/EmpathyMap/BoardView";
-import { AnalysisView } from "@/components/EmpathyMap/AnalysisView";
-import { PersonaModal } from "@/components/EmpathyMap/PersonaModal";
-import { ExportModal } from "@/components/EmpathyMap/ExportModal";
-import { INITIAL_MAPS } from "./initialData";
+import { HeaderEM } from "@/features/empathy-map/components/Header";
+import Header from "@/components/layout/Header";
+import { PersonaBar } from "@/features/empathy-map/components/PersonaBar";
+import { BoardView } from "@/features/empathy-map/components/BoardView";
+import { AnalysisView } from "@/features/empathy-map/components/AnalysisView";
+import { PersonaModal } from "@/features/empathy-map/components/PersonaModal";
+import { ExportModal } from "@/features/empathy-map/components/ExportModal";
+import { INITIAL_MAPS } from "@/features/empathy-map/lib/initialData";
 import {
   EmpathyCategory,
   EmpathyMap,
@@ -15,9 +15,9 @@ import {
   NoteColor,
   Persona,
   ViewMode,
-} from "@/types/EmpathyMap.types";
-import { MapManagerModal } from "@/components/EmpathyMap/MapManagerModal";
-import { HelpModal } from "@/components/EmpathyMap/HelpModal";
+} from "@/features/empathy-map/types";
+import { MapManagerModal } from "@/features/empathy-map/components/MapManagerModal";
+import { HelpModal } from "@/features/empathy-map/components/HelpModal";
 
 const STORAGE_KEY = "mapa_empatia_simple_v2";
 const ACTIVE_MAP_KEY = "mapa_empatia_active_v2";

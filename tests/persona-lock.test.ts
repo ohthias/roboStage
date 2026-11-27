@@ -2,14 +2,14 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { userPreferences, users } from "@/db/schema";
-import { updatePersonaType } from "@/utils/stagebook/actions/account";
-import { updatePreferences } from "@/utils/stagebook/actions/preferences";
-import { getPreferencesFor } from "@/utils/stagebook/preferences-core";
+import { updatePersonaType } from "@/features/stagebook/actions/account";
+import { updatePreferences } from "@/features/stagebook/actions/preferences";
+import { getPreferencesFor } from "@/features/stagebook/lib/preferences-core";
 import {
   PERSONA_LOCK_MS,
   formatLockCountdown,
   personaLockState,
-} from "@/utils/stagebook/persona-lock";
+} from "@/features/stagebook/lib/persona-lock";
 import { call } from "./helpers/actions";
 import { actAs } from "./helpers/context";
 import { applySchema, createUser } from "./helpers/db";

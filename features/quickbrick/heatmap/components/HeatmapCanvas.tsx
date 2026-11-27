@@ -1,0 +1,318 @@
+"use client";
+
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import type {
+  HeatPoint,
+  HeatmapConfig,
+  HeatmapMode,
+  SeasonKey,
+} from "@/features/quickbrick/heatmap/types";
+import {
+  renderHeatmap,
+  renderTable,
+  getLocalIntensity,
+} from "@/features/quickbrick/heatmap/lib/heatmap";
+import { getMissions } from "@/features/quickbrick/heatmap/lib/missions";
+import { SEASONS } from "@/features/quickbrick/heatmap/lib/seasons";
+
+type Ripple = { id: string; x: number; y: number; color: string };
+
+type Props = {
+  points: HeatPoint[];
+  config: HeatmapConfig;
+  mode: HeatmapMode;
+  season: SeasonKey;
+  onAddPoint: (x: number, y: number) => void;
+  onRemoveNearest: (x: number, y: number) => void;
+  imagePath: string | null;
+};
+
+export type HeatmapCanvasRef = {
+  tableCanvas: HTMLCanvasElement | null;
+  heatmapCanvas: HTMLCanvasElement | null;
+};
+
+function computeCanvasSize(containerEl: HTMLElement): { w: number; h: number } {
+  const { width, height } = containerEl.getBoundingClientRect();
+  const maxW = width - 24;
+  const maxH = height - 48;
+  const ratio = 2 / 1;
+
+  let w = maxW;
+  let h = maxW / ratio;
+
+  if (h > maxH) {
+    h = maxH;
+    w = maxH * ratio;
+  }
+
+  return { w: Math.floor(w), h: Math.floor(h) };
+}
+
+const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
+  function HeatmapCanvas(
+    { points, config, mode, season, onAddPoint, onRemoveNearest, imagePath },
+    ref,
+  ) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const tableRef = useRef<HTMLCanvasElement>(null);
+    const heatRef = useRef<HTMLCanvasElement>(null);
+    const isDrawingRef = useRef(false);
+    const lastStampRef = useRef<{ x: number; y: number } | null>(null);
+
+    const [size, setSize] = useState({ w: 800, h: 550 });
+    const [ripples, setRipples] = useState<Ripple[]>([]);
+
+    const applySize = useCallback(() => {
+      if (!containerRef.current) return;
+      const { w, h } = computeCanvasSize(containerRef.current);
+      setSize({ w, h });
+    }, []);
+
+    useLayoutEffect(() => {
+      applySize();
+      const ro = new ResizeObserver(applySize);
+      if (containerRef.current) ro.observe(containerRef.current);
+      return () => ro.disconnect();
+    }, [applySize]);
+
+    useEffect(() => {
+      const canvas = tableRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const { accentColor, tableColor, name } = SEASONS[season];
+      renderTable(
+        ctx,
+        size.w,
+        size.h,
+        accentColor,
+        tableColor,
+        name,
+        getMissions(season),
+      );
+    }, [season, size]);
+
+    useEffect(() => {
+      const canvas = heatRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      renderHeatmap(
+        ctx,
+        points,
+        config.brushRadius,
+        config.opacity,
+        size.w,
+        size.h,
+      );
+    }, [points, config.brushRadius, config.opacity, size]);
+
+    useImperativeHandle(ref, () => ({
+      tableCanvas: tableRef.current,
+      heatmapCanvas: heatRef.current,
+    }));
+
+    const applyBrushAt = useCallback(
+      (clientX: number, clientY: number, showRipple: boolean) => {
+        if (!wrapperRef.current || mode === "view") return;
+
+        const rect = wrapperRef.current.getBoundingClientRect();
+        const localX = clientX - rect.left;
+        const localY = clientY - rect.top;
+        const nx = localX / rect.width;
+        const ny = localY / rect.height;
+
+        if (nx < 0 || nx > 1 || ny < 0 || ny > 1) return;
+
+        const stampStepPx = Math.max(6, config.brushRadius * 0.35);
+        const last = lastStampRef.current;
+
+        if (!last) {
+          if (mode === "remove") {
+            onRemoveNearest(nx, ny);
+          } else {
+            onAddPoint(nx, ny);
+          }
+          lastStampRef.current = { x: localX, y: localY };
+        } else {
+          const dx = localX - last.x;
+          const dy = localY - last.y;
+          const dist = Math.hypot(dx, dy);
+
+          if (dist >= stampStepPx) {
+            const steps = Math.floor(dist / stampStepPx);
+            for (let i = 1; i <= steps; i++) {
+              const t = i / steps;
+              const ix = last.x + dx * t;
+              const iy = last.y + dy * t;
+              const inx = ix / rect.width;
+              const iny = iy / rect.height;
+
+              if (mode === "remove") {
+                onRemoveNearest(inx, iny);
+              } else {
+                onAddPoint(inx, iny);
+              }
+            }
+            lastStampRef.current = { x: localX, y: localY };
+          }
+        }
+
+        if (showRipple) {
+          const color = mode === "remove" ? "#ff4d6a" : "#00e532";
+          const rippleId = `${Date.now()}-${Math.random()}`;
+          setRipples((prev) => [
+            ...prev,
+            { id: rippleId, x: localX, y: localY, color },
+          ]);
+
+          setTimeout(
+            () => setRipples((prev) => prev.filter((r) => r.id !== rippleId)),
+            520,
+          );
+        }
+      },
+      [mode, config.brushRadius, onAddPoint, onRemoveNearest],
+    );
+
+    const stopDrawing = useCallback(() => {
+      isDrawingRef.current = false;
+      lastStampRef.current = null;
+    }, []);
+
+    useEffect(() => {
+      const handleWindowMouseUp = () => stopDrawing();
+      window.addEventListener("mouseup", handleWindowMouseUp);
+      return () => window.removeEventListener("mouseup", handleWindowMouseUp);
+    }, [stopDrawing]);
+
+    const handleMouseDown = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        if (mode === "view") return;
+        isDrawingRef.current = true;
+        applyBrushAt(e.clientX, e.clientY, true);
+      },
+      [mode, applyBrushAt],
+    );
+
+    const handleMouseMove = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!wrapperRef.current) return;
+
+        if (mode !== "view" && isDrawingRef.current) {
+          applyBrushAt(e.clientX, e.clientY, false);
+          return;
+        }
+
+        if (mode !== "view") return;
+
+        const rect = wrapperRef.current.getBoundingClientRect();
+        const nx = (e.clientX - rect.left) / rect.width;
+        const ny = (e.clientY - rect.top) / rect.height;
+
+        if (nx < 0 || nx > 1 || ny < 0 || ny > 1) {
+          return;
+        }
+
+        const intensity = getLocalIntensity(
+          points,
+          nx,
+          ny,
+          config.brushRadius,
+          size.w,
+        );
+
+        if (intensity > 0) {
+          
+        } else {
+        }
+      },
+      [mode, points, config.brushRadius, size.w, applyBrushAt],
+    );
+
+    const cursor =
+      mode === "remove"
+        ? "cursor-cell"
+        : mode === "view"
+          ? "cursor-default"
+          : "cursor-crosshair";
+
+    return (
+      <>
+        <div
+          ref={containerRef}
+          className={`relative flex-1 h-full flex items-center justify-center bg-surface border border-white/7 rounded-2xl overflow-hidden ${cursor}`}
+          onMouseDown={handleMouseDown}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
+          onMouseMove={handleMouseMove}
+        >
+          <div
+            ref={wrapperRef}
+            className="relative"
+            style={{
+              width: size.w,
+              height: size.h,
+              backgroundImage: imagePath ? `url(${imagePath})` : undefined,
+              backgroundSize: "100% 100%",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          >
+            <canvas
+              ref={tableRef}
+              width={size.w}
+              height={size.h}
+              className="block rounded-md"
+            />
+
+            <canvas
+              ref={heatRef}
+              width={size.w}
+              height={size.h}
+              className="absolute top-0 left-0 pointer-events-none rounded-md"
+            />
+
+            <AnimatePresence>
+              {ripples.map((r) => (
+                <motion.div
+                  key={r.id}
+                  className="absolute pointer-events-none rounded-full"
+                  style={{
+                    width: 30,
+                    height: 30,
+                    left: r.x - 15,
+                    top: r.y - 15,
+                    background: r.color + "30",
+                    border: `1px solid ${r.color}60`,
+                  }}
+                  initial={{ scale: 0, opacity: 1 }}
+                  animate={{ scale: 4, opacity: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+      </>
+    );
+  },
+);
+
+HeatmapCanvas.displayName = "HeatmapCanvas";
+
+export default HeatmapCanvas;

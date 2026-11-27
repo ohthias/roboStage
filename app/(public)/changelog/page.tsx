@@ -3,12 +3,12 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowDown, ArrowUpRight, CalendarDays, GitBranch, Newspaper, Sparkles, Tag } from "lucide-react";
 
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
-import PageHero, { heroBtn } from "@/components/UI/PageHero";
-import { SectionTitle } from "@/components/home/shared";
-import { CtaBlock } from "@/components/competicoes/shared/CompetitionSections";
-import { getChangelog, RELEASES_URL } from "@/utils/institutional/changelog";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import PageHero, { heroBtn } from "@/components/layout/PageHero";
+import { SectionTitle } from "@/features/home/components/shared";
+import { CtaBlock } from "@/features/leagues/shared/components/CompetitionSections";
+import { getChangelog, RELEASES_URL } from "@/features/institutional/lib/changelog";
 
 export const metadata: Metadata = {
   title: "Changelog",

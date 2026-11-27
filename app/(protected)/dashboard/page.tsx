@@ -1,7 +1,7 @@
-import { getDashboardData } from "./data";
-import { MentorDashboard } from "@/components/dashboard/home/mentor-view";
-import { CompetitorDashboard } from "@/components/dashboard/home/competitor-view";
-import { ExplorerDashboard } from "@/components/dashboard/home/explorer-view";
+import { getDashboardData } from "@/features/home/dashboard/lib/data";
+import { MentorDashboard } from "@/features/home/dashboard/components/mentor-view";
+import { CompetitorDashboard } from "@/features/home/dashboard/components/competitor-view";
+import { ExplorerDashboard } from "@/features/home/dashboard/components/explorer-view";
 
 /**
  * Home do dashboard — cada tipo de conta (personaType) vê um layout próprio:

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { getJournalEntry, getJournalScopeInfo, listJournalTemplates } from "@/utils/stagebook/journal-queries";
-import { formatJournalDate } from "@/types/journal";
-import { JournalEditor } from "../_components/journal-editor";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { getJournalEntry, getJournalScopeInfo, listJournalTemplates } from "@/features/stagebook/lib/journal-queries";
+import { formatJournalDate } from "@/features/stagebook/types/journal";
+import { JournalEditor } from "@/features/stagebook/journal/components/journal-editor";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

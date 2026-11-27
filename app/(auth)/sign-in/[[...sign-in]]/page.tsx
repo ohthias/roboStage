@@ -1,4 +1,4 @@
-import { BackgroundStars } from "@/components/UI/BackgroundStars";
+import { BackgroundStars } from "@/components/stage/decor/BackgroundStars";
 import { SignIn } from "@clerk/nextjs";
 
 export default function SignInPage() {

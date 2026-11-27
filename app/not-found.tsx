@@ -1,6 +1,6 @@
 "use client";
 
-import { BackgroundStars } from "@/components/UI/BackgroundStars";
+import { BackgroundStars } from "@/components/stage/decor/BackgroundStars";
 import { useRouter } from "next/navigation";
 
 export default function NotFound() {

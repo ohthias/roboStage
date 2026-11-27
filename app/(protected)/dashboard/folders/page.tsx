@@ -1,11 +1,11 @@
 import { count, eq, and, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { documents, folders } from "@/db/schema";
-import { scopeWhere } from "@/utils/stagebook/permissions";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { FoldersView } from "./folders-view";
-import { PersonalTransferButton } from "@/components/stagebook/transfer/personal-transfer-button";
-import type { FolderItem } from "@/types/folders";
+import { scopeWhere } from "@/features/stagebook/lib/permissions";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { FoldersView } from "@/features/stagebook/folders/components/folders-view";
+import { PersonalTransferButton } from "@/features/stagebook/components/transfer/personal-transfer-button";
+import type { FolderItem } from "@/features/stagebook/types/folders";
 
 export default async function FoldersPage() {
   const scope = await resolveStagebookScope();

@@ -1,10 +1,10 @@
 import { desc } from "drizzle-orm";
 import { db } from "@/db/client";
 import { documents } from "@/db/schema";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { liveDocumentWhere } from "./history-core";
-import { DocumentsHome, type HomeDocument } from "./documents-home";
-import { PersonalTransferButton } from "@/components/stagebook/transfer/personal-transfer-button";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { liveDocumentWhere } from "@/features/stagebook/documents/lib/history-core";
+import { DocumentsHome, type HomeDocument } from "@/features/stagebook/documents/components/documents-home";
+import { PersonalTransferButton } from "@/features/stagebook/components/transfer/personal-transfer-button";
 
 export default async function NotebookIndexPage() {
   const scope = await resolveStagebookScope();

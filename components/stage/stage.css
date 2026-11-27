@@ -382,7 +382,7 @@
   backdrop-filter: blur(1px);
 }
 
-/* ---------- Fundo animado da home (components/home/home.css) ---------- */
+/* ---------- Fundo animado da home (features/home/components/home.css) ---------- */
 .rs-background {
   position: absolute;
   inset: 0;
@@ -585,7 +585,7 @@ html[data-motion="off"] [data-reveal] {
 
 /* ==================================================================
  Ponte para modais legados (v0.9)
- O Modal comum do dashboard (components/stagebook/modal.tsx) virou o
+ O Modal comum do dashboard (features/stagebook/components/modal.tsx) virou o
  ToolDialog. As telas antigas ainda escrevem daisyUI dentro dele
  (.modal-action, .btn, .input, .fieldset-legend…): aqui esse conteúdo
  ganha a densidade e o acabamento do kit ferramenta, sem reescrever

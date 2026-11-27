@@ -7,8 +7,8 @@ import {
   createTestExecution,
   deleteTest,
   listTests,
-} from "@/app/(protected)/dashboard/labtest/new/actions";
-import { getLabTestViewData } from "@/app/(protected)/dashboard/labtest/actions";
+} from "@/features/labtest/actions/create";
+import { getLabTestViewData } from "@/features/labtest/actions/labtest";
 import { call } from "./helpers/actions";
 import { actAs } from "./helpers/context";
 import { applySchema, createTeam, createUser } from "./helpers/db";

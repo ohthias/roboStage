@@ -15,6 +15,7 @@
     "db:studio": "drizzle-kit studio",
     "test": "vitest run",
     "data:mission-images": "node scripts/generate-mission-images.mjs",
+    "data:assets": "node scripts/generate-public-assets.mjs",
     "perf:first-load": "node scripts/measure-first-load.mjs",
     "perf:lighthouse": "bash scripts/lighthouse.sh"
   },

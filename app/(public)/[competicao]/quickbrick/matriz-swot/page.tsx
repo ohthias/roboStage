@@ -1,6 +1,6 @@
 "use client";
-import HeaderTool from "@/components/QuickBrick/HeaderTool";
-import { SWOTCanvasDefault } from "@/components/QuickBrick/Swot/SWOTCanvasDefault";
+import HeaderTool from "@/features/quickbrick/shared/components/HeaderTool";
+import { SWOTCanvasDefault } from "@/features/quickbrick/swot/components/SWOTCanvasDefault";
 import { Grid2X2 } from "lucide-react";
 
 export default function MatrizSwotPageDefault() {

@@ -1,11 +1,11 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db/client";
 import { leagues, userLeagueInterests } from "@/db/schema";
-import { createThinkLab, listThinkLabsByUserId } from "@/app/(protected)/dashboard/thinklab/actions";
-import { getThinkLabMissionPacks } from "@/app/(protected)/dashboard/thinklab/mission-actions";
-import { requireTeamAccess } from "@/utils/stagebook/scope";
-import { getUserLeagues } from "@/utils/stagebook/user-leagues";
-import { isOwnedByScope } from "@/utils/stagebook/permissions";
+import { createThinkLab, listThinkLabsByUserId } from "@/features/thinklab/actions/thinklab";
+import { getThinkLabMissionPacks } from "@/features/thinklab/actions/missions";
+import { requireTeamAccess } from "@/features/stagebook/lib/scope";
+import { getUserLeagues } from "@/features/stagebook/lib/user-leagues";
+import { isOwnedByScope } from "@/features/stagebook/lib/permissions";
 import { actAs } from "./helpers/context";
 import { applySchema, createTeam, createUser } from "./helpers/db";
 

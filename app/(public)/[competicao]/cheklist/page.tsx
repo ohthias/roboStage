@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import ConfereAI from "@/components/competicoes/FLL/confere-ai/ConfereAI";
+import ConfereAI from "@/features/leagues/fll/confere-ai/components/ConfereAI";
 import {
   CONFERE_AI_COMPETITIONS,
   isConfereAICompetition,
-} from "@/utils/competitions/fll/confere-ai/types";
+} from "@/features/leagues/fll/confere-ai/lib/types";
 
 type Props = {
   params: Promise<{ competicao: string }>;

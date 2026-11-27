@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { NEWS_CACHE_TAG, sanitizeNewsSlug } from "@/utils/institutional/news";
+import { NEWS_CACHE_TAG, sanitizeNewsSlug } from "@/features/institutional/lib/news";
 
 /**
  * Chamado pelo editor de notícias depois de salvar ou excluir uma notícia,

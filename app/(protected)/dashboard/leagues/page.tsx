@@ -1,8 +1,8 @@
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { leagues, userLeagueInterests } from "@/db/schema";
-import { resolveStagebookScope } from "@/utils/stagebook/scope";
-import { LeaguesView, type LeagueItem } from "./leagues-view";
+import { resolveStagebookScope } from "@/features/stagebook/lib/scope";
+import { LeaguesView, type LeagueItem } from "@/features/stagebook/leagues/components/leagues-view";
 
 export default async function LeaguesPage() {
   const scope = await resolveStagebookScope();

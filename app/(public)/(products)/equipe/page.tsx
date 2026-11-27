@@ -17,10 +17,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
-import { ProductHero } from "@/components/product/ProductHero";
-import { FaqBlock, ProductCta } from "@/components/product/ProductBlocks";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import { ProductHero } from "@/features/institutional/components/product/ProductHero";
+import { FaqBlock, ProductCta } from "@/features/institutional/components/product/ProductBlocks";
 import {
   ActivityCard,
   AvatarStack,

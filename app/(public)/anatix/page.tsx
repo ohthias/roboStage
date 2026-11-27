@@ -1,13 +1,14 @@
+import { PUBLIC_DIRS } from "@/lib/assets";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Activity, ArrowRight,
   ArrowUpRight, Braces, Cable, Cpu, Download, Flag, FolderGit2, Gauge, Layers, Package, ShieldCheck, Terminal, Timer, ToyBrick, Trophy, Workflow, Zap } from "lucide-react";
 
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
 import "./style.css";
-import { CodeBlock, CopyButton, LiveMonitor } from "./anatix-interactive";
-import { Navbar } from "@/components/UI/Navbar";
-import { Footer } from "@/components/UI/Footer";
+import { CodeBlock, CopyButton, LiveMonitor } from "@/features/labtest/anatix/components/anatix-interactive";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
   title: "Anatix",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 const REPO_URL = "https://github.com/ohthias/Anatix_C";
 const REPO_GIT = `${REPO_URL}.git`;
 const REPO_ZIP = `${REPO_URL}/archive/refs/heads/main.zip`;
-const PYBRICKS_BASE = "/anatix/pybricks";
+const PYBRICKS_BASE = PUBLIC_DIRS.anatixPybricks;
 
 const features = [
   {

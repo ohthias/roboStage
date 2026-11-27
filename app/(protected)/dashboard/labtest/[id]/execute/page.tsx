@@ -14,17 +14,17 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-import type { FieldDefinition } from "@/types/labtest.types";
-import ExecuteTestForm from "@/components/labtest/ExecuteTestForm";
-import FllRoundExecution from "@/components/labtest/FllRoundExecution";
-import FutureEditionMatch from "@/components/labtest/future-edition/FutureEditionMatch";
-import { getMatchDuration, isFutureEditionConfig } from "@/utils/labtest/future-edition";
-import ObrRoundExecution from "@/components/labtest/obr/ObrRoundExecution";
-import { getObrArena, isObrConfig } from "@/utils/labtest/obr";
-import { getLabTestViewData } from "../../actions";
-import { getExecutionContext, type ExecutionContext } from "@/utils/stagebook/actions/roster";
-import { ExecutionOperatorProvider } from "@/components/labtest/execution-operator";
-import { OperatorSelect, TrainingSessionBanner } from "@/components/stagebook/training-session-banner";
+import type { FieldDefinition } from "@/features/labtest/types";
+import ExecuteTestForm from "@/features/labtest/components/ExecuteTestForm";
+import FllRoundExecution from "@/features/labtest/components/FllRoundExecution";
+import FutureEditionMatch from "@/features/labtest/components/future-edition/FutureEditionMatch";
+import { getMatchDuration, isFutureEditionConfig } from "@/features/labtest/lib/future-edition";
+import ObrRoundExecution from "@/features/labtest/components/obr/ObrRoundExecution";
+import { getObrArena, isObrConfig } from "@/features/labtest/lib/obr";
+import { getLabTestViewData } from "@/features/labtest/actions/labtest";
+import { getExecutionContext, type ExecutionContext } from "@/features/stagebook/actions/roster";
+import { ExecutionOperatorProvider } from "@/features/labtest/components/execution-operator";
+import { OperatorSelect, TrainingSessionBanner } from "@/features/stagebook/components/training-session-banner";
 
 export default function ExecuteTestPage() {
   const params = useParams();

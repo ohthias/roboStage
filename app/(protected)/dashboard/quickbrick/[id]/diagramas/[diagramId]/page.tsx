@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { DiagramEditor } from "@/components/QuickBrick/Notebook/DiagramEditor";
-import { getDiagram } from "../../../actions";
+import { DiagramEditor } from "@/features/quickbrick/notebook/components/DiagramEditor";
+import { getDiagram } from "@/features/quickbrick/shared/actions";
 
 export const metadata = { title: "Diagrama · QuickBrick Studio" };
 

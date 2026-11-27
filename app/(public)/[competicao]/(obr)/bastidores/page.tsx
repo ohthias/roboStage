@@ -15,12 +15,12 @@ import {
   Megaphone,
 } from "lucide-react";
 
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import LibraryExplorer from "@/components/competicoes/OBR/bastidores/LibraryExplorer";
-import { AnimatedBackground, SectionTitle, toneClasses, type Tone } from "@/components/home/shared";
-import { CtaBlock, cornerBtn } from "@/components/competicoes/shared/CompetitionSections";
-import { materials, path, SUGGEST_MATERIAL_URL } from "@/utils/competitions/bastidores";
-import "@/components/home/home.css";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
+import LibraryExplorer from "@/features/leagues/obr/bastidores/components/LibraryExplorer";
+import { AnimatedBackground, SectionTitle, toneClasses, type Tone } from "@/features/home/components/shared";
+import { CtaBlock, cornerBtn } from "@/features/leagues/shared/components/CompetitionSections";
+import { materials, path, SUGGEST_MATERIAL_URL } from "@/features/leagues/obr/bastidores/lib/bastidores";
+import "@/features/home/components/home.css";
 
 type Params = { params: Promise<{ competicao: string }> };
 

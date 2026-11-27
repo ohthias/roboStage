@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { applyListFilters, listHref, parseListFilters } from "@/utils/labtest/list-filters";
-import { applyFilters } from "@/utils/labtest/view-dashboard";
+import { applyListFilters, listHref, parseListFilters } from "@/features/labtest/lib/list-filters";
+import { applyFilters } from "@/features/labtest/lib/view-dashboard";
 
 const t = (name: string, extra: Partial<Parameters<typeof applyListFilters>[0][number]> = {}) => ({
   name,

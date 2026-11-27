@@ -21,14 +21,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
-import PageHero, { heroBtn } from "@/components/UI/PageHero";
-import { SectionTitle, toneClasses, type Tone } from "@/components/home/shared";
-import { CtaBlock, cornerBtn } from "@/components/competicoes/shared/CompetitionSections";
-import { communities } from "@/utils/institutional/community";
-import ShareButton, { CopyLinkButton } from "./ShareButton";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
+import PageHero, { heroBtn } from "@/components/layout/PageHero";
+import { SectionTitle, toneClasses, type Tone } from "@/features/home/components/shared";
+import { CtaBlock, cornerBtn } from "@/features/leagues/shared/components/CompetitionSections";
+import { communities } from "@/features/institutional/lib/community";
+import ShareButton, { CopyLinkButton } from "@/features/institutional/components/ShareButton";
 
 export const metadata: Metadata = {
   title: "Apoie o RoboStage",

@@ -24,20 +24,20 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { Footer } from "@/components/UI/Footer";
-import { Navbar } from "@/components/UI/Navbar";
-import RevealOnScroll from "@/components/UI/RevealOnScroll";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
 import {
   AnimatedBackground,
   SectionTitle,
   toneClasses,
   type Tone,
-} from "@/components/home/shared";
+} from "@/features/home/components/shared";
 import {
   CtaBlock,
   cornerBtn,
-} from "@/components/competicoes/shared/CompetitionSections";
-import "@/components/home/home.css";
+} from "@/features/leagues/shared/components/CompetitionSections";
+import "@/features/home/components/home.css";
 
 const SHOWLIVE_URL =
   process.env.NEXT_PUBLIC_SHOWLIVE_URL ?? "https://showlive.robostage.com.br";

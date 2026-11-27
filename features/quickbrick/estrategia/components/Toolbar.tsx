@@ -24,7 +24,9 @@ import {
   IconToggle,
   ActionButton,
   ToggleRow,
+  SliderRow,
 } from "@/components/stage/tool/panel-kit";
+import { IconButton, Kbd, cn } from "@/components/stage";
 
 /* ------------------ Tipagens ------------------ */
 
@@ -102,11 +104,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   toggleZoneVisibility,
 }) => {
   return (
-    <div className="w-64 h-[513px] flex flex-col bg-base-200 border-r border-base-300">
-      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-6">
+    <div className="flex h-full min-h-[513px] w-64 flex-col border-r border-base-300 bg-base-100">
+      <div className="custom-scrollbar flex-1 space-y-5 overflow-y-auto p-3">
         {/* FERRAMENTAS */}
         <Section title="Ferramentas">
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-6 gap-1">
             {TOOLS.map((t) => (
               <IconToggle
                 key={t.key}
@@ -121,10 +123,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         {/* PROPRIEDADES */}
         <Section title="Propriedades">
-          <PanelCard className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full overflow-hidden relative ring-1 ring-base-content/10 shadow-sm">
+          <PanelCard className="flex items-center gap-3 p-2">
+            <div className="relative size-8 overflow-hidden rounded-md ring-1 ring-base-content/15">
               <div
-                className="absolute inset-0 rounded-full pointer-events-none"
+                className="pointer-events-none absolute inset-0"
                 style={{ background: color }}
               />
               <input
@@ -136,13 +138,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               />
             </div>
 
-            <div>
-              <p className="text-[11px] opacity-60">Cor selecionada</p>
-              <p className="text-sm font-mono">{color.toUpperCase()}</p>
+            <div className="leading-tight">
+              <p className="text-[11px] text-base-content/55">Cor do traço</p>
+              <p className="font-mono text-[13px] font-semibold">{color.toUpperCase()}</p>
             </div>
           </PanelCard>
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-2 space-y-0.5">
             <ToggleRow
               label="Mostrar Medidas"
               checked={showLabels}
@@ -157,28 +159,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
           {/* Tamanho do apagador — só aparece com a ferramenta selecionada */}
           {tool === "eraser" && (
-            <div className="mt-4">
-              <div className="flex justify-between items-center px-1 mb-1">
-                <span className="text-[10px] font-semibold uppercase tracking-wide opacity-50">
-                  Tamanho do Apagador
-                </span>
-                <span className="text-xs font-mono opacity-70">
-                  {eraserSize}px
-                </span>
-              </div>
-              <input
-                type="range"
-                min={10}
-                max={80}
-                step={2}
-                value={eraserSize}
-                onChange={(e) => setEraserSize(Number(e.target.value))}
-                className="range range-xs range-primary"
-              />
-              <p className="text-[10px] opacity-50 mt-1 px-1">
-                Passe sobre um traço para apagar só a parte tocada. Segure{" "}
-                <kbd className="kbd kbd-xs">Ctrl</kbd> para apagar o traço
-                inteiro.
+            <div className="mt-3">
+              <SliderRow label="Tamanho da borracha" value={eraserSize} min={10} max={80} step={2} display={`${eraserSize}px`} onChange={setEraserSize} />
+              <p className="mt-1 text-[11px] leading-relaxed text-base-content/55">
+                Passe sobre um traço para apagar só a parte tocada. Segure <Kbd>Ctrl</Kbd> para apagar o traço inteiro.
               </p>
             </div>
           )}
@@ -217,97 +201,78 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <ActionButton
               onClick={exportGeneral}
               Icon={ImageIcon}
-              label="Exportar PNG"
-              className="w-full text-left text-[10px]"
+              label="PNG"
+              variant="primary"
+              className="w-full"
             />
 
             <ActionButton
               onClick={exportLayers}
               Icon={Archive}
-              label="Exportar Camadas"
-              className="w-full text-left text-[10px]"
+              label="Camadas"
+              className="w-full"
             />
           </div>
         </Section>
 
         {/* CAMADAS */}
         <Section title="Camadas" action={<AddLayerButton onClick={addLayer} />}>
-          <ul className="menu bg-base-100 border border-base-300 rounded-xl w-full p-0 shadow-sm">
+          <ul className="space-y-0.5 rounded-lg border border-base-300 bg-base-100 p-1 max-h-[80px] overflow-y-auto">
             {layers.map((layer) => {
               const isActive = activeLayerId === layer.id;
-
               return (
                 <li
                   key={layer.id}
-                  className={`transition-all ${
-                    isActive ? "bg-base-200/70 border-l-4 border-primary rounded-r-lg" : ""
-                  }`}
+                  onClick={() => setActiveLayerId(layer.id)}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-1 rounded-md py-1 pl-1 pr-0.5 transition-colors",
+                    isActive ? "bg-primary/10" : "hover:bg-base-content/[0.04]",
+                  )}
                 >
-                  <div
-                    className="flex items-center gap-2 py-2 px-3 cursor-pointer"
-                    onClick={() => setActiveLayerId(layer.id)}
-                  >
-                    {/* Nome */}
-                    <input
-                      aria-label={`Nome da camada ${layer.name}`}
-                      type="text"
-                      value={layer.name}
-                      onChange={(e) => renameLayer(layer.id, e.target.value)}
-                      className={`input input-ghost input-xs w-full max-w-[140px] rounded-lg ${
-                        isActive ? "font-semibold" : ""
-                      }`}
-                      onClick={(e) => e.stopPropagation()}
+                  <span className={cn("h-5 w-1 shrink-0 rounded-full", isActive ? "bg-primary" : "bg-transparent")} aria-hidden />
+                  <input
+                    aria-label={`Nome da camada ${layer.name}`}
+                    type="text"
+                    value={layer.name}
+                    onChange={(e) => renameLayer(layer.id, e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    className={cn(
+                      "h-7 min-w-0 flex-1 rounded border border-transparent bg-transparent px-1.5 text-[13px] hover:border-base-300 focus:border-primary focus:bg-base-100 focus:outline-none",
+                      isActive && "font-semibold text-primary",
+                    )}
+                  />
+                  <IconButton
+                    label="Mostrar zonas"
+                    icon={<Scan />}
+                    size="xs"
+                    active={layer.zonesVisible && layer.visible}
+                    disabled={!layer.visible}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleZoneVisibility(layer.id);
+                    }}
+                  />
+                  <IconButton
+                    label={layer.visible ? "Ocultar camada" : "Mostrar camada"}
+                    icon={layer.visible ? <Eye /> : <EyeOff className="opacity-40" />}
+                    size="xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleVisibility(layer.id);
+                    }}
+                  />
+                  {layers.length > 1 && (
+                    <IconButton
+                      label="Excluir camada"
+                      icon={<Trash2 />}
+                      size="xs"
+                      variant="danger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteLayer(layer.id);
+                      }}
                     />
-
-                    <div className="flex items-center gap-1 ml-auto">
-                      {/* Mostrar zonas */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleZoneVisibility(layer.id);
-                        }}
-                        className={`btn btn-square btn-ghost btn-xs ${
-                          layer.zonesVisible && layer.visible
-                            ? "text-primary"
-                            : "opacity-30"
-                        }`}
-                        disabled={!layer.visible}
-                        title="Mostrar zonas"
-                      >
-                        <Scan size={14} />
-                      </button>
-
-                      {/* Visibilidade */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleVisibility(layer.id);
-                        }}
-                        className="btn btn-square btn-ghost btn-xs"
-                        title="Visibilidade"
-                      >
-                        {layer.visible ? (
-                          <Eye size={14} />
-                        ) : (
-                          <EyeOff size={14} className="opacity-30" />
-                        )}
-                      </button>
-
-                      {/* Delete */}
-                      {layers.length > 1 && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteLayer(layer.id);
-                          }}
-                          className="btn btn-square btn-ghost btn-xs text-error"
-                          title="Deletar camada"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                  )}
                 </li>
               );
             })}
@@ -319,15 +284,5 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 };
 
 const AddLayerButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    aria-label="Adicionar camada"
-    className="
-      flex items-center justify-center h-6 w-6 rounded-md
-      bg-primary/10 text-primary hover:bg-primary hover:text-primary-content
-      transition-all border border-primary/20
-    "
-  >
-    <Plus size={14} />
-  </button>
+  <IconButton label="Adicionar camada" icon={<Plus />} size="xs" variant="primary" onClick={onClick} />
 );

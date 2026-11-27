@@ -10,34 +10,39 @@ interface RunMissionProps {
   onFailure: () => void;
 }
 
+const bigBtn =
+  "inline-flex h-16 w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl border-2 border-base-content text-lg font-black tracking-tight shadow-[4px_4px_0_0_var(--stage-shadow)] transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--stage-shadow)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0";
+
 export default function RunMission({ mission, missionId, onSuccess, onFailure }: RunMissionProps) {
   return (
-    <div className="flex flex-col items-center gap-4 w-full">
+    <div className="flex w-full flex-col items-center gap-5">
       <div className="text-center">
-        <div className="badge badge-lg badge-neutral font-mono">{missionId}</div>
-        <h2 className="text-2xl sm:text-3xl font-bold mt-2">{mission?.name ?? "Missão"}</h2>
+        <span className="inline-block -rotate-2 rounded-tl-lg rounded-br-lg bg-base-content px-3 py-1 font-mono text-sm font-bold text-base-100">
+          {missionId}
+        </span>
+        <h2 className="stage-display mt-3 text-3xl sm:text-4xl">{mission?.name ?? "Missão"}</h2>
         {mission?.points !== undefined && (
-          <p className="text-success font-semibold mt-1">+ {mission.points} pontos</p>
+          <p className="mt-1 font-semibold text-success">+ {mission.points} pontos</p>
         )}
       </div>
 
-      <div className="w-full max-w-sm flex flex-col gap-3 mt-2">
+      <div className="mt-2 grid w-full max-w-sm gap-3">
         <button
           type="button"
           onClick={onSuccess}
-          className="btn btn-success btn-lg h-16 text-lg gap-2"
+          className={`${bigBtn} bg-success text-success-content`}
           aria-label={`Registrar sucesso na missão ${missionId}`}
         >
-          <Check className="w-6 h-6" aria-hidden="true" />
+          <Check className="size-6" aria-hidden="true" />
           SUCESSO
         </button>
         <button
           type="button"
           onClick={onFailure}
-          className="btn btn-error btn-lg h-16 text-lg gap-2"
+          className={`${bigBtn} bg-error text-error-content`}
           aria-label={`Registrar falha na missão ${missionId}`}
         >
-          <X className="w-6 h-6" aria-hidden="true" />
+          <X className="size-6" aria-hidden="true" />
           FALHA
         </button>
       </div>

@@ -51,7 +51,7 @@ const SmallNumber: React.FC<{ label: string; value: number; onChange: (v: number
     <input
       type="number"
       step={step}
-      className="input input-bordered input-xs font-mono text-xs w-full"
+      className="rounded-md border border-base-300 bg-base-100 px-2.5 transition-colors placeholder:text-base-content/40 hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 h-7 w-full font-mono text-xs"
       value={Number.isFinite(value) ? parseFloat(value.toFixed(1)) : 0}
       onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
     />
@@ -104,9 +104,9 @@ const MissionsPanel: React.FC<MissionsPanelProps> = ({
   };
 
   return (
-    <section className="rounded-lg bg-base-100 border border-base-content/10 p-3.5 space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-[11px] font-bold uppercase tracking-wider text-base-content/60">Missões</h2>
+    <section className="space-y-3">
+      <div className="flex min-h-6 items-center justify-between">
+        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">Missões</h3>
         <div className="flex items-center gap-1">
           <span className="font-mono text-xs">
             <span className="text-success font-semibold">{doneCount}</span>
@@ -114,7 +114,7 @@ const MissionsPanel: React.FC<MissionsPanelProps> = ({
           </span>
           <button
             onClick={onToggleShow}
-            className="btn btn-ghost btn-xs btn-square"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content size-7 px-0"
             title={showMissions ? "Ocultar no tapete" : "Mostrar no tapete"}
           >
             {showMissions ? <Eye size={13} /> : <EyeOff size={13} />}
@@ -122,13 +122,15 @@ const MissionsPanel: React.FC<MissionsPanelProps> = ({
         </div>
       </div>
 
-      <progress className="progress progress-success w-full h-1.5" value={doneCount} max={Math.max(total, 1)} />
-      <p className="text-[10px] text-base-content/50 -mt-1">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-base-200" role="progressbar" aria-valuenow={doneCount} aria-valuemax={total}>
+        <div className="h-full rounded-full bg-success transition-[width]" style={{ width: `${(doneCount / Math.max(total, 1)) * 100}%` }} />
+      </div>
+      <p className="text-[11px] leading-relaxed text-base-content/55 -mt-1">
         A rota atual conclui {plannedCount} de {total}. Uma missão conta quando o centro do robô entra no círculo
         de ativação.
       </p>
 
-      <ul className="space-y-1">
+      <ul className="space-y-0.5 rounded-lg border border-base-300 bg-base-100 p-1">
         {missions.map((m) => {
           const isDone = completed.has(m.id);
           const t = completionTimes[m.id];
@@ -163,7 +165,7 @@ const MissionsPanel: React.FC<MissionsPanelProps> = ({
                   </span>
                 </span>
                 {isTouching && (
-                  <span className="badge badge-warning badge-xs" title="O robô está encostando nesta zona">
+                  <span className="inline-flex h-4 items-center rounded bg-warning/20 px-1 text-[10px] font-semibold" title="O robô está encostando nesta zona">
                     contato
                   </span>
                 )}
@@ -172,7 +174,7 @@ const MissionsPanel: React.FC<MissionsPanelProps> = ({
               {isSelected && (
                 <div className="px-2 pb-2 pt-1 space-y-2">
                   <input
-                    className="input input-bordered input-xs w-full text-xs"
+                    className="rounded-md border border-base-300 bg-base-100 px-2.5 transition-colors placeholder:text-base-content/40 hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 h-7 w-full text-xs"
                     value={m.name}
                     onChange={(e) => onUpdate(m.id, { name: e.target.value })}
                     aria-label="Nome da missão"
@@ -204,13 +206,13 @@ const MissionsPanel: React.FC<MissionsPanelProps> = ({
                       </p>
                       <div className="flex gap-1.5">
                         <button
-                          className="btn btn-info btn-xs flex-1"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 h-7 px-2 text-xs flex-1 text-info"
                           disabled={draftCount < 3}
                           onClick={onFinishZone}
                         >
                           Concluir
                         </button>
-                        <button className="btn btn-ghost btn-xs flex-1" onClick={onCancelEdit}>
+                        <button className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content h-7 px-2 text-xs flex-1" onClick={onCancelEdit}>
                           Cancelar
                         </button>
                       </div>
@@ -218,20 +220,20 @@ const MissionsPanel: React.FC<MissionsPanelProps> = ({
                   ) : editingThis && editMode?.kind === "activation" ? (
                     <div className="rounded-md bg-info/10 border border-info/30 p-2 flex items-center gap-2">
                       <p className="text-[10px] text-base-content/70 flex-1">Clique no tapete para posicionar o alvo.</p>
-                      <button className="btn btn-ghost btn-xs" onClick={onCancelEdit}>
+                      <button className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content h-7 px-2 text-xs" onClick={onCancelEdit}>
                         Cancelar
                       </button>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-1.5">
                       <button
-                        className="btn btn-outline btn-xs gap-1"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 h-7 px-2 text-xs"
                         onClick={() => onStartEdit(m.id, "zone")}
                       >
                         <Hexagon size={11} /> Desenhar zona
                       </button>
                       <button
-                        className="btn btn-outline btn-xs gap-1"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 h-7 px-2 text-xs"
                         onClick={() => onStartEdit(m.id, "activation")}
                       >
                         <Crosshair size={11} /> Mover alvo
@@ -240,7 +242,7 @@ const MissionsPanel: React.FC<MissionsPanelProps> = ({
                   )}
 
                   <button
-                    className="btn btn-ghost btn-xs w-full text-error gap-1"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-error hover:bg-error/10 h-7 px-2 text-xs w-full"
                     onClick={() => onRemove(m.id)}
                   >
                     <Trash2 size={11} /> Excluir missão
@@ -256,21 +258,21 @@ const MissionsPanel: React.FC<MissionsPanelProps> = ({
       </ul>
 
       <div className="flex gap-1.5">
-        <button className="btn btn-primary btn-xs flex-1 gap-1" onClick={onAdd}>
+        <button className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 rounded-tl-lg rounded-br-lg rounded-tr-sm rounded-bl-sm border-transparent bg-primary text-primary-content hover:brightness-110 h-7 px-2 text-xs flex-1" onClick={onAdd}>
           <Plus size={12} /> Nova missão
         </button>
-        <button className="btn btn-ghost btn-xs btn-square" onClick={handleExport} title="Exportar missões (JSON)">
+        <button className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content size-7 px-0" onClick={handleExport} title="Exportar missões (JSON)">
           <Download size={12} />
         </button>
         <button
-          className="btn btn-ghost btn-xs btn-square"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content size-7 px-0"
           onClick={() => fileRef.current?.click()}
           title="Importar missões (JSON)"
         >
           <Upload size={12} />
         </button>
         <button
-          className="btn btn-ghost btn-xs btn-square"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content size-7 px-0"
           onClick={() => {
             if (confirm("Restaurar as missões padrão? Suas alterações serão perdidas.")) onReset();
           }}

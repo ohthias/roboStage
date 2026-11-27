@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, X, AlertTriangle } from "lucide-react";
+import { AlertTriangle, Check, X } from "lucide-react";
+import { KeyValue, Panel, ToolBadge, cn } from "@/components/stage";
 import type { Mission, MissionTimerResult } from "@/features/leagues/fll/partiu-mesa/lib/types";
 
 interface MissionResultsProps {
@@ -9,78 +10,70 @@ interface MissionResultsProps {
 }
 
 export default function MissionResults({ result, missionsById }: MissionResultsProps) {
+  const notes = [
+    result.firstFailureMissionId && { label: "Primeira falha", value: result.firstFailureMissionId },
+    result.mostInconsistentMissionIds.length > 0 && {
+      label: result.mostInconsistentMissionIds.length > 1 ? "Missões mais inconsistentes" : "Missão mais inconsistente",
+      value: result.mostInconsistentMissionIds.join(", "),
+    },
+  ].filter(Boolean) as { label: string; value: string }[];
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h3 className="font-semibold mb-3">Análise por missão</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+      <Panel title="Análise por missão">
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {result.missionStats.map((stat) => {
             const mission = missionsById.get(stat.missionId);
             return (
-              <div key={stat.missionId} className="card bg-base-200">
-                <div className="card-body py-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="badge badge-neutral badge-sm">{stat.missionId}</span>
-                      <span className="text-sm font-medium truncate">{mission?.name}</span>
-                    </div>
-                    {stat.isFirstFailure && (
-                      <span className="badge badge-error badge-outline badge-sm gap-1">
-                        <AlertTriangle className="w-3 h-3" /> 1ª falha
-                      </span>
-                    )}
+              <li key={stat.missionId} className="rounded-md border border-base-300 px-3 py-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <ToolBadge className="font-mono">{stat.missionId}</ToolBadge>
+                    <span className="truncate text-[13px] font-semibold">{mission?.name}</span>
                   </div>
-                  <p className="text-xs text-base-content/60 mt-1">
-                    {stat.attempts} tentativa{stat.attempts !== 1 ? "s" : ""} · {stat.successRate}% sucesso
-                  </p>
+                  {stat.isFirstFailure && (
+                    <ToolBadge tone="warning">
+                      <AlertTriangle className="size-3" /> 1ª falha
+                    </ToolBadge>
+                  )}
                 </div>
-              </div>
+                <p className="mt-1 text-[11px] text-base-content/55">
+                  {stat.attempts} tentativa{stat.attempts !== 1 ? "s" : ""} · {stat.successRate}% sucesso
+                </p>
+              </li>
             );
           })}
-        </div>
-      </div>
+        </ul>
+      </Panel>
 
-      <div>
-        <h3 className="font-semibold mb-3">Sequência</h3>
-        <div className="flex flex-wrap items-center gap-2">
+      <Panel title="Sequência">
+        <ol className="flex flex-wrap items-center gap-1.5">
           {result.attempts.map((attempt, index) => (
-            <span key={attempt.id} className="flex items-center gap-2">
+            <li key={attempt.id} className="flex items-center gap-1.5">
               <span
-                className={`inline-flex items-center gap-1 badge ${
+                className={cn(
+                  "inline-flex h-6 items-center gap-1 rounded-md border px-1.5 font-mono text-[11px] font-semibold",
                   attempt.result === "success"
-                    ? "badge-success"
+                    ? "border-success/30 bg-success/10 text-success"
                     : attempt.result === "failure"
-                      ? "badge-error"
-                      : "badge-ghost"
-                }`}
+                      ? "border-error/30 bg-error/10 text-error"
+                      : "border-dashed border-base-300 text-base-content/40",
+                )}
               >
                 {attempt.missionId}
-                {attempt.result === "success" && <Check className="w-3 h-3" />}
-                {attempt.result === "failure" && <X className="w-3 h-3" />}
+                {attempt.result === "success" && <Check className="size-3" />}
+                {attempt.result === "failure" && <X className="size-3" />}
               </span>
-              {index < result.attempts.length - 1 && <span className="text-base-content/40">→</span>}
-            </span>
+              {index < result.attempts.length - 1 && (
+                <span aria-hidden="true" className="text-base-content/30">
+                  →
+                </span>
+              )}
+            </li>
           ))}
-        </div>
-
-        <div className="mt-3 space-y-1 text-sm">
-          {result.firstFailureMissionId && (
-            <p>
-              <span className="text-base-content/60">Primeira falha:</span>{" "}
-              <span className="font-medium">{result.firstFailureMissionId}</span>
-            </p>
-          )}
-          {result.mostInconsistentMissionIds.length > 0 && (
-            <p>
-              <span className="text-base-content/60">
-                Missão{result.mostInconsistentMissionIds.length > 1 ? "ões" : ""} mais inconsistente
-                {result.mostInconsistentMissionIds.length > 1 ? "s" : ""}:
-              </span>{" "}
-              <span className="font-medium">{result.mostInconsistentMissionIds.join(", ")}</span>
-            </p>
-          )}
-        </div>
-      </div>
+        </ol>
+        {notes.length > 0 && <KeyValue items={notes} className="mt-3 border-t border-base-300 pt-1" />}
+      </Panel>
     </div>
   );
 }

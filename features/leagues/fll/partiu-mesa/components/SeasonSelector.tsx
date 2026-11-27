@@ -1,5 +1,6 @@
 "use client";
 
+import { PropertyRow, ToolSelect } from "@/components/stage";
 import type { Season } from "@/features/leagues/fll/partiu-mesa/lib/types";
 
 interface SeasonSelectorProps {
@@ -10,13 +11,9 @@ interface SeasonSelectorProps {
 
 export default function SeasonSelector({ seasons, selectedSeasonId, onSelect }: SeasonSelectorProps) {
   return (
-    <div className="form-control w-full max-w-sm">
-      <label className="label" htmlFor="mission-timer-season">
-        <span className="label-text font-medium">Escolha uma temporada</span>
-      </label>
-      <select
+    <PropertyRow label="Temporada" className="w-full grid-cols-[5.5rem_1fr] sm:w-80">
+      <ToolSelect
         id="mission-timer-season"
-        className="select select-bordered w-full"
         value={selectedSeasonId ?? ""}
         onChange={(e) => onSelect(e.target.value)}
         aria-label="Temporada da FIRST LEGO League"
@@ -29,7 +26,7 @@ export default function SeasonSelector({ seasons, selectedSeasonId, onSelect }: 
             {season.name}
           </option>
         ))}
-      </select>
-    </div>
+      </ToolSelect>
+    </PropertyRow>
   );
 }

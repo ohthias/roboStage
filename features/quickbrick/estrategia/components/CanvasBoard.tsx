@@ -1715,16 +1715,16 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
 
         {selectedItem && editModalPos && (
           <div
-            className="card fixed bg-base-300 shadow-lg w-xs z-40 animate-fade-in-up transition-all duration-75"
+            className="tool-scope fixed z-40 w-72 animate-fade-in-up overflow-hidden rounded-lg border border-base-300 bg-base-100 text-[13px] shadow-xl transition-all duration-75"
             style={{
               top: editModalPos.top,
               left: editModalPos.left,
               transform: "translateY(-50%)",
             }}
           >
-            <div className="card-body p-4">
+            <div className="p-3">
               <div className="flex justify-between items-center mb-2">
-                <h4 className="text-sm font-bold flex items-center gap-2 text-primary">
+                <h4 className="flex items-center gap-2 text-[13px] font-bold [&>svg]:size-4 [&>svg]:text-primary">
                   {activeSelection?.type === "robot" ? (
                     <Bot />
                   ) : (
@@ -1735,7 +1735,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                 </h4>
                 <button
                   onClick={() => setActiveSelection(null)}
-                  className="btn btn-xs btn-circle btn-ghost"
+                  className="inline-grid size-7 place-items-center rounded-md text-base-content/60 hover:bg-base-content/[0.06] hover:text-base-content" aria-label="Fechar propriedades"
                 >
                   <X size={16} />
                 </button>
@@ -1743,15 +1743,15 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
 
               {activeSelection?.type === "robot" ? (
                 <div className="space-y-4">
-                  <div className="join w-full">
-                    <div className="join-item flex-1">
-                      <label className="text-[10px] font-semibold uppercase tracking-wide opacity-50 px-1">
+                  <div className="grid w-full grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
                         Largura
                       </label>
                       <input
                         type="number"
                         min="0"
-                        className="input input-sm input-bordered w-full join-item"
+                        className="h-8 w-full rounded-md border border-base-300 bg-base-100 px-2.5 text-[13px] transition-colors hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                         value={
                           Number.isFinite((selectedItem as Robot).width * CM_PER_PIXEL)
                             ? Math.round((selectedItem as Robot).width * CM_PER_PIXEL)
@@ -1770,14 +1770,14 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                         onKeyDown={(e) => e.key === "Enter" && registerAction()}
                       />
                     </div>
-                    <div className="join-item flex-1">
-                      <label className="text-[10px] font-semibold uppercase tracking-wide opacity-50 px-1">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
                         Altura
                       </label>
                       <input
                         type="number"
                         min="0"
-                        className="input input-sm input-bordered w-full join-item"
+                        className="h-8 w-full rounded-md border border-base-300 bg-base-100 px-2.5 text-[13px] transition-colors hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                         value={
                           Number.isFinite((selectedItem as Robot).height * CM_PER_PIXEL)
                             ? Math.round((selectedItem as Robot).height * CM_PER_PIXEL)
@@ -1822,11 +1822,11 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-semibold uppercase tracking-wide opacity-50 px-1">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
                       Tipo
                     </label>
                     <select
-                      className="select select-sm select-bordered w-full mt-1"
+                      className="h-8 w-full rounded-md border border-base-300 bg-base-100 px-2.5 text-[13px] transition-colors hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 mt-1"
                       value={(selectedItem as Robot).type}
                       onChange={(e) => {
                         handleUpdateItem({ type: e.target.value });
@@ -1858,7 +1858,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                 <div className="space-y-4">
                   <div>
                     <label
-                      className="text-[10px] font-semibold uppercase tracking-wide opacity-50 px-1"
+                      className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50"
                       htmlFor="zone-name"
                     >
                       Nome
@@ -1866,7 +1866,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                     <input
                       type="text"
                       id="zone-name"
-                      className="input input-sm input-bordered w-full mt-1"
+                      className="h-8 w-full rounded-md border border-base-300 bg-base-100 px-2.5 text-[13px] transition-colors hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 mt-1"
                       value={(selectedItem as Zone).name}
                       onChange={(e) =>
                         handleUpdateItem({ name: e.target.value })
@@ -1878,13 +1878,13 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
 
                   <div className="flex items-end gap-2">
                     <div className="flex-1">
-                      <label className="text-[10px] font-semibold uppercase tracking-wide opacity-50 px-1">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
                         Largura
                       </label>
                       <input
                         type="number"
                         min="1"
-                        className="input input-sm input-bordered w-full mt-1"
+                        className="h-8 w-full rounded-md border border-base-300 bg-base-100 px-2.5 text-[13px] transition-colors hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 mt-1"
                         value={Math.round(selectedItem.width * CM_PER_PIXEL)}
                         onChange={(e) =>
                           handleUpdateItem({
@@ -1898,13 +1898,13 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="text-[10px] font-semibold uppercase tracking-wide opacity-50 px-1">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
                         Altura
                       </label>
                       <input
                         type="number"
                         min="1"
-                        className="input input-sm input-bordered w-full mt-1"
+                        className="h-8 w-full rounded-md border border-base-300 bg-base-100 px-2.5 text-[13px] transition-colors hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 mt-1"
                         value={Math.round(selectedItem.height * CM_PER_PIXEL)}
                         onChange={(e) =>
                           handleUpdateItem({
@@ -1932,7 +1932,7 @@ export const CanvasBoard = forwardRef<CanvasHandle, CanvasBoardProps>(
 
               <div className="pt-2">
                 <button
-                  className="btn btn-error btn-outline btn-sm w-full"
+                  className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md border border-error/40 bg-base-100 text-[13px] font-semibold text-error transition-colors hover:bg-error/10"
                   onClick={() => {
                     setLayers((prev) =>
                       prev.map((l) =>

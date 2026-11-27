@@ -1,6 +1,7 @@
 "use client";
 
-import { Star, X } from "lucide-react";
+import { Check, Star, X } from "lucide-react";
+import { IconButton, cn } from "@/components/stage";
 import { EffectiveItem } from "@/features/leagues/fll/confere-ai/lib/utils";
 
 interface ChecklistItemProps {
@@ -11,59 +12,57 @@ interface ChecklistItemProps {
   compact?: boolean;
 }
 
-export default function ChecklistItem({
-  item,
-  checked,
-  onToggle,
-  onRemove,
-  compact = false,
-}: ChecklistItemProps) {
+export default function ChecklistItem({ item, checked, onToggle, onRemove, compact = false }: ChecklistItemProps) {
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg border border-base-300 bg-base-100 px-3 transition-colors hover:bg-base-200 ${
-        compact ? "py-2" : "py-3"
-      }`}
+      className={cn(
+        "group flex items-center gap-2 rounded-md px-2 transition-colors hover:bg-base-content/[0.04]",
+        compact ? "py-1" : "py-1.5",
+      )}
     >
       <button
         type="button"
         onClick={() => onToggle(item.id)}
         aria-pressed={checked}
         aria-label={checked ? `Desmarcar "${item.text}"` : `Marcar "${item.text}" como concluído`}
-        className="flex flex-1 items-center gap-3 text-left focus:outline-none"
+        className="flex min-w-0 flex-1 items-center gap-2.5 rounded text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={() => onToggle(item.id)}
-          tabIndex={-1}
-          aria-hidden="true"
-          className={`checkbox pointer-events-none checkbox-sm ${
-            item.important ? "checkbox-primary" : ""
-          }`}
-        />
         <span
-          className={`flex-1 text-sm sm:text-base ${
-            checked ? "text-base-content/50 line-through" : "text-base-content"
-          }`}
+          aria-hidden="true"
+          className={cn(
+            "grid size-5 shrink-0 place-items-center rounded-tl-md rounded-br-md border transition-colors",
+            checked
+              ? "border-success bg-success text-success-content"
+              : item.important
+                ? "border-primary"
+                : "border-base-content/30",
+          )}
+        >
+          {checked && <Check size={12} strokeWidth={3} />}
+        </span>
+        <span
+          className={cn(
+            "flex-1 text-[13px] sm:text-sm",
+            checked ? "text-base-content/45 line-through" : "text-base-content",
+          )}
         >
           {item.text}
         </span>
         {item.important && !checked && (
           <span title="Item importante">
-            <Star className="h-4 w-4 shrink-0 fill-primary text-primary" aria-hidden="true" />
+            <Star className="size-3.5 shrink-0 fill-primary text-primary" aria-hidden="true" />
           </span>
         )}
       </button>
 
       {item.custom && onRemove && (
-        <button
-          type="button"
+        <IconButton
+          label={`Remover item personalizado "${item.text}"`}
+          icon={<X />}
+          size="xs"
+          className="opacity-60 group-hover:opacity-100"
           onClick={() => onRemove(item.id)}
-          aria-label={`Remover item personalizado "${item.text}"`}
-          className="btn btn-ghost btn-xs btn-circle shrink-0"
-        >
-          <X className="h-3.5 w-3.5" aria-hidden="true" />
-        </button>
+        />
       )}
     </div>
   );

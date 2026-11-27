@@ -367,3 +367,72 @@ function clusterCount(pts: HeatPoint[], thresh: number): number {
 
   return clusters;
 }
+/**
+ * Desenha as missões do tapete (zonas do Sharks Simulator) por cima do mapa.
+ * Coordenadas das missões em cm, origem no canto inferior esquerdo.
+ */
+export function renderMissions(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  missions: Array<{ id: string; name: string; vertices: { x: number; y: number }[] }>,
+  opts: {
+    matWidthCm: number;
+    matHeightCm: number;
+    showLabels: boolean;
+    highlightId?: string | null;
+    label: (name: string) => string;
+  },
+): void {
+  ctx.clearRect(0, 0, w, h);
+  const px = (p: { x: number; y: number }) => ({
+    x: (p.x / opts.matWidthCm) * w,
+    y: ((opts.matHeightCm - p.y) / opts.matHeightCm) * h,
+  });
+
+  for (const m of missions) {
+    if (m.vertices.length < 3) continue;
+    const hl = opts.highlightId === m.id;
+    ctx.beginPath();
+    m.vertices.forEach((v, i) => {
+      const q = px(v);
+      if (i === 0) ctx.moveTo(q.x, q.y);
+      else ctx.lineTo(q.x, q.y);
+    });
+    ctx.closePath();
+    ctx.fillStyle = hl ? "rgba(56,189,248,0.32)" : "rgba(251,191,36,0.22)";
+    ctx.fill();
+    // halo escuro por baixo para o contorno aparecer no tapete colorido
+    ctx.lineJoin = "round";
+    ctx.lineWidth = hl ? 5 : 4;
+    ctx.strokeStyle = "rgba(15,23,42,0.55)";
+    ctx.stroke();
+    ctx.setLineDash(hl ? [] : [6, 3]);
+    ctx.lineWidth = hl ? 2.5 : 2;
+    ctx.strokeStyle = hl ? "#38bdf8" : "#fbbf24";
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  if (!opts.showLabels) return;
+
+  const fontSize = Math.max(9, Math.round(w * 0.011));
+  ctx.font = `700 ${fontSize}px 'JetBrains Mono', ui-monospace, monospace`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  for (const m of missions) {
+    if (m.vertices.length < 3) continue;
+    const cx = m.vertices.reduce((s, v) => s + v.x, 0) / m.vertices.length;
+    const cy = m.vertices.reduce((s, v) => s + v.y, 0) / m.vertices.length;
+    const q = px({ x: cx, y: cy });
+    const text = opts.label(m.name);
+    const tw = ctx.measureText(text).width + 8;
+    const th = fontSize + 6;
+    ctx.fillStyle = opts.highlightId === m.id ? "rgba(2,132,199,0.92)" : "rgba(15,23,42,0.82)";
+    ctx.beginPath();
+    roundRect(ctx, q.x - tw / 2, q.y - th / 2, tw, th, 3);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(text, q.x, q.y + 0.5);
+  }
+}

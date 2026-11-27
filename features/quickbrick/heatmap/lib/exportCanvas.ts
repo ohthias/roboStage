@@ -33,6 +33,7 @@ async function buildMergedCanvas(
   heatmapCanvas: HTMLCanvasElement,
   season: SeasonKey,
   backgroundImage?: string | HTMLImageElement | null,
+  overlayCanvas?: HTMLCanvasElement | null,
 ): Promise<HTMLCanvasElement> {
   const seasonData = SEASONS[season];
   const w = tableCanvas.width;
@@ -60,6 +61,8 @@ async function buildMergedCanvas(
   // Camadas principais
   ctx.drawImage(tableCanvas, 0, 0);
   ctx.drawImage(heatmapCanvas, 0, 0);
+  // Missões do tapete por cima do calor (se estiverem visíveis)
+  if (overlayCanvas) ctx.drawImage(overlayCanvas, 0, 0);
 
   return out;
 }
@@ -72,12 +75,14 @@ export async function exportCanvasPNG(
   heatmapCanvas: HTMLCanvasElement,
   season: SeasonKey,
   backgroundImage?: string | HTMLImageElement | null,
+  overlayCanvas?: HTMLCanvasElement | null,
 ): Promise<void> {
   const out = await buildMergedCanvas(
     tableCanvas,
     heatmapCanvas,
     season,
     backgroundImage,
+    overlayCanvas,
   );
 
   const blob = await new Promise<Blob | null>((resolve) => {

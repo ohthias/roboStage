@@ -7,10 +7,11 @@ import {
   computeMissionCompletionTimes,
   createMission,
   isValidMissionList,
+  MISSIONS_STORAGE_KEY,
   touchingMissionIds,
 } from "./missions.service";
 
-const STORAGE_KEY = "robostage:sharks-simulator:missions:v1";
+const STORAGE_KEY = MISSIONS_STORAGE_KEY;
 
 /** Lista de missões editável, salva no navegador (localStorage). */
 export const useMissions = () => {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, Circle, RotateCcw } from "lucide-react";
+import { Check, RotateCcw } from "lucide-react";
+import { ChunkyProgress, StickerTag, cn } from "@/components/stage";
 
 // Checklist com progresso. O estado fica só neste navegador (localStorage).
 export default function GuideChecklist({ items, storageKey }: { items: string[]; storageKey: string }) {
@@ -36,9 +37,14 @@ export default function GuideChecklist({ items, storageKey }: { items: string[];
   return (
     <div>
       <div className="flex items-end justify-between gap-3">
-        <p className="font-mono text-3xl font-bold tabular-nums">
+        <p className="stage-display flex items-center gap-3 text-4xl tabular-nums">
           {count}
-          <span className="text-base text-base-content/45">/{items.length}</span>
+          <span className="-ml-2 text-base text-base-content/45">/{items.length}</span>
+          {count === items.length && (
+            <StickerTag tone="success" rotate={-4} size="sm">
+              Pronto!
+            </StickerTag>
+          )}
         </p>
         {count > 0 && (
           <button
@@ -51,32 +57,33 @@ export default function GuideChecklist({ items, storageKey }: { items: string[];
           </button>
         )}
       </div>
-      <div
-        className="mt-3 h-2 overflow-hidden rounded-full bg-base-200"
-        role="progressbar"
-        aria-valuenow={pct}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label="Progresso do checklist"
-      >
-        <div className="h-full rounded-full bg-success transition-all duration-500" style={{ width: `${pct}%` }} />
-      </div>
+      <ChunkyProgress
+        value={pct}
+        tone="success"
+        showValue={false}
+        label={<span className="sr-only">Progresso do checklist</span>}
+        className="mt-3"
+      />
 
       <ul className="mt-5 space-y-1">
         {items.map((item, i) => (
           <li key={item}>
-            <label className="flex cursor-pointer items-start gap-3 rounded-tl-lg rounded-br-lg p-2 transition hover:bg-base-200/70">
+            <label className="flex cursor-pointer items-start gap-3 rounded-tl-lg rounded-br-lg p-2 transition hover:bg-base-200/70 has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-primary/30">
               <input
                 type="checkbox"
-                className="sr-only"
+                className="peer sr-only"
                 checked={done[i]}
                 onChange={() => update(done.map((d, j) => (j === i ? !d : d)))}
               />
-              {done[i] ? (
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" />
-              ) : (
-                <Circle className="mt-0.5 h-5 w-5 shrink-0 text-base-content/25" />
-              )}
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "mt-0.5 grid size-5 shrink-0 place-items-center rounded-tl-md rounded-br-md border transition-colors",
+                  done[i] ? "border-success bg-success text-success-content" : "border-base-content/25",
+                )}
+              >
+                {done[i] && <Check size={12} strokeWidth={3} />}
+              </span>
               <span
                 className={`text-sm leading-6 ${done[i] ? "text-base-content/45 line-through" : "text-base-content/80"}`}
               >

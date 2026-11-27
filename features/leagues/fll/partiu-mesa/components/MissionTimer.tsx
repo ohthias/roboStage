@@ -2,7 +2,36 @@
 
 import { loadMissionCatalog } from "@/lib/data/missions-client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Pause, Play, RotateCcw, Trash2 } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarRange,
+  Flag,
+  ListOrdered,
+  Pause,
+  Play,
+  RefreshCw,
+  RotateCcw,
+  Target,
+  Timer,
+  TimerOff,
+  Trash2,
+} from "lucide-react";
+import {
+  Button,
+  InlineAlert,
+  Panel,
+  Segmented,
+  Starburst,
+  TimerDial,
+  ToolBadge,
+  ToolButton,
+  ToolEmpty,
+  ToolInput,
+  ToolScope,
+  Toolbar,
+  ToolbarGroup,
+  ToolbarSpacer,
+} from "@/components/stage";
 
 import type { Mission, MissionAttempt, MissionTimerConfig, MissionTimerSession, Season } from "@/features/leagues/fll/partiu-mesa/lib/types";
 import { normalizeMissionsData, MissionsDataError } from "@/features/leagues/fll/partiu-mesa/lib/normalize";
@@ -13,7 +42,6 @@ import { useClockTick } from "@/features/leagues/fll/partiu-mesa/hooks/useClockT
 import SeasonSelector from "./SeasonSelector";
 import MissionSelector from "./MissionSelector";
 import MissionSequence from "./MissionSequence";
-import TimerDisplay from "./TimerDisplay";
 import RunMission from "./RunMission";
 import RunProgress from "./RunProgress";
 import ResultsSummary from "./ResultsSummary";
@@ -120,13 +148,17 @@ export default function MissionTimer() {
     [seasons, selectedSeasonId]
   );
 
+  // Os IDs (M01, M02…) se repetem entre temporadas: a temporada da sessão
+  // (ou a escolhida) vem por último para vencer as outras no mapa.
+  const activeSeasonId = session?.seasonId ?? selectedSeasonId;
   const missionsById = useMemo(() => {
     const map = new Map<string, Mission>();
-    for (const season of seasons) {
+    const ordered = [...seasons].sort((a, b) => Number(a.id === activeSeasonId) - Number(b.id === activeSeasonId));
+    for (const season of ordered) {
       for (const mission of season.missions) map.set(mission.id, mission);
     }
     return map;
-  }, [seasons]);
+  }, [seasons, activeSeasonId]);
 
   const now = useClockTick(session?.status === "running");
 
@@ -297,7 +329,7 @@ export default function MissionTimer() {
 
   if (loadStatus === "loading") {
     return (
-      <div className="flex flex-col items-center justify-center py-24 gap-4">
+      <div className="flex flex-col items-center justify-center gap-4 py-24" role="status">
         <span className="loading loading-spinner loading-lg text-primary" />
         <p className="text-base-content/60">Carregando missões...</p>
       </div>
@@ -306,15 +338,18 @@ export default function MissionTimer() {
 
   if (loadStatus === "error") {
     return (
-      <div className="alert alert-error max-w-lg mx-auto">
-        <div>
-          <p className="font-medium">{loadError}</p>
-          <p className="text-sm">Verifique sua conexão e tente novamente.</p>
-        </div>
-        <button className="btn btn-sm" onClick={fetchMissions}>
-          Tentar novamente
-        </button>
-      </div>
+      <InlineAlert
+        type="error"
+        title={loadError}
+        className="mx-auto max-w-lg"
+        action={
+          <ToolButton size="sm" onClick={fetchMissions} icon={<RefreshCw />}>
+            Tentar novamente
+          </ToolButton>
+        }
+      >
+        Verifique sua conexão e tente novamente.
+      </InlineAlert>
     );
   }
 
@@ -322,47 +357,51 @@ export default function MissionTimer() {
   if (session && session.status === "result") {
     const result = buildMissionTimerResult(session, Array.from(missionsById.values()));
     return (
-      <div className="max-w-6xl mx-auto space-y-10 bg-base-100 border border-base-content/10 rounded-2xl shadow-md p-6">
+      <ToolScope className="mx-auto max-w-6xl space-y-4 rounded-tl-[1.5rem] rounded-br-[1.5rem] border border-base-300 p-4 sm:p-6">
         <ResultsSummary result={result} />
         <MissionResults result={result} missionsById={missionsById} />
         <LaunchHistory attempts={result.attempts} />
         <ExportResults result={result} missionsById={missionsById} />
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-base-300 justify-center">
-          <button className="btn btn-outline gap-2" onClick={resetToSetup}>
-            <RotateCcw className="w-4 h-4" />
-            Nova sessão
-          </button>
-          <button className="btn btn-ghost gap-2 text-error" onClick={clearAll}>
-            <Trash2 className="w-4 h-4" />
+        <div className="flex flex-wrap justify-end gap-2 border-t border-base-300 pt-4">
+          <ToolButton variant="danger" size="md" icon={<Trash2 />} onClick={clearAll}>
             Limpar sessão
-          </button>
+          </ToolButton>
+          <ToolButton variant="primary" size="md" icon={<RotateCcw />} onClick={resetToSetup}>
+            Nova sessão
+          </ToolButton>
         </div>
-      </div>
+      </ToolScope>
     );
   }
 
   // ---- FINISHED (transição antes do resultado) ----
   if (session && session.status === "finished") {
     const executedCount = session.attempts.filter((a) => a.result !== "skipped").length;
+    const timeout = finishReason === "timeout";
     return (
-      <div className="max-w-md mx-auto text-center py-16 space-y-4">
-        <h2 className="text-2xl font-bold">
-          {finishReason === "timeout" ? "Tempo esgotado" : "Sequência concluída"}
-        </h2>
+      <div className="stage-paper relative mx-auto max-w-md space-y-4 overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] border border-base-300 bg-base-100 px-6 py-12 text-center shadow-[8px_8px_0_0_var(--stage-shadow)]">
+        <Starburst
+          size={56}
+          tone={timeout ? "warning" : "accent"}
+          motion="spin"
+          className="absolute right-4 top-4"
+        >
+          {timeout ? <TimerOff size={18} strokeWidth={3} /> : <Flag size={18} strokeWidth={3} />}
+        </Starburst>
+        <p className="stage-kicker text-base-content/45">/ FIM DO TESTE</p>
+        <h2 className="stage-display text-3xl">{timeout ? "Tempo esgotado" : "Sequência concluída"}</h2>
         <p className="text-base-content/60">
-          {finishReason === "timeout"
-            ? "O teste terminou antes da sequência."
-            : "Todas as missões selecionadas foram executadas."}
+          {timeout ? "O teste terminou antes da sequência." : "Todas as missões selecionadas foram executadas."}
         </p>
-        {finishReason === "timeout" && (
+        {timeout && (
           <p className="font-mono text-sm">
             Executadas: {executedCount} / {session.sequence.length}
           </p>
         )}
-        <button className="btn btn-primary btn-lg mt-4" onClick={goToResult}>
-          {finishReason === "timeout" ? "Ver resultado" : "Finalizar teste"}
-        </button>
+        <Button tone="primary" size="lg" className="mt-4" onClick={goToResult} iconRight={<ArrowRight size={18} />}>
+          {timeout ? "Ver resultado" : "Finalizar teste"}
+        </Button>
       </div>
     );
   }
@@ -373,28 +412,42 @@ export default function MissionTimer() {
     const remainingMs = Math.max(0, session.config.durationMs - elapsed);
     const currentMissionId = session.sequence[session.currentIndex];
     const currentMission = currentMissionId ? missionsById.get(currentMissionId) : undefined;
+    const done = session.attempts.length;
+    const total = session.sequence.length;
 
     if (session.status === "paused") {
       return (
-        <div className="max-w-md mx-auto text-center py-16 space-y-6">
-          <h2 className="text-xl font-semibold text-base-content/70">Teste pausado</h2>
-          <TimerDisplay remainingMs={remainingMs} />
-          <div className="flex flex-col gap-3 max-w-xs mx-auto">
-            <button className="btn btn-primary gap-2" onClick={resumeSession}>
-              <Play className="w-4 h-4" />
+        <div className="stage-paper mx-auto max-w-md space-y-6 rounded-tl-[2rem] rounded-br-[2rem] border border-base-300 bg-base-100 px-6 py-12 text-center">
+          <div className="flex justify-center">
+            <TimerDial totalTime={session.config.durationMs / 1000} currentTime={remainingMs / 1000} label="PAUSADO" size={240} />
+          </div>
+          <div className="mx-auto flex max-w-xs flex-col gap-3">
+            <Button tone="primary" onClick={resumeSession} iconLeft={<Play size={18} />}>
               Continuar
-            </button>
-            <button className="btn btn-outline btn-error" onClick={endTestFromPause}>
+            </Button>
+            <ToolButton variant="danger" size="md" onClick={endTestFromPause}>
               Encerrar teste
-            </button>
+            </ToolButton>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="max-w-md mx-auto flex flex-col items-center gap-8 py-8">
-        <TimerDisplay remainingMs={remainingMs} urgent={remainingMs <= 30_000} />
+      <div className="stage-paper mx-auto flex max-w-xl flex-col items-center gap-8 rounded-tl-[2rem] rounded-br-[2rem] border border-base-300 bg-base-100 px-6 py-10">
+        <div className="flex w-full items-center justify-between">
+          <p className="stage-kicker text-base-content/45">
+            / MISSÃO {Math.min(done + 1, total)} DE {total}
+          </p>
+          <ToolButton variant="ghost" icon={<Pause />} onClick={pauseSession} aria-label="Pausar teste">
+            Pausar
+          </ToolButton>
+        </div>
+        <TimerDial totalTime={session.config.durationMs / 1000} currentTime={remainingMs / 1000} label="PARTIU MESA" size={260}>
+          <span className="stage-label mt-2 text-base-content/50">
+            {done}/{total} missões
+          </span>
+        </TimerDial>
         <RunMission
           mission={currentMission}
           missionId={currentMissionId}
@@ -402,116 +455,125 @@ export default function MissionTimer() {
           onFailure={() => registerResult("failure")}
         />
         <RunProgress sequence={session.sequence} currentIndex={session.currentIndex} attempts={session.attempts} />
-        <button className="btn btn-ghost gap-2" onClick={pauseSession} aria-label="Pausar teste">
-          <Pause className="w-4 h-4" />
-          Pausar
-        </button>
       </div>
     );
   }
 
   // ---- SETUP ----
   return (
-    <div className="space-y-10 bg-base-100 border border-base-content/10 rounded-2xl shadow-md p-6 max-w-6xl mx-auto">
-      <SeasonSelector
-        seasons={seasons}
-        selectedSeasonId={selectedSeasonId}
-        onSelect={(id) => {
-          setSelectedSeasonId(id);
-          setSequence([]);
-        }}
-      />
-
-      {selectedSeason && (
-        <>
-          <MissionSelector missions={selectedSeason.missions} selectedIds={sequence} onToggle={toggleMission} />
-
-          <MissionSequence
-            sequence={sequence}
-            missionsById={missionsById}
-            onMoveUp={(index) => moveSequence(index, -1)}
-            onMoveDown={(index) => moveSequence(index, 1)}
-            onRemove={removeFromSequence}
+    <ToolScope className="mx-auto max-w-6xl overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] border border-base-300">
+      <Toolbar label="Sessão do Partiu Mesa!" className="px-3">
+        <ToolbarGroup className="min-w-0 flex-1 basis-60">
+          <SeasonSelector
+            seasons={seasons}
+            selectedSeasonId={selectedSeasonId}
+            onSelect={(id) => {
+              setSelectedSeasonId(id);
+              setSequence([]);
+            }}
           />
+        </ToolbarGroup>
+        <ToolbarSpacer />
+        <ToolButton variant="danger" icon={<Trash2 />} onClick={clearAll}>
+          Limpar sessão
+        </ToolButton>
+      </Toolbar>
 
-          {sequence.length > 0 && (
-            <div className="card bg-base-200">
-              <div className="card-body">
-                <p className="font-medium">
-                  {sequence.length} missõe{sequence.length !== 1 ? "s" : ""} selecionada
-                  {sequence.length !== 1 ? "s" : ""}
-                </p>
+      {!selectedSeason ? (
+        <div className="p-4 sm:p-6">
+          <ToolEmpty
+            icon={<CalendarRange />}
+            title="Escolha uma temporada"
+            description="As missões da temporada aparecem aqui para você montar a sequência do teste."
+          />
+        </div>
+      ) : (
+        <div className="grid gap-4 p-4 sm:p-6 lg:grid-cols-[1.5fr_1fr] [&>*]:min-w-0">
+          <Panel
+            title="Missões disponíveis"
+            icon={<Target />}
+            actions={<ToolBadge>{selectedSeason.missions.length}</ToolBadge>}
+          >
+            <MissionSelector missions={selectedSeason.missions} selectedIds={sequence} onToggle={toggleMission} />
+          </Panel>
 
-                <div className="form-control w-full max-w-xs mt-2">
-                  <label className="label" htmlFor="mission-timer-duration">
-                    <span className="label-text font-medium">Tempo de teste</span>
-                  </label>
-                  <select
-                    id="mission-timer-duration"
-                    className="select select-bordered"
-                    value={durationChoice}
-                    onChange={(e) => setDurationChoice(e.target.value)}
-                  >
-                    {DURATION_PRESETS.map((preset) => (
-                      <option key={preset.label} value={preset.label}>
-                        {preset.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+          <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+            <Panel
+              title="Sua sequência"
+              icon={<ListOrdered />}
+              actions={sequence.length > 0 ? <ToolBadge tone="primary">{sequence.length}</ToolBadge> : undefined}
+            >
+              <MissionSequence
+                sequence={sequence}
+                missionsById={missionsById}
+                onMoveUp={(index) => moveSequence(index, -1)}
+                onMoveDown={(index) => moveSequence(index, 1)}
+                onRemove={removeFromSequence}
+              />
+            </Panel>
+
+            {sequence.length > 0 && (
+              <Panel title="Tempo de teste" icon={<Timer />}>
+                <Segmented
+                  label="Tempo de teste"
+                  value={durationChoice}
+                  onChange={setDurationChoice}
+                  options={DURATION_PRESETS.map((p) => ({
+                    value: p.label,
+                    label: p.ms === "custom" ? "Outro" : p.label,
+                    title: p.label,
+                  }))}
+                  className="flex w-full [&>button]:flex-1"
+                />
 
                 {durationChoice === "Personalizado" && (
-                  <div className="flex items-end gap-3 mt-2">
-                    <div className="form-control">
-                      <label className="label" htmlFor="mission-timer-minutes">
-                        <span className="label-text">Minutos</span>
-                      </label>
-                      <input
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <label className="space-y-1">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
+                        Minutos
+                      </span>
+                      <ToolInput
                         id="mission-timer-minutes"
                         type="number"
                         min={0}
                         max={30}
-                        className="input input-bordered w-24"
+                        suffix="min"
                         value={customMinutes}
                         onChange={(e) => setCustomMinutes(Number(e.target.value))}
                       />
-                    </div>
-                    <div className="form-control">
-                      <label className="label" htmlFor="mission-timer-seconds">
-                        <span className="label-text">Segundos</span>
-                      </label>
-                      <input
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
+                        Segundos
+                      </span>
+                      <ToolInput
                         id="mission-timer-seconds"
                         type="number"
                         min={0}
                         max={59}
-                        className="input input-bordered w-24"
+                        suffix="s"
                         value={customSeconds}
                         onChange={(e) => setCustomSeconds(Number(e.target.value))}
                       />
-                    </div>
+                    </label>
                   </div>
                 )}
 
-                <p className="text-sm text-base-content/60 mt-2">
-                  Duração selecionada: {formatDurationMs(resolveDurationMs())}
+                <p className="mt-3 text-xs text-base-content/60">
+                  {sequence.length} {sequence.length !== 1 ? "missões selecionadas" : "missão selecionada"} ·{" "}
+                  <span className="font-mono font-semibold text-base-content">
+                    {formatDurationMs(resolveDurationMs())}
+                  </span>
                 </p>
 
-                <button className="btn btn-primary btn-lg mt-4" onClick={startTest}>
+                <Button tone="primary" size="lg" className="mt-4 w-full" onClick={startTest} iconLeft={<Play size={18} />}>
                   Começar teste
-                </button>
-              </div>
-            </div>
-          )}
-        </>
+                </Button>
+              </Panel>
+            )}
+          </div>
+        </div>
       )}
-
-      <div className="pt-6 border-t border-base-300 ml-auto">
-        <button className="btn btn-ghost btn-sm gap-2 text-error" onClick={clearAll}>
-          <Trash2 className="w-4 h-4" />
-          Limpar sessão
-        </button>
-      </div>
-    </div>
+    </ToolScope>
   );
 }

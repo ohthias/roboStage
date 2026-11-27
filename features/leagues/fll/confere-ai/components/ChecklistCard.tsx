@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { IconButton, ToolBadge, ToolButton, ToolEmpty } from "@/components/stage";
 import { ConfereAIChecklist, ConfereAICustomItem } from "@/features/leagues/fll/confere-ai/lib/types";
 import { calculateProgress, mergeChecklistItems } from "@/features/leagues/fll/confere-ai/lib/utils";
 import ChecklistItem from "./ChecklistItem";
@@ -37,36 +38,35 @@ export default function ChecklistCard({
   const progress = calculateProgress(items, completedItems);
 
   return (
-    <div className="card border border-base-300 bg-base-100 shadow-sm">
-      <div className="card-body gap-3 p-4 sm:p-5">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h3 className="card-title text-base sm:text-lg">{checklist.title}</h3>
-            {checklist.description && (
-              <p className="text-sm text-base-content/60">{checklist.description}</p>
-            )}
-          </div>
-          {isCustomChecklist && onRemoveChecklist && (
-            <button
-              type="button"
-              onClick={() => onRemoveChecklist(checklist.id)}
-              aria-label={`Remover checklist "${checklist.title}"`}
-              className="btn btn-ghost btn-sm btn-circle shrink-0"
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-            </button>
-          )}
+    <section className="flex flex-col overflow-hidden rounded-lg border border-base-300 bg-base-100">
+      <header className="flex items-start justify-between gap-2 border-b border-base-300 px-4 py-3">
+        <div className="min-w-0">
+          <h3 className="flex items-center gap-2 text-sm font-bold">
+            {checklist.title}
+            {isCustomChecklist && <ToolBadge tone="secondary">Sua</ToolBadge>}
+          </h3>
+          {checklist.description && <p className="mt-0.5 text-xs text-base-content/60">{checklist.description}</p>}
+        </div>
+        {isCustomChecklist && onRemoveChecklist && (
+          <IconButton
+            label={`Remover checklist "${checklist.title}"`}
+            icon={<Trash2 />}
+            size="xs"
+            variant="danger"
+            onClick={() => onRemoveChecklist(checklist.id)}
+          />
+        )}
+      </header>
+
+      <div className="flex flex-1 flex-col gap-3 p-3">
+        <div className="px-1">
+          <ProgressSummary done={progress.done} total={progress.total} percent={progress.percent} />
         </div>
 
-        <ProgressSummary done={progress.done} total={progress.total} percent={progress.percent} />
-
         {items.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-base-300 p-4 text-center text-sm text-base-content/60">
-            <p>Nada por aqui ainda.</p>
-            <p>Adicione seu primeiro item para começar.</p>
-          </div>
+          <ToolEmpty title="Nada por aqui ainda." description="Adicione seu primeiro item para começar." />
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col">
             {items.map((item) => (
               <ChecklistItem
                 key={item.id}
@@ -79,16 +79,13 @@ export default function ChecklistCard({
             ))}
           </div>
         )}
-
-        <button
-          type="button"
-          onClick={() => setAddItemOpen(true)}
-          className="btn btn-outline btn-sm self-start"
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          Adicionar item
-        </button>
       </div>
+
+      <footer className="border-t border-base-300 bg-base-200/40 px-3 py-2">
+        <ToolButton variant="ghost" size="xs" icon={<Plus />} onClick={() => setAddItemOpen(true)}>
+          Adicionar item
+        </ToolButton>
+      </footer>
 
       <AddItemModal
         open={addItemOpen}
@@ -99,6 +96,6 @@ export default function ChecklistCard({
           setAddItemOpen(false);
         }}
       />
-    </div>
+    </section>
   );
 }

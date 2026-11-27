@@ -1,27 +1,78 @@
-import type { MissionZone, SeasonKey } from '@/features/quickbrick/heatmap/types';
+import type { HeatPoint, MissionZone, SeasonKey } from "@/features/quickbrick/heatmap/types";
+import type { Mission } from "@/features/quickbrick/sharks-simulator/types";
+import {
+  DEFAULT_MISSIONS,
+  MISSIONS_STORAGE_KEY,
+  isValidMissionList,
+  pointInPolygon,
+  polygonCenter,
+} from "@/features/quickbrick/sharks-simulator/components/missions.service";
+import { TAPETE_HEIGHT_CM, TAPETE_WIDTH_CM } from "@/features/quickbrick/sharks-simulator/components/constants";
 
-// Normalized positions (rx, ry, rw, rh) relative to canvas size
-const BASE_MISSIONS: MissionZone[] = [
-  { id: 1,  rx: 0.06, ry: 0.08, rw: 0.09, rh: 0.24 },
-  { id: 2,  rx: 0.17, ry: 0.06, rw: 0.09, rh: 0.18 },
-  { id: 3,  rx: 0.29, ry: 0.08, rw: 0.08, rh: 0.22 },
-  { id: 4,  rx: 0.40, ry: 0.05, rw: 0.09, rh: 0.20 },
-  { id: 5,  rx: 0.52, ry: 0.08, rw: 0.09, rh: 0.20 },
-  { id: 6,  rx: 0.63, ry: 0.05, rw: 0.09, rh: 0.25 },
-  { id: 7,  rx: 0.78, ry: 0.08, rw: 0.09, rh: 0.18 },
-  { id: 8,  rx: 0.10, ry: 0.40, rw: 0.09, rh: 0.22 },
-  { id: 9,  rx: 0.24, ry: 0.38, rw: 0.10, rh: 0.22 },
-  { id: 10, rx: 0.38, ry: 0.40, rw: 0.10, rh: 0.20 },
-  { id: 11, rx: 0.52, ry: 0.38, rw: 0.10, rh: 0.22 },
-  { id: 12, rx: 0.67, ry: 0.40, rw: 0.09, rh: 0.20 },
-  { id: 13, rx: 0.80, ry: 0.38, rw: 0.09, rh: 0.22 },
-  { id: 14, rx: 0.22, ry: 0.68, rw: 0.09, rh: 0.18 },
-  { id: 15, rx: 0.47, ry: 0.68, rw: 0.10, rh: 0.18 },
-];
+/** Proporção do tapete (200 × 114 cm) — a mesa do mapa de calor segue a mesma. */
+export const MAT_RATIO = TAPETE_WIDTH_CM / TAPETE_HEIGHT_CM;
 
-// Extend per-season if layouts differ
+// Zonas antigas do fundo procedural (só usadas quando não há imagem do tapete).
 const SEASON_MISSIONS: Partial<Record<SeasonKey, MissionZone[]>> = {};
 
 export function getMissions(season: SeasonKey): MissionZone[] {
-  return SEASON_MISSIONS[season] ?? BASE_MISSIONS;
+  return SEASON_MISSIONS[season] ?? [];
+}
+
+/**
+ * Missões do tapete, as mesmas do Sharks Simulator. Se a equipe editou as
+ * missões no simulador, usa a versão salva no navegador.
+ */
+export function loadMatMissions(): Mission[] {
+  if (typeof window === "undefined") return DEFAULT_MISSIONS;
+  try {
+    const raw = window.localStorage.getItem(MISSIONS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (isValidMissionList(parsed)) return parsed;
+    }
+  } catch {
+    // storage indisponível
+  }
+  return DEFAULT_MISSIONS;
+}
+
+/** Rótulo curto: "Missão 7" → "M07". Nomes livres ficam como estão. */
+export function missionShortLabel(name: string): string {
+  const m = name.match(/(\d+)\s*$/);
+  return m ? `M${m[1].padStart(2, "0")}` : name;
+}
+
+/** Ponto normalizado (0–1, origem no topo) → cm (origem embaixo à esquerda). */
+const toCm = (p: { x: number; y: number }) => ({
+  x: p.x * TAPETE_WIDTH_CM,
+  y: (1 - p.y) * TAPETE_HEIGHT_CM,
+});
+
+/** Distância de tolerância (cm) ao redor da zona — falha "perto" da missão conta. */
+const NEAR_CM = 8;
+
+export type MissionHeat = { mission: Mission; heat: number; points: number };
+
+/**
+ * Soma a intensidade dos pontos que caem dentro (ou a até 8 cm do centro)
+ * de cada missão. Ordena da mais crítica para a menos.
+ */
+export function missionHeat(points: HeatPoint[], missions: Mission[]): MissionHeat[] {
+  const rows = missions
+    .filter((m) => m.vertices.length >= 3)
+    .map((mission) => {
+      const c = polygonCenter(mission.vertices);
+      let heat = 0;
+      let count = 0;
+      for (const p of points) {
+        const cm = toCm(p);
+        if (pointInPolygon(cm, mission.vertices) || Math.hypot(cm.x - c.x, cm.y - c.y) <= NEAR_CM) {
+          heat += p.intensity;
+          count++;
+        }
+      }
+      return { mission, heat, points: count };
+    });
+  return rows.filter((r) => r.points > 0).sort((a, b) => b.heat - a.heat);
 }

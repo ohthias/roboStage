@@ -5,7 +5,7 @@ import { SWOTCanvas } from "@/features/quickbrick/swot/components/SwotCanva";
 import { SwotMobile } from "@/features/quickbrick/swot/components/SwotMobile";
 import HeaderTool from "@/features/quickbrick/shared/components/HeaderTool";
 import { LayoutGrid } from "lucide-react";
-import { loadMissionCatalog, loadSeasonMissions } from "@/lib/data/missions-client";
+import { loadSeasonMissions } from "@/lib/data/missions-client";
 
 const seasons: Record<string, { name: string }> = {
   bioglow: {
@@ -26,8 +26,8 @@ interface SwotPageClientProps {
 export default function SwotPageClient({ season }: SwotPageClientProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [missions, setMissions] = useState<any[]>([]);
-  const [availableSeasons, setAvailableSeasons] = useState<string[]>([]);
-  const [selectedSeason, setSelectedSeason] = useState<string>(season);
+  // A temporada vem só da rota (/matriz-swot/[season]).
+  const selectedSeason = season;
 
   useEffect(() => {
     const checkSize = () => setIsMobile(window.innerWidth <= 720);
@@ -35,25 +35,6 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
     window.addEventListener("resize", checkSize);
     return () => window.removeEventListener("resize", checkSize);
   }, []);
-
-  useEffect(() => {
-    // Catálogo inteiro só aqui (para saber quais temporadas têm imagens);
-    // a requisição é memorizada e não se repete a cada troca de temporada.
-    loadMissionCatalog()
-      .then((data) => {
-        const availableSeasons: string[] = [];
-        Object.entries(data).forEach(([seasonId, seasonMissions]: any) => {
-          const hasImages = seasonMissions.some((m: any) => m.image);
-          if (hasImages && seasons[seasonId]) {
-            availableSeasons.push(seasonId);
-          }
-        });
-        setAvailableSeasons(availableSeasons);
-        if (!selectedSeason && availableSeasons.length > 0) {
-          setSelectedSeason(availableSeasons[0]);
-        }
-      });
-  }, [selectedSeason]);
 
   useEffect(() => {
     if (!selectedSeason) return;
@@ -80,9 +61,7 @@ export default function SwotPageClient({ season }: SwotPageClientProps) {
           <SWOTCanvas
             missions={missions}
             setMissions={setMissions}
-            seasons={availableSeasons}
             selectedSeason={selectedSeason}
-            setSelectedSeason={setSelectedSeason}
           />
         )}
       </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Download, FileText } from "lucide-react";
+import { InlineAlert, Panel, ToolButton } from "@/components/stage";
 import type { Mission, MissionTimerResult } from "@/features/leagues/fll/partiu-mesa/lib/types";
 import { buildExportFileName, downloadTextFile, generateMissionTimerMarkdown } from "@/features/leagues/fll/partiu-mesa/lib/markdown";
 
@@ -36,28 +37,21 @@ export default function ExportResults({ result, missionsById }: ExportResultsPro
   }
 
   return (
-    <div>
-      <h3 className="font-semibold mb-3">Exportar resultado</h3>
-      <div className="flex flex-col sm:flex-row gap-3">
-        <button type="button" className="btn btn-outline gap-2" onClick={handleDownloadMarkdown}>
-          <FileText className="w-4 h-4" />
+    <Panel title="Exportar resultado">
+      <p className="text-xs text-base-content/60">Leve o treino para o caderno da equipe.</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <ToolButton size="md" icon={<FileText />} onClick={handleDownloadMarkdown}>
           Baixar .md
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary gap-2"
-          onClick={handleDownloadPdf}
-          disabled={isExportingPdf}
-        >
-          <Download className="w-4 h-4" />
+        </ToolButton>
+        <ToolButton size="md" variant="primary" icon={<Download />} onClick={handleDownloadPdf} disabled={isExportingPdf}>
           {isExportingPdf ? "Gerando PDF..." : "Exportar PDF"}
-        </button>
+        </ToolButton>
       </div>
       {pdfError && (
-        <div className="alert alert-error mt-3">
-          <span className="text-sm">{pdfError}</span>
-        </div>
+        <InlineAlert type="error" className="mt-3">
+          {pdfError}
+        </InlineAlert>
       )}
-    </div>
+    </Panel>
   );
 }

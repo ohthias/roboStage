@@ -7,7 +7,9 @@ import {
   AlertTriangle,
   Sparkles,
   Plus,
+  type LucideIcon,
 } from 'lucide-react';
+import { IconButton, ToolInput, cn } from '@/components/stage';
 import { CATEGORIES } from '@/features/empathy-map/lib/initialData';
 import { EmpathyCategory, EmpathyNote, NoteColor } from '@/features/empathy-map/types';
 import { StickyNote } from './StickyNote';
@@ -23,13 +25,13 @@ interface BoardViewProps {
   boardRef: React.RefObject<HTMLDivElement | null>;
 }
 
-const QUADRANTS: { id: EmpathyCategory; icon: any; badgeClass: string }[] = [
-  { id: 'thinks', icon: Brain, badgeClass: 'badge-info' },
-  { id: 'says', icon: MessageSquareQuote, badgeClass: 'badge-success' },
-  { id: 'does', icon: Activity, badgeClass: 'badge-secondary' },
-  { id: 'feels', icon: Heart, badgeClass: 'badge-accent' },
-  { id: 'pains', icon: AlertTriangle, badgeClass: 'badge-error' },
-  { id: 'gains', icon: Sparkles, badgeClass: 'badge-warning' },
+const QUADRANTS: { id: EmpathyCategory; icon: LucideIcon }[] = [
+  { id: 'thinks', icon: Brain },
+  { id: 'says', icon: MessageSquareQuote },
+  { id: 'does', icon: Activity },
+  { id: 'feels', icon: Heart },
+  { id: 'pains', icon: AlertTriangle },
+  { id: 'gains', icon: Sparkles },
 ];
 
 export const BoardView: React.FC<BoardViewProps> = ({
@@ -100,11 +102,11 @@ export const BoardView: React.FC<BoardViewProps> = ({
   };
 
   return (
-    <div className="sm:p-4 lg:p-6 max-w-7xl mx-auto">
+    <div>
       {/* Atalhos de quadrante (só celular) */}
       <nav
         aria-label="Ir para quadrante"
-        className="md:hidden sticky top-0 z-30 -mx-4 mb-3 px-4 py-2 bg-base-100/90 backdrop-blur-sm border-b border-base-200"
+        className="sticky top-16 z-30 -mx-4 mb-3 border-b border-base-300 bg-base-100/90 px-4 py-2 backdrop-blur-sm md:hidden"
       >
         <div className="flex gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {QUADRANTS.map(({ id: catId, icon: IconComponent }) => {
@@ -115,120 +117,96 @@ export const BoardView: React.FC<BoardViewProps> = ({
                 key={catId}
                 type="button"
                 onClick={() => scrollToQuadrant(catId)}
-                className="btn btn-sm btn-ghost border border-base-300 rounded-full shrink-0 gap-1.5 font-semibold"
+                className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-base-300 bg-base-100 px-2.5 text-xs font-semibold"
               >
-                <IconComponent className="w-3.5 h-3.5" style={{ color: config.accentColor }} />
+                <IconComponent className="size-3.5" style={{ color: config.accentColor }} />
                 <span>{config.title}</span>
-                <span className="font-mono text-xs opacity-60 tabular-nums">{count}</span>
+                <span className="font-mono tabular-nums opacity-60">{count}</span>
               </button>
             );
           })}
         </div>
       </nav>
 
-      <div
-        ref={boardRef}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-      >
-        {QUADRANTS.map(({ id: catId, icon: IconComponent, badgeClass }) => {
+      <div ref={boardRef} className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {QUADRANTS.map(({ id: catId, icon: IconComponent }) => {
           const config = CATEGORIES[catId];
           const catNotes = notes.filter((n) => n.category === catId);
           const isTarget = dragOverCategory === catId;
 
           return (
-            <div
+            <section
               key={catId}
               id={`em-quadrant-${catId}`}
+              aria-label={config.title}
               onDragOver={(e) => handleDragOver(e, catId)}
               onDragLeave={() => handleDragLeave(catId)}
               onDrop={(e) => handleDrop(e, catId)}
-              className={`card border bg-base-100 transition-all duration-150 p-4 flex flex-col justify-between shadow-2xs ${
-                isTarget
-                  ? 'border-primary ring-2 ring-primary/40 bg-primary/5'
-                  : 'border-base-200 hover:border-base-300'
-              } scroll-mt-16 md:scroll-mt-24 md:min-h-[340px]`}
+              className={cn(
+                'flex scroll-mt-28 flex-col overflow-hidden rounded-lg border bg-base-100 transition-[border-color,box-shadow] duration-150 md:min-h-[340px]',
+                isTarget ? 'border-primary ring-2 ring-primary/30' : 'border-base-300',
+              )}
+              style={{ borderTopColor: config.accentColor, borderTopWidth: 3 }}
             >
-              <div>
-                {/* Quadrant Header */}
-                <div className="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-base-200">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                      style={{
-                        backgroundColor: `${config.accentColor}18`,
-                        color: config.accentColor,
-                      }}
-                    >
-                      <IconComponent className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-base-content leading-tight">
-                        {config.title}
-                      </h3>
-                      <p className="text-[11px] text-base-content/60 leading-none mt-0.5">
-                        {config.subtitle}
-                      </p>
-                    </div>
-                  </div>
-
-                  <span className={`badge ${badgeClass} badge-sm font-bold font-mono tabular-nums`}>
-                    {catNotes.length}
+              <header className="flex items-center justify-between gap-2 border-b border-base-300 px-3 py-2.5">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span
+                    className="grid size-7 shrink-0 place-items-center rounded-tl-md rounded-br-md"
+                    style={{ backgroundColor: `${config.accentColor}1f`, color: config.accentColor }}
+                  >
+                    <IconComponent className="size-4" />
                   </span>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-[13px] font-bold leading-tight">{config.title}</h3>
+                    <p className="truncate text-[11px] leading-tight text-base-content/55">{config.subtitle}</p>
+                  </div>
                 </div>
+                <span
+                  className="grid h-5 min-w-5 place-items-center rounded px-1 font-mono text-[11px] font-bold tabular-nums"
+                  style={{ backgroundColor: `${config.accentColor}1f`, color: config.accentColor }}
+                >
+                  {catNotes.length}
+                </span>
+              </header>
 
-                {/* Instant Inline Add with DaisyUI input & btn */}
-                <div className="mb-3 flex items-center gap-1.5">
-                  <input
+              <div className="flex flex-1 flex-col gap-2 p-3">
+                <div className="flex items-center gap-1.5">
+                  <ToolInput
                     type="text"
                     value={quickInput[catId] || ''}
-                    onChange={(e) =>
-                      setQuickInput((prev) => ({ ...prev, [catId]: e.target.value }))
-                    }
+                    onChange={(e) => setQuickInput((prev) => ({ ...prev, [catId]: e.target.value }))}
                     onKeyDown={(e) => handleKeyDown(e, catId)}
                     placeholder="+ Adicionar nota"
                     enterKeyHint="send"
                     aria-label={`Adicionar nota em ${config.title}`}
-                    className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
+                    className="h-9 text-base sm:h-8 sm:text-[13px]"
                   />
                   {quickInput[catId]?.trim() && (
-                    <button
-                      onClick={() => handleAddClick(catId)}
-                      type="button"
-                      className="btn btn-primary btn-md sm:btn-sm btn-square shrink-0"
-                      title="Adicionar nota"
-                      aria-label="Adicionar nota"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
+                    <IconButton label="Adicionar nota" icon={<Plus />} variant="primary" onClick={() => handleAddClick(catId)} />
                   )}
                 </div>
 
-                {/* Notes List */}
-                <div className="space-y-2">
-                  {catNotes.map((note) => (
-                    <StickyNote
-                      key={note.id}
-                      note={note}
-                      onVote={onVoteNote}
-                      onUpdateText={onUpdateNoteText}
-                      onChangeColor={onChangeNoteColor}
-                      onDelete={onDeleteNote}
-                      onDragStart={handleDragStart}
-                      onChangeCategory={onChangeCategory}
-                      categoryOrder={categoryOrder}
-                    />
-                  ))}
+                {catNotes.map((note) => (
+                  <StickyNote
+                    key={note.id}
+                    note={note}
+                    onVote={onVoteNote}
+                    onUpdateText={onUpdateNoteText}
+                    onChangeColor={onChangeNoteColor}
+                    onDelete={onDeleteNote}
+                    onDragStart={handleDragStart}
+                    onChangeCategory={onChangeCategory}
+                    categoryOrder={categoryOrder}
+                  />
+                ))}
 
-                  {catNotes.length === 0 && (
-                    <div className="border border-dashed border-base-300 rounded-xl p-4 text-center">
-                      <span className="text-xs text-base-content/50">
-                        Nenhuma nota ainda. Digite acima ou mova uma nota para cá.
-                      </span>
-                    </div>
-                  )}
-                </div>
+                {catNotes.length === 0 && (
+                  <p className="rounded-md border border-dashed border-base-300 px-3 py-4 text-center text-xs text-base-content/50">
+                    Nenhuma nota ainda. Digite acima ou mova uma nota para cá.
+                  </p>
+                )}
               </div>
-            </div>
+            </section>
           );
         })}
       </div>

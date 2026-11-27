@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Play, Pause, TimerReset, Trash } from "lucide-react";
+import { IconButton, ToolButton, cn } from "@/components/stage";
 
 interface TimerProps {
   duration?: number;
@@ -14,6 +15,8 @@ interface TimerProps {
   onReset?: () => void;
   onFinish?: () => void;
   onResetScore?: () => void;
+  /** Conteúdo extra à direita do relógio (ex.: placar). */
+  aside?: React.ReactNode;
 }
 
 export default function Timer({
@@ -27,6 +30,7 @@ export default function Timer({
   onReset,
   onFinish,
   onResetScore,
+  aside,
 }: TimerProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -97,87 +101,78 @@ export default function Timer({
   };
 
   const progress = (timeLeft / duration) * 100;
-
-  const progressColor =
-    timeLeft <= 10
-      ? "bg-red-500"
-      : timeLeft <= 30
-        ? "bg-yellow-500"
-        : "bg-primary";
+  const tone = timeLeft <= 10 ? "error" : timeLeft <= 30 ? "warning" : "primary";
 
   const formatTime = (seconds: number) => {
     const m = String(Math.floor(seconds / 60)).padStart(2, "0");
-    const s = String(seconds % 60).padStart(2, "0");
-    return `${m}:${s}`;
+    const sec = String(seconds % 60).padStart(2, "0");
+    return `${m}:${sec}`;
   };
 
   return (
-    <>
-      {/* Controles */}
-      <nav
-        className={`animate-fade-in-down w-full mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 px-4 py-3 ${className}`}
-      >
-        <div className="flex items-center gap-3">
+    <section
+      aria-label="Cronômetro da partida"
+      className={cn(
+        "stage-paper sticky top-[1rem] z-20 mx-auto w-full overflow-hidden rounded-tl-[1.25rem] rounded-br-[1.25rem] border border-base-300 bg-base-100/95 backdrop-blur",
+        className,
+      )}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:flex-nowrap sm:px-5">
+        <div className="flex items-baseline gap-3">
           <span
-            className="font-mono font-tight uppercase tracking-[0.18em] text-2xl">
+            role="timer"
+            aria-live="off"
+            className={cn(
+              "stage-display text-4xl tabular-nums sm:text-5xl",
+              tone === "error" && "text-error",
+              tone === "warning" && "text-[color-mix(in_oklab,var(--color-warning)_70%,var(--color-base-content))]",
+            )}
+          >
             {formatTime(timeLeft)}
+          </span>
+          <span className="stage-kicker hidden text-base-content/45 sm:inline">
+            / {timerRunning ? "EM JOGO" : timeLeft === 0 ? "FIM" : hasStarted ? "PAUSADO" : "PRONTO"}
           </span>
         </div>
 
-        <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-          <button
-            className="btn btn-success btn-sm sm:btn-md gap-2"
-            onClick={startTimer}
-            disabled={timerRunning}
-          >
-            <Play size={18} />
-            <span className="hidden sm:inline">Iniciar</span>
-          </button>
+        {aside && <div className="order-last flex w-full justify-center sm:order-none sm:ml-auto sm:w-auto">{aside}</div>}
 
-          <button
-            className="btn btn-warning btn-sm sm:btn-md gap-2"
-            onClick={pauseTimer}
-            disabled={!timerRunning}
-          >
-            <Pause size={18} />
-            <span className="hidden sm:inline">Pausar</span>
-          </button>
-
-          <button
-            className="btn btn-outline btn-sm sm:btn-md gap-2"
-            onClick={resetTimer}
-          >
-            <TimerReset size={18} />
-            <span className="hidden sm:inline">Tempo</span>
-          </button>
-
+        <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+          {timerRunning ? (
+            <ToolButton size="md" variant="secondary" icon={<Pause />} onClick={pauseTimer}>
+              Pausar
+            </ToolButton>
+          ) : (
+            <ToolButton size="md" variant="primary" icon={<Play />} onClick={startTimer}>
+              {hasStarted && timeLeft > 0 ? "Continuar" : "Iniciar"}
+            </ToolButton>
+          )}
+          <IconButton label="Reiniciar tempo" icon={<TimerReset />} size="md" variant="outline" onClick={resetTimer} />
           {showResetScore && (
             <>
-              <div className="divider divider-horizontal hidden sm:flex" />
-
-              <button
-                className="btn btn-error btn-outline btn-sm sm:btn-md gap-2"
-                onClick={onResetScore}
-              >
-                <Trash size={18} />
-                <span className="hidden sm:inline">Pontos</span>
-              </button>
+              <span aria-hidden className="mx-1 hidden h-6 w-px bg-base-300 sm:block" />
+              <ToolButton size="md" variant="danger" icon={<Trash />} onClick={onResetScore}>
+                <span className="hidden sm:inline">Zerar pontos</span>
+              </ToolButton>
             </>
           )}
         </div>
-      </nav>
+      </div>
 
-      {/* Barra de progresso fixa */}
-      <div className={`sticky inset-x-0 top-0 z-10 h-2 bg-neutral mx-auto rounded-full ${className}`}>
+      <div className="h-1.5 bg-base-200">
         <div
-          className={`h-full transition-all duration-500 ${progressColor} rounded-full`}
+          className={cn(
+            "h-full transition-[width] duration-1000 ease-linear",
+            tone === "error" ? "bg-error" : tone === "warning" ? "bg-warning" : "bg-primary",
+          )}
           style={{ width: `${progress}%` }}
           role="progressbar"
-          aria-valuenow={progress}
+          aria-label="Tempo restante"
+          aria-valuenow={Math.round(progress)}
           aria-valuemin={0}
           aria-valuemax={100}
         />
       </div>
-    </>
+    </section>
   );
 }

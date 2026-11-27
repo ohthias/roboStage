@@ -28,7 +28,7 @@ const MobileWaypointsSheet: React.FC<MobileWaypointsSheetProps> = ({
       title={`Pontos do percurso (${waypoints.length})`}
       headerRight={
         waypoints.length > 0 ? (
-          <button onClick={onClearAll} className="btn btn-ghost btn-xs text-error gap-1">
+          <button onClick={onClearAll} className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-error hover:bg-error/10 h-7 px-2 text-xs">
             <MapPinOff size={14} /> Limpar
           </button>
         ) : null
@@ -48,9 +48,9 @@ const MobileWaypointsSheet: React.FC<MobileWaypointsSheetProps> = ({
           {waypoints.map((wp, i) => (
             <div
               key={i}
-              className="card card-compact bg-base-200 border border-base-content/10"
+              className="rounded-lg border border-base-300 bg-base-100"
             >
-              <div className="card-body p-3 gap-2">
+              <div className="flex flex-col gap-2 p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-xs shrink-0">
@@ -76,7 +76,7 @@ const MobileWaypointsSheet: React.FC<MobileWaypointsSheetProps> = ({
                   </div>
                   <button
                     onClick={() => onRemove(wp)}
-                    className="btn btn-ghost btn-sm btn-circle text-error"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-error hover:bg-error/10 size-9 rounded-full px-0"
                     aria-label="Remover ponto"
                   >
                     <Trash2 size={16} />
@@ -96,7 +96,7 @@ const MobileWaypointsSheet: React.FC<MobileWaypointsSheetProps> = ({
                         step={5}
                         value={wp.moveSpeed ?? 50}
                         onChange={(e) => onUpdateSpeed(wp, parseFloat(e.target.value))}
-                        className="range range-xs range-primary flex-1"
+                        className="h-1.5 flex-1 cursor-pointer accent-primary"
                       />
                       <span className="text-[10px] font-mono w-8 text-right text-base-content/60">
                         {(wp.moveSpeed ?? 50).toFixed(0)}%

@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useId, useState } from "react";
+import { ToolButton, ToolDialog, ToolInput } from "@/components/stage";
 
 interface AddChecklistModalProps {
   open: boolean;
@@ -8,11 +9,14 @@ interface AddChecklistModalProps {
   onConfirm: (title: string, description: string) => void;
 }
 
+const labelCls = "text-[11px] font-semibold uppercase tracking-wider text-base-content/50";
+
 export default function AddChecklistModal({ open, onClose, onConfirm }: AddChecklistModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-
-  if (!open) return null;
+  const formId = useId();
+  const titleId = useId();
+  const descId = useId();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -30,62 +34,53 @@ export default function AddChecklistModal({ open, onClose, onConfirm }: AddCheck
   }
 
   return (
-    <dialog className="modal modal-open" aria-labelledby="add-checklist-title">
-      <div className="modal-box">
-        <h3 id="add-checklist-title" className="text-lg font-bold">
-          Nova checklist
-        </h3>
-
-        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
-          <label className="form-control w-full">
-            <div className="label">
-              <span className="label-text">Nome</span>
-            </div>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex.: Meu Robô"
-              className="input input-bordered w-full"
-              autoFocus
-              maxLength={80}
-              required
-            />
+    <ToolDialog
+      open={open}
+      onClose={handleClose}
+      title="Nova checklist"
+      description="Organize algo específico da sua equipe."
+      footer={
+        <>
+          <ToolButton variant="ghost" onClick={handleClose}>
+            Cancelar
+          </ToolButton>
+          <ToolButton type="submit" form={formId} variant="primary" disabled={!title.trim()}>
+            Criar
+          </ToolButton>
+        </>
+      }
+    >
+      <form id={formId} onSubmit={handleSubmit} className="space-y-3 pb-2">
+        <div className="space-y-1.5">
+          <label htmlFor={titleId} className={labelCls}>
+            Nome
           </label>
-
-          <label className="form-control w-full">
-            <div className="label">
-              <span className="label-text">Descrição</span>
-              <span className="label-text-alt">opcional</span>
-            </div>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Do que essa checklist trata?"
-              className="textarea textarea-bordered w-full"
-              rows={2}
-              maxLength={160}
-            />
+          <ToolInput
+            id={titleId}
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Ex.: Meu Robô"
+            autoFocus
+            maxLength={80}
+            required
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label htmlFor={descId} className={`${labelCls} flex justify-between`}>
+            Descrição <span className="normal-case tracking-normal text-base-content/40">opcional</span>
           </label>
-
-          <div className="modal-action">
-            <button type="button" className="btn btn-ghost" onClick={handleClose}>
-              Cancelar
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={!title.trim()}>
-              Criar
-            </button>
-          </div>
-        </form>
-      </div>
-      <button
-        type="button"
-        aria-label="Fechar"
-        className="modal-backdrop"
-        onClick={handleClose}
-      >
-        close
-      </button>
-    </dialog>
+          <textarea
+            id={descId}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Do que essa checklist trata?"
+            rows={2}
+            maxLength={160}
+            className="w-full resize-none rounded-md border border-base-300 bg-base-100 px-2.5 py-1.5 text-[13px] transition-colors placeholder:text-base-content/40 hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+      </form>
+    </ToolDialog>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Upload, Trash2, User, Camera } from 'lucide-react';
+import { Upload, Trash2, User, Camera } from 'lucide-react';
+import { ToolButton, ToolDialog, ToolInput } from '@/components/stage';
 import { Persona } from '@/features/empathy-map/types';
 
 interface PersonaModalProps {
@@ -42,8 +43,6 @@ export const PersonaModal: React.FC<PersonaModalProps> = ({
       setAvatarUrl(sanitizeAvatarUrl(persona.avatarUrl || ''));
     }
   }, [isOpen, persona]);
-
-  if (!isOpen) return null;
 
   // Process and resize any uploaded photo
   const handleFileUpload = (file: File) => {
@@ -109,164 +108,84 @@ export const PersonaModal: React.FC<PersonaModalProps> = ({
     onClose();
   };
 
+  const label = 'mb-1 block text-[11px] font-semibold uppercase tracking-wider text-base-content/50';
+
   return (
-    <div className="modal modal-open modal-bottom sm:modal-middle">
-      <div className="modal-box max-w-md relative bg-base-100">
-        <button
-          onClick={onClose}
-          type="button"
-          className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3 text-base-content/60"
-        >
-          <X className="w-4 h-4" />
-        </button>
+    <ToolDialog
+      open={isOpen}
+      onClose={onClose}
+      title="Editar persona"
+      description="Defina o perfil e envie uma foto da pessoa."
+      size="md"
+      footer={
+        <>
+          <ToolButton variant="ghost" onClick={onClose}>
+            Cancelar
+          </ToolButton>
+          <ToolButton type="submit" form="em-persona-form" variant="primary">
+            Salvar persona
+          </ToolButton>
+        </>
+      }
+    >
+      <form id="em-persona-form" onSubmit={handleSubmit} className="space-y-3 pb-2">
+        <div className="flex items-center gap-4 rounded-lg border border-base-300 bg-base-200/40 p-3">
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+            className="group relative grid size-16 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-tl-xl rounded-br-xl border-2 border-dashed border-base-300 bg-base-200 transition-colors hover:border-primary"
+            title="Clique para escolher foto ou arraste uma imagem aqui"
+          >
+            {avatarUrl ? (
+              <img src={sanitizeAvatarUrl(avatarUrl)} alt={name} className="size-full object-cover" />
+            ) : (
+              <User className="size-7 text-base-content/40" />
+            )}
+            <div className="absolute inset-0 grid place-items-center bg-black/40 text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <Camera className="size-5" />
+            </div>
+          </div>
 
-        <h3 className="font-bold text-base text-base-content">
-          Editar Persona
-        </h3>
-        <p className="text-xs text-base-content/60 mt-0.5 mb-4">
-          Defina o perfil e faça o upload de uma foto da pessoa.
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-3.5">
-          {/* Photo Upload Zone */}
-          <div className="card bg-base-200/50 border border-base-300 p-3.5 flex flex-row items-center gap-4">
-            {/* Avatar Preview */}
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDrop}
-              className="relative w-16 h-16 rounded-full overflow-hidden bg-base-200 border-2 border-base-300 group cursor-pointer shrink-0 flex items-center justify-center hover:border-primary transition-colors"
-              title="Clique para escolher foto ou arraste uma imagem aqui"
-            >
-              {avatarUrl ? (
-                <img
-                  src={sanitizeAvatarUrl(avatarUrl)}
-                  alt={name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User className="w-8 h-8 text-base-content/40" />
+          <div className="flex-1 space-y-1.5">
+            <p className="text-[13px] font-bold">Foto da persona</p>
+            <div className="flex items-center gap-2">
+              <ToolButton size="xs" variant="primary" icon={<Upload />} onClick={() => fileInputRef.current?.click()}>
+                Subir foto
+              </ToolButton>
+              {avatarUrl && (
+                <ToolButton size="xs" variant="danger" icon={<Trash2 />} onClick={() => setAvatarUrl('')}>
+                  Remover
+                </ToolButton>
               )}
-
-              {/* Hover overlay with camera icon */}
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white">
-                <Camera className="w-5 h-5" />
-              </div>
             </div>
-
-            {/* Upload Buttons */}
-            <div className="flex-1 space-y-1.5">
-              <div className="text-xs font-bold text-base-content">
-                Foto da Persona
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="btn btn-xs btn-primary gap-1"
-                >
-                  <Upload className="w-3 h-3" />
-                  <span>Subir Foto</span>
-                </button>
-
-                {avatarUrl && (
-                  <button
-                    type="button"
-                    onClick={() => setAvatarUrl('')}
-                    className="btn btn-xs btn-ghost text-error gap-1"
-                    title="Remover foto"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                    <span>Remover</span>
-                  </button>
-                )}
-              </div>
-              <p className="text-[10px] text-base-content/50">
-                Arraste uma foto ou selecione do computador (PNG, JPG, WebP)
-              </p>
-
-              {/* Hidden file input */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={onFileInputChange}
-                className="hidden"
-              />
-            </div>
+            <p className="text-[11px] text-base-content/50">Arraste uma foto ou escolha do computador (PNG, JPG, WebP).</p>
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={onFileInputChange} className="hidden" />
           </div>
+        </div>
 
-          <div>
-            <label className="label py-0.5 text-xs font-bold text-base-content">
-              Nome da Persona
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="Ex: Marina Santos"
-              className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
-            />
-          </div>
-
-          <div>
-            <label className="label py-0.5 text-xs font-bold text-base-content">
-              Cargo / Perfil
-            </label>
-            <input
-              type="text"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              placeholder="Ex: Product Manager & Mãe de 2 filhos"
-              className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
-            />
-          </div>
-
-          <div>
-            <label className="label py-0.5 text-xs font-bold text-base-content">
-              Frase de Destaque (Quote)
-            </label>
-            <input
-              type="text"
-              value={quote}
-              onChange={(e) => setQuote(e.target.value)}
-              placeholder='Ex: "Só quero que o dinheiro funcione em paz sem burocracia."'
-              className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
-            />
-          </div>
-
-          <div>
-            <label className="label py-0.5 text-xs font-bold text-base-content">
-              Ou cole a URL da Imagem (opcional)
-            </label>
-            <input
-              type="text"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(sanitizeAvatarUrl(e.target.value))}
-              placeholder="https://exemplo.com/foto.jpg"
-              className="input input-bordered input-md sm:input-sm w-full text-base sm:text-xs"
-            />
-          </div>
-
-          <div className="modal-action pt-2 border-t border-base-200 flex justify-end gap-2 mt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-sm btn-ghost"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="btn btn-sm btn-primary font-bold"
-            >
-              Salvar Persona
-            </button>
-          </div>
-        </form>
-      </div>
-      <div className="modal-backdrop bg-black/40" onClick={onClose} />
-    </div>
+        <label className="block">
+          <span className={label}>Nome da persona</span>
+          <ToolInput type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="Ex: Marina Santos" />
+        </label>
+        <label className="block">
+          <span className={label}>Cargo / perfil</span>
+          <ToolInput type="text" value={role} onChange={(e) => setRole(e.target.value)} placeholder="Ex: Professora de ciências" />
+        </label>
+        <label className="block">
+          <span className={label}>Frase de destaque</span>
+          <ToolInput type="text" value={quote} onChange={(e) => setQuote(e.target.value)} placeholder='Ex: "Quero que a turma aprenda fazendo."' />
+        </label>
+        <label className="block">
+          <span className={label}>Ou cole a URL da imagem (opcional)</span>
+          <ToolInput
+            type="text"
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(sanitizeAvatarUrl(e.target.value))}
+            placeholder="https://exemplo.com/foto.jpg"
+          />
+        </label>
+      </form>
+    </ToolDialog>
   );
 };

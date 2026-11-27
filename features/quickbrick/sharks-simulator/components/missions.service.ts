@@ -17,6 +17,9 @@ import { AnimationSegment, Coordinate, Mission, RobotState } from "@/features/qu
 
 export const DEFAULT_ACTIVATION_RADIUS = 10;
 
+/** Onde o simulador guarda as missões editadas (também lido pelo Mapa de Calor). */
+export const MISSIONS_STORAGE_KEY = "robostage:sharks-simulator:missions:v1";
+
 /** Média dos vértices — usada para posicionar o rótulo da missão. */
 export const polygonCenter = (vertices: Coordinate[]): Coordinate => {
   if (vertices.length === 0) return { x: 0, y: 0 };

@@ -1,3 +1,4 @@
+import { ToolScope } from "@/components/stage";
 import { asset } from "@/lib/assets";
 import { useState, useRef } from "react";
 import { useChangeNotifier } from "@/lib/hooks/useChangeNotifier";
@@ -161,8 +162,8 @@ export default function QuickBrickCanvas({ initialLayers, onLayersChange }: Quic
   };
 
   return (
-    <div className="flex items-center justify-center">
-      <div className="flex-none z-20 h-full bg-base-200 shadow-xl rounded-lg">
+    <ToolScope className="inline-flex overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] border border-base-300">
+      <div className="z-20 h-full flex-none">
         <Toolbar
           tool={tool}
           setTool={setTool}
@@ -228,6 +229,6 @@ export default function QuickBrickCanvas({ initialLayers, onLayersChange }: Quic
           onConfirm={confirmExport}
         />
       )}
-    </div>
+    </ToolScope>
   );
 }

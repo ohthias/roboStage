@@ -49,7 +49,7 @@ const BottomSheetMobile: React.FC<BottomSheetMobileProps> = ({
             {headerRight}
             <button
               onClick={onClose}
-              className="btn btn-ghost btn-sm btn-circle"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-base-content/75 hover:bg-base-content/[0.06] hover:text-base-content size-9 rounded-full px-0"
               aria-label="Fechar"
             >
               <X size={18} />

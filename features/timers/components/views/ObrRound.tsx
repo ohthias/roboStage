@@ -2,9 +2,6 @@
 
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import {
-  ArrowLeftCircleIcon,
-  Bell,
-  BellOff,
   Flag,
   MinusCircle,
   SkipForward,
@@ -17,6 +14,8 @@ import { CompletionModal } from "@/features/timers/components/CompletionModal";
 import { ConfirmModal } from "@/features/timers/components/ConfirmModal";
 import { ControlBar } from "@/features/timers/components/ControlBar";
 import { TimerCircle } from "@/features/timers/components/TimerCircle";
+import { TimerShell } from "@/features/timers/components/TimerShell";
+import { Button, Kbd, cn } from "@/components/stage";
 
 /* ================= REGRAS OBR ================= */
 export const OBR_CALIBRATION_SECONDS = 2 * 60; // 2min de calibração
@@ -233,12 +232,18 @@ export function ObrRound({ backHref = "/obr/timers" }: Props) {
   const canUndo = giveUps.length > 0 && (phase === "round" || phase === "finished");
 
   return (
-    <div
-      ref={containerRef}
-      className="relative flex min-h-[100dvh] w-full flex-col overflow-hidden bg-base-200/60"
+    <TimerShell
+      containerRef={containerRef}
+      kicker="Round OBR"
+      status={{
+        tone: isRunning ? "running" : phase === "finished" ? "finished" : phase === "idle" ? "idle" : "paused",
+        label: `OBR · ${PHASE_LABEL[phase]}${!isRunning && phase !== "idle" && phase !== "finished" ? " · pausado" : ""}`,
+      }}
+      onBack={handleBack}
+      muted={muted}
+      onToggleMute={() => dispatch({ type: "TOGGLE_MUTE" })}
+      onFullscreen={handleFullscreen}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,theme(colors.base-content)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.base-content)_1px,transparent_1px)] bg-[size:28px_28px] opacity-[0.04]" />
-
       <ConfirmModal
         isOpen={state.showExitModal}
         onCancel={() => dispatch({ type: "CLOSE_EXIT" })}
@@ -255,52 +260,33 @@ export function ObrRound({ backHref = "/obr/timers" }: Props) {
             ? `${giveUps.length} desistência(s) de checkpoint · -${formatTime(penalty)}`
             : "Nenhuma desistência de checkpoint."
         }
+        details={[
+          { label: "Desistências", value: giveUps.length },
+          { label: "Tempo retirado", value: `-${formatTime(penalty)}` },
+        ]}
         onReset={() => dispatch({ type: "RESET" })}
         onMenu={goBack}
       />
 
-      {/* ===== BARRA SUPERIOR ===== */}
-      <header className="relative z-10 flex items-center justify-between px-4 py-4 sm:px-6">
-        <button onClick={handleBack} className="btn btn-ghost btn-circle btn-sm" aria-label="Voltar">
-          <ArrowLeftCircleIcon size={20} />
-        </button>
-
-        <div className="flex items-center gap-2 rounded-full border border-base-300 bg-base-100/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-base-content/70 backdrop-blur">
-          <span
-            className={`h-2 w-2 rounded-full ${
-              isRunning ? "animate-pulse bg-success" : phase === "finished" ? "bg-error" : "bg-warning"
-            }`}
-          />
-          OBR · {PHASE_LABEL[phase]}
-          {!isRunning && phase !== "idle" && phase !== "finished" && " (pausado)"}
-        </div>
-
-        <button
-          onClick={() => dispatch({ type: "TOGGLE_MUTE" })}
-          className="btn btn-ghost btn-circle btn-sm"
-          aria-label={muted ? "Ativar som" : "Silenciar"}
-        >
-          {muted ? <BellOff size={18} /> : <Bell size={18} />}
-        </button>
-      </header>
-
-      <main className="relative z-10 flex flex-1 flex-col gap-6 px-4 pb-8 sm:px-6 lg:flex-row lg:items-stretch lg:gap-8 lg:px-10">
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 pb-10 sm:px-6 lg:flex-row lg:items-center lg:gap-12">
         {/* ===== CRONÔMETRO ===== */}
         <section className="flex flex-1 flex-col items-center justify-center py-4">
           {/* etapas */}
-          <ol className="mb-8 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide">
+          <ol className="mb-8 flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em]">
             <li
-              className={`flex items-center gap-1 rounded-full px-3 py-1 ${
-                phase === "calibration" ? "bg-info text-info-content" : "bg-base-100 text-base-content/50"
-              }`}
+              className={cn(
+                "flex items-center gap-1.5 rounded-tl-md rounded-br-md border px-3 py-1",
+                phase === "calibration" ? "stage-shadow-sm border-base-content bg-info text-info-content" : "border-base-300 bg-base-100 text-base-content/50",
+              )}
             >
               <Wrench size={12} /> Calibração · 2min
             </li>
             <li className="text-base-content/30">→</li>
             <li
-              className={`flex items-center gap-1 rounded-full px-3 py-1 ${
-                phase === "round" ? "bg-success text-success-content" : "bg-base-100 text-base-content/50"
-              }`}
+              className={cn(
+                "flex items-center gap-1.5 rounded-tl-md rounded-br-md border px-3 py-1",
+                phase === "round" ? "stage-shadow-sm border-base-content bg-success text-success-content" : "border-base-300 bg-base-100 text-base-content/50",
+              )}
             >
               <Flag size={12} /> Round · 5min
             </li>
@@ -308,10 +294,10 @@ export function ObrRound({ backHref = "/obr/timers" }: Props) {
 
           <TimerCircle totalTime={total} currentTime={timeLeft} colorClass={circleColor}>
             <div className="flex flex-col items-center">
-              <span className="font-mono text-6xl font-bold tabular-nums text-base-content sm:text-7xl">
+              <span className="stage-display text-6xl leading-none tabular-nums text-base-content sm:text-7xl">
                 {formatTime(timeLeft)}
               </span>
-              <span className="mt-1 text-xs uppercase tracking-widest text-base-content/50">
+              <span className="mt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-base-content/45">
                 {phase === "idle" ? "toque ▶ para calibrar" : PHASE_LABEL[phase]}
               </span>
             </div>
@@ -329,40 +315,24 @@ export function ObrRound({ backHref = "/obr/timers" }: Props) {
           </div>
 
           {(phase === "idle" || phase === "calibration") && (
-            <button
-              onClick={() => dispatch({ type: "SKIP_CALIBRATION" })}
-              className="btn btn-ghost btn-sm mt-4 gap-2"
-            >
-              <SkipForward size={16} />
+            <Button tone="ghost" size="sm" className="mt-4" iconLeft={<SkipForward size={16} />} onClick={() => dispatch({ type: "SKIP_CALIBRATION" })}>
               {phase === "idle" ? "Ir direto para o round" : "Encerrar calibração e iniciar round"}
-            </button>
+            </Button>
           )}
         </section>
 
         {/* ===== PAINEL DE CHECKPOINTS ===== */}
         <aside className="w-full shrink-0 lg:w-[340px]">
-          <div className="rounded-3xl border border-base-300 bg-base-100/80 p-6 shadow-xl backdrop-blur-xl">
-            <p className="mb-4 font-mono text-xs font-semibold uppercase tracking-widest text-base-content/50">
-              Desistência de checkpoint
-            </p>
+          <div className="stage-ink stage-shadow rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-lg rounded-bl-lg bg-base-100 p-5">
+            <p className="stage-kicker mb-4 text-base-content/50">/ Desistência de checkpoint</p>
 
-            <button
-              onClick={() => dispatch({ type: "GIVE_UP" })}
-              disabled={!canGiveUp}
-              className="btn btn-error btn-lg w-full gap-2"
-            >
-              <MinusCircle size={22} />
+            <Button tone="primary" size="lg" className="w-full" iconLeft={<MinusCircle size={22} />} onClick={() => dispatch({ type: "GIVE_UP" })} disabled={!canGiveUp}>
               Marcar desistência (-1min)
-            </button>
+            </Button>
 
-            <button
-              onClick={() => dispatch({ type: "UNDO_GIVE_UP" })}
-              disabled={!canUndo}
-              className="btn btn-ghost btn-sm mt-3 w-full gap-2"
-            >
-              <Undo2 size={16} />
+            <Button tone="ghost" size="sm" className="mt-3 w-full" iconLeft={<Undo2 size={16} />} onClick={() => dispatch({ type: "UNDO_GIVE_UP" })} disabled={!canUndo}>
               Desfazer última (+1min)
-            </button>
+            </Button>
 
             {!canGiveUp && phase !== "finished" && (
               <p className="mt-3 text-center text-xs text-base-content/50">
@@ -371,13 +341,13 @@ export function ObrRound({ backHref = "/obr/timers" }: Props) {
             )}
 
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-neutral px-4 py-3 text-neutral-content">
-                <p className="text-[10px] uppercase tracking-widest opacity-60">Desistências</p>
-                <p className="font-mono text-3xl font-bold tabular-nums">{giveUps.length}</p>
+              <div className="stage-night rounded-tl-xl rounded-br-xl rounded-tr-sm rounded-bl-sm px-4 py-3 text-white">
+                <p className="font-mono text-[10px] uppercase tracking-[0.16em] opacity-60">Desistências</p>
+                <p className="stage-display text-3xl leading-tight tabular-nums">{giveUps.length}</p>
               </div>
-              <div className="rounded-2xl bg-neutral px-4 py-3 text-neutral-content">
-                <p className="text-[10px] uppercase tracking-widest opacity-60">Tempo retirado</p>
-                <p className="font-mono text-3xl font-bold tabular-nums">-{formatTime(penalty)}</p>
+              <div className="stage-night rounded-tl-xl rounded-br-xl rounded-tr-sm rounded-bl-sm px-4 py-3 text-white">
+                <p className="font-mono text-[10px] uppercase tracking-[0.16em] opacity-60">Tempo retirado</p>
+                <p className="stage-display text-3xl leading-tight tabular-nums">-{formatTime(penalty)}</p>
               </div>
             </div>
 
@@ -386,7 +356,7 @@ export function ObrRound({ backHref = "/obr/timers" }: Props) {
                 {giveUps.map((at, i) => (
                   <li
                     key={i}
-                    className="flex items-center justify-between rounded-lg bg-base-200 px-3 py-1.5"
+                    className="flex items-center justify-between rounded-md border border-base-300 bg-base-200/60 px-3 py-1.5"
                   >
                     <span>#{i + 1}</span>
                     <span className="font-mono tabular-nums text-base-content/60">
@@ -398,21 +368,17 @@ export function ObrRound({ backHref = "/obr/timers" }: Props) {
             )}
 
             {phase === "round" && (
-              <button
-                onClick={() => dispatch({ type: "FINISH" })}
-                className="btn btn-outline btn-sm mt-5 w-full"
-              >
+              <Button tone="outline" size="sm" className="mt-5 w-full" onClick={() => dispatch({ type: "FINISH" })}>
                 Encerrar round agora
-              </button>
+              </Button>
             )}
 
             <p className="mt-5 text-[11px] leading-relaxed text-base-content/40">
-              Atalhos: <kbd className="kbd kbd-xs">Espaço</kbd> iniciar/pausar ·{" "}
-              <kbd className="kbd kbd-xs">D</kbd> desistência · <kbd className="kbd kbd-xs">Z</kbd> desfazer
+              Atalhos: <Kbd>Espaço</Kbd> iniciar/pausar · <Kbd>D</Kbd> desistência · <Kbd>Z</Kbd> desfazer
             </p>
           </div>
         </aside>
-      </main>
-    </div>
+      </div>
+    </TimerShell>
   );
 }

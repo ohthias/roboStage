@@ -59,9 +59,9 @@ const VisualEditor: React.FC<VisualEditorProps> = ({ code, onChange }) => {
         {commands.map((cmd, idx) => (
           <div 
             key={idx} 
-            className="card card-compact bg-base-100 shadow border border-base-content/10 hover:shadow-md hover:border-primary/40 transition-all group"
+            className="group rounded-lg border border-base-300 bg-base-100 transition-colors hover:border-primary/40"
           >
-            <div className="card-body p-4 gap-3">
+            <div className="flex flex-col gap-3 p-3">
               {/* Header with Icon and Type */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -78,7 +78,7 @@ const VisualEditor: React.FC<VisualEditorProps> = ({ code, onChange }) => {
                 </div>
                 <button 
                   onClick={() => removeCommand(idx)}
-                  className="btn btn-ghost btn-sm btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-transparent text-error hover:bg-error/10 size-8 px-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -90,28 +90,28 @@ const VisualEditor: React.FC<VisualEditorProps> = ({ code, onChange }) => {
                   <label className="label p-0">
                     <span className="label-text text-xs font-semibold opacity-70">{cmd.type === 'reto' ? 'Distância' : 'Ângulo'}</span>
                   </label>
-                  <div className="join w-full">
+                  <div className="inline-flex items-center gap-0.5 rounded-md border border-base-300 bg-base-200/60 p-0.5 flex w-full">
                     <input 
                       type="number" 
                       value={cmd.val}
                       onChange={(e) => updateCommand(idx, 'val', parseFloat(e.target.value) || 0)}
-                      className="input input-sm input-bordered join-item w-full font-mono text-center"
+                      className="rounded-md border border-base-300 bg-base-100 px-2.5 transition-colors placeholder:text-base-content/40 hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 h-7 w-full text-center font-mono text-[13px]"
                     />
-                    <span className="join-item btn btn-sm btn-static">{cmd.type === 'reto' ? 'cm' : '°'}</span>
+                    <span className="inline-flex h-7 items-center px-2 text-xs font-semibold text-base-content/55">{cmd.type === 'reto' ? 'cm' : '°'}</span>
                   </div>
                 </div>
                 <div className="form-control gap-1">
                   <label className="label p-0">
                     <span className="label-text text-xs font-semibold opacity-70">Velocidade</span>
                   </label>
-                  <div className="join w-full">
+                  <div className="inline-flex items-center gap-0.5 rounded-md border border-base-300 bg-base-200/60 p-0.5 flex w-full">
                     <input 
                       type="number" 
                       value={cmd.speed}
                       onChange={(e) => updateCommand(idx, 'speed', parseFloat(e.target.value) || 0)}
-                      className="input input-sm input-bordered join-item w-full font-mono text-center"
+                      className="rounded-md border border-base-300 bg-base-100 px-2.5 transition-colors placeholder:text-base-content/40 hover:border-base-content/30 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 h-7 w-full text-center font-mono text-[13px]"
                     />
-                    <span className="join-item btn btn-sm btn-static">%</span>
+                    <span className="inline-flex h-7 items-center px-2 text-xs font-semibold text-base-content/55">%</span>
                   </div>
                 </div>
               </div>
@@ -123,7 +123,7 @@ const VisualEditor: React.FC<VisualEditorProps> = ({ code, onChange }) => {
                   <div className="flex gap-2">
                     <button 
                       onClick={() => toggleSign(idx)} 
-                      className="btn btn-xs btn-outline btn-neutral flex-1"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 h-7 px-2 text-xs flex-1"
                     >
                       Inverter
                     </button>
@@ -131,7 +131,7 @@ const VisualEditor: React.FC<VisualEditorProps> = ({ code, onChange }) => {
                       <button 
                         key={angle} 
                         onClick={() => updateCommand(idx, 'val', cmd.val >= 0 ? angle : -angle)} 
-                        className="btn btn-xs btn-primary text-primary-content font-mono flex-1"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 rounded-tl-lg rounded-br-lg rounded-tr-sm rounded-bl-sm border-transparent bg-primary text-primary-content hover:brightness-110 h-7 px-2 text-xs flex-1 font-mono"
                       >
                         {angle}°
                       </button>
@@ -148,13 +148,13 @@ const VisualEditor: React.FC<VisualEditorProps> = ({ code, onChange }) => {
       <div className="p-2 grid grid-cols-2 gap-2 bg-base-100 border-t border-base-content/10">
         <button 
           onClick={() => addCommand('reto')}
-          className="btn btn-sm btn-outline btn-success"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 h-8 px-3 text-[13px] text-success"
         >
           <ArrowUp size={14} strokeWidth={3} /> Move
         </button>
         <button 
           onClick={() => addCommand('giro')}
-          className="btn btn-sm btn-outline btn-info"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40 border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 h-8 px-3 text-[13px] text-info"
         >
           <RotateCw size={14} strokeWidth={3} /> Turn
         </button>

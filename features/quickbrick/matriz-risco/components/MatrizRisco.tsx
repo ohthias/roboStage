@@ -29,7 +29,7 @@ const MatrizRisco = React.forwardRef<HTMLDivElement, MatrizRiscoProps>(
     };
 
     return (
-      <div ref={ref} className="w-full mx-auto p-4">
+      <div ref={ref} className="mx-auto w-full bg-base-100 p-4">
         <div 
           role="grid" 
           aria-label="Matriz de Risco"
@@ -41,27 +41,27 @@ const MatrizRisco = React.forwardRef<HTMLDivElement, MatrizRiscoProps>(
             
             {/* Canto Vazio e Label PROBABILIDADE */}
             <div style={{ gridColumn: '1', gridRow: '1 / 3' }} aria-hidden="true"></div>
-            <div className="col-span-5 text-center font-extrabold p-4 text-base-content" style={{ gridColumn: '2 / 7', gridRow: '1' }} aria-hidden="true">
+            <div className="col-span-5 p-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-base-content/55" style={{ gridColumn: '2 / 7', gridRow: '1' }} aria-hidden="true">
                 PROBABILIDADE
             </div>
 
             {/* Label IMPACTO */}
             <div className="row-span-5 flex items-center justify-start pl-4" style={{ gridColumn: '1', gridRow: '3 / 8' }} aria-hidden="true">
-              <div className="font-extrabold text-base-content text-lg tracking-wider transform -rotate-90 origin-left">
+              <div className="origin-left -rotate-90 transform text-[11px] font-semibold uppercase tracking-[0.2em] text-base-content/55">
                 IMPACTO
               </div>
             </div>
 
             {/* Cabeçalhos da Probabilidade */}
             {probabilidadeLevels.map((prob, index) => (
-                <div key={prob} role="columnheader" className="text-center font-bold p-2 text-base-content/85" style={{ gridColumn: `${index + 2}`, gridRow: '2' }}>
+                <div key={prob} role="columnheader" className="p-2 text-center text-[13px] font-bold text-base-content/80" style={{ gridColumn: `${index + 2}`, gridRow: '2' }}>
                     {PROBABILIDADE_LABELS[prob]}
                 </div>
             ))}
 
             {/* Cabeçalhos do Impacto */}
             {impactoLevels.map((impacto, index) => (
-                <div key={impacto} role="rowheader" className="flex items-center justify-end p-2 font-bold text-base-content" style={{ gridColumn: '1', gridRow: `${index + 3}` }}>
+                <div key={impacto} role="rowheader" className="flex items-center justify-end p-2 text-right text-[13px] font-bold text-base-content/80" style={{ gridColumn: '1', gridRow: `${index + 3}` }}>
                     {IMPACTO_LABELS[impacto]}
                 </div>
             ))}
@@ -79,7 +79,7 @@ const MatrizRisco = React.forwardRef<HTMLDivElement, MatrizRiscoProps>(
                             onDrop={(e) => handleDrop(e, impacto, prob)}
                             onDragEnter={() => setDragOverCell({ impacto, prob })}
                             onDragLeave={() => setDragOverCell(null)}
-                            className={`min-h-[100px] p-1 border transition-all duration-200 ${getRiskColor(impacto, prob)} ${isDragOver ? 'brightness-110 ring-2 ring-blue-500' : ''}`}
+                            className={`m-0.5 min-h-[100px] rounded-md border p-1 transition-all duration-200 ${getRiskColor(impacto, prob)} ${isDragOver ? 'ring-2 ring-primary ring-offset-1 ring-offset-base-100' : ''}`}
                             style={{ gridColumn: `${colIndex + 2}`, gridRow: `${rowIndex + 3}` }}
                         >
                             {riscos

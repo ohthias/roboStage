@@ -1,8 +1,8 @@
 "use client";
 
-import { RubricCategory, LevelKey, LEVEL_LABELS } from "@/features/rubric/lib/fll";
-import IndicatorRow from "./IndicatorRow";
 import { Settings } from "lucide-react";
+import { RubricCategory, LevelKey } from "@/features/rubric/lib/fll";
+import IndicatorRow from "./IndicatorRow";
 
 interface RubricSheetProps {
   category: RubricCategory;
@@ -12,79 +12,49 @@ interface RubricSheetProps {
   onComment: (indicatorId: string, value: string) => void;
 }
 
-export default function RubricSheet({
-  category,
-  scores,
-  comments,
-  onSelect,
-  onComment,
-}: RubricSheetProps) {
+export default function RubricSheet({ category, scores, comments, onSelect, onComment }: RubricSheetProps) {
   return (
-    <div className="paper-sheet relative rounded-box bg-base-200/50 border border-base-content/15 p-4 sm:p-6 mb-6">
-      <div className="mb-4">
-        <h2 className="font-display text-xl font-semibold text-secondary">{category.name}</h2>
-        <p className="text-sm text-base-content/65 mt-1.5 max-w-2xl">{category.instructions}</p>
-      </div>
+    <section className="overflow-hidden rounded-lg border border-base-300 bg-base-100">
+      <header className="border-b border-base-300 px-4 py-3 sm:px-5">
+        <p className="font-mono text-[11px] font-semibold tracking-wider text-secondary">{category.code}</p>
+        <h2 className="text-lg font-black tracking-tight">{category.name}</h2>
+        <p className="mt-1 max-w-3xl text-[13px] leading-6 text-base-content/65">{category.instructions}</p>
+      </header>
 
-      {/* Cabeçalho de colunas de nível, replicando o layout do PDF oficial */}
-      <div className="hidden sm:grid grid-cols-4 gap-1.5 mb-3">
-        {([1, 2, 3, 4] as LevelKey[]).map((lvl) => (
-          <div
-            key={lvl}
-            className={[
-              "rounded-t-box px-2.5 py-1.5 text-center border-b-2",
-              lvl === 4
-                ? "bg-warning/15 border-warning text-warning-content"
-                : "bg-base-200 border-base-300 text-base-content/80",
-            ].join(" ")}
-          >
-            <span className="font-mono-tech text-[11px] font-bold uppercase tracking-wide block text-secondary">
-              {LEVEL_LABELS[lvl]}
-            </span>
-            <span className="font-mono-tech text-[10px] text-base-content/50">{lvl}</span>
+      <div className="divide-y divide-base-300">
+        {category.criteria.map((criterion, i) => (
+          <div key={criterion.id} className="px-4 py-4 sm:px-5">
+            <div className="mb-2.5">
+              <div className="flex items-baseline gap-2.5">
+                <span className="font-mono text-xs text-base-content/40">{String(i + 1).padStart(2, "0")}</span>
+                <h3 className="text-sm font-bold uppercase tracking-wide text-secondary">{criterion.code}</h3>
+              </div>
+              <p className="mt-1 max-w-3xl text-[13px] text-base-content/70">{criterion.question}</p>
+            </div>
+
+            <div className="space-y-2">
+              {criterion.indicators.map((indicator) => (
+                <IndicatorRow
+                  key={indicator.id}
+                  indicator={indicator}
+                  selected={scores[indicator.id]}
+                  comment={comments[indicator.id] ?? ""}
+                  onSelect={(level) => onSelect(indicator.id, level)}
+                  onCommentChange={(value) => onComment(indicator.id, value)}
+                />
+              ))}
+            </div>
           </div>
         ))}
       </div>
 
-      {category.criteria.map((criterion, i) => (
-        <div
-          key={criterion.id}
-          className="border-b border-base-300 last:border-b-0 py-4 first:pt-0"
-        >
-          <div className="mb-2.5">
-            <div className="flex items-baseline gap-2.5">
-              <span className="font-mono-tech text-xs text-base-content/40">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h3 className="font-display font-semibold text-[15px] sm:text-base uppercase tracking-wide">
-                {criterion.code}
-              </h3>
-            </div>
-            <p className="text-sm text-base-content/70 mt-1 max-w-2xl">{criterion.question}</p>
-          </div>
-
-          <div className="space-y-2">
-            {criterion.indicators.map((indicator) => (
-              <IndicatorRow
-                key={indicator.id}
-                indicator={indicator}
-                selected={scores[indicator.id]}
-                comment={comments[indicator.id] ?? ""}
-                onSelect={(level) => onSelect(indicator.id, level)}
-                onCommentChange={(value) => onComment(indicator.id, value)}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
-
-      <p className="text-[11px] text-base-content/50 mt-4 flex items-start gap-1.5">
-        <Settings className="shrink-0 mt-0.5" size={14} />
+      <footer className="flex items-start gap-1.5 border-t border-base-300 bg-base-200/40 px-4 py-2.5 text-[11px] text-base-content/55 sm:px-5">
+        <Settings className="mt-0.5 shrink-0" size={14} />
         <span>
-          Indicadores com este símbolo contam em dobro para a classificação de Core Values, que
-          representa 25% da pontuação da equipe no Champion&apos;s Award.
+          Indicadores com este símbolo contam em dobro para a classificação de Core Values, que representa 25% da
+          pontuação da equipe no Champion&apos;s Award.
         </span>
-      </p>
-    </div>
+      </footer>
+    </section>
   );
 }

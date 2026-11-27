@@ -1,11 +1,27 @@
 import Link from "next/link";
-import { ArrowDown, ArrowRight, ArrowUpRight, Link2, ListChecks, TriangleAlert, type LucideIcon } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, Link2, ListChecks, UserPlus, type LucideIcon } from "lucide-react";
 
-import RevealOnScroll from "@/components/stage/core/RevealOnScroll";
-import { AnimatedBackground, SectionTitle, toneClasses, type Tone } from "@/features/home/components/shared";
-import { CtaBlock, ToolGrid, cornerBtn, type ToolItem } from "@/features/leagues/shared/components/CompetitionSections";
+import {
+  Accordion,
+  ButtonLink,
+  Callout,
+  FeatureCard,
+  Flower,
+  Gear,
+  Kicker,
+  Reveal,
+  Section,
+  SectionTitle,
+  Sparkle,
+  Starburst,
+  StickerTag,
+  cn,
+  toneSoft,
+  toneText,
+  type Tone,
+} from "@/components/stage";
+import type { ToolItem } from "@/features/leagues/shared/components/CompetitionSections";
 import GuideChecklist from "./GuideChecklist";
-import "@/features/home/components/home.css";
 
 export type BeginnerGuideData = {
   slug: string;
@@ -39,6 +55,17 @@ const jump = [
   { href: "#faq", label: "FAQ" },
 ];
 
+const tones: Tone[] = ["primary", "secondary", "accent"];
+
+const hoverShadow: Record<string, string> = {
+  primary: "hover:border-primary hover:shadow-[6px_6px_0_0_var(--color-primary)]",
+  secondary: "hover:border-secondary hover:shadow-[6px_6px_0_0_var(--color-secondary)]",
+  accent: "hover:border-accent hover:shadow-[6px_6px_0_0_var(--color-accent)]",
+};
+
+const cardBase =
+  "stage-paper group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 transition-[transform,box-shadow,border-color] duration-200 motion-reduce:hover:translate-y-0";
+
 function ExternalCard({
   icon: Icon,
   title,
@@ -54,75 +81,70 @@ function ExternalCard({
   badge?: string;
   tone: Tone;
 }) {
-  const c = toneClasses[tone];
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 ${c.hover}`}
+      className={cn(cardBase, "p-6 hover:-translate-y-1", hoverShadow[tone])}
     >
-      <div aria-hidden="true" className={`pointer-events-none absolute -right-10 -top-10 size-28 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 ${c.ring}`} />
-      <div className="relative flex items-center justify-between gap-3">
-        <div className={`flex size-11 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
+      <div className="flex items-center justify-between gap-3">
+        <span className={cn("grid size-11 place-items-center rounded-tl-xl rounded-br-xl transition-colors duration-300", toneSoft[tone])}>
           <Icon size={20} strokeWidth={1.8} />
-        </div>
+        </span>
         {badge && (
-          <span className="rounded-tl-md rounded-br-md border border-base-300 px-2 py-0.5 font-mono text-[10px] tracking-[0.15em] text-base-content/55">
+          <span className="rounded-tl-md rounded-br-md bg-base-content px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.15em] text-base-100">
             {badge.toUpperCase()}
           </span>
         )}
       </div>
-      <h3 className="relative mt-5 text-lg font-bold tracking-tight">{title}</h3>
-      <p className="relative mt-2 flex-1 text-sm leading-6 text-base-content/60">{text}</p>
-      <span className="relative mt-5 flex items-center justify-between border-t border-base-300 pt-4 font-mono text-xs text-base-content/50">
+      <h3 className="mt-5 text-lg font-black tracking-tight">{title}</h3>
+      <p className="mt-2 flex-1 text-sm leading-6 text-base-content/60">{text}</p>
+      <span className="mt-5 flex items-center justify-between border-t border-dashed border-base-300 pt-4 font-mono text-xs text-base-content/50">
         {new URL(href).hostname.replace(/^www\./, "")}
-        <ArrowUpRight size={16} className="text-base-content/40 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-base-content" />
+        <ArrowUpRight size={16} className="transition-transform group-hover:rotate-45 group-hover:text-base-content" />
       </span>
     </a>
   );
 }
 
-const tones: Tone[] = ["primary", "secondary", "accent"];
+const featureTones = ["primary", "secondary", "accent", "success", "info"] as const;
+type FeatureTone = (typeof featureTones)[number];
+const asFeatureTone = (t: string): FeatureTone => ((featureTones as readonly string[]).includes(t) ? (t as FeatureTone) : "primary");
 
 export default function BeginnerGuide({ data }: { data: BeginnerGuideData }) {
   return (
     <main className="overflow-x-clip bg-base-100 text-base-content">
-      <section className="relative isolate overflow-hidden px-6 pb-16 pt-14 sm:pt-20">
-        <AnimatedBackground />
+      {/* ============================================================== HERO */}
+      <Section tone="glow" innerClassName="pb-16 pt-14 sm:pt-20">
         <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1.1fr_0.9fr] [&>*]:min-w-0">
-          <div>
-            <nav aria-label="Trilha" className="font-mono text-xs tracking-[0.15em] text-base-content/45">
-              <Link href="/fll" className="hover:text-primary">/FLL</Link>
+          <Reveal>
+            <nav aria-label="Trilha" className="stage-kicker text-base-content/45">
+              <Link href="/fll" className="hover:text-primary">
+                /FLL
+              </Link>
               <span> / GUIA {data.program.toUpperCase()}</span>
             </nav>
-            <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-6xl">
+            <h1 className="stage-display mt-5 text-4xl sm:text-6xl">
               {data.title}{" "}
-              <span className="mt-2 inline-block -rotate-1 bg-accent px-3 py-1 italic text-accent-content">
-                {data.highlight}
-              </span>
+              <span className="mt-2 inline-block -rotate-1 bg-accent px-3 py-1 italic text-accent-content">{data.highlight}</span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-base-content/65 sm:text-lg">{data.intro}</p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
-              <a
-                href="#primeiros-passos"
-                className={`btn btn-primary btn-lg ${cornerBtn} shadow-[4px_4px_0_0_var(--color-base-content)] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--color-base-content)]`}
-              >
-                <ListChecks size={20} />
+              <ButtonLink href="#checklist" tone="primary" size="lg" iconLeft={<ListChecks size={20} />}>
                 Abrir checklist
-              </a>
-              <a href="#faq" className="btn btn-ghost btn-lg">
+              </ButtonLink>
+              <ButtonLink href="#faq" tone="ghost" size="lg" shape="rounded" iconRight={<ArrowDown size={18} />}>
                 Dúvidas comuns
-                <ArrowDown size={18} />
-              </a>
+              </ButtonLink>
             </div>
-          </div>
+          </Reveal>
 
           {/* ficha rápida */}
-          <div className="relative">
-            <div aria-hidden="true" className="absolute -right-4 -top-4 size-24 rotate-12 rounded-tl-2xl rounded-br-2xl bg-accent" />
-            <div aria-hidden="true" className="absolute -bottom-5 -left-5 size-20 rounded-full border-2 border-dashed border-secondary/50" />
-            <div className="relative overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 shadow-[8px_8px_0_0_var(--color-secondary)]">
+          <Reveal delay={120} effect="pop" className="relative">
+            <Starburst size={76} tone="accent" motion="spin" className="absolute -right-5 -top-7 z-10" />
+            <Flower size={48} tone="secondary" motion="float" className="absolute -bottom-6 -left-5 z-10 hidden sm:inline-grid" />
+            <div className="stage-paper relative overflow-hidden rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 shadow-[8px_8px_0_0_var(--color-secondary)]">
               <div className="flex items-center justify-between border-b border-base-300 px-5 py-3">
                 <span className="inline-flex items-center gap-2 font-mono text-xs text-base-content/60">
                   <span className="size-2 rounded-full bg-primary" />
@@ -133,26 +155,21 @@ export default function BeginnerGuide({ data }: { data: BeginnerGuideData }) {
               <dl className="divide-y divide-base-300">
                 {data.facts.map(({ label, value, detail }, i) => (
                   <div key={label} className="flex items-baseline justify-between gap-4 px-5 py-4">
-                    <dt className={`text-[10px] font-bold tracking-[0.15em] ${toneClasses[tones[i % 3]].tag}`}>
-                      {label.toUpperCase()}
-                    </dt>
+                    <dt className={cn("stage-kicker text-[10px] font-bold", toneText[tones[i % 3]])}>{label.toUpperCase()}</dt>
                     <dd className="text-right">
-                      <span className="block font-mono text-lg font-bold sm:text-xl">{value}</span>
+                      <span className="stage-display block text-xl sm:text-2xl">{value}</span>
                       {detail && <span className="block text-xs text-base-content/55">{detail}</span>}
                     </dd>
                   </div>
                 ))}
               </dl>
             </div>
-          </div>
+          </Reveal>
         </div>
-      </section>
+      </Section>
 
       {/* ======================================================== NAVEGAÇÃO */}
-      <nav
-        aria-label="Seções do guia"
-        className="sticky top-0 z-20 border-y border-base-300 bg-base-100/85 px-6 py-3 backdrop-blur"
-      >
+      <nav aria-label="Seções do guia" className="sticky top-0 z-20 border-y border-base-300 bg-base-100/90 px-6 py-3 backdrop-blur">
         <ul className="mx-auto flex max-w-6xl gap-2 overflow-x-auto">
           {jump.map(({ href, label }) => (
             <li key={href} className="shrink-0">
@@ -168,108 +185,104 @@ export default function BeginnerGuide({ data }: { data: BeginnerGuideData }) {
       </nav>
 
       {/* ============================================================ AVISO */}
-      <section className="px-6 pt-10">
-        <div role="note" className="mx-auto flex max-w-6xl items-start gap-4 rounded-tl-2xl rounded-br-2xl border border-warning/50 bg-warning/10 p-5 sm:p-6">
-          <span className="grid size-10 shrink-0 place-items-center rounded-tl-lg rounded-br-lg bg-warning text-warning-content">
-            <TriangleAlert size={20} />
-          </span>
-          <div>
-            <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-base-content/60">CONTEÚDO NÃO OFICIAL</p>
-            <p className="mt-1.5 text-sm leading-6 text-base-content/75">{data.notice}</p>
-          </div>
-        </div>
-      </section>
+      <div className="px-6 pt-10">
+        <Callout type="warning" title="Conteúdo não oficial" className="mx-auto max-w-6xl">
+          {data.notice}
+        </Callout>
+      </div>
 
       {/* ====================================================== VISÃO GERAL */}
-      <section id="visao-geral" className="scroll-mt-32 px-6 py-24">
+      <Section id="visao-geral" className="scroll-mt-32">
         <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
+          <Reveal>
             <SectionTitle
               kicker="/ VISÃO GERAL"
               title={data.pillarsTitle.title}
               highlight={data.pillarsTitle.highlight}
               description={data.pillarsTitle.description}
             />
-          </RevealOnScroll>
+          </Reveal>
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {data.pillars.map(({ icon: Icon, title, text, tone }, i) => {
-              const c = toneClasses[tone];
-              return (
-                <RevealOnScroll key={title} delay={i * 0.06} className="h-full">
-                  <article className={`group relative flex h-full flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-1 ${c.hover}`}>
-                    <div aria-hidden="true" className={`pointer-events-none absolute -right-10 -top-10 size-28 rounded-full border border-base-300 transition-transform duration-500 group-hover:scale-125 ${c.ring}`} />
-                    <div className="relative flex items-center justify-between">
-                      <div className={`flex size-12 items-center justify-center rounded-tl-xl rounded-br-xl transition-colors duration-300 ${c.icon}`}>
-                        <Icon size={22} strokeWidth={1.8} />
-                      </div>
-                      <span className="font-mono text-xs text-base-content/35">/{String(i + 1).padStart(2, "0")}</span>
-                    </div>
-                    <h3 className="relative mt-7 text-xl font-bold tracking-tight">{title}</h3>
-                    <p className="relative mt-3 text-sm leading-6 text-base-content/60">{text}</p>
-                  </article>
-                </RevealOnScroll>
-              );
-            })}
+            {data.pillars.map(({ icon: Icon, title, text, tone }, i) => (
+              <Reveal key={title} delay={i * 60} className="h-full">
+                <article className={cn(cardBase, "p-6 hover:-translate-y-1", hoverShadow[tone])}>
+                  <div className="flex items-center justify-between">
+                    <span className={cn("grid size-12 place-items-center rounded-tl-xl rounded-br-xl transition-colors duration-300", toneSoft[tone])}>
+                      <Icon size={22} strokeWidth={1.8} />
+                    </span>
+                    <span className="font-mono text-xs text-base-content/35">/{String(i + 1).padStart(2, "0")}</span>
+                  </div>
+                  <h3 className="mt-7 text-xl font-black tracking-tight">{title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-base-content/60">{text}</p>
+                </article>
+              </Reveal>
+            ))}
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* ================================================== PRIMEIROS PASSOS */}
-      <section id="primeiros-passos" className="scroll-mt-32 border-y border-base-300 bg-base-200/40 px-6 py-24">
+      <Section id="primeiros-passos" tone="muted" edgeTop="studs" className="scroll-mt-32">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.35fr_1fr] lg:items-start [&>*]:min-w-0">
           <div>
-            <RevealOnScroll>
+            <Reveal>
               <SectionTitle
                 kicker="/ PRIMEIROS PASSOS"
                 title="O que a equipe"
                 highlight="precisa ter."
-                highlightClass="bg-secondary text-secondary-content"
+                highlightTone="secondary"
                 description="A estrutura mínima para começar a temporada com segurança."
               />
-            </RevealOnScroll>
+            </Reveal>
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
               {data.needs.map(({ title, text }, i) => (
-                <RevealOnScroll key={title} delay={(i % 2) * 0.06} className="h-full">
-                  <article className="flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5">
+                <Reveal key={title} delay={(i % 2) * 60} className="h-full">
+                  <article className="stage-paper flex h-full flex-col rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5">
                     <span className="font-mono text-xs text-base-content/40">{String(i + 1).padStart(2, "0")}</span>
-                    <h3 className="mt-2 font-bold">{title}</h3>
+                    <h3 className="mt-2 font-black tracking-tight">{title}</h3>
                     <p className="mt-2 text-sm leading-6 text-base-content/65">{text}</p>
                   </article>
-                </RevealOnScroll>
+                </Reveal>
               ))}
             </div>
 
-            <RevealOnScroll>
-              <h3 className="mt-14 font-mono text-xs tracking-[0.2em] text-base-content/45">/ CONCEITOS ESSENCIAIS</h3>
-            </RevealOnScroll>
+            <Reveal>
+              <Kicker className="mt-14">CONCEITOS ESSENCIAIS</Kicker>
+            </Reveal>
             <div className="mt-5 grid gap-4">
               {data.concepts.map(({ icon: Icon, title, text }, i) => (
-                <RevealOnScroll key={title} delay={i * 0.06}>
-                  <article className="flex gap-4 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5">
-                    <span className={`flex size-11 shrink-0 items-center justify-center rounded-tl-xl rounded-br-xl ${toneClasses[tones[i % 3]].icon}`}>
+                <Reveal key={title} delay={i * 60}>
+                  <article className="stage-paper group flex gap-4 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-5">
+                    <span className={cn("grid size-11 shrink-0 place-items-center rounded-tl-xl rounded-br-xl transition-colors", toneSoft[tones[i % 3]])}>
                       <Icon size={20} strokeWidth={1.8} />
                     </span>
                     <div>
-                      <h4 className="font-bold">{title}</h4>
+                      <h4 className="font-black tracking-tight">{title}</h4>
                       <p className="mt-1.5 text-sm leading-6 text-base-content/65">{text}</p>
                     </div>
                   </article>
-                </RevealOnScroll>
+                </Reveal>
               ))}
             </div>
           </div>
 
           <aside className="grid gap-6 lg:sticky lg:top-32">
-            <div id="checklist" className="scroll-mt-32 rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 p-6 shadow-[8px_8px_0_0_var(--color-primary)]">
-              <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-primary">CHECKLIST INICIAL</p>
-              <h3 className="mt-1 text-xl font-bold">Um resumo para a primeira fase</h3>
+            <div
+              id="checklist"
+              className="stage-paper relative scroll-mt-36 rounded-tl-3xl rounded-br-3xl border border-base-300 bg-base-100 p-6 shadow-[8px_8px_0_0_var(--color-primary)]"
+            >
+              <StickerTag tone="accent" rotate={4} size="sm" className="absolute -top-3 right-5">
+                Salvo aqui
+              </StickerTag>
+              <Kicker className="text-primary">CHECKLIST INICIAL</Kicker>
+              <h3 className="mt-1 text-xl font-black tracking-tight">Um resumo para a primeira fase</h3>
               <div className="mt-5">
                 <GuideChecklist items={data.checklist} storageKey={`robostage:guia:${data.slug}`} />
               </div>
             </div>
 
-            <div className="rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6">
-              <p className="inline-flex items-center gap-2 font-mono text-[10px] font-bold tracking-[0.18em] text-base-content/55">
+            <div className="stage-paper rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6">
+              <p className="stage-kicker inline-flex items-center gap-2 text-base-content/55">
                 <Link2 size={12} />
                 RECURSOS OFICIAIS
               </p>
@@ -280,10 +293,10 @@ export default function BeginnerGuide({ data }: { data: BeginnerGuideData }) {
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex items-center justify-between gap-3 py-2.5 text-sm font-medium transition-colors hover:text-primary"
+                      className="group flex items-center justify-between gap-3 py-2.5 text-sm font-semibold transition-colors hover:text-primary"
                     >
                       {label}
-                      <ArrowUpRight size={15} className="shrink-0 text-base-content/35 group-hover:text-primary" />
+                      <ArrowUpRight size={15} className="shrink-0 text-base-content/35 transition-transform group-hover:rotate-45 group-hover:text-primary" />
                     </a>
                   </li>
                 ))}
@@ -291,127 +304,157 @@ export default function BeginnerGuide({ data }: { data: BeginnerGuideData }) {
             </div>
           </aside>
         </div>
-      </section>
+      </Section>
 
       {/* ========================================================= PREPARAÇÃO */}
-      <section id="preparacao" className="scroll-mt-32 px-6 py-24">
-        <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
+      <Section id="preparacao" className="scroll-mt-32">
+        <div className="relative mx-auto max-w-6xl">
+          <Gear size={70} tone="secondary" motion="spin" className="absolute -top-6 right-0 hidden md:inline-block" />
+          <Reveal>
             <SectionTitle
               kicker="/ PREPARAÇÃO"
               title={data.prep.title}
               highlight={data.prep.highlight}
-              highlightClass="bg-accent text-accent-content"
+              highlightTone="accent"
               description={data.prep.description}
             />
-          </RevealOnScroll>
+          </Reveal>
           <div className="mt-14 grid gap-5 sm:grid-cols-2">
             {data.prep.items.map(({ title, text }, i) => {
-              const c = toneClasses[tones[i % 3]];
+              const tone = tones[i % 3];
               return (
-                <RevealOnScroll key={title} delay={(i % 2) * 0.06} className="h-full">
-                  <article className={`flex h-full gap-5 rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:-translate-y-0.5 ${c.hover}`}>
-                    <span className={`font-mono text-3xl font-bold ${c.tag}`}>{String(i + 1).padStart(2, "0")}</span>
+                <Reveal key={title} delay={(i % 2) * 60} className="h-full">
+                  <article className={cn(cardBase, "flex-row gap-5 p-6 hover:-translate-y-0.5", hoverShadow[tone])}>
+                    <span className={cn("stage-display text-4xl", toneText[tone])}>{String(i + 1).padStart(2, "0")}</span>
                     <div>
-                      <h3 className="text-lg font-bold">{title}</h3>
+                      <h3 className="text-lg font-black tracking-tight">{title}</h3>
                       <p className="mt-2 text-sm leading-6 text-base-content/65">{text}</p>
                     </div>
                   </article>
-                </RevealOnScroll>
+                </Reveal>
               );
             })}
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* ============================================================ VÍDEOS */}
-      <section id="videos" className="scroll-mt-32 border-y border-base-300 bg-base-200/40 px-6 py-24">
+      <Section id="videos" tone="muted" className="scroll-mt-32">
         <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
+          <Reveal>
             <SectionTitle
               kicker="/ VÍDEOS E CANAIS"
               title="Comece pelo que"
               highlight="mais importa."
               description="Uma seleção prática de vídeos e os canais oficiais para acompanhar a operação no Brasil."
             />
-          </RevealOnScroll>
+          </Reveal>
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {data.videos.map((v, i) => (
-              <RevealOnScroll key={v.title} delay={(i % 4) * 0.06} className="h-full">
+              <Reveal key={v.title} delay={(i % 4) * 60} className="h-full">
                 <ExternalCard icon={v.icon} title={v.title} text={v.text} href={v.href} badge={v.badge} tone={tones[i % 3]} />
-              </RevealOnScroll>
+              </Reveal>
             ))}
           </div>
           <p className="mt-5 text-xs leading-6 text-base-content/50">{data.videosNote}</p>
 
-          <RevealOnScroll>
-            <h3 className="mt-14 font-mono text-xs tracking-[0.2em] text-base-content/45">/ CANAIS OFICIAIS BRASILEIROS</h3>
-          </RevealOnScroll>
+          <Reveal>
+            <Kicker className="mt-14">CANAIS OFICIAIS BRASILEIROS</Kicker>
+          </Reveal>
           <div className="mt-5 grid gap-5 md:grid-cols-3">
             {data.channels.map((ch, i) => (
-              <RevealOnScroll key={ch.title} delay={i * 0.06} className="h-full">
+              <Reveal key={ch.title} delay={i * 60} className="h-full">
                 <ExternalCard icon={ch.icon} title={ch.title} text={ch.text} href={ch.href} tone={tones[(i + 1) % 3]} />
-              </RevealOnScroll>
+              </Reveal>
             ))}
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* ======================================================= NO ROBOSTAGE */}
-      <section id="no-robostage" className="scroll-mt-32 px-6 py-24">
+      <Section id="no-robostage" className="scroll-mt-32">
         <div className="mx-auto max-w-6xl">
-          <RevealOnScroll>
+          <Reveal>
             <SectionTitle
               kicker="/ NO ROBOSTAGE"
               title="Ferramentas para"
               highlight="a primeira temporada."
-              highlightClass="bg-secondary text-secondary-content"
+              highlightTone="secondary"
               description="Gratuitas e feitas para o dia a dia de quem está começando."
             />
-          </RevealOnScroll>
-          <ToolGrid tools={data.tools} columns={data.tools.length % 3 === 0 ? 3 : 4} />
+          </Reveal>
+          <div className={cn("mt-14 grid gap-5 sm:grid-cols-2", data.tools.length % 3 === 0 ? "lg:grid-cols-3" : "lg:grid-cols-4")}>
+            {data.tools.map(({ icon: Icon, tag, title, description, href, tone, status }, i) => (
+              <Reveal key={title} delay={(i % 4) * 60} className="h-full">
+                <FeatureCard
+                  title={title}
+                  description={description}
+                  category={tag}
+                  icon={<Icon />}
+                  href={href}
+                  index={i + 1}
+                  badge={status}
+                  tone={asFeatureTone(tone)}
+                />
+              </Reveal>
+            ))}
+          </div>
         </div>
-      </section>
+      </Section>
 
       {/* ================================================================ FAQ */}
-      <section id="faq" className="scroll-mt-32 border-t border-base-300 bg-base-200/40 px-6 py-24">
+      <Section id="faq" tone="muted" className="scroll-mt-32">
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
-          <RevealOnScroll>
+          <Reveal>
             <div className="lg:sticky lg:top-32">
               <SectionTitle kicker="/ FAQ" title="Dúvidas de" highlight="equipes novas." />
               <p className="mt-6 text-sm leading-6 text-base-content/60">
-                Respostas diretas para as perguntas mais comuns. Na dúvida,
-                confira sempre os documentos da temporada vigente.
+                Respostas diretas para as perguntas mais comuns. Na dúvida, confira sempre os documentos da temporada vigente.
               </p>
             </div>
-          </RevealOnScroll>
-          <RevealOnScroll delay={0.1}>
-            <div className="space-y-3">
-              {data.faq.map(({ q, a }, i) => (
-                <div key={q} className="collapse collapse-plus rounded-tl-2xl rounded-br-2xl border border-base-300 bg-base-100">
-                  <input type="radio" name={`faq_${data.slug}`} defaultChecked={i === 0} aria-label={q} />
-                  <div className="collapse-title pr-12 font-semibold">{q}</div>
-                  <div className="collapse-content text-sm leading-7 text-base-content/70">
-                    <p>{a}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </RevealOnScroll>
+          </Reveal>
+          <Reveal delay={100}>
+            <Accordion
+              defaultOpen={0}
+              items={data.faq.map(({ q, a }) => ({
+                title: q,
+                content: <p className="text-sm leading-7 text-base-content/70">{a}</p>,
+              }))}
+            />
+          </Reveal>
         </div>
-      </section>
+      </Section>
 
-      <CtaBlock
-        kicker={data.next.kicker}
-        icon={ArrowRight}
-        title={data.next.title}
-        text={data.next.text}
-        actions={[
-          { label: data.next.label, href: data.next.href, variant: "accent" },
-          { label: "Voltar para a FLL", href: "/fll", variant: "ghost" },
-          { label: "Criar conta grátis", href: "/sign-up", variant: "ghost" },
-        ]}
-      />
+      {/* ============================================================ CTA */}
+      <Section tone="secondary" edgeTop="wave" innerClassName="stage-grid-on-color relative overflow-hidden">
+        <Starburst size={120} tone="accent" motion="spin" className="absolute -right-8 -top-8 hidden sm:inline-grid" />
+        <Sparkle size={34} tone="paper" motion="float" className="absolute bottom-12 right-24 hidden md:inline-grid" />
+        <Reveal>
+          <div className="relative mx-auto max-w-6xl">
+            <Kicker className="text-secondary-content/70">{data.next.kicker.replace(/^\/\s*/, "")}</Kicker>
+            <h2 className="stage-display mt-4 max-w-3xl text-3xl sm:text-5xl">{data.next.title}</h2>
+            <p className="mt-5 max-w-xl text-secondary-content/85">{data.next.text}</p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <ButtonLink href={data.next.href} tone="accent" size="lg" iconRight={<ArrowRight size={18} />}>
+                {data.next.label}
+              </ButtonLink>
+              <ButtonLink href="/fll" tone="ghost" size="lg" shape="rounded" className="text-secondary-content hover:bg-secondary-content/10">
+                Voltar para a FLL
+              </ButtonLink>
+              <ButtonLink
+                href="/sign-up"
+                tone="ghost"
+                size="lg"
+                shape="rounded"
+                iconLeft={<UserPlus size={18} />}
+                className="text-secondary-content hover:bg-secondary-content/10"
+              >
+                Criar conta grátis
+              </ButtonLink>
+            </div>
+          </div>
+        </Reveal>
+      </Section>
     </main>
   );
 }

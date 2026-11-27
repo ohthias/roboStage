@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2 } from "lucide-react";
+import { ChunkyProgress } from "@/components/stage";
 
 interface ProgressSummaryProps {
   done: number;
@@ -12,20 +13,20 @@ export default function ProgressSummary({ done, total, percent }: ProgressSummar
   const complete = total > 0 && done === total;
 
   return (
-    <div className="flex flex-col gap-1">
-      <progress
-        className={`progress w-full ${complete ? "progress-success" : "progress-primary"}`}
+    <div className="flex flex-col gap-1.5">
+      <ChunkyProgress
         value={percent}
-        max={100}
-        aria-label={`Progresso: ${done} de ${total} concluídos`}
+        tone={complete ? "success" : "primary"}
+        showValue={false}
+        label={<span className="sr-only">Progresso: {done} de {total} concluídos</span>}
       />
-      <div className="flex items-center justify-between text-xs text-base-content/70">
-        <span>
-          {done} de {total} concluídos
+      <div className="flex items-center justify-between text-[11px] text-base-content/60">
+        <span className="font-mono">
+          {done}/{total} concluídos
         </span>
         {complete && (
-          <span className="inline-flex items-center gap-1 font-medium text-success">
-            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+          <span className="inline-flex items-center gap-1 font-semibold text-success">
+            <CheckCircle2 className="size-3.5" aria-hidden="true" />
             Tudo certo!
           </span>
         )}

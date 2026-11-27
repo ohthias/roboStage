@@ -18,10 +18,12 @@ import type {
 } from "@/features/quickbrick/heatmap/types";
 import {
   renderHeatmap,
+  renderMissions,
   renderTable,
-  getLocalIntensity,
 } from "@/features/quickbrick/heatmap/lib/heatmap";
-import { getMissions } from "@/features/quickbrick/heatmap/lib/missions";
+import { MAT_RATIO, getMissions, missionShortLabel } from "@/features/quickbrick/heatmap/lib/missions";
+import type { Mission } from "@/features/quickbrick/sharks-simulator/types";
+import { TAPETE_HEIGHT_CM, TAPETE_WIDTH_CM } from "@/features/quickbrick/sharks-simulator/components/constants";
 import { SEASONS } from "@/features/quickbrick/heatmap/lib/seasons";
 
 type Ripple = { id: string; x: number; y: number; color: string };
@@ -34,18 +36,25 @@ type Props = {
   onAddPoint: (x: number, y: number) => void;
   onRemoveNearest: (x: number, y: number) => void;
   imagePath: string | null;
+  /** Missões do tapete (mesmas do Sharks Simulator). */
+  missions?: Mission[];
+  showMissions?: boolean;
+  showMissionLabels?: boolean;
+  highlightMissionId?: string | null;
 };
 
 export type HeatmapCanvasRef = {
   tableCanvas: HTMLCanvasElement | null;
   heatmapCanvas: HTMLCanvasElement | null;
+  /** Camada das missões — null quando escondida. */
+  missionsCanvas: HTMLCanvasElement | null;
 };
 
 function computeCanvasSize(containerEl: HTMLElement): { w: number; h: number } {
   const { width, height } = containerEl.getBoundingClientRect();
-  const maxW = width - 24;
-  const maxH = height - 48;
-  const ratio = 2 / 1;
+  const maxW = width - 32;
+  const maxH = height - 32;
+  const ratio = MAT_RATIO;
 
   let w = maxW;
   let h = maxW / ratio;
@@ -60,13 +69,26 @@ function computeCanvasSize(containerEl: HTMLElement): { w: number; h: number } {
 
 const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
   function HeatmapCanvas(
-    { points, config, mode, season, onAddPoint, onRemoveNearest, imagePath },
+    {
+      points,
+      config,
+      mode,
+      season,
+      onAddPoint,
+      onRemoveNearest,
+      imagePath,
+      missions = [],
+      showMissions = true,
+      showMissionLabels = true,
+      highlightMissionId = null,
+    },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const tableRef = useRef<HTMLCanvasElement>(null);
     const heatRef = useRef<HTMLCanvasElement>(null);
+    const missionsRef = useRef<HTMLCanvasElement>(null);
     const isDrawingRef = useRef(false);
     const lastStampRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -120,9 +142,24 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
       );
     }, [points, config.brushRadius, config.opacity, size]);
 
+    useEffect(() => {
+      const canvas = missionsRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      renderMissions(ctx, size.w, size.h, showMissions ? missions : [], {
+        matWidthCm: TAPETE_WIDTH_CM,
+        matHeightCm: TAPETE_HEIGHT_CM,
+        showLabels: showMissionLabels,
+        highlightId: highlightMissionId,
+        label: missionShortLabel,
+      });
+    }, [missions, showMissions, showMissionLabels, highlightMissionId, size]);
+
     useImperativeHandle(ref, () => ({
       tableCanvas: tableRef.current,
       heatmapCanvas: heatRef.current,
+      missionsCanvas: showMissions ? missionsRef.current : null,
     }));
 
     const applyBrushAt = useCallback(
@@ -217,30 +254,8 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
           return;
         }
 
-        if (mode !== "view") return;
-
-        const rect = wrapperRef.current.getBoundingClientRect();
-        const nx = (e.clientX - rect.left) / rect.width;
-        const ny = (e.clientY - rect.top) / rect.height;
-
-        if (nx < 0 || nx > 1 || ny < 0 || ny > 1) {
-          return;
-        }
-
-        const intensity = getLocalIntensity(
-          points,
-          nx,
-          ny,
-          config.brushRadius,
-          size.w,
-        );
-
-        if (intensity > 0) {
-          
-        } else {
-        }
       },
-      [mode, points, config.brushRadius, size.w, applyBrushAt],
+      [mode, applyBrushAt],
     );
 
     const cursor =
@@ -254,7 +269,7 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
       <>
         <div
           ref={containerRef}
-          className={`relative flex-1 h-full flex items-center justify-center bg-surface border border-white/7 rounded-2xl overflow-hidden ${cursor}`}
+          className={`relative flex h-full flex-1 items-center justify-center overflow-hidden bg-base-200 ${cursor}`}
           onMouseDown={handleMouseDown}
           onMouseUp={stopDrawing}
           onMouseLeave={stopDrawing}
@@ -262,7 +277,7 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
         >
           <div
             ref={wrapperRef}
-            className="relative"
+            className="relative rounded-md shadow-sm ring-1 ring-base-content/10"
             style={{
               width: size.w,
               height: size.h,
@@ -284,6 +299,13 @@ const HeatmapCanvas = forwardRef<HeatmapCanvasRef, Props>(
               width={size.w}
               height={size.h}
               className="absolute top-0 left-0 pointer-events-none rounded-md"
+            />
+
+            <canvas
+              ref={missionsRef}
+              width={size.w}
+              height={size.h}
+              className="absolute top-0 left-0 pointer-events-none"
             />
 
             <AnimatePresence>
